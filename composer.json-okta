@@ -1,0 +1,33 @@
+{
+  "require-dev": {
+    "phpunit/phpunit": "5.7",
+    "maximebf/debugbar": ">=1.0.0",
+    "elasticsearch/elasticsearch": "~5.0",
+    "monolog/monolog": "~1.0",
+    "knplabs/github-api": "~2.7",
+    "php-http/guzzle6-adapter": "~1.1.1",
+    "ezyang/htmlpurifier": "~4.9",
+    "easyrdf/easyrdf": "0.9.*",
+    "hoa/compiler": "~3.17",
+    "hoa/visitor": "~2.17",
+    "collectiveaccess/service-wrapper": "v1.1.1",
+    "phpoffice/phppresentation": "dev-master",
+    "phpoffice/phpword": "v0.14.*",
+    "phpoffice/phpexcel": "v1.8.1",
+    "tedivm/stash": "0.14.*",
+    "pear/file_marc": "~1.2",
+    "dompdf/dompdf": "~0.8",
+    "scholarslab/bagit": "~0.2",
+    "league/flysystem": "v1.0.45",
+    "league/flysystem-cached-adapter": ">=1.0.0",
+    "league/flysystem-aws-s3-v3": ">=1.0.0",
+    "league/flysystem-webdav": ">=1.0.0",
+    "league/flysystem-ziparchive": ">=1.0.0",
+    "spatie/flysystem-dropbox": ">=1.0.0",
+    "league/climate": ">=1.0.0",
+    "okta/sdk": ">=1.0.0",
+    "okta/jwt-verifier": "^0.2.1",
+    "guzzlehttp/psr7": "^1.4",
+    "spomky-labs/jose": "^7.1"
+  }
+}

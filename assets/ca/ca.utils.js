@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,6 +111,52 @@ var caUI = caUI || {};
 			}
 			
 			// ------------------------------------------------------------------------------------
+			
+			caUI.utils.sortObjIdno = function(arr) {
+				var sortedKeys = new Array();
+				var sortedObj = {};
+				var trans = {};
+				
+				// Separate keys and sort them
+				for (var i in arr){
+				    var elements = i.split(/[ ]+/);
+				    var acc = [];
+				    for (var ie in elements) {
+				        var e = elements[ie];
+				        if (e == '') { continue; }
+				        var r;
+				        if (r = e.match(/^([\d]+)$/)) {
+				            var e = String(parseInt(r[1]));
+                            while (e.length < 10) {e = "0" + e;}
+				        } 
+				        acc.push(e);
+				    }
+				    var tk = acc.join(' ');
+				    //var tk = i.replace(/[ ]+/, ' ').trim();
+				    trans[tk] = i;
+					sortedKeys.push(tk);
+				}
+				sortedKeys.sort(caUI.utils._caseInsensitiveSort);
+				console.log(sortedKeys);
+				// Reconstruct sorted obj based on keys
+				for (var i in sortedKeys){
+					sortedObj[trans[sortedKeys[i]]] = arr[trans[sortedKeys[i]]];
+				}
+				return sortedObj;
+			};
+			
+			caUI.utils._caseInsensitiveSort = function(a, b) { 
+			   var ret = 0;
+			   a = a.toLowerCase();
+			   b = b.toLowerCase();
+			   if(a > b) 
+				  ret = 1;
+			   if(a < b) 
+				  ret = -1; 
+			   return ret;
+			}
+			
+			// ------------------------------------------------------------------------------------
 			// Update state/province form drop-down based upon country setting
 			// Used by BaseModel for text fields with DISPLAY_TYPE DT_COUNTRY_LIST and DT_STATEPROV_LIST
 			//
@@ -199,6 +245,23 @@ var caUI = caUI || {};
  
 				return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
 			};
+			
+			//
+			// https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+			//
+			caUI.utils.hexToRgb = function(hex, format=null) {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                var colors = result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+                
+                if (format && colors) {
+                    return format.replace(/%r/, colors.r).replace(/%g/, colors.g).replace(/%b/, colors.b);
+                }
+                return colors;
+            };
 			
 			
 			//

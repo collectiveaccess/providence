@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.idnochecker.js
+ * js/ca.idnochecker.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

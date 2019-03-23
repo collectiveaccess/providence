@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
+	require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
@@ -79,8 +79,7 @@
 			
 			$t_mapping = caGetOption('mapping', $pa_options, null);
 			if ($t_mapping) {
-				$o_dm = Datamodel::load();
-				if ($t_mapping->get('table_num') != $o_dm->getTableNum('ca_list_items')) { 
+				if ($t_mapping->get('table_num') != Datamodel::getTableNum('ca_list_items')) { 
 					if ($o_log) {
 						$o_log->logError(_t("listItemIndentedHierarchyBuilder refinery may only be used in imports to ca_list_items"));
 					}
@@ -177,6 +176,15 @@
 		 */
 		public function returnsMultipleValues() {
 			return false;
+		}
+		# -------------------------------------------------------	
+		/**
+		 * listItemIndentedHierarchyBuilder returns actual row_ids, not idnos
+		 *
+		 * @return bool
+		 */
+		public function returnsRowIDs() {
+			return true;
 		}
 		# -------------------------------------------------------
 	}

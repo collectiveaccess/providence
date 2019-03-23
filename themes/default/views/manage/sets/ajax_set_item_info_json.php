@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,7 +27,7 @@
  */
 	$va_errors = $this->getVar('errors');
 	
-	if (sizeof($va_errors)) {
+	if (is_array($va_errors) && sizeof($va_errors)) {
 		print json_encode(array('status' => 'error', 'errors' => $va_errors, 'set_id' => $this->getVar('set_id'), 'row_id' => $this->getVar('row_id')));
 	} else {
 		print json_encode(array(
@@ -44,4 +44,3 @@
 			'displayTemplate' => $this->getVar('displayTemplate'),
 		));
 	}
-?>

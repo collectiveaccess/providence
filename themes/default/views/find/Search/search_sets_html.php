@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,7 +30,7 @@
  	$o_result_context 	= $this->getVar('result_context');
 	$t_list 			= new ca_lists();
 	
-	$vb_show_add_checked_to_set = (bool)(is_array($va_sets = $this->getVar('available_sets')) && sizeof($va_sets) && $this->request->user->canDoAction('can_edit_sets'));
+	$vb_show_add_checked_to_set = (bool)(is_array($va_sets = $this->getVar('available_editable_sets')) && sizeof($va_sets) && $this->request->user->canDoAction('can_edit_sets'));
 	$vb_show_create_set_from_checked = (bool)$this->request->user->canDoAction('can_create_sets');
 
 	if ($vb_show_add_checked_to_set || $vb_show_create_set_from_checked) {

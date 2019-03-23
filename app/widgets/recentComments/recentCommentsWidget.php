@@ -25,11 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+	require_once(__CA_LIB_DIR__.'/Datamodel.php');
  
 	class recentCommentsWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
@@ -43,7 +43,6 @@
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recentComments.conf');
-			$this->opo_datamodel = Datamodel::load();
 		}
 		# -------------------------------------------------------
 		/**

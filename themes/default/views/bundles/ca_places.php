@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -164,7 +164,7 @@
 <?php
 } else {
 		$vn_use_as_root_id = 'null';
-		if (sizeof($va_settings['restrict_to_lists']) == 1) {
+		if (is_array($va_settings['restrict_to_lists']) && (sizeof($va_settings['restrict_to_lists']) == 1)) {
 			$t_item = new ca_list_items();
 			if ($t_item->load(array('list_id' => $va_settings['restrict_to_lists'][0], 'parent_id' => null))) {
 				$vn_use_as_root_id = $t_item->getPrimaryKey();
@@ -211,7 +211,7 @@
 						
 						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 						
-						//initItemID: <?php print (int)$this->request->session->getVar('ca_places_browse_last_id'); ?>,
+						//initItemID: <?php print (int)Session::getVar('ca_places_browse_last_id'); ?>,
 						useAsRootID: <?php print $vn_use_as_root_id; ?>,
 						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						
@@ -348,12 +348,13 @@
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Place', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
+			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
 			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
-			listSortItems: 'div.roundedRel',
+			listSortItems: 'div.roundedRel,div.listRel',
 			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
 <?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,

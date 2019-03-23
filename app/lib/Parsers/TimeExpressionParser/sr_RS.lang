@@ -1,0 +1,108 @@
+﻿# *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
+
+# List month names; used whenever name of month needs to be displayed
+monthList = [јануар, фебруар, март, април, мај, јун, јул, август, септембар, октобар, новембар, децембар]
+
+# *** the following list of months is for display and *SHOULD* be capitalized where appropriate
+monthListDisplay = [Јануар, Фебруар, Март, Април, Мај, Јун, Јул, Август, Септембар, Октобар, Новембар, Децембар]
+
+# Hash table mapping acceptable month names to the display names defined in 'monthList'
+monthTable = {
+	јан = јануар, јан. = јануар,
+	феб = фебруар, феб. = фебруар,
+	мар = март, мар. = март,
+	апр = април, апр. = април,
+	мај = мај, мај. = мај,
+	јун = јун, јун. = јун,
+	јул = јул, јул. = јул,
+	авг = август, авг. = август,
+	сеп = септембар, сеп. = септембар,
+	окт = октобар, окт. = октобар,
+	нов = новембар, нов. = новембар,
+	дец = децембар, дец. = децембар
+}
+
+# List of day names, starting with Sunday
+dayListDisplay = [Недеља, Понедељак, Уторак, Среда, Четвртак, Петак, Субота]
+
+rangePreConjunctions = [од, између]
+rangeConjunctions = [до, -, и, .., кроз]
+
+dateTimeConjunctions = [ет,@]
+
+dateDelimiters = [/,-,.]
+timeDelimiters = [:,.]
+
+timeAMMeridian = ам
+timePMMeridian = пм
+
+meridianTable = {
+	а.м. = ам,
+	п.м. = пм
+}
+
+dateCircaIndicator = [цирка, ц, ц., ца, ца.]
+dateProbablyIndicator = [probably, possibly]
+dateUncertaintyIndicator = [~]
+dateUncertaintyYearIndicator = [г]
+dateUncertaintyDayIndicator = [д]
+
+# What to use to indicate a geological date ("millions of years ago")
+dateMYA = [пмг]
+
+# What to use to indicate radiocarbon dates ("before present")
+dateBP = [bp]
+
+dateADIndicator = не
+dateBCIndicator = пне
+ADBCTable = {
+	н.е. = не,
+	п.н.е. = пне
+}
+
+nowDate = [сада]
+todayDate = [данас]
+yesterdayDate = [јуче]
+tomorrowDate = [сутра]
+undatedDate = [undated, unknown]
+
+presentDate = [данас, ?, ??, ???, ????]
+beforeQualifier = [пре]
+earlyQualifier = [early]
+midQualifier = [mid, middle]
+lateQualifier = [late]
+diedQualifier = [у., у, умро]
+afterQualifier = [после]
+bornQualifier = [р., р, рођен]
+
+# Text to indicate century (as in "20th century")
+centuryIndicator = [century, jahrhundert, cent, vek]
+
+# Text to indicate decdae (as in "1920s")
+decadeIndicator = [s]
+
+# list of numeric suffixes, starting with the one for zero
+# (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
+ordinalSuffixes = [., ., ., .]
+ordinalSuffixDefault = .
+
+# in delimited dates (ex. 12/10/2009) is the first number a month or a day?
+# set to "0" for European style dates (day comes first); "1" for American-style dates (month comes first)
+monthComesFirstInDelimitedDate = 0
+
+# character(s) to append to day in full (not delimited) date
+# eg. in the date "1. February 2009", "." is the daySuffix
+# Note: you can put arbitrary text here - only punctuation
+daySuffix = [.]
+
+# Definite articles
+definiteArticles = []
+
+# Indefinite articles
+indefiniteArticles = []
+
+# Seasons
+winterSeason = [winter]
+springSeason = [spring]
+summerSeason = [summer]
+autumnSeason = [autumn, fall]

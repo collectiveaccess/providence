@@ -38,10 +38,10 @@ require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
-require_once(__CA_LIB_DIR__."/ca/BatchMetadataExportProgress.php");
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/BatchProcessor.php");
+require_once(__CA_LIB_DIR__."/BatchMetadataExportProgress.php");
 
 
 class MetadataExportController extends ActionController {
@@ -57,7 +57,6 @@ class MetadataExportController extends ActionController {
 
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 
-		$this->opo_datamodel = Datamodel::load();
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
 		$this->cleanOldExportFilesFromTmpDir();
@@ -111,7 +110,7 @@ class MetadataExportController extends ActionController {
 		}
 
 		$t_exporter = $this->getExporterInstance();
-		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$t_subject = Datamodel::getInstanceByTableNum($t_exporter->get('table_num'), true);
 
 		// Can user export records of this type?
 		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
@@ -139,7 +138,7 @@ class MetadataExportController extends ActionController {
 			return;
 		}
 
-		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$t_subject = Datamodel::getInstanceByTableNum($t_exporter->get('table_num'), true);
 
 		// Can user export records of this type?
 		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
@@ -198,10 +197,9 @@ class MetadataExportController extends ActionController {
 			file_put_contents($vs_tmp_file, $vs_export);
 
 			// Store file name and exporter data in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
-			$o_session = $this->getRequest()->getSession();
-			$o_session->setVar('export_file', $vs_tmp_file);
-			$o_session->setVar('export_content_type', $t_exporter->getContentType());
-			$o_session->setVar('exporter_id', $t_exporter->getPrimaryKey());
+			Session::setVar('export_file', $vs_tmp_file);
+			Session::setVar('export_content_type', $t_exporter->getContentType());
+			Session::setVar('exporter_id', $t_exporter->getPrimaryKey());
 
 			$this->render('export/export_destination_html.php');
 		}
@@ -215,12 +213,10 @@ class MetadataExportController extends ActionController {
 		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
 		$this->getView()->setVar('file_name', $vs_filename);
 
-		$o_session = $this->getRequest()->getSession();
-
-		if(!($vs_tmp_file = $o_session->getVar('export_file')) && !($vs_tmp_data = $o_session->getVar('export_data'))) {
+		if(!($vs_tmp_file = Session::getVar('export_file')) && !($vs_tmp_data = Session::getVar('export_data'))) {
 			return; //@todo error handling
 		}
-		if(!($vs_content_type = $o_session->getVar('export_content_type'))) {
+		if(!($vs_content_type = Session::getVar('export_content_type'))) {
 			return; // @todo error handling
 		}
 
@@ -261,17 +257,14 @@ class MetadataExportController extends ActionController {
 					if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
 					$this->getView()->setVar('dest_display_name', $va_dest['display']);
 
-					if(caExportDataToResourceSpace($va_dest['user'], $va_dest['api_key'], $va_dest['base_api_url'], $vs_tmp_file)){
-						$vb_success = true;
-					}
-
+					$vb_success = caExportDataToResourceSpace($va_dest['user'], $va_dest['api_key'], $va_dest['base_api_url'], $vs_tmp_file);
 				}
 
 			}
 		}
 
 		$this->getView()->setVar('alternate_destination_success', $vb_success);
-		unlink($vs_tmp_file);
+		if (file_exists($vs_tmp_file)) { unlink($vs_tmp_file); }
 		$this->render('export/download_feedback_html.php');
 	}
 	# -------------------------------------------------------
@@ -302,9 +295,8 @@ class MetadataExportController extends ActionController {
 	 */
 	public function SetupBatchExport() {
 		$o_conf = Configuration::load();
-		$o_session = $this->getRequest()->getSession();
 
-		if(!($vn_exporter_id = $o_session->getVar('exporter_id'))) {
+		if(!($vn_exporter_id = Session::getVar('exporter_id'))) {
 			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3420?r='.urlencode($this->getRequest()->getFullUrlPath()));
 			return;
 		}
@@ -315,7 +307,7 @@ class MetadataExportController extends ActionController {
 			return;
 		}
 
-		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$t_subject = Datamodel::getInstanceByTableNum($t_exporter->get('table_num'), true);
 
 		// alternate destinations
 		$va_alt_dest = $o_conf->getAssoc('exporter_alternate_destinations');

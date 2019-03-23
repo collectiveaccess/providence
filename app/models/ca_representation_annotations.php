@@ -34,8 +34,8 @@
    *
    */
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
 
 
@@ -553,10 +553,10 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  	# ------------------------------------------------------
  	public function loadProperties($ps_type, $pa_parameters=null) {
  		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
- 		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
+ 		if (!file_exists(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
  			return false;
  		}
- 		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
+ 		include_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
  		
  		$this->opo_annotations_properties = new $vs_classname;
  		$this->opo_annotations_properties->setPropertyValues(is_array($pa_parameters) ? $pa_parameters : $this->get('props'));
@@ -693,10 +693,10 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  	# ------------------------------------------------------
  	static public function getPropertiesCoderInstance($ps_type) {
  		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
- 		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
+ 		if (!file_exists(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
  			return false;
  		}
- 		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
+ 		include_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
  		
  		return new $vs_classname;
  	}

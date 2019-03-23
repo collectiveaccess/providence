@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,15 +36,17 @@
 require_once(__CA_APP_DIR__."/helpers/errorHelpers.php");
 require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer
 
-require_once(__CA_LIB_DIR__."/core/Zend/Translate.php");
-require_once(__CA_LIB_DIR__."/core/Zend/Cache.php");
-require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php"); // is used in utilityHelpers
-require_once(__CA_LIB_DIR__."/core/Cache/ExternalCache.php"); // is used in utilityHelpers
-require_once(__CA_LIB_DIR__."/core/Cache/CompositeCache.php"); // is used in utilityHelpers
-require_once(__CA_LIB_DIR__."/core/Zend/Registry.php");
+require_once(__CA_LIB_DIR__."/Zend/Translate.php");
+require_once(__CA_LIB_DIR__."/Zend/Cache.php");
+require_once(__CA_LIB_DIR__."/Cache/MemoryCache.php"); // is used in utilityHelpers
+require_once(__CA_LIB_DIR__."/Cache/ExternalCache.php"); // is used in utilityHelpers
+require_once(__CA_LIB_DIR__."/Cache/CompositeCache.php"); // is used in utilityHelpers
+require_once(__CA_LIB_DIR__."/Cache/PersistentCache.php"); // is used in utilityHelpers
+require_once(__CA_LIB_DIR__."/Zend/Registry.php");
 
-require_once(__CA_LIB_DIR__."/core/Utils/Debug.php");
+require_once(__CA_LIB_DIR__."/Utils/Debug.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/requestHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/initializeLocale.php");
 
 if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
@@ -55,27 +57,27 @@ if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 require_once(__CA_APP_DIR__.'/helpers/navigationHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
 
-require_once(__CA_LIB_DIR__.'/core/ApplicationMonitor.php');
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
-require_once(__CA_LIB_DIR__.'/core/Controller/AppController.php');
+require_once(__CA_LIB_DIR__.'/ApplicationMonitor.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/Controller/AppController.php');
 
-require_once(__CA_LIB_DIR__.'/ca/MetaTagManager.php');
-require_once(__CA_LIB_DIR__.'/ca/AssetLoadManager.php');
-require_once(__CA_LIB_DIR__.'/ca/TooltipManager.php');
-require_once(__CA_LIB_DIR__.'/ca/FooterManager.php');
+require_once(__CA_LIB_DIR__.'/MetaTagManager.php');
+require_once(__CA_LIB_DIR__.'/AssetLoadManager.php');
+require_once(__CA_LIB_DIR__.'/TooltipManager.php');
+require_once(__CA_LIB_DIR__.'/FooterManager.php');
 
-require_once(__CA_LIB_DIR__.'/ca/AppNavigation.php');
+require_once(__CA_LIB_DIR__.'/AppNavigation.php');
 
-require_once(__CA_LIB_DIR__.'/core/Controller/ActionController.php');
+require_once(__CA_LIB_DIR__.'/Controller/ActionController.php');
 
 require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
-require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
-require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
-require_once(__CA_LIB_DIR__.'/core/Cache/MemoryCache.php');
-
-require_once(__CA_APP_DIR__.'/lib/ca/GarbageCollection.php');
+require_once(__CA_APP_DIR__.'/lib/GarbageCollection.php');
 require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
+
+
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+Datamodel::load();
 
 // initialize Tooltip manager
 TooltipManager::init();

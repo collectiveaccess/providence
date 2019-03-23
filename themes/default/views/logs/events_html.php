@@ -36,11 +36,10 @@
 /* ]]> */
 </script>
 <div class="sectionBox">
-	<?php 
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			_t('Show from').': '.caFormTag($this->request, 'Index', 'eventsLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('events_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'eventsLogSearch')."</form>"
+			_t('Show from').': '.caFormTag($this->request, 'Index', 'eventsLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)).caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('events_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'eventsLogSearch')."</form>"
 		); 
 	?>
 	

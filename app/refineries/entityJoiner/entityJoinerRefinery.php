@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
  	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
  
 	class entityJoinerRefinery extends BaseRefinery {

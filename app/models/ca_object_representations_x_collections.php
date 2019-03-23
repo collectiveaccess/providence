@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/ca/BaseRepresentationRelationship.php');
+require_once(__CA_LIB_DIR__.'/BaseRepresentationRelationship.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations_x_collections'] = array(

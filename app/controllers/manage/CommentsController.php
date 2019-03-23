@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
 	require_once(__CA_MODELS_DIR__."/ca_item_comments.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ItemCommentSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ItemCommentSearch.php");
  	
  	class CommentsController extends BaseSearchController {
  		# -------------------------------------------------------
@@ -190,7 +190,6 @@
  		 * 
  		 */
  		public function Info() {
- 			$o_dm = Datamodel::load();
  			
  			$t_comments = new ca_item_comments();
  			$this->view->setVar('unmoderated_comment_count', ($t_comments->getUnmoderatedCommentCount()));

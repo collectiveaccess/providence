@@ -1,0 +1,34 @@
+#!/bin/sh
+
+
+if [ -z "$COLLECTIVEACCESS_HOME" ]
+then
+     >&2 echo 'COLLECTIVEACCESS_HOME environment variable must be set to the root directory of your CollectiveAccess installation!'
+    exit 127
+fi
+
+if command -v curl > /dev/null
+then
+    EXPECTED_SIGNATURE=$(curl -s https://composer.github.io/installer.sig)
+else
+    EXPECTED_SIGNATURE=$(wget -q -O - https://composer.github.io/installer.sig)
+fi
+
+export COMPOSER_SETUP=/composer-setup.php
+export COMPOSER_SETUP_PATH=$COLLECTIVEACCESS_HOME/app/tmp$COMPOSER_SETUP
+
+php -r "copy('https://getcomposer.org/installer', '$COMPOSER_SETUP_PATH');"
+ACTUAL_SIGNATURE=$(php -r "echo hash_file('SHA384', '$COMPOSER_SETUP_PATH');")
+
+if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
+then
+    >&2 echo 'ERROR: Invalid installer signature'
+    rm composer-setup.php
+    exit 1
+fi
+
+export COMPOSER_HOME=$COLLECTIVEACCESS_HOME/app/tmp
+php $COLLECTIVEACCESS_HOME/app/tmp/composer-setup.php -q --install-dir $COMPOSER_HOME
+RESULT=$?
+rm $COLLECTIVEACCESS_HOME/app/tmp/composer-setup.php
+exit $RESULT

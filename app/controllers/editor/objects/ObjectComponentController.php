@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/ObjectComponentController.php : 
+ * app/lib/ObjectComponentController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,11 +35,11 @@
   */
  
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
- 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
-	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_LIB_DIR__."/Datamodel.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
+	require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
  
  	class ObjectComponentController extends ActionController {
  		# -------------------------------------------------------
@@ -54,7 +54,6 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			
- 			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
  		}
@@ -96,7 +95,7 @@
  			
  			// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
 			if ($vn_parent_id > 0) {
-				$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+				$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
 				if ($t_parent->load($vn_parent_id)) {
 					if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
 						$this->view->setVar('_context_id', $t_parent->get($vs_idno_context_field));
@@ -124,8 +123,8 @@
  			
  			// Get default screen (this is all we show in the component editor, even if the UI has multiple screens)
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-				array(),
-				array()
+				[],
+				[]
 			);
 			
 			$this->view->setVar('t_ui', $t_ui);
@@ -232,7 +231,7 @@
  					$this->view->setVar('_context_id', $vn_context_id = $t_subject->get($vs_idno_context_field));
  				} else {
  					if ($vn_parent_id > 0) {
- 						$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+ 						$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
  						if ($t_parent->load($vn_parent_id)) {
  							$this->view->setVar('_context_id', $vn_context_id = $t_parent->get($vs_idno_context_field));
  						}
@@ -267,7 +266,7 @@
 					$this->request->setParameter($t_subject->primaryKey(), $vn_subject_id, 'GET');
 					$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
 					$this->view->setVar('subject_id', $vn_subject_id);
-					$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
+					Session::setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
 					
 					// Set ACL for newly created record
 					if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
@@ -339,7 +338,7 @@
  			AssetLoadManager::register('imageScroller');
  			AssetLoadManager::register('ckeditor');
  			
- 			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+ 			$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
  			
  			if (is_array($pa_options) && isset($pa_options['loadSubject']) && (bool)$pa_options['loadSubject'] && ($vn_subject_id = (int)$this->request->getParameter($t_subject->primaryKey(), pInteger))) {
  				$t_subject->load($vn_subject_id);

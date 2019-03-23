@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,10 +71,10 @@
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";
-	if(sizeof($this->getVar('initialValues'))) {
+	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
 	}
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
+	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
 		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
@@ -205,7 +205,7 @@
 					</td>
 					<td>
 <?php
-	if (sizeof($this->getVar('relationship_types_by_sub_type'))) {
+	if (is_array($this->getVar('relationship_types_by_sub_type')) && sizeof($this->getVar('relationship_types_by_sub_type'))) {
 ?>
 						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
 <?php
@@ -226,7 +226,7 @@
 	<div class="bundleContainer">
 		<div class="caItemList">
 <?php
-	if (sizeof($va_errors)) {
+	if (is_array($va_errors) && sizeof($va_errors)) {
 ?>
 		<span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
 <?php
@@ -321,12 +321,13 @@
 			showEmptyFormsOnLoad: 1,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Object', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
+			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
 			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
-			listSortItems: 'div.roundedRel',
+			listSortItems: 'div.roundedRel,div.listRel',
 			
 			itemColor: '<?php print $vs_color; ?>',
 			firstItemColor: '<?php print $vs_first_color; ?>',

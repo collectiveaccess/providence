@@ -342,12 +342,11 @@ class ca_acl extends BaseModel {
 	 *
 	 */
 	public static function applyACLInheritanceToRelatedFromRow($t_subject, $ps_target) {
-		$o_dm = Datamodel::load();
 		$o_db = new Db();
 		
 		if ($t_link = $t_subject->getRelationshipInstance($ps_target)) {
-			if ($t_rel_item = $o_dm->getInstanceByTableName($ps_target, false)) {
-				$va_path = array_keys($o_dm->getPath($vs_cur_table = $t_subject->tableName(), $ps_target));
+			if ($t_rel_item = Datamodel::getInstanceByTableName($ps_target, false)) {
+				$va_path = array_keys(Datamodel::getPath($vs_cur_table = $t_subject->tableName(), $ps_target));
 				$vs_table = array_shift($va_path);
 				
 				if (!$t_rel_item->hasField("acl_inherit_from_{$vs_table}")) { return false; }
@@ -361,7 +360,7 @@ class ca_acl extends BaseModel {
 				$vn_subject_id = (int)$t_subject->getPrimaryKey();
 				
 				foreach($va_path as $vs_join_table) {
-					$va_rel_info = $o_dm->getRelationships($vs_cur_table, $vs_join_table);
+					$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
 					$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 					$vs_cur_table = $vs_join_table;
 				}
@@ -395,11 +394,10 @@ class ca_acl extends BaseModel {
 	 *
 	 */
 	public static function applyACLInheritanceToRelatedRowFromRow($t_subject, $pn_subject_id, $ps_target, $pn_target_id, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		$o_db = new Db();
 		
 		if ($t_link = $t_subject->getRelationshipInstance($ps_target)) {
-			if ($t_rel_item = $o_dm->getInstanceByTableName($ps_target, false)) {
+			if ($t_rel_item = Datamodel::getInstanceByTableName($ps_target, false)) {
 				
 				
 				$vs_target_pk = (string)$t_rel_item->primaryKey();

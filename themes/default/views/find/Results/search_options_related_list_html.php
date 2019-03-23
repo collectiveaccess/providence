@@ -44,25 +44,25 @@ if($vo_result->numHits() > 0) {
 ?>
 <div style="clear: both;"><!-- empty --></div>
  
-<a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, '24px'); ?></a>
+<a href='#' class='showOptions' id='showOptions_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("display", "show");'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, '24px'); ?></a>
 
 <?php
 	if($vo_result->numHits() > 0) {
 		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && !($this->getVar('noRefine'))) {
 ?>
-			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon(__CA_NAV_ICON_FILTER__, '24px'); ?></a>
+			<a href='#' id='showRefine_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("refine", "show");'><?php print caNavIcon(__CA_NAV_ICON_FILTER__, '24px'); ?></a>
 <?php
 		}
 ?>
-		<a href='#' id='showTools' onclick='return caHandleResultsUIBoxes("tools", "show");'><?php print caNavIcon(__CA_NAV_ICON_EXPORT__, '24px'); ?></a>
+		<a href='#' class='showTools' id='showTools_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("tools", "show");'><?php print caNavIcon(__CA_NAV_ICON_EXPORT__, '24px'); ?></a>
 <?php
 	}
 ?>
 <div style="clear: both;"><!-- empty --></div>
-<div id="searchOptionsBox">
+<div id="searchOptionsBox_<?php print $this->getVar('interstitialPrefix'); ?>" class="relatedListSearchOptionsBox">
 	<div class="bg">
 <?php
-		print caFormTag($this->request, 'Index', 'caSearchOptionsForm',  null , 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'Index', 'caSearchOptionsForm_'.$this->getVar('interstitialPrefix'),  null , 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
 		print "<div class='col'>";
 		print _t("Sort").": <select name='sort' style='width: 70px;'>\n";
@@ -120,22 +120,22 @@ if($vo_result->numHits() > 0) {
 ?>		
 			<div class="clear"> </div>
 		
-			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide"); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
-			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit(); return false;'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+			<a href='#' id='hideOptions_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("display", "hide"); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+			<a href='#' id='saveOptions_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='jQuery("#caSearchOptionsForm_<?php print $this->getVar('interstitialPrefix'); ?>").submit(); return false;'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 		</form>
 
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchOptionsBox -->
 <?php
-	TooltipManager::add('#showOptions', _t("Display Options"));
-	TooltipManager::add('#showRefine', _t("Refine Results"));
-	TooltipManager::add('#showTools', _t("Export Tools"));
+	TooltipManager::add('#showOptions_'.$this->getVar('interstitialPrefix'), _t("Display Options"));
+	TooltipManager::add('#showRefine_'.$this->getVar('interstitialPrefix'), _t("Refine Results"));
+	TooltipManager::add('#showTools_'.$this->getVar('interstitialPrefix'), _t("Export Tools"));
 ?>
 <script type="text/javascript">
-	function caHandleResultsUIBoxes(mode, action) {
-		var boxes = ['searchOptionsBox', 'searchRefineBox', 'searchToolsBox', 'searchSetsBox'];
-		var showButtons = ['showOptions', 'showRefine', 'showTools', 'showSets'];
+	function caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>(mode, action) {
+		var boxes = ['searchOptionsBox_<?php print $this->getVar('interstitialPrefix'); ?>', 'searchRefineBox_<?php print $this->getVar('interstitialPrefix'); ?>', 'searchToolsBox_<?php print $this->getVar('interstitialPrefix'); ?>'];
+		var showButtons = ['showOptions_<?php print $this->getVar('interstitialPrefix'); ?>', 'showRefine_<?php print $this->getVar('interstitialPrefix'); ?>', 'showTools_<?php print $this->getVar('interstitialPrefix'); ?>'];
 		
 		var currentBox, currentShowButton, currentHideButton;
 		
@@ -143,31 +143,23 @@ if($vo_result->numHits() > 0) {
 		switch(mode) {
 			case 'display':
 				if (action == 'show') {
-					currentBox = "searchOptionsBox";
-					currentShowButton = "showOptions";
+					currentBox = "searchOptionsBox_<?php print $this->getVar('interstitialPrefix'); ?>";
+					currentShowButton = "showOptions_<?php print $this->getVar('interstitialPrefix'); ?>";
 				}
 				break;
 			case 'refine':
 				if (action == 'show') {
 				
-					currentBox = "searchRefineBox";
-					currentShowButton = "showRefine";
+					currentBox = "searchRefineBox_<?php print $this->getVar('interstitialPrefix'); ?>";
+					currentShowButton = "showRefine_<?php print $this->getVar('interstitialPrefix'); ?>";
 				} 
 				break;
 			case 'tools':
 				if (action == 'show') {
 				
-					currentBox = "searchToolsBox";
-					currentShowButton = "showTools";
+					currentBox = "searchToolsBox_<?php print $this->getVar('interstitialPrefix'); ?>";
+					currentShowButton = "showTools_<?php print $this->getVar('interstitialPrefix'); ?>";
 					jQuery("input.addItemToSetControl").show(); 
-				} 
-				break;
-			case 'sets':
-				if (action == 'show') {
-					currentBox = "searchSetsBox";
-					currentShowButton = "showSets";
-					jQuery("input.addItemToSetControl").show(); 
-					
 				} 
 				break;
 		}

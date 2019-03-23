@@ -44,3 +44,6 @@ CKEDITOR.editorConfig = function( config ) {
 	config.allowedContent = true;
 	config.disableNativeSpellChecker = false;
 };
+
+CKEDITOR.config.allowedContent = true;
+CKEDITOR.config.format_tags = 'p;h1;h2;h3;h4;h5;h6;pre;address;div';

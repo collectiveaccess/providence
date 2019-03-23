@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/VersionUpdate83.php : 
+ * app/lib/VersionUpdate83.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,9 +34,9 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/ca/BaseVersionUpdater.php');
- require_once(__CA_LIB_DIR__."/core/Db.php");
- require_once(__CA_LIB_DIR__."/core/Datamodel.php");
+ require_once(__CA_LIB_DIR__.'/BaseVersionUpdater.php');
+ require_once(__CA_LIB_DIR__."/Db.php");
+ require_once(__CA_LIB_DIR__."/Datamodel.php");
  require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
  require_once(__CA_MODELS_DIR__.'/ca_locales.php');
  

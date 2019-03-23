@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.objectcheckout.js
+ * js/ca.objectcheckout.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

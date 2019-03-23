@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Service/ItemService.php');
+require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 abstract class AbstractSearchQueryTest extends BaseTestWithData {
@@ -47,9 +47,7 @@ abstract class AbstractSearchQueryTest extends BaseTestWithData {
 
 	# -------------------------------------------------------
 	protected function setPrimaryTable($ps_table) {
-		$o_dm = Datamodel::load();
-
-		if(!$o_dm->tableExists($ps_table)) {
+		if(!Datamodel::tableExists($ps_table)) {
 			$this->assertTrue(false, 'Invalid table '.$ps_table);
 		}
 

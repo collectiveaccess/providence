@@ -39,7 +39,7 @@
 </script>
 <div class="sectionBox">
 	<?php
-		print caFormTag($this->request, 'Index', 'changeLogSearch');
+		print caFormTag($this->request, 'Index', 'changeLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			caHTMLSelect('filter_change_type', [_t('--Any--') => '', _t('Added') => 'I', _t('Edited') => 'U', _t('Deleted') => 'D'], null, ['value' => $vs_filter_change_type]).
@@ -83,7 +83,7 @@
 					<?php print $va_log_entry[0]['changetype_display']; ?>
 				</td>
 				<td>
-					<?php print Datamodel::load()->getInstance($va_log_entry[0]['subject_table_num'], true)->getProperty('NAME_PLURAL'); ?>
+					<?php print Datamodel::getInstance($va_log_entry[0]['subject_table_num'], true)->getProperty('NAME_PLURAL'); ?>
 				</td>
 				<td>
 					<?php

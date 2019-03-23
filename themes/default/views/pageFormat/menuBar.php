@@ -15,18 +15,18 @@
 					<!-- Quick search -->
 <?php 	
 						if ($vs_target_table = $this->request->config->get('one_table_search')) {	
-							print caFormTag($this->request, 'Index', 'caQuickSearchForm', 'find/'.$vs_target_table, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+							print caFormTag($this->request, 'Index', 'caQuickSearchForm', 'find/'.$vs_target_table, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 						} else {
-							print caFormTag($this->request, 'Index', 'caQuickSearchForm', 'find/QuickSearch', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+							print caFormTag($this->request, 'Index', 'caQuickSearchForm', 'find/QuickSearch', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 						}
 					
 						if ($this->request->isLoggedIn() && ($this->request->user->getPreference('clear_quicksearch') == 'auto_clear')) { 
 ?>
-						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print $this->request->session->getVar('quick_search_last_search'); ?>" onfocus="this.value='';"/>
+						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print Session::getVar('quick_search_last_search'); ?>" onfocus="this.value='';"/>
 <?php						
 						} else {
 ?>
-						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print $this->request->session->getVar('quick_search_last_search'); ?>" onfocus="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>"/>	
+						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print Session::getVar('quick_search_last_search'); ?>" onfocus="<?php print htmlspecialchars(Session::getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>"/>	
 <?php
 						}
 						print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_SEARCH__, 1, array('style' => 'float: right; margin: 5px 3px 0 0; color: #777')), 'caQuickSearchFormSubmit', 'caQuickSearchForm'); 

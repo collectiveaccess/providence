@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-	$va_download_list = $this->getVar('download_list');
-	$va_tables = $this->getVar('tables');
+	if (!is_array($va_download_list = $this->getVar('download_list'))) { $va_download_list = []; }
+	if (!is_array($va_tables = $this->getVar('tables'))) { $va_tables = []; }
 	$va_labels_by_table_num = $this->getVar("labels_by_table_num");
 	$vs_group_by = $this->getVar("download_list_group_by");
 
@@ -40,7 +40,7 @@
 </script>
 <div class="sectionBox">
 	<?php 
-		print caFormTag($this->request, 'Index', 'downloadLogSearch');
+		print caFormTag($this->request, 'Index', 'downloadLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caDownloadList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 

@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
+ 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
 	require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 	
  	class BundleDisplaysController extends ActionController {
@@ -61,7 +61,6 @@
  		 * 
  		 */
  		public function Info() {
- 			$o_dm = Datamodel::load();
  			
  			$t_display = new ca_bundle_displays($vn_display_id = $this->_getDisplayID());
  			$this->view->setVar('bundle_displays', caExtractValuesByUserLocale($t_display->getBundleDisplays(array('user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_EDIT_ACCESS__)), null, array()));

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,8 +29,8 @@
  	require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
  	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
  	require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
- 	require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
+ 	require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
 	
 	class libraryServicesPlugin extends BaseApplicationPlugin {
 		# -------------------------------------------------------
@@ -46,7 +46,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Override checkStatus() to return true - the twitterPlugin plugin always initializes ok
+		 * Override checkStatus() to return true 
 		 */
 		public function checkStatus() {
 			return array(
@@ -87,7 +87,7 @@
 							if ($t_user->load($vn_user_id)) {
 								if ($vs_user_email = $t_user->get('email')) {
 									$vs_subject = _t('Notice of items coming due for return');
-									if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_coming_due.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user), null, $va_administrative_email_addresses)) {
+									if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_coming_due.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Libary item due'])) {
 										// mark record
 										foreach($va_items_for_user as $va_item) {
 											if ($t_checkout->load($va_item['checkout_id'])) {
@@ -125,7 +125,7 @@
 							if ($t_user->load($vn_user_id)) {
 								if ($vs_user_email = $t_user->get('email')) {
 									$vs_subject = _t('Notice of overdue items');
-									if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_overdue.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user), null, $va_administrative_email_addresses)) {
+									if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_overdue.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library item overdue'])) {
 										// mark record
 										foreach($va_items_for_user as $va_item) {
 											if ($t_checkout->load($va_item['checkout_id'])) {
@@ -163,7 +163,7 @@
 							if ($t_user->load($vn_user_id)) {
 								if ($vs_user_email = $t_user->get('email')) {
 									$vs_subject = _t('Notice of reserved available items');
-									if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_reservation_available.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user), null, $va_administrative_email_addresses)) {
+									if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_reservation_available.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library reserved item available'])) {
 										// mark record
 										foreach($va_items_for_user as $va_item) {
 											if ($t_checkout->load($va_item['checkout_id'])) {
@@ -194,13 +194,6 @@
 			}
 					
 			return true;
-		}
-		# -------------------------------------------------------
-		/**
-		 * Get plugin user actions
-		 */
-		static public function getRoleActionList() {
-			return array();
 		}
 		# -------------------------------------------------------
 	}

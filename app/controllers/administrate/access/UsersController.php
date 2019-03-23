@@ -27,7 +27,7 @@
  */
 
  	require_once(__CA_MODELS_DIR__.'/ca_users.php');
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
  	class UsersController extends ActionController {
  		# -------------------------------------------------------
@@ -74,8 +74,10 @@
  			$t_user->setMode(ACCESS_WRITE);
  			foreach($t_user->getFormFields() as $vs_f => $va_field_info) {
 				// dont get/set password if backend doesn't support it
-				if($vs_f == 'password' && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
-					continue;
+				if($vs_f == 'password') {
+					if(!strlen($_REQUEST[$vs_f]) || !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
+						continue;
+					}
 				}
  				$t_user->set($vs_f, $_REQUEST[$vs_f]);
  				if ($t_user->numErrors()) {
@@ -184,7 +186,7 @@
 						# -- generate mail text from template - get both the text and the html versions
 						$vs_mail_message_text = $o_view->render("mailTemplates/account_activation.tpl");
 						$vs_mail_message_html = $o_view->render("mailTemplates/account_activation_html.tpl");
-						caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html);						
+						caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html, null, null, null, ['source' => 'Account activation']);						
 					}
 
 					$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
@@ -424,7 +426,7 @@
 								# -- generate mail text from template - get both the text and the html versions
 								$vs_mail_message_text = $o_view->render("mailTemplates/account_activation.tpl");
 								$vs_mail_message_html = $o_view->render("mailTemplates/account_activation_html.tpl");
-								caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html);						
+								caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html, null, null, null, ['source' => 'Account activation']);						
 							}
 							
 						}

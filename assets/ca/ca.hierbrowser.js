@@ -435,7 +435,7 @@ var caUI = caUI || {};
 							if (that.uiStyle == 'horizontal') {
 								var moreButton = '';
 								if (that.editButtonIcon) {
-									if (item.children > 0) {
+									if ((item.children > 0) || (level == 0)){
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' >" + that.editButtonIcon + "</a></div>";
 									} else {
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren'>" + that.disabledButtonIcon + "</a></div>";
@@ -614,14 +614,13 @@ var caUI = caUI || {};
 					if (!foundSelected && that.selectedItemIDs[level]) {
 						var p = jQuery('#' + newLevelDivID).data("page");
 						if (!p || (p < 0)) { p = 0; }
-
+						
 						jQuery('#' + newLevelDivID).data("page", p);
-						if (jQuery('#' + newLevelDivID).data('itemCount') > (p * that.maxItemsPerHierarchyLevelPage)) {
-							if (!that._pageLoadsForLevel[level] || !that._pageLoadsForLevel[level][p]) {		// is page loaded?
+						if (parseInt(jQuery('#' + newLevelDivID).data('itemCount')) > parseInt(p * that.maxItemsPerHierarchyLevelPage)) {
+							if (!that._pageLoadsForLevel[level] || !that._pageLoadsForLevel[level][p + 1]) {		// is page loaded?
 								if (!that._pageLoadsForLevel[level]) { that._pageLoadsForLevel[level] = []; }
 								that._pageLoadsForLevel[level][p] = true;
-
-								that.queueHierarchyLevelDataLoad(level, item_id, false, newLevelDivID, newLevelListID, selected_item_id, p * that.maxItemsPerHierarchyLevelPage, true);
+								that.queueHierarchyLevelDataLoad(level, item_id, false, newLevelDivID, newLevelListID, selected_item_id, (p + 1) * that.maxItemsPerHierarchyLevelPage, true);
 
 								dontDoSelectAndScroll = true;	// we're still trying to find selected item so don't try to select it
 							}
@@ -630,8 +629,6 @@ var caUI = caUI || {};
 						// Treat sequential page load as init so selected item is highlighted
 						is_init = true;
 					}
-
-
 
 					if (that.uiStyle == 'horizontal') {
 						if (!is_init) {

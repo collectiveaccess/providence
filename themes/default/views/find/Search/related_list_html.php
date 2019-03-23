@@ -28,7 +28,7 @@
 	$vo_result 				= $this->getVar('result');
  	$vo_result_context 		= $this->getVar('result_context');
  	
- 	print $this->render('Search/search_controls_html.php');
+// 	print $this->render('Search/search_controls_html.php');
  ?>
  	<div id="resultBox" style="margin-bottom:13px"><!-- override margin from base.css so that the bottom paging controls barely fit -->
 <?php

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -115,10 +115,6 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			'warnings' => array(),
 			'available' => (bool)$this->opo_config->getBoolean('enabled')
 		);
-	}
-
-	static function getRoleActionList() {
-		return array();
 	}
 
 	public function hookAfterBundleInsert(&$pa_params) {

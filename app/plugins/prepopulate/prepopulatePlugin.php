@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2017 Whirl-i-Gig
+ * Copyright 2014-2018 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -44,7 +44,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Override checkStatus() to return true - the MMS plugin always initializes ok
+	 * 
 	 */
 	public function checkStatus() {
 		return array(
@@ -67,13 +67,6 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$this->prepopulateFields($pa_params['instance']);
 		}
 		return true;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Get plugin user actions
-	 */
-	static public function getRoleActionList() {
-		return array();
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -115,15 +108,21 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		foreach($va_rules as $vs_rule_key => $va_rule) {
 			if($t_instance->tableName() != $va_rule['table']) { continue; }
 
-			// check target
-			$vs_target = $va_rule['target'];
-			if(strlen($vs_target)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
-
-			// check template
-			$vs_template = $va_rule['template'];
-			if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
-
 			$vs_mode = caGetOption('mode', $va_rule, 'merge');
+			
+			// check target
+			$vs_target = caGetOption('target', $va_rule, null);
+			
+			if(strlen($vs_target)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
+			
+			$vb_is_relationship_rule = Datamodel::tableExists($vs_target);
+            if (!$vb_is_relationship_rule) {
+                // check template
+                $vs_template = caGetOption('template', $va_rule, null);
+                if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
+            }
+            
+            $vs_context = caGetOption('context', $va_rule, null);
 
 			// respect restrictToTypes option
 			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
@@ -149,14 +148,92 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 				}
 			}
 
-			// evaluate template
-			$vs_value = caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), array($t_instance->getPrimaryKey()), array('path' => true));
-			Debug::msg("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
+            if (!$vb_is_relationship_rule) {
+                // evaluate template
+                $vs_value = caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), array($t_instance->getPrimaryKey()), array('path' => true));
+                Debug::msg("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
+            }
 
 			// inject into target
 			$va_parts = explode('.', $vs_target);
+			
+			if ((sizeof($va_parts) == 1) && $vb_is_relationship_rule) {    // clone relationships
+			    if (($vs_mode === 'addIfTempty') && $t_instance->hasRelationshipsWith($vs_target)) { 
+			        Debug::msg("[prepopulateFields()] skipped rule {$vs_rule_key} because mode is addIfEmpty and it already has {$vs_target} relationships.");
+			        continue;
+			    }
+			    
+			    $va_rels = null;
+			    $va_instance_rel_ids = [];
+			    
+                $va_restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $va_rule, null);
+                $va_exclude_relationship_types = caGetOption('excludeRelationshipTypes', $va_rule, null);
+                $va_restrict_to_related_types = caGetOption('restrictToRelatedTypes', $va_rule, null);
+                $va_exclude_related_types = caGetOption('excludeRelatedTypes', $va_rule, null);
+			    
+			    switch($vs_context) {
+			        case 'parent':
+			            $t_parent = Datamodel::getInstance($t_instance->tableName());
+			            if (($vn_parent_id = $t_instance->get($t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'))) && $t_parent->load($vn_parent_id)) {
+			            
+			                $va_rels = $t_parent->getRelatedItems($vs_target, ['showCurrentOnly' => caGetOption('currentOnly', $va_rule, false)]);
+			            }
+			            break;
+			         case 'children':
+			            if($t_instance->getPrimaryKey()) {
+                            $va_child_ids = $t_instance->getHierarchy($t_instance->getPrimaryKey(), ['idsOnly' => true]);
+                            if (is_array($va_child_ids) && sizeof($va_child_ids)) {
+                                 $va_rels = $t_parent->getRelatedItems($vs_target, ['row_ids' => $va_child_ids, 'showCurrentOnly' => caGetOption('currentOnly', $va_rule, false)]);
+                            }
+                        }
+			            break;
+			         case 'related':
+			            if($t_instance->getPrimaryKey()) {
+                            $va_rel_ids = $t_instance->get($t_instance->tableName().'.related.'.$t_instance->primaryKey(), ['idsOnly' => true, 'returnAsArray' => true]);
+                
+                            if (is_array($va_rel_ids) && sizeof($va_rel_ids)) {
+                                 $va_rels = $t_parent->getRelatedItems($vs_target, ['row_ids' => $va_rel_ids, 'showCurrentOnly' => caGetOption('currentOnly', $va_rule, false)]);
+                            }
+                        }
+			            break;
+			    }
+			    
+			    if (is_array($va_rels)) {
+                    foreach($va_rels as $va_rel) {
+                        if (is_array($va_restrict_to_relationship_types) && sizeof($va_restrict_to_relationship_types) && !in_array($va_rel['relationship_type_code'], $va_restrict_to_relationship_types)) { continue; }
+                        if (is_array($va_exclude_relationship_types) && sizeof($va_exclude_relationship_types) && in_array($va_rel['relationship_type_code'], $va_exclude_relationship_types)) { continue; }
+
+                        $va_related_types = caMakeTypeList($vs_target, [$va_rel['item_type_id']]);
+                        if (is_array($va_restrict_to_related_types) && sizeof($va_restrict_to_related_types) && sizeof(array_intersect($va_related_types, $va_restrict_to_related_types))) { continue; }
+                        if (is_array($va_exclude_related_types) && sizeof($va_exclude_related_types) && !sizeof(array_intersect($va_related_types, $va_exclude_related_types))) { continue; }
+                
+                        $vn_target_id = $va_rel[Datamodel::primaryKey($vs_target)];
+                        if (!($va_existing_rel_ids = $t_instance->relationshipExists($vs_target, $vn_target_id, $va_rel['relationship_type_code'], $va_rel['effective_date']))) {
+                            if ($t = $t_instance->addRelationship($vs_target, $vn_target_id, $va_rel['relationship_type_code'], $va_rel['effective_date'])) {
+                                $va_instance_rel_ids[] = $t->getPrimaryKey();
+                            } else {
+                                Debug::msg("[prepopulateFields()] could not add {$vs_target} relationship");
+                            }
+                        } else {
+                            $va_instance_rel_ids = array_merge($va_instance_rel_ids, $va_existing_rel_ids);
+                        }
+                    }
+                
+                    if ($vs_mode === 'overwrite') {
+                        // remove rels that aren't in target
+                        if (is_array($va_instance_rels = $t_instance->getRelatedItems($vs_target))) {
+                            foreach($va_instance_rels as $va_instance_rel) {
+                                if (!in_array($va_instance_rel['relation_id'], $va_instance_rel_ids)) {
+                                    if (!$t_instance->removeRelationship($vs_target, $va_instance_rel['relation_id'])) {
+                                        Debug::msg("[prepopulateFields()] could not delete {$vs_target} relationship in overwrite mode");
+                                    }
+                                }  
+                            }
+                        }
+                    }
+                }
 // intrinsic or simple (non-container) attribute
-			if(sizeof($va_parts) == 2) {
+			} elseif(sizeof($va_parts) == 2) {
 // intrinsic
 				if($t_instance->hasField($va_parts[1])) {
 					switch(strtolower($vs_mode)) {
@@ -253,7 +330,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 // labels
 				} elseif($va_parts[1] == 'preferred_labels' || $va_parts[1] == 'nonpreferred_labels') {
 					$vb_preferred = ($va_parts[1] == 'preferred_labels');
-					if (!($t_label = $t_instance->getAppDatamodel()->getInstanceByTableName($t_instance->getLabelTableName(), true))) { continue; }
+					if (!($t_label = Datamodel::getInstanceByTableName($t_instance->getLabelTableName(), true))) { continue; }
 					if(!$t_label->hasField($va_parts[2])) { continue; }
 
 					switch($t_instance->getLabelCount($vb_preferred)) {
@@ -308,12 +385,12 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			}
 		}
 
+
+		if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
 		$vn_old_mode = $t_instance->getMode();
 		$t_instance->setMode(ACCESS_WRITE);
 		$t_instance->update();
 		$t_instance->setMode($vn_old_mode);
-
-		//$_REQUEST['form_timestamp'] = $vn_timestamp;
 
 		if($t_instance->numErrors() > 0) {
 			foreach($t_instance->getErrors() as $vs_error) {

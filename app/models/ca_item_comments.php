@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,8 +34,8 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
@@ -346,7 +346,7 @@ class ca_item_comments extends BaseModel {
 		if (!$this->getPrimaryKey()) { return null; }
 		$this->setMode(ACCESS_WRITE);
 		$this->set('moderated_by_user_id', $pn_user_id);
-		$this->set('moderated_on', 'now');
+		$this->set('moderated_on', _t('now'));
 		return $this->update();
 	}
 	# ------------------------------------------------------
@@ -444,8 +444,6 @@ class ca_item_comments extends BaseModel {
 			{$vs_where} ORDER BY cic.created_on DESC {$vs_limit}
 		");
 		
-		$o_datamodel = $this->getAppDatamodel();
-		
 		$va_comments = array();
 		while($qr_res->nextRow()) {
 			$vn_datetime = $qr_res->get('created_on');
@@ -454,7 +452,7 @@ class ca_item_comments extends BaseModel {
 			$va_row = $qr_res->getRow();
 			$va_row['created_on'] = $o_tep->getText();
 			
-			$t_table = $o_datamodel->getInstanceByTableNum($qr_res->get('table_num'), true);
+			$t_table = Datamodel::getInstanceByTableNum($qr_res->get('table_num'), true);
 			if ($t_table->load($qr_res->get('row_id'))) {
 				$va_row['commented_on'] = $t_table->getLabelForDisplay(false);
 				if ($vs_idno = $t_table->get('idno')) {
@@ -488,7 +486,7 @@ class ca_item_comments extends BaseModel {
     public function getItem() {
         if (!$this->getPrimaryKey()) { return null; }
 
-        if (!($t_item = $this->getAppDatamodel()->getInstanceByTableNum($this->get('table_num')))) { return false; }
+        if (!($t_item = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
         if ($t_item->load($this->get('row_id'))) {
             return $t_item;

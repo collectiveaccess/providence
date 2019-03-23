@@ -35,8 +35,8 @@
    */
 
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
@@ -375,6 +375,8 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
 		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
+		$this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
+		
 		$this->BUNDLES['ca_loans'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans'));
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
 		
@@ -409,28 +411,54 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 				$va_objects_by_collection[$qr->get('ca_objects_x_collections.collection_id')][] = $qr->get('ca_objects_x_collections.object_id');
  			}
  			
+ 			$t_obj = new ca_objects();
  			$va_objects = [];
- 			foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
- 				$va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
- 			}
  			
- 			$va_vals_proc = [];
- 			foreach($va_vals as $vn_i => $va_val) {
- 				$va_vals_proc[] = $va_val;
- 				if(isset($va_objects[$va_val['id']])) {
- 					foreach($va_objects[$va_val['id']] as $vn_j => $vs_object_display_value) {
-						$va_vals_proc[] = [
-							'level' => $va_val['level'] + 1,
-							'id' => "ca_objects:".$va_objects_by_collection[$va_val['id']][$vn_j],
-							'parent_id' => "ca_collections:{$va_val['id']}",
-							'display' => $vs_object_display_value
-						];
-					}
- 				}
- 			}
+ 			if ($this->getAppConfig()->get('ca_collections_hierarchy_summary_show_full_object_hierarachy')) {
+                foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
+                    foreach($va_object_ids as $vn_object_id) {
+                        $va_objects[$vn_collection_id][$vn_object_id] = $t_obj->hierarchyWithTemplate($ps_object_template, ['object_id' => $vn_object_id, 'returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+                    }
+                }
+            
+                $va_vals_proc = [];
+                foreach($va_vals as $vn_i => $va_val) {
+                    $va_vals_proc[] = $va_val;
+                    if(isset($va_objects[$va_val['id']])) {
+                        foreach($va_objects[$va_val['id']] as $vn_object_id => $va_object_hierarchy) {
+                            foreach($va_object_hierarchy as $va_obj) {
+                                $va_vals_proc[] = [
+                                    'level' => $va_val['level'] + (int)$va_obj['level'],
+                                    'id' => "ca_objects:".$va_obj['id'],
+                                    'parent_id' => "ca_collections:{$va_val['id']}",
+                                    'display' => $va_obj['display']
+                                ];
+                            }
+                        }
+                    }
+                }
+            } else {
+                foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
+                    $va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+                }
+            
+                $va_vals_proc = [];
+                foreach($va_vals as $vn_i => $va_val) {
+                    $va_vals_proc[] = $va_val;
+                    if(isset($va_objects[$va_val['id']])) {
+                        foreach($va_objects[$va_val['id']] as $vn_j => $vs_object_display_value) {
+                            $va_vals_proc[] = [
+                                'level' => $va_val['level'] + 1,
+                                'id' => "ca_objects:".$va_objects_by_collection[$va_val['id']][$vn_j],
+                                'parent_id' => "ca_collections:{$va_val['id']}",
+                                'display' => $vs_object_display_value
+                            ];
+                        }
+                    }
+                }
+            }
  			$va_vals = $va_vals_proc;
 		}
-		
 		
 		return $va_vals;
 	}

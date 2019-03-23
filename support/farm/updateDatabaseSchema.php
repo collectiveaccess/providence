@@ -8,7 +8,7 @@
 	$_SERVER['HTTP_HOST'] = $argv[1];
 	
 	require_once("./setup.php");
-	require_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
+	require_once(__CA_LIB_DIR__."/ConfigurationCheck.php");
 	
 	if ($argv[1]) {
 		$o_config_check = new ConfigurationCheck();

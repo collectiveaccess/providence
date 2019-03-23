@@ -29,9 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/Datamodel.php");
+require_once(__CA_LIB_DIR__."/Db.php");
+require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
 class ModelSchemaTest extends PHPUnit_Framework_TestCase {
@@ -39,14 +39,14 @@ class ModelSchemaTest extends PHPUnit_Framework_TestCase {
 	private $opo_dm;
 	# -------------------------------------------------------
 	protected function setUp(){
-		$this->opo_dm = Datamodel::load();
+		
 	}
 	# -------------------------------------------------------
 	/**
 	 * Check if all tables in datamodel.conf have a model file 
 	 */
 	public function testModelFilesExistDatamodel(){
-		foreach($this->opo_dm->getTableNames() as $vs_table){
+		foreach(Datamodel::getTableNames() as $vs_table){
 			$this->assertFileExists(__CA_MODELS_DIR__."/{$vs_table}.php");
 		}
 	}
@@ -88,7 +88,7 @@ class ModelSchemaTest extends PHPUnit_Framework_TestCase {
 			$va_tables[] = $qr_tables->get("Tables_in_".__CA_DB_DATABASE__);
 		}
 		
-		foreach($this->opo_dm->getTableNames() as $vs_table){
+		foreach(Datamodel::getTableNames() as $vs_table){
 			if(!in_array($vs_table,$va_tables)){
 				print "DATAMODEL ENTRY $vs_table DOESN'T HAVE A DB TABLE!\n";
 			}
@@ -100,7 +100,7 @@ class ModelSchemaTest extends PHPUnit_Framework_TestCase {
 	 * Check if a datamodel entry exists for each model file 
 	 */
 	public function testDatamodelEntryExistsModelFiles(){
-		$va_tables = $this->opo_dm->getTableNames();
+		$va_tables = Datamodel::getTableNames();
 		
 		$va_files = caGetDirectoryContentsAsList(__CA_MODELS_DIR__);
 		foreach($va_files as &$vs_f){
@@ -134,10 +134,10 @@ class ModelSchemaTest extends PHPUnit_Framework_TestCase {
 			$vs_right_field = array_shift(preg_split('![ ]+!', $va_right[1]));
 			
 			// Check models
-			$t_left = $this->opo_dm->getInstanceByTableName($vs_left_table);
+			$t_left = Datamodel::getInstanceByTableName($vs_left_table);
 			$this->assertInstanceOf('BaseModel', $t_left, "Model {$vs_left_table} does not exist (relationship was {$vs_rel})");
 			
-			$t_right = $this->opo_dm->getInstanceByTableName($vs_right_table);
+			$t_right = Datamodel::getInstanceByTableName($vs_right_table);
 			$this->assertInstanceOf('BaseModel', $t_left, "Model {$vs_right_table} does not exist (relationship was {$vs_rel})");
 			
 			$this->assertTrue($t_left->hasField($vs_left_field), "Field {$vs_left_field} does not exist in model {$vs_left_table} (relationship was {$vs_rel})");

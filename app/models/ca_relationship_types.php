@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
@@ -309,10 +309,9 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		if ($vn_table_num = $this->get('table_num')) {
 			$va_relationship_tables = $this->getRelationshipsUsingTypes();
 			if (!isset($va_relationship_tables[$vn_table_num])) { return null; }
-			$o_dm = $this->getAppDatamodel();
 			
-			$t_rel_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
-			$t_instance = $o_dm->getInstanceByTableName($t_rel_instance->getLeftTableName(), true);
+			$t_rel_instance = Datamodel::getInstanceByTableNum($vn_table_num, true);
+			$t_instance = Datamodel::getInstanceByTableName($t_rel_instance->getLeftTableName(), true);
 			
 			
 			if (method_exists($t_instance, 'getTypeList')) {
@@ -323,7 +322,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 			
-			$t_instance = $o_dm->getInstanceByTableName($t_rel_instance->getRightTableName(), true);
+			$t_instance = Datamodel::getInstanceByTableName($t_rel_instance->getRightTableName(), true);
 			
 			if (method_exists($t_instance, 'getTypeList')) {
 				$va_types = $t_instance->getTypeList();
@@ -355,7 +354,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getRelationshipInfo($pm_table_name_or_num, $ps_type_code=null) {
 		if (!is_numeric($pm_table_name_or_num)) {
-			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
+			$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		} else {
 			$vn_table_num = $pm_table_name_or_num;
 		}
@@ -395,7 +394,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
 		if (!is_numeric($pm_table_name_or_num)) {
-			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
+			$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		} else {
 			$vn_table_num = $pm_table_name_or_num;
 		}
@@ -467,14 +466,17 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array List of tables that use relationship types
 	 */ 
 	public function getRelationshipsUsingTypes() {
-	 	$va_tables = $this->_DATAMODEL->getTableNames();
+	 	$va_tables = Datamodel::getTableNames();
 		$va_relationship_tables = array();
 	 	foreach($va_tables as $vs_table) {
 	 		if (preg_match('!_x_!', $vs_table)) {
-	 			$t_instance = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
+	 			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 	 			if (!$t_instance || !$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
 	 			$vs_name = $t_instance->getProperty('NAME_PLURAL');
-	 			$va_relationship_tables[$t_instance->tableNum()] = array('name' => $vs_name);
+	 			$va_relationship_tables[$t_instance->tableNum()] = array(
+	 				'name' => $vs_name,
+					'table' => $vs_table
+				);
 	 		}
 	 	}
 	 	return $va_relationship_tables;
@@ -489,7 +491,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	 public function getRelationshipTypeTable($ps_table1, $ps_table2) {
 	 	if (isset(ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2])) { return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2]; }
-	 	$va_path = array_keys($this->getAppDatamodel()->getPath($ps_table1, $ps_table2));
+	 	$va_path = array_keys(Datamodel::getPath($ps_table1, $ps_table2));
 	 	switch(sizeof($va_path)) {
 	 		case 2:
 			case 3:
@@ -510,7 +512,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 static public function getRelationshipTypeInstance($ps_table1, $ps_table2) {
 	 	$t_rel = new ca_relationship_types();
 	 	if ($vs_table = $t_rel->getRelationshipTypeTable($ps_table1, $ps_table2)) {
-	 		return $t_rel->getAppDatamodel()->getInstanceByTableName($vs_table);
+	 		return Datamodel::getInstanceByTableName($vs_table);
 	 	}
 	 	return null;
 	 }
@@ -555,7 +557,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	 public function relationshipTypeListToTypeCodes($pm_table_name_or_num, $pa_list, $pa_options=null) {
 	 	if (!is_numeric($pm_table_name_or_num)) {
-			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
+			$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		} else {
 			$vn_table_num = $pm_table_name_or_num;
 		}
@@ -622,7 +624,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 		if (!is_numeric($pn_id)) {
 	 			$va_non_numerics[] = $pn_id;
 	 		} else {
-	 			$va_ids = (int)$pn_id;
+	 			$va_ids = [(int)$pn_id];
 	 		}
 	 	}
 	 	if (!sizeof($va_ids)) { return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $pa_ids; }
@@ -786,7 +788,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($va_info[$vn_type_id])) { return null; }
 		
 		$vn_rel_table_num = $va_info[$vn_type_id]['table_num'];
-		if ($vs_rel_table_name = $this->getAppDatamodel()->getTableName($vn_rel_table_num)) {
+		if ($vs_rel_table_name = Datamodel::getTableName($vn_rel_table_num)) {
 			$qr_res = $this->getDb()->query("
 				SELECT count(*) c
 				FROM {$vs_rel_table_name}
@@ -808,7 +810,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_source_id = $this->getPrimaryKey())) { return null; }
 		if (!($vn_type_id = $this->getRelationshipTypeID($vn_table_num = $this->get('table_num'), $pm_type_code_or_id))) { return null; }
 		
-		if (!($vs_table_name = $this->getAppDatamodel()->getTableName($vn_table_num))) { return null; }
+		if (!($vs_table_name = Datamodel::getTableName($vn_table_num))) { return null; }
 		$qr_res = $this->getDb()->query("
 				SELECT * 
 				FROM {$vs_table_name}

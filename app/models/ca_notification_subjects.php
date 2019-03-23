@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -74,6 +74,37 @@ BaseModel::$s_ca_models_definitions['ca_notification_subjects'] = array(
 			'DESCRIPTION' => _t('Indicates whether this notification was marked as read or not.'),
 			'BOUNDS_VALUE' => array(0,1),
 		),
+		'read_on' => array(
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Date read'), 'DESCRIPTION' => _t('The date and time the notification was read.')
+		),
+		'delivery_email' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'LABEL' => _t('Deliver by email?'),
+			'DESCRIPTION' => _t('Set this if the notification should be delivered by email.'),
+			'BOUNDS_VALUE' => array(0,1)
+		),
+		'delivery_email_sent_on' => array(
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'LABEL' => _t('Date and time notification was sent by email'), 'DESCRIPTION' => _t('Date and time notification was sent by email')
+		),
+		'delivery_inbox' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 1,
+			'LABEL' => _t('Deliver to notification inbox?'),
+			'DESCRIPTION' => _t('Set this if the notification should be delivered to the users notification inbox.'),
+			'BOUNDS_VALUE' => array(0,1)
+		)
 	)
 );
 
@@ -178,6 +209,26 @@ class ca_notification_subjects extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function insert($pa_options=null) {
+		if ($this->get('was_read')) { 
+			$this->set('read_on', _t('now'));
+		}
+		return parent::insert($pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($pa_options=null) {
+		if ($this->changed('was_read') && $this->get('was_read')) { 
+			$this->set('read_on', _t('now'));
+		}
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 }

@@ -25,11 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+	require_once(__CA_LIB_DIR__.'/Datamodel.php');
 	require_once(__CA_MODELS_DIR__."/ca_users.php");
  
 	class recentRegistrationsWidget extends BaseWidget implements IWidget {
@@ -45,7 +45,6 @@
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recentRegistrations.conf');
-			$this->opo_datamodel = Datamodel::load();
 		}
 		# -------------------------------------------------------
 		/**
@@ -98,7 +97,6 @@
 			if(is_array($va_users_list) && sizeof($va_users_list)){
 				$va_filtered_list = array();
 				#$va_profile_prefs = $t_user->getValidPreferences('profile');
-				print_r($va_profile_prefs);
 				foreach($va_users_list as $vn_key => $va_user){
 					if(($vn_show_type == 1) && ($va_user["active"])){
 						# --- only show new registrations in need of approval ---- active == null

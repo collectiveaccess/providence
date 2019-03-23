@@ -33,7 +33,7 @@
   /**
    *
    */
-	require_once(__CA_LIB_DIR__.'/core/Zend/Locale.php');
+	require_once(__CA_LIB_DIR__.'/Zend/Locale.php');
 	# ----------------------------------------
 	/**
 	 * Verify the locale is valid and supported by current installation
@@ -103,13 +103,13 @@
 	*/
 	function caGetArticlesForLocale($ps_locale, $pa_options=null) {
 		if(sizeof($va_tmp = explode('_', $ps_locale)) == 1) {
-			$va_locales = array_map(function($v) { return pathinfo($v, PATHINFO_BASENAME); }, caGetDirectoryContentsAsList(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser", false));
+			$va_locales = array_map(function($v) { return pathinfo($v, PATHINFO_BASENAME); }, caGetDirectoryContentsAsList(__CA_LIB_DIR__."/Parsers/TimeExpressionParser", false));
 			$va_locales = array_filter($va_locales, function($v) use ($ps_locale) { return preg_match("!^{$ps_locale}_!", $v); });
 			if(sizeof($va_locales) > 0) { $ps_locale = str_replace(".lang", "", array_shift($va_locales)); } else { return null; }
 		}
 	
-		if(!file_exists($vs_path = __CA_LIB_DIR__."/core/Parsers/TimeExpressionParser/{$ps_locale}.lang")) { return null; }
-		$o_config = Configuration::load(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser/{$ps_locale}.lang");
+		if(!file_exists($vs_path = __CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$ps_locale}.lang")) { return null; }
+		$o_config = Configuration::load(__CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$ps_locale}.lang");
 	
 		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'definitite') {
 			return $o_config->getList('definiteArticles');

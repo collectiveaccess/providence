@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/DashboardManager.php');
+ 	require_once(__CA_LIB_DIR__.'/DashboardManager.php');
  
 	AssetLoadManager::register('draggableUI');		// adds jQuery UI draggable 
 	AssetLoadManager::register('dashboard');			// adds caUI dashboard library

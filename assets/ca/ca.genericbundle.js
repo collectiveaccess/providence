@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.genericbundle.js
+ * js/ca.genericbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.seteditor.js
+ * js/ca.seteditor.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -105,7 +105,6 @@ var caUI = caUI || {};
 			
 			var itemID = valueArray['item_id'];
 			var rID = rowID + ((itemID > 0) ? "_" + itemID : "");
-			console.log("item=" + itemID, rowID, rID, repHTML);
 			
 			var counterHTML = '';
 			counterHTML = '<div class="setItemCounter"></div> ';
@@ -209,7 +208,16 @@ var caUI = caUI || {};
 				}
 				jQuery(v).remove();
 			});
-			indexedValues = caUI.utils.sortObj(indexedValues, true);
+			
+			switch(key) {
+				case 'name':
+					indexedValues = caUI.utils.sortObj(indexedValues, true);
+					break;
+				case 'idno':
+					indexedValues = caUI.utils.sortObjIdno(indexedValues);
+					break;
+			}
+			
 			
 			jQuery.each(indexedValues, function(k, v) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).append(v);

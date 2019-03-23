@@ -31,9 +31,9 @@
 	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
 	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screen_labels.php');
 	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_bundle_placements.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	require_once(__CA_LIB_DIR__.'/ca/BaseEditorController.php');
-	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
+	require_once(__CA_LIB_DIR__.'/Datamodel.php');
+	require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
+	require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
 class InterfacesController extends BaseEditorController {
 	# -------------------------------------------------------
@@ -47,10 +47,9 @@ class InterfacesController extends BaseEditorController {
 		
 		$this->checkConfiguration();
 		
-		$vo_dm = Datamodel::load();
 		$va_uis = ca_editor_uis::getUIList(null);
 		foreach($va_uis as $vs_key => $va_ui){
-			if (!($t_instance = $vo_dm->getInstanceByTableNum($va_ui['editor_type'], true))) { continue; }
+			if (!($t_instance = Datamodel::getInstanceByTableNum($va_ui['editor_type'], true))) { continue; }
 			$va_uis[$vs_key]['editor_type'] = $t_instance->getProperty('NAME_PLURAL');
 		}
 		$this->view->setVar('editor_ui_list',$va_uis);
@@ -106,7 +105,7 @@ class InterfacesController extends BaseEditorController {
 			$t_screen->set('ui_id', $vn_ui_id);
 			$t_screen->set('idno', 'basic_'.$vn_ui_id);
 			$t_screen->set('rank', 1);
-			$t_screen->set('default', 1);
+			$t_screen->set('is_default', 1);
 			$t_screen->insert();
 			
 			if ($t_screen->numErrors()) {
@@ -155,7 +154,7 @@ class InterfacesController extends BaseEditorController {
 			$t_screen->set('ui_id', $vn_ui_id);
 			$t_screen->set('idno', 'basic_'.$vn_ui_id);
 			$t_screen->set('rank', 1);
-			$t_screen->set('default', 1);
+			$t_screen->set('is_default', 1);
 			$t_screen->insert();
 			
 			if ($t_screen->numErrors()) {

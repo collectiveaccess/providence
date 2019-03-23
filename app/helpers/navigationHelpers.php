@@ -123,6 +123,7 @@
 	 * @param array $pa_options Options include:
 	 *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
 	 *		absolute = return absolute URL. [Default is to return relative URL]
+	 *      useQueryString = encode other parameters as query string rather than in url path [Default is false]
 	 *
 	 * @return string
 	 */
@@ -156,14 +157,23 @@
 			$vn_i = 0;
 			
 			if (caIsAssociativeArray($pa_other_params)) {
+			    $use_query_string = caGetOption('useQueryString', $pa_options, false);
+			    $query_params = [];
 				foreach($pa_other_params as $vs_name => $vs_value) {
 					if (in_array($vs_name, array('module', 'controller', 'action'))) { continue; }
 					if (is_array($vs_value)) { // is the value is array we need to serialize is... just treat it as a list of values which *should* be what it is.
 						$vs_value = join(";", $vs_value);
 					}
-					$vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : urlencode($vs_value));
-				
+					
+					if ($use_query_string) { 
+					    $query_params[$vs_name] = $vs_value;
+					} else {
+					    $vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : urlencode($vs_value));
+				    }
 					$vn_i++;
+				}
+				if ($use_query_string) {
+				    $vs_url .= "?".http_build_query($query_params);
 				}
 			} else {
 				$vs_url .= "/".join("/", $pa_other_params);
@@ -383,6 +393,14 @@
 		} else {
 			$vs_target = '';
 		}
+		
+		if ($ps_action == '*') { 
+			$ps_action = $po_request->getAction(); 
+			if ($vs_action_extra =  $po_request->getActionExtra()) { 
+				$ps_action .= "/{$vs_action_extra}";
+			}
+		}
+		
 		
 		if ($ps_module_and_controller_path) {
 			$vs_action = (caUseCleanUrls()) ?
@@ -949,11 +967,10 @@
 	 * @return string
 	 */
 	function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		if (is_numeric($ps_table)) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($ps_table, true))) { return null; }
 		} else {
-			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		$pb_quick_add = caGetOption('quick_add', $pa_options, false);
 
@@ -1126,11 +1143,10 @@
 	 *		type_id = type_id of item to get detail for
 	 */
 	function caDetailUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
-		$o_dm = Datamodel::load();
 		if (is_numeric($ps_table)) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($ps_table, true))) { return null; }
 		} else {
-			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $ps_table;
@@ -1148,8 +1164,8 @@
 		}
 		
 		$vn_id_for_idno = null;
-		if(((int)$pn_id > 0) && ($vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls($ps_table))) {
-		    $va_attr = array_values($t_table->getAttributeForIDs($vs_use_alt_identifier_in_urls, [$pn_id]));
+		if(((int)$pn_id > 0) && ($vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls($ps_table)) && is_array($attr_list = $t_table->getAttributeForIDs($vs_use_alt_identifier_in_urls, [$pn_id]))) {
+		    $va_attr = array_values($attr_list);
 		    if (is_array($va_attr[0]) && ($vn_id_for_idno = array_shift($va_attr[0]))) {
 				$vb_id_exists = true;
 			}
@@ -1200,12 +1216,11 @@
 	 *		intrinsic = Checks value of instrinsic field and return list of primary keys that use the specified value
 	 */
 	function caJSONLookupServiceUrl($po_request, $ps_table, $pa_attributes=null) {
-		$o_dm = Datamodel::load();
 		
 		if (is_numeric($ps_table)) {
-			if (!($t_table = $o_dm->getInstanceByTableNum($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableNum($ps_table, true))) { return null; }
 		} else {
-			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
+			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		
 		$vs_pk = $t_table->primaryKey();
