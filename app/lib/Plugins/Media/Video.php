@@ -402,8 +402,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 				case 'video/x-ms-asf':
 				case 'video/x-ms-wmv':
-					$this->properties["has_video"] = (sizeof($this->opa_media_metadata["asf"]["video_media"]) ? 1 : 0);
-					$this->properties["has_audio"] = (sizeof($this->opa_media_metadata["asf"]["audio_media"]) ? 1 : 0);
+					$this->properties["has_video"] = (($this->opa_media_metadata["asf"]["video_media"]) ? 1 : 0);
+					$this->properties["has_audio"] = (($this->opa_media_metadata["asf"]["audio_media"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = array("asf" => $this->opa_media_metadata["asf"]);
 
@@ -416,8 +416,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 				case 'video/quicktime':
 				case 'video/mp4':
-					$this->properties["has_video"] = (isset($this->opa_media_metadata["video"]["bitrate"]) && sizeof($this->opa_media_metadata["video"]["bitrate"]) ? 1 : 0);
-					$this->properties["has_audio"] = (isset($this->opa_media_metadata["audio"]["bitrate"]) && sizeof($this->opa_media_metadata["audio"]["bitrate"]) ? 1 : 0);
+					$this->properties["has_video"] = (isset($this->opa_media_metadata["video"]["bitrate"]) && ($this->opa_media_metadata["video"]["bitrate"]) ? 1 : 0);
+					$this->properties["has_audio"] = (isset($this->opa_media_metadata["audio"]["bitrate"]) && ($this->opa_media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = array();
 
@@ -455,8 +455,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["bandwidth"] = array("min" => $this->opa_media_metadata["filesize"]/$this->opa_media_metadata["playtime_seconds"], "max" => $this->opa_media_metadata["filesize"]/$this->opa_media_metadata["playtime_seconds"]);
 					break;
 				case 'video/mpeg':
-					$this->properties["has_video"] = (isset($this->opa_media_metadata["video"]["bitrate"]) && sizeof($this->opa_media_metadata["video"]["bitrate"]) ? 1 : 0);
-					$this->properties["has_audio"] = (isset($this->opa_media_metadata["audio"]["bitrate"]) && sizeof($this->opa_media_metadata["audio"]["bitrate"]) ? 1 : 0);
+					$this->properties["has_video"] = (isset($this->opa_media_metadata["video"]["bitrate"]) && ($this->opa_media_metadata["video"]["bitrate"]) ? 1 : 0);
+					$this->properties["has_audio"] = (isset($this->opa_media_metadata["audio"]["bitrate"]) && ($this->opa_media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = array();
 
@@ -468,8 +468,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["bandwidth"] = array("min" => $this->opa_media_metadata["bitrate"], "max" => $this->opa_media_metadata["bitrate"]);
 					break;
 				case 'video/x-flv':
-					$this->properties["has_video"] = (sizeof($this->opa_media_metadata["header"]["hasVideo"]) ? 1 : 0);
-					$this->properties["has_audio"] = (sizeof($this->opa_media_metadata["header"]["hasAudio"]) ? 1 : 0);
+					$this->properties["has_video"] = (($this->opa_media_metadata["header"]["hasVideo"]) ? 1 : 0);
+					$this->properties["has_audio"] = (($this->opa_media_metadata["header"]["hasAudio"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = array("header" => $this->opa_media_metadata["header"]);
 
