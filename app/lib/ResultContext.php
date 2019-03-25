@@ -1155,6 +1155,7 @@
 				return self::$storage->setVar($key, $value, $options);
 			} else {
 				$s = self::$storage;
+				if (!($s = self::$storage)) { $s = 'Session'; }
 				return $s::setVar($key, $value, $options);
 			}
 		}
@@ -1166,7 +1167,7 @@
 			if (is_object(self::$storage)) {
 				return self::$storage->getVar($key);
 			} else {
-				$s = self::$storage;
+				if (!($s = self::$storage)) { $s = 'Session'; }
 				return$s::getVar($key, $value, $options);
 			}
 		}
