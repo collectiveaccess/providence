@@ -55,9 +55,9 @@
 		 * 
 		 */
 		public function __construct($po_request, $pm_table_name_or_num, $ps_find_type, $ps_find_subtype=null) {
+			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
 			$this->opo_request = $po_request;
 			ResultContextStorage::init($po_request);
-			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
 			
 			
 			$this->ops_table_name = $vs_table_name;
@@ -104,7 +104,7 @@
 		 * @return string - expression or null if no expression is defined
 		 */
 		public function getSearchExpression($pb_from_context_only=false) {
-			if(!$pb_from_context_only && ($ps_search = urldecode((strip_tags(html_entity_decode($this->opo_request->getParameter('search', pString)))))) != ''){
+			if(!$pb_from_context_only && ($ps_search = urldecode((strip_tags(html_entity_decode($this->opo_request->getParameter('search', pString, ['forcePurify' => true])))))) != ''){
 				// search specified by request parameter
 				if ($ps_search != $this->getContextValue('expression')) {
 					$this->setContextValue('expression', $ps_search);
@@ -133,7 +133,7 @@
 		public function searchExpressionHasChanged($pb_from_context_only=false) {
 			if (!is_null($this->opb_search_expression_has_changed)) { return $this->opb_search_expression_has_changed; }
 			 
-			if(!$pb_from_context_only && ($ps_search = urldecode((strip_tags($this->opo_request->getParameter('search', pString))))) != ''){
+			if(!$pb_from_context_only && ($ps_search = urldecode((strip_tags($this->opo_request->getParameter('search', pString, ['forcePurify' => true]))))) != ''){
 				// search specified by request parameter
 				if ($ps_search != $this->getContextValue('expression')) {
 					return $this->opb_search_expression_has_changed = true;
@@ -221,7 +221,7 @@
 		 * @return integer - number of page; the first page is 1 (*not* zero). Returns 1 as default if no page has been set for the current context.
 		 */
 		public function getCurrentResultsPageNumber() {
-			if (($pn_page = intval($this->opo_request->getParameter('page', pString))) < 1) { 
+			if (($pn_page = intval($this->opo_request->getParameter('page', pString, ['forcePurify' => true]))) < 1) { 
  				// no page in request so fetch from context 
  				if ($va_context = $this->getContext()) {
 					$pn_page = $va_context['page'];
@@ -314,7 +314,7 @@
 		 * @return string - First letter of results to display on results page, or null if no value is set
 		 */
 		public function getLetterBarPage() {
-			if (!($ps_letter_bar_page = htmlspecialchars(strip_tags($this->opo_request->getParameter('l', pString))))) {
+			if (!($ps_letter_bar_page = htmlspecialchars(strip_tags($this->opo_request->getParameter('l', pString, ['forcePurify' => true]))))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['letter_bar_page'] ? $va_context['letter_bar_page'] : null;
 				}
@@ -349,7 +349,7 @@
 		 * @return string - the view to use
 		 */
 		public function getCurrentView() {
-			if (!($ps_view = htmlspecialchars($this->opo_request->getParameter('view', pString)))) {
+			if (!($ps_view = htmlspecialchars($this->opo_request->getParameter('view', pString, ['forcePurify' => true])))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['view'] ? $va_context['view'] : null;
 				}
@@ -384,7 +384,7 @@
 		 * @return string - the field (or fields in a comma separated list) to sort by
 		 */
 		public function getCurrentSort() {
-			if (!($ps_sort = htmlspecialchars($this->opo_request->getParameter('sort', pString)))) {
+			if (!($ps_sort = htmlspecialchars($this->opo_request->getParameter('sort', pString, ['forcePurify' => true])))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['sort'] ? $va_context['sort'] : null;
 				}
@@ -420,7 +420,7 @@
 		 * @return string - the field (or fields in a comma separated list) to refine the primary sort by
 		 */
 		public function getCurrentSecondarySort() {
-			if (!($ps_secondary_sort = htmlspecialchars($this->opo_request->getParameter('secondarySort', pString)))) {
+			if (!($ps_secondary_sort = htmlspecialchars($this->opo_request->getParameter('secondarySort', pString, ['forcePurify' => true])))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['secondarySort'] ? $va_context['secondarySort'] : null;
 				}
@@ -455,7 +455,7 @@
 		 * @return string - the sort direction
 		 */
 		public function getCurrentSortDirection() {
-			if (!($ps_sort_direction = htmlspecialchars($this->opo_request->getParameter('direction', pString)))) {
+			if (!($ps_sort_direction = htmlspecialchars($this->opo_request->getParameter('direction', pString, ['forcePurify' => true])))) {
  				if ($va_context = $this->getContext()) {
 					return in_array($va_context['sort_direction'], array('asc', 'desc')) ? $va_context['sort_direction'] : 'asc';
 				}
@@ -494,7 +494,7 @@
 		 */
 		public function getTypeRestriction(&$pb_type_restriction_has_changed) {
 			$pb_type_restriction_has_changed = false;
-			if (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString))))) {
+			if (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString, ['forcePurify' => true]))))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['type_id'] ? $va_context['type_id'] : null;
 				}
@@ -535,7 +535,7 @@
 		 * @return int Display_id of ca_bundle_displays row to use
 		 */
 		public function getCurrentBundleDisplay($pn_type_id=null) {
-			if (!strlen($pn_display_id = htmlspecialchars($this->opo_request->getParameter('display_id', pString)))) { 
+			if (!strlen($pn_display_id = htmlspecialchars($this->opo_request->getParameter('display_id', pString, ['forcePurify' => true])))) { 
  				if ($va_context = $this->getContext()) {
 					$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"];
 				}
@@ -567,7 +567,7 @@
 		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
 		 */
 		public function getCurrentChildrenDisplayMode() {
-			if (!($ps_children_display_mode = $this->opo_request->getParameter('children', pString))) {
+			if (!($ps_children_display_mode = $this->opo_request->getParameter('children', pString, ['forcePurify' => true]))) {
  				if ($va_context = $this->getContext()) {
 					$o_config = Configuration::load();
 					return (in_array(strtolower($va_context['children_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $va_context['children_display_mode'] : (($vs_children_display_mode_default = $o_config->get($this->ops_table_name."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow"));
@@ -614,7 +614,7 @@
 					return $va_context['param_'.$ps_param] ? $va_context['param_'.$ps_param] : null;
 				}
 			} else {
-				if (!isset($_REQUEST[$ps_param]) && !$this->opo_request->getParameter($ps_param, pString)) {
+				if (!isset($_REQUEST[$ps_param]) && !$this->opo_request->getParameter($ps_param, pString, ['forcePurify' => true])) {
 					if ($va_context = $this->getContext()) {
 						if (is_array($va_context['param_'.$ps_param])) {
 							return $va_context['param_'.$ps_param];
@@ -623,7 +623,7 @@
 						}
 					}
 				} else {
-					$vs_value = $this->opo_request->getParameter($ps_param, pString);
+					$vs_value = $this->opo_request->getParameter($ps_param, pString, ['forcePurify' => true]);
 					$this->setContextValue('param_'.$ps_param, $vs_value);
 					return $vs_value;
 				}
@@ -682,8 +682,8 @@
 		 * @return string - the find type of the last find operation for this table
 		 */
 		static public function getLastFind($po_request, $pm_table_name_or_num, $pa_options=null) {
-			if (!ResultContextStorage::$storageLoaded) { ResultContextStorage::init($po_request); }
 			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
+			if (!ResultContextStorage::$storageLoaded) { ResultContextStorage::init($po_request); }
 			
 			if (caGetOption('noSubtype', $pa_options, false)) {
 				$vs_find_tag = ResultContextStorage::getVar('result_last_context_'.$vs_table_name);
@@ -702,6 +702,7 @@
 		 * @return ResultContext - result context from the last find operation for this table
 		 */
 		static public function getResultContextForLastFind($po_request, $pm_table_name_or_num) {
+			if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) { return null; }
 			if (!ResultContextStorage::$storageLoaded) { ResultContextStorage::init($po_request); }
 			
 			$va_tmp = explode('/', ResultContextStorage::getVar('result_last_context_'.$vs_table_name));
@@ -729,8 +730,35 @@
 			$va_nav = $va_find_nav[$va_tmp[0]];
 			if (!$va_nav) { return false; }
 			
-			if (!($vs_action = ResultContextStorage::getVar('result_last_context_'.$vs_table_name.'_action'))) {
+			if (__CA_APP_TYPE__ == 'PAWTUCKET') {
+				// Pawtucket-specific navigation rewriting
+				if (
+					!file_exists($vs_path = __CA_THEME_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
+					&&
+					!file_exists($vs_path = __CA_APP_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
+				) { return false; }
+				include_once($vs_path);
+				$vs_controller_class = $va_nav['controller']."Controller";
+				$va_nav = call_user_func_array( "{$vs_controller_class}::".$va_nav['action'] , array($po_request, $vs_table_name) );
+			
+				if (!($vs_action = ResultContextStorage::getVar('result_last_context_'.$vs_table_name.'_action'))) {
+					$vs_action = $va_nav['action'];
+				}
+			} else {
 				$vs_action = $va_nav['action'];
+			}
+			$va_params = array();
+			if (is_array($va_nav['params'])) {
+				$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
+				foreach ($va_nav['params'] as $vs_param) {
+					if (!($vs_param = trim($vs_param))) { continue; }
+					if(!trim($va_params[$vs_param] = $po_request->getParameter($vs_param, pString))) {
+						$va_params[$vs_param] = trim($o_context->getParameter($vs_param));
+					}
+				}
+				
+				if (!is_array($pa_params)) { $pa_params = array(); }
+				$pa_params = array_merge($pa_params, $va_params);
 			}
 			
 			return caNavUrl($po_request, trim($va_nav['module_path']), trim($va_nav['controller']), trim($vs_action), $pa_params);
@@ -782,7 +810,7 @@
 				$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
 				foreach ($va_nav['params'] as $vs_param) {
 					if (!($vs_param = trim($vs_param))) { continue; }
-					if(!trim($va_params[$vs_param] = $po_request->getParameter($vs_param, pString))) {
+					if(!trim($va_params[$vs_param] = $po_request->getParameter($vs_param, pString, ['forcePurify' => true]))) {
 						$va_params[$vs_param] = trim($o_context->getParameter($vs_param));
 					}
 				}

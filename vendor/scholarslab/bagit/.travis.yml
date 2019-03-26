@@ -1,0 +1,12 @@
+language: php
+php:
+    - 5.3
+    - 5.4
+before_script: ./bin/install_ci_dependencies.sh
+branches:
+    only:
+        - master
+        - develop
+notifications:
+    irc:
+        - "irc.freenode.org#slab"

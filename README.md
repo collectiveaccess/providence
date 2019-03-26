@@ -10,18 +10,22 @@ CollectiveAccess is freely available under the open source GNU Public License ve
 
 ### About CollectiveAccess 1.7.7
 
-Version 1.7.7 is a maintenance release with many bug fixes and a handful of new features. It is the first release compatible with PHP 7.2. Note that it has not been fully tested with PHP 7.3 or MySQL 8.0.
+Version 1.7.7 is a maintenance release with many bug fixes and a handful of new features. It is the first release compatible with PHP 7.2 and will run under PHP versions 5.6, 7.0, 7.1 and 7.2. It has not been extensively tested with PHP 7.3 or MySQL 8.0. A list of changes is [available](https://clangers.collectiveaccess.org/jira/issues/?filter=11242).
 
 
 ### Installation
 
 First make sure your server meets all of the [requirements](https://docs.collectiveaccess.org/wiki/Requirements). Then follow the [installation instructions](https://docs.collectiveaccess.org/wiki/Installing_Providence). 
 
-### Updating from Providence version 1.7 or later
+
+### Updating from a previous version
 
 NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
 
-To update from a version 1.7.x installation decompress the CollectiveAccess Providence 1.7.7 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), any local print templates (`app/printTemplates`) and your setup.php file.
+
+#### Updating from Providence version 1.7 or later
+
+To update from a version 1.7.x installation decompress the CollectiveAccess Providence 1.7.7 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), any local print templates (`app/printTemplates`) and your setup.php file. If you're updating from a version prior to 1.7.6 you will have to recreate your setup.php file as the format of the file has changed significantly from that used in version 1.7.5 and earlier. You can reuse the settings in your old setup.php file as-is. Only the format of the setup.php file has changed. 
 
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
@@ -32,9 +36,7 @@ Your database is out-of-date. Please install all schema migrations starting with
 The migration number may vary depending upon the version you're upgrading from. Click on the `here` link to begin the database update process. 
 
 
-### Updating from Providence version 1.6 or earlier
-
-NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
+#### Updating from Providence version 1.6 or earlier
 
 To update from a version 1.6.x or older installation decompress the CollectiveAccess Providence 1.7.7 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), and any local print templates (`app/printTemplates`). 
 

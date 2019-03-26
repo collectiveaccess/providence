@@ -368,4 +368,3 @@ class ca_occurrences extends BaseObjectLocationModel implements IBundleProvider 
 	}
 	# ------------------------------------------------------
 }
-?>

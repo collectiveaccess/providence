@@ -280,4 +280,3 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		return $vs_buf;
 	}
 	# ---------------------------------------
-?>

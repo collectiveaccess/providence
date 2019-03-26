@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -202,7 +202,8 @@
  			//
  			// Regenerate display template for bundle that launched the interstitial editor so it will reflect any changes
  			//
- 			$vs_related_table = $t_placement->getEditorType();
+ 			$vs_editor_table = $t_placement->getEditorType();
+ 			$vs_related_table = $t_subject->getOppositeTableName($t_placement->getEditorType());
  			$vs_template = caGetBundleDisplayTemplate($t_subject, $vs_related_table, $pa_bundle_settings);
 		
  			$qr_rel_items = caMakeSearchResult($t_subject->tableName(), array($t_subject->getPrimaryKey()));
@@ -219,7 +220,7 @@
 					
 					$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($vn_left_id == $pn_primary_id) ? 'ltol' : 'rtol');
 				} else {
-					$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_related_table) ? 'rtol' : 'ltor');
+					$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_editor_table) ? 'rtol' : 'ltor');
 				}
 				$va_bundle_values['relationship_type_code'] = $t_subject->getRelationshipTypeCode();
 			}
@@ -338,4 +339,3 @@
 		}
 		# ------------------------------------------------------------------
  	}
- ?>

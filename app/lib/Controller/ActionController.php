@@ -212,7 +212,9 @@ class ActionController extends BaseObject {
 				if (!$vs_param) { $va_params[] = $vs_param; }
 				if (!$vs_value) { $va_params[] = $vs_value; }
 			}
-			return $o_default_controller->{$this->opo_request->getController()}($va_params);
+			if (method_exists($o_default_controller, $this->opo_request->getController())) { 
+			    return $o_default_controller->{$this->opo_request->getController()}($va_params);
+			}
 		}
 		$this->postError(2310, _t("Action '%1' in class '%2' is invalid", $ps_methodname, get_class($this)), "ActionController->__call()");
 		return false;
