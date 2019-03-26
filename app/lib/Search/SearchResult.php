@@ -2266,6 +2266,19 @@ class SearchResult extends BaseObject {
 											$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
 											break;
 									}
+									
+									if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
+                                        if (preg_match("!\[([^\]]+)!", $vs_val_proc, $va_matches)) {
+                                            $va_tmp = explode(',', $va_matches[1]);
+                                            if ((sizeof($va_tmp) == 2) && (is_numeric($va_tmp[0])) && (is_numeric($va_tmp[1]))) {
+                                                $vs_val_proc = array('latitude' => trim($va_tmp[0]), 'longitude' => trim($va_tmp[1]), 'path' => trim($va_matches[1]), 'label' => $this->ops_text_value);
+                                            } else {
+                                                $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
+                                            }
+                                        } else {
+                                            $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
+                                        }
+                                    }
 									$vb_dont_return_value = false;
 									break;
 								}

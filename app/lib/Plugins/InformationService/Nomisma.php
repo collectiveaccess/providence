@@ -129,6 +129,7 @@ PREFIX dcterms:	<http://purl.org/dc/terms/>
 PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
 PREFIX nm: <http://nomisma.org/id/>
 PREFIX nmo: <http://nomisma.org/ontology#>
+PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX spatial: <http://jena.apache.org/spatial#>
 PREFIX xsd:	<http://www.w3.org/2001/XMLSchema#>
@@ -136,12 +137,18 @@ PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 
 SELECT * WHERE {
    ?data skos:prefLabel ?label .
-   ?data rdf:type ?t.
-   OPTIONAL { ?data skos:broader ?parent }
+   ?data rdf:type ?t .
+   OPTIONAL { 
+    ?data skos:broader ?parent .
+    ?data geo:location ?l .
+    ?l geo:lat ?lat.
+    ?l geo:long ?long .
+    
+    }
   '.$query_filter.'
   '.$ontology_filter.'
 }
-LIMIT '.$pn_limit);
+LIMIT '.(int)$pn_limit); 
 
 		$va_results = parent::queryNomisma($vs_query);
 		if(!is_array($va_results)) { return false; }
@@ -171,6 +178,8 @@ LIMIT '.$pn_limit);
 				'label' => htmlentities($vs_label),
 				'url' => $va_values['data']['value'],
 				'idno' => $vs_id,
+				'lat' => isset($va_values['lat']['value']) ? $va_values['lat']['value'] : null,
+				'long' => isset($va_values['long']['value']) ? $va_values['long']['value'] : null
 			);
 		}
 
@@ -191,6 +200,17 @@ LIMIT '.$pn_limit);
 			return $va_matches[1];
 		}
 		return $ps_text;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function getExtraInfo($pa_settings, $ps_url) {
+	    $ret = parent::getExtraInfo($pa_settings, $ps_url);
+	    if (isset($ret['lat']) && isset($ret['long']) && $ret['lat'] && $ret['long']) {
+	        $ret['georeference'] = "[".$ret['lat'].",".$ret['long']."]";
+	    }
+	    return $ret;
 	}
 	# ------------------------------------------------
 }

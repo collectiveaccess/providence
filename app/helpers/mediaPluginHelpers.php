@@ -1052,8 +1052,6 @@
 					'width' => $o_page->getWidth(),
 					'height' => $o_page->getHeight()
 				];
-			} else {
-				return null;
 			}
 		}
 		
@@ -1074,8 +1072,6 @@
 						);
 					}
 				} while((sizeof($va_output) > 0) && ($va_tmp[0] !== 'PDF'));
-			} else {
-				return null;
 			}
 		}
 		
@@ -1096,8 +1092,6 @@
 						);
 					}
 				} while((sizeof($va_output) > 0) && ($va_tmp[0] !== 'PDF'));
-			} else {
-				return null;
 			}
 		}
 		

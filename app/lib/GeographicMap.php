@@ -127,6 +127,7 @@
  
  		$va_tmp = explode('.', $ps_georeference_field_name);
  		$vs_field_name = array_pop($va_tmp);
+ 		$vs_containter_field_name = array_pop($va_tmp);
  			
  		//$va_point_buf = array();	
  		
@@ -144,7 +145,13 @@
  			if (is_array($va_coordinates = $po_data_object->get($ps_georeference_field_name, array('coordinates' => true, 'returnWithStructure' => true, 'returnAllLocales' => false)))) {
 				foreach($va_coordinates as $vn_i => $va_coord_list) {
 					foreach($va_coord_list as $vn_attribute_id => $va_geoname) {
-						$va_coordinate = isset($va_geoname[$vs_field_name]) ? $va_geoname[$vs_field_name] : $va_geoname;
+					    if(isset($va_geoname[$vs_field_name])) {
+					        $va_coordinate = $va_geoname[$vs_field_name];
+					    } elseif(isset($va_geoname[$vs_containter_field_name])) {
+						    $va_coordinate =  $va_geoname[$vs_containter_field_name];
+						} else {
+						    $va_coordinate = $va_geoname;
+						}
 						
 						if(!$va_coordinate['latitude'] || !$va_coordinate['longitude']) { continue; }
 						$vs_label = $vs_content = $vs_ajax_content = null;
@@ -240,7 +247,13 @@
  					$vs_table = $po_data_object->tableName();
  					foreach($va_coordinates as $vn_element_id => $va_coord_list) {
  							foreach($va_coord_list as $vn_attribute_id => $va_geoname) {
-								$va_coordinate = isset($va_geoname[$vs_field_name]) ? $va_geoname[$vs_field_name] : $va_geoname;
+								if(isset($va_geoname[$vs_field_name])) {
+                                    $va_coordinate = $va_geoname[$vs_field_name];
+                                } elseif(isset($va_geoname[$vs_containter_field_name])) {
+                                    $va_coordinate =  $va_geoname[$vs_containter_field_name];
+                                } else {
+                                    $va_coordinate = $va_geoname;
+                                }
 							
 								$vs_label = $vs_content = $vs_ajax_content = null;
 					
