@@ -34,6 +34,7 @@
   * Methods for models than can have a current location
   */
   	require_once(__CA_MODELS_DIR__."/ca_history_tracking_current_values.php");
+  	require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
  
 	trait HistoryTrackingCurrentValueTrait {
 		# ------------------------------------------------------
@@ -2002,9 +2003,6 @@
 		 * @return string Rendered HTML bundle
 		 */
 		public function getHistoryTrackingCurrentContentsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
-			require_once(__CA_MODELS_DIR__."/ca_movements.php");
-			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
-			require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
 			global $g_ui_locale;
 			
 			if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, null)))) { 
@@ -2030,8 +2028,6 @@
 		
 			
 			$o_view->setVar('qr_result', ($qr_result = $this->getContents($policy)));
-			
-			$o_view->setVar('t_subject_rel', new ca_storage_locations());
 			
 		
 			return $o_view->render('history_tracking_current_contents.php');
