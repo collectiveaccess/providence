@@ -273,10 +273,6 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
-	private static function getRandomPassword() {
-		return substr(md5(uniqid(microtime())), 0, 6);
-	}
-	# --------------------------------------------------
 	private static function createDirectoryPath($ps_path) {
 		if (!file_exists($ps_path)) {
 			if (!@mkdir($ps_path, 0777, true)) {
@@ -2088,7 +2084,7 @@ class Installer {
 
 		foreach($va_logins as $vs_user_name => $vo_login) {
 			if (!($vs_password = trim((string) self::getAttribute($vo_login, "password")))) {
-				$vs_password = $this->getRandomPassword();
+				$vs_password = caGenerateRandomPassword(8);
 			}
 
 			$t_user = new ca_users();
@@ -2377,7 +2373,7 @@ class Installer {
 	public function createAdminAccount() {
 		require_once(__CA_MODELS_DIR__."/ca_users.php");
 
-		$ps_password = $this->getRandomPassword();
+		$ps_password = caGenerateRandomPassword(8);
 		$t_user = new ca_users();
 		$t_user->setMode(ACCESS_WRITE);
 		$t_user->set("user_name", 'administrator');
