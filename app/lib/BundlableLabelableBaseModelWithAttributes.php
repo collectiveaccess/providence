@@ -3705,7 +3705,7 @@ if (!$vb_batch) {
 									}
 								} else {
 									$this->editLabel($va_label['label_id'],
-										array($this->getLabelDisplayField() => '['._t('BLANK').']'),
+										array($this->getLabelDisplayField() => '['.caGetBlankLabelText().']'),
 										$vn_label_locale_id,
 										$vn_label_type_id,
 										true, array('queueIndexing' => true)
@@ -3755,7 +3755,7 @@ if (!$vb_batch) {
 									foreach($va_labels_for_this_locale as $vn_id => $va_labels_by_locale) {
 						 				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
 						 					foreach($va_labels as $vn_i => $va_label) {
-						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['._t('BLANK').']')) {
+						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['.caGetBlankLabelText().']')) {
 						 							$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 						 						}
 						 					}
@@ -3846,7 +3846,7 @@ if (!$vb_batch) {
 									}
 								} else {
 									$this->editLabel($va_label['label_id'],
-										array($this->getLabelDisplayField() => '['._t('BLANK').']'),
+										array($this->getLabelDisplayField() => '['.caGetBlankLabelText().']'),
 										$vn_label_locale_id,
 										$vn_label_type_id,
 										false, array('queueIndexing' => true)

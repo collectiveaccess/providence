@@ -947,7 +947,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								$vs_label = $vs_idno;
 								$vb_show_idno = false;
 							} else {
-								$vs_label =  '['._t('BLANK').']'; 
+								$vs_label =  '['.caGetBlankLabelText().']'; 
 							}
 							break;
 					}
@@ -1885,7 +1885,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		
 		if (!($vs_label = $t_set->getLabelForDisplay())) {
 			if (!($vs_label = $t_set->get('set_code'))) {
-				$vs_label = '['._t('BLANK').']'; 
+				$vs_label = '['.caGetBlankLabelText().']'; 
 			}
 		}
 		
@@ -4522,4 +4522,18 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
  		}
  		return $va_bundle_settings;
  	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	$g_blank_label_text = null;
+	function caGetBlankLabelText() {
+		global $g_blank_label_text;
+		if ($g_blank_label_text) { return $g_blank_label_text; }
+		$config = Configuration::load();
+		if ($label_text = $config->get('blank_label_text')) {
+			return $g_blank_label_text = _t($label_text);
+		}
+		return $g_blank_label_text = _t('BLANK');
+	}
 	# ------------------------------------------------------------------

@@ -2507,7 +2507,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													&&
 													(sizeof(array_filter($t_subject->getSecondaryLabelDisplayFields(), function($v) use ($va_element_content) { return isset($va_element_content[$v]) && strlen($va_element_content[$v]); })) == 0)
 												) { 
-													$va_element_content[$vs_disp_field] = '['._t('BLANK').']'; 
+													$va_element_content[$vs_disp_field] = '['.caGetBlankLabelText().']'; 
 												}
 												
 												if ($vb_skip_if_data_present && ($t_subject->getLabelCount(true, $vn_locale_id) > 0)) { continue(2); }
@@ -2702,7 +2702,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						            $vs_rel_label_display_fld = $t_rel->getLabelDisplayField();
 						        }
 						
-						        $vs_name = '['._t('BLANK').']';
+						        $vs_name = '['.caGetBlankLabelText().']';
 						        if(isset($va_element_data['preferred_labels'][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data['preferred_labels'][$vs_rel_label_display_fld]; }
 						        elseif(isset($va_element_data['preferred_labels']) ) { $vs_name = $va_element_data['preferred_labels']; }
 						        elseif(isset($va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]; }
