@@ -4579,6 +4579,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if ($g_blank_label_text) { return $g_blank_label_text; }
 		$config = Configuration::load();
 		if ($label_text = $config->get('blank_label_text')) {
+		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
 			return $g_blank_label_text = _t($label_text);
 		}
 		return $g_blank_label_text = _t('BLANK');
