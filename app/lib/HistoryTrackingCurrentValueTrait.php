@@ -1719,6 +1719,7 @@
 					}
 				}
 			}
+			ksort($va_history);
 			
 			// filter out deleted
 			if (is_array($deleted = self::getDeletedCurrentValues())) {
@@ -2012,9 +2013,9 @@
 			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 			
 			$o_view->setVar('policy', $policy);
-			$o_view->setVar('policy_info', $x=self::getHistoryTrackingCurrentValuePolicy($policy));
+			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
 	
-			if(!is_array($pa_options)) { $pa_options = array(); }
+			if(!is_array($pa_options)) { $pa_options = []; }
 		
 			$vs_display_template		= caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined'));
 		
@@ -2026,9 +2027,7 @@
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('t_subject', $this);
 		
-			
-			$o_view->setVar('qr_result', ($qr_result = $this->getContents($policy)));
-			
+			$o_view->setVar('qr_result', $this->getContents($policy));	
 		
 			return $o_view->render('history_tracking_current_contents.php');
 		}
