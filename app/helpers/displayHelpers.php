@@ -4524,7 +4524,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
  	}
 	# ------------------------------------------------------------------
 	/**
+	 * Return currently set blank preferred label placeholder text. This text
+	 * is used to set labels that are saved with no value set.
 	 *
+	 * The returned value will be the placeholder as configured via the app.conf
+	 * "blank_label_text" option. If the option is not set the default value of 
+	 * "[BLANK]" will be returned.
+	 *
+	 * @return string
 	 */
 	$g_blank_label_text = null;
 	function caGetBlankLabelText() {
