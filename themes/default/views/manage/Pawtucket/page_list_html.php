@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2017 Whirl-i-Gig
+ * Copyright 2016-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -90,7 +90,7 @@
 					<div class="caPageListName"><?php print $va_page['title']; ?></div>
 				</td>
 				<td>
-					<div><?php print $va_page['path']; ?></div>
+					<div><?php print ($va_page['path'] === 'PROVIDENCE_HELP_MENU') ? _t('<em>Providence help menu</em>') : $va_page['path']; ?></div>
 				</td>
 				<td>
 					<div><?php print $va_page['description']; ?></div>

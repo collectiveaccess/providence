@@ -714,7 +714,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$va_items = $pa_sorted_items;
 		}
 		
-		ExternalCache::save($vs_cache_key, $va_items, 'listItems');
+		if (is_array($va_items) && (sizeof($va_items) < 1000)) {
+			ExternalCache::save($vs_cache_key, $va_items, 'listItems');
+		}
 		return $va_items;
 	}
 	# ------------------------------------------------------

@@ -41,6 +41,7 @@ create index i_logged on ca_change_log(logged_row_id, logged_table_num);
 create index i_unit_id on ca_change_log(unit_id);
 create index i_table_num on ca_change_log (logged_table_num);
 create index i_batch_id on ca_change_log (batch_id);
+CREATE INDEX i_date_unit on ca_change_log(log_datetime, unit_id); 
 
 
 /*==========================================================================*/
@@ -68,6 +69,7 @@ create table ca_change_log_subjects
 
 create index i_log_id on ca_change_log_subjects(log_id);
 create index i_subject on ca_change_log_subjects(subject_row_id, subject_table_num);
+CREATE INDEX i_log_plus on ca_change_log_subjects (log_id, subject_table_num, subject_row_id);
 
 
 /*==========================================================================*/
@@ -1919,6 +1921,7 @@ create index i_row_id on ca_attributes(row_id);
 create index i_table_num on ca_attributes(table_num);
 create index i_element_id on ca_attributes(element_id);
 create index i_row_table_num on ca_attributes(row_id, table_num);
+create index i_prefetch ON ca_attributes(row_id, element_id, table_num);
 
 
 /*==========================================================================*/
@@ -6339,9 +6342,28 @@ create table ca_media_replication_status_check (
 /*==========================================================================*/
 create table ca_metadata_dictionary_entries (
    entry_id                 int unsigned					not null AUTO_INCREMENT,
+   table_num                tinyint unsigned not null default 0,
    bundle_name              varchar(255) not null,
    settings                 longtext not null,
-   primary key (entry_id)
+   primary key (entry_id),
+   key i_table_num (table_num),
+   key i_bundle_name (bundle_name)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_metadata_dictionary_entry_labels (
+	label_id		  int unsigned not null primary key auto_increment,
+	entry_id			  int unsigned null references ca_metadata_dictionary_entries(entry_id),
+	locale_id		  smallint unsigned not null references ca_locales(locale_id),
+	name			    varchar(255) not null,
+	name_sort		  varchar(255) not null,
+	description		text not null,
+	source_info		longtext not null,
+	is_preferred	tinyint unsigned not null,
+
+	KEY i_entry_id (entry_id),
+	KEY i_locale_id (locale_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -7009,6 +7031,19 @@ create table ca_history_tracking_current_values (
 
 
 /*==========================================================================*/
+create table ca_persistent_cache (
+    cache_key         char(32) not null primary key,
+    cache_value       longblob not null,
+    created_on        int unsigned not null,
+    updated_on        int unsigned not null,
+    namespace         varchar(100) not null default '',
+
+	KEY i_namespace (namespace),
+	KEY i_updated_on (updated_on)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7019,4 +7054,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (157, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (158, unix_timestamp());

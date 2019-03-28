@@ -81,6 +81,7 @@
 			// initialize CA Utils
 			caUI.initUtils({unsavedChangesWarningMessage: '<?php _p('You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes.'); ?>'});
 
+			var caPromptManager = caUI.initPromptManager();
 		</script>
 		<!--[if lte IE 6]>
 			<style type="text/css">

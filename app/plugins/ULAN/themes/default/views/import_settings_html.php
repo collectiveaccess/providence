@@ -45,7 +45,7 @@
  </form>
  
 <?php
-	print caFormTag($this->request, 'Run', 'caULANResultsForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+	print caFormTag($this->request, 'Run', 'caULANResultsForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
 	<div class="<?php print $vb_importers_available ? 'formLabel' : 'formLabelError'; ?>">
 <?php

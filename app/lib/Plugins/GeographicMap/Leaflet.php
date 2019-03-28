@@ -159,7 +159,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				
         		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label, 'content' => $vs_content];
         		if ($vn_angle !== 0) { $l['angle'] = $vn_angle; }
-        		//if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
+        		if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
         		$pointList[] = $l;
 			}
 			$vn_c++;
@@ -184,7 +184,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				}	
 				
 				if (!($lat && $lng)) { continue; }
-				$vs_label = preg_replace("![\n\r]+!", " ", $vs_label);
+				$vs_l	abel = preg_replace("![\n\r]+!", " ", $vs_label);
 				$vs_content = preg_replace("![\n\r]+!", " ", join($vs_delimiter, $va_buf));
 				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? ($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
 				

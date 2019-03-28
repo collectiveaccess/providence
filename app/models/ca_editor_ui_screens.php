@@ -343,7 +343,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * 		noCache = if set to true then the returned list if always generated directly from the database, otherwise it is returned from the cache if possible. Set this to true if you expect the cache may be stale. Default is false.
 	 *		returnAllAvailableIfEmpty = if set to true then the list of all available bundles will be returned if the currently loaded screen has no placements, or if there is no display loaded
 	 *		table = if using the returnAllAvailableIfEmpty option and you expect a list of available bundles to be returned if no display is loaded, you must specify the table the bundles are intended for use with with this option. Either the table name or number may be used.
-	 *		user_id = if specified then placements are only returned if the user has at least read access to the display
+	 *		user_id = if specified then placements are only returned if the user has at least read access to the display,
+	 *		screen_id = get placements for specified screen id rather than currently loaded screen. [Default is null]
 	 * @return array List of placements in display order. Array is keyed on bundle name. Values are arrays with the following keys:
 	 *		placement_id = primary key of ca_editor_ui_bundle_placements row - a unique id for the placement
 	 *		bundle_name = bundle name (a code - not for display)
@@ -363,12 +364,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		//	return array();
 		//}
 		
-		if (!($vn_screen_id = $this->getPrimaryKey())) {
+		if (!($vn_screen_id = caGetOption('screen_id', $pa_options, null)) && !($vn_screen_id = $this->getPrimaryKey())) {
 			if ($pb_return_all_available_if_empty && $ps_table) {
 				return ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id] = $this->getAvailableBundles($ps_table, ['table' => $ps_table]);
 			}
-		//	return array(); 
+			return []; 
 		}
+		$vn_screen_id = preg_replace("!^screen!i", "", $vn_screen_id);
+		
 		
 		if (!$pb_no_cache && isset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]) && ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]) {
 			return ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id];
@@ -382,7 +385,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			WHERE
 				screen_id = ?
 			ORDER BY rank
-		", (int)$vn_screen_id);
+		", [(int)$vn_screen_id]);
 		
 		$va_available_bundles = ($pb_settings_only) ? array() : $this->getAvailableBundles();
 		$va_placements = array();

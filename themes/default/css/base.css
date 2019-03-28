@@ -1279,6 +1279,7 @@ div.hint {
 }
 .settingsBundle {
     padding: 10px;
+    max-height: 700px;
 }
 
 .caDupeLabelMessageBox {
@@ -1949,8 +1950,8 @@ div.control-box-left-content {
 
 div.control-box-middle-content {
     text-align: center;
-    margin: 10px;
-    float: left;
+    margin: 3px;
+    float: right;
     font-size:12px;
     font-weight: bold;
 }
@@ -5647,6 +5648,12 @@ select.listRelRelationshipTypeEdit {
     overflow-y: auto;
 }
 
+
+.settingsBundle {
+    padding: 10px;
+    max-height: 700px;
+}
+
 div.caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
@@ -6903,6 +6910,14 @@ div.caMetadataDictionaryViolationsListHeading {
 	color: #333;
 }
 
+.caMetadataDictionaryViolationInCurrentTab {
+	color: #ffffff;
+}
+
+.caMetadataDictionaryViolationNotInCurrentTab {
+	color: #999999;
+}
+
 /** Metadata importer **/
 table.caFileSourceControls {
 	width: 700px
@@ -7462,4 +7477,36 @@ li.mediaItem-selected {
 /* Force CKEditor full screen overlay to top of window */
 .cke_maximized {
     top: 0px !important;
+}
+
+div.changeLogSearchResultsPagination {
+	float: right;
+	padding: 5px;
+}
+
+/* Statistics dashboard */
+div.statisticsDashboardPanel {
+    width: 268px;
+    height: 300px;
+    overflow: auto;
+    float: left;
+    padding: 0 15px 15px 15px;
+    margin: 0 10px 10px 10px;
+    border: 1px dotted #a0a0a0;
+}
+
+div.statisticsDashboardGroupList {
+    margin: 0 0 10px 0;
+}
+
+div.statisticsDashboardsiteList {
+    margin: 0 0 10px 0;
+}
+
+span.statisticsDashboardSelectedGroup {
+    font-weight: bold;
+}
+
+span.statisticsDashboardSelectedsite {
+    font-weight: bold;
 }

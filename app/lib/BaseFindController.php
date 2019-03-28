@@ -83,18 +83,18 @@
  			if ($this->ops_tablename) {
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
 
-				if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
-					
-					if ($pb_type_restriction_has_changed) {
-						Session::setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
-					} elseif($vn_type_id = Session::getVar($this->ops_tablename.'_type_id')) {
-						$this->opn_type_restriction_id = $vn_type_id;
-					}
-					
-					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
-					
-				}
-							
+                if($this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_submenu') || $this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_menu')) {                 
+                    if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
+                    
+                        if ($pb_type_restriction_has_changed) {
+                            Session::setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
+                        } elseif($vn_type_id = Session::getVar($this->ops_tablename.'_type_id')) {
+                            $this->opn_type_restriction_id = $vn_type_id;
+                        }
+                    
+                        $this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
+                    }
+				}	
                 if ($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id)) {
                     $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null));
 			    } else {

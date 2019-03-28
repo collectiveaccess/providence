@@ -1992,6 +1992,7 @@ function caFileIsIncludable($ps_file) {
 	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
 	 *		castTo = array|int|string|float|bool
 	 *		delimiter = A delimiter, or array of delimiters, to break a string option value on. When this option is set an array will always be returned. [Default is null]
+	 *		defaultOnEmptyString = Force use of default value when option is set to an empty string). [Default is false]
 	 * @return mixed
 	 */
 	function caGetOption($pm_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
@@ -2020,6 +2021,7 @@ function caFileIsIncludable($ps_file) {
 		} else {
 			$vm_val = (isset($pa_options[$pm_option]) && !is_null($pa_options[$pm_option])) ? $pa_options[$pm_option] : $pm_default;
 		}
+		if (isset($pa_parse_options['defaultOnEmptyString']) && $pa_parse_options['defaultOnEmptyString'] && is_string($vm_val) && (strlen($vm_val) === 0)) { $vm_val = $pm_default; }
 
 		if (
 			((is_string($vm_val) && !isset($pa_parse_options['castTo'])) || (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'] == 'string')))
@@ -3333,6 +3335,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGenerateCSRFToken($po_request=null){
+		$session_id = $po_request ? $po_request->getSessionID() : 'none';
 	    if(function_exists("random_bytes")) {           // PHP 7
 	        $vs_token = bin2hex(random_bytes(32));
 	    } elseif (function_exists("openssl_random_pseudo_bytes")) {     // PHP 5.x with OpenSSL
@@ -3343,7 +3346,7 @@ function caFileIsIncludable($ps_file) {
             $vs_token = md5(uniqid(rand(), TRUE));   // this is not very good, and is only used if one of the more secure options above is available (one of them should be in almost all cases)
 	    }
 	    if ($po_request) {
-	        if (!is_array($va_tokens = Session::getVar('csrf_tokens'))) { $va_tokens = []; }
+	        if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
 	        if (sizeof($va_tokens) > 300) { 
 	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 28800)); });	// delete any token older than eight hours
 	    	}
@@ -3353,7 +3356,7 @@ function caFileIsIncludable($ps_file) {
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }
 	        
-	        Session::setVar('csrf_tokens', $va_tokens);
+	        PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
 	    }
 	    return $vs_token;
 	}
@@ -3370,13 +3373,15 @@ function caFileIsIncludable($ps_file) {
 	 * @throws ApplicationException
 	 */
 	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
+		$session_id = $po_request ? $po_request->getSessionID() : 'none';
+		
 	    if(!$ps_token) { $ps_token = $po_request->getParameter('crsfToken', pString); }
-	    if (!is_array($va_tokens = Session::getVar('csrf_tokens'))) { $va_tokens = []; }
+	    if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
 	        if (caGetOption('remove', $pa_options, true)) {
 	            unset($va_tokens[$ps_token]);
-	            Session::setVar('csrf_tokens', $va_tokens);
+	        	PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
 	        }
 	        return true;
 	    }

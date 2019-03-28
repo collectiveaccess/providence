@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -134,10 +134,9 @@ class ModelSettings extends BaseSettings {
 
 				}
 			}
-
-			foreach($va_values as $vs_setting_key => $vs_value) {
-				$this->setSetting($vs_setting, $vs_value);
-			}
+		}
+		foreach($va_values as $vs_setting_key => $vs_value) {
+			$this->setSetting($vs_setting_key, $vs_value);
 		}
 		return $this->o_instance->update();
 	}

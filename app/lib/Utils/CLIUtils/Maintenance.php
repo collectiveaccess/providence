@@ -898,7 +898,8 @@
 				while($qr_records->nextHit()) {
 					$vn_count++;
 
-					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", $va_rule['rule_settings']['label'], $vn_rule_num, $vn_num_rules, $vn_count));
+                    if(!is_array($va_rule['rule_settings'])) { $va_rule['rule_settings'] = []; }
+					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", caExtractSettingsValueByUserLocale('label', $va_rule['rule_settings']), $vn_rule_num, $vn_num_rules, $vn_count));
 					$t_violation->clear();
 					$vn_id = $qr_records->getPrimaryKey();
 
@@ -917,23 +918,27 @@
 						$t_violation = $t_found;
 					}
 
-					if (!$vb_skip && ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
-						// violation
-						if ($t_violation->getPrimaryKey()) {
-							$t_violation->setMode(ACCESS_WRITE);
-							$t_violation->update();
-						} else {
-							$t_violation->setMode(ACCESS_WRITE);
-							$t_violation->set('rule_id', $va_rule['rule_id']);
-							$t_violation->set('table_num', $t_instance->tableNum());
-							$t_violation->set('row_id', $qr_records->getPrimaryKey());
-							$t_violation->insert();
-						}
-					} else {
-						if ($t_violation->getPrimaryKey()) {
-							$t_violation->delete(true);		// remove violation
-						}
-					}
+                    try {
+                        if (!$vb_skip && ExpressionParser::evaluate(html_entity_decode($va_rule['expression']), $va_row)) {
+                            // violation
+                            if ($t_violation->getPrimaryKey()) {
+                                $t_violation->setMode(ACCESS_WRITE);
+                                $t_violation->update();
+                            } else {
+                                $t_violation->setMode(ACCESS_WRITE);
+                                $t_violation->set('rule_id', $va_rule['rule_id']);
+                                $t_violation->set('table_num', $t_instance->tableNum());
+                                $t_violation->set('row_id', $qr_records->getPrimaryKey());
+                                $t_violation->insert();
+                            }
+                        } else {
+                            if ($t_violation->getPrimaryKey()) {
+                                $t_violation->delete(true);		// remove violation
+                            }
+                        }
+                    } catch (Exception $e) {
+                        // pass
+                    }
 				}
 			}
 			print CLIProgressBar::finish();

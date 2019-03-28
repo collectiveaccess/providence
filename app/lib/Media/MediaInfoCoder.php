@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2015 Whirl-i-Gig
+ * Copyright 2006-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -94,7 +94,7 @@ class MediaInfoCoder {
 		#
 		# Use icon
 		#
-		if ($ps_version && (!$ps_key || (in_array($ps_key, array('WIDTH', 'HEIGHT'))))) {
+		if ($ps_version && (!$ps_key || (in_array(strtoupper($ps_key), array('WIDTH', 'HEIGHT'))))) {
 			if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
 				if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT'])) {
 					$va_media_info[$ps_version]['WIDTH'] = $va_icon_size['width'];
@@ -102,7 +102,7 @@ class MediaInfoCoder {
 				}
 			}
 		} else {
-			if (!$ps_key || (in_array($ps_key, array('WIDTH', 'HEIGHT')))) {
+			if (!$ps_key || (in_array(strtoupper($ps_key), array('WIDTH', 'HEIGHT')))) {
 				foreach(array_keys($va_media_info) as $vs_version) {
 					if (isset($va_media_info[$vs_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$vs_version]['USE_ICON'])) {
 						if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$vs_version]['WIDTH'], $va_media_info[$vs_version]['HEIGHT'])) {
@@ -119,7 +119,12 @@ class MediaInfoCoder {
 			if (!$ps_key) {
 				return $va_media_info[$ps_version];
 			} else { 
-				return $va_media_info[$ps_version][$ps_key];
+			    if ($v = $va_media_info[$ps_version][$ps_key]) { return $v; }
+			    
+			    // Make case insensitive
+			    if ($v = $va_media_info[$ps_version][strtoupper($ps_key)]) { return $v; }
+			    if ($v = $va_media_info[$ps_version][strtolower($ps_key)]) { return $v; }
+				return null;
 			}
 		} else {
 			return $va_media_info;
