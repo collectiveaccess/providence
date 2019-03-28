@@ -1279,6 +1279,7 @@ div.hint {
 }
 .settingsBundle {
     padding: 10px;
+    max-height: 700px;
 }
 
 .caDupeLabelMessageBox {
@@ -1949,8 +1950,8 @@ div.control-box-left-content {
 
 div.control-box-middle-content {
     text-align: center;
-    margin: 10px;
-    float: left;
+    margin: 3px;
+    float: right;
     font-size:12px;
     font-weight: bold;
 }
@@ -5647,6 +5648,12 @@ select.listRelRelationshipTypeEdit {
     overflow-y: auto;
 }
 
+
+.settingsBundle {
+    padding: 10px;
+    max-height: 700px;
+}
+
 div.caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
@@ -6324,7 +6331,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
 }
 
 /* Quick add */
-.caRelationQuickAddPanel {
+.caRelationQuickAddPanel, .caRelationInterstitialEditPanel {
     position: fixed;
     top: 0px;
     left: 0px;
@@ -6339,16 +6346,16 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     background-color: #FFFFFF;
 }
 
-#caRelationQuickAddPanel .close a{
+#caRelationQuickAddPanel .close a, #caRelationInterstitialEditPanel .close a{
     text-decoration:none;
     font-size:16px;
 }
 
-#caRelationQuickAddPanelContentArea {
+#caRelationQuickAddPanelContentArea, #caRelationInterstitialEditPanelContentArea {
     padding:10px;
 }
 
-#caRelationQuickAddPanelControlButtons {
+#caRelationQuickAddPanelControlButtons, #caRelationInterstitialEditPanelControlButtons {
     width: 100%;
     text-align: center;
 }
@@ -6736,50 +6743,52 @@ div.caRepresentationMediaReplicationControls {
 }
 
 /** Object location tracking **/
-.caCurrentLocation {
+.caHistoryTrackingCurrent {
+    position: relative;
 	padding: 10px;
-	margin-right: 12px;
+	min-height: 60px;
 }
 
-div.caLocationHistory {
+div.caHistoryTracking {
+    position: relative;
 	border-top: 1px dotted #e6e6e6;
 	padding: 10px;
-	margin-right: 12px;
+	min-height: 60px;
 }
 
-div.caLocationHistoryTab {
+div.caHistoryTrackingTab {
 	max-height: 400px;
 	overflow: auto;
 }
 
 /** Object use history **/
-div.caUseHistoryEntry {
+div.caHistoryTrackingEntry {
 	position: relative;
 	display: table; 
 	overflow: hidden;
 	font-weight: normal;
 	font-size: 11px;
 	
-	width: 730px;
+	width: 700px;
 	
-	margin: 5px 0 0 5px;
-	padding: 5px 0 5px 0;
+	margin: 1px 0 0 5px;
+	padding: 10px;
 	border-top: 1px dotted #e6e6e6;
 }
 
-div.caUseHistoryEntryFirst {
+div.caHistoryTrackingEntryFirst {
 	border: none;
 }
 
-div.caUseHistoryButtonBar {
+div.caHistoryTrackingButtonBar {
 	padding: 10px;
 }
 
-.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caSetChildViewButton {
+.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caAddCollectionButton, .caSetChildViewButton {
 	margin-top: 5px;
 }
 
-div.caUseHistoryIconContainer {
+div.caHistoryTrackingIconContainer {
 	float: left;
 	display: table; 
 	width: 60px;
@@ -6792,18 +6801,18 @@ div.caUseHistoryIconContainer {
 	margin: 0 10px 0 0;
 }
 
-div.caUseHistoryIcon {
+div.caHistoryTrackingIcon {
 	display: table-cell; 
 	vertical-align: middle;
 }
 
-div.caUseHistoryIconText {
+div.caHistoryTrackingIconText {
 	text-align: center;
 	font-size: 11px;
 	font-style: italic;
 }
 
-div.caUseHistoryDate {
+div.caHistoryTrackingEntryDate {
 	position: absolute;
 	bottom: 3px;
 	right: 3px;
@@ -6812,15 +6821,27 @@ div.caUseHistoryDate {
 	font-size: 9px;
 }
 
-h2.caUseHistorySetLocationHeading {
+div.caHistoryTrackingEntryDelete {
+	position: absolute;
+	top: 8px;
+	right: 3px;
+}
+
+div.caHistoryTrackingEntryInterstitialEdit {
+    position: absolute;
+	top: 8px;
+	right: 27px;
+}
+
+h2.caHistoryTrackingSetLocationHeading {
 	float: left;
 }
 
-div.caUseHistoryHierarchyBrowser {
+div.caHistoryTrackingHierarchyBrowser {
 	border-top: 2px;
 }
 
-table.caUseHistoryUpdateLocationMetadata tr td {
+table.caHistoryTrackingUpdateLocationMetadata tr td {
 	vertical-align: middle;
 }
 
@@ -6887,6 +6908,14 @@ div.caMetadataDictionaryViolationsListHeading {
 
 .caMetadataDictionaryViolationDebg {
 	color: #333;
+}
+
+.caMetadataDictionaryViolationInCurrentTab {
+	color: #ffffff;
+}
+
+.caMetadataDictionaryViolationNotInCurrentTab {
+	color: #999999;
 }
 
 /** Metadata importer **/
@@ -7448,4 +7477,36 @@ li.mediaItem-selected {
 /* Force CKEditor full screen overlay to top of window */
 .cke_maximized {
     top: 0px !important;
+}
+
+div.changeLogSearchResultsPagination {
+	float: right;
+	padding: 5px;
+}
+
+/* Statistics dashboard */
+div.statisticsDashboardPanel {
+    width: 268px;
+    height: 300px;
+    overflow: auto;
+    float: left;
+    padding: 0 15px 15px 15px;
+    margin: 0 10px 10px 10px;
+    border: 1px dotted #a0a0a0;
+}
+
+div.statisticsDashboardGroupList {
+    margin: 0 0 10px 0;
+}
+
+div.statisticsDashboardsiteList {
+    margin: 0 0 10px 0;
+}
+
+span.statisticsDashboardSelectedGroup {
+    font-weight: bold;
+}
+
+span.statisticsDashboardSelectedsite {
+    font-weight: bold;
 }

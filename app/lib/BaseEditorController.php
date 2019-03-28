@@ -213,6 +213,10 @@ class BaseEditorController extends ActionController {
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
+		// Are there metadata dictionary alerts?
+		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
+		$this->getView()->setVar('show_show_notifications', (is_array($violations_to_prompt) && (sizeof($violations_to_prompt) > 0)));
+
 		$this->render("{$vs_view}.php");
 	}
 	# -------------------------------------------------------
@@ -437,6 +441,10 @@ class BaseEditorController extends ActionController {
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
+		// Are there metadata dictionary alerts?
+		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
+		$this->getView()->setVar('show_show_notifications', (sizeof($violations_to_prompt) > 0));
+		
 		$this->render('screen_html.php');
 	}
 	# -------------------------------------------------------
@@ -743,7 +751,7 @@ class BaseEditorController extends ActionController {
 		
 		// Summary formats list
 		$formats = [];
-		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName()]))) {
+		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName(), 'restrictToTypes' => $t_subject->getTypeID()]))) {
             $num_available_templates = sizeof($available_templates);
             foreach($available_templates as $k => $v) {
                 if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available

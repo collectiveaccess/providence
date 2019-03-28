@@ -48,7 +48,6 @@ var caUI = caUI || {};
 		that.checkValue = function() { 
 			var t = (that.processIndicator.search("<") === -1) ? '<img src="' + that.processIndicator + '" border=\'0\'/>' : that.processIndicator;
 			jQuery('#' + that.statusID).html(t);
-			console.log("t", t);
 			
 			var val = jQuery('#' + that.formElementID).val();
 			jQuery.getJSON(that.lookupUrl, { n: val, table_num: that.table_num, id: that.row_id, field: that.field, withinFields: that.withinFields}, 

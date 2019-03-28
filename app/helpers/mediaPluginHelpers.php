@@ -1052,7 +1052,7 @@
 					'width' => $o_page->getWidth(),
 					'height' => $o_page->getHeight()
 				];
-			}
+			} 
 		}
 		
 		// try graphicsmagick

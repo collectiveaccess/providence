@@ -848,7 +848,7 @@ class MultipartIDNumber extends IDNumber {
 		foreach($va_elements as $vs_element) {
 			$va_element_info = $va_elements_normal_order[$vs_element];
 			$vn_i = array_search($vs_element, $va_element_names_normal_order);
-
+            if(!is_array($va_output[$vn_i])) { $va_output[$vn_i] = []; }
 			switch($va_element_info['type']) {
 				case 'LIST':
 					$va_output[$vn_i] = array($va_element_vals[$vn_i]);

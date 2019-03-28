@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -841,6 +841,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		// get fields 
 		if (is_array($va_search_settings)) { 
 			foreach($va_search_settings as $vs_table => $va_fields) {
+			
 				if (preg_match("!\.related$!", $vs_table)) { continue; }
 				if (!is_array($va_fields['fields'])) { continue; }
 
@@ -849,6 +850,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 					$va_field_list = [];
 					foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
+                        $vs_field = str_replace("_ca_attribute_", "", $vs_field);
 						if ($vs_field === '_metadata') {
 							foreach($va_element_codes as $vs_code) {
 								$va_field_list[$vs_code] = $va_field_indexing_info;
@@ -857,9 +859,33 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							$va_field_list[$vs_field] = $va_field_indexing_info;
 						}
 					}
+					
+					if(is_array($va_fields['current_values'])) {
+                        foreach($va_fields['current_values'] as $p => $pinfo) {
+                            foreach($pinfo as $f => $finfo) {
+                                $f = str_replace("_ca_attribute_", "", $f);
+                                if ($vs_field === '_metadata') {
+                                    foreach($va_element_codes as $vs_code) {
+                                        $va_field_list["CV{$p}_{$vs_code}"] = $finfo;
+                                    }
+                                } else {
+                                    $va_field_list["CV|{$p}|{$vs_field}"] = $finfo;
+                                }
+                            }
+                        }
+                    }
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
 						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
+
+                        $policy = $policy_label = null;
+                        $tmp = explode('|', $vs_field);
+                        if ($tmp[0] == 'CV') {
+                            $policy = $tmp[1];
+                            $vs_field = $tmp[2];
+                            
+                            $policy_label = $policy ? _t('Current value for %1', $policy) : null;
+                        }
 
 						if (!($va_field_info = $t_instance->getFieldInfo($vs_field))) {
 							// is it an attribute?
@@ -873,7 +899,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 								$vs_bundle = $vs_table.'.'.$vs_field;
 
-								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
+								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 								$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 									'bundle' => $vs_bundle,
 									'label' => $vs_label,
@@ -893,7 +919,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							if (in_array($va_field_info['FIELD_TYPE'], array(FT_MEDIA, FT_FILE))) { continue; }
 
 							$vs_bundle = $vs_table.'.'.$vs_field;
-							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
+							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 								'bundle' => $vs_bundle,
 								'label' => $vs_label,
@@ -922,6 +948,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				
 					$va_field_list = [];
 					foreach($va_fields['fields'] as $vs_field => $va_field_indexing_info) {
+                        $vs_field = str_replace("_ca_attribute_", "", $vs_field);
 						if ($vs_field === '_metadata') {
 							foreach($va_element_codes as $vs_code) {
 								$va_field_list[$vs_code] = $va_field_indexing_info;
@@ -930,14 +957,37 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							$va_field_list[$vs_field] = $va_field_indexing_info;
 						}
 					}
+					
+					if(is_array($va_fields['current_values'])) {
+                        foreach($va_fields['current_values'] as $p => $pinfo) {
+                            foreach($pinfo as $f => $finfo) {
+                                $f = str_replace("_ca_attribute_", "", $f);
+                                if ($vs_field === '_metadata') {
+                                    foreach($va_element_codes as $vs_code) {
+                                        $va_field_list["CV{$p}_{$vs_code}"] = $finfo;
+                                    }
+                                } else {
+                                    $va_field_list["CV|{$p}|{$f}"] = $finfo;
+                                }
+                            }
+                        }
+                    }
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
 						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
-
+						
+						$policy = $policy_label = null;
+                        $tmp = explode('|', $vs_field);
+                        if ($tmp[0] == 'CV') {  // current value bundle
+                            $policy = $tmp[1];
+                            $vs_field = $tmp[2];
+                        }
+                        
 						if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field))) {
 							if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
 
-							$vs_bundle = $vs_table.'.'.$vs_field;
+                            $vs_base_bundle = "{$vs_table}.{$vs_field}";
+							$vs_bundle = $policy ? "{$vs_table}.current_value.{$p}.{$vs_field}" : "{$vs_table}.{$vs_field}";
 
 							$vs_related_table = caUcFirstUTF8Safe($t_table->getProperty('NAME_SINGULAR'));
 							if (method_exists($t_table, 'getSubjectTableInstance')) {
@@ -945,7 +995,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								$vs_related_table = caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'));
 							}
 
-							$vs_label = $t_instance->getDisplayLabel($vs_bundle);
+							$vs_label = $t_instance->getDisplayLabel($vs_base_bundle);
+							if ($policy) { 
+							    $vs_label = _t('Current value for <em>%1</em> from <em>%2</em>', $vs_label, ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name'));
+							}
+							
 							if  (method_exists($t_table, "getSubjectTableName") && ($vs_primary_table == $vs_subject_table)) {
 								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
 							} else {
@@ -1200,6 +1254,14 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				}
 				continue;
 			}
+		    $tmp = explode(".", $va_element['bundle_name']);
+		    $policy = null;
+		    $bundle = $vs_field;
+            if ($tmp[1] == 'current_value') {    // getHistoryTrackingCurrentValuePolicy
+                $policy = $tmp[2];
+                $bundle = $va_element['bundle_name'];
+                $vs_field = $tmp[0].".".$tmp[3];
+            }
 
 			$va_output[] = array(
 				'element' => $t_instance->htmlFormElementForSearch($po_request, $vs_field, array(
@@ -1209,10 +1271,12 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 					'format' => '^ELEMENT',
 					'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT',
-					'id' => str_replace('.', '_', $vs_field)
+					'id' => str_replace('.', '_', $vs_field),
+					'policy' => $policy,
+				    'name' => $bundle
 				)),
 				'label' => ($vs_field_label) ? $vs_field_label :  $t_instance->getDisplayLabel($vs_field),
-				'name' => $vs_field
+				'name' => $bundle
 			);
 		}
 
@@ -1244,22 +1308,26 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							break;
 						default:
 							$va_tmp = explode(".", $vs_element);
-							$t_element = ca_metadata_elements::getInstance($vs_element_code = array_pop($va_tmp));
-							switch(ca_metadata_elements::getDataTypeForElementCode($vs_element_code)) {
-								case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-									$o_value = new InformationServiceAttributeValue();
-									$va_data = $o_value->parseValue($vs_query_element, ['settings' => $t_element->getSettings()]);
-								
-									$vs_query_element = $va_data['value_longtext1'];
-									break;
-								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-								    // convert bare ranges to Lucene range syntax
-									if (preg_match("!^([A-Z\$£¥€]+[ ]*[\d\.]+)[ ]*([-–]{1}|to)[ ]*([A-Z\$£¥€]+[ ]*[\d\.]+)$!", trim(str_replace('"', '', $vs_query_element)), $m)) {
-									    $vs_query_element = "[".$m[1]." to ".$m[3]."]";
-									}
-									break;
-							}
-							$va_query_elements[] = "({$vs_element}:{$vs_query_element})";
+							if ($va_tmp[1] == 'current_value') { // history tracking current value search (format is <table>.current_value.<policy name>
+							    $va_query_elements[] = "({$vs_element}:{$vs_query_element})";
+							} else {
+                                $t_element = ca_metadata_elements::getInstance($vs_element_code = array_pop($va_tmp));
+                                switch(ca_metadata_elements::getDataTypeForElementCode($vs_element_code)) {
+                                    case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+                                        // convert bare ranges to Lucene range syntax
+                                        if (preg_match("!^([A-Z\$£¥€]+[ ]*[\d\.]+)[ ]*([-–]{1}|to)[ ]*([A-Z\$£¥€]+[ ]*[\d\.]+)$!", trim(str_replace('"', '', $vs_query_element)), $m)) {
+                                            $vs_query_element = "[".$m[1]." to ".$m[3]."]";
+                                        }
+                                        break;
+                                    case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+                                        $o_value = new InformationServiceAttributeValue();
+                                        $va_data = $o_value->parseValue($vs_query_element, ['settings' => $t_element->getSettings()]);
+                                
+                                        $vs_query_element = $va_data['value_longtext1'];
+                                        break;
+                                }
+                                $va_query_elements[] = "({$vs_element}:{$vs_query_element})";
+                            }
 							break;
 					}
 				}
@@ -1303,14 +1371,21 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_elements = [];
 		foreach($va_placements as $vn_i => $va_placement) {
 			$va_tmp = explode('.',  $va_placement['bundle_name']);
-			if ($t_element->load(array('element_code' => $va_tmp[1]))) {
+			if ($va_tmp[1] == 'current_value') { 
+			    $element_code = $va_tmp[3];
+			    $element_prefix = $va_placement['bundle_name'];
+			} else {
+			    $element_code = $va_tmp[1];
+			    $element_prefix = $va_tmp[0].'.'.$va_tmp[1];
+			}
+			if ($t_element->load(array('element_code' => $element_code))) {
 				if ($t_element->get('datatype') > 0) {
 					$va_elements[] = $va_placement['bundle_name'];
 				}
 				if (sizeof($va_sub_elements = $t_element->getElementsInSet()) > 1) {
 					foreach($va_sub_elements as $vn_element_id => $va_element_info) {
-						if ($va_tmp[1] == $va_element_info['element_code']) { continue; }
-						$va_elements[] = $va_tmp[0].'.'.$va_tmp[1].'.'.$va_element_info['element_code'];
+						if ($element_code == $va_element_info['element_code']) { continue; }
+						$va_elements[] = $element_prefix.'.'.$va_element_info['element_code'];
 					}
 				}
 			} else {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -145,8 +145,6 @@
 			
 			$t_label->set($this->primaryKey(), $vn_id);
 			
-			$t_label->setMode(ACCESS_WRITE);
-			
 			$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
 			$vn_label_id = $t_label->insert(array('queueIndexing' => $pb_queue_indexing, 'subject' => $this));
@@ -236,8 +234,6 @@
 			
 			$t_label->set($this->primaryKey(), $vn_id);
 			
-			$t_label->setMode(ACCESS_WRITE);
-			
 			$this->opo_app_plugin_manager->hookBeforeLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
 			try {
@@ -281,8 +277,6 @@
  			$vb_is_preferred = (bool)$t_label->get('is_preferred');
  			
  			if (!($t_label->get($this->primaryKey()) == $this->getPrimaryKey())) { return null; }
- 			
- 			$t_label->setMode(ACCESS_WRITE);
  			
  			$this->opo_app_plugin_manager->hookBeforeLabelDelete(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 
@@ -1875,9 +1869,11 @@
 		 *
 		 * @param bool $pb_preferred
 		 * @param int $pn_locale_id
+		 * @param array $options Options include:
+		 *      omitBlanks = Don't include [BLANK] values in label count. [Default is false]
 		 * @return int Number of labels
 		 */
- 		public function getLabelCount($pb_preferred=true, $pn_locale_id=null) {
+ 		public function getLabelCount($pb_preferred=true, $pn_locale_id=null, $options=null) {
  			if (!$this->getPrimaryKey()) { return null; }
 			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
@@ -1893,6 +1889,12 @@
 				$vs_locale_sql = ' AND (l.locale_id = ?)';
 				$va_params[] = (int)$pn_locale_id;
 			}
+			
+			$omit_blanks_sql = '';
+			if (caGetOption('omitBlanks', $options, false)) {
+			    $omit_blanks_sql = " AND (l.".$this->getLabelDisplayField()." <> ?)";
+			    $va_params[] = '['._t('BLANK').']';
+			}
  			
  			if (!$t_label->hasField('is_preferred')) { 
  				array_shift($va_params);
@@ -1900,14 +1902,14 @@
 					SELECT l.label_id 
 					FROM ".$this->getLabelTableName()." l
 					WHERE 
-						(l.".$this->primaryKey()." = ?) {$vs_locale_sql}
+						(l.".$this->primaryKey()." = ?) {$vs_locale_sql} {$omit_blanks_sql}
 				", $va_params);
  			} else {
 				$qr_res = $o_db->query($x="
 					SELECT l.label_id 
 					FROM ".$this->getLabelTableName()." l
 					WHERE 
-						(l.is_preferred = ?) AND (l.".$this->primaryKey()." = ?) {$vs_locale_sql}
+						(l.is_preferred = ?) AND (l.".$this->primaryKey()." = ?) {$vs_locale_sql} {$omit_blanks_sql}
 				", $va_params);
 			}
  			return $qr_res->numRows();
@@ -2537,7 +2539,6 @@
 				$t_rel->clear();
 				$t_rel->load(array('group_id' => $vn_group_id, $vs_pk => $vn_id));		// try to load existing record
 				
-				$t_rel->setMode(ACCESS_WRITE);
 				$t_rel->set($vs_pk, $vn_id);
 				$t_rel->set('group_id', $vn_group_id);
 				$t_rel->set('access', $vn_access);
@@ -2593,7 +2594,6 @@
 			foreach($pa_group_ids as $vn_group_id) {
 				if (!isset($va_current_groups[$vn_group_id]) && $va_current_groups[$vn_group_id]) { continue; }
 				
-				$t_rel->setMode(ACCESS_WRITE);
 				if ($t_rel->load(array($vs_pk => $vn_id, 'group_id' => $vn_group_id))) {
 					$t_rel->delete(true);
 					
@@ -2621,7 +2621,6 @@
 			if(is_array($va_groups = $this->getUserGroups(['returnAsInitialValuesForBundle' => true]))) {
 				foreach($va_groups as $vn_rel_id => $va_info) {
 					if($t_rel->load($vn_rel_id)) {
-						$t_rel->setMode(ACCESS_WRITE);
 						$t_rel->delete();
 						
 						if ($t_rel->numErrors()) {
@@ -2772,7 +2771,6 @@
 				$t_rel->clear();
 				$t_rel->load(array('user_id' => $vn_user_id, $vs_pk => $vn_id));		// try to load existing record
 				
-				$t_rel->setMode(ACCESS_WRITE);
 				$t_rel->set($vs_pk, $vn_id);
 				$t_rel->set('user_id', $vn_user_id);
 				$t_rel->set('access', $vn_access);
@@ -2828,7 +2826,6 @@
 			foreach($pa_user_ids as $vn_user_id) {
 				if (!isset($va_current_users[$vn_user_id]) && $va_current_users[$vn_user_id]) { continue; }
 				
-				$t_rel->setMode(ACCESS_WRITE);
 				if ($t_rel->load(array($vs_pk => $vn_id, 'user_id' => $vn_user_id))) {
 					$t_rel->delete(true);
 					
@@ -2856,7 +2853,6 @@
 			if(is_array($va_users = $this->getUsers(['returnAsInitialValuesForBundle' => true]))) {
 				foreach($va_users as $vn_rel_id => $va_info) {
 					if($t_rel->load($vn_rel_id)) {
-						$t_rel->setMode(ACCESS_WRITE);
 						$t_rel->delete();
 						
 						if ($t_rel->numErrors()) {
@@ -2998,7 +2994,6 @@
 				$t_rel->clear();
 				$t_rel->load(array('role_id' => $vn_role_id, $vs_pk => $vn_id));		// try to load existing record
 				
-				$t_rel->setMode(ACCESS_WRITE);
 				$t_rel->set($vs_pk, $vn_id);
 				$t_rel->set('role_id', $vn_role_id);
 				$t_rel->set('access', $vn_access);
@@ -3051,7 +3046,6 @@
 			foreach($pa_role_ids as $vn_role_id) {
 				if (!isset($va_current_roles[$vn_role_id]) && $va_current_roles[$vn_role_id]) { continue; }
 				
-				$t_rel->setMode(ACCESS_WRITE);
 				if ($t_rel->load(array($vs_pk => $vn_id, 'role_id' => $vn_role_id))) {
 					$t_rel->delete(true);
 					
@@ -3078,7 +3072,6 @@
 			if(is_array($va_roles = $this->getUserRoles(['returnAsInitialValuesForBundle' => true]))) {
 				foreach($va_roles as $vn_rel_id => $va_info) {
 					if($t_rel->load($vn_rel_id)) {
-						$t_rel->setMode(ACCESS_WRITE);
 						$t_rel->delete();
 						
 						if ($t_rel->numErrors()) {

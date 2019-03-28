@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,6 @@
  
 	class BaseSettings {
 		# ------------------------------------------------------
-		
 		/**
 		 *
 		 */
@@ -199,15 +198,22 @@
 			
 			$po_request = 			caGetOption('request', $pa_options, null);
 			$vs_id = 				caGetOption('id', $pa_options, null);
+			
+			$format = 				caGetOption('format', $pa_options, null);
+			
 			$vs_name = 				caGetOption('name', $pa_options, null);
 			$vs_placement_code = 	caGetOption('placement_code', $pa_options, null);
 			
-			$va_options = array('request' => $po_request, 'id_prefix' => $vs_id);
+			$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null));
 			foreach($va_settings as $vs_setting => $va_setting_info) {
-				$va_options['id'] = "{$vs_id}_{$vs_setting}";
+				if ($format) {
+					$va_options['id'] = str_replace("^setting_name", $vs_setting, $format);
+				} else {
+					$va_options['id'] = "{$vs_id}_{$vs_setting}";
+				}
 				$va_options['label_id'] = $va_options['id'].'_label';
 				if (!$vs_name) { $vs_name = $vs_id; }
-				$va_options['name'] = "{$vs_placement_code}{$vs_name}_{$vs_setting}";
+				$va_options['name'] = $format ? $va_options['id'] : "{$vs_placement_code}{$vs_name}_{$vs_setting}";
 				
 				$va_options['value'] = caGetOption($vs_setting, $va_setting_values, $this->getSetting($vs_setting));
 				$va_options['helpText'] = caGetOption('helpText', $va_setting_info, '');
@@ -327,12 +333,10 @@
 						if ($vb_takes_locale && (sizeof($va_locales) > 1)) { 
 							$vs_locale_label = " (".$va_locale_info['name'].")";
 							$vs_input_name_suffix = '_'.$vs_locale;
+						} elseif ($vb_takes_locale) {
+							$vs_input_name_suffix = '_'.$vs_locale;
 						} else {
-							if ($vb_takes_locale) {
-								$vs_input_name_suffix = '_'.$vs_locale;
-							} else {
-								$vs_input_name_suffix = $vs_locale_label = '';
-							}
+							$vs_input_name_suffix = $vs_locale_label = '';
 						}
 						
 						if (($vs_locale != '_generic') && (is_array($vs_value))) {		// _generic means this setting doesn't take a locale
@@ -342,7 +346,39 @@
 						} else {
 							$vs_text_value = $vs_value;
 						}
-						$vs_return .= caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'id' => $vs_input_id))."{$vs_locale_label}<br/>\n";	
+						$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
+						
+						if($va_properties['usewysiwygeditor']) {
+							AssetLoadManager::register("ckeditor");
+							
+							$config = Configuration::load();
+							if(!is_array($va_toolbar_config = $config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = []; }
+									
+							$vs_width = $va_properties['width'];					
+							if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
+								$vs_width = ((int)$vs_width * 6)."px";
+							}
+							$vs_height = $va_properties['height'];
+							if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
+								$vs_height = ((int)$vs_height * 16)."px";
+							}
+							
+							$vs_return .= "<script type='text/javascript'>jQuery(document).ready(function() {
+							var ckEditor = CKEDITOR.replace( '{$vs_input_id}{$vs_input_name_suffix}',
+							{
+								toolbar : ".json_encode(array_values($va_toolbar_config)).",
+								width: '{$vs_width}',
+								height: '{$vs_height}',
+								toolbarLocation: 'top',
+								enterMode: CKEDITOR.ENTER_BR
+							});
+					
+							ckEditor.on('instanceReady', function(){ 
+								 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+							});
+});									
+</script>";
+						}
 					}
 					break;
 				# --------------------------------------------
@@ -463,7 +499,15 @@
 							}
 						}
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
-					} elseif (($vs_rel_table = $va_properties['useRelationshipTypeList']) || ($vb_locale_list = (bool)$va_properties['useLocaleList']) || ($vs_list_code = $va_properties['useList']) || ($vb_show_lists = ((bool)$va_properties['showLists'] || (bool)$va_properties['showVocabularies']))) {
+					} elseif (
+						($vs_rel_table = $va_properties['useRelationshipTypeList']) || 
+						($vb_locale_list = (bool)$va_properties['useLocaleList']) || 
+						($vs_list_code = $va_properties['useList']) || 
+						($vb_show_lists = ((bool)$va_properties['showLists'] || 
+						(bool)$va_properties['showVocabularies'])) || 
+						($vb_policy_list = (bool)$va_properties['useHistoryTrackingPolicyList']) ||
+						($vb_referring_policy_list = (bool)$va_properties['useHistoryTrackingReferringPolicyList'])
+					) {
 						if ($vs_rel_table) {
 							$t_rel = new ca_relationship_types();
 							$va_rels = $t_rel->getRelationshipInfo($vs_rel_table);
@@ -480,6 +524,16 @@
 							if ($vb_locale_list) {
  								include_once(__CA_MODELS_DIR__.'/ca_locales.php');
  								$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
+ 							} elseif($vb_policy_list) {
+ 								include_once(__CA_MODELS_DIR__.'/ca_objects.php');
+ 								$va_rel_opts = array_flip(array_map(function($v) {
+ 									return $v['name'];
+ 								}, ca_objects::getHistoryTrackingCurrentValuePolicies(caGetOption('table', $pa_options, null))));
+ 							} elseif($vb_referring_policy_list) {
+ 								include_once(__CA_MODELS_DIR__.'/ca_objects.php');
+ 								$va_rel_opts = array_flip(array_map(function($v) {
+ 									return $v['name'];
+ 								}, ca_objects::getDependentHistoryTrackingCurrentValuePolicies(caGetOption('table', $pa_options, null))));
 							} else {
 								if ($vb_show_lists) {
  									include_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -618,8 +672,9 @@
 							// Regular drop-down with configured options
 							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
 
-							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							$va_opts = array('width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
+							$va_attr['id'] = $vs_input_id;
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
 						}
 					}
@@ -705,4 +760,3 @@
 		}
 		# ------------------------------------------------------
 	}
-?>
