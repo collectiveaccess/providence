@@ -309,7 +309,7 @@ switch($display_mode) {
 					</td>
 				</tr>
 			</table>
-			<?php print ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings); ?>	
+			<?php print ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['placement_code' => $vs_id_prefix]); ?>	
 <?php
 	} else {
 ?>
@@ -337,7 +337,7 @@ switch($display_mode) {
 			
 			<div class="clear" style="height: 20px;"><!-- empty --></div>
 
-			<?php print ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings); ?>	
+			<?php print ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['placement_code' => $vs_id_prefix]); ?>	
 
 			<div class="clear"><!-- empty --></div>
 		
@@ -410,7 +410,7 @@ if($show_loan_controls) {
 					</td>
 				</tr>
 			</table>
-			<?php print ca_loans::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
+			<?php print ca_loans::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno'], 'placement_code' => $vs_id_prefix]); ?>
 		</div>
 	</textarea>
 <?php
@@ -436,7 +436,7 @@ if($show_loan_controls) {
 					</td>
 				</tr>
 			</table>
-			<?php print ca_movements::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
+			<?php print ca_movements::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno'], 'placement_code' => $vs_id_prefix]); ?>
 		</div>
 	</textarea>
 <?php
@@ -462,7 +462,7 @@ if($show_loan_controls) {
 					</td>
 				</tr>
 			</table>
-			<?php print ca_objects::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
+			<?php print ca_objects::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno'], 'placement_code' => $vs_id_prefix]); ?>
 		</div>
 	</textarea>
 <?php
@@ -489,7 +489,7 @@ if($show_occurrence_controls) {
 					</td>
 				</tr>
 			</table>
-			<?php print ca_occurrences::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
+			<?php print ca_occurrences::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno'], 'placement_code' => $vs_id_prefix]); ?>
 		</div>
 	</textarea>
 <?php
@@ -517,7 +517,7 @@ if($show_collection_controls) {
 					</td>
 				</tr>
 			</table>
-			<?php print ca_collections::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
+			<?php print ca_collections::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno'], 'placement_code' => $vs_id_prefix]); ?>
 		</div>
 	</textarea>
 <?php
@@ -545,7 +545,7 @@ if($show_entity_controls) {
 					</td>
 				</tr>
 			</table>
-			<?php print ca_entities::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno']]); ?>
+			<?php print ca_entities::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['type' => $va_type_info['idno'], 'placement_code' => $vs_id_prefix]); ?>
 		</div>
 	</textarea>
 <?php
@@ -562,8 +562,7 @@ if($show_entity_controls) {
 </div>
 <div id="caRelationInterstitialEditPanel<?php print $vs_id_prefix; ?>" class="caRelationInterstitialEditPanel"> 
 	<div id="caRelationInterstitialEditPanel<?php print $vs_id_prefix; ?>ContentArea">
-	<div class='dialogHeader'><?php print _t('Edit'); ?></div>
-		
+	    <div class='dialogHeader'><?php print _t('Edit'); ?></div>
 	</div>
 </div>
 

@@ -2045,16 +2045,18 @@
 		 * @param array $settings Array of settings for history tracking chronlogy bundle
 		 * @param array $options Options include:
 		 *		type = type of related record [Default is null]
+		 *      placement_code = Bundle placement code.
 		 *
 		 * @return string HTML form
 		 */
-		public static function getHistoryTrackingChronologyInterstitialElementAddHTMLForm($id_prefix, $subject_table, $settings, $options=null) {
+		public static function getHistoryTrackingChronologyInterstitialElementAddHTMLForm($request, $id_prefix, $subject_table, $settings, $options=null) {
 			global $g_ui_locale;
 			
 			$buf = '';
 			
 			$rel_table = get_called_class();
 			$type_idno = caGetOption('type', $options, null);
+			$placement_code = caGetOption('placement_code', $options, null);
 			if((is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"])|| is_array($interstitial_elements = $settings["setInterstitialElementsOnAdd"])) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
 				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
@@ -2089,7 +2091,7 @@
 						}
 						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'id' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'value' => _t('today'), 'classname' => $field_class])."</td>";
 					} else {
-						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($this->request, null, $element_code, $this->getVar('placement_code'), $settings, ['elementsOnly' => true])."</td>";
+						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($request, null, $element_code, $placement_code, $settings, ['elementsOnly' => true])."</td>";
 					}	
 					$buf .= "</tr>\n";
 				}
