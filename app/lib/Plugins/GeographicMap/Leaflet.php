@@ -184,7 +184,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				}	
 				
 				if (!($lat && $lng)) { continue; }
-				$vs_l	abel = preg_replace("![\n\r]+!", " ", $vs_label);
+				$vs_label = preg_replace("![\n\r]+!", " ", $vs_label);
 				$vs_content = preg_replace("![\n\r]+!", " ", join($vs_delimiter, $va_buf));
 				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? ($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
 				
