@@ -2113,17 +2113,18 @@
 				$rel_table = get_called_class();
 				
 				$type = $rel_table::typeCodeForRowID($rel_id);
+				$type_id = $rel_table::typeIDForRowID($rel_id);
 				if (is_array($interstitial_elements = caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $settings, array()))) {
 					foreach($interstitial_elements as $element_code) {
 						if ($t_item_rel->hasField($element_code)) {
-							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter("{$placement_code}{$form_prefix}_{$rel_table}_{$element_code}new_0", pString));
+							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter("{$placement_code}{$form_prefix}_{$type_id}_{$element_code}new_0", pString));
 						} elseif ($element_id = ca_metadata_elements::getElementID($element_code)) {
-							$va_sub_element_ids = ca_metadata_elements::getElementsForSet($element_id, ['idsOnly' => true]);
+							$sub_element_ids = ca_metadata_elements::getElementsForSet($element_id, ['idsOnly' => true]);
 							$vals = [];
 							foreach($sub_element_ids as $sub_element_id) {
-								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter("{$placement_code}{$form_prefix}_{$rel_table}_{$sub_element_id}_new_0", pString);
+								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter("{$placement_code}{$form_prefix}_{$type_id}_{$sub_element_id}_new_0", pString);
 							}
-							$t_item_rel->addAttribute($vals, $element);
+							$t_item_rel->addAttribute($vals, $element_code);
 						}
 					}
 					return $t_item_rel->update();
