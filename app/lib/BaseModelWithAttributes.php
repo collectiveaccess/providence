@@ -529,6 +529,10 @@
 				if(caGetOption('queueIndexing', $pa_options, true)) {
 					$va_index_options['queueIndexing'] = true;
 				}
+				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+                    $table = $this->tableName();
+                    if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
+                }
 				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array), false, $va_index_options);
 				
 				if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -575,6 +579,10 @@
 					$va_index_options['queueIndexing'] = true;
 				}
 				
+				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+                    $table = $this->tableName();
+                    if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
+                }
 				$this->doSearchIndexing($va_fields_changed_array, false, $va_index_options);
 				
 				if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
