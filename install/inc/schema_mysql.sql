@@ -248,6 +248,7 @@ create table ca_entities
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (entity_id),
    constraint fk_ca_entities_source_id foreign key (source_id)
@@ -285,6 +286,10 @@ create index i_life_sdatetime on ca_entities(life_sdatetime);
 create index i_life_edatetime on ca_entities(life_edatetime);
 create index i_view_count on ca_entities(view_count);
 create index i_entity_filter on ca_entities(entity_id, deleted, access);
+create index i_submission_user_id on ca_entities(submission_user_id);
+create index i_submission_group_id on ca_entities(submission_group_id);
+create index i_submission_status_id on ca_entities(submission_status_id);
+create index i_submission_via_form on ca_entities(submission_via_form);
 
 
 /*==========================================================================*/
@@ -429,6 +434,7 @@ create table ca_object_lots
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    primary key (lot_id),
    
    constraint fk_ca_object_lots_type_id foreign key (type_id)
@@ -457,6 +463,10 @@ create index i_admin_idno_stub_sort on ca_object_lots(idno_stub_sort);
 create index i_lot_status_id on ca_object_lots(lot_status_id);
 create index i_view_count on ca_object_lots(view_count);
 create index i_lot_filter on ca_object_lots(lot_id, deleted, access); 
+create index i_submission_user_id on ca_object_lots(submission_user_id);
+create index i_submission_group_id on ca_object_lots(submission_group_id);
+create index i_submission_status_id on ca_object_lots(submission_status_id);
+create index i_submission_via_form on ca_object_lots(submission_via_form);
 
 
 /*==========================================================================*/
@@ -487,6 +497,7 @@ create table ca_object_representations
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (representation_id),
    constraint fk_ca_object_representations_type_id foreign key (type_id)
@@ -520,6 +531,10 @@ create index i_rank on ca_object_representations(rank);
 create index i_source_id on ca_object_representations(source_id);
 create index i_view_count on ca_object_representations(view_count);
 create index i_rep_filter on ca_object_representations(representation_id, deleted, access); 
+create index i_submission_user_id on ca_object_representations(submission_user_id);
+create index i_submission_group_id on ca_object_representations(submission_group_id);
+create index i_submission_status_id on ca_object_representations(submission_status_id);
+create index i_submission_via_form on ca_object_representations(submission_via_form);
 
 
 /*==========================================================================*/
@@ -618,6 +633,7 @@ create table ca_occurrences
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    primary key (occurrence_id),
    
    constraint fk_ca_occurrences_type_id foreign key (type_id)
@@ -651,6 +667,10 @@ create index i_hier_right on ca_occurrences(hier_right);
 create index i_hier_occurrence_id on ca_occurrences(hier_occurrence_id);
 create index i_view_count on ca_occurrences(view_count);
 create index i_occ_filter on ca_occurrences(occurrence_id, deleted, access); 
+create index i_submission_user_id on ca_occurrences(submission_user_id);
+create index i_submission_group_id on ca_occurrences(submission_group_id);
+create index i_submission_status_id on ca_occurrences(submission_status_id);
+create index i_submission_via_form on ca_occurrences(submission_via_form);
 
 
 /*==========================================================================*/
@@ -713,6 +733,7 @@ create table ca_collections
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (collection_id),
    constraint fk_ca_collections_type_id foreign key (type_id)
@@ -749,6 +770,10 @@ create index i_hier_right on ca_collections(hier_right);
 create index i_acl_inherit_from_parent on ca_collections(acl_inherit_from_parent);
 create index i_view_count on ca_collections(view_count);
 create index i_collection_filter on ca_collections(collection_id, deleted, access); 
+create index i_submission_user_id on ca_collections(submission_user_id);
+create index i_submission_group_id on ca_collections(submission_group_id);
+create index i_submission_status_id on ca_collections(submission_status_id);
+create index i_submission_via_form on ca_collections(submission_via_form);
 
 
 /*==========================================================================*/
@@ -814,6 +839,7 @@ create table ca_places
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (place_id),
    constraint fk_ca_places_source_id foreign key (source_id)
@@ -854,6 +880,10 @@ create index i_hier_left on ca_places(hier_left);
 create index i_hier_right on ca_places(hier_right);
 create index i_view_count on ca_places(view_count);
 create index i_place_filter on ca_places(place_id, deleted, access); 
+create index i_submission_user_id on ca_places(submission_user_id);
+create index i_submission_group_id on ca_places(submission_group_id);
+create index i_submission_status_id on ca_places(submission_status_id);
+create index i_submission_via_form on ca_places(submission_via_form);
 
 
 /*==========================================================================*/
@@ -914,6 +944,7 @@ create table ca_storage_locations
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (location_id),
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
@@ -944,6 +975,10 @@ create index i_hier_left on ca_storage_locations(hier_left);
 create index i_hier_right on ca_storage_locations(hier_right);
 create index i_view_count on ca_storage_locations(view_count);
 create index i_loc_filter on ca_storage_locations(location_id, deleted, access); 
+create index i_submission_user_id on ca_storage_locations(submission_user_id);
+create index i_submission_group_id on ca_storage_locations(submission_group_id);
+create index i_submission_status_id on ca_storage_locations(submission_status_id);
+create index i_submission_via_form on ca_storage_locations(submission_via_form);
 
 
 /*==========================================================================*/
@@ -1002,6 +1037,7 @@ create table ca_loans (
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    primary key (loan_id),
    
    constraint fk_ca_loans_type_id foreign key (type_id)
@@ -1038,6 +1074,10 @@ create index hier_right on ca_loans(hier_right);
 create index hier_loan_id on ca_loans(hier_loan_id);
 create index i_view_count on ca_loans(view_count);
 create index i_loan_filter on ca_loans(loan_id, deleted, access); 
+create index i_submission_user_id on ca_loans(submission_user_id);
+create index i_submission_group_id on ca_loans(submission_group_id);
+create index i_submission_status_id on ca_loans(submission_status_id);
+create index i_submission_via_form on ca_loans(submission_via_form);
 
 
 /*==========================================================================*/
@@ -1088,6 +1128,7 @@ create table ca_movements (
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    primary key (movement_id),
    
     constraint fk_ca_movements_type_id foreign key (type_id)
@@ -1116,6 +1157,10 @@ create index idno on ca_movements(idno);
 create index idno_sort on ca_movements(idno_sort);
 create index i_view_count on ca_movements(view_count);
 create index i_movement_filter on ca_movements(movement_id, deleted, access);
+create index i_submission_user_id on ca_movements(submission_user_id);
+create index i_submission_group_id on ca_movements(submission_group_id);
+create index i_submission_status_id on ca_movements(submission_status_id);
+create index i_submission_via_form on ca_movements(submission_via_form);
 
 
 /*==========================================================================*/
@@ -1708,6 +1753,7 @@ create table ca_objects
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1782,6 +1828,10 @@ create index i_current_loc_subclass on ca_objects(current_loc_subclass);
 create index i_current_loc_id on ca_objects(current_loc_id);
 create index i_view_count on ca_objects(view_count);
 create index i_obj_filter on ca_objects(object_id, deleted, access); 
+create index i_submission_user_id on ca_objects(submission_user_id);
+create index i_submission_group_id on ca_objects(submission_group_id);
+create index i_submission_status_id on ca_objects(submission_status_id);
+create index i_submission_via_form on ca_objects(submission_via_form);
 
 
 /*==========================================================================*/

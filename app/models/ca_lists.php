@@ -1656,7 +1656,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$va_attributes['value'] = $vm_value;
 					$va_attributes['id'] = $ps_name.'_'.$vn_i;
 					
-					if ($pa_options['value'] == $vm_value) {
+					if (is_array($pa_options['value']) ? in_array($vm_value, $pa_options['value']) : ($pa_options['value'] == $vm_value)) {
 						$va_attributes['checked'] = '1';
 					}
 					if (isset($pa_options['readonly']) && ($pa_options['readonly'])) {
@@ -1686,7 +1686,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					if (strlen($vm_value) == 0) { continue; }	// don't count null values when calculating the first value for the yes/no
 					switch($vn_c) {
 						case 0:
-							if ($pa_options['value'] === (string)$vm_value) {
+							if (is_array($pa_options['value']) ? in_array($vm_value, $pa_options['value']) : ($pa_options['value'] == $vm_value)) {
 								$vb_is_checked = true;
 							}
 							$pa_attributes['value'] = $pa_options['value'] = $vm_value;
@@ -1724,7 +1724,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($pa_options['readonly']) && ($pa_options['readonly'])) {
 						$va_attributes['disabled'] = 1;
 					}
-					if (is_array($pa_options['value']) && in_array($vm_value, $pa_options['value']) ) { $va_attributes['checked'] = '1'; }
+					if (is_array($pa_options['value']) ? in_array($vm_value, $pa_options['value']) : ($pa_options['value'] == $vm_value)) {
+						$va_attributes['checked'] = '1';
+					}
 					
 					$vs_buf .= "<td>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." {$vs_label}</td><td> </td>";
 					
@@ -1903,7 +1905,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			default:
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				if (isset($pa_options['readonly']) && ($pa_options['readonly'])) { $pa_attributes['disabled'] = 1; }
-				if ($vs_render_as == 'multiple') {  $pa_attributes['multiple'] = 1; unset($pa_options['value']); }
+				if ($vs_render_as == 'multiple') {  
+					$pa_attributes['multiple'] = 1; unset($pa_options['value']); 
+				} elseif(is_array($pa_options['value'])) {
+					$pa_options['value'] = array_shift($pa_options['value']);
+				}
+				
 				return caHTMLSelect($ps_name, $va_options, $pa_attributes, array_merge($pa_options, array('contentArrayUsesKeysForValues' => true, 'colors' => $va_colors, 'height' => null)));
 				break;
 		}
