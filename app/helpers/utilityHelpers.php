@@ -3874,6 +3874,9 @@ function caFileIsIncludable($ps_file) {
 			case 'in':
 				return ($pb_is_list) ? true : false;
 				break;
+			case 'not in':
+				return ($pb_is_list) ? true : false;
+				break;
 		}
 		return false;
 	}
