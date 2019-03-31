@@ -87,7 +87,7 @@
 		}
 	} else {
 ?>
-		<div class="labelInfo"><table><tr><td><?php print _t('Location is empty'); ?></td></tr></table></div>
+		<div class="labelInfo"><table><tr><td><?php print _t('Empty'); ?></td></tr></table></div>
 <?php
 	}
 ?>
