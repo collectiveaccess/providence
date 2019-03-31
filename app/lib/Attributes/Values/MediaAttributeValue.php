@@ -167,6 +167,15 @@
                     case 'path':
                         return $this->opo_media_info_coder->getMediaPath($vs_version);
                         break;
+                    case 'id':
+                    	return $this->opn_value_id;
+                    	break;
+                    case 'original_filename':
+                    case 'originalfilename':
+                    case 'filename':
+                        $media_info = $this->opo_media_info_coder->getMediaInfo();
+                        return caGetOption('ORIGINAL_FILENAME', $media_info, pathinfo($this->opo_media_info_coder->getMediaPath($vs_version ? $vs_version : 'original'), PATHINFO_BASENAME));
+                        break;
                     case 'url':
                     default:
                         return $this->opo_media_info_coder->getMediaUrl($vs_version);

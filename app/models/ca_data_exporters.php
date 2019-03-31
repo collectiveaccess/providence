@@ -1473,7 +1473,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()) {
-
 		// The variable cache is valid for the whole record export.
 		// It's being modified in ca_data_exporters::processExporterItem
 		// and then reset here if we move on to the next record.

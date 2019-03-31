@@ -1657,6 +1657,7 @@ class DisplayTemplateParser {
 	 *			removePrefix = string to remove from tags extracted from template before doing lookup into value array
 	 *			getFrom = a model instance to draw data from. If set, $pa_values is ignored.
 	 *			quote = quote replacement values (Eg. ^ca_objects.idno becomes "2015.001" rather than 2015.001). Value containing quotes will be escaped with a backslash. [Default is false]
+	 *          skipTagsWithoutValues = Don't process tags without a corresponding value in $pa_values. [Default is false]
 	 *
 	 * @return string Output of processed template
 	 */
@@ -1666,6 +1667,7 @@ class DisplayTemplateParser {
 		$ps_prefix = caGetOption('prefix', $pa_options, null);
 		$ps_remove_prefix = caGetOption('removePrefix', $pa_options, null);
 		$pb_quote = caGetOption('quote', $pa_options, false);
+		$pb_skip_tags_without_values = caGetOption('skipTagsWithoutValues', $pa_options, false);
 		
 		$va_tags = caGetTemplateTags($ps_template);
 		
@@ -1675,6 +1677,8 @@ class DisplayTemplateParser {
 		}
 		
 		foreach($va_tags as $vs_tag) {
+		    if ($pb_skip_tags_without_values && !isset($pa_values[$vs_tag])){ continue; }
+		    
 		    $va_tmp = (substr($vs_tag, 0, 5) === '^join') ? [$vs_tag] : explode("~", $vs_tag);
             $vs_proc_tag = $vs_tag;
             

@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/MediaReplication/BaseMediaReplicationPlugIn.php : 
+ * app/lib/Plugins/ExternalExport/BaseExternalExportTransportPlugin.php : base class for external export plugins
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage MediaReplication
+ * @subpackage ExternalExport
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
@@ -33,29 +33,22 @@
   /**
     *
     */ 
-    
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMediaReplication.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExport.php");
 include_once(__CA_LIB_DIR__."/Configuration.php");
 
-define('__CA_MEDIA_REPLICATION_STATUS_UNKNOWN__', 0);
-define('__CA_MEDIA_REPLICATION_STATUS_UPLOADING__', 1);
-define('__CA_MEDIA_REPLICATION_STATUS_PROCESSING__', 2);
-define('__CA_MEDIA_REPLICATION_STATUS_COMPLETE__', 3);
-define('__CA_MEDIA_REPLICATION_STATUS_ERROR__', 4);
-
-abstract class BaseMediaReplicationPlugIn Extends WLPlug {
+abstract class BaseExternalExportTransportPlugin Extends WLPlug {
 	# ------------------------------------------------
-	// app config
-	protected $opo_config;
-	
-	// map item list
+	// properties for this plugin instance
+	protected $properties = array(
+		
+	);
 
 	// plugin info
 	protected $info = array(
-		"NAME" => "BaseMediaReplicationPlugin",
+		"NAME" => "?",
 		"PROPERTIES" => array(
-			
+			'id' => 'W'
 		)
 	);
 	
@@ -64,36 +57,59 @@ abstract class BaseMediaReplicationPlugIn Extends WLPlug {
 	 *
 	 */
 	public function __construct() {
-		$this->opo_config = Configuration::load();
+	
 	}
 	# ------------------------------------------------
 	/**
-	 * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
+	 *
 	 */
-	abstract public function initiateReplication($ps_filepath, $pa_data, $pa_options=null);
+	public function register() {
+		$this->opo_config = Configuration::load();
+		
+		$this->info["INSTANCE"] = $this;
+		return $this->info;
+	}
+	# ------------------------------------------------
+	/**
+	 * Returns status of plugin. Normally this is overriden by the plugin subclass
+	 *
+	 * @return array - status info array; 'available' key determines if the plugin should be loaded or not
+	 */
+	public function checkStatus() {
+		$va_status = parent::checkStatus();
+		
+		if ($this->register()) {
+			$va_status['available'] = true;
+		}
+		
+		return $va_status;
+	}
+	# ------------------------------------------------
+	/**
+	 * Process export. This *must* be overriden 
+	 */
+	abstract public function process($t_instance, $target_info, $options=null);
 	# ------------------------------------------------
 	/**
 	 *
 	 */
-	abstract public function getReplicationStatus($ps_request_token);
+	public function init() {
+	
+		return;
+	}
 	# ------------------------------------------------
 	/**
 	 *
 	 */
-	abstract public function getReplicationErrors($ps_request_token);
+	public function cleanup() {
+		return;
+	}
 	# ------------------------------------------------
 	/**
 	 *
 	 */
-	abstract public function getReplicationInfo($ps_request_token);
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function removeReplication($ps_key, $pa_options=null) {
-		// Override to implement
-		return null;
+	public function getAvailableSettings() {
+		return [];
 	}
 	# ------------------------------------------------
 }
-?>

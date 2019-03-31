@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/Plugins/IWLPlugMediaReplication.php : interface for Media Replication classes
+ * app/lib/Plugins/IWLPlugExternalExport.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,32 +26,26 @@
  * ----------------------------------------------------------------------
  */
 	
-	interface IWLPlugMediaReplication {
-		# -------------------------------------------------------
-		/**
-		 * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
-		 */
-		public function initiateReplication($ps_filepath, $pa_data, $pa_options=null);
-		
-		/**
-		 *
-		 */
-		public function getReplicationStatus($ps_request_token, $pa_options=null);
-		
-		/**
-		 *
-		 */
-		public function getReplicationErrors($ps_request_token);
-		
-		/**
-		 *
-		 */
-		public function getReplicationInfo($ps_request_token, $pa_options=null);
-		
-		/**
-		 *
-		 */
-		public function removeReplication($ps_key, $pa_options=null);
-		# -------------------------------------------------------
-	}
-?>
+interface IWLPlugExternalExport {
+	# -------------------------------------------------------
+	# Initialization and state
+	# -------------------------------------------------------
+	public function __construct();
+	public function register();
+	public function init();
+	public function cleanup();
+	
+	public function getDescription();
+	public function checkStatus();
+	
+	# -------------------------------------------------------
+	# Settings
+	# -------------------------------------------------------
+	public function getAvailableSettings();
+	
+	# -------------------------------------------------------
+	# Processing
+	# -------------------------------------------------------
+	public function process($t_instance, $target_info, $options=null);
+	# -------------------------------------------------------
+}
