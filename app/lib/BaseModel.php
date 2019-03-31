@@ -5981,12 +5981,18 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	  *
 	  * @param $po_request HTTPRequest
 	  * @param $ps_field string
-	  * @param $pa_options array
+	  * @param $pa_options array Options include:
+	  *		width = 
+	  *		height =
+	  *		class = 
+	  *		values = 
+	  *		useCurrentRowValueAsDefault = 
+	  *
 	  * @return string HTML text of form element. Will return null if it is not possible to generate an HTML form widget for the bundle.
-	  * 
 	  */
 	public function htmlFormElementForSearch($po_request, $ps_field, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = []; }
+		$use_current_row_value = caGetOption('useCurrentRowValueAsDefault', $pa_options, false);
 		
 		if (isset($pa_options['width'])) {
 			if ($va_dim = caParseFormElementDimension($pa_options['width'])) {
@@ -5998,13 +6004,17 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$va_tmp = explode('.', $ps_field);
 		
 		if (in_array($va_tmp[0], array('created', 'modified'))) {
+			$value = (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : null);
+			if (is_null($value) && $use_current_row_value) {
+				$value = $this->get($ps_field);
+			}
 			return caHTMLTextInput($ps_field, array(
 				'id' => str_replace(".", "_", $ps_field),
 				'class' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 				'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 				'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
-				'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''))
-			);
+				'value' => $value
+			));
 		}
 		
 		if ($va_tmp[0] != $this->tableName()) { return null; }
@@ -6017,12 +6027,19 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		
 		if ($this->hasField($va_tmp[1])) {
 			if (caGetOption('asArrayElement', $pa_options, false)) { $ps_field .= "[]"; } 
+			
+			$n = caGetOption('name', $pa_options, $ps_field);
+			$value = caGetOption([$ps_field, $n], $pa_options['values'], '');	// use field as well as name when looking for default value
+			if (is_null($value) && $use_current_row_value) {
+				$value = $this->get($ps_field);
+			}
+			
 			return $this->htmlFormElement($va_tmp[1], '^ELEMENT', array_merge($pa_options, array(
-					'name' => ($n = caGetOption('name', $pa_options, $ps_field)).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
+					'name' => $n.(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
-					'value' => caGetOption([$ps_field, $n], $pa_options['values'], ''),     // use field as well as name when looking for default value
+					'value' => $value,     
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 					'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 					'no_tooltips' => true
@@ -6041,12 +6058,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	  *
 	  * @param $po_request HTTPRequest
 	  * @param $ps_field string
-	  * @param $pa_options array
+	  * @param $pa_options array Options include:
+	  *		useCurrentRowValueAsDefault = 
+	  *	
 	  * @return string HTML text of form element. Will return null if it is not possible to generate an HTML form widget for the bundle.
-	  * 
 	  */
 	public function htmlFormElementForSimpleForm($po_request, $ps_field, $pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
+		$use_current_row_value = caGetOption('useCurrentRowValueAsDefault', $pa_options, false);
 		
 		if (isset($pa_options['width'])) {
 			if ($va_dim = caParseFormElementDimension($pa_options['width'])) {
@@ -6063,6 +6082,11 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if ($this->hasField($va_tmp[1])) {
 			if (caGetOption('asArrayElement', $pa_options, false)) { $ps_field .= "[]"; } 
 			
+			$value = (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : null);
+			if (is_null($value) && $use_current_row_value) {
+				$value = $this->get($ps_field);
+			}
+			
 			if ($this->getProperty('ID_NUMBERING_ID_FIELD') == $va_tmp[1]) {
 				
 				$va_lookup_url_info = caJSONLookupServiceUrl($po_request, $this->tableName());
@@ -6072,7 +6096,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
 						'id' => str_replace(".", "_", $ps_field),
 						'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
-						'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),
+						'value' => $value,
 						'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 						'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 						'no_tooltips' => true,
@@ -6086,7 +6110,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					'name' => $ps_field,
 					'id' => str_replace(".", "_", $ps_field),
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
-					'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),
+					'value' => $value,
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 					'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 					'no_tooltips' => true
@@ -11368,6 +11392,7 @@ $pa_options["display_form_field_tips"] = true;
 		// Convert other intrinsic list references
 		//
 		$vb_find_all = false;
+
 		foreach($pa_values as $vs_field => $va_field_values) {
 			foreach($va_field_values as $vn_i => $va_field_value) {
 				if ($vs_field == $vs_type_field_name) { continue; }
@@ -11380,7 +11405,9 @@ $pa_options["display_form_field_tips"] = true;
 				if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
 			
-					if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+					if(is_array($vm_value)) {
+						$pa_values[$vs_field][$vn_i] = [$vs_op, $z=array_map(function ($v) use ($vs_list_code) { return is_numeric($v) ? $v : ca_lists::getItemID($vs_list_code, $v); }, $vm_value)];
+					} elseif ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
 						$pa_values[$vs_field][$vn_i] = [$vs_op, $vn_id];
 					}
 				}
@@ -11430,12 +11457,12 @@ $pa_options["display_form_field_tips"] = true;
 						}
 						if (is_null($vm_value) && !$t_instance->getFieldInfo($vs_field, 'IS_NULL')) { $vs_op = '='; }
 					}
-
+					
 					if (is_null($vm_value)) {
 						if ($vs_op !== '=') { $vs_op = 'IS'; }
 						$va_sql_wheres[] = "({$vs_field} {$vs_op} NULL)";
 					} elseif (is_array($vm_value) && sizeof($vm_value)) {
-						if ($vs_op !== '=') { $vs_op = 'IN'; }
+						if (strtoupper($vs_op) !== 'NOT IN') { $vs_op = 'IN'; }
 						$va_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
 					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
 						$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
@@ -11447,7 +11474,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			if(!sizeof($va_sql_wheres)) { return null; }
 		}
-				
+
 		if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_instance->hasField('access')) {
 			$va_sql_wheres[] = "({$vs_table}.access IN (?))";
 			$va_sql_params[] = $pa_check_access;

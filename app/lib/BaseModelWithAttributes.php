@@ -1385,9 +1385,15 @@
 		  *
 		  * @param $po_request HTTPRequest
 		  * @param $ps_field string
-		  * @param $pa_options array
+		  * @param $pa_options array Options include:
+		  *		restrictToRelationshipTypes = 
+		  *		render = 
+		  *		class = 
+		  *		autocomplete = 
+		  *		value = 
+		  *		values = 
+		  *		
 		  * @return string HTML text of form element. Will return null (from superclass) if it is not possible to generate an HTML form widget for the bundle.
-		  * 
 		  */
 		public function htmlFormElementForSearch($po_request, $ps_field, $pa_options=null) {
 			if(!$pa_options) { $pa_options = array(); }
@@ -1455,16 +1461,24 @@
 		  *
 		  * @param $po_request HTTPRequest
 		  * @param $ps_field string
-		  * @param $pa_options array
+		  * @param $pa_options array Options include:
+		  *		values = 
+		  *		width = 
+		  *		height = 
+		  *		class = 
+		  *		useCurrentRowValueAsDefault = 
+		  *		
 		  * @return string HTML text of form element. Will return null (from superclass) if it is not possible to generate an HTML form widget for the bundle.
 		  * 
 		  */
 		public function htmlFormElementForSimpleForm($po_request, $ps_field, $pa_options=null) {
-			if(!$pa_options) { $pa_options = array(); }
+			if(!$pa_options) { $pa_options = []; }
 			$va_tmp = explode('.', $ps_field);
 			
+			$use_current_row_value = caGetOption('useCurrentRowValueAsDefault', $pa_options, false);
+			
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
-				return $this->getTypeListAsHTMLFormElement(null, null, $pa_options);
+				return $this->getTypeListAsHTMLFormElement($ps_field, ($use_current_row_value ? ['value' => $this->get($this->getTypeFieldName())] : null), $pa_options);
 			}
 			
 			if ($va_tmp[0] != $this->tableName()) { return null; }
@@ -1730,6 +1744,8 @@
 				return false;
 			}
 			
+			$use_current_row_value = caGetOption('useCurrentRowValueAsDefault', $pa_options, false);
+			
 			$policy = caGetOption('policy', $pa_options, null);     // current value policy
 			$vb_is_sub_element = (bool)($t_element->get('parent_id'));
 			$t_parent = $vb_is_sub_element ? ca_metadata_elements::getInstance($t_element->get('parent_id')) : null;
@@ -1774,8 +1790,11 @@
 				// Include "current_value" syntax if policy is set
 				$vs_subelement_code = $this->tableName().'.'.($policy ? "current_value.{$policy}." : '').($vb_is_sub_element ? $t_parent->get('element_code').'.' : '').(($vs_element_code !== $va_element['element_code']) ? "{$vs_element_code}." : "").$va_element['element_code'];
 				
-				$vs_value = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : '';
-
+				$vm_values = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : null;
+				
+				// Use current row value as default value if option is set
+				if (is_null($vm_values) && $use_current_row_value) { $vm_values = $this->get($vs_subelement_code, ['returnAsArray' => ca_metadata_elements::getDataTypeForElementCode($va_element['element_code']) == 3]); }
+			
 				$va_element_opts = array_merge(array(
 					'label' => $va_label['name'],
 					'description' => $va_label['description'],
@@ -1784,9 +1803,9 @@
 					'request' => $po_request,
 					'class' => $pa_options['class'],
 					'nullOption' => '-',
-					'value' => $vs_value,
+					'value' => $vm_values,
 					'forSearch' => true,
-					'render' => (isset($va_element['settings']['render']) && ($va_element['settings']['render'] == 'lookup')) ? $va_element['settings']['render'] : isset($pa_options['render']) ? $pa_options['render'] : 'select'
+					'render' => $va_element['settings']['render']//(isset($va_element['settings']['render']) && ($va_element['settings']['render'] == 'lookup')) ? $va_element['settings']['render'] : isset($pa_options['render']) ? $pa_options['render'] : 'select'
 				), array_merge($pa_options, $va_override_options));
 				
 				if (caGetOption('forSimpleForm', $pa_options, false)) { 
@@ -1810,7 +1829,7 @@
 					// prep element for use as search element
 					//
 					// ... replace value
-					$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
+					$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vm_values, $vs_form_element);
 				
 				
 					// escape any special characters in jQuery selectors

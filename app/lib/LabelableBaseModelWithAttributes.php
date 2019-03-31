@@ -1700,7 +1700,6 @@
 		 */
  		public function getLabels($pa_locale_ids=null, $pn_mode=__CA_LABEL_TYPE_ANY__, $pb_dont_cache=true, $pa_options=null) {
  			if(isset($pa_options['restrictToTypes']) && (!isset($pa_options['restrict_to_types']) || !$pa_options['restrict_to_types'])) { $pa_options['restrict_to_types'] = $pa_options['restrictToTypes']; }
-	 	
  			if (!($vn_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey())) ) { return null; }
  			if (isset($pa_options['forDisplay']) && $pa_options['forDisplay']) {
  				$pa_options['extractValuesByUserLocale'] = true;
@@ -1734,7 +1733,10 @@
  			$vs_label_where_sql = 'WHERE (l.'.$this->primaryKey().' = ?)';
  			$vs_locale_join_sql = '';
  			
- 			if ($pa_locale_ids) {
+ 			
+ 			if (!is_array($pa_locale_ids)) { $pa_locale_ids = [$pa_locale_ids]; }
+ 			$pa_locale_ids = array_filter($pa_locale_ids, function($v) { return (bool)strlen($v); });
+ 			if (sizeof($pa_locale_ids) > 0) {
  				$vs_label_where_sql .= ' AND (l.locale_id IN ('.join(',', $pa_locale_ids).'))';
  			}
  			$vs_locale_join_sql = 'INNER JOIN ca_locales AS loc ON loc.locale_id = l.locale_id';
