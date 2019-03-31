@@ -245,6 +245,10 @@ create table ca_entities
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    rank                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   
    primary key (entity_id),
    constraint fk_ca_entities_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -256,7 +260,16 @@ create table ca_entities
       references ca_locales (locale_id) on delete restrict on update restrict,
       
    constraint fk_ca_entities_parent_id foreign key (parent_id)
-      references ca_entities (entity_id) on delete restrict on update restrict
+      references ca_entities (entity_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_entities_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_entities_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_entities_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_source_id on ca_entities(source_id);
@@ -412,7 +425,10 @@ create table ca_object_lots
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
    primary key (lot_id),
    
    constraint fk_ca_object_lots_type_id foreign key (type_id)
@@ -422,8 +438,16 @@ create table ca_object_lots
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_lots_lot_status_id foreign key (lot_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
       
+   constraint fk_ca_object_lots_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_lots_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_lots_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_admin_idno_stub on ca_object_lots(idno_stub);
@@ -460,6 +484,9 @@ create table ca_object_representations
    rank                           int unsigned                   not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
    
    primary key (representation_id),
    constraint fk_ca_object_representations_type_id foreign key (type_id)
@@ -469,7 +496,16 @@ create table ca_object_representations
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_representations_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict
+      references ca_locales (locale_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_reps_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_reps_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_reps_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -578,7 +614,10 @@ create table ca_occurrences
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
    primary key (occurrence_id),
    
    constraint fk_ca_occurrences_type_id foreign key (type_id)
@@ -591,8 +630,16 @@ create table ca_occurrences
       references ca_locales (locale_id) on delete restrict on update restrict,
       
    constraint fk_ca_occurrences_parent_id foreign key (parent_id)
-      references ca_occurrences (occurrence_id) on delete restrict on update restrict
+      references ca_occurrences (occurrence_id) on delete restrict on update restrict,
       
+   constraint fk_ca_occurrences_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_occurrences_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_occurrences_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_occurrences(parent_id);
@@ -661,8 +708,11 @@ create table ca_collections
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
-   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   rank                           int unsigned                   not null default 0,
+   acl_inherit_from_parent        tinyint unsigned               not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
    
    primary key (collection_id),
    constraint fk_ca_collections_type_id foreign key (type_id)
@@ -675,7 +725,16 @@ create table ca_collections
       references ca_locales (locale_id) on delete restrict on update restrict,
       
    constraint fk_ca_collections_parent_id foreign key (parent_id)
-      references ca_collections (collection_id) on delete restrict on update restrict
+      references ca_collections (collection_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_collections_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_collections_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_collections_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_collections(parent_id);
@@ -752,6 +811,9 @@ create table ca_places
    hier_right                     decimal(30,20)                 not null,
    rank                           int unsigned                   not null default 0,
    floorplan                      longblob                       not null,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
    
    primary key (place_id),
    constraint fk_ca_places_source_id foreign key (source_id)
@@ -767,7 +829,16 @@ create table ca_places
       references ca_locales (locale_id) on delete restrict on update restrict,
       
    constraint fk_ca_places_parent_id foreign key (parent_id)
-      references ca_places (place_id) on delete restrict on update restrict
+      references ca_places (place_id) on delete restrict on update restrict,
+   
+   constraint fk_ca_places_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_places_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_places_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_hierarchy_id on ca_places(hierarchy_id);
@@ -840,6 +911,10 @@ create table ca_storage_locations
    deleted                        tinyint unsigned               not null default 0,
    rank                           int unsigned                   not null default 0,
    is_enabled                     tinyint unsigned               not null default 1,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   
    primary key (location_id),
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -848,7 +923,16 @@ create table ca_storage_locations
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_storage_locations_parent_id foreign key (parent_id)
-      references ca_storage_locations (location_id) on delete restrict on update restrict
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_storage_locations(parent_id);
@@ -914,7 +998,10 @@ create table ca_loans (
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
    primary key (loan_id),
    
    constraint fk_ca_loans_type_id foreign key (type_id)
@@ -927,7 +1014,16 @@ create table ca_loans (
       references ca_loans (loan_id) on delete restrict on update restrict,
       
    constraint fk_ca_loans_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict
+      references ca_locales (locale_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_loans_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_loans_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_loans_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -988,7 +1084,10 @@ create table ca_movements (
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
    primary key (movement_id),
    
     constraint fk_ca_movements_type_id foreign key (type_id)
@@ -998,7 +1097,16 @@ create table ca_movements (
       references ca_list_items (item_id) on delete restrict on update restrict,
       
     constraint fk_ca_movements_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict
+      references ca_locales (locale_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_movements_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_movements_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_movements_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_type_id on ca_movements(type_id);
@@ -1385,6 +1493,7 @@ create table ca_user_groups
    name                           varchar(255)                   not null,
    code                           varchar(20)                    not null,
    description                    text                           not null,
+   for_public_use                 tinyint unsigned               not null default 0,
    user_id                        int unsigned                   null references ca_users(user_id),
    rank                           smallint unsigned              not null default 0,
    vars                           text                           not null,
@@ -1596,6 +1705,9 @@ create table ca_objects
    current_loc_subclass           int unsigned                   null,
    current_loc_id                 int unsigned                   null,
    circulation_status_id          int unsigned                   null,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1626,6 +1738,15 @@ create table ca_objects
       references ca_storage_locations (location_id) on delete restrict on update restrict,
 
    constraint fk_ca_objects_circulation_status_id foreign key (circulation_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_objects_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_objects_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_objects_submission_status_id foreign key (submission_status_id)
       references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -7054,4 +7175,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (158, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (159, unix_timestamp());

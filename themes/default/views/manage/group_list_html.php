@@ -57,6 +57,9 @@
 					<?php print _t('Description'); ?>
 				</th>
 				<th class="list-header-unsorted">
+					<?php print _t('For public use?'); ?>
+				</th>
+				<th class="list-header-unsorted">
 					<?php print _t('Members'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEdit">&nbsp;</th>
@@ -76,6 +79,9 @@
 				</td>
 				<td>
 					<?php print $va_group['description']; ?>
+				</td>
+				<td>
+					<?php print ((bool)$va_group['for_public_use'] ? _t('Yes') : _t('No')); ?>
 				</td>
 				<td>
 					<?php print $va_group['member_list']; ?>
