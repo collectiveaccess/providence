@@ -271,7 +271,7 @@
 		public function replaceAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null) {
 			$va_attrs = $this->getAttributesByElement($pm_element_code_or_id);
 			
-			if (sizeof($va_attrs)) {
+			if (is_array($va_attrs) && sizeof($va_attrs)) {
 				return $this->editAttribute(
 					$va_attrs[0]->getAttributeID(),
 					$pm_element_code_or_id, $pa_values, $ps_error_source

@@ -281,14 +281,7 @@ class BaseModel extends BaseObject {
 	 *
 	 * @access private
 	 */
-	private $opqs_get_change_log_subjects;		#
-
-	/**
-	 * array containing parsed version string from
-	 *
-	 * @access private
-	 */
-	private $opa_php_version;				#
+	private $opqs_get_change_log_subjects;
 	
 	/**
 	 * Flag controlling whether changes are written to the change log (ca_change_log)
@@ -4239,9 +4232,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$vb_is_archive = false;
 					$vs_original_filename = $this->_SET_FILES[$ps_field]['original_filename'];
 					$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
-					$va_matches = array();
-
-					
+					$va_matches = [];
 
 					// ImageMagick partly relies on file extensions to properly identify images (RAW images in particular)
 					// therefore we rename the temporary file here (using the extension of the original filename, if any)
@@ -4303,7 +4294,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							"MD5" => md5_file($this->_SET_FILES[$ps_field]['tmp_name']),
 							"FILESIZE" => filesize($this->_SET_FILES[$ps_field]['tmp_name']),
 							"FETCHED_FROM" => $vs_url_fetched_from,
-							"FETCHED_ON" => $vn_url_fetched_on
+							"FETCHED_ON" => $vn_url_fetched_on,
+							"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$ps_field]['tmp_name'])
 						 )
 					);
 				
@@ -4344,7 +4336,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 										"FILENAME" => $vs_filename,
 										"HASH" => $dirhash,
 										"MAGIC" => $magic,
-										"MD5" => md5_file($filepath)
+										"MD5" => md5_file($filepath),
+										"FILE_LAST_MODIFIED" => filemtime($filepath)
 									);
 								}
 							}
@@ -4489,7 +4482,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									"HASH" => null,
 									"MAGIC" => null,
 									"EXTENSION" => $ext,
-									"MD5" => md5_file($filepath)
+									"MD5" => md5_file($filepath),
+									"FILE_LAST_MODIFIED" => filemtime($filepath)
 								);
 							} else {
 								$magic = rand(0,99999);
@@ -4573,7 +4567,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									"HASH" => $dirhash,
 									"MAGIC" => $magic,
 									"EXTENSION" => $ext,
-									"MD5" => md5_file($filepath)
+									"MD5" => md5_file($filepath),
+									"FILE_LAST_MODIFIED" => filemtime($filepath)
 								);
 							}
 						} else {
@@ -4725,7 +4720,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									"HASH" => $dirhash,
 									"MAGIC" => $magic,
 									"EXTENSION" => $ext,
-									"MD5" => md5_file($vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext)
+									"MD5" => md5_file($fp = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext),
+									"FILE_LAST_MODIFIED" => filemtime($fp)
 								);
 							}
 							$m->reset();
@@ -4872,14 +4868,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					// Just set field values in SQL (assume in-place update of media metadata) because no tmp_name is set
 					// [This generally should not happen]
 					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
-					$vs_sql =  "$ps_field = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
+					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 				}
 
 				$this->_SET_FILES[$ps_field] = null;
 			} elseif(is_array($this->_FIELD_VALUES[$ps_field])) {
 				// Just set field values in SQL (usually in-place update of media metadata)
 				$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
-				$vs_sql =  "$ps_field = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
+				$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 			}
 		}
 		set_time_limit($vn_max_execution_time);
@@ -5398,7 +5394,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					"PROPERTIES" => $properties,
 					"DANGEROUS" => $vn_dangerous,
 					"CONVERSIONS" => array(),
-					"MD5" => md5_file($this->_SET_FILES[$field]['tmp_name'])
+					"MD5" => md5_file($this->_SET_FILES[$field]['tmp_name']),
+					"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$field]['tmp_name'])
 				);
 
 				if (!@copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
@@ -8853,9 +8850,9 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return string
 	 */
 	public function escapeHTML($ps_text) {
-		$opa_php_version = caGetPHPVersion();
+		$php_version = caGetPHPVersion();
 
-		if ($opa_php_version['versionInt'] >= 50203) {
+		if ($php_version['versionInt'] >= 50203) {
 			$ps_text = htmlspecialchars(stripslashes($ps_text), ENT_QUOTES, $this->getCharacterSet(), false);
 		} else {
 			$ps_text = htmlspecialchars(stripslashes($ps_text), ENT_QUOTES, $this->getCharacterSet());

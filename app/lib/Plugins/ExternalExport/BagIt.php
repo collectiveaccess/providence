@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -145,6 +145,7 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                             
                             $filenames = $t->get("{$pathless_spec}.filename",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
                             $mimetypes = $t->get("{$pathless_spec}.mimetype",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+                            $file_mod_times = $t->get("{$pathless_spec}.fileModificationTime",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
                            
                             $ids = $t->get("{$pathless_spec}.id", ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
                             $files = $t->get($get_spec, ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
@@ -152,6 +153,7 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                             $seen_files = [];
                             foreach($files as $i => $f) {
                             	$m = $mimetypes[$i];
+                            	$t = $file_mod_times[$i];
                             	if(is_array($restrict_to_mimetypes) && sizeof($restrict_to_mimetypes) && !sizeof(array_filter($restrict_to_mimetypes, function($v) use ($m) { return caCompareMimetypes($m, $v); }))) { continue; }
                             
                             	$extension = pathinfo($f, PATHINFO_EXTENSION);
@@ -167,13 +169,17 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                             	$file_mimetypes[$m] = true;
                             	
                             	// Detect and rename duplicate file names
-                            	$i = 1;
+                            	$c = 1;
                             	while(isset($seen_files[$e]) && $seen_files[$e]) {
-                            		$e = pathinfo($export_filename, PATHINFO_FILENAME)."-{$i}.{$extension}";
-                            		$i++;
+                            		$e = pathinfo($export_filename, PATHINFO_FILENAME)."-{$c}.{$extension}";
+                            		$c++;
                             	}
                             	$total_filesize += ($fs = filesize($f));
                                 $bag->addFile($f, $e);
+                                
+                                if ($t > 0) {
+                                	touch("{$staging_dir}/{$name}/data/{$e}", $t);
+                                }
                                 $seen_files[$export_filename] = true;
                                 
                                 if ($file_list_template && !isset($file_list[$export_filename])) {
@@ -205,7 +211,7 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
             'now' => date('c'), 
             'creator_name' => $creator_name, 'creator_email' => $creator_email, 
             'total_filesize_in_bytes' => $total_filesize, 'total_filesize_for_display' => caHumanFilesize($total_filesize),
-            'file_count' => sizeof($seen_files), 'mimetypes' => join(", ", array_keys($file_mimetypes)),
+            'file_count' => is_array($seen_files) ? sizeof($seen_files) : 0, 'mimetypes' => join(", ", array_keys($file_mimetypes)),
             'file_list' => join($file_list_delimiter, array_values($file_list))
         ];
         

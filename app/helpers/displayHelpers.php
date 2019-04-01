@@ -1167,18 +1167,6 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 			}
 			
-			
-			// export options		
-			if ($vn_item_id && $vs_select = $po_view->getVar('available_mappings_as_html_select')) {
-				$vs_more_info .= "<div class='inspectorExportControls'>".caFormTag($po_view->request, 'exportItem', 'caExportForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-				$vs_more_info .= $vs_select;
-				$vs_more_info .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
-				$vs_more_info .= caHTMLHiddenInput('download', array('value' => 1));
-				$vs_more_info .= caFormSubmitLink($po_view->request, 'Export &rsaquo;', 'button', 'caExportForm');
-				$vs_more_info .= "</form></div>";
-			}
-			
-			
 			$va_creation = $t_item->getCreationTimestamp();
 			$va_last_change = $t_item->getLastChangeTimestamp();
 			

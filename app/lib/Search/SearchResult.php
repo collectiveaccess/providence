@@ -2219,6 +2219,7 @@ class SearchResult extends BaseObject {
                                         case 'original_filename':
                                         case 'originalfilename':
                                         case 'filename':
+                                        case 'filemodificationtime':
                                         case 'id':
                                             $vs_return_type = $vs_e;
                                             break;
@@ -2512,9 +2513,18 @@ class SearchResult extends BaseObject {
 							if(in_array(strtolower($vs_info_element), ['original_filename', 'originalfilename', 'filename'])) {
 								$media_info = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], null, null, $pa_options);
 								$va_return_values[$vn_id][$vm_locale_id] = caGetOption('ORIGINAL_FILENAME', $media_info, pathinfo($this->getMediaPath($va_path_components['table_name'].'.'.$va_path_components['field_name'], 'original', $pa_options), PATHINFO_BASENAME));
-							} elseif(in_array(strtolower($vs_info_element), ['mimetype'])) {
+							} elseif(in_array($e=strtolower($vs_info_element), ['mimetype', 'filemodificationtime'])) {
 								$media_info = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'original', null, $pa_options);
-								$va_return_values[$vn_id][$vm_locale_id] = caGetOption('MIMETYPE', $media_info, null);
+								switch($e) {
+									default:
+									case 'mimetype':
+										$k = "MIMETYPE";
+										break;
+									case 'filemodificationtime':
+										$k = "FILE_LAST_MODIFIED";
+										break;
+								}
+								$va_return_values[$vn_id][$vm_locale_id] = caGetOption($k, $media_info, null);
 							} elseif(in_array(strtolower($vs_info_element), ['id'])) {
 								$va_return_values[$vn_id][$vm_locale_id] = $vn_id;
 							} else {
