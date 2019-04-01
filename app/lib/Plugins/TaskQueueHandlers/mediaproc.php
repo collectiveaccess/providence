@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2016 Whirl-i-Gig
+ * Copyright 2006-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -311,7 +311,8 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 						"HASH" => $vs_dirhash,
 						"MAGIC" => $vs_magic,
 						"EXTENSION" => $vs_ext,
-						"MD5" => md5_file($vs_filepath)
+						"MD5" => md5_file($vs_filepath),
+						"FILE_LAST_MODIFIED" => filemtime($vs_filepath)
 					);
 				} else {
 					$o_media->set('version', $v);
@@ -429,7 +430,8 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 							"HASH" => $vs_dirhash,
 							"MAGIC" => $vs_magic,
 							"EXTENSION" => $vs_ext,
-							"MD5" => md5_file($vs_filepath.".".$vs_ext)
+							"MD5" => md5_file($vs_filepath.".".$vs_ext),
+							"FILE_LAST_MODIFIED" => filemtime($vs_filepath.".".$vs_ext)
 						);
 					}
 				}
