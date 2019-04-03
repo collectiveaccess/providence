@@ -35,7 +35,7 @@ ALTER TABLE ca_places ADD COLUMN submission_group_id int unsigned null reference
 ALTER TABLE ca_places ADD COLUMN submission_status_id int unsigned null references ca_list_items(item_id);
 ALTER TABLE ca_places ADD COLUMN submission_via_form varchar(100) null;
 
-create index i_submission_user_id on ca_objects(submission_user_id);
+create index i_submission_user_id on ca_places(submission_user_id);
 create index i_submission_group_id on ca_places(submission_group_id);
 create index i_submission_status_id on ca_places(submission_status_id);
 create index i_submission_via_form on ca_places(submission_via_form);
