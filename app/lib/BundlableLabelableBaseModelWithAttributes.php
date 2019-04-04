@@ -573,6 +573,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		if ($vb_duplicate_children && $this->isHierarchical() && ($child_ids = $this->getHierarchyChildren(null, ['idsOnly' => true]))) {
+		    $dupe_id = $t_dupe->getPrimaryKey();
 			foreach($child_ids as $child_id) {
 				if ($t_child = $table::find([$vs_pk => $child_id], ['returnAs' => 'firstModelInstance'])) {
 					$t_child_dupe = $t_child->duplicate($pa_options);
@@ -581,7 +582,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($vb_we_set_transaction) { $o_t->rollback();}
 						return false;
 					}
-					$t_child_dupe->set($vs_parent_id_fld, $t_dupe->getPrimaryKey());
+					$t_child_dupe->set($vs_parent_id_fld, $dupe_id);
 					$t_child_dupe->update();
 					if ($t_child_dupe->numErrors()) {
 						$this->errors = $t_child_dupe->errors;
