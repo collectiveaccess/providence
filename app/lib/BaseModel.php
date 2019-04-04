@@ -2092,12 +2092,18 @@ class BaseModel extends BaseObject {
 	 		$pa_ids[$vn_i] = (int)$vn_v;
 	 	}
 	 	
+	 	$deleted_sql = '';
+	 	if ($this->hasField('deleted')) {
+	 	    $deleted_sql = " AND (deleted = 0)";
+	 	}
+	 	
 	 	$o_db = $this->getDb();
 	 	$qr_get_children = $o_db->query("
 			SELECT ".$this->primaryKey()."
 			FROM ".$this->tableName()."
 			WHERE 
 				{$vs_parent_id_fld} IN (?)
+				{$deleted_sql}
 		", array($pa_ids));
 		
 		$va_child_ids = $qr_get_children->getAllFieldValues($this->primaryKey());
@@ -4497,6 +4503,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 									return false;
 								}
+								@touch($filepath, filemtime($this->_SET_FILES[$ps_field]['tmp_name']));
 							
 							
 								if ($v === $va_default_queue_settings['QUEUE_USING_VERSION']) {
@@ -5402,6 +5409,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
+				@touch($filepath, filemtime($this->_SET_FILES[$field]['tmp_name']));
 
 
 				# -- delete old file if its name is different from the one we just wrote (otherwise, we overwrote it)
@@ -9530,6 +9538,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
+				    if (($t_item_rel->numErrors() == 1) && ($t_item_rel->errors()[0]->getErrorNumber() == 251)) { continue; }  // don't worry about failed duplicates
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
@@ -9569,6 +9578,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
+				    if (($t_item_rel->numErrors() == 1) && ($t_item_rel->errors()[0]->getErrorNumber() == 251)) { continue; }   // don't worry about failed duplicates
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
