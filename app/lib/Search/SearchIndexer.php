@@ -375,7 +375,7 @@ class SearchIndexer extends SearchBase {
 		}
 
 		/* cache outdated? (i.e. changes to search_indexing.conf) */
-		$va_configfile_stat = stat($this->opo_search_config->get('search_indexing_config'));
+		$va_configfile_stat = stat(__CA_CONF_DIR__.'/search_indexing.conf');
 		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime')) {
 			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime']);
 			$va_cache_data = array();
@@ -2806,7 +2806,7 @@ if (!$for_current_value_reindex) {
 	}
 	# ------------------------------------------------
 	/**
-	 * Generate count indexing Ð the number of relationships on the subject, broken out by type
+	 * Generate count indexing ï¿½ the number of relationships on the subject, broken out by type
 	 *
 	 * @param BaseModel $pt_subject
 	 * @param int $pn_subject_row_id
