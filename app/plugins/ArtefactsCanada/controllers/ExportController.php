@@ -158,17 +158,18 @@ class ExportController extends ActionController {
 
 		// add headers
 		$headers = array_merge(array_values(array_map(function($v) { 
+			if(isset($v['display'])) { return $v['display']; }
 			if (is_array($v['settings']) && is_array($v['settings']['label']) && sizeof($v['settings']['label'])) {
 				if(isset($v['settings']['label'][__CA_DEFAULT_LOCALE__])) { return $v['settings']['label'][__CA_DEFAULT_LOCALE__]; }
 				return array_shift($v['settings']['label']);
 			}
-			return $v['display']; 
+			return "???"; 
 		}, $placements)), [_t('Media')]);
 		$headers = array_map(function($v) {
 		    $v = preg_replace("![\r\n\t]+!u", " ", html_entity_decode($v, ENT_QUOTES));
 		    $v = preg_replace("![“”]+!u", '"', $v);
 		    $v = preg_replace("![‘’]+!u", "'", $v);
-			$v = mb_convert_encoding($v, 'ISO-8859-1', 'UTF-8'); //iconv('UTF-8', 'ISO-8859-1', $v);
+			$v = iconv('UTF-8', 'ISO-8859-1//IGNORE', $v);
 			if (preg_match("![^A-Za-z0-9 .;\p{L}]+!u", $v)) {
 				$v = ('"'.str_replace('"', '""', $v).'"');
 			}
