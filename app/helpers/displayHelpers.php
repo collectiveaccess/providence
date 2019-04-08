@@ -1760,7 +1760,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			}
 			
 			require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
-			if (ExternalExportManager::getTargets($t_item->tableNum(), ['countOnly' => true]) > 0) {
+			if (ExternalExportManager::getTargets(['countOnly' => true, 'table' => $t_item->tableNum(), 'restrictToTypes' => [$t_item->getTypeCode()]]) > 0) {
 				$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExternalExportItemButton">';
 				$vs_buf .= _t('Export to external repository')." ";
 				$vs_buf .= "<a class='button' onclick='jQuery(\"#externalExporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
