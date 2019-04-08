@@ -145,7 +145,7 @@ class ExternalExportManager {
 			return true;
 		});
 		
-		if (isset($pa_options['countOnly']) && $pa_options['countOnly']) {
+		if (isset($options['countOnly']) && $options['countOnly']) {
 			return sizeof($targets);
 		}
 
