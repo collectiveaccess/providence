@@ -7484,6 +7484,11 @@ div.changeLogSearchResultsPagination {
 	padding: 5px;
 }
 
+div.checklist {
+    font-weight: normal;
+    line-height: 2em;
+}
+
 /* Statistics dashboard */
 div.statisticsDashboardPanel {
     width: 268px;

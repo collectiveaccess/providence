@@ -1646,7 +1646,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			case 'radio_buttons':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				$vn_i = 0;
-				$vs_buf = "<div style=\"column-count: {$max_columns};\">\n";
+				$vs_buf = "<div class=\"checklist\" style=\"column-count: {$max_columns};\">\n";
 				foreach($va_options as $vm_value => $vs_label) {
 					
 					$va_attributes = array('value' => $vm_value);
@@ -1704,7 +1704,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				break;
 			case 'checklist':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
-				$vs_buf = "<div style=\"column-count: {$max_columns};\">\n";
+				$vs_buf = "<div class=\"checklist\" style=\"column-count: {$max_columns};\">\n";
 				foreach($va_options as $vm_value => $vs_label) {
 					$va_attributes = array('value' => $vm_value);
 					if (isset($va_disabled_options[$vm_value]) && $va_disabled_options[$vm_value]) {
