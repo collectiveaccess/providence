@@ -1641,13 +1641,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['disabledOptions'] = $va_disabled_options;
 		
+		if (($max_columns = caGetOption('maxColumns', $pa_options, 1, ['castTo' => 'integer'])) < 1) { $max_columns = 1; }
 		switch($vs_render_as) {
 			case 'radio_buttons':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
-				$vn_c = 0; $vn_i = 0;
-				$vs_buf = "<table>\n";
+				$vn_i = 0;
+				$vs_buf = "<div style=\"column-count: {$max_columns};\">\n";
 				foreach($va_options as $vm_value => $vs_label) {
-					if ($vn_c == 0) { $vs_buf .= "<tr>"; }
 					
 					$va_attributes = array('value' => $vm_value);
 					if (isset($va_disabled_options[$vm_value]) && $va_disabled_options[$vm_value]) {
@@ -1662,19 +1662,11 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($pa_options['readonly']) && ($pa_options['readonly'])) {
 						$va_attributes['disabled'] = 1;
 					}
-					$vs_buf .= "<td>".caHTMLRadioButtonInput($ps_name, $va_attributes, $pa_options)." {$vs_label}</td>";
-					$vn_c++;
+					$vs_buf .= caHTMLRadioButtonInput($ps_name, $va_attributes, $pa_options)." {$vs_label}<br/>\n";
 					
-					if ($vn_c >= $pa_options['maxColumns']) {
-						$vn_c = 0;
-						$vs_buf .= "</tr>\n";
-					}
 					$vn_i++;
 				}
-				if ($vn_c != 0) {
-					$vs_buf .= "</tr>\n";
-				}
-				$vs_buf .= "</table>";
+				$vs_buf .= "</div>";
 				return $vs_buf;
 				break;
 			case 'yes_no_checkboxes':
@@ -1712,11 +1704,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				break;
 			case 'checklist':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
-				$vn_c = 0;
-				$vs_buf = "<table>\n";
+				$vs_buf = "<div style=\"column-count: {$max_columns};\">\n";
 				foreach($va_options as $vm_value => $vs_label) {
-					if ($vn_c == 0) { $vs_buf .= "<tr valign='top'>"; }
-					
 					$va_attributes = array('value' => $vm_value);
 					if (isset($va_disabled_options[$vm_value]) && $va_disabled_options[$vm_value]) {
 						$va_attributes['disabled'] = 1;
@@ -1728,19 +1717,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						$va_attributes['checked'] = '1';
 					}
 					
-					$vs_buf .= "<td>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." {$vs_label}</td><td> </td>";
+					$vs_buf .= caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." {$vs_label}<br/>\n";
 					
-					$vn_c++;
-					
-					if ($vn_c >= $pa_options['maxColumns']) {
-						$vn_c = 0;
-						$vs_buf .= "</tr>\n";
-					}
 				}
-				if ($vn_c != 0) {
-					$vs_buf .= "</tr>\n";
-				}
-				$vs_buf .= "</table>";
+				$vs_buf .= "</div>";
 				return $vs_buf;
 				break;
 			case 'lookup':

@@ -545,8 +545,24 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'allowNull' => true,
 							'allowAll' => true,
 							'multiple' => true,
-							'label' => _t('Look up values using list'),
+							'label' => _t('Use list to suggest values'),
 							'description' => _t('Suggest values using a specific list. Select <em>All lists</em> to suggest any configured list value.')
+						);
+						$va_additional_settings['use_list_format'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "275px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => null,
+							'options' => array(
+								_t('Lookup') => 'lookup',
+								_t('Drop-down') => 'select'
+							),
+							'allowNull' => false,
+							'allowAll' => false,
+							'multiple' => false,
+							'label' => _t('Suggest value via'),
+							'description' => _t('Suggest values with the selected list as either a type-ahead lookup or a drop-down menu.')
 						);
 					}
 					break;
