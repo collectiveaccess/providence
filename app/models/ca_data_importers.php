@@ -2001,7 +2001,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							if (isset($va_item['settings']['skipGroupIfExpression']) && strlen(trim($va_item['settings']['skipGroupIfExpression']))) {
 								try {
-									if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipGroupIfExpression'], $va_row_with_replacements)) {
+								   if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipGroupIfExpression'], $va_row_with_replacements)) {
 										$o_log->logInfo(_t('[%1] Skipped group %2 because skipRowIfExpression %3 is true', $vs_idno, $vn_group_id, $va_item['settings']['skipGroupIfExpression']));
 										continue(3);
 									}
@@ -2277,7 +2277,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				// Process data in subject record
 				//
 				// print_r($va_content_tree);
-// 				die("END\n\n");
+				// die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
@@ -2507,7 +2507,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													&&
 													(sizeof(array_filter($t_subject->getSecondaryLabelDisplayFields(), function($v) use ($va_element_content) { return isset($va_element_content[$v]) && strlen($va_element_content[$v]); })) == 0)
 												) { 
-													$va_element_content[$vs_disp_field] = '['._t('BLANK').']'; 
+													$va_element_content[$vs_disp_field] = '['.caGetBlankLabelText().']'; 
 												}
 												
 												if ($vb_skip_if_data_present && ($t_subject->getLabelCount(true, $vn_locale_id) > 0)) { continue(2); }
@@ -2678,6 +2678,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$o_log->logDebug(_t('Started insert of %1.%2 for idno %3 at %4 seconds [id=%3]', $vs_table_name, $vs_element, $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				
 						foreach($va_content as $vn_i => $va_element_data) {
+						        // Importing tags?
+						        if ($vs_table_name === 'ca_item_tags') {
+						            if(isset($va_element_data['ca_item_tags']['tag'])) {
+						                $t_subject->addTag($va_element_data['ca_item_tags']['tag'], null, null, $va_element_data['ca_item_tags']['access'], null, ['forceModerated' => true]);
+						            } elseif(isset($va_element_data['ca_item_tags']) && is_string($va_element_data['ca_item_tags'])) {
+						                $t_subject->addTag($va_element_data['ca_item_tags'], null, null, 1, null, ['forceModerated' => true]);
+						            }
+						            continue;
+						        }
+						
+						
 								$va_match_on = caGetOption('_matchOn', $va_element_data, null);
 								$vb_dont_create = caGetOption('_dontCreate', $va_element_data, false);
 								$vb_ignore_parent = caGetOption('_ignoreParent', $va_element_data, false);
@@ -2702,7 +2713,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						            $vs_rel_label_display_fld = $t_rel->getLabelDisplayField();
 						        }
 						
-						        $vs_name = '['._t('BLANK').']';
+						        $vs_name = '['.caGetBlankLabelText().']';
 						        if(isset($va_element_data['preferred_labels'][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data['preferred_labels'][$vs_rel_label_display_fld]; }
 						        elseif(isset($va_element_data['preferred_labels']) ) { $vs_name = $va_element_data['preferred_labels']; }
 						        elseif(isset($va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]; }
@@ -2912,6 +2923,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								 }
 							} catch (Exception $e) {
 								// noop
+								$o_log->logError(_t('Error while processing related content: %1', $e->getMessage()));
 							}
 							try {
 								 if(is_array($va_element_data['_related_related']) && sizeof($va_element_data['_related_related'])) {
@@ -2936,12 +2948,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								 }
 							} catch (Exception $e) {
 								// noop
+								$o_log->logError(_t('Error while processing related-to-related content: %1', $e->getMessage()));
 							}
 							 
 						}
 					}
 				}
-			
 			
 				// $t_subject->update(['queueIndexing' => true]);
 	// 

@@ -253,7 +253,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		}
 		
 		$vs_remapping_controls = caDeleteRemapper($po_request, $t_instance);
-		$vs_output = caFormTag($po_request, 'Delete', 'caDeleteForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true,'disableUnsavedChangesWarning' => true));
+		$vs_output = caFormTag($po_request, 'Delete', 'caDeleteForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false,'disableUnsavedChangesWarning' => true));
 		$vs_output .= "<div class='delete-control-box'>".caFormControlBox(
 			"<div class='delete_warning_box'>"._t('Really delete "%1"?', $ps_item_name)."</div>".
 			($vs_remapping_controls ? "<div class='delete_remapping_controls'>{$vs_remapping_controls}</div>" : ''),
@@ -947,7 +947,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								$vs_label = $vs_idno;
 								$vb_show_idno = false;
 							} else {
-								$vs_label =  '['._t('BLANK').']'; 
+								$vs_label =  '['.caGetBlankLabelText().']'; 
 							}
 							break;
 					}
@@ -1885,7 +1885,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		
 		if (!($vs_label = $t_set->getLabelForDisplay())) {
 			if (!($vs_label = $t_set->get('set_code'))) {
-				$vs_label = '['._t('BLANK').']'; 
+				$vs_label = '['.caGetBlankLabelText().']'; 
 			}
 		}
 		
@@ -4522,4 +4522,26 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
  		}
  		return $va_bundle_settings;
  	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return currently set blank preferred label placeholder text. This text
+	 * is used to set labels that are saved with no value set.
+	 *
+	 * The returned value will be the placeholder as configured via the app.conf
+	 * "blank_label_text" option. If the option is not set the default value of 
+	 * "[BLANK]" will be returned.
+	 *
+	 * @return string
+	 */
+	$g_blank_label_text = null;
+	function caGetBlankLabelText() {
+		global $g_blank_label_text;
+		if ($g_blank_label_text) { return $g_blank_label_text; }
+		$config = Configuration::load();
+		if ($label_text = $config->get('blank_label_text')) {
+		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
+			return $g_blank_label_text = _t($label_text);
+		}
+		return $g_blank_label_text = _t('BLANK');
+	}
 	# ------------------------------------------------------------------

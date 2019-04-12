@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -252,7 +252,7 @@ class ItemService extends BaseJSONService {
 		if($t_instance instanceof RepresentableBaseModel) {
 			$va_reps = $t_instance->getRepresentations($va_versions);
 			if(is_array($va_reps) && (sizeof($va_reps)>0)) {
-				$va_return['representations'] = $va_reps;
+				$va_return['representations'] = caSanitizeArray($va_reps, ['removeNonCharacterData' => true]);
 			}
 		}
 
@@ -322,7 +322,7 @@ class ItemService extends BaseJSONService {
 				if($t_rel_instance instanceof RepresentableBaseModel) {
 					foreach($va_related_items as &$va_rel_item) {
 						if($t_rel_instance->load($va_rel_item[$t_rel_instance->primaryKey()])) {
-							$va_rel_item['representations'] = $t_rel_instance->getRepresentations($va_versions);
+							$va_rel_item['representations'] = caSanitizeArray($t_rel_instance->getRepresentations($va_versions), ['removeNonCharacterData' => true]);
 						}
 					}
 				}
@@ -406,7 +406,7 @@ class ItemService extends BaseJSONService {
 		if($t_instance instanceof RepresentableBaseModel) {
 			$va_reps = $t_instance->getRepresentations();
 			if(is_array($va_reps) && (sizeof($va_reps)>0)) {
-				$va_return['representations'] = $va_reps;
+				$va_return['representations'] = caSanitizeArray($va_reps, ['removeNonCharacterData' => true]);
 			}
 		}
 
@@ -497,8 +497,7 @@ class ItemService extends BaseJSONService {
 		//
 		if (!($vs_delimiter = $this->opo_request->getParameter('delimiter', pString))) { $vs_delimiter = "; "; }
 		if (!($vs_flatten = $this->opo_request->getParameter('flatten', pString))) { $vs_flatten = null; }
-		$va_flatten = preg_split("![ ]*[;]+[ ]*!", $vs_flatten);
-		$va_flatten = array_flip($va_flatten);
+		$va_flatten = array_flip(preg_split("![ ]*[;]+[ ]*!", $vs_flatten));
 
 		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 
@@ -511,6 +510,8 @@ class ItemService extends BaseJSONService {
 		}
 
 		// "intrinsic" fields
+		
+		$type_id_fld_name = $t_instance->getTypeFieldName();
 		foreach($t_instance->getFieldsArray() as $vs_field_name => $va_field_info) {
 			$vs_list = null;
 			if(!is_null($vs_val = $t_instance->get($vs_field_name))) {
@@ -523,6 +524,8 @@ class ItemService extends BaseJSONService {
 					if ($t_item = new ca_list_items($va_item["item_id"])) {
 						$vs_val = $t_item->get('idno');
 					}
+				} elseif($vs_field_name == $type_id_fld_name) {
+				    $vs_val = $t_instance->getTypeCodeForID($va_item["item_id"]);
 				}
 				switch($vs_field_name) {
 					case 'parent_id':
@@ -536,7 +539,14 @@ class ItemService extends BaseJSONService {
 				}
 			}
 		}
-
+		
+		// tags
+		if(is_array($tags = $t_instance->getTags(null, true)) && sizeof($tags)) {
+		    $va_return['tags'] = $tags;
+        } else {
+            $va_return['tags'] = [];
+        }
+        
 		// preferred labels
 		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnWithStructure" => true, "returnAllLocales" => true));
 		$va_labels = end($va_labels);
@@ -571,15 +581,14 @@ class ItemService extends BaseJSONService {
 		if(is_array($va_labels)) {
 			foreach($va_labels as $vn_locale_id => $va_labels_by_locale) {
 				foreach($va_labels_by_locale as $va_tmp) {
-					$va_label = array();
-					$va_label['locale'] = $va_locales[$vn_locale_id]["code"];
+					$va_label = array('locale' => $va_locales[$vn_locale_id]["code"]);
 
 					// add only UI fields to return
 					foreach(array_merge($t_instance->getLabelUIFields(), array('type_id')) as $vs_label_fld) {
 						$va_label[$vs_label_fld] = $va_tmp[$vs_label_fld];
 					}
 
-					$va_return["nonpreferred_labels"][$va_label['locale']] = $va_label;
+					$va_return["nonpreferred_labels"][] = $va_label;
 				}
 			}
 
@@ -630,6 +639,8 @@ class ItemService extends BaseJSONService {
 		// yes, not all combinations between these tables have
 		// relationships but it also doesn't hurt to query
 		foreach($this->opa_valid_tables as $vs_rel_table) {
+		    if (!$t_rel = Datamodel::getInstance($vs_rel_table, true)) { continue; }
+		    $type_id_fld_name = $t_instance->getTypeFieldName();
 			$vs_get_spec = $vs_rel_table;
 			if($vs_rel_table == $this->ops_table) {
 				$vs_get_spec = $vs_rel_table . '.related';
@@ -642,7 +653,7 @@ class ItemService extends BaseJSONService {
 			}
 
 			$va_related_items = $t_instance->getRelatedItems($vs_rel_table,array('returnWithStructure' => true, 'returnAsArray' => true, 'useLocaleCodes' => true, 'groupFields' => true));
-
+           
 			if(($this->ops_table == "ca_objects") && ($vs_rel_table=="ca_object_representations")) {
 				$va_versions = $t_instance->getMediaVersions('media');
 
@@ -654,7 +665,7 @@ class ItemService extends BaseJSONService {
 					}
 					$va_return['representations'] = join($vs_delimiter, $va_urls);
 				} else {
-					$va_return['representations'] = $t_instance->getRepresentations(['original']);
+					$va_return['representations'] = caSanitizeArray($t_instance->getRepresentations(['original'], ['removeNonCharacterData' => true]));
 				}
 
 				if(is_array($va_return['representations'])) {
@@ -675,6 +686,7 @@ class ItemService extends BaseJSONService {
 								case 'item_type_id':
 									$va_item_add[$vs_fld] = $vs_val;
 									$va_item_add['type_id'] = $vs_val;
+									$va_item_add['type_id_code'] = $t_rel->getTypeCodeForID($vs_val);
 									break;
 								case 'item_source_id':
 									$va_item_add[$vs_fld] = $vs_val;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,8 +42,7 @@
 	print caFormTag($this->request, 'Save', 'GroupsForm');
 
 		foreach($t_group->getFormFields() as $vs_f => $va_group_info) {
-			if ($vs_f == 'code') { continue; }
-			print $t_group->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
+			print $t_group->htmlFormElement($vs_f, null, array('readonly' => ($vs_f == 'code'), 'field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
 		}
 		
 		// users
