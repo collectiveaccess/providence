@@ -126,6 +126,7 @@
 <?php		
 				}
 			}
+			
 			if(!$read_only && !caGetOption('hide_add_to_object_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_objects'))) {
 			    $show_object_controls = true;
 ?>

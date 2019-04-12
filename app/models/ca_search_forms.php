@@ -1150,7 +1150,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int Number of placements.
 	 */
 	public function getPlacementCount($pa_options=null) {
-		return sizeof($this->getPlacementsInForm($pa_options));
+	    $placements = $this->getPlacementsInForm($pa_options);
+		return is_array($placements) ? sizeof($placements) : 0;
 	}
 	# ------------------------------------------------------
 	#
