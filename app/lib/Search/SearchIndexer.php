@@ -2937,6 +2937,7 @@ if (!$for_current_value_reindex) {
 	                    }
 	                }
 	            }
+	            if (sizeof($field_nums) === 0) { continue; }
 	            $this->opo_engine->removeRowIndexing($subject_table_num, $subject_row_id, Datamodel::getTableNum($rel_table), $field_nums);
 	        }
 	    }
