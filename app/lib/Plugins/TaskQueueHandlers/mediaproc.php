@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2016 Whirl-i-Gig
+ * Copyright 2006-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -218,14 +218,15 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
                 $o_media->cleanup();
                 return false;
             }
-            if (!$o_media->read($vs_input_file)) {
-                $this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
-                $o_media->cleanup();
-                return false;
-            }
             
 			foreach($va_versions as $v => $va_version_settings) {
 				$vs_use_icon = null;
+								
+                if (!$o_media->read($vs_input_file)) {
+                    $this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
+                    $o_media->cleanup();
+                    return false;
+                }
 				
 				$vs_rule 			= isset($va_version_info[$v]['RULE']) ? $va_version_info[$v]['RULE'] : '';
 				$va_rules 			= $o_media_proc_settings->getMediaTransformationRule($vs_rule);
