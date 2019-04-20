@@ -7193,7 +7193,7 @@ create table ca_history_tracking_current_values (
    index i_row_id				(row_id),
    
    /* Only one current value per subject per policy */
-   unique index u_all           (row_id, table_num, policy, type_id), 
+   unique index u_all           (row_id, table_num, policy, type_id, is_future), 
    
    index i_current              (current_row_id, current_table_num, current_type_id), 
    index i_tracked              (tracked_row_id, tracked_table_num, tracked_type_id),
@@ -7225,4 +7225,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (159, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (160, unix_timestamp());
