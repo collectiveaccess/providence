@@ -363,7 +363,7 @@ create index i_submission_group_id on ca_entities(submission_group_id);
 create index i_submission_status_id on ca_entities(submission_status_id);
 create index i_submission_via_form on ca_entities(submission_via_form);
 
-alter table ca_entities add constraint fk_ca_entities_entity_id foreign key (entity_id) references ca_entities (entity_id) on delete restrict on update restrict;
+alter table ca_users add constraint fk_ca_users_entity_id foreign key (entity_id) references ca_entities (entity_id) on delete restrict on update restrict;
 
 
 /*==========================================================================*/
