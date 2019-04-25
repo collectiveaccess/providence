@@ -5412,7 +5412,7 @@ if (!$vb_batch) {
 				$t_item_rel = $this->isRelationship() ? $this : null;
 				$vs_item_rel_table_name = $t_item_rel ? $t_item_rel->tableName() : null;
 				
-				$t_rel_item = Datamodel::getInstance($va_path[1]);
+				if (!($t_rel_item = Datamodel::getInstance($va_path[1]))) { return null; }
 				$vs_rel_item_table_name = $t_rel_item->tableName();
 				
 				$vs_key = $t_rel_item->primaryKey();
