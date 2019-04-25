@@ -416,7 +416,7 @@
 			
 			$is_future = caGetOption('isFuture', $options, null);
 			if (is_null($values) && !$is_future) {			
-				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance'])) {
+				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()])) {
 					$l->setDb($this->getDb());	
 					self::$s_history_tracking_deleted_current_values[$l->get('tracked_table_num')][$l->get('tracked_row_id')][$policy] = 
 					    self::$s_history_tracking_deleted_current_values[$l->get('current_table_num')][$l->get('current_row_id')][$policy] = 
@@ -444,18 +444,18 @@
 				foreach([$values['current_table_num'] => $values['current_row_id'], $values['tracked_table_num'] => $values['tracked_row_id']] as $t => $id) {
 					if (!($table = Datamodel::getTableName($t))) { continue; } 
 					Datamodel::getInstance($table, true);
-					if ($table::find($id, ['returnAs' => 'count']) == 0) {
+					if ($table::find($id, ['returnAs' => 'count', 'transaction' => $this->getTransaction()]) == 0) {
 						throw new ApplicationException(_t('Invalid row id'));
 					}
 				}
 			}
 			
-			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance']))) {
+			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]))) {
 				throw new ApplicationException(_t('Invalid subject row id'));
 			}
 			$t->setDb($this->getDb());
 			
-			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays'])) {
+			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()])) {
 				foreach($ls as $l) {
 				    if((bool)$l['is_future']) { continue; }
 				    if (
@@ -1781,7 +1781,7 @@
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 			if (!$policy) { if (!($policy = $this->getDefaultHistoryTrackingCurrentValuePolicy())) { return null; } }
 		
-			$values = ca_history_tracking_current_values::find(['policy' => $policy, 'current_table_num' => $this->tableNum(), 'current_row_id' => $row_id], ['returnAs' => 'arrays']);
+			$values = ca_history_tracking_current_values::find(['policy' => $policy, 'current_table_num' => $this->tableNum(), 'current_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()]);
 		
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
 			$row = array_shift($values);
@@ -2058,7 +2058,7 @@
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
 				
 				Datamodel::getInstance('ca_editor_uis', true);
-				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance']);
+				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]);
 				foreach($interstitial_elements as $element_code) {
 					$buf .= "<tr>";
 					
@@ -2875,8 +2875,8 @@
 		 * @return array
 		 */
 		static public function getDependentCurrentValues($table_num, $row_id) {
-		    $current = ca_history_tracking_current_values::find(['current_table_num' => $table_num, 'current_row_id' => $row_id], ['returnAs' => 'arrays']);
-		    $tracked = ca_history_tracking_current_values::find(['tracked_table_num' => $table_num, 'tracked_row_id' => $row_id], ['returnAs' => 'arrays']);
+		    $current = ca_history_tracking_current_values::find(['current_table_num' => $table_num, 'current_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()]);
+		    $tracked = ca_history_tracking_current_values::find(['tracked_table_num' => $table_num, 'tracked_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()]);
 		    
 		    $rows = array_reduce(array_merge($current, $tracked), function($c, $i) { if (!$i['is_future']) { $c[$i['policy']][$i['table_num']][$i['row_id']] = true; } return $c; }, []);
 		    
