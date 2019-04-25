@@ -2058,7 +2058,7 @@
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
 				
 				Datamodel::getInstance('ca_editor_uis', true);
-				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]);
+				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance', 'transaction' => caGetOption('transaction', $options, null)]);
 				foreach($interstitial_elements as $element_code) {
 					$buf .= "<tr>";
 					
