@@ -2874,9 +2874,9 @@
 		 *
 		 * @return array
 		 */
-		static public function getDependentCurrentValues($table_num, $row_id) {
-		    $current = ca_history_tracking_current_values::find(['current_table_num' => $table_num, 'current_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()]);
-		    $tracked = ca_history_tracking_current_values::find(['tracked_table_num' => $table_num, 'tracked_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()]);
+		static public function getDependentCurrentValues($table_num, $row_id, $options=null) {
+		    $current = ca_history_tracking_current_values::find(['current_table_num' => $table_num, 'current_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => caGetOption('transaction', $options, null)]);
+		    $tracked = ca_history_tracking_current_values::find(['tracked_table_num' => $table_num, 'tracked_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => caGetOption('transaction', $options, null)]);
 		    
 		    $rows = array_reduce(array_merge($current, $tracked), function($c, $i) { if (!$i['is_future']) { $c[$i['policy']][$i['table_num']][$i['row_id']] = true; } return $c; }, []);
 		    
