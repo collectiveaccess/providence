@@ -918,12 +918,12 @@ final class ConfigurationExporter {
 
 				//$vo_type_restrictions = null;
 				if(is_array($t_screen->getTypeRestrictions()) && sizeof($t_screen->getTypeRestrictions())>0) {
-					//$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
+					$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
 
 					$va_types = [];
 					$vb_include_subtypes = false;
 					foreach($t_screen->getTypeRestrictions() as $va_restriction) {
-						//$vo_type_restriction = $this->opo_dom->createElement("restriction");
+						$vo_type_restriction = $this->opo_dom->createElement("restriction");
 
 						$t_instance = Datamodel::getInstanceByTableNum($va_restriction["table_num"]);
 						if($t_instance instanceof BaseRelationshipModel) {
@@ -938,7 +938,7 @@ final class ConfigurationExporter {
 						}
 
 						if ($va_restriction['include_subtypes'] && !$vb_include_subtypes)  { $vb_include_subtypes = true; }
-						//$vo_type_restrictions->appendChild($vo_type_restriction);
+						$vo_type_restrictions->appendChild($vo_type_restriction);
 					}
 
 					if (is_array($va_types) && (sizeof($va_types) > 0)) {
