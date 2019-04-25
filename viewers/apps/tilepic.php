@@ -33,7 +33,7 @@
 $ps_filepath = 	$_REQUEST["p"];
 $pn_tile = $_REQUEST["t"];
 
-$media_root = $_SERVER['CONTEXT_DOCUMENT_ROOT'] ? $_SERVER['CONTEXT_DOCUMENT_ROOT'] : $_SERVER['DOCUMENT_ROOT'];
+$media_root = join("/", array_slice($pieces = explode("/", __FILE__), 0, sizeof($pieces) - 3));	// remove app/viewers/tilepic.php
 $script_path = join("/", array_slice(explode("/", __FILE__), 0, -3));
 
 $ps_filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", $ps_filepath);
