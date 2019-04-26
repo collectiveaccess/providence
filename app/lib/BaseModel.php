@@ -5723,6 +5723,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$va_list = isset($va_attr["BOUNDS_CHOICE_LIST"]) ? $va_attr["BOUNDS_CHOICE_LIST"] : null;
 			if (isset($va_attr['LIST']) && $va_attr['LIST']) {
 				$t_list = new ca_lists();
+				$t_list->setTransaction($this->getTransaction());
 				if ($t_list->load(array('list_code' => $va_attr['LIST']))) {
 					$va_items = caExtractValuesByUserLocale($t_list->getItemsForList($va_attr['LIST']));
 					$va_list = array();
