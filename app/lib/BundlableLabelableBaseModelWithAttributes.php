@@ -7383,11 +7383,19 @@ side. For many self-relations the direction determines the nature and display te
 			$qr_res = $o_db->query("
 				SELECT o.{$vs_pk}, count(*) c
 				FROM {$vs_table} o
-				INNER JOIN {$vs_table} AS p ON p.{$vs_parent_fld} = o.{$vs_pk}
+				LEFT JOIN {$vs_table} AS p ON o.{$vs_pk} = p.{$vs_parent_fld} 
 				WHERE ".(join(" AND ", $va_wheres))."
 				GROUP BY o.{$vs_pk}
 			", $va_params);
 			
+			$qr_childless = $o_db->query("
+				SELECT o.{$vs_pk}
+				FROM {$vs_table} o
+				LEFT JOIN {$vs_table} AS p ON o.{$vs_pk} = p.{$vs_parent_fld} 
+				WHERE ".(join(" AND ", $va_wheres))." AND p.{$vs_pk} is NULL
+				GROUP BY o.{$vs_pk}
+			", $va_params);
+			$childless_ids = $qr_childless->getAllFieldValues($vs_pk);
 	 		$va_hiers = array();
 	 		
 	 		$va_ids = $qr_res->getAllFieldValues($vs_pk);
@@ -7399,9 +7407,10 @@ side. For many self-relations the direction determines the nature and display te
 	 				$vs_pk => $vn_id,
 	 				'name' => caProcessTemplateForIDs($vs_template, $vs_table, array($vn_id)),
 	 				'hierarchy_id' => $vn_id,
-	 				'children' => (int)$qr_res->get('c')
+	 				'children' => in_array($vn_id, $childless_ids) ? 0 : (int)$qr_res->get('c')
 	 			);
 	 		}
+	 		
 	 		return $va_hiers;
 	 	} else {
 	 		// return specific collection as root of hierarchy
