@@ -2177,6 +2177,21 @@
 					}
 					return null;
 				    break;
+		    case 'submitted_by_user':
+		        $vals = array_shift(array_shift($pa_values));
+		        if($user_id = $vals['submission_user_id']) {
+                    $template = caGetOption('display_template', $pa_options, "^ca_users.fname ^ca_users.lname (^ca_users.email)");
+                    return caProcessTemplateForIDs($template, 'ca_users', array($user_id));
+                }
+                return null;
+                break;
+            case 'submission_group':
+                $vals = array_shift(array_shift($pa_values));
+		        if($group_id = $vals['submission_group_id']) {
+                    $template = caGetOption('display_template', $pa_options, "^ca_user_groups.name (^ca_user_groups.code)");
+                    return caProcessTemplateForIDs($template, 'ca_user_groups', array($group_id));
+                }
+                break;
 			}
 		
 			return null;
