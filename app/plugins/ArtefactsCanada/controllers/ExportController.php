@@ -153,18 +153,20 @@ class ExportController extends ActionController {
 			throw new ApplicationException(_t("Configured display '%1' is not available", $display_code));
 		}
 		$qr = caMakeSearchResult('ca_objects', $items);
+		$qr->filterNonPrimaryRepresentations(false);
 		
 		$placements = $t_display->getPlacements(['format' => 'simple']);
 
 		// add headers
 		$headers = array_merge(array_values(array_map(function($v) { 
-			if(isset($v['display'])) { return $v['display']; }
 			if (is_array($v['settings']) && is_array($v['settings']['label']) && sizeof($v['settings']['label'])) {
 				if(isset($v['settings']['label'][__CA_DEFAULT_LOCALE__])) { return $v['settings']['label'][__CA_DEFAULT_LOCALE__]; }
 				return array_shift($v['settings']['label']);
 			}
+			if(isset($v['display'])) { return $v['display']; }
 			return "???"; 
 		}, $placements)), [_t('Media')]);
+		
 		$headers = array_map(function($v) {
 		    $v = preg_replace("![\r\n\t]+!u", " ", html_entity_decode($v, ENT_QUOTES));
 		    $v = preg_replace("![“”]+!u", '"', $v);
@@ -177,7 +179,7 @@ class ExportController extends ActionController {
 		; }, $headers);
 		$rows[] = join("\t", $headers);
 		
-		$zip = new ZipFile();
+		$zip = new ZipFile(__CA_APP_DIR__."/tmp");
 		$seen_idnos = [];
 		
 		
@@ -208,8 +210,9 @@ class ExportController extends ActionController {
 					} while(isset($seen_idnos[$id]));
 					
 					$zip->addFile($media_path, $media_refs[] = "{$id}.".pathinfo($media_path, PATHINFO_EXTENSION));
+					
+				    $seen_idnos[$id] = true;
 				}
-				$seen_idnos[$id] = true;
 			}
 			$row[] = join(";", $media_refs);
 			$row = array_map(function($v) { return preg_replace("![\t]+!", " ", $v); }, $row);
@@ -226,8 +229,6 @@ class ExportController extends ActionController {
 		
 		$links = [caNavLink($this->request, _t('Download Artefacts Canada data as ZIP file (%1)', caHumanFilesize(filesize($new_path))), '', '*', '*', 'Download', ['job_id' => $job_id, 'download' => 1])];
 		
-		// TODO: support SFTP here?
-	
 		$o_progress->finish();
 		$job_info = $o_progress->getDataForJobID($job_id);
 		
