@@ -215,8 +215,10 @@
 		/**
 		 * 
 		 *
-		 * @param array $options Options include:
-		 *		policy = Name of policy to apply. If omitted, legacy 'current_location_criteria' configuration will be used if present, otherwise a null value will be returned. [Default is null]
+		 * @param string $policy Name of policy to apply
+		 * @param string $table
+		 * @param string $type
+		 * @param array $options
 		 *
 		 * @return array Element array or null if not available.
 		 */
@@ -599,6 +601,27 @@
 				$tables[$policy_info['table']] = true;
 			}
 			return array_keys($tables);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return list of policies applied to a table
+		 *
+		 * @param string $table Table to which policies are applied
+		 * @param array $options No options are currently supported
+		 *
+		 * @return array List of policies
+		 */ 
+		static public function getHistoryTrackingCurrentValuePoliciesForTable($table, $options=null) {
+			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
+			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
+				return [];	// No policies are configured
+			}
+			
+			$policies = array_filter($policy_config['policies'], function($v) use ($table) {
+			    return isset($v['table']) && ($v['table'] === $table); 
+			});
+			
+			return is_array($policies) ? $policies : [];
 		}
 		# ------------------------------------------------------
 		/**

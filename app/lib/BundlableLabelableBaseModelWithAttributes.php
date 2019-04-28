@@ -378,6 +378,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		duplicate_nonpreferred_labels = duplicate nonpreferred labels. [Default is false]
 	 *		duplicate_attributes = duplicate all content fields (intrinsics and attributes). [Default is false]
 	 *		duplicate_relationships = if set to an array of table names, all relationships to be specified tables will be duplicated. [Default is null - no relationships duplicated]
+	 *		duplicate_current_relationships_only = duplicate only current relationships, as determined by configured history tracking policies. [Default is false]
 	 *		duplicate_relationship_attributes = duplicate metadata attributes attached to duplicated relationships. [Default is false]
 	 *		duplicate_element_settings = per-metdata element duplication settings; keys are element names, values are 1 (duplicate) or 0 (don't duplicate); if element is not set then it will be duplicated. [Default is null]
 	 *		duplicate_children = duplicate child records. [Default is false]
@@ -397,6 +398,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_duplicate_attributes = isset($pa_options['duplicate_attributes']) && $pa_options['duplicate_attributes'];
 		$vb_duplicate_relationship_attributes = isset($pa_options['duplicate_relationship_attributes']) && $pa_options['duplicate_relationship_attributes'];
 		$va_duplicate_relationships = (isset($pa_options['duplicate_relationships']) && is_array($pa_options['duplicate_relationships']) && sizeof($pa_options['duplicate_relationships'])) ? $pa_options['duplicate_relationships'] : array();
+		$vb_duplicate_current_relationships_only = isset($pa_options['duplicate_current_relationships_only']) && $pa_options['duplicate_current_relationships_only'];
 		$va_duplicate_element_settings = (isset($pa_options['duplicate_element_settings']) && is_array($pa_options['duplicate_element_settings']) && sizeof($pa_options['duplicate_element_settings'])) ? $pa_options['duplicate_element_settings'] : array();
 		$vb_duplicate_relationship_attributes = isset($pa_options['duplicate_relationship_attributes']) && $pa_options['duplicate_relationship_attributes'];
 		$vb_duplicate_children = isset($pa_options['duplicate_children']) && $pa_options['duplicate_children'];
@@ -541,7 +543,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 			$va_options = ['restrictToAttributesByCodes' => $va_attrs_to_duplicate];
 
-			if($va_dont_duplicate_codes = $this->getAppConfig()->get($table.'_dont_duplicate_element_codes')) {
+			if($va_dont_duplicate_codes = $this->getAppConfig()->get("{$table}_dont_duplicate_element_codes")) {
 				if(is_array($va_dont_duplicate_codes)) {
 					$va_options['excludeAttributesByCodes'] = $va_dont_duplicate_codes;
 				}
@@ -555,12 +557,30 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// duplicate relationships
+		$history_tracking_policies = method_exists($table, "getHistoryTrackingCurrentValuePoliciesForTable") ? array_keys($table::getHistoryTrackingCurrentValuePoliciesForTable($table)) : [];
 		foreach(array(
 			'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 
 			'ca_collections', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_storage_locations', 'ca_tour_stops'
 		) as $vs_rel_table) {
 			if (!in_array($vs_rel_table, $va_duplicate_relationships)) { continue; }
-			if ($this->copyRelationships($vs_rel_table, $t_dupe->getPrimaryKey(), array('copyAttributes' => $vb_duplicate_relationship_attributes)) === false) {
+			
+			$limit_to_relation_ids = null;
+			if ($vb_duplicate_current_relationships_only) {
+				
+				if(is_array($history_tracking_policies) && sizeof($history_tracking_policies)) {
+					// is this relationship part of a policy?
+					foreach($history_tracking_policies as $policy) {
+						if (!$table::historyTrackingPolicyUses($policy, $vs_rel_table)) { continue; }
+						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy]))) { continue; }
+						
+						$current = array_shift(array_shift($h));
+						if ($current['current_table_num'] === Datamodel::getTableNum($vs_rel_table)) {
+							$limit_to_relation_ids = [$current['tracked_row_id']];
+						}
+					}
+				}
+			}
+			if ($this->copyRelationships($vs_rel_table, $t_dupe->getPrimaryKey(), array('copyAttributes' => $vb_duplicate_relationship_attributes, 'relationIds' => $limit_to_relation_ids)) === false) {
 				$this->errors = $t_dupe->errors;
 				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
