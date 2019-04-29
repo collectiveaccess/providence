@@ -289,6 +289,34 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	/**
 	 *
 	 */
+	function caDeleteMultipleWarningBox($po_request, $t_instance, $row_ids, $message, $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters) {
+		if ($vs_warning = isset($pa_parameters['warning']) ? $pa_parameters['warning'] : null) {
+			$vs_warning = '<br/>'.$vs_warning;
+		}
+		
+		$vs_output = caFormTag($po_request, 'Delete', 'caDeleteForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false,'disableUnsavedChangesWarning' => true));
+		$vs_output .= "<div class='delete-control-box'>".caFormControlBox(
+			"<div class='delete_warning_box'>"._t('Really delete %1?', $message)."</div>",
+			$vs_warning,
+			caFormSubmitButton($po_request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
+			caFormNavButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters)
+		)."</div>\n";
+		
+		
+		foreach(array_merge($pa_parameters, array('confirm' => 1)) as $vs_f => $vs_v) {
+			$vs_output .= caHTMLHiddenInput($vs_f, array('value' => $vs_v));
+		}
+		foreach($row_ids as $row_id) {
+			$vs_output .= caHTMLHiddenInput("row_id[]", array('value' => $row_id));
+		}
+		$vs_output .= "</form>\n";
+		
+		return $vs_output;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caDeleteRemapper($po_request, $t_instance) {
 		$vs_instance_table = $t_instance->tableName();
 		
