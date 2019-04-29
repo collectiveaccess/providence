@@ -473,8 +473,9 @@
 					    self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
 					        ['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
 					        
-					$t_l = new ca_history_tracking_current_values($l['tracking_id']);
+					$t_l = new ca_history_tracking_current_values();
 					$t_l->setDb($this->getDb());	
+					$t_l->load($l['tracking_id']);
 					$t_l->setMode(ACCESS_WRITE);
 				    if (!($rc = $t_l->delete())) {
                         $this->errors = $t_l->errors;
