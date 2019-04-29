@@ -215,8 +215,10 @@
 		/**
 		 * 
 		 *
-		 * @param array $options Options include:
-		 *		policy = Name of policy to apply. If omitted, legacy 'current_location_criteria' configuration will be used if present, otherwise a null value will be returned. [Default is null]
+		 * @param string $policy Name of policy to apply
+		 * @param string $table
+		 * @param string $type
+		 * @param array $options
 		 *
 		 * @return array Element array or null if not available.
 		 */
@@ -600,6 +602,27 @@
 				$tables[$policy_info['table']] = true;
 			}
 			return array_keys($tables);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return list of policies applied to a table
+		 *
+		 * @param string $table Table to which policies are applied
+		 * @param array $options No options are currently supported
+		 *
+		 * @return array List of policies
+		 */ 
+		static public function getHistoryTrackingCurrentValuePoliciesForTable($table, $options=null) {
+			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
+			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
+				return [];	// No policies are configured
+			}
+			
+			$policies = array_filter($policy_config['policies'], function($v) use ($table) {
+			    return isset($v['table']) && ($v['table'] === $table); 
+			});
+			
+			return is_array($policies) ? $policies : [];
 		}
 		# ------------------------------------------------------
 		/**
@@ -2178,6 +2201,21 @@
 					}
 					return null;
 				    break;
+		    case 'submitted_by_user':
+		        $vals = array_shift(array_shift($pa_values));
+		        if($user_id = $vals['submission_user_id']) {
+                    $template = caGetOption('display_template', $pa_options, "^ca_users.fname ^ca_users.lname (^ca_users.email)");
+                    return caProcessTemplateForIDs($template, 'ca_users', array($user_id));
+                }
+                return null;
+                break;
+            case 'submission_group':
+                $vals = array_shift(array_shift($pa_values));
+		        if($group_id = $vals['submission_group_id']) {
+                    $template = caGetOption('display_template', $pa_options, "^ca_user_groups.name (^ca_user_groups.code)");
+                    return caProcessTemplateForIDs($template, 'ca_user_groups', array($group_id));
+                }
+                break;
 			}
 		
 			return null;

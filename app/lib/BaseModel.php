@@ -9488,7 +9488,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param int $pn_to_id The primary key value of the row to move the relationships to.
 	 * @param array $pa_options Array of options. Options include:
 	 *		copyAttributes = Copy metadata attributes associated with each relationship, if the calling model supports attributes. [Default is false]
-	 *
+	 *      relationIds = List of relationship relation_id's to limit copy to. [Default is null]
 	 * @return int Number of relationships copied, or null on error. Note that you should carefully test the return value for null-ness rather than false-ness, since zero is a valid return value in cases where no relationships were available to be copied. 
 	 */
 	public function copyRelationships($pm_rel_table_name_or_num, $pn_to_id, $pa_options=null) {
@@ -9498,6 +9498,11 @@ $pa_options["display_form_field_tips"] = true;
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
 		$vb_copy_attributes = caGetOption('copyAttributes', $pa_options, false, array('castTo' => 'boolean')) && method_exists($this, 'copyAttributesFrom');
+		$relation_ids = caGetOption('relationIds', $pa_options, null);
+		if (is_numeric($relation_ids) && !is_array($relation_ids)) { $relation_ids = [$relation_ids]; }
+		if ($relation_ids && !is_array($relation_ids)) { $relation_ids = null; }
+		
+		$relation_id_sql = (is_array($relation_ids) && sizeof($relation_ids)) ? " AND (relation_id IN (?))" : null;
 		
 		$o_db = $this->getDb();
 		
@@ -9509,6 +9514,9 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$va_to_reindex_relations = array();
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+		    $params = [(int)$vn_row_id, (int)$vn_row_id];
+		    if ($relation_id_sql) { $params[] = $relation_ids; }
+		    
 			$vs_left_field_name = $t_item_rel->getLeftTableFieldName();
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
@@ -9516,8 +9524,9 @@ $pa_options["display_form_field_tips"] = true;
 				SELECT * 
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
-					({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?)
-			", (int)$vn_row_id, (int)$vn_row_id);
+					(({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?))
+					{$relation_id_sql}
+			", $params);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
 			while($qr_res->nextRow()) {
@@ -9552,12 +9561,15 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			}
 		} else {
+		    $params = [(int)$vn_row_id];
+		    if ($relation_id_sql) { $params[] = $relation_ids; }
 			$qr_res = $o_db->query("
 				SELECT * 
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					({$vs_item_pk} = ?)
-			", (int)$vn_row_id);
+					{$relation_id_sql}
+			", $params);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
 			while($qr_res->nextRow()) {

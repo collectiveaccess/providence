@@ -102,6 +102,7 @@ class BaseEditorController extends ActionController {
 				'duplicate_nonpreferred_labels' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_nonpreferred_labels'),
 				'duplicate_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_attributes'),
 				'duplicate_relationships' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationships'),
+				'duplicate_current_relationships_only' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_current_relationships_only'),
 				'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
 				'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
 				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
