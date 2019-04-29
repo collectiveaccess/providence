@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,8 +51,7 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 		} else {
-			$o_trans = new Transaction();
-			$this->setTransaction($o_trans);
+			$this->setTransaction($o_trans = new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		}
 		
@@ -114,7 +113,7 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 		} else {
-			$o_trans = new Transaction();
+			$o_trans = new Transaction($this->getDb());
 			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		}
@@ -211,7 +210,7 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 		} else {
-			$o_trans = new Transaction();
+			$o_trans = new Transaction($this->getDb());
 			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		}
