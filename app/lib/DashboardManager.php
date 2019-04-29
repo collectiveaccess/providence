@@ -60,7 +60,7 @@
 			$this->ApplicationVars = $po_request;
 			if (!$po_request->isLoggedIn()) { return; }
 			if (!is_array($this->opa_dashboard_config = $po_request->user->getVar('dashboard_config'))) {
-				$this->opa_dashboard_config = array();
+				$this->opa_dashboard_config = self::getDefaultLayout();
 			}
 			
 			$this->opo_widget_manager = new WidgetManager();
@@ -256,6 +256,34 @@
 			return true;
 		}
 		# -------------------------------------------------------
+		/**
+		 * Generate default layout
+		 *
+		 * @param $po_request RequestHTTP Current request object
+		 * @return boolean Always returns true
+		 */
+		static public function getDefaultLayout() {
+			$config = Configuration::load();
+			
+			$data = $config->get('dashboard_default_layout');
+			$layout = [];
+			if(is_array($data) && is_array($data['columns'])) {
+				$col = 1;
+				$layout['columns'] = [];
+				foreach($data['columns'] as $i => $widget_list) {
+					foreach($widget_list as $widget) {
+						$layout['columns'][$col][] = [
+							'widget' => $widget,
+							'widget_id' => md5(uniqid($widget)),
+							'settings' => []
+						];
+					}
+					$col++;
+				}
+			}
+			
+			return $layout;
+		}
+		# -------------------------------------------------------
 	
 	}
-?>
