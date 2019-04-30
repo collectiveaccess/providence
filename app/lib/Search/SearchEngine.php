@@ -615,7 +615,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a label? Rewrite the field for that.
-		$va_tmp = preg_split('![/\|]+', $vs_fld);
+		$va_tmp = preg_split('![/\|]+!', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
