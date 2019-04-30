@@ -301,7 +301,7 @@
 			$vs_sort_tmp_table = null;
 			$va_sort_key_values = array();
 			foreach($va_bundles as $vs_bundle) {
-				$va_sort_tmp = explode('/', $vs_bundle);		// strip any relationship type (and/or item type)
+				$va_sort_tmp = preg_split('![/\|]+!', $vs_bundle);		// strip any relationship type (and/or item type)
 				$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;	
 				$vs_item_type = (sizeof($va_sort_tmp) > 2) ? $va_sort_tmp[2] : null;	
 				
