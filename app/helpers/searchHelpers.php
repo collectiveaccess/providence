@@ -810,7 +810,7 @@
 			} else {
 				$va_tmp = explode('.', $vs_element);
 				$vs_possible_element_with_rel = array_pop($va_tmp);
-				$va_tmp2 = explode("/", $vs_possible_element_with_rel);
+				$va_tmp2 = preg_split("![/\|]+!", $vs_possible_element_with_rel);
 				$vs_possible_element = array_shift($va_tmp2);
 				
 				// TODO: display relationship types when defined?
