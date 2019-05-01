@@ -1365,7 +1365,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
 			# be a simple string. In the future settings should be normalized such that any value that may be localized is an array key'ed by locale code,
 			# but since we're in the present we check for and handle all three current possibilities here.
-			$pa_bundle_settings['definition'][$g_ui_locale] = caExtractSettingsValueByUserLocale('definition', $va_dictionary_entry['settings']);
+			if (!($pa_bundle_settings['definition'][$g_ui_locale] = caExtractSettingsValueByUserLocale('definition', $va_dictionary_entry['settings']))) {
+			    $pa_bundle_settings['definition'][$g_ui_locale] = $va_dictionary_entry['settings']['definition'];
+			}
 			if (caGetOption('mandatory', $va_dictionary_entry['settings'], false)) {
 				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').caExtractSettingsValueByUserLocale('definition', $pa_bundle_settings);
 			}
