@@ -63,157 +63,160 @@
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			header("Content-type: application/json");
+			if ($this->request->user->canDoAction('can_search_'.$this->ops_table_name)) { 
+				$o_config = Configuration::load();
+				$o_search_config = caGetSearchConfig();
+				
+				if (!$this->ops_search_class) { return null; }
+				$ps_query = $ps_query_proc = $this->request->getParameter('term', pString);
 			
-			$o_config = Configuration::load();
-			$o_search_config = caGetSearchConfig();
-				
-			if (!$this->ops_search_class) { return null; }
-			$ps_query = $ps_query_proc = $this->request->getParameter('term', pString);
+				$pb_exact = $this->request->getParameter('exact', pInteger);
+				$ps_exclude = $this->request->getParameter('exclude', pString);
+				$va_excludes = explode(";", $ps_exclude);
+				$ps_type = $this->request->getParameter('type', pString);
+				$ps_types = $this->request->getParameter('types', pString);
+				$ps_restrict_to_access_point = trim($this->request->getParameter('restrictToAccessPoint', pString));
+				$ps_restrict_to_search = trim($this->request->getParameter('restrictToSearch', pString));
+				$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
+				$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
+				$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
+				$pb_quiet = (bool)$this->request->getParameter('quiet', pInteger);
 			
-			$pb_exact = $this->request->getParameter('exact', pInteger);
-			$ps_exclude = $this->request->getParameter('exclude', pString);
-			$va_excludes = explode(";", $ps_exclude);
-			$ps_type = $this->request->getParameter('type', pString);
-			$ps_types = $this->request->getParameter('types', pString);
-			$ps_restrict_to_access_point = trim($this->request->getParameter('restrictToAccessPoint', pString));
-			$ps_restrict_to_search = trim($this->request->getParameter('restrictToSearch', pString));
-			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
-			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
-			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
-			$pb_quiet = (bool)$this->request->getParameter('quiet', pInteger);
-			
-			if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
-			$va_items = array();
-			if (($vn_str_len = mb_strlen($ps_query)) > 0) {
-				if ($vn_str_len < 3) { $pb_exact = true; }		// force short strings to be an exact match (using a very short string as a stem would perform badly and return too many matches in most cases)
+				if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
+				$va_items = array();
+				if (($vn_str_len = mb_strlen($ps_query)) > 0) {
+					if ($vn_str_len < 3) { $pb_exact = true; }		// force short strings to be an exact match (using a very short string as a stem would perform badly and return too many matches in most cases)
 				
-				if (is_array($va_asis_regexes = $o_search_config->getList('asis_regexes'))) {
-					foreach($va_asis_regexes as $vs_asis_regex) {
-						if (preg_match("!{$vs_asis_regex}!", $ps_query)) {
-							$pb_exact = true;
-							break;
-						}
-					}
-				}
-				
-				
-				$o_search = new $this->ops_search_class();
-				
-				$pa_types = array();
-				if ($ps_types) {
-					$pa_types = explode(';', $ps_types);
-				} else {
-					if ($ps_type) {
-						$pa_types = array($ps_type);
-					}
-				}
-				
-				// Get type_ids
-				$va_ids = array();
-				if (sizeof($pa_types)) {
-					$va_types = $this->opo_item_instance->getTypeList();
-					$va_types_proc = array();
-					foreach($va_types as $vn_type_id => $va_type) {
-						$va_types_proc[$vn_type_id] = $va_types_proc[$va_type['idno']] = $vn_type_id;
-					}
-					foreach($pa_types as $ps_type) {
-						if (isset($va_types_proc[$ps_type])) {
-							$va_ids[$va_types_proc[$ps_type]] = true;
-						} elseif (is_numeric($ps_type)) {
-							$va_ids[(int)$ps_type] = true;
-						}
-					}
-					$va_ids = array_keys($va_ids);
-					
-					if (sizeof($va_ids) > 0) {
-						$t_list = new ca_lists();
-						
-						if (!$pb_no_subtypes) {
-							foreach($va_ids as $vn_id) {
-								$va_children = $t_list->getItemsForList($this->opo_item_instance->getTypeListCode(), array('item_id' => $vn_id, 'idsOnly' => true));
-								$va_ids = array_merge($va_ids, $va_children);
+					if (is_array($va_asis_regexes = $o_search_config->getList('asis_regexes'))) {
+						foreach($va_asis_regexes as $vs_asis_regex) {
+							if (preg_match("!{$vs_asis_regex}!", $ps_query)) {
+								$pb_exact = true;
+								break;
 							}
-							$va_ids = array_flip(array_flip($va_ids));
 						}
-						$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
 					}
-				}
+				
+				
+					$o_search = new $this->ops_search_class();
+				
+					$pa_types = array();
+					if ($ps_types) {
+						$pa_types = explode(';', $ps_types);
+					} else {
+						if ($ps_type) {
+							$pa_types = array($ps_type);
+						}
+					}
+				
+					// Get type_ids
+					$va_ids = array();
+					if (sizeof($pa_types)) {
+						$va_types = $this->opo_item_instance->getTypeList();
+						$va_types_proc = array();
+						foreach($va_types as $vn_type_id => $va_type) {
+							$va_types_proc[$vn_type_id] = $va_types_proc[$va_type['idno']] = $vn_type_id;
+						}
+						foreach($pa_types as $ps_type) {
+							if (isset($va_types_proc[$ps_type])) {
+								$va_ids[$va_types_proc[$ps_type]] = true;
+							} elseif (is_numeric($ps_type)) {
+								$va_ids[(int)$ps_type] = true;
+							}
+						}
+						$va_ids = array_keys($va_ids);
+					
+						if (sizeof($va_ids) > 0) {
+							$t_list = new ca_lists();
+						
+							if (!$pb_no_subtypes) {
+								foreach($va_ids as $vn_id) {
+									$va_children = $t_list->getItemsForList($this->opo_item_instance->getTypeListCode(), array('item_id' => $vn_id, 'idsOnly' => true));
+									$va_ids = array_merge($va_ids, $va_children);
+								}
+								$va_ids = array_flip(array_flip($va_ids));
+							}
+							$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
+						}
+					}
 			
-				// add any additional search elements
-				$vs_additional_query_params = '';
-				if (is_array($pa_additional_query_params) && sizeof($pa_additional_query_params)) {
-					$vs_additional_query_params = ' AND ('.join(' AND ', $pa_additional_query_params).')';
-				}
+					// add any additional search elements
+					$vs_additional_query_params = '';
+					if (is_array($pa_additional_query_params) && sizeof($pa_additional_query_params)) {
+						$vs_additional_query_params = ' AND ('.join(' AND ', $pa_additional_query_params).')';
+					}
 
-				$vs_restrict_to_access_point = '';
-				if((strlen($ps_restrict_to_access_point) > 0) && $ps_query) {
-					$ps_query_proc = $ps_restrict_to_access_point.":\"".str_replace('"', '', $ps_query)."\"";
-				}
-				
-				$vs_restrict_to_search = '';
-				if(strlen($ps_restrict_to_search) > 0) {
-					$vs_restrict_to_search .= ' AND ('.$ps_restrict_to_search.')';
-				}
-				
-				// get sort field
-				$vs_sort = $this->request->getAppConfig()->get($this->opo_item_instance->tableName().'_lookup_sort');
-				if(!$vs_sort) { $vs_sort = '_natural'; }
-	
-				$vs_hier_parent_id_fld 		= $this->opo_item_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
-				$vs_hier_fld 						= $this->opo_item_instance->getProperty('HIERARCHY_ID_FLD');
-				if ($vs_hier_fld && ($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
-					$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$vs_hier_fld, '=', (int)$vn_restrict_to_hier_id);
-				}
-				
-				// add filters
-				if (isset($pa_options['filters']) && is_array($pa_options['filters']) && sizeof($pa_options['filters'])) {
-					foreach($pa_options['filters'] as $va_filter) {
-						$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
+					$vs_restrict_to_access_point = '';
+					if((strlen($ps_restrict_to_access_point) > 0) && $ps_query) {
+						$ps_query_proc = $ps_restrict_to_access_point.":\"".str_replace('"', '', $ps_query)."\"";
 					}
-				}
-		
-				if (preg_match("![\/\.\-]!", $ps_query)) { $pb_exact = true; }
 				
-				// do search
-				if($vs_additional_query_params || $vs_restrict_to_search) {
-					$vs_search = '('.trim($ps_query_proc).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
-				} else {
-					$vs_search = trim($ps_query_proc).(intval($pb_exact) ? '' : '*');
-				}
+					$vs_restrict_to_search = '';
+					if(strlen($ps_restrict_to_search) > 0) {
+						$vs_restrict_to_search .= ' AND ('.$ps_restrict_to_search.')';
+					}
 				
-				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+					// get sort field
+					$vs_sort = $this->request->getAppConfig()->get($this->opo_item_instance->tableName().'_lookup_sort');
+					if(!$vs_sort) { $vs_sort = '_natural'; }
+	
+					$vs_hier_parent_id_fld 		= $this->opo_item_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
+					$vs_hier_fld 						= $this->opo_item_instance->getProperty('HIERARCHY_ID_FLD');
+					if ($vs_hier_fld && ($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
+						$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$vs_hier_fld, '=', (int)$vn_restrict_to_hier_id);
+					}
 				
-				$qr_res->setOption('prefetch', $pn_limit);
-				$qr_res->setOption('dontPrefetchAttributes', true);
-				
-				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit, 'request' => $this->getRequest());
-				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
-					// if the lookup was restricted by search, try the lookup without the restriction
-					// so that we can notify the user that he might be about to create a duplicate
-					if((strlen($ps_restrict_to_search) > 0)) {
-						$o_no_filter_result = $o_search->search(trim($ps_query_proc) . (intval($pb_exact) ? '' : '*') . $vs_type_query . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
-						if ($o_no_filter_result->numHits() != $qr_res->numHits()) {
-							$va_opts['inlineCreateMessageDoesNotExist'] = _t("<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create <em>%1</em>?", $ps_query, $o_no_filter_result->numHits());
-							$va_opts['inlineCreateMessage'] = _t('<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?', $ps_query, ($o_no_filter_result->numHits() - $qr_res->numHits()));
+					// add filters
+					if (isset($pa_options['filters']) && is_array($pa_options['filters']) && sizeof($pa_options['filters'])) {
+						foreach($pa_options['filters'] as $va_filter) {
+							$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
 						}
 					}
-					if(!isset($va_opts['inlineCreateMessageDoesNotExist'])) { $va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $ps_query); }
-					if(!isset($va_opts['inlineCreateMessage'])) { $va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $ps_query); }
-					$va_opts['inlineCreateQuery'] = $ps_query;
-				} elseif(!$pb_quiet) {
-					$va_opts['emptyResultQuery'] = $ps_query;
-					$va_opts['emptyResultMessage'] = _t('No matches found for "%1"', $ps_query);
-				}
+		
+					if (preg_match("![\/\.\-]!", $ps_query)) { $pb_exact = true; }
 				
-				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);
-			}
-			if (!is_array($va_items)) { $va_items = array(); }
+					// do search
+					if($vs_additional_query_params || $vs_restrict_to_search) {
+						$vs_search = '('.trim($ps_query_proc).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
+					} else {
+						$vs_search = trim($ps_query_proc).(intval($pb_exact) ? '' : '*');
+					}
+				
+					$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+				
+					$qr_res->setOption('prefetch', $pn_limit);
+					$qr_res->setOption('dontPrefetchAttributes', true);
+				
+					$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit, 'request' => $this->getRequest());
+					if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
+						// if the lookup was restricted by search, try the lookup without the restriction
+						// so that we can notify the user that he might be about to create a duplicate
+						if((strlen($ps_restrict_to_search) > 0)) {
+							$o_no_filter_result = $o_search->search(trim($ps_query_proc) . (intval($pb_exact) ? '' : '*') . $vs_type_query . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+							if ($o_no_filter_result->numHits() != $qr_res->numHits()) {
+								$va_opts['inlineCreateMessageDoesNotExist'] = _t("<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create <em>%1</em>?", $ps_query, $o_no_filter_result->numHits());
+								$va_opts['inlineCreateMessage'] = _t('<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?', $ps_query, ($o_no_filter_result->numHits() - $qr_res->numHits()));
+							}
+						}
+						if(!isset($va_opts['inlineCreateMessageDoesNotExist'])) { $va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $ps_query); }
+						if(!isset($va_opts['inlineCreateMessage'])) { $va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $ps_query); }
+						$va_opts['inlineCreateQuery'] = $ps_query;
+					} elseif(!$pb_quiet) {
+						$va_opts['emptyResultQuery'] = $ps_query;
+						$va_opts['emptyResultMessage'] = _t('No matches found for "%1"', $ps_query);
+					}
+				
+					$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);
+				}
+				if (!is_array($va_items)) { $va_items = array(); }
 			
-			// Optional output simple list of labels instead of full data format
-			if ((bool)$this->request->getParameter('simple', pInteger)) { 
-				$va_items = caExtractValuesFromArrayList($va_items, 'label', array('preserveKeys' => false)); 
+				// Optional output simple list of labels instead of full data format
+				if ((bool)$this->request->getParameter('simple', pInteger)) { 
+					$va_items = caExtractValuesFromArrayList($va_items, 'label', array('preserveKeys' => false)); 
+				}
+				$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', array_values($va_items));
+			} else {
+				$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', [_t('You do not have access to search %1', $this->opo_item_instance->getProperty('NAME_PLURAL'))]);
 			}
-			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', array_values($va_items));
  			return $this->render(str_replace(' ', '_', 'ajax_'.$this->ops_name_singular.'_list_html.php'));
 		}
  		# -------------------------------------------------------
