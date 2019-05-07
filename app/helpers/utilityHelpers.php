@@ -1877,7 +1877,8 @@ function caFileIsIncludable($ps_file) {
 	 * @return string escaped parameter value, surrounded with single quotes and ready for use
 	 */
 	function caEscapeShellArg($ps_text) {
-		return escapeshellarg($ps_text);
+		// Don't escape on Windows as many of our exec()'s rely upon sending "%" characters...
+		return caIsWindows() ? $ps_text : escapeshellarg($ps_text);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
