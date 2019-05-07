@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -139,9 +139,9 @@ class RequestDispatcher extends BaseObject {
 		$this->opa_module_path =& $va_module_path;
 		if ($vs_module_path_prefix) { array_unshift($this->opa_module_path, $vs_module_path_prefix); }
 		$this->ops_controller = ucfirst(preg_replace("![^A-Za-z0-9_:\.\*]+!", "", array_shift($va_tmp)));
-		$this->ops_action = preg_replace("![^A-Za-z0-9_:\.\*]+!", "", array_shift($va_tmp));
+		$this->ops_action = preg_replace("![^A-Za-z0-9_:\.\*%\-]+!", "", array_shift($va_tmp));
 		if ((sizeof($va_tmp) % 2) != 0) {
-			$this->ops_action_extra = preg_replace("![^A-Za-z0-9_:\.\*]+!", "", array_shift($va_tmp));
+			$this->ops_action_extra = preg_replace("![^A-Za-z0-9_:\.\*%\-]+!", "", array_shift($va_tmp));
 		} else {
 			$this->ops_action_extra = '';
 		}
