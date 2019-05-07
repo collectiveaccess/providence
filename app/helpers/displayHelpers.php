@@ -3261,7 +3261,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
 		global $g_ui_locale;
 		
-		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
+		$definition = caGetOption($g_ui_locale, $pa_settings['definition'], null);
+		if(is_array($definition)) { $definition = join ("", $definition); }
+		if (!($vs_definition = trim($definition))) { return ''; }
 		
 		$vs_buf = '';
 		$vs_buf .= "<span class='iconButton'>";
