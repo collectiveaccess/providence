@@ -919,6 +919,8 @@
 
 			if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 				$o_db = $pa_options['transaction']->getDb();
+			} elseif(isset($pa_options['db'])) {
+		        $o_db = $pa_options['db'];
 			} else {
 				$o_db = new Db();
 			}
