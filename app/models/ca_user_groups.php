@@ -775,4 +775,3 @@ class ca_user_groups extends BaseModel {
 	}
 	# ----------------------------------------
 }
-?>
