@@ -425,7 +425,8 @@ class ca_users extends BaseModel {
 	 */
 	static public function applyPasswordPolicy($password) {
 		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
-			
+		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
+		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
 			// check password policy
 			$builder = new \PasswordPolicy\PolicyBuilder(new \PasswordPolicy\Policy);
@@ -463,6 +464,8 @@ class ca_users extends BaseModel {
 	 */
 	static public function getPasswordPolicyAsText() {
 		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return ''; }	// password policies only apply to integral auth system
+		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
 			$criteria = [];
 			foreach($policies as $p) {
