@@ -1136,8 +1136,12 @@ if (!$for_current_value_reindex) {
 			$va_rows_to_reindex = $this->_getDependentRowsForSubject($pn_subject_table_num, $pn_subject_row_id, $va_deps, $va_changed_field_nums);
 
 			if ($vb_can_do_incremental_indexing) {
-			    $current_values = ca_objects::getDependentCurrentValues($pn_subject_table_num, $pn_subject_row_id, ['db' => $this->getDb()]);
-
+				if (method_exists($vs_subject_tablename, "getDependentCurrentValues")) {
+			    	$current_values = $vs_subject_tablename::getDependentCurrentValues($pn_subject_table_num, $pn_subject_row_id, ['db' => $this->getDb()]);
+				} else {
+					$current_values = [];
+				}
+				
 				$va_rows_to_reindex_by_row_id = [];
 				$va_row_ids_to_reindex_by_table = [];
 				
