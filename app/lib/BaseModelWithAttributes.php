@@ -1345,7 +1345,7 @@
 				}
 			}
 			
-			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, $pa_options);
+			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options, ['value' => $this->get($this->getTypeFieldName())]));
 		}
 		# ------------------------------------------------------------------
 		// --- Forms
@@ -1793,7 +1793,13 @@
 				$vm_values = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : null;
 				
 				// Use current row value as default value if option is set
-				if (is_null($vm_values) && $use_current_row_value) { $vm_values = $this->get($vs_subelement_code, ['returnAsArray' => ca_metadata_elements::getDataTypeForElementCode($va_element['element_code']) == 3]); }
+				if (is_null($vm_values) && $use_current_row_value) { 
+				    $index_set = !is_null($index = caGetOption('index', $pa_options, null));
+				    $vm_values = $this->get($vs_subelement_code, ['returnAsArray' => $is = ((ca_metadata_elements::getDataTypeForElementCode($va_element['element_code']) == 3) || $index_set)]); 
+				    if ($is && $index_set) {
+				        $vm_values = $vm_values[$index];
+				    }
+				}
 			
 				$va_element_opts = array_merge(array(
 					'label' => $va_label['name'],
