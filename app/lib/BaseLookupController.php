@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@
  	
  	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
  	require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_user_roles.php');
  	
  	class BaseLookupController extends ActionController {
  		# -------------------------------------------------------
@@ -63,7 +64,7 @@
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			header("Content-type: application/json");
-			if ($this->request->user->canDoAction('can_search_'.$this->ops_table_name)) { 
+			if (!ca_user_roles::isValidAction('can_search_'.$this->ops_table_name) || ($this->request->user->canDoAction('can_search_'.$this->ops_table_name))) { 
 				$o_config = Configuration::load();
 				$o_search_config = caGetSearchConfig();
 				
