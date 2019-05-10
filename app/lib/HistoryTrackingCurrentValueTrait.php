@@ -711,7 +711,7 @@
 							if (isset($dspec['date']) && $dspec['date']) {
 								$spec_has_date = true;
 								$element_code = array_shift(explode('.', $dspec['date']));
-								if($this->elementDidChange($element_code)) {
+								if($this->attributeDidChange($element_code)) {
 									$date_has_changed = true;
 								}
 							}

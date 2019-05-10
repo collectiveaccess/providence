@@ -579,7 +579,7 @@
 					$va_index_options['queueIndexing'] = true;
 				}
 				
-				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+				if (method_exists($this, "deriveHistoryTrackingCurrentValue") && $this->attributesChanged())  {
                     $table = $this->tableName();
                     if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
                 }
@@ -3180,7 +3180,7 @@
 		 * @param $pm_element_code_or_id
 		 * @return bool
 		 */
-		public function elementHasChanged($pm_element_code_or_id) {
+		public function attributeHasChanged($pm_element_code_or_id) {
 			$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
 			$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 
@@ -3191,6 +3191,18 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Have any attributes changed on this row?
+		 *
+		 * @return bool
+		 */
+		public function attributesChanged() {
+            if(!is_array($cf = $this->_FIELD_VALUE_CHANGED)) { return false; }
+            if(sizeof($cf) === 0) { return false; }
+            if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+            return false;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * This is the same as BaseModel::didChange(), except for elements.
 		 * We changed the name instead of overriding it so that we don't have to run
 		 * every single changed() call on a Bundlable through this function. Turns out it gets called a lot.
@@ -3198,7 +3210,7 @@
 		 * @param $pm_element_code_or_id
 		 * @return bool
 		 */
-		public function elementDidChange($pm_element_code_or_id) {
+		public function attributeDidChange($pm_element_code_or_id) {
 			$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
 			$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 
@@ -3206,6 +3218,19 @@
 			if(!$vs_code || (!$this->hasElement($vs_code))) { return false; }
 
 			return isset($this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id] : false;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Did any attributes changed on this row, even if already saved?
+		 *
+		 * @param $pm_element_code_or_id
+		 * @return bool
+		 */
+		public function attributesDidChange() {
+            if(!is_array($cf = $this->_FIELD_VALUE_DID_CHANGE)) { return false; }
+            if(sizeof($cf) === 0) { return false; }
+            if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+            return false;
 		}
 		# ------------------------------------------------------------------
 	}
