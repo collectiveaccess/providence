@@ -1270,20 +1270,31 @@
 
 											$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
 										} else {
-											$this->_createTempTable("_browseTmp");
-											$vs_sql = "
-												INSERT IGNORE INTO _browseTmp
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
-												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
-												{$vs_join_sql}
-												{$vs_where_sql}";
+											if ($va_facet_info['element_code']) {
+											    $vs_sql = "
+                                                    SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+                                                    FROM ".$this->ops_browse_table_name."
+                                                    {$vs_relative_to_join}
+                                                    {$vs_join_sql}
+                                                    {$vs_where_sql}";
 
-											$this->opo_db->query($vs_sql, $va_sql_params);
-											
-											$qr_res = $this->opo_db->query("SELECT t.".$t_item->primaryKey()." FROM ".$this->ops_browse_table_name." t LEFT JOIN _browseTmp AS b ON ".$t_item->primaryKey()." = b.row_id WHERE b.row_id IS NULL");
-											
-											$this->_dropTempTable("_browseTmp");
+                                                $qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
+											} else {
+											    $this->_createTempTable("_browseTmp");
+                                                $vs_sql = "
+                                                    INSERT IGNORE INTO _browseTmp
+                                                    SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+                                                    FROM ".$this->ops_browse_table_name."
+                                                    {$vs_relative_to_join}
+                                                    {$vs_join_sql}
+                                                    {$vs_where_sql}";
+
+                                                $this->opo_db->query($vs_sql, $va_sql_params);
+                                            
+                                                $qr_res = $this->opo_db->query("SELECT t.".$t_item->primaryKey()." FROM ".$this->ops_browse_table_name." t LEFT JOIN _browseTmp AS b ON ".$t_item->primaryKey()." = b.row_id WHERE b.row_id IS NULL");
+                                            
+                                                $this->_dropTempTable("_browseTmp");
+                                            }
 										}
 										
 										$va_acc[$vn_i] = $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey());
