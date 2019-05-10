@@ -3103,6 +3103,75 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Get weight unit type as Zend constant, e.g. 'ft.' = Zend_Measure_Length::KILOGRAM
+	 * @param string $ps_unit
+	 * @param array $pa_options Options include:
+	 *		short = return short name for unit (ex. for kilograp, return "kg", for pounds return "lbs")
+	 * @return null|string
+	 */
+	function caGetWeightUnitType($ps_unit, $pa_options=null) {
+		$vb_return_short = caGetOption('short', $pa_options, false);
+		$vb_return_code = caGetOption('code', $pa_options, false);
+		
+		switch(strtolower(str_replace(".", "", $ps_unit))) {
+            case "lbs":
+            case 'lbs.':
+            case 'lb':
+            case 'lb.':
+            case 'pound':
+            case 'pounds':
+                return $vb_return_short ? 'lbs' :  Zend_Measure_Weight::POUND;
+                break;
+            case 'kg':
+            case 'kg.':
+            case 'kilo':
+            case 'kilos':
+            case 'kilogram':
+            case 'kilograms':
+                return $vb_return_short ? 'kg' : Zend_Measure_Weight::KILOGRAM;
+                break;
+            case 'g':
+            case 'g.':
+            case 'gram':
+            case 'grams':
+                return $vb_return_short ? 'g' : Zend_Measure_Weight::GRAM;
+                break;
+            case 'mg':
+            case 'mg.':
+            case 'milligram':
+            case 'milligrams':
+                return $vb_return_short ? 'mg' : Zend_Measure_Weight::MILLIGRAM;
+                break;
+            case 'oz':
+            case 'oz.':
+            case 'ounce':
+            case 'ounces':
+                return $vb_return_short ? 'oz' : Zend_Measure_Weight::OUNCE;
+                break;
+            case 'ton':
+            case 'tons':
+            case 'tonne':
+            case 'tonnes':
+            case 't':
+            case 't.':
+                return $vb_return_short ? 't' : Zend_Measure_Weight::TON;
+                break;
+            case 'stone':
+                return $vb_return_short ? 'stone' : Zend_Measure_Weight::STONE;
+                break;
+            case 'grain':
+            case 'gr':
+            case 'gr.':
+                return $vb_return_short ? 'gr' : Zend_Measure_Weight::GRAIN;
+                break;
+            default:
+                return null;
+                break;
+        }
+		
+	}
+	# ----------------------------------------
+	/**
 	 * Parse weight dimension
 	 * @param string $ps_value value to parse
 	 * @param null|array $pa_options options array
@@ -3130,58 +3199,9 @@ function caFileIsIncludable($ps_file) {
 					$vs_value += caConvertLocaleSpecificFloat(trim($vs_v), $vs_locale);
 				}
 
-				switch(strtolower($va_matches[2])) {
- 					case "lbs":
- 					case 'lbs.':
- 					case 'lb':
- 					case 'lb.':
- 					case 'pound':
- 					case 'pounds':
- 						$vs_units = Zend_Measure_Weight::POUND;
- 						break;
- 					case 'kg':
- 					case 'kg.':
- 					case 'kilo':
- 					case 'kilos':
- 					case 'kilogram':
- 					case 'kilograms':
- 						$vs_units = Zend_Measure_Weight::KILOGRAM;
- 						break;
- 					case 'g':
- 					case 'g.':
- 					case 'gr':
- 					case 'gr.':
- 					case 'gram':
- 					case 'grams':
- 						$vs_units = Zend_Measure_Weight::GRAM;
- 						break;
- 					case 'mg':
- 					case 'mg.':
- 					case 'milligram':
- 					case 'milligrams':
- 						$vs_units = Zend_Measure_Weight::MILLIGRAM;
- 						break;
- 					case 'oz':
- 					case 'oz.':
- 					case 'ounce':
- 					case 'ounces':
- 						$vs_units = Zend_Measure_Weight::OUNCE;
- 						break;
- 					case 'ton':
- 					case 'tons':
- 					case 'tonne':
- 					case 'tonnes':
- 					case 't':
- 					case 't.':
- 						$vs_units = Zend_Measure_Weight::TON;
- 						break;
- 					case 'stone':
- 						$vs_units = Zend_Measure_Weight::STONE;
- 						break;
- 					default:
- 						throw new Exception(_t('Not a valid unit of weight [%2]', $ps_value));
- 						break;
- 				}
+                if (!($vs_units = caGetWeightUnitType($va_matches[2]))) {
+                    throw new Exception(_t('Not a valid unit of weight [%2]', $ps_value, $va_matches[2]));
+                }
 
 				try {
 					$o_tmp = new Zend_Measure_Weight($vs_value, $vs_units, $vs_locale);

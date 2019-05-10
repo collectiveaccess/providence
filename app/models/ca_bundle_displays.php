@@ -1496,7 +1496,29 @@ if (!$pb_omit_editing_info) {
 						),
 						'label' => _t('Output mode'),
 						'description' => _t('Determines if value used is URL of media or the media itself.')
-					)		
+					),
+					'show_nonprimary' => array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'width' => 35, 'height' => 1,
+						'takesLocale' => false,
+						'default' => 0,
+						'options' => array(
+							_t('Yes') => 1,
+							_t('No') => 0
+						),
+						'label' => _t('Include non-primary media'),
+						'description' => _t('Includes non-primary media in display.')
+					),					
+                    'delimiter' => array(
+                        'formatType' => FT_TEXT,
+                        'displayType' => DT_FIELD,
+                        'width' => 35, 'height' => 1,
+                        'takesLocale' => false,
+                        'default' => '',
+                        'label' => _t('Delimiter'),
+                        'description' => _t('Text to place in-between repeating values.')
+                    )
 				);
 			
 				$o_media_settings = new MediaProcessingSettings('ca_object_representations', 'media');
@@ -2048,6 +2070,7 @@ if (!$pb_omit_editing_info) {
 		$o_request = 		caGetOption('request', $pa_options, null);
 		
 		$vb_return_info =	caGetOption('returnInfo', $pa_options, false);
+		$vb_include_nonprimary_media = caGetOption('show_nonprimary', $pa_options, false);
 		
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		if (!isset($pa_options['forReport'])) { $pa_options['forReport'] = false; }
@@ -2171,7 +2194,10 @@ if (!$pb_omit_editing_info) {
 			if($pb_show_hierarchy && (sizeof($va_bundle_bits) == 1)) {
 				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
 			}
+			
+			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(false); }
 			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], array_merge($pa_options, ['policy' => $va_settings['policy']])));	// policy passed for history tracking current value
+			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(true); }
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {

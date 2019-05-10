@@ -1211,8 +1211,12 @@ class BaseEditorController extends ActionController {
 		$this->view->setVar('subject_id', $vn_subject_id);
 		$this->view->setVar('t_subject', $t_subject);
 
-		MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));
-
+        if ($t_subject->getAppConfig()->get($t_subject->tableName().'_dont_use_labels')) {
+            MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')) : _t('new %1', $t_subject->getTypeName())));
+        } else {
+		    MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));
+        }
+        
 		// pass relationship parameters to Save() action from Edit() so
 		// that we can create a relationship for a newly created object
 		if($vs_rel_table = $this->getRequest()->getParameter('rel_table', pString)) {
