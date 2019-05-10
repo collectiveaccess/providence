@@ -221,6 +221,78 @@ create index i_type_id on ca_list_item_labels(type_id);
 
 
 /*==========================================================================*/
+create table ca_users
+(
+   user_id                        int unsigned                   not null AUTO_INCREMENT,
+   user_name                      varchar(255)                   not null,
+   userclass                      tinyint unsigned               not null,
+   password                       varchar(100)                   not null,
+   fname                          varchar(255)                   not null,
+   lname                          varchar(255)                   not null,
+   email                          varchar(255)                   not null,
+   sms_number                     varchar(30)                    not null,
+   vars                           longtext                       not null,
+   volatile_vars                  text                           not null,
+   active                         tinyint unsigned               not null,
+   confirmed_on                   int unsigned,
+   confirmation_key               char(32),
+   registered_on                  int unsigned,
+   entity_id                      int unsigned,
+   primary key (user_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create unique index u_user_name on ca_users(user_name);
+create unique index u_confirmation_key on ca_users(confirmation_key);
+create index i_userclass on ca_users(userclass);
+create index i_entity_id on ca_users(entity_id);
+
+
+/*==========================================================================*/
+create table ca_user_groups
+(
+   group_id                       int unsigned                   not null AUTO_INCREMENT,
+   parent_id                      int unsigned,
+   name                           varchar(255)                   not null,
+   code                           varchar(20)                    not null,
+   description                    text                           not null,
+   for_public_use                 tinyint unsigned               not null default 0,
+   user_id                        int unsigned                   null references ca_users(user_id),
+   rank                           smallint unsigned              not null default 0,
+   vars                           text                           not null,
+   hier_left                      decimal(30,20)                 not null,
+   hier_right                     decimal(30,20)                 not null,
+   primary key (group_id),
+      
+   constraint fk_ca_user_groups_parent_id foreign key (parent_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_hier_left on ca_user_groups(hier_left);
+create index i_hier_right on ca_user_groups(hier_right);
+create index i_parent_id on ca_user_groups(parent_id);
+create index i_user_id on ca_user_groups(user_id);
+create unique index u_name on ca_user_groups(name);
+create unique index u_code on ca_user_groups(code);
+
+
+/*==========================================================================*/
+create table ca_user_roles
+(
+   role_id                        smallint unsigned              not null AUTO_INCREMENT,
+   name                           varchar(255)                   not null,
+   code                           varchar(20)                    not null,
+   description                    text                           not null,
+   rank                           smallint unsigned              not null default 0,
+   vars                           longtext                       not null,
+   field_access                   longtext                       not null,
+   primary key (role_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create unique index u_name on ca_user_roles(name);
+create unique index u_code on ca_user_roles(code);
+
+
+/*==========================================================================*/
 create table ca_entities
 (
    entity_id                      int unsigned               not null AUTO_INCREMENT,
@@ -291,34 +363,7 @@ create index i_submission_group_id on ca_entities(submission_group_id);
 create index i_submission_status_id on ca_entities(submission_status_id);
 create index i_submission_via_form on ca_entities(submission_via_form);
 
-
-/*==========================================================================*/
-create table ca_users
-(
-   user_id                        int unsigned                   not null AUTO_INCREMENT,
-   user_name                      varchar(255)                   not null,
-   userclass                      tinyint unsigned               not null,
-   password                       varchar(100)                   not null,
-   fname                          varchar(255)                   not null,
-   lname                          varchar(255)                   not null,
-   email                          varchar(255)                   not null,
-   sms_number                     varchar(30)                    not null,
-   vars                           longtext                       not null,
-   volatile_vars                  text                           not null,
-   active                         tinyint unsigned               not null,
-   confirmed_on                   int unsigned,
-   confirmation_key               char(32),
-   registered_on                  int unsigned,
-   entity_id                      int unsigned,
-   primary key (user_id),
-   constraint fk_ca_entities_entity_id foreign key (entity_id)
-      references ca_entities (entity_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create unique index u_user_name on ca_users(user_name);
-create unique index u_confirmation_key on ca_users(confirmation_key);
-create index i_userclass on ca_users(userclass);
-create index i_entity_id on ca_users(entity_id);
+alter table ca_users add constraint fk_ca_users_entity_id foreign key (entity_id) references ca_entities (entity_id) on delete restrict on update restrict;
 
 
 /*==========================================================================*/
@@ -1528,51 +1573,6 @@ create index i_completed_on on ca_task_queue(completed_on);
 create index i_entity_key on ca_task_queue(entity_key);
 create index i_row_key on ca_task_queue(row_key);
 create index i_error_code on ca_task_queue(error_code);
-
-
-/*==========================================================================*/
-create table ca_user_groups
-(
-   group_id                       int unsigned                   not null AUTO_INCREMENT,
-   parent_id                      int unsigned,
-   name                           varchar(255)                   not null,
-   code                           varchar(20)                    not null,
-   description                    text                           not null,
-   for_public_use                 tinyint unsigned               not null default 0,
-   user_id                        int unsigned                   null references ca_users(user_id),
-   rank                           smallint unsigned              not null default 0,
-   vars                           text                           not null,
-   hier_left                      decimal(30,20)                 not null,
-   hier_right                     decimal(30,20)                 not null,
-   primary key (group_id),
-      
-   constraint fk_ca_user_groups_parent_id foreign key (parent_id)
-      references ca_user_groups (group_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_hier_left on ca_user_groups(hier_left);
-create index i_hier_right on ca_user_groups(hier_right);
-create index i_parent_id on ca_user_groups(parent_id);
-create index i_user_id on ca_user_groups(user_id);
-create unique index u_name on ca_user_groups(name);
-create unique index u_code on ca_user_groups(code);
-
-
-/*==========================================================================*/
-create table ca_user_roles
-(
-   role_id                        smallint unsigned              not null AUTO_INCREMENT,
-   name                           varchar(255)                   not null,
-   code                           varchar(20)                    not null,
-   description                    text                           not null,
-   rank                           smallint unsigned              not null default 0,
-   vars                           longtext                       not null,
-   field_access                   longtext                       not null,
-   primary key (role_id)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create unique index u_name on ca_user_roles(name);
-create unique index u_code on ca_user_roles(code);
 
 
 /*==========================================================================*/
@@ -7193,7 +7193,7 @@ create table ca_history_tracking_current_values (
    index i_row_id				(row_id),
    
    /* Only one current value per subject per policy */
-   unique index u_all           (row_id, table_num, policy, type_id), 
+   unique index u_all           (row_id, table_num, policy, type_id, is_future), 
    
    index i_current              (current_row_id, current_table_num, current_type_id), 
    index i_tracked              (tracked_row_id, tracked_table_num, tracked_type_id),
@@ -7225,4 +7225,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (159, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (160, unix_timestamp());

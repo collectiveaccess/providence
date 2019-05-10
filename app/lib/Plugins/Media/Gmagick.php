@@ -233,6 +233,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	private $ops_dcraw_path;
 	private $ops_graphicsmagick_path;
 	private $ops_imagemagick_path;
+	private $opa_raw_list = [];
 	
 	/**
 	 * Per-request cache of extracted metadata from read files
@@ -285,6 +286,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 			if ($vn_return == 0) {
 				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
+					$this->opa_raw_list[$ps_filepath] = true;
 					return 'image/x-dcraw';
 				}
 			}
@@ -458,7 +460,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->metadata = array();
 
 				// convert to tiff with dcraw if necessary
-				if ($mimetype == 'image/x-dcraw') {
+				if (($mimetype == 'image/x-dcraw') || ($this->opa_raw_list[$ps_filepath])) {
 					$ps_filepath = $this->_dcrawConvertToTiff($ps_filepath);
 				}
 

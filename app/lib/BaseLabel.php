@@ -197,11 +197,17 @@
 			if (($ps_field == $this->getDisplayField()) && (is_array($va_use_list = caGetOption('use_list', $pa_options, false))) && ($po_request = caGetOption('request', $pa_options, null))) {
 				$vn_list_id = array_shift($va_use_list);
 				if ($vn_list_id > 0) {
-                    $va_urls = caJSONLookupServiceUrl($po_request, 'ca_list_items', ['list' => caGetListCode($vn_list_id)]);
-                
-                    $pa_options['height'] = 1;
-                    $pa_options['usewysiwygeditor'] = false;
-                    $pa_options['lookup_url'] = $va_urls['search'];
+					$ret_format = caGetOption('use_list_format', $pa_options, 'lookup');
+                    
+                    if ($ret_format == 'select') {
+                    	return ca_lists::getListAsHTMLFormElement($vn_list_id, $pa_options['name'], ['id' => $pa_options['name']], array_merge($pa_options, ['useOptionsForValues' => true]));
+                    } else {
+						$va_urls = caJSONLookupServiceUrl($po_request, 'ca_list_items', ['list' => caGetListCode($vn_list_id)]);
+				
+						$pa_options['height'] = 1;
+						$pa_options['usewysiwygeditor'] = false;
+						$pa_options['lookup_url'] = $va_urls['search'];
+					}
                 }
 			}
 			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);

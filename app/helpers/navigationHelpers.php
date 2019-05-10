@@ -488,10 +488,12 @@
 			$vs_extra = "jQuery(\"#isSaveAndReturn\").val(\"1\");";
 		}
 		
+		$css_id = caGetOption('id', $pa_options, null);
+		
 		if ($pb_prevent_duplicate_submits) {
-			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "").">";
 		} else {
-			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "").">";
 		}
 		
 		if (!$pb_no_background) { 

@@ -579,7 +579,7 @@
 					$va_index_options['queueIndexing'] = true;
 				}
 				
-				if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+				if (method_exists($this, "deriveHistoryTrackingCurrentValue") && $this->attributesChanged())  {
                     $table = $this->tableName();
                     if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
                 }
@@ -1345,7 +1345,7 @@
 				}
 			}
 			
-			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, $pa_options);
+			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options, ['value' => $this->get($this->getTypeFieldName())]));
 		}
 		# ------------------------------------------------------------------
 		// --- Forms
@@ -1793,7 +1793,13 @@
 				$vm_values = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : null;
 				
 				// Use current row value as default value if option is set
-				if (is_null($vm_values) && $use_current_row_value) { $vm_values = $this->get($vs_subelement_code, ['returnAsArray' => ca_metadata_elements::getDataTypeForElementCode($va_element['element_code']) == 3]); }
+				if (is_null($vm_values) && $use_current_row_value) { 
+				    $index_set = !is_null($index = caGetOption('index', $pa_options, null));
+				    $vm_values = $this->get($vs_subelement_code, ['returnAsArray' => $is = ((ca_metadata_elements::getDataTypeForElementCode($va_element['element_code']) == 3) || $index_set)]); 
+				    if ($is && $index_set) {
+				        $vm_values = $vm_values[$index];
+				    }
+				}
 			
 				$va_element_opts = array_merge(array(
 					'label' => $va_label['name'],
@@ -2280,26 +2286,31 @@
 				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'placeholderPrefix' => $this->tableName().'.'.$t_element->get('element_code'))));
 			} else {
 				// no template
-				$va_attribute_list = array();
-				foreach($va_tmp as $vn_id => $va_value_list) {
-					foreach($va_value_list as $va_value) {
-						foreach($va_value as $vs_element_code => $vs_value) {
-							if (strlen($vs_value)) { 
-								$va_attribute_list[] = $vs_value;
-							}
-						}
-					}
-				}
+				if(sizeof($va_tmp) > 0) {
+                    $va_attribute_list = array();
+                    foreach($va_tmp as $vn_id => $va_value_list) {
+                        foreach($va_value_list as $va_value) {
+                            foreach($va_value as $vs_element_code => $vs_value) {
+                                if (strlen($vs_value)) { 
+                                    $va_attribute_list[] = $vs_value;
+                                }
+                            }
+                        }
+                    }
 
-				//Allow getAttributesForDisplay to return an array value (for "special" returns such as coordinates or raw dates)
-				// if the value returns only a single value and it's an array. This is useful for getting "specials" via SearchResult::get()
-				if ((sizeof($va_attribute_list) === 1) && (is_array($va_attribute_list[0]))) { return $va_attribute_list[0]; }
-				
-				
-				$vs_text = join($vs_delimiter, $va_attribute_list);
-				
-				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
-					$vs_text = caConvertLineBreaks($vs_text);
+                    //Allow getAttributesForDisplay to return an array value (for "special" returns such as coordinates or raw dates)
+                    // if the value returns only a single value and it's an array. This is useful for getting "specials" via SearchResult::get()
+                    if ((sizeof($va_attribute_list) === 1) && (is_array($va_attribute_list[0]))) { return $va_attribute_list[0]; }
+                
+                
+                    $vs_text = join($vs_delimiter, $va_attribute_list);
+                
+                    if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
+                        $vs_text = caConvertLineBreaks($vs_text);
+                    }
+				} else {
+				    // Return default value for element if no value is available
+				    $vs_text = ca_metadata_elements::getElementDefaultValue($pm_element_code_or_id); 
 				}
 				return $vs_text;
 			}
@@ -3169,7 +3180,7 @@
 		 * @param $pm_element_code_or_id
 		 * @return bool
 		 */
-		public function elementHasChanged($pm_element_code_or_id) {
+		public function attributeHasChanged($pm_element_code_or_id) {
 			$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
 			$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 
@@ -3180,6 +3191,18 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Have any attributes changed on this row?
+		 *
+		 * @return bool
+		 */
+		public function attributesChanged() {
+            if(!is_array($cf = $this->_FIELD_VALUE_CHANGED)) { return false; }
+            if(sizeof($cf) === 0) { return false; }
+            if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+            return false;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * This is the same as BaseModel::didChange(), except for elements.
 		 * We changed the name instead of overriding it so that we don't have to run
 		 * every single changed() call on a Bundlable through this function. Turns out it gets called a lot.
@@ -3187,7 +3210,7 @@
 		 * @param $pm_element_code_or_id
 		 * @return bool
 		 */
-		public function elementDidChange($pm_element_code_or_id) {
+		public function attributeDidChange($pm_element_code_or_id) {
 			$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
 			$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 
@@ -3195,6 +3218,19 @@
 			if(!$vs_code || (!$this->hasElement($vs_code))) { return false; }
 
 			return isset($this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id] : false;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Did any attributes changed on this row, even if already saved?
+		 *
+		 * @param $pm_element_code_or_id
+		 * @return bool
+		 */
+		public function attributesDidChange() {
+            if(!is_array($cf = $this->_FIELD_VALUE_DID_CHANGE)) { return false; }
+            if(sizeof($cf) === 0) { return false; }
+            if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+            return false;
 		}
 		# ------------------------------------------------------------------
 	}

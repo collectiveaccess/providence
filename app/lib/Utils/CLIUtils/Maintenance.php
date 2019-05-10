@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1415,6 +1415,7 @@
 				} else {
 					CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));
 				}
+				PersistentCache::flush();
 			}
 			if (in_array($ps_cache, array('all', 'usermedia'))) {
 				if (($vs_tmp_directory = $o_config->get('ajax_media_upload_tmp_directory')) && (file_exists($vs_tmp_directory))) {

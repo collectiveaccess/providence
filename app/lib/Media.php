@@ -254,7 +254,7 @@ class Media extends BaseObject {
 			
 		if ($this->instance) {
 			$this->instance->init();
-			$vn_res = $this->instance->read($filepath, $mimetype);
+			$vn_res = $this->instance->read($filepath);
 		  if ($this->DEBUG) { print "USING ".$plugin_info["NAME"]."\n"; }
 			if (!$vn_res) {
 				$this->postError(1605, join("; ", $this->instance->getErrors()), "Media->read()");	

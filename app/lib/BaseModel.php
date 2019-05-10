@@ -2092,12 +2092,18 @@ class BaseModel extends BaseObject {
 	 		$pa_ids[$vn_i] = (int)$vn_v;
 	 	}
 	 	
+	 	$deleted_sql = '';
+	 	if ($this->hasField('deleted')) {
+	 	    $deleted_sql = " AND (deleted = 0)";
+	 	}
+	 	
 	 	$o_db = $this->getDb();
 	 	$qr_get_children = $o_db->query("
 			SELECT ".$this->primaryKey()."
 			FROM ".$this->tableName()."
 			WHERE 
 				{$vs_parent_id_fld} IN (?)
+				{$deleted_sql}
 		", array($pa_ids));
 		
 		$va_child_ids = $qr_get_children->getAllFieldValues($this->primaryKey());
@@ -2676,6 +2682,7 @@ class BaseModel extends BaseObject {
 	 *		updateOnlyMediaVersions = when set to an array of valid media version names, media is only processed for the specified versions
 	 *		force = if set field values are not verified prior to performing the update
 	 *		dontLogChange = don't log change in change log. [Default is false]
+	 *      dontUpdateHistoryCurrentValueTracking = Skip updating current value tracking caches. Used internally when deleting rows. [Default is false]
 	 * @return bool success state
 	 */
 	public function update($pa_options=null) {
@@ -2840,7 +2847,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$vs_sql = "UPDATE ".$this->TABLE." SET ";
 		$va_many_to_one_relations = Datamodel::getManyToOneRelations($this->tableName());
 
-		$vn_fields_that_have_been_set = 0;
+		$vn_fields_that_have_been_set = 0; $fields_changed = 0;
 		foreach ($this->FIELDS as $vs_field => $va_attr) {
 			if (isset($va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) && (bool)$va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) { continue; }
 			if (isset($va_attr['IDENTITY']) && $va_attr['IDENTITY']) { continue; }	// never update identity fields
@@ -2916,20 +2923,20 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							return false;
 						}
 						$vs_sql .= "{$vs_field} = {$vm_val},";
-						$vn_fields_that_have_been_set++;
+						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
 					case (FT_TEXT):
 					case (FT_PASSWORD):
 						$vm_val = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
 						$vs_sql .= "{$vs_field} = ".$this->quote($vm_val).",";
-						$vn_fields_that_have_been_set++;
+						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
 					case (FT_VARS):
 						$vm_val = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
 						$vs_sql .= "{$vs_field} = ".$this->quote(caSerializeForDatabase($vm_val, ((isset($va_attr['COMPRESS']) && $va_attr['COMPRESS']) ? true : false))).",";
-						$vn_fields_that_have_been_set++;
+						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
 					case (FT_DATETIME):
@@ -2952,7 +2959,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if (is_null($vm_val)) { $vm_val = 'null'; }
 						
 						$vs_sql .= "{$vs_field} = {$vm_val},";		# output as is
-						$vn_fields_that_have_been_set++;
+						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
 					case (FT_TIME):
@@ -2972,13 +2979,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if (is_null($vm_val)) { $vm_val = 'null'; }
 						
 						$vs_sql .= "{$vs_field} = {$vm_val},";		# output as is
-						$vn_fields_that_have_been_set++;
+						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
 					case (FT_TIMESTAMP):
 						if (isset($va_attr["UPDATE_ON_UPDATE"]) && $va_attr["UPDATE_ON_UPDATE"]) {
 							$vs_sql .= "{$vs_field} = ".time().",";
-							$vn_fields_that_have_been_set++;
+							$vn_fields_that_have_been_set++; $fields_changed++;
 						}
 						break;
 					# -----------------------------
@@ -3016,7 +3023,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
 						
 						$vs_sql .= "{$start_field_name} = {$vm_start_val}, {$end_field_name} = {$vm_end_val},";
-						$vn_fields_that_have_been_set++;
+						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
 					case (FT_TIMERANGE):
@@ -3052,7 +3059,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
 						
 						$vs_sql .= "{$start_field_name} = {$vm_start_val}, {$end_field_name} = {$vm_end_val},";
-						$vn_fields_that_have_been_set++;
+						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
 					case (FT_TIMECODE):
@@ -3065,7 +3072,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							return false;
 						}
 						$vs_sql .= "{$vs_field} = {$vm_val},";
-						$vn_fields_that_have_been_set++;
+						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
 					case (FT_MEDIA):
@@ -3073,7 +3080,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						
 						if ($vs_media_sql = $this->_processMedia($vs_field, array('processingMediaForReplication' => caGetOption('processingMediaForReplication', $pa_options, false), 'these_versions_only' => $va_limit_to_versions, 'batch' => caGetOption('batch', $pa_options, false)))) {
 							$vs_sql .= $vs_media_sql;
-							$vn_fields_that_have_been_set++;
+							$vn_fields_that_have_been_set++; $fields_changed++;
 						} else {
 							if ($this->numErrors() > 0) {
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -3086,7 +3093,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					case (FT_FILE):
 						if ($vs_file_sql = $this->_processFiles($vs_field)) {
 							$vs_sql .= $vs_file_sql;
-							$vn_fields_that_have_been_set++;
+							$vn_fields_that_have_been_set++; $fields_changed++;
 						} else {
 							if ($this->numErrors() > 0) {
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -3143,7 +3150,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				} 
 				
 				SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-                if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
+                if (($fields_changed > 0) && method_exists($this, "deriveHistoryTrackingCurrentValue") && !caGetOption('dontUpdateHistoryCurrentValueTracking', $pa_options, false)) {
                     $table = $this->tableName();
                     $this->deriveHistoryTrackingCurrentValue();
                     if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
@@ -3290,7 +3297,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				$vb_we_set_transaction = true;
 			}
 			$this->set('deleted', 1);
-			if ($vn_rc = self::update(array('force' => true))) {
+			if ($vn_rc = self::update(array('force' => true, 'dontUpdateHistoryCurrentValueTracking' => true))) {
 				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__') || !__CA_DONT_DO_SEARCH_INDEXING__) {
 					$o_indexer = $this->getSearchIndexer();
 					$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
@@ -4497,6 +4504,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 									return false;
 								}
+								@touch($filepath, filemtime($this->_SET_FILES[$ps_field]['tmp_name']));
 							
 							
 								if ($v === $va_default_queue_settings['QUEUE_USING_VERSION']) {
@@ -5402,6 +5410,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
+				@touch($filepath, filemtime($this->_SET_FILES[$field]['tmp_name']));
 
 
 				# -- delete old file if its name is different from the one we just wrote (otherwise, we overwrote it)
@@ -5715,6 +5724,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$va_list = isset($va_attr["BOUNDS_CHOICE_LIST"]) ? $va_attr["BOUNDS_CHOICE_LIST"] : null;
 			if (isset($va_attr['LIST']) && $va_attr['LIST']) {
 				$t_list = new ca_lists();
+				$t_list->setTransaction($this->getTransaction());
 				if ($t_list->load(array('list_code' => $va_attr['LIST']))) {
 					$va_items = caExtractValuesByUserLocale($t_list->getItemsForList($va_attr['LIST']));
 					$va_list = array();
@@ -9117,15 +9127,18 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
 					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
 				}
-				$t_item_rel->set('rank', $pn_rank);	
-				$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);		// TODO: verify type_id based upon type_id's of each end of the relationship
+				if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
+				if (!is_null($pn_type_id)) { $t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);}	// TODO: verify type_id based upon type_id's of each end of the relationship
 				if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 				if(!is_null($pa_source_info)){ $t_item_rel->set("source_info",$pa_source_info); }
-				$t_item_rel->update();
-				if ($t_item_rel->numErrors()) {
-					$this->errors = $t_item_rel->errors;
-					return false;
-				}
+				
+				if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
+                    $t_item_rel->update();
+                    if ($t_item_rel->numErrors()) {
+                        $this->errors = $t_item_rel->errors;
+                        return false;
+                    }
+                }
 				return $t_item_rel;
 			}
 		} else {
@@ -9144,49 +9157,61 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
 						}
 						
-						$t_item_rel->set('rank', $pn_rank);	
-						$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);		// TODO: verify type_id based upon type_id's of each end of the relationship
+						if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
+						if (!is_null($pn_type_id)) { $t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 						if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 						if(!is_null($pa_source_info)){ $t_item_rel->set("source_info",$pa_source_info); }
-						$t_item_rel->update();
 						
-						if ($t_item_rel->numErrors()) {
-							$this->errors = $t_item_rel->errors;
-							return false;
-						}
-						
+						if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
+                            $t_item_rel->update();
+                    
+                            if ($t_item_rel->numErrors()) {
+                                $this->errors = $t_item_rel->errors;
+                                return false;
+                            }
+                        }
+                        
 						return $t_item_rel;
 					}
 				case 2:		// many-to-one relations
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
 						if ($t_item_rel->load($pn_relation_id)) {
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
-							$t_item_rel->update();
 							
-							if ($t_item_rel->numErrors()) {
-								$this->errors = $t_item_rel->errors;
-								return false;
-							}
+							if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
+                                $t_item_rel->update();
+                            
+                                if ($t_item_rel->numErrors()) {
+                                    $this->errors = $t_item_rel->errors;
+                                    return false;
+                                }
+                            }
 							return $t_item_rel;
 						}
 						
 						if ($t_item_rel->load($pn_rel_id)) {
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
-							$t_item_rel->update();
 							
-							if ($t_item_rel->numErrors()) {
-								$this->errors = $t_item_rel->errors;
-								return false;
-							}
+							if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
+                                $t_item_rel->update();
+                            
+                                if ($t_item_rel->numErrors()) {
+                                    $this->errors = $t_item_rel->errors;
+                                    return false;
+                                }
+                            }
 							return $t_item_rel;
 						}
 					} else {
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
-						$this->update();
 						
-						if ($this->numErrors()) {
-							return false;
-						}
+						if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
+                            $this->update();
+                        
+                            if ($this->numErrors()) {
+                                return false;
+                            }
+                        }
 						return $this;
 					}
 					break;
@@ -9479,7 +9504,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param int $pn_to_id The primary key value of the row to move the relationships to.
 	 * @param array $pa_options Array of options. Options include:
 	 *		copyAttributes = Copy metadata attributes associated with each relationship, if the calling model supports attributes. [Default is false]
-	 *
+	 *      relationIds = List of relationship relation_id's to limit copy to. [Default is null]
 	 * @return int Number of relationships copied, or null on error. Note that you should carefully test the return value for null-ness rather than false-ness, since zero is a valid return value in cases where no relationships were available to be copied. 
 	 */
 	public function copyRelationships($pm_rel_table_name_or_num, $pn_to_id, $pa_options=null) {
@@ -9489,6 +9514,11 @@ $pa_options["display_form_field_tips"] = true;
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
 		$vb_copy_attributes = caGetOption('copyAttributes', $pa_options, false, array('castTo' => 'boolean')) && method_exists($this, 'copyAttributesFrom');
+		$relation_ids = caGetOption('relationIds', $pa_options, null);
+		if (is_numeric($relation_ids) && !is_array($relation_ids)) { $relation_ids = [$relation_ids]; }
+		if ($relation_ids && !is_array($relation_ids)) { $relation_ids = null; }
+		
+		$relation_id_sql = (is_array($relation_ids) && sizeof($relation_ids)) ? " AND (relation_id IN (?))" : null;
 		
 		$o_db = $this->getDb();
 		
@@ -9500,6 +9530,9 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$va_to_reindex_relations = array();
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+		    $params = [(int)$vn_row_id, (int)$vn_row_id];
+		    if ($relation_id_sql) { $params[] = $relation_ids; }
+		    
 			$vs_left_field_name = $t_item_rel->getLeftTableFieldName();
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
@@ -9507,8 +9540,9 @@ $pa_options["display_form_field_tips"] = true;
 				SELECT * 
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
-					({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?)
-			", (int)$vn_row_id, (int)$vn_row_id);
+					(({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?))
+					{$relation_id_sql}
+			", $params);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
 			while($qr_res->nextRow()) {
@@ -9530,6 +9564,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
+				    if (($t_item_rel->numErrors() == 1) && ($t_item_rel->errors()[0]->getErrorNumber() == 251)) { continue; }  // don't worry about failed duplicates
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
@@ -9542,12 +9577,15 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			}
 		} else {
+		    $params = [(int)$vn_row_id];
+		    if ($relation_id_sql) { $params[] = $relation_ids; }
 			$qr_res = $o_db->query("
 				SELECT * 
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					({$vs_item_pk} = ?)
-			", (int)$vn_row_id);
+					{$relation_id_sql}
+			", $params);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
 			while($qr_res->nextRow()) {
@@ -9569,6 +9607,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
+				    if (($t_item_rel->numErrors() == 1) && ($t_item_rel->errors()[0]->getErrorNumber() == 251)) { continue; }   // don't worry about failed duplicates
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
@@ -9977,6 +10016,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of options. Supported options are:
 	 *				purify = if true, comment, name and email are run through HTMLPurifier before being stored in the database. Default is true. 
 	 *				rank = option rank used for sorting. If omitted the tag is added to the end of the display list. [Default is null]
+	 *              forceModeration = force status of newly created tag to moderated. [Default is false]
 	 */
 	public function addTag($ps_tag, $pn_user_id=null, $pn_locale_id=null, $pn_access=0, $pn_moderator=null, $pa_options=null) {
 		global $g_ui_locale_id;
@@ -10024,7 +10064,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!is_null($pn_moderator)) {
 			$t_ixt->set('moderated_by_user_id', $pn_moderator);
 			$t_ixt->set('moderated_on', _t('now'));
-		}elseif($this->_CONFIG->get("dont_moderate_comments")){
+		}elseif(caGetOption('forceModerated', $pa_options, false) || $this->_CONFIG->get("dont_moderate_comments")){
 			$t_ixt->set('moderated_on', _t('now'));
 		}
 		
@@ -11514,6 +11554,8 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 			$o_db = $pa_options['transaction']->getDb();
+		} elseif(isset($pa_options['db'])) {
+		    $o_db = $pa_options['db'];
 		} else {
 			$o_db = new Db();
 		}

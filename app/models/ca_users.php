@@ -425,7 +425,8 @@ class ca_users extends BaseModel {
 	 */
 	static public function applyPasswordPolicy($password) {
 		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
-			
+		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
+		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
 			// check password policy
 			$builder = new \PasswordPolicy\PolicyBuilder(new \PasswordPolicy\Policy);
@@ -463,6 +464,8 @@ class ca_users extends BaseModel {
 	 */
 	static public function getPasswordPolicyAsText() {
 		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return ''; }	// password policies only apply to integral auth system
+		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
 			$criteria = [];
 			foreach($policies as $p) {
@@ -2984,7 +2987,7 @@ class ca_users extends BaseModel {
 			$vs_username = preg_replace("!".preg_quote($vs_rewrite_username_with_regex, "!")."!", $vs_rewrite_username_to_regex, $vs_username);
 		}
 		
-		 if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
+		if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
             $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
             $vs_username = $va_info['user_name'];
         }
@@ -2999,7 +3002,7 @@ class ca_users extends BaseModel {
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
 					));
-					return false;
+					throw($e);
 				}
 
 				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
@@ -3020,7 +3023,7 @@ class ca_users extends BaseModel {
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
 					));
-					return false;
+					throw($e);
 				}
 
 				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {

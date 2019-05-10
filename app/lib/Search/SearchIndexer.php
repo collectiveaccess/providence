@@ -375,7 +375,7 @@ class SearchIndexer extends SearchBase {
 		}
 
 		/* cache outdated? (i.e. changes to search_indexing.conf) */
-		$va_configfile_stat = stat($this->opo_search_config->get('search_indexing_config'));
+		$va_configfile_stat = stat(__CA_CONF_DIR__.'/search_indexing.conf');
 		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime')) {
 			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime']);
 			$va_cache_data = array();
@@ -1136,8 +1136,12 @@ if (!$for_current_value_reindex) {
 			$va_rows_to_reindex = $this->_getDependentRowsForSubject($pn_subject_table_num, $pn_subject_row_id, $va_deps, $va_changed_field_nums);
 
 			if ($vb_can_do_incremental_indexing) {
-			    $current_values = ca_objects::getDependentCurrentValues($pn_subject_table_num, $pn_subject_row_id);
-
+				if (method_exists($vs_subject_tablename, "getDependentCurrentValues")) {
+			    	$current_values = $vs_subject_tablename::getDependentCurrentValues($pn_subject_table_num, $pn_subject_row_id, ['db' => $this->getDb()]);
+				} else {
+					$current_values = [];
+				}
+				
 				$va_rows_to_reindex_by_row_id = [];
 				$va_row_ids_to_reindex_by_table = [];
 				
@@ -2806,7 +2810,7 @@ if (!$for_current_value_reindex) {
 	}
 	# ------------------------------------------------
 	/**
-	 * Generate count indexing Ð the number of relationships on the subject, broken out by type
+	 * Generate count indexing ï¿½ the number of relationships on the subject, broken out by type
 	 *
 	 * @param BaseModel $pt_subject
 	 * @param int $pn_subject_row_id
@@ -2937,6 +2941,7 @@ if (!$for_current_value_reindex) {
 	                    }
 	                }
 	            }
+	            if (sizeof($field_nums) === 0) { continue; }
 	            $this->opo_engine->removeRowIndexing($subject_table_num, $subject_row_id, Datamodel::getTableNum($rel_table), $field_nums);
 	        }
 	    }

@@ -2771,7 +2771,6 @@ if (!$pb_omit_editing_info) {
 	 * @return array Array of placements. Each value is an array with information about a column in the inline editor.
 	 */
 	static public function makeBundlesForResultsEditor($pa_bundles, $pa_settings=null) {		
-		
 		$va_placements = [];
 
 		$vn_i = 1;
@@ -2786,6 +2785,7 @@ if (!$pb_omit_editing_info) {
 				}
 			}
 			
+			$vs_bundle = preg_replace("!\.related$!", "", $vs_bundle);  // Remove .related specifier as editor form generator doesn't need or recognize itQ
 			$va_placements[] = array(
 				'placement_id' => 'X'.$vn_i,
 				'screen_id' => -1,
@@ -3151,7 +3151,7 @@ if (!$pb_omit_editing_info) {
 		$vn_id = $t_subject->getPrimaryKey();
 		
 		return [
-			'status' => sizeof($va_error_list) ? 10 : 0,
+			'status' => (is_array($va_error_list) && sizeof($va_error_list)) ? 10 : 0,
 			'id' => $vn_id,
 			'row' => $pn_row, 'col' => $pn_col,
 			'table' => $t_subject->tableName(),

@@ -218,14 +218,15 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
                 $o_media->cleanup();
                 return false;
             }
-            if (!$o_media->read($vs_input_file)) {
-                $this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
-                $o_media->cleanup();
-                return false;
-            }
             
 			foreach($va_versions as $v => $va_version_settings) {
 				$vs_use_icon = null;
+								
+                if (!$o_media->read($vs_input_file)) {
+                    $this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
+                    $o_media->cleanup();
+                    return false;
+                }
 				
 				$vs_rule 			= isset($va_version_info[$v]['RULE']) ? $va_version_info[$v]['RULE'] : '';
 				$va_rules 			= $o_media_proc_settings->getMediaTransformationRule($vs_rule);
@@ -350,7 +351,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 					$vs_magic = rand(0,99999);
 					$vs_filepath = $va_volume_info["absolutePath"]."/".$vs_dirhash."/".$vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v;
 							
-					$m->set('colorspace', 'RGB');					
+					$o_media->set('colorspace', 'RGB');					
 					if (!($vs_output_file = $o_media->write($vs_filepath, $vs_output_mimetype, $va_options))) {
 						$this->error = $o_media->errors[0];
 						$o_media->cleanup();

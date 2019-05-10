@@ -289,6 +289,34 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	/**
 	 *
 	 */
+	function caDeleteMultipleWarningBox($po_request, $t_instance, $row_ids, $message, $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters) {
+		if ($vs_warning = isset($pa_parameters['warning']) ? $pa_parameters['warning'] : null) {
+			$vs_warning = '<br/>'.$vs_warning;
+		}
+		
+		$vs_output = caFormTag($po_request, 'Delete', 'caDeleteForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false,'disableUnsavedChangesWarning' => true));
+		$vs_output .= "<div class='delete-control-box'>".caFormControlBox(
+			"<div class='delete_warning_box'>"._t('Really delete %1?', $message)."</div>",
+			$vs_warning,
+			caFormSubmitButton($po_request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
+			caFormNavButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters)
+		)."</div>\n";
+		
+		
+		foreach(array_merge($pa_parameters, array('confirm' => 1)) as $vs_f => $vs_v) {
+			$vs_output .= caHTMLHiddenInput($vs_f, array('value' => $vs_v));
+		}
+		foreach($row_ids as $row_id) {
+			$vs_output .= caHTMLHiddenInput("row_id[]", array('value' => $row_id));
+		}
+		$vs_output .= "</form>\n";
+		
+		return $vs_output;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caDeleteRemapper($po_request, $t_instance) {
 		$vs_instance_table = $t_instance->tableName();
 		
@@ -1760,7 +1788,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			}
 			
 			require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
-			if (ExternalExportManager::getTargets($t_item->tableNum(), ['countOnly' => true]) > 0) {
+			if (ExternalExportManager::getTargets(['countOnly' => true, 'table' => $t_item->tableNum(), 'restrictToTypes' => [$t_item->getTypeCode()]]) > 0) {
 				$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExternalExportItemButton">';
 				$vs_buf .= _t('Export to external repository')." ";
 				$vs_buf .= "<a class='button' onclick='jQuery(\"#externalExporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
@@ -3233,7 +3261,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
 		global $g_ui_locale;
 		
-		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
+		$definition = caGetOption($g_ui_locale, $pa_settings['definition'], null);
+		if(is_array($definition)) { $definition = join ("", $definition); }
+		if (!($vs_definition = trim($definition))) { return ''; }
 		
 		$vs_buf = '';
 		$vs_buf .= "<span class='iconButton'>";

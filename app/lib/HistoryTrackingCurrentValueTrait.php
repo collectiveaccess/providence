@@ -215,8 +215,10 @@
 		/**
 		 * 
 		 *
-		 * @param array $options Options include:
-		 *		policy = Name of policy to apply. If omitted, legacy 'current_location_criteria' configuration will be used if present, otherwise a null value will be returned. [Default is null]
+		 * @param string $policy Name of policy to apply
+		 * @param string $table
+		 * @param string $type
+		 * @param array $options
 		 *
 		 * @return array Element array or null if not available.
 		 */
@@ -250,7 +252,7 @@
 							'policy', 'displayMode', 'row_id', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 'hide_update_location_controls',
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
-							'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_entity_controls', 'add_to_entity_types', 
+							'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_object_controls', 'hide_add_to_entity_controls', 'add_to_entity_types', 
 							'ca_storage_locations_elements', 'sortDirection', 'setInterstitialElementsOnAdd',
 							'currentValueColor', 'pastValueColor', 'futureValueColor', 'hide_value_interstitial_edit', 'hide_value_delete'
 						) as $vs_key) {
@@ -416,7 +418,7 @@
 			
 			$is_future = caGetOption('isFuture', $options, null);
 			if (is_null($values) && !$is_future) {			
-				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance'])) {
+				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()])) {
 					$l->setDb($this->getDb());	
 					self::$s_history_tracking_deleted_current_values[$l->get('tracked_table_num')][$l->get('tracked_row_id')][$policy] = 
 					    self::$s_history_tracking_deleted_current_values[$l->get('current_table_num')][$l->get('current_row_id')][$policy] = 
@@ -444,18 +446,18 @@
 				foreach([$values['current_table_num'] => $values['current_row_id'], $values['tracked_table_num'] => $values['tracked_row_id']] as $t => $id) {
 					if (!($table = Datamodel::getTableName($t))) { continue; } 
 					Datamodel::getInstance($table, true);
-					if ($table::find($id, ['returnAs' => 'count']) == 0) {
+					if ($table::find($id, ['returnAs' => 'count', 'transaction' => $this->getTransaction()]) == 0) {
 						throw new ApplicationException(_t('Invalid row id'));
 					}
 				}
 			}
 			
-			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance']))) {
+			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]))) {
 				throw new ApplicationException(_t('Invalid subject row id'));
 			}
 			$t->setDb($this->getDb());
 			
-			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays'])) {
+			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()])) {
 				foreach($ls as $l) {
 				    if((bool)$l['is_future']) { continue; }
 				    if (
@@ -473,8 +475,9 @@
 					    self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
 					        ['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
 					        
-					$t_l = new ca_history_tracking_current_values($l['tracking_id']);
+					$t_l = new ca_history_tracking_current_values();
 					$t_l->setDb($this->getDb());	
+					$t_l->load($l['tracking_id']);
 					$t_l->setMode(ACCESS_WRITE);
 				    if (!($rc = $t_l->delete())) {
                         $this->errors = $t_l->errors;
@@ -602,6 +605,27 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Return list of policies applied to a table
+		 *
+		 * @param string $table Table to which policies are applied
+		 * @param array $options No options are currently supported
+		 *
+		 * @return array List of policies
+		 */ 
+		static public function getHistoryTrackingCurrentValuePoliciesForTable($table, $options=null) {
+			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
+			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
+				return [];	// No policies are configured
+			}
+			
+			$policies = array_filter($policy_config['policies'], function($v) use ($table) {
+			    return isset($v['table']) && ($v['table'] === $table); 
+			});
+			
+			return is_array($policies) ? $policies : [];
+		}
+		# ------------------------------------------------------
+		/**
 		 * Calculate and set for loaded row current values for all policies
 		 *
 		 * @param array $options Options include:
@@ -687,7 +711,7 @@
 							if (isset($dspec['date']) && $dspec['date']) {
 								$spec_has_date = true;
 								$element_code = array_shift(explode('.', $dspec['date']));
-								if($this->elementDidChange($element_code)) {
+								if($this->attributeDidChange($element_code)) {
 									$date_has_changed = true;
 								}
 							}
@@ -1556,7 +1580,7 @@
 			// Storage locations
 			if (is_array($path = Datamodel::getPath($table, 'ca_storage_locations')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
 				$va_locations = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
-			
+
 				$va_child_locations = [];
 				if(caGetOption('ca_storage_locations_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_locations = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
@@ -1618,7 +1642,7 @@
 							'type' => 'ca_storage_locations',
 							'id' => $vn_location_id,
 							'relation_id' => $relation_id,
-							'display' => $qr_locations->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+							'display' => "[$relation_id] ".$qr_locations->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 							'typename_singular' => $vs_name_singular, 
@@ -1721,14 +1745,15 @@
 			}
 			ksort($va_history);
 			
-			// filter out deleted
+			// filter out deleted current values
 			if (is_array($deleted = self::getDeletedCurrentValues())) {
-                foreach($va_history as $d => $by_date) {
+                foreach(array_reverse($va_history) as $d => $by_date) {
                     foreach($by_date as $i => $h) {
                         if(isset($deleted[$h['tracked_table_num']][$h['tracked_row_id']]) || isset($deleted[$h['current_table_num']][$h['current_row_id']])) {
                             unset($va_history[$d][$i]);
                             if(!sizeof($va_history[$d])) { unset($va_history[$d]); }
                         }
+                        break(2);
                     }
                 }
             }
@@ -1780,7 +1805,7 @@
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 			if (!$policy) { if (!($policy = $this->getDefaultHistoryTrackingCurrentValuePolicy())) { return null; } }
 		
-			$values = ca_history_tracking_current_values::find(['policy' => $policy, 'current_table_num' => $this->tableNum(), 'current_row_id' => $row_id], ['returnAs' => 'arrays']);
+			$values = ca_history_tracking_current_values::find(['policy' => $policy, 'current_table_num' => $this->tableNum(), 'current_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()]);
 		
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
 			$row = array_shift($values);
@@ -2057,7 +2082,7 @@
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
 				
 				Datamodel::getInstance('ca_editor_uis', true);
-				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance']);
+				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance', 'transaction' => caGetOption('transaction', $options, null)]);
 				foreach($interstitial_elements as $element_code) {
 					$buf .= "<tr>";
 					
@@ -2176,6 +2201,21 @@
 					}
 					return null;
 				    break;
+		    case 'submitted_by_user':
+		        $vals = array_shift(array_shift($pa_values));
+		        if($user_id = $vals['submission_user_id']) {
+                    $template = caGetOption('display_template', $pa_options, "^ca_users.fname ^ca_users.lname (^ca_users.email)");
+                    return caProcessTemplateForIDs($template, 'ca_users', array($user_id));
+                }
+                return null;
+                break;
+            case 'submission_group':
+                $vals = array_shift(array_shift($pa_values));
+		        if($group_id = $vals['submission_group_id']) {
+                    $template = caGetOption('display_template', $pa_options, "^ca_user_groups.name (^ca_user_groups.code)");
+                    return caProcessTemplateForIDs($template, 'ca_user_groups', array($group_id));
+                }
+                break;
 			}
 		
 			return null;
@@ -2873,9 +2913,16 @@
 		 *
 		 * @return array
 		 */
-		static public function getDependentCurrentValues($table_num, $row_id) {
-		    $current = ca_history_tracking_current_values::find(['current_table_num' => $table_num, 'current_row_id' => $row_id], ['returnAs' => 'arrays']);
-		    $tracked = ca_history_tracking_current_values::find(['tracked_table_num' => $table_num, 'tracked_row_id' => $row_id], ['returnAs' => 'arrays']);
+		static public function getDependentCurrentValues($table_num, $row_id, $options=null) {
+		    $opts = ['returnAs' => 'arrays'];
+		    if ($db = caGetOption('db', $options, null)) {
+		        $opts['db'] = $db;
+		    } elseif($trans = caGetOption('transaction', $options, null)) {
+		        $opts['transaction'] = $trans;
+		    }
+		    
+		    $current = ca_history_tracking_current_values::find(['current_table_num' => $table_num, 'current_row_id' => $row_id], $opts);
+		    $tracked = ca_history_tracking_current_values::find(['tracked_table_num' => $table_num, 'tracked_row_id' => $row_id], $opts);
 		    
 		    $rows = array_reduce(array_merge($current, $tracked), function($c, $i) { if (!$i['is_future']) { $c[$i['policy']][$i['table_num']][$i['row_id']] = true; } return $c; }, []);
 		    

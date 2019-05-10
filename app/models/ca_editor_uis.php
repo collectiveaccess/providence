@@ -917,6 +917,65 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		return array('fragment' => $va_nav, 'defaultScreen' => 'Screen'.$vn_default_screen_id);
 	}
 	# ----------------------------------------
+	/**
+	 * Add bundle placement to screen in currently loaded user interface
+	 *
+	 * @param mixed $pm_screen screen_id, idno or preferred label of screen to add bundle to.
+	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name)
+	 * @param array $pa_settings Placement settings array; keys should be valid setting names
+	 * @param int $pn_rank Optional value that determines sort order of bundles in the screen. If omitted, placement is added to the end of the screen.
+	 * @param array $pa_options Optional array of options. Supports the following options:
+	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
+	 * @return int Returns placement_id of newly created placement on success, false on error
+	 */
+	public function addPlacementToScreen($pm_screen, $ps_bundle_name, $ps_placement_code, $pa_settings, $pn_rank=null, $pa_options=null) {
+	    if(!$this->getPrimaryKey()) { return null; }
+	    if ($t_screen = ca_editor_ui_screens::loadScreen($this->getPrimaryKey(), $pm_screen, $pa_options)) {
+	        return $t_screen->addPlacement($ps_bundle_name, $ps_placement_code, $pa_settings, $pn_rank, $pa_options);
+	    }
+	    return null;
+	}
+	# ----------------------------------------
+	/**
+	 * Add bundle placement to currently loaded screen before a specified bundle
+	 *
+	 * @param mixed $pm_screen screen_id, idno or preferred label of screen to add bundle to.
+	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name)
+	 * @param string $ps_placement_code Placement code
+	 * @param array $pa_settings Placement settings array; keys should be valid setting names
+	 * @param string $ps_relative_to_bundle_name_or_placement_code Bundle name or placement code of placement to insert new placement before.
+	 * @param array $pa_options Optional array of options. Supports the following options:
+	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
+	 * @return int Returns placement_id of newly created placement on success, false on error
+	 */
+	public function addPlacementToScreenBefore($pm_screen, $ps_bundle_name, $ps_placement_code, $pa_settings, $ps_relative_to_bundle_name_or_placement_code, $pa_options=null) {
+	    if(!$this->getPrimaryKey()) { return null; }
+	    if ($t_screen = ca_editor_ui_screens::loadScreen($this->getPrimaryKey(), $pm_screen, $pa_options)) {
+	        return $t_screen->addPlacementBefore($ps_bundle_name, $ps_placement_code, $pa_settings, $ps_relative_to_bundle_name_or_placement_code, $pa_options);
+	    }
+	    return null;
+	}
+	# ----------------------------------------
+	/**
+	 * Add bundle placement to currently loaded screen after a specified bundle
+	 *
+	 * @param mixed $pm_screen screen_id, idno or preferred label of screen to add bundle to.
+	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name)
+	 * @param string $ps_placement_code Placement code
+	 * @param array $pa_settings Placement settings array; keys should be valid setting names
+	 * @param string $ps_relative_to_bundle_name_or_placement_code Bundle name or placement code of placement to insert new placement after.
+	 * @param array $pa_options Optional array of options. Supports the following options:
+	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
+	 * @return int Returns placement_id of newly created placement on success, false on error
+	 */
+	public function addPlacementToScreenAfter($pm_screen, $ps_bundle_name, $ps_placement_code, $pa_settings, $ps_relative_to_bundle_name_or_placement_code, $pa_options=null) {
+	    if(!$this->getPrimaryKey()) { return null; }
+	    if ($t_screen = ca_editor_ui_screens::loadScreen($this->getPrimaryKey(), $pm_screen, $pa_options)) {
+	        return $t_screen->addPlacementAfter($ps_bundle_name, $ps_placement_code, $pa_settings, $ps_relative_to_bundle_name_or_placement_code, $pa_options);
+	    }
+	    return null;
+	}
+	# ----------------------------------------
 	# Static
 	# ----------------------------------------
 	/**

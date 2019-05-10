@@ -763,6 +763,7 @@ class RequestHTTP extends Request {
 			//
 			// is a user already logged in?
 			//
+			
 			if ($vn_user_id = Session::getVar($vs_app_name."_user_id")) { 				// does session have a user attached to it?
 				// user is already logged in
 
@@ -814,7 +815,13 @@ class RequestHTTP extends Request {
                     }
                 } else {
                 	// Redirect to external auth?
-                	return $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]);
+                	try {
+                		return $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]);
+                	} catch (Exception $e) {
+                		$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with exception '".$e->getMessage()." (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                		$this->opo_response->addHeader("Location", $vs_auth_login_url);
+                		return false;
+                	}
                 }
 			}
 		} 

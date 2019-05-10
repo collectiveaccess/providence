@@ -602,11 +602,11 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->opa_media_metadata["mime_type"] != 'application/x-shockwave-flash')) {
-					exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04-vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
-						// try again, with -ss 1 (seems to work consistently on some files where other -ss values won't work)
-						exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						// try again, without attempting to force aspect ratio, as this seems to cause ffmpeg to barf at specific frame sizes and input aspect ratios
+						exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					}
 
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {

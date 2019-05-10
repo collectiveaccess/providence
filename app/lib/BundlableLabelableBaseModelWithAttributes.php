@@ -378,6 +378,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		duplicate_nonpreferred_labels = duplicate nonpreferred labels. [Default is false]
 	 *		duplicate_attributes = duplicate all content fields (intrinsics and attributes). [Default is false]
 	 *		duplicate_relationships = if set to an array of table names, all relationships to be specified tables will be duplicated. [Default is null - no relationships duplicated]
+	 *		duplicate_current_relationships_only = duplicate only current relationships, as determined by configured history tracking policies. [Default is false]
 	 *		duplicate_relationship_attributes = duplicate metadata attributes attached to duplicated relationships. [Default is false]
 	 *		duplicate_element_settings = per-metdata element duplication settings; keys are element names, values are 1 (duplicate) or 0 (don't duplicate); if element is not set then it will be duplicated. [Default is null]
 	 *		duplicate_children = duplicate child records. [Default is false]
@@ -397,6 +398,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_duplicate_attributes = isset($pa_options['duplicate_attributes']) && $pa_options['duplicate_attributes'];
 		$vb_duplicate_relationship_attributes = isset($pa_options['duplicate_relationship_attributes']) && $pa_options['duplicate_relationship_attributes'];
 		$va_duplicate_relationships = (isset($pa_options['duplicate_relationships']) && is_array($pa_options['duplicate_relationships']) && sizeof($pa_options['duplicate_relationships'])) ? $pa_options['duplicate_relationships'] : array();
+		$vb_duplicate_current_relationships_only = isset($pa_options['duplicate_current_relationships_only']) && $pa_options['duplicate_current_relationships_only'];
 		$va_duplicate_element_settings = (isset($pa_options['duplicate_element_settings']) && is_array($pa_options['duplicate_element_settings']) && sizeof($pa_options['duplicate_element_settings'])) ? $pa_options['duplicate_element_settings'] : array();
 		$vb_duplicate_relationship_attributes = isset($pa_options['duplicate_relationship_attributes']) && $pa_options['duplicate_relationship_attributes'];
 		$vb_duplicate_children = isset($pa_options['duplicate_children']) && $pa_options['duplicate_children'];
@@ -541,7 +543,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 			$va_options = ['restrictToAttributesByCodes' => $va_attrs_to_duplicate];
 
-			if($va_dont_duplicate_codes = $this->getAppConfig()->get($table.'_dont_duplicate_element_codes')) {
+			if($va_dont_duplicate_codes = $this->getAppConfig()->get("{$table}_dont_duplicate_element_codes")) {
 				if(is_array($va_dont_duplicate_codes)) {
 					$va_options['excludeAttributesByCodes'] = $va_dont_duplicate_codes;
 				}
@@ -555,12 +557,30 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// duplicate relationships
+		$history_tracking_policies = method_exists($table, "getHistoryTrackingCurrentValuePoliciesForTable") ? array_keys($table::getHistoryTrackingCurrentValuePoliciesForTable($table)) : [];
 		foreach(array(
 			'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 
 			'ca_collections', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_storage_locations', 'ca_tour_stops'
 		) as $vs_rel_table) {
 			if (!in_array($vs_rel_table, $va_duplicate_relationships)) { continue; }
-			if ($this->copyRelationships($vs_rel_table, $t_dupe->getPrimaryKey(), array('copyAttributes' => $vb_duplicate_relationship_attributes)) === false) {
+			
+			$limit_to_relation_ids = null;
+			if ($vb_duplicate_current_relationships_only) {
+				
+				if(is_array($history_tracking_policies) && sizeof($history_tracking_policies)) {
+					// is this relationship part of a policy?
+					foreach($history_tracking_policies as $policy) {
+						if (!$table::historyTrackingPolicyUses($policy, $vs_rel_table)) { continue; }
+						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy]))) { continue; }
+						
+						$current = array_shift(array_shift($h));
+						if ($current['current_table_num'] === Datamodel::getTableNum($vs_rel_table)) {
+							$limit_to_relation_ids = [$current['tracked_row_id']];
+						}
+					}
+				}
+			}
+			if ($this->copyRelationships($vs_rel_table, $t_dupe->getPrimaryKey(), array('copyAttributes' => $vb_duplicate_relationship_attributes, 'relationIds' => $limit_to_relation_ids)) === false) {
 				$this->errors = $t_dupe->errors;
 				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
@@ -573,6 +593,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		if ($vb_duplicate_children && $this->isHierarchical() && ($child_ids = $this->getHierarchyChildren(null, ['idsOnly' => true]))) {
+		    $dupe_id = $t_dupe->getPrimaryKey();
 			foreach($child_ids as $child_id) {
 				if ($t_child = $table::find([$vs_pk => $child_id], ['returnAs' => 'firstModelInstance'])) {
 					$t_child_dupe = $t_child->duplicate($pa_options);
@@ -581,7 +602,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($vb_we_set_transaction) { $o_t->rollback();}
 						return false;
 					}
-					$t_child_dupe->set($vs_parent_id_fld, $t_dupe->getPrimaryKey());
+					$t_child_dupe->set($vs_parent_id_fld, $dupe_id);
 					$t_child_dupe->update();
 					if ($t_child_dupe->numErrors()) {
 						$this->errors = $t_child_dupe->errors;
@@ -1344,7 +1365,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
 			# be a simple string. In the future settings should be normalized such that any value that may be localized is an array key'ed by locale code,
 			# but since we're in the present we check for and handle all three current possibilities here.
-			$pa_bundle_settings['definition'][$g_ui_locale] = caExtractSettingsValueByUserLocale('definition', $va_dictionary_entry['settings']);
+			if (!($pa_bundle_settings['definition'][$g_ui_locale] = caExtractSettingsValueByUserLocale('definition', $va_dictionary_entry['settings']))) {
+			    $pa_bundle_settings['definition'][$g_ui_locale] = $va_dictionary_entry['settings']['definition'];
+			}
 			if (caGetOption('mandatory', $va_dictionary_entry['settings'], false)) {
 				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').caExtractSettingsValueByUserLocale('definition', $pa_bundle_settings);
 			}
@@ -5411,7 +5434,7 @@ if (!$vb_batch) {
 				$t_item_rel = $this->isRelationship() ? $this : null;
 				$vs_item_rel_table_name = $t_item_rel ? $t_item_rel->tableName() : null;
 				
-				$t_rel_item = Datamodel::getInstance($va_path[1]);
+				if (!($t_rel_item = Datamodel::getInstance($va_path[1]))) { return null; }
 				$vs_rel_item_table_name = $t_rel_item->tableName();
 				
 				$vs_key = $t_rel_item->primaryKey();
@@ -7382,11 +7405,19 @@ side. For many self-relations the direction determines the nature and display te
 			$qr_res = $o_db->query("
 				SELECT o.{$vs_pk}, count(*) c
 				FROM {$vs_table} o
-				INNER JOIN {$vs_table} AS p ON p.{$vs_parent_fld} = o.{$vs_pk}
+				LEFT JOIN {$vs_table} AS p ON o.{$vs_pk} = p.{$vs_parent_fld} 
 				WHERE ".(join(" AND ", $va_wheres))."
 				GROUP BY o.{$vs_pk}
 			", $va_params);
 			
+			$qr_childless = $o_db->query("
+				SELECT o.{$vs_pk}
+				FROM {$vs_table} o
+				LEFT JOIN {$vs_table} AS p ON o.{$vs_pk} = p.{$vs_parent_fld} 
+				WHERE ".(join(" AND ", $va_wheres))." AND p.{$vs_pk} is NULL
+				GROUP BY o.{$vs_pk}
+			", $va_params);
+			$childless_ids = $qr_childless->getAllFieldValues($vs_pk);
 	 		$va_hiers = array();
 	 		
 	 		$va_ids = $qr_res->getAllFieldValues($vs_pk);
@@ -7398,9 +7429,10 @@ side. For many self-relations the direction determines the nature and display te
 	 				$vs_pk => $vn_id,
 	 				'name' => caProcessTemplateForIDs($vs_template, $vs_table, array($vn_id)),
 	 				'hierarchy_id' => $vn_id,
-	 				'children' => (int)$qr_res->get('c')
+	 				'children' => in_array($vn_id, $childless_ids) ? 0 : (int)$qr_res->get('c')
 	 			);
 	 		}
+	 		
 	 		return $va_hiers;
 	 	} else {
 	 		// return specific collection as root of hierarchy

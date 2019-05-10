@@ -508,11 +508,11 @@
 					switch($vs_match_on) {
 						case 'idno':
 							if (!trim($pa_values['idno'])) { break; }
-							$va_ids = ca_object_representations::find(array('idno' => trim($pa_values['idno'])), array('returnAs' => 'ids'));
+							$va_ids = ca_object_representations::find(array('idno' => trim($pa_values['idno'])), array('returnAs' => 'ids', 'transaction' => $this->getTransaction()));
 							break;
 						case 'label':
 							if (!trim($pa_values['preferred_labels']['name'])) { break; }
-							$va_ids = ca_object_representations::find(array('preferred_labels' => array('name' => trim($pa_values['preferred_labels']['name']))), array('returnAs' => 'ids'));
+							$va_ids = ca_object_representations::find(array('preferred_labels' => array('name' => trim($pa_values['preferred_labels']['name']))), array('returnAs' => 'ids', 'transaction' => $this->getTransaction()));
 							break;
 					}
 					if(is_array($va_ids) && sizeof($va_ids)) { 
@@ -627,7 +627,7 @@
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			if ($this->inTransaction()) { $t_oxor->setTransaction($this->getTransaction()); }
+			$t_oxor->setTransaction($this->getTransaction()); 
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);
 			$t_oxor->set('representation_id', $t_rep->getPrimaryKey());
@@ -1143,7 +1143,7 @@
 			$va_path = Datamodel::getPath($this->tableName(), 'ca_object_representations');
 			if (!is_array($va_path) || (sizeof($va_path) != 3)) { return null; }
 			$va_path = array_keys($va_path);
-			return Datamodel::getInstanceByTableName($va_path[1], true);
+			return Datamodel::getInstanceByTableName($va_path[1]);
 		}
 		# ------------------------------------------------------
         /**

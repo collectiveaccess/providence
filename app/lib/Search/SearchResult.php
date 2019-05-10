@@ -2150,6 +2150,8 @@ class SearchResult extends BaseObject {
 						} elseif ($vb_element_is_present) {
 							// ca_objects.authority_attr_code
 							$va_auth_spec = array_slice($va_path_components['components'], 2);
+						} else {
+						    $va_auth_spec = [];
 						}
 					}
 					
@@ -2176,8 +2178,9 @@ class SearchResult extends BaseObject {
 										continue;
 									}
 								}
+								
 								$va_val_proc = $qr_res->get(join(".", $va_auth_spec), $va_options);
-							
+								
 								if(is_array($va_val_proc)) {
 									foreach($va_val_proc as $vn_i => $vs_v) {
 										$vn_list_id = null;
@@ -2362,9 +2365,13 @@ class SearchResult extends BaseObject {
 			}
 		} else {
 			// is blank
+			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
+			
 			if ($pa_options['returnWithStructure'] && $pa_options['returnBlankValues']) {
-				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = '';
-			}	
+				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
+			} elseif ($default_value) {
+			    $va_return_values[(int)$vn_id][null][null][] = $default_value;	
+			}
 		}
 		
 		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	

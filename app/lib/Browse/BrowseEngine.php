@@ -2710,18 +2710,18 @@
 							case 'relationship_types':
 								foreach($va_item['rel_type_id'] as $vs_g) {
 									if (isset($va_relationship_types[$vs_g]['typename'])) {
-										$va_groups[] = $va_relationship_types[$vs_g]['typename'];
+										$va_groups[$vs_g] = $va_relationship_types[$vs_g]['typename'];
 									} else {
-										$va_groups[] = $vs_g;
+										$va_groups[$vs_g] = $vs_g;
 									}
 								}
 								break;
 							case 'type':
 								foreach($va_item['type_id'] as $vs_g) {
 									if (isset($va_types[$vs_g]['name_plural'])) {
-										$va_groups[] = $va_types[$vs_g]['name_plural'];
+										$va_groups[$vs_g] = $va_types[$vs_g]['name_plural'];
 									} else {
-										$va_groups[] = _t('Type ').$vs_g;
+										$va_groups[$vs_g] = _t('Type ').$vs_g;
 									}
 								}
 								break;
@@ -2753,9 +2753,20 @@
 								break;
 						}
 
-						foreach($va_groups as $vs_group) {
+						foreach($va_groups as $vs_g => $vs_group) {
 							$vs_group = caUcFirstUTF8Safe($vs_group);
 							$vs_alpha_key = '';
+							
+							switch($ps_grouping_field) {
+							    case 'type':
+							        $va_item['content_count'] = $va_item['counts_by_type'][$vs_g];
+							        break;
+							    case 'relationship_types':
+							        $va_item['content_count'] = $va_item['counts_by_rel_type'][$vs_g];
+							        break;
+							}
+									
+							
 							foreach($va_label_order_by_fields as $vs_f) {
 								$vs_alpha_key .= $va_item[$vs_f];
 							}
@@ -5942,14 +5953,14 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 	if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) {
 						$vs_sql = "
-							SELECT COUNT(*) _count, ".join(', ', $va_selects)."
+							SELECT COUNT(DISTINCT ".$t_item->primaryKey(true).") _count, ".join(', ', $va_selects)."
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
 								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 	} else {
 						$vs_sql = "
-							SELECT COUNT(*) _count, ".join(', ', $va_selects)."
+							SELECT COUNT(DISTINCT ".$t_item->primaryKey(true).") _count, ".join(', ', $va_selects)."
 							FROM ".$t_rel_item->tableName()."
 							{$vs_join_sql}
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
@@ -6003,12 +6014,16 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								if (!is_null($vs_single_value) && ($va_fetched_row[$vs_rel_pk] == $vs_single_value)) {
 									$vb_single_value_is_present = true;
 								}
+							} else {
+							    $va_facet_items[$va_fetched_row[$vs_rel_pk]]['content_count'] += $va_fetched_row['_count'];
 							}
 							if ($va_fetched_row['type_id']) {
 								$va_facet_items[$va_fetched_row[$vs_rel_pk]]['type_id'][] = $va_fetched_row['type_id'];
+							    $va_facet_items[$va_fetched_row[$vs_rel_pk]]['counts_by_type'][$va_fetched_row['type_id']] += $va_fetched_row['_count'];
 							}
 							if ($va_fetched_row['rel_type_id']) {
 								$va_facet_items[$va_fetched_row[$vs_rel_pk]]['rel_type_id'][] = $va_fetched_row['rel_type_id'];
+							    $va_facet_items[$va_fetched_row[$vs_rel_pk]]['counts_by_rel_type'][$va_fetched_row['rel_type_id']] += $va_fetched_row['_count'];
 							}
 						}
 						

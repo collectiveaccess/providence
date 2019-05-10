@@ -97,7 +97,7 @@
 	} else {
 ?>
 			<tr>
-				<td colspan="5">
+				<td colspan="6">
 					<div align="center">
 						<?php print _t('You have not defined any teams'); ?>
 					</div>
