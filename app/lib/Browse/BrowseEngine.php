@@ -736,6 +736,18 @@
 					return "{$vn_start} {$vs_units} - {$vn_end} {$vs_units}";
 					break;
 				# -----------------------------------------------------
+				case 'normalizedWeight':
+					$vn_start = urldecode($pn_row_id);
+					if (!($vs_output_units = caGetWeightUnitType($vs_units=caGetOption('units', $va_facet_info, 'g')))) {
+						$vs_output_units = Zend_Measure_Length::GRAM;
+					}
+					$vs_increment = caGetOption('increment', $va_facet_info, '1 g');
+					$vo_increment = caParseWeightDimension($vs_increment);
+					$vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
+					$vn_end = $vn_start + $vn_increment_in_current_units;
+					return "{$vn_start} {$vs_units} - {$vn_end} {$vs_units}";
+					break;
+				# -----------------------------------------------------
 				case 'normalizedDates':
 					return ($pn_row_id === 'null') ? _t('Date unknown') : urldecode($pn_row_id);
 					break;
@@ -1712,6 +1724,92 @@
 										$vo_end = new Zend_Measure_Length($vn_end, $vs_output_units, 'en_US');
 										$vn_start_in_meters = (float)$vo_start->convertTo(Zend_Measure_Length::METER, 6, 'en_US');
 										$vn_end_in_meters = (float)$vo_end->convertTo(Zend_Measure_Length::METER, 6, 'en_US');
+										
+										$va_params = [intval($vs_target_browse_table_num), $vn_element_id, $vn_start_in_meters, $vn_end_in_meters];
+										$vs_container_sql = '';
+                                        if (is_array($va_element_code) && (sizeof($va_element_code) == 1) && is_array($va_container_ids[$va_element_code[0]]) && sizeof($va_container_ids[$va_element_code[0]])) {
+                                            $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
+                                            $va_params[] = $va_container_ids[$va_element_code[0]];
+                                        }
+
+										$vs_sql = "
+											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey().", ca_attributes.attribute_id
+											FROM ".$this->ops_browse_table_name."
+											{$vs_relative_to_join}
+											INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
+											INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
+											WHERE
+												(ca_attribute_values.element_id = ?) AND
+												(ca_attribute_values.value_decimal1 BETWEEN ? AND ?)
+                                                {$vs_container_sql}
+										";
+										$qr_res = $this->opo_db->query($vs_sql, $va_params);
+
+										if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
+										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
+										
+										if ($vb_is_element && is_array($va_element_code) && (sizeof($va_element_code) == 1)) {
+										    // is sub-element in container
+										    $va_container_ids[$va_element_code[0]] = array_unique($qr_res->getAllFieldValues('attribute_id'));
+										    $this->opo_ca_browse_cache->setParameter('container_ids', $va_container_ids);
+										}
+										
+										if (!caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
+									}
+									if (caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
+									break;
+								# -----------------------------------------------------
+								case 'normalizedWeight':
+									$t_element = new ca_metadata_elements();
+									$va_element_code = explode('.', $va_facet_info['element_code']);
+
+									$vb_is_element = $vb_is_field = false;
+									if (!($vb_is_element = $t_element->load(array('element_code' => array_pop($va_element_code)))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
+										return array();
+									}
+                                    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, array_shift(explode(".", $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
+
+									// TODO: check that it is a *single-value* (ie. no hierarchical ca_metadata_elements) DateRange attribute
+
+									$vs_normalization = $va_facet_info['normalization'];
+									$o_tep = new TimeExpressionParser();
+
+									if ($va_facet_info['relative_to']) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
+											$vs_relative_to_join = join("\n", $va_relative_to_join);
+											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+										}
+									}
+
+									$vn_element_id = $vb_is_element ? $t_element->getPrimaryKey() : null;
+
+									$vs_browse_start_fld = $vs_browse_start_fld = null;
+									if ($vb_is_field) {
+										$vs_browse_start_fld = $t_item->getFieldInfo($va_facet_info['element_code'], 'START');
+										$vs_browse_end_fld = $t_item->getFieldInfo($va_facet_info['element_code'], 'END');
+									}
+
+									if (!($vs_output_units = caGetWeightUnitType($vs_units=caGetOption('units', $va_facet_info, 'm')))) {
+										$vs_output_units = Zend_Measure_Weight::METER;
+									}
+									$vs_increment = caGetOption('increment', $va_facet_info, '1 g');
+									$vo_increment = caParseWeightDimension($vs_increment);
+									$vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
+
+									foreach($va_row_ids as $vn_row_id) {
+										$vn_start = urldecode($vn_row_id); // is start dimension
+
+										// calculate end dimension
+										$vn_end = $vn_start + $vn_increment_in_current_units;
+
+										// convert to kilograms
+										$vo_start = new Zend_Measure_Weight($vn_start, $vs_output_units, 'en_US');
+										$vo_end = new Zend_Measure_Weight($vn_end, $vs_output_units, 'en_US');
+										$vn_start_in_meters = (float)$vo_start->convertTo(Zend_Measure_Weight::KILOGRAM, 6, 'en_US');
+										$vn_end_in_meters = (float)$vo_end->convertTo(Zend_Measure_Weight::KILOGRAM, 6, 'en_US');
 										
 										$va_params = [intval($vs_target_browse_table_num), $vn_element_id, $vn_start_in_meters, $vn_end_in_meters];
 										$vs_container_sql = '';
@@ -5330,6 +5428,192 @@
 
 							// normalize
 							$vo_dim = new Zend_Measure_Length($vn_meters, Zend_Measure_Length::METER, 'en_US');
+							$vs_dim = $vo_dim->convertTo($vs_output_units, 6, 'en_US');
+							$vn_dim = (float)$vs_dim;
+
+							$vn_normalized = (floor($vn_dim/$vn_increment_in_current_units) * $vn_increment_in_current_units);
+							if (isset($va_criteria[$vn_normalized])) { continue; }
+							$vs_normalized_range_with_units = "{$vn_normalized} {$vs_units} - ".($vn_normalized + $vn_increment_in_current_units)." {$vs_units}";
+							$va_values[$vn_normalized][$vn_normalized] = array(
+								'id' => $vn_normalized,
+								'label' => $vs_normalized_range_with_units,
+								'content_count' => $qr_res->get('_count')
+							);
+							if (!is_null($vs_single_value) && ($vn_normalized == $vs_single_value)) {
+								$vb_single_value_is_present = true;
+							}
+						}
+
+						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+							return array();
+						}
+
+						ksort($va_values);
+
+						if ($vs_dir == 'DESC') { $va_values = array_reverse($va_values); }
+						$va_sorted_values = array();
+						foreach($va_values as $vn_sort_value => $va_values_for_sort_value) {
+							$va_sorted_values = array_merge($va_sorted_values, $va_values_for_sort_value);
+						}
+						return $va_sorted_values;
+					}
+
+					break;
+				# -----------------------------------------------------
+				case 'normalizedWeight':
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
+					
+					$va_element_code = explode(".", $va_facet_info['element_code']);
+					$t_element = new ca_metadata_elements();
+					
+					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, array_shift(explode(".", $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+
+
+					$vb_is_element = $vb_is_field = false;
+					if (!($vb_is_element = $t_element->load(array('element_code' => array_pop($va_element_code)))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
+						return array();
+					}
+					
+					$vs_container_code = (is_array($va_element_code) && (sizeof($va_element_code) > 0)) ? array_pop($va_element_code) : null;
+                    if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+					
+					if ($vb_is_element) {
+						$va_joins = array(
+							'INNER JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id',
+							'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($vs_browse_table_num)
+						);
+					} else {
+						$va_joins = array();
+					}
+
+					$va_wheres = array();
+					$vs_normalization = $va_facet_info['normalization'];	// how do we construct the dimensions ranges presented to users. In other words - what increments do we can to use to  browse measurments?
+
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
+					}
+
+					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+					}
+
+					if ($vs_browse_type_limit_sql) {
+						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
+					}
+
+					if ($t_item->hasField('deleted')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+					}
+
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+						}
+					}
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
+					}
+
+					$vs_where_sql = '';
+					if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
+						$vs_where_sql = ' AND ('.$vs_where_sql.')';
+					}
+
+
+
+					$vs_join_sql = join("\n", $va_joins);
+
+					$vn_element_id = $t_element->getPrimaryKey();
+
+					$vs_dir = (strtoupper($va_facet_info['sort']) === 'DESC') ? "DESC" : "ASC";
+
+					$vs_min_sql = $vs_max_sql = '';
+					$vo_minimum_dimension = caParseWeightDimension(caGetOption('minimum_dimension', $va_facet_info, "0 kg"));
+					$vo_maximum_dimension = caParseWeightDimension(caGetOption('maximum_dimension', $va_facet_info, "0 kg"));
+					if ($vo_minimum_dimension) {
+						$vn_tmp = (float)$vo_minimum_dimension->convertTo('KILOGRAM', 6, 'en_US');
+						$vs_min_sql = " AND (ca_attribute_values.value_decimal1 >= {$vn_tmp})";
+					}
+					if (caGetOption('maximum_dimension', $va_facet_info, null) && $vo_maximum_dimension) {
+						$vn_tmp = (float)$vo_maximum_dimension->convertTo('KILOGRAM', 6, 'en_US');
+						$vs_max_sql = " AND (ca_attribute_values.value_decimal1 <= {$vn_tmp})";
+					}
+
+					if ($vb_check_availability_only) {
+						$vs_sql = "
+							SELECT 1
+							FROM ca_attributes
+							{$vs_join_sql}
+							WHERE
+								ca_attribute_values.element_id = ?
+								{$vs_min_sql}
+								{$vs_max_sql}
+								{$vs_where_sql}
+								LIMIT 1";
+						//print $vs_sql;
+						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
+
+						return ((int)$qr_res->numRows() > 0) ? true : false;
+					} else {
+					    $vs_container_sql = '';
+                        $va_params = [$vn_element_id];
+                        if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+                            $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
+                            $va_params[] = $va_container_ids[$vs_container_code];
+                        }
+						$vs_sql = "
+							SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2, ca_attributes.attribute_id
+							FROM ca_attributes
+							{$vs_join_sql}
+							WHERE
+								ca_attribute_values.element_id = ?
+								{$vs_min_sql}
+								{$vs_max_sql}
+								{$vs_where_sql}
+								{$vs_container_sql}
+							GROUP BY ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
+						";
+						//print $vs_sql;
+						$qr_res = $this->opo_db->query($vs_sql, $va_params);
+
+						$va_values = array();
+
+						if (!($vs_output_units = caGetWeightUnitType($vs_units=caGetOption('units', $va_facet_info, 'm')))) {
+							$vs_output_units = Zend_Measure_Weight::KILOGRAM;
+						}
+
+						$vs_increment = caGetOption('increment', $va_facet_info, '1 g');
+						$vo_increment = caParseWeightDimension($vs_increment);
+						$vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
+
+						while($qr_res->nextRow()) {
+							$vn_kg = $qr_res->get('value_decimal1');	// measurement in kilograms
+
+							// convert to target dimensions
+
+							// normalize
+							$vo_dim = new Zend_Measure_Weight($vn_kg, Zend_Measure_Weight::KILOGRAM, 'en_US');
 							$vs_dim = $vo_dim->convertTo($vs_output_units, 6, 'en_US');
 							$vn_dim = (float)$vs_dim;
 
