@@ -963,6 +963,23 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	/**
+	 * Validate currently loaded configuration file against schema
+	 *
+	 * @return Opis\JsonSchema\ValidationResult
+	 */
+	public function validate() {
+		$f = pathinfo($this->ops_config_file_path, PATHINFO_BASENAME);
+		
+		$v = new \Opis\JsonSchema\Validator();	
+		$loader = new \Opis\JsonSchema\Loaders\File("https://collectiveaccess.org", [__CA_LIB_DIR__."/Configuration/".ucfirst(strtolower(__CA_APP_TYPE__))."/schemas"]);
+		if (!($schema = $loader->loadSchema("https://collectiveaccess.org/{$f}.schema.json"))) { return null; } 	// no schema loaded
+
+		$result = $v->schemaValidation(json_decode($this->toJson()), $schema);
+		
+		return $result;
+	}
+	/* ---------------------------------------- */
+	/**
 	 * Find out if there was an error processing the configuration file
 	 *
 	 * @return bool Returns true if error occurred, false if not
