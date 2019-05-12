@@ -965,7 +965,7 @@ class Configuration {
 	/**
 	 * Validate currently loaded configuration file against schema
 	 *
-	 * @return Opis\JsonSchema\ValidationResult
+	 * @return Opis\JsonSchema\ValidationResult Returns null if schema could not be loaded, either because it is invalid or does not exist.
 	 */
 	public function validate() {
 		$f = pathinfo($this->ops_config_file_path, PATHINFO_BASENAME);
