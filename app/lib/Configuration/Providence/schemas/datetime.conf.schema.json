@@ -1,0 +1,58 @@
+{
+  "$id": "https://collectiveaccess.org/datetime.conf.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "datetime.conf",
+  "type": "object",
+  
+    "definitions": {
+        "general": {
+            "title": "Date/time processing and display configuration",
+            "description": "Options affecting parsing and display of date/time values.",
+            "$id": "#applications",
+            "properties": {
+                "expressions": {
+                    "type": "object",
+                    "description": "A dictionary mapping text values to date/time expressions. The text expression keys must be *all lowercase*. The date/time values for each text expression must be valid, parsable date/time expressions. ",
+                    "examples": ["expressions = {
+	us civil war = 1861 to 1865,
+	world war 2  = 1939 to 1945,
+	nickel empire = 1920s
+}]"
+                    ]
+                },
+                "dateFormat": {
+                    "type": "string",
+                    "description": "Output format for date/time values. Possible values are: 
+    \"original\": the date as originally entered
+    \"delimited\": numeric date with locale-dependent delimiters (Ex. 5/23/2019)
+    \"iso8601\": ISO-8601 format
+    \"text\": locale-dependent format (Ex. 23 May 2019)",
+                    "default": "text",
+                    "enum": ["original", "delimited", "iso8601", "text"]
+                },
+                "timeOmit": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to omit the time portion of date/time expressions.",
+                    "default": 0
+                },
+                "showCommaAfterDayForTextDates": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to include commas after the day in US-style (month first) text dates.",
+                    "default": 0
+                },
+                "timeFormat": {
+                    "type": "integer",
+                    "description": "Format to use for time values. Valid options are:
+    12: twelve-hour time value (Ex. 7:05pm)
+    24: twenty-four-hour time value (Ex. 19:05)",
+                    "default": 24,
+                    "enum": [12, 24]
+                }
+            }
+        }
+    },
+  
+    "anyOf": [
+        { "$ref": "#general" }
+    ]
+}
