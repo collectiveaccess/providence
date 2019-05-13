@@ -104,7 +104,18 @@
  				$message = _t('Statistics for group <em>%1</em>', $groups[$cur_group]['name']);
  			} else {
  				$f = array_shift(array_keys($sites));
- 				$message = (sizeof($sites) == 1) ? _t('Statistics for %1', $sites[$f]['name']) : _t('Statistics for all %1 sites', sizeof($sites));
+ 				
+ 				switch(sizeof($sites)) {
+ 					case 0:
+ 						$message = _t('No statistics available');
+ 						break;
+ 					case 1:
+ 						$message = _t('Statistics for %1', $sites[$f]['name']);
+ 						break;
+ 					default:
+ 						$message = _t('Statistics for all %1 sites', sizeof($sites));
+ 						break;
+ 				}
  			}
  			
  			$this->view->setVar('message', $message);
