@@ -2267,20 +2267,23 @@
 
 								$qr_res = $this->opo_db->query($vs_sql, [$va_row_ids]);
 							
-								$va_wheres[] = "{$vs_browse_table_name}.{$idno_fld} IN (?)";
-								$vs_sql = "
-										SELECT {$vs_browse_table_name}.".$t_item->primaryKey()."
-										FROM {$vs_browse_table_name}
-										{$vs_relative_to_join}
-										".((sizeof($va_wheres) > 0) ? " WHERE ".join(" AND ", $va_wheres) : "")."
-										";
+							    if(is_array($idno_list = $qr_res->getAllFieldValues($idno_fld)) && (sizeof($idno_list) > 0)) {
+							
+                                    $va_wheres[] = "{$vs_browse_table_name}.{$idno_fld} IN (?)";
+                                    $vs_sql = "
+                                            SELECT {$vs_browse_table_name}.".$t_item->primaryKey()."
+                                            FROM {$vs_browse_table_name}
+                                            {$vs_relative_to_join}
+                                            ".((sizeof($va_wheres) > 0) ? " WHERE ".join(" AND ", $va_wheres) : "")."
+                                            ";
 
-								$qr_res = $this->opo_db->query($vs_sql, [$qr_res->getAllFieldValues($idno_fld)]);
-								
-								if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
-								$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($vs_browse_table_name.'.'.$t_item->primaryKey()));
-
-								$vn_i++;
+                                    $qr_res = $this->opo_db->query($vs_sql, [$idno_list]);
+                                
+                                    if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
+                                    $va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($vs_browse_table_name.'.'.$t_item->primaryKey()));
+                                    
+								    $vn_i++;
+                                }
 								break;
 							# -----------------------------------------------------
 							default:
