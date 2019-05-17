@@ -284,5 +284,17 @@
 			return $layout;
 		}
 		# -------------------------------------------------------
+		/**
+		 * Loads Default widgets onto the dashboard
+		 *
+		 * @return boolean Always returns true
+		 */ 
+		public function defaultDashboard() {
+			$this->opo_request->user->setVar('dashboard_config', array());
+			$this->opa_dashboard_config = self::getDefaultLayout();
+			$this->opo_request->user->setVar('dashboard_config', $this->opa_dashboard_config);
+			return true;
+		}
+		# -------------------------------------------------------
 	
 	}
