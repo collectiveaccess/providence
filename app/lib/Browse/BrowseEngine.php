@@ -2021,7 +2021,7 @@
 												SELECT cv.row_id
 												FROM ca_history_tracking_current_values cv
 												WHERE
-													(cv.current_table_num = ?)"
+													(cv.is_future IS NULL) AND (cv.current_table_num = ?)"
 														.((sizeof($va_row_tmp) == 2) ? " AND (cv.current_type_id IN (?))" : "")
 														.((sizeof($va_row_tmp) > 2) ? " AND (((cv.current_type_id = ?) AND (cv.current_row_id = ?)) OR (cv.current_row_id IN (?)))" : "");
 			
@@ -2031,7 +2031,7 @@
 												SELECT cv.row_id
 												FROM ca_history_tracking_current_values cv
 												WHERE
-													(cv.current_table_num = ?)"
+													(cv.is_future IS NULL) AND (cv.current_table_num = ?)"
 														.((sizeof($va_row_tmp) > 1) ? " AND (cv.current_type_id = ?)" : "")
 														.((sizeof($va_row_tmp) > 2) ? " AND (cv.current_row_id = ?)" : "");
 											$qr_res = $this->opo_db->query($vs_sql, $va_row_tmp);
@@ -3855,7 +3855,7 @@
 					$vs_where_sql = '';
 					
 					$va_joins = ["INNER JOIN ca_history_tracking_current_values AS cv ON cv.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND cv.table_num = {$vs_browse_table_num}"];
-					$va_wheres = ['(cv.policy = ?)']; 
+					$va_wheres = ['(cv.policy = ?)', '(cv.is_future IS NULL)']; 
 					$params = [$policy];
 					
 					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
