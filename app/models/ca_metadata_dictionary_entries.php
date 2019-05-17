@@ -645,17 +645,18 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				preg_match("/^{$vs_id_prefix}_(.+?)_(new_[\d]+|[\d]+)$/u", $vs_k, $va_matches)	
 			) {
 				$rule_id = $va_matches[2];
-				if (isset($rules[$rule_id]) && is_array($rules[$rule_id])) {
-					$setting = $va_matches[1];
-					if (in_array($setting, $settings_list)) {
-						if ($locale = isset($va_matches[3]) ? $va_matches[3] : null) {
-							$settings[$rule_id][$setting][$locale] = $vm_v;
-						} else {
-							$settings[$rule_id][$setting] = $vm_v;
-						}
-						continue;
-					}
+				if (!isset($rules[$rule_id]) || !is_array($rules[$rule_id])) {
+				    $rules[$rule_id] = [];
 				}
+                $setting = $va_matches[1];
+                if (in_array($setting, $settings_list)) {
+                    if ($locale = isset($va_matches[3]) ? $va_matches[3] : null) {
+                        $settings[$rule_id][$setting][$locale] = $vm_v;
+                    } else {
+                        $settings[$rule_id][$setting] = $vm_v;
+                    }
+                    continue;
+                }
 			}
 			if(preg_match("/^{$vs_id_prefix}_(.+?)_new_([\d]+)$/u", $vs_k, $va_matches)) {
 				$adds[$va_matches[2]][$va_matches[1]] = $vm_v;
