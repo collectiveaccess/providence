@@ -628,6 +628,7 @@ final class ConfigurationExporter {
 			$vo_entry = $this->opo_dom->createElement("entry");
 			$vo_dict->appendChild($vo_entry);
 			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
+			$vo_entry->setAttribute('table', Datamodel::getTableName($t_entry->get('table_num')));
 
 			if(is_array($t_entry->getSettings())) {
 				$va_settings = array();
@@ -684,11 +685,11 @@ final class ConfigurationExporter {
 					$vo_rule->setAttribute('level', $va_rule['rule_level']);
 
 					// expression
-					if(isset($va_rule['expression']) && is_array($va_rule['expression']) && sizeof($va_rule['expression']) > 0) {
-						$vo_expression = $this->opo_dom->createElement('expression');
+					$vo_expression = $this->opo_dom->createElement('expression');
+					if(isset($va_rule['expression']) && $va_rule['expression']) {	
 						$vo_expression->appendChild(new DOMCdataSection($va_rule['expression']));
-						$vo_rule->appendChild($vo_expression);
 					}
+					$vo_rule->appendChild($vo_expression);
 
 					// rule settings
 					if(isset($va_rule['settings']) && is_array($va_rule['settings'])) {
@@ -759,10 +760,12 @@ final class ConfigurationExporter {
 		$qr_uis = $this->opo_db->query("SELECT * FROM ca_editor_uis ORDER BY ui_id");
 
 		while($qr_uis->nextRow()) {
+			$vs_type = Datamodel::getTableName($qr_uis->get("editor_type"));
+			if (!$vs_type) { continue; }
+			
 			$vo_ui = $this->opo_dom->createElement("userInterface");
 			$t_ui = new ca_editor_uis($qr_uis->get("ui_id"));
 
-			$vs_type = Datamodel::getTableName($qr_uis->get("editor_type"));
 
 			if(strlen($vs_code = $qr_uis->get("editor_code")) > 0) {
 				$vo_ui->setAttribute("code", $this->makeIDNO($vs_code));
