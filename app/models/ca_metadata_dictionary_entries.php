@@ -574,6 +574,8 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	
 	# ------------------------------------------------------
 	/**
+	 * Render editor bundle for dictionary entry rules
+	 *
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_form_name
 	 * @param string $ps_placement_code
