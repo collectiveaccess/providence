@@ -624,6 +624,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		}
 
 		if(sizeof($va_bulk_params['body'])) {
+			// Improperly encoded UTF8 characters in the body will make
+			// Elastic throw errors and result in records being omitted from the index.
+			// We force the document to UTF8 here to avoid that fate.
+			$va_bulk_params['body'] = caEncodeUTF8Deep($va_bulk_params['body']);
+			
+			
 			$this->getClient()->bulk($va_bulk_params);
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
