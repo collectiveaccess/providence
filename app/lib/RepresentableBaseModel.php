@@ -378,7 +378,7 @@
 			$o_db = $this->getDb();
 		
 			$qr_reps = $o_db->query("
-				SELECT count(*) c
+				SELECT count(DISTINCT caor.representation_id) c
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 				LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
@@ -557,7 +557,10 @@
 						}
 					}
 				}
-		
+				if(!isset($pa_values['idno'])) {
+					$t_rep->setIdnoWithTemplate('%', ['serialOnly' => true]);
+				}
+				
 				$t_rep->insert();
 		
 				if ($t_rep->numErrors()) {
