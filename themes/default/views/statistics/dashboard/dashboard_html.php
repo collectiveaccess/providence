@@ -51,10 +51,18 @@
 <?php
 	}
 ?>
-	<h2><?php print $this->getVar('message'); ?></h2>
+	<h2><?php print $this->getVar('message'); ?>
 <?php
-	if (sizeof($data)) {
-		foreach($panels as $panel => $panel_options) {
-			print "<div class='statisticsDashboardPanel'>".StatisticsDashboard::renderPanel($this->request, $panel, $data, $panel_options)."</div>";
-		}
-	}
+    if ($last_update = $this->getVar('last_update')) {
+?>
+	(<?php print _t('Last updated %1', $last_update); ?>)
+<?php
+    }
+?>
+    </h2>
+<?php
+    if (sizeof($data)) {
+        foreach($panels as $panel => $panel_options) {
+            print "<div class='statisticsDashboardPanel'>".StatisticsDashboard::renderPanel($this->request, $panel, $data, $panel_options)."</div>";
+        }
+    }

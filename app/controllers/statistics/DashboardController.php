@@ -120,6 +120,8 @@
  			
  			$this->view->setVar('message', $message);
  			
+ 			$this->view->setVar('last_update', ($d = PersistentCache::fetch('site_statistics_last_fetch', 'statistics')) ? caGetLocalizedDate($d) : "");
+ 			
  			$this->render('dashboard/dashboard_html.php');
  		}
  		# -------------------------------------------------------

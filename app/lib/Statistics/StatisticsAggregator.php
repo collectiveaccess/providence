@@ -55,9 +55,11 @@ class StatisticsAggregator {
 			$stats_data_for_site['description'] = $site_info['description'];
 			$stats_data_for_site['url'] = $site_info['url'];
 			$stats_data_for_site['groups'] = $site_info['groups'];
+			$stats_data_for_site['fetched_on'] = time();
 			$stats_data[$k] = $stats_data_for_site;
 		}
 		
+		PersistentCache::save('site_statistics_last_fetch', time(), 'statistics');
 		PersistentCache::save('site_statistics', $stats_data, 'statistics');
 		
 		self::aggregateData($stats_data);
