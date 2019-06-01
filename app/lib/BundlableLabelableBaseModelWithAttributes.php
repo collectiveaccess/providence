@@ -7214,7 +7214,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @param string $ps_template_value Template to use. If omitted or left blank the template defaults to a single "%" This is useful for the common case of assigning simple auto-incrementing integers as idno values.
 	 * @param array $pa_options Options are:
-	 *		dontSetValue = The template will be processed and the idno value generated but not actually set for the current row if this option is set. Default is false.
+	 *		dontSetValue = The template will be processed and the idno value generated but not actually set for the current row. Default is false.
+	 *		serialOnly = Only set idno if the idno is configured to be SERIAL (auto-incrementing numbers). [Default is true]
 	 * @return mixed The processed template value set as the idno, or false if the model doesn't support id numbering
 	 */
 	public function setIdnoWithTemplate($ps_template_value=null, $pa_options=null) {
@@ -7223,6 +7224,11 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		if (($vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) && $this->opo_idno_plugin_instance) {
 			$pb_dont_set_value = (bool)(isset($pa_options['dontSetValue']) && $pa_options['dontSetValue']);
+			$pb_serial_only = (bool)(isset($pa_options['serialOnly']) && $pa_options['serialOnly']);
+			
+			if ($pb_serial_only && !$this->opo_idno_plugin_instance->isSerialFormat()) {
+				return false;
+			}
 		
 			if (!$ps_template_value) {
 				$ps_template_value = '%';
