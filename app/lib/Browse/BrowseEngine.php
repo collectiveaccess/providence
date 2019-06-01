@@ -729,23 +729,33 @@
 					if (!($vs_output_units = caGetLengthUnitType($vs_units=caGetOption('units', $va_facet_info, 'm')))) {
 						$vs_output_units = Zend_Measure_Length::METER;
 					}
-					$vs_increment = caGetOption('increment', $va_facet_info, '1 m');
-					$vo_increment = caParseLengthDimension($vs_increment);
-					$vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
-					$vn_end = $vn_start + $vn_increment_in_current_units;
-					return "{$vn_start} {$vs_units} - {$vn_end} {$vs_units}";
+					
+					if (preg_match("!^([\d][\.]*[\d]*)[ ]*\-[ ]*([\d][\.]*[\d]*)$!", $vn_start, $m)) { // range?
+					    return "{$m[1]} {$vs_units} - {$m[2]} {$vs_units}";
+					} else {
+                        $vs_increment = caGetOption('increment', $va_facet_info, '1 m');
+                        $vo_increment = caParseLengthDimension($vs_increment);
+                        $vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
+                        $vn_end = $vn_start + $vn_increment_in_current_units;
+                        return "{$vn_start} {$vs_units} - {$vn_end} {$vs_units}";
+                    }
 					break;
 				# -----------------------------------------------------
 				case 'normalizedWeight':
-					$vn_start = urldecode($pn_row_id);
+					$vn_start = urldecode(trim($pn_row_id));
 					if (!($vs_output_units = caGetWeightUnitType($vs_units=caGetOption('units', $va_facet_info, 'g')))) {
 						$vs_output_units = Zend_Measure_Length::GRAM;
 					}
-					$vs_increment = caGetOption('increment', $va_facet_info, '1 g');
-					$vo_increment = caParseWeightDimension($vs_increment);
-					$vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
-					$vn_end = $vn_start + $vn_increment_in_current_units;
-					return "{$vn_start} {$vs_units} - {$vn_end} {$vs_units}";
+					
+					if (preg_match("!^([\d][\.]*[\d]*)[ ]*\-[ ]*([\d][\.]*[\d]*)$!", $vn_start, $m)) { // range?
+					    return "{$m[1]} {$vs_units} - {$m[2]} {$vs_units}";
+					} else {
+                        $vs_increment = caGetOption('increment', $va_facet_info, '1 g');
+                        $vo_increment = caParseWeightDimension($vs_increment);
+                        $vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
+                        $vn_end = $vn_start + $vn_increment_in_current_units;
+                        return "{$vn_start} {$vs_units} - {$vn_end} {$vs_units}";
+                    }
 					break;
 				# -----------------------------------------------------
 				case 'normalizedDates':
@@ -1562,12 +1572,17 @@
 									}
 
 									foreach($va_row_ids as $vn_row_id) {
-										$vn_row_id = urldecode($vn_row_id);
+										$vn_row_id = urldecode(trim($vn_row_id));
 
 										$va_dates = null;
 										if ($vn_row_id !== 'null') {
 											if (!$o_tep->parse($vn_row_id)) { continue; } // invalid date?
 											$va_dates = $o_tep->getHistoricTimestamps();
+											
+											$tmp = explode('.', $va_dates['start']);
+											if (substr($tmp[1], 0, 10) == '0101000000') { // rewrite start date to encompass circa dates
+											    $va_dates['start'] = (int)$va_dates['start'].".01010000002";
+											}
 										}
 										
 										if (
@@ -1725,10 +1740,14 @@
 									$vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
 
 									foreach($va_row_ids as $vn_row_id) {
-										$vn_start = urldecode($vn_row_id); // is start dimension
-
-										// calculate end dimension
-										$vn_end = $vn_start + $vn_increment_in_current_units;
+										$vn_start = urldecode(trim($vn_row_id)); // is start dimension
+										
+                                        if (preg_match("!^([\d][\.]*[\d]*)[ ]*\-[ ]*([\d][\.]*[\d]*)$!", $vn_start, $m)) { // range?
+                                            $vn_start = (float)$m[1]; $vn_end = (float)$m[2];
+                                        } else {
+                                            // calculate end dimension
+                                            $vn_end = $vn_start + $vn_increment_in_current_units;
+                                        }
 
 										// convert to meters
 										$vo_start = new Zend_Measure_Length($vn_start, $vs_output_units, 'en_US');
@@ -1811,10 +1830,13 @@
 									$vn_increment_in_current_units = (float)$vo_increment->convertTo($vs_output_units, 6, 'en_US');
 
 									foreach($va_row_ids as $vn_row_id) {
-										$vn_start = urldecode($vn_row_id); // is start dimension
-
-										// calculate end dimension
-										$vn_end = $vn_start + $vn_increment_in_current_units;
+										$vn_start = urldecode(trim($vn_row_id)); // is start dimension
+                                        if (preg_match("!^([\d][\.]*[\d]*)[ ]*\-[ ]*([\d][\.]*[\d]*)$!", $vn_start, $m)) { // range?
+                                            $vn_start = (float)$m[1]; $vn_end = (float)$m[2];
+                                        } else {
+                                            // calculate end dimension
+                                            $vn_end = $vn_start + $vn_increment_in_current_units;
+                                        }
 
 										// convert to kilograms
 										$vo_start = new Zend_Measure_Weight($vn_start, $vs_output_units, 'en_US');
@@ -5148,6 +5170,8 @@
                                         $va_values[$vn_sort_value][$vs_normalized_value] = array(
                                             'id' => $vs_normalized_value,
                                             'label' => $vs_normalized_value,
+                                            'start' => (int)$vn_start,
+                                            'end' => (int)$vn_end,
                                             'content_count' => (int)$qr_res->get('_count')
                                         );
                                     } else {
@@ -5258,6 +5282,7 @@
 							$qr_res = $this->opo_db->query($vs_sql);
 
 							$va_values = array();
+							
 							while($qr_res->nextRow()) {
 								$vn_start = $qr_res->get($vs_browse_start_fld);
 								$vn_end = $qr_res->get($vs_browse_end_fld);
@@ -5272,6 +5297,8 @@
                                         $va_values[$vn_sort_value][$vs_normalized_value] = array(
                                             'id' => $vs_normalized_value,
                                             'label' => $vs_normalized_value,
+                                            'start' => $vn_start,
+                                            'end' => $vn_end,
                                             'content_count' => $qr_res->get('_count')
                                         );
                                     } else {
@@ -5455,13 +5482,16 @@
 							$vo_dim = new Zend_Measure_Length($vn_meters, Zend_Measure_Length::METER, 'en_US');
 							$vs_dim = $vo_dim->convertTo($vs_output_units, 6, 'en_US');
 							$vn_dim = (float)$vs_dim;
-
+						
 							$vn_normalized = (floor($vn_dim/$vn_increment_in_current_units) * $vn_increment_in_current_units);
 							if (isset($va_criteria[$vn_normalized])) { continue; }
 							$vs_normalized_range_with_units = "{$vn_normalized} {$vs_units} - ".($vn_normalized + $vn_increment_in_current_units)." {$vs_units}";
+							
 							$va_values[$vn_normalized][$vn_normalized] = array(
 								'id' => $vn_normalized,
 								'label' => $vs_normalized_range_with_units,
+								'start' => $vn_normalized,
+								'end' => ($vn_normalized + $vn_increment_in_current_units),
 								'content_count' => $qr_res->get('_count')
 							);
 							if (!is_null($vs_single_value) && ($vn_normalized == $vs_single_value)) {
@@ -5648,6 +5678,8 @@
 							$va_values[$vn_normalized][$vn_normalized] = array(
 								'id' => $vn_normalized,
 								'label' => $vs_normalized_range_with_units,
+								'start' => $vn_normalized,
+								'end' => ($vn_normalized + $vn_increment_in_current_units),
 								'content_count' => $qr_res->get('_count')
 							);
 							if (!is_null($vs_single_value) && ($vn_normalized == $vs_single_value)) {
@@ -5779,7 +5811,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					}
 
 					if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
-						$va_wheres[] = "{$vs_rel_table_name}.type_id IN (".join(',', caGetOption('dont_include_subtypes', $va_facet_info, false) ? $va_restrict_to_types : $va_restrict_to_types_expanded).")".($t_rel_item->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_rel_table_name}.type_id IS NULL)" : '');
+						//$va_wheres[] = "{$vs_rel_table_name}.type_id IN (".join(',', caGetOption('dont_include_subtypes', $va_facet_info, false) ? $va_restrict_to_types : $va_restrict_to_types_expanded).")".($t_rel_item->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_rel_table_name}.type_id IS NULL)" : '');
 						
 						if($va_facet_info['type'] !== 'relationship_types') {
 						    $va_selects[] = "{$vs_rel_table_name}.type_id";
@@ -6011,9 +6043,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 							if (!$va_facet_items[$va_fetched_row[$vs_rel_pk]]) {
 
-								if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types) && $va_fetched_row['type_id'] && !in_array($va_fetched_row['type_id'], $va_restrict_to_types)) {
-									continue;
-								}
+								// if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types) && $va_fetched_row['type_id'] && !in_array($va_fetched_row['type_id'], $va_restrict_to_types)) {
+// 									continue;
+// 								}
 
 								$va_facet_items[$va_fetched_row[$vs_rel_pk]] = array(
 									'id' => $va_fetched_row[$vs_rel_pk],
@@ -6056,6 +6088,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						$vb_check_ancestor_access = (bool)(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access'));
 
 						if($qr_ancestors) {
+						    $va_facet_items_ancestors = [];
 							while($qr_ancestors->nextHit()) {
 								if ($qr_ancestors->get("{$vs_rel_table}.deleted")) { continue; }
 								if (!($vn_parent_type_id = $qr_ancestors->get('type_id'))) { continue; }
@@ -6067,15 +6100,21 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && !in_array($vn_parent_type_id, $va_restrict_to_types)) { continue; }
 								if ($vb_check_ancestor_access && !in_array($qr_ancestors->get('access'), $pa_options['checkAccess'])) { continue; }
 
-								$va_facet_items[$vn_ancestor_id] = array(
+                                $children = $t_rel_item->getHierarchy($vn_ancestor_id, ['idsOnly' => true]); 
+            
+                                $ancestor_count = array_reduce($children, function($c, $i) use ($va_facet_items) {return isset($va_facet_items[$i]) ? $c + $va_facet_items[$i]['content_count'] : $c; }, 0);
+						
+								$va_facet_items_ancestors[$vn_ancestor_id] = array(
 									'id' => $vn_ancestor_id,
-									'type_id' => array(),
+									'type_id' => array($vn_parent_type_id),
 									'parent_id' => $vb_rel_is_hierarchical ? $qr_ancestors->get("{$vs_hier_parent_id_fld}") : null,
 									'hierarchy_id' => ($vb_rel_is_hierarchical && $vs_hier_id_fld) ? $qr_ancestors->get($vs_hier_id_fld) : null,
 									'rel_type_id' => array(),
-									'child_count' => 0
+									'child_count' => sizeof($children),
+									'content_count' => $ancestor_count
 								);
 							}
+							$va_facet_items = $va_facet_items_ancestors + $va_facet_items;
 						}
 		}
 
@@ -6085,6 +6124,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							if ($va_item['parent_id'] && isset($va_facet_items[$va_item['parent_id']])) {
 								$va_facet_items[$va_item['parent_id']]['child_count']++;
 							}
+						    if ($va_restrict_to_types) {
+						        if (!sizeof(array_intersect($va_restrict_to_types, $va_item['type_id']))) {
+						            unset($va_facet_items[$vn_i]);
+						            continue;
+						        }
+						    }
 						}
 
                         $natural_sort = caGetOption('natural_sort', $va_facet_info, false);
