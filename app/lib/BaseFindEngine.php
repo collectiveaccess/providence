@@ -522,7 +522,7 @@
 				foreach($hits as $idx => $hit) {
 					$key = '';
 					foreach($sortable_values as $vn_i => $sortable_values_level) {
-						$v = preg_replace("![^\w_]+!", " ", $sortable_values_level[$hit]);
+						$v = preg_replace("![^\w_]+!u", " ", caRemoveAccents($sortable_values_level[$hit]));
 						
 						$key .= str_pad(substr($v,0,50), 50, ' ', is_numeric($v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
 					}
