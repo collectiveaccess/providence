@@ -4543,7 +4543,7 @@ if (!$vb_batch) {
 						}
 						
 						if ($this->changed('media')) {
-							$this->update(($vs_version != '_all') ? array('updateOnlyMediaVersions' => $va_versions_to_process) : array());
+							$this->update(($vs_version != '_all') ? array('updateOnlyMediaVersions' => $va_versions_to_process, 'startAtTime' => $vs_timecode, 'startAtPage' => $vn_page) : array());
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), 'ca_object_representations_media_display', 'general');
 							}
