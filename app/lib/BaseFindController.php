@@ -202,7 +202,7 @@
 
 					if ($va_tmp[0] != $this->ops_tablename) { 
 					    // Sort on related tables
-						if (($t_rel = Datamodel::getInstance($va_tmp[0], true)) && ($t_rel_label = $t_rel->getLabelTableInstance())) {
+						if (($t_rel = Datamodel::getInstance($va_tmp[0], true)) && method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
                             $va_display_list[$vn_i]['is_sortable'] = true; 
                             $types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
                             

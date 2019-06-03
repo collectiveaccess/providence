@@ -387,7 +387,6 @@
 					}
 				} else {
 					if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c, 'returnAsString' => true, 'delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v)) {
-					
 						if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
 							$vs_path = array_shift($va_candidates);
 						}
@@ -643,7 +642,6 @@
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
 		
-		$po_refinery_instance->setReturnsMultipleValues(true);
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
@@ -674,7 +672,6 @@
 		if (!is_array($va_delimited_items)) { $va_delimited_items = array($va_delimited_items); }
 		$va_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
 		if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
-							
 		if (sizeof($va_delimiter)) {
 			foreach($va_delimiter as $vn_index => $vs_delim) {
 				if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
@@ -810,7 +807,7 @@
 									$va_val['_type'] = $pa_item['settings']['storageLocationSplitter_storageLocationTypeDefault'];
 								}
 					
-								foreach($va_location_hier as $vn_i => $vs_parent) {
+								foreach($va_location_hier as $vn_ix => $vs_parent) {
 									if (sizeof($va_types) > 0)  { 
 										$vs_type = array_shift($va_types); 
 									} else { 
@@ -840,7 +837,7 @@
 		
 						// Set attributes
 						//      $va_attr_vals = directly attached attributes for item
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 			

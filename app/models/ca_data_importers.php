@@ -2033,9 +2033,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 						
-							if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
+							//if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
 							//	continue; 
-							}
+							//}
 					
 							if($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) { 
 								continue; 
@@ -2187,10 +2187,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$va_group_buf[$vn_c]['_truncateLongLabels'] = true;
 								}
 							}
-							
 							switch($vs_item_terminal) {
 							    case 'type_id':
-							        $vs_type = $vm_val;
+							        if(($vs_target_table == $vs_subject_table_name) && (sizeof($va_item_dest) == 2)) {
+                                        $vs_type = $vm_val;
+                                    }
 							        break; 
 								case 'preferred_labels':
 								case 'nonpreferred_labels':
