@@ -66,7 +66,8 @@
 </script>
 <div id="dashboardControls">
 	<div id="clearDashboardControl" style="float: left;">
-		<?php print caNavLink($this->request, _t('Clear dashboard').' &rsaquo;', 'dashboardControl', '', 'Dashboard', 'clear', array(), array('id' => 'dashboardClearButton')); ?>
+		<?php print caNavLink($this->request, _t('Clear dashboard').' &rsaquo;', 'dashboardControl', '', 'Dashboard', 'clear', array(), array('id' => 'dashboardClearButton'));
+	              print caNavLink($this->request, _t('Default dashboard').' &rsaquo;', 'dashboardControl', '', 'Dashboard', 'default', array(), array('id' => 'dashboardDefaultButton')); ?>
 	</div>
 	
 	<a href="#" onclick='caDashboard.editDashboard(1);' class='dashboardControl' id='dashboardEditButton'><?php print _t('Edit dashboard'); ?> &rsaquo;</a>
