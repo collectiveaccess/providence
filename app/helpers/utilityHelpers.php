@@ -2139,7 +2139,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_array The array to sanitize
 	 * @param array $pa_options
 	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode [Default=false]
-	 *		  removeNonCharacterData = remove non-character data from all array value. This option leaves all character data in-place [Default=false]
+	 *		  removeNonCharacterData = remove non-character data from all array values. This option leaves all character data in-place [Default=false]
 	 * @return array The sanitized array
 	 */
 	function caSanitizeArray($pa_array, $pa_options=null) {
@@ -3363,6 +3363,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool True if $guid is a valid guid
 	 */
 	function caIsGUID($guid){
+	    if (!is_string($guid)) { return false; }
 		return preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $guid);
 	}
 	# ----------------------------------------
