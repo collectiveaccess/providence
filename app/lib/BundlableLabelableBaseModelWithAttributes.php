@@ -7559,17 +7559,20 @@ side. For many self-relations the direction determines the nature and display te
 	 	$va_sql_params = array($vn_id, $this->tableNum());
 	 	$vs_bundle_sql = '';
 	 	
-	 	if (($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) && !Datamodel::tableExists($ps_bundle_name)) {	 	
-			if (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name)) {
-				$ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
-			}
+	 	if ($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) {	 
+	 	    if(!Datamodel::tableExists($ps_bundle_name) && (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name))) {
+                $ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
+            }
 			$vs_bundle_sql = "AND cmde.bundle_name = ?";
 			$va_sql_params[] = $ps_bundle_name;
 	 	} 
 	 	
 	 	
 	 	$qr_res = $o_db->query("
-	 		SELECT *
+	 		SELECT 
+	 		    cmdr.rule_code, cmdr.rule_id,
+	 		    cmdrv.violation_id, cmdr.rule_level,
+	 		    cmdrv.created_on, cmdrv.last_checked_on, cmde.bundle_name, cmde.settings
 	 		FROM ca_metadata_dictionary_rule_violations cmdrv
 	 		INNER JOIN ca_metadata_dictionary_rules AS cmdr ON cmdr.rule_id = cmdrv.rule_id
 	 		INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id

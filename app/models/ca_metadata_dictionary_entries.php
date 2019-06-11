@@ -507,11 +507,11 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		}
 		
 		if(!is_array($va_types = caGetOption('restrict_to_types', $pa_settings, null)) && $va_types) {
-			$va_types = array($va_types);
+			$va_types = [$va_types];
 		}
-		if(!is_array($va_types)) { $va_types = array(); }
-		if(sizeof($va_types = array_filter($va_types, 'strlen'))) {
-			$va_types = ca_lists::itemIDsToIDNOs($va_types);
+		if(!is_array($va_types)) { $va_types = []; }
+		if(sizeof($va_types = array_filter($va_types, 'strlen')) && Datamodel::tableExists($ps_bundle_name)) {
+			$va_types = caMakeTypeIDList($ps_bundle_name, $va_types);
 		}
 		
 		if(!is_array($va_relationship_types = caGetOption('restrict_to_relationship_types', $pa_settings, null)) && $va_relationship_types) {
@@ -525,7 +525,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		if ($va_entry_list = ca_metadata_dictionary_entries::entryExists($ps_bundle_name)) {
 			$vn_entry_id = null;
 			
-			//if (sizeof($va_types) || sizeof($va_relationship_types)) {
+			if (sizeof($va_types) || sizeof($va_relationship_types)) {
 				foreach(array_keys($va_entry_list) as $vn_id) {
 					$va_entry = ca_metadata_dictionary_entries::$s_definition_cache[$vn_id];
 					if (is_array($va_tables = $va_entry['settings']['restrict_to']) && sizeof($va_tables)) {
@@ -533,7 +533,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 							$vn_entry_id = $vn_id;
 						} else {
 							$vn_entry_id = null;
-							continue;
 						}
 					}
 					if (sizeof($va_relationship_types)) {
@@ -544,7 +543,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 								$vn_entry_id = $vn_id;
 							} else {
 								$vn_entry_id = null;
-								continue;
 							}
 						}
 					}
@@ -556,16 +554,17 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 								$vn_entry_id = $vn_id;
 							} else {
 								$vn_entry_id = null;
-								continue;
 							}
 						}
 					}
 					
 					if ($vn_entry_id) { break; }
 				}
-			//}
+			} else {
+			    $vn_entry_id = array_pop(array_keys($va_entry_list));
+			}
 			
-			if (!$vn_entry_id)  { $vn_entry_id = array_pop(array_keys($va_entry_list)); }
+			if (!$vn_entry_id)  { return null; }
 			return ca_metadata_dictionary_entries::$s_definition_cache[$vn_entry_id];
 		}
 		
