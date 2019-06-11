@@ -450,7 +450,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
 
-		$vs_render = caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
+        $for_search = caGetOption('forSearch', $pa_options, false);
+
+		$vs_render = $for_search ? "" : caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
 		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
 
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
