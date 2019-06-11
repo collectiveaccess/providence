@@ -203,27 +203,48 @@
 			
 			$va_attr_values = $t_attr->getAttributeValues();
 			
-			if (sizeof($va_attr_values) != (sizeof($pa_values) - 1)) {		// -1 to remove locale_id which is not in attribute values array
+			if (
+			    // this may return a false positive if the attribute is a container with media or file attributes, 
+			    // as ca_attribute_values records for those will only be present if a file was uploaded
+			    (sizeof($va_attr_values) !== (sizeof($pa_values) - 1))      
+			    &&
+			    // so if it looks like it may be a mismatch we do another, more costly, element calcuation to be sure
+			    is_array($elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }))
+			    &&    
+			    (sizeof($elements) !== (sizeof($pa_values) - 1))
+			) {		// -1 to remove locale_id which is not in attribute values array
 				// Value arrays are different sizes - probably means the elements in the set have been reconfigured (sub-elements added or removed)
 				// so we need to force a save.
-				$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
+		       $this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
 			} else {
 				// Have any of the values changed?
 				foreach($va_attr_values as $o_attr_value) {
 					$vn_element_id = $o_attr_value->getElementID();
 					$vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
+					$vn_element_datatype = ca_metadata_elements::getElementDatatype($vn_element_id);
 					
 					if (
 						(
 							isset($pa_values[$vn_element_id]) && ($pa_values[$vn_element_id] !== $o_attr_value->getDisplayValue()) 
 							&& 
 							!(($pa_values[$vn_element_id] == "") && (is_null($o_attr_value->getDisplayValue())))
+							&& 
+							!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
 						)
 						||
 						(
 							isset($pa_values[$vs_element_code]) && ($pa_values[$vs_element_code] !== $o_attr_value->getDisplayValue()) 
 							&&
 							!(($pa_values[$vs_element_code] == "") && (is_null($o_attr_value->getDisplayValue())))
+							&& 
+							!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+						)
+						||
+						(
+							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+							&& 
+							isset($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
+							
 						)
 					) {
 						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
@@ -341,6 +362,7 @@
 				'error_source' => $ps_error_source,
 				'element_id' => $t_attr->get('element_id')
 			);
+			
 			
 			$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$t_attr->get('element_id')] = true;
 			
