@@ -875,9 +875,14 @@ class Installer {
 
 		foreach($this->opo_profile->metadataDictionary->children() as $vo_entry) {
 			$vs_field = self::getAttribute($vo_entry, "bundle");
-
+			$vs_table = self::getAttribute($vo_entry, "table");
 			if(strlen($vs_field)<1) {
 				$this->addError("No bundle specified in a metadata dictionary entry. Skipping row.");
+				continue;
+			}
+			
+			if(!($vn_table_num = Datamodel::getTableNum($vs_table))) {
+				$this->addError("Table {$vs_table} is invalid for metadata dictionary entry. Skipping row.");
 				continue;
 			}
 
@@ -885,6 +890,7 @@ class Installer {
 			$t_entry = new ca_metadata_dictionary_entries();
 			$t_entry->setMode(ACCESS_WRITE);
 			$t_entry->set('bundle_name', $vs_field);
+			$t_entry->set('table_num', $vn_table_num);
 			$this->_processSettings($t_entry, $vo_entry->settings);
 
 			$t_entry->insert();

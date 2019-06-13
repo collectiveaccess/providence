@@ -3933,6 +3933,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				unset($va_media_desc["_CENTER"]);
 				unset($va_media_desc["_SCALE"]);
 				unset($va_media_desc["_SCALE_UNITS"]);
+				unset($va_media_desc["_START_AT_PAGE"]);
+				unset($va_media_desc["_START_AT_TIME"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -4294,6 +4296,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						"_CENTER" => $va_center,
 						"_SCALE" => caGetOption('_SCALE', $va_tmp, array()),
 						"_SCALE_UNITS" => caGetOption('_SCALE_UNITS', $va_tmp, array()),
+						"_START_AT_TIME" => caGetOption('startAtTime', $pa_options, null),
+						"_START_AT_PAGE" => caGetOption('startAtPage', $pa_options, null),
 						"INPUT" => array(
 							"MIMETYPE" => $m->get("mimetype"),
 							"WIDTH" => $m->get("width"),
@@ -4365,7 +4369,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						// Copy metadata for version we're not processing 
 						if (sizeof($va_process_these_versions_only)) {
 							foreach (array_keys($va_tmp) as $v) {
-								if (!in_array($v, $va_process_these_versions_only)) {
+								if (!in_array($v, $va_process_these_versions_only) && !in_array($v, ['_START_AT_PAGE', '_START_AT_TIME'])) {
 									$media_desc[$v] = $va_tmp[$v];
 								}
 							}

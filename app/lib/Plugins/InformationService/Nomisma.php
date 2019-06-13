@@ -111,7 +111,6 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 		if(is_numeric($ps_search)) {
 			$vs_search = $ps_search;
 		} elseif(isURL($ps_search)) {
-			//$vs_search = str_replace('http://nomisma.org/id/', '', $ps_search);
 			$is_url = true;
 		} elseif($pb_phrase) {
 			$vs_search = '\"'.$ps_search.'\"';

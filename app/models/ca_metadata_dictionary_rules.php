@@ -267,7 +267,13 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	}
 	# ----------------------------------------
 	/**
-	 * 
+	 * Return all rules for all or selected bundles
+	 *
+	 * @param array $pa_options Options include:
+	 *		db = Database connection to use. If omitted a new connection is created. [Default is null]
+	 *		bundles = List of bundle name to return rules for. If omitted all rules for all bundles are returned. [Default is null]
+	 *
+	 * @return array List of rules. Each rule is an array with rule data.
 	 */
 	static public function getRules($pa_options=null) {
 		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }

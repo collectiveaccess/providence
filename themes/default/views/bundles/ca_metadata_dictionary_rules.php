@@ -36,6 +36,7 @@
 	$settings_tags			= $this->getVar('settings_tags');
 
 	$va_initial_values = $this->getVar('rules');	// list of existing rules
+	if(!is_array($va_initial_values)) { $va_initial_values = []; }
 	$va_errors = $va_failed_inserts = [];
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);

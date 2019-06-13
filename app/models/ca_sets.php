@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2776,6 +2776,43 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			return true;
 		}
 		return false;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Return list of set contents as array
+	 *
+	 * @param string $set_code
+	 * @param array $options Options include:
+	 *		versions = Considers set existance subject to acccess the user. 
+	 *		access = Consider set to exist if user has at least the specified access level. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then a set will be considered to exist if the user has at least read access. 
+	 *		checkAccess = Consider set to exist if it has a public access level with the specified values. Can be a single value or array if you wish to filter on multiple public access values.
+	 *			
+	 * @return array
+	 */
+	static public function setContents($set_code, $options=null) {
+		if (!$set = ca_sets::find(['set_code' => $set_code], ['returnAs' => 'firstModelInstance'])) { return json_encode([]); }
+		
+		if (($user_id = caGetOption('user_id', $options, null)) && !$set->haveAccessToSet($user_id, caGetOption('access', $options, null), $set->getPrimaryKey(), ['access' => caGetOption('access', $options, null)])) {
+			return false;
+		}
+		
+		$reps = array_values(caExtractValuesByUserLocale($set->getItems(['thumbnailVersions' => caGetOption('versions', $options, ['large'])])));
+		return array_map(function($r) { return ['key' => md5($r['representation_url_large']), 'url' => $r['representation_url_large'], 'caption' => $r['set_item_label']]; }, $reps);
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Return list of set contents as JSON
+	 *
+	 * @param string $set_code
+	 * @param array $options Options include:
+	 *		versions = Considers set existance subject to acccess the user. 
+	 *		access = Consider set to exist if user has at least the specified access level. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then a set will be considered to exist if the user has at least read access. 
+	 *		checkAccess = Consider set to exist if it has a public access level with the specified values. Can be a single value or array if you wish to filter on multiple public access values.
+	 *			
+	 * @return strung
+	 */
+	static public function setContentsAsJSON($set_code, $options=null) {
+		return json_encode(self::setContents($set_code, $options));
 	}
 	# ---------------------------------------------------------------
 }

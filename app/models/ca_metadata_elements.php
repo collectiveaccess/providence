@@ -341,6 +341,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$t_element = new ca_metadata_elements();
 		return $t_element->getElementsInSet($pn_element_id, !caGetOption('noCache', $pa_options, false), $pa_options);
 	}
+	# ------------------------------------------------------
 	/**
 	 * Returns array of elements in set of currently loaded row
 	 *

@@ -541,14 +541,14 @@ class ItemService extends BaseJSONService {
 		}
 		
 		// tags
-		if(is_array($tags = $t_instance->getTags(null, true)) && sizeof($tags)) {
+		if(is_array($tags = $t_instance->getTags(null)) && sizeof($tags)) {
 		    $va_return['tags'] = $tags;
         } else {
             $va_return['tags'] = [];
         }
         
 		// preferred labels
-		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnWithStructure" => true, "returnAllLocales" => true));
+		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnWithStructure" => true, "assumeDisplayField" => false, "returnAllLocales" => true));
 		$va_labels = end($va_labels);
 
 		$vs_display_field_name = $t_instance->getLabelDisplayField();
@@ -573,6 +573,8 @@ class ItemService extends BaseJSONService {
 			if (isset($va_flatten['locales'])) {
 				$va_return["preferred_labels"] = array_pop(caExtractValuesByUserLocale(array($va_return["preferred_labels"])));
 			}
+		} else {
+		    $va_return["preferred_labels"] = [];
 		}
 
 		// nonpreferred labels
@@ -595,6 +597,8 @@ class ItemService extends BaseJSONService {
 			if (isset($va_flatten['locales'])) {
 				$va_return["nonpreferred_labels"] = array_pop(caExtractValuesByUserLocale(array($va_return["nonpreferred_labels"])));
 			}
+		} else {
+		    $va_return["nonpreferred_labels"] = [];
 		}
 
 		// attributes
@@ -665,7 +669,7 @@ class ItemService extends BaseJSONService {
 					}
 					$va_return['representations'] = join($vs_delimiter, $va_urls);
 				} else {
-					$va_return['representations'] = caSanitizeArray($t_instance->getRepresentations(['original'], ['removeNonCharacterData' => true]));
+					$va_return['representations'] = caSanitizeArray($t_instance->getRepresentations(['original']), ['removeNonCharacterData' => true]);
 				}
 
 				if(is_array($va_return['representations'])) {

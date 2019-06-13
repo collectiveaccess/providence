@@ -1243,6 +1243,14 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('after_id', $vn_after_id = $this->request->getParameter('after_id', pInteger));
 				$t_subject->set($vs_parent_id_fld, $vn_parent_id);
 
+				if ($vn_above_id > 0) { 
+				    Session::setVar('default_hierarchy_add_mode', 'above');
+				} elseif($vn_after_id > 0) {
+				    Session::setVar('default_hierarchy_add_mode', 'next_to');
+				} else {
+				    Session::setVar('default_hierarchy_add_mode', 'under');
+				}
+
 				$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
 				if (
 					$t_parent->load($vn_parent_id)
@@ -2415,7 +2423,7 @@ class BaseEditorController extends ActionController {
 							}
 							$vs_file_name = join('_', $va_tmp);
 						} else {
-							$vs_file_name = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version;
+							$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						}
 
 						if (isset($va_file_names[$vs_file_name.'.'.$va_rep_info['EXTENSION']])) {

@@ -4543,7 +4543,7 @@ if (!$vb_batch) {
 						}
 						
 						if ($this->changed('media')) {
-							$this->update(($vs_version != '_all') ? array('updateOnlyMediaVersions' => $va_versions_to_process) : array());
+							$this->update(($vs_version != '_all') ? array('updateOnlyMediaVersions' => $va_versions_to_process, 'startAtTime' => $vs_timecode, 'startAtPage' => $vn_page) : array());
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), 'ca_object_representations_media_display', 'general');
 							}
@@ -7214,7 +7214,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @param string $ps_template_value Template to use. If omitted or left blank the template defaults to a single "%" This is useful for the common case of assigning simple auto-incrementing integers as idno values.
 	 * @param array $pa_options Options are:
-	 *		dontSetValue = The template will be processed and the idno value generated but not actually set for the current row if this option is set. Default is false.
+	 *		dontSetValue = The template will be processed and the idno value generated but not actually set for the current row. Default is false.
+	 *		serialOnly = Only set idno if the idno is configured to be SERIAL (auto-incrementing numbers). [Default is true]
 	 * @return mixed The processed template value set as the idno, or false if the model doesn't support id numbering
 	 */
 	public function setIdnoWithTemplate($ps_template_value=null, $pa_options=null) {
@@ -7223,6 +7224,11 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		if (($vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) && $this->opo_idno_plugin_instance) {
 			$pb_dont_set_value = (bool)(isset($pa_options['dontSetValue']) && $pa_options['dontSetValue']);
+			$pb_serial_only = (bool)(isset($pa_options['serialOnly']) && $pa_options['serialOnly']);
+			
+			if ($pb_serial_only && !$this->opo_idno_plugin_instance->isSerialFormat()) {
+				return false;
+			}
 		
 			if (!$ps_template_value) {
 				$ps_template_value = '%';
@@ -7553,17 +7559,20 @@ side. For many self-relations the direction determines the nature and display te
 	 	$va_sql_params = array($vn_id, $this->tableNum());
 	 	$vs_bundle_sql = '';
 	 	
-	 	if (($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) && !Datamodel::tableExists($ps_bundle_name)) {	 	
-			if (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name)) {
-				$ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
-			}
+	 	if ($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) {	 
+	 	    if(!Datamodel::tableExists($ps_bundle_name) && (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name))) {
+                $ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
+            }
 			$vs_bundle_sql = "AND cmde.bundle_name = ?";
 			$va_sql_params[] = $ps_bundle_name;
 	 	} 
 	 	
 	 	
 	 	$qr_res = $o_db->query("
-	 		SELECT *
+	 		SELECT 
+	 		    cmdr.rule_code, cmdr.rule_id,
+	 		    cmdrv.violation_id, cmdr.rule_level,
+	 		    cmdrv.created_on, cmdrv.last_checked_on, cmde.bundle_name, cmde.settings
 	 		FROM ca_metadata_dictionary_rule_violations cmdrv
 	 		INNER JOIN ca_metadata_dictionary_rules AS cmdr ON cmdr.rule_id = cmdrv.rule_id
 	 		INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id

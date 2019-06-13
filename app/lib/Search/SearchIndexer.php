@@ -455,7 +455,7 @@ class SearchIndexer extends SearchBase {
 	 * 
 	 */
 	private function _genIndexInheritance($pt_subject, $pt_rel, $ps_field_num, $pn_subject_row_id, $pn_content_row_id, $pa_values_to_index, $pa_data, $pa_options=null) {
-		$is_generic = caGetOption('isGeneric', $pa_options, true);
+		$is_generic = caGetOption('isGeneric', $pa_options, false);
 		$subject_table_num = $pt_subject->tableNum();
 		
 		if (caGetOption('CHILDREN_INHERIT', $pa_data, false) || (array_search('CHILDREN_INHERIT', $pa_data, true) !== false)) {
