@@ -29,7 +29,7 @@ Vagrant.configure(2) do |config|
   # provision via shell script
   #
   config.vm.provision "shell", inline: <<-SHELL
-    
+
     # Fix for https://bugs.launchpad.net/ubuntu/+source/livecd-rootfs/+bug/1561250
     if ! grep -q "ubuntu-xenial" /etc/hosts; then
         echo "127.0.0.1 ubuntu-xenial" >> /etc/hosts
@@ -55,7 +55,7 @@ Vagrant.configure(2) do |config|
     apt-get -y install mysql-client mysql-server
 
     apt-get -q -y -o Dpkg::Options::=--force-confold install curl apache2
-    apt-get -q -y -o Dpkg::Options::=--force-confold install php7.2 libapache2-mod-php7.2 p7.2-curl php7.2-mysql
+    apt-get -q -y -o Dpkg::Options::=--force-confold install php7.2 libapache2-mod-php7.2 php7.2-curl php7.2-mysql
     apt-get -q -y -o Dpkg::Options::=--force-confold install php7.2-xml php7.2-zip php7.2-gd php7.2-json php7.2-imap
     apt-get -q -y -o Dpkg::Options::=--force-confold install htop screen vim apachetop vnstat git
     apt-get -q -y -o Dpkg::Options::=--force-confold install ffmpeg graphicsmagick python-pdfminer
