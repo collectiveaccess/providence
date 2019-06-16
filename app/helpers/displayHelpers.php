@@ -4515,14 +4515,21 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                                     $ps_text = str_replace($vs_tag, '', $ps_text); // remove tag that cannot be resolved.
                                     continue; 
                                 }
+                                
+                                if (!($caption = trim($qr_m->get('caption')))) { $caption = null; }
+                                if (!($title = trim($qr_m->get('title')))) { $title = null; }
+                                if (!($idno = trim($qr_m->get('idno')))) { $idno = null; }
+                                
+                                $alt_text = caGetOption(['caption', 'title', 'idno'], ['caption' => $caption, 'title' => $title, 'idno' => $idno], null);
+                                 
                                 if ($vs_template = $va_l['content']) {
-                                    $vs_template = str_replace("^title", $qr_m->get('title'), $vs_template);
-                                    $vs_template = str_replace("^caption", $qr_m->get('caption'), $vs_template);
-                                    $vs_template = str_replace("^idno", $qr_m->get('idno'), $vs_template);
-                                    $vs_template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media')))), $vs_template);
+                                    $vs_template = str_replace("^title", $title, $vs_template);
+                                    $vs_template = str_replace("^caption", $caption, $vs_template);
+                                    $vs_template = str_replace("^idno", $idno, $vs_template);
+                                    $vs_template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $vs_template);
                                     $ps_text = str_replace($vs_tag, $vs_template, $ps_text);
                                 } else {
-                                    $ps_text = str_replace($vs_tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media')))), $ps_text);
+                                    $ps_text = str_replace($vs_tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $ps_text);
                                 }
                                 
                                 break;
