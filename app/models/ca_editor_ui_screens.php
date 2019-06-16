@@ -1355,6 +1355,19 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Display'),
 										'description' => _t('Display format for chronology.')
 									),
+									'dateMode' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t("Order by dates") => 'use_dates', // current default mode
+											_t('Ignore dates and use entry order') => 'dateless'
+										),
+										'takesLocale' => false,
+										'default' => 'use_dates',
+										'width' => "200px", 'height' => 1,
+										'label' => _t('Date mode'),
+										'description' => _t('Order chronology items by date or by entry order.')
+									),
 									'useAppConfDefaults' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_CHECKBOXES,
@@ -1555,7 +1568,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								
 								$va_additional_settings = array_merge($va_additional_settings, ca_objects::getHistoryTrackingEditorBundleSettingsData($vs_table));
 								
-								$va_to_hide_when_using_defaults = array_values(array_filter(array_keys($va_additional_settings), function($v) { return preg_match("!^(ca_|showDeaccessionInformation|deaccession_)!", $v); }));
+								$va_to_hide_when_using_defaults = array_values(array_filter(array_keys($va_additional_settings), function($v) { return preg_match("!^(ca_|showDeaccessionInformation|deaccession_|dateMode)!", $v); }));
 								$va_additional_settings['useAppConfDefaults']['hideOnSelect'] = $va_to_hide_when_using_defaults;
 								break;
 							case 'ca_storage_locations_contents':
