@@ -2033,9 +2033,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 						
-							if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
-								continue; 
-							}
+                            //
+                            // If type is was set in content tree then use that instead of what was specified initially
+                            // Note that this is being done rather late in the game, which means that anything that relies on type
+                            // that was evaluated before now (Eg. restrictToTypes and existing record policy) which have used the old type, which
+                            // is probably not what the user wants. 
+                            //
+                            // TODO: enable evaluation of dynamically set type in such a way that all options use the final type 
+                            // 
+                            if(($va_item['destination'] == "{$vs_subject_table}.{$vs_type_id_fld}") && strlen($vm_val)) {
+                                $vs_old_type = $vs_type;
+                                $vs_type = $vm_val;
+                                $o_log->logDebug(_t("Reset type to %1 using value in content tree; was %2", $vs_type, $vs_old_type));
+                            }
 					
 							if($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) { 
 								continue; 
