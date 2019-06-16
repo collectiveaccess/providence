@@ -162,16 +162,13 @@ class iDigBioDataReader extends BaseDataReader {
 		if (!$this->items || !is_array($this->items) || !sizeof($this->items)) { return false; }
 		
 		$this->current_offset++;
-		//print "co=".$this->current_offset."; cr=".$this->current_row."\n";
 		
 		if(isset($this->items[$this->current_offset]) && is_array($this->items[$this->current_offset])) {
 		    $this->current_row++;
 			$this->row_buf = $this->items[$this->current_offset]['data'];
-			//print_r($this->row_buf);
 			return true;
 		} elseif($this->current_row < $this->total_items) {
 		    // get next frame
-		    //print "get next frame: " .$this->start."\n";
 		    $this->current_offset--;
 		    if ($this->getData()) {
 		    
