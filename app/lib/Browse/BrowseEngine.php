@@ -3161,6 +3161,10 @@
 						if (!is_array($va_exclude_relationship_types = $va_facet_info['exclude_relationship_types'])) { $va_exclude_relationship_types = array(); }
 						$va_exclude_relationship_types = $this->_getRelationshipTypeIDs($va_exclude_relationship_types, $va_facet_info['relationship_table']);
 
+						if (!is_array($va_restrict_to_lists = $va_facet_info['restrict_to_lists'])) { $va_restrict_to_lists = array(); }
+						$va_restrict_to_lists = caMakeListIDList($va_restrict_to_lists);
+
+
 						$vn_table_num = Datamodel::getTableNum($vs_rel_table_name);
 						$vs_rel_table_pk = Datamodel::primaryKey($vn_table_num);
 
@@ -3229,6 +3233,9 @@
 								if (is_array($va_exclude_types) && sizeof($va_exclude_types)) {
 									$va_wheres[] = "(".$t_rel_item->tableName().".type_id IN (".join(',', $va_exclude_types).")) ";
 								}
+								if (is_array($va_restrict_to_lists) && sizeof($va_restrict_to_lists)) {
+									$va_wheres[] = "((".$t_rel_item->tableName().".list_id NOT IN (".join(',', $va_restrict_to_lists).")) OR (".$t_rel_item->tableName().".list_id IS NULL))";
+								}
 
 								if (is_array($va_wheres) && sizeof($va_wheres) == $vn_num_wheres) {
 									$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
@@ -3251,6 +3258,10 @@
 								
 								if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
 									$va_wheres[] = "(".$t_rel_item->tableName().".type_id IN (".join(',', $va_restrict_to_types)."))";
+								}
+								
+								if (is_array($va_restrict_to_lists) && sizeof($va_restrict_to_lists)) {
+									$va_wheres[] = "(".$t_rel_item->tableName().".list_id IN (".join(',', $va_restrict_to_lists)."))";
 								}
 								
 								if (is_array($va_exclude_types) && sizeof($va_exclude_types)) {
