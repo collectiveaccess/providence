@@ -35,10 +35,13 @@
   */
 function caGetPreferredThemeForCurrentDevice($pa_theme_device_mappings) {
     if(isset($_GET['current_theme'])){
-        $_COOKIE['current_theme'] = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
-    }
-    if(isset($_COOKIE['current_theme']) && file_exists(__CA_THEMES_DIR__.'/'.$_COOKIE['current_theme'])){
+        $vs_theme = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
+        setcookie('current_theme', $vs_theme);
+    } elseif(isset($_COOKIE['current_theme'])) {
         $vs_theme = $_COOKIE['current_theme'];
+    }
+    
+    if(isset($vs_theme) && defined("__CA_THEMES_DIR__") && file_exists(__CA_THEMES_DIR__.'/'.$vs_theme)){
         return $vs_theme;
     }
     $vs_default_theme = 'default';

@@ -44,9 +44,15 @@ class iDigBioDataReader extends BaseDataReader {
 	# -------------------------------------------------------
 	private $items = null;
 	private $row_buf = [];
-	private $current_row = 0;
+	private $current_row = 0;   // row index within entire dataset
+	private $current_offset = 0; // row index within current frame
 	
 	private $client = null;
+	
+	private $source = null;
+	private $start = 0;
+	private $limit = 500;
+	private $total_items = null;
 	
 	# -------------------------------------------------------
 	/**
@@ -74,27 +80,79 @@ class iDigBioDataReader extends BaseDataReader {
 	public function read($source, $options=null) {
 		parent::read($source, $options);
 		
-		$this->current_row = 0;
+		$this->current_row = -1;
+		$this->current_offset = -1;
 		$this->items = [];
 		
-		try {
+		$this->source = $source;
+		$this->start = 0;
+		
+		$this->getData();
+		
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 */
+	private function getData() {
+	    try {
 			$this->client = new \GuzzleHttp\Client();
-			$url = "https://search.idigbio.org/v2/search/records?rq=".urlencode($source);
+			$url = "https://search.idigbio.org/v2/search/records?limit=".(int)$this->limit."&offset=".(int)$this->start."&rq=".urlencode($this->source);
 		
 			$response = $this->client->request("GET", $url);
 			
 			$data = json_decode($response->getBody(), true);
-		
+ 
 			if (is_array($data) && isset($data['itemCount']) && ((int)$data['itemCount'] > 0) && is_array($data['items'])) {
-				$this->items = $data['items'];
-				$this->current_row = -1;
+			    $this->total_items = $data['itemCount'];
+			    $data = $data['items'];
+			                
+                // get related media ids
+                $media_ids = [];
+                foreach($data as $di => $r) {
+                    if (is_array($r['indexTerms']['mediarecords']) && sizeof($r['indexTerms']['mediarecords'])) {
+                        foreach($r['indexTerms']['mediarecords'] as $mi => $media_id) {
+                           $media_ids[] = $media_id;
+                        }
+                        if (is_array($media_info = $this->getMedia(array_unique($media_ids))) && is_array($media_info['items']) && sizeof($media_info['items'])) {
+                            $data[$di]['data']['media'] = $media_info['items'];
+                        }
+                    } elseif(isset($r['data']['dwc:associatedMedia']) && strlen($r['data']['dwc:associatedMedia'])) {
+                        // add media
+                        $data[$di]['data']['media'][] = [
+                            'data' => ['ac:accessURI' => $r['data']['dwc:associatedMedia']]
+                        ];
+                    }
+                }
+			    $this->start += sizeof($data);
+				$this->items = $data;
+				$this->current_offset = -1;
+				
+				return $data;
 			}
 		} catch (Exception $e) {
 			return false;
 		}
-		
-		return true;
-	}
+    }
+    # -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 */
+	private function getMedia($ids) {
+	    try {
+			$this->client = new \GuzzleHttp\Client();
+			$url = "https://search.idigbio.org/v2/search/media?mq=".json_encode(['uuid' => $ids], true);
+	
+			$response = $this->client->request("GET", $url);
+			
+			return json_decode($response->getBody(), true);
+		} catch (Exception $e) {
+			return false;
+		}
+    }
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -103,10 +161,19 @@ class iDigBioDataReader extends BaseDataReader {
 	public function nextRow() {
 		if (!$this->items || !is_array($this->items) || !sizeof($this->items)) { return false; }
 		
-		$this->current_row++;
-		if(isset($this->items[$this->current_row]) && is_array($this->items[$this->current_row])) {
-			$this->row_buf = $this->items[$this->current_row]['data'];
+		$this->current_offset++;
+		
+		if(isset($this->items[$this->current_offset]) && is_array($this->items[$this->current_offset])) {
+		    $this->current_row++;
+			$this->row_buf = $this->items[$this->current_offset]['data'];
 			return true;
+		} elseif($this->current_row < $this->total_items) {
+		    // get next frame
+		    $this->current_offset--;
+		    if ($this->getData()) {
+		    
+		        return $this->nextRow();
+		    }
 		}
 		return false;
 	}
@@ -119,10 +186,12 @@ class iDigBioDataReader extends BaseDataReader {
 	 */
 	public function seek($row_num) {
 		$row_num = (int)$row_num;
-		if (($row_num >= 0) && ($row_num < sizeof($this->items))) {
-			$this->current_row = $row_num;
-			return true;
-		}
+		
+        if (($row_num >= 0) && ($row_num < $this->total_items)) {
+            $this->current_row = $row_num;
+            $this->start = $row_num;
+            return (bool)$this->getData();
+        }
 		return false;
 	}
 	# -------------------------------------------------------
@@ -134,11 +203,30 @@ class iDigBioDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($col, $options=null) {
-		if ($vm_ret = parent::get($col, $options)) { 
+		$return_as_array = caGetOption('returnAsArray', $options, false);
+		$delimiter = caGetOption('delimiter', $options, ';');
+		
+		if ($vm_ret = parent::get($col, $options)) {
 			return $vm_ret; 
 		}
 		
-		return isset($this->row_buf[$col]) ? $this->row_buf[$col] : null;
+		if (substr($col, 0, 6) === 'media:') {
+		    $spec = substr($col, 6);
+		    $media = $this->row_buf['media'];
+		    if (is_array($media)) { 
+                $d = array_map(function($v) use ($spec) { return $v['data'][$spec]; }, array_filter($media, function($v) use ($spec) { return isset($v['data'][$spec]); }));
+                return $return_as_array ? $d : join($delimiter, $d);
+            } 	
+		}
+		
+		if (is_array($this->row_buf) && ($col) && (isset($this->row_buf[$col]))) {
+			if($return_as_array) {
+				return [$this->row_buf[$col]];
+			} else {
+				return $this->row_buf[$col];
+			}
+		}
+		return null;	
 	}
 	# -------------------------------------------------------
 	/**
@@ -147,8 +235,8 @@ class iDigBioDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function getRow($options=null) {
-		if (isset($this->items[$this->current_row]) && is_array($row = $this->items[$this->current_row])){
-			return $row['data'];
+		if (isset($this->items[$this->current_offset]) && is_array($row = $this->items[$this->current_offset])){
+			return array_map(function($v) { return !is_array($v) ? [$v] : $v; }, $row['data']);
 		}
 		
 		return null;	
@@ -160,7 +248,7 @@ class iDigBioDataReader extends BaseDataReader {
 	 * @return int
 	 */
 	public function numRows() {
-		return is_array($this->items) ? sizeof($this->items) : 0;
+		return $this->total_items; //is_array($this->items) ? sizeof($this->items) : 0;
 	}
 	# -------------------------------------------------------
 	/**
@@ -187,7 +275,7 @@ class iDigBioDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function valuesCanRepeat() {
-		return false;
+		return true;
 	}
 	# -------------------------------------------------------
 }

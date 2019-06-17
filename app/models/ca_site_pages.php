@@ -560,10 +560,12 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
             ]);
             $va_media_list[$va_media_info['media_id']]['info']['original_filename'] = $va_media_list[$va_media_info['media_id']]['info']['ORIGINAL_FILENAME'];
             
+           $alt_text = caGetOption(['caption', 'title', 'idno'], $va_media_info, null);     
+            
 	        foreach($pa_versions as $vs_version) {
                 $va_disp = caGetMediaInfoForDisplay($o_coder, $vs_version);
                 
-                $va_media_list[$va_media_info['media_id']]['tags'][$vs_version] = $o_coder->getMediaTag($vs_version);
+                $va_media_list[$va_media_info['media_id']]['tags'][$vs_version] = $o_coder->getMediaTag($vs_version, ['alt' => $alt_text]);
                 $va_media_list[$va_media_info['media_id']]['urls'][$vs_version] = $o_coder->getMediaUrl($vs_version);
                 $va_media_list[$va_media_info['media_id']]['paths'][$vs_version] = $o_coder->getMediaPath($vs_version);
                 $va_media_list[$va_media_info['media_id']]['dimensions'][$vs_version] = $va_disp['dimensions'];

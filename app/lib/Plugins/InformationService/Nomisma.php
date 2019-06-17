@@ -124,7 +124,7 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 		$ontology_filter = (is_array($pa_settings['ontologies']) && sizeof($pa_settings['ontologies'])) ? "FILTER (?t IN (".join(',', $pa_settings['ontologies'])."))" : "";
 		
 		if ($is_url) {
-		   $query_filter = 'FILTER (?data IN (<'.preg_replace("![^A-Za-z0-9_\-\%\/\&\:\.]+!", "", $ps_search).'>))';
+		   $query_filter = 'FILTER (?data IN (<'.preg_replace("![^A-Za-z0-9_\-\%\/\&\:\.]+!", "", mb_strtolower($ps_search)).'>))';
            $vs_query = urlencode('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX dcterms:	<http://purl.org/dc/terms/>
                 PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>

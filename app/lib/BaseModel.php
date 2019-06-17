@@ -3758,6 +3758,11 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if (!is_array($va_media_info = $this->getMediaInfo($ps_field))) { return null; }
 		if (!is_array($va_media_info[$ps_version])) { return null; }
 
+        if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
+		    $alt_text = $this->getWithTemplate($alt_text_template);
+		} else {
+		    $alt_text = $this->get($this->tableName().".preferred_labels");
+		}
 		#
 		# Use icon
 		#
@@ -3778,7 +3783,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$o_vol = new MediaVolumes();
 		$va_volume = $o_vol->getVolumeInformation($va_media_info[$ps_version]['VOLUME']);
 
-		return $m->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $url, $va_media_info[$ps_version]["PROPERTIES"], $pa_options, $va_volume);
+		return $m->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $url, $va_media_info[$ps_version]["PROPERTIES"], array_merge($pa_options, ['alt' => $alt_text]), $va_volume);
 	}
 
 	/**

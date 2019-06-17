@@ -3125,7 +3125,15 @@ class SearchResult extends BaseObject {
 		if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['data' => reset($this->opa_field_media_info[$ps_field])]));
+		
+		if($alt_text = caGetOption('alt', $pa_options, null)) {
+		    // noop
+		} elseif ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
+		    $alt_text = $this->getWithTemplate($alt_text_template);
+		} else {
+		    $alt_text = $this->get($this->tableName().".preferred_labels");
+		}
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['alt' => $alt_text, 'data' => reset($this->opa_field_media_info[$ps_field])]));
 	}
 	# ------------------------------------------------------------------
 	/**
