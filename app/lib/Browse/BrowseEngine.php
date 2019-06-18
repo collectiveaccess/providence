@@ -1190,7 +1190,10 @@
 
 										if (!is_array($va_exclude_relationship_types = $va_facet_info['exclude_relationship_types'])) { $va_exclude_relationship_types = array(); }
 										$va_exclude_relationship_types = $this->_getRelationshipTypeIDs($va_exclude_relationship_types, $va_facet_info['relationship_table']);
-
+													
+										if (!is_array($va_restrict_to_lists = $va_facet_info['restrict_to_lists'])) { $va_restrict_to_lists = array(); }
+										$va_restrict_to_lists = caMakeListIDList($va_restrict_to_lists);
+	
 										$vn_table_num = Datamodel::getTableNum($vs_rel_table_name);
 										$vs_rel_table_pk = Datamodel::primaryKey($vn_table_num);
 
@@ -1254,6 +1257,10 @@
 											if (is_array($va_exclude_types) && (sizeof($va_exclude_types) > 0) && is_object($t_rel_item)) {
 												$va_wheres[] = "((".$t_rel_item->tableName().".type_id NOT IN (".join(',', $va_exclude_types).")) OR (".$t_rel_item->tableName().".type_id IS NULL))";
 											}
+											
+											if (is_array($va_restrict_to_lists) && sizeof($va_restrict_to_lists)) {
+												$va_wheres[] = "(".$t_rel_item->tableName().".list_id IN (".join(',', $va_restrict_to_lists)."))";
+											}
 										}
 
 										if ($t_item->hasField('deleted')) {
@@ -1309,23 +1316,20 @@
 
                                                 $qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
 											} else {
-											    $this->_createTempTable("_browseTmp");
-                                                $vs_sql = "
-                                                    INSERT IGNORE INTO _browseTmp
-                                                    SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
-                                                    FROM ".$this->ops_browse_table_name."
-                                                    {$vs_relative_to_join}
-                                                    {$vs_join_sql}
-                                                    {$vs_where_sql}";
+												$vs_sql = "
+													SELECT ".$t_item->primaryKey()."
+													FROM ".$this->ops_browse_table_name."
+													WHERE ".$t_item->primaryKey()." NOT IN (
+														SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+														FROM ".$this->ops_browse_table_name."
+														{$vs_relative_to_join}
+														{$vs_join_sql}
+														{$vs_where_sql}
+													)";
 
-                                                $this->opo_db->query($vs_sql, $va_sql_params);
-                                            
-                                                $qr_res = $this->opo_db->query("SELECT t.".$t_item->primaryKey()." FROM ".$this->ops_browse_table_name." t LEFT JOIN _browseTmp AS b ON ".$t_item->primaryKey()." = b.row_id WHERE b.row_id IS NULL");
-                                            
-                                                $this->_dropTempTable("_browseTmp");
+                                                $qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
                                             }
 										}
-										
 										$va_acc[$vn_i] = $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey());
 										$vn_i++;
 									break;
@@ -3027,6 +3031,7 @@
 					if (isset($va_all_criteria[$ps_facet_name])) { break; }		// only one instance of this facet allowed per browse
 
 					if (!($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true))) { break; }
+					$vs_browse_table_pk = $t_item->primaryKey();
 					
 					if (isset($va_facet_info['element_code']) && $t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name,  array_shift(explode('.', $va_facet_info['element_code']))) < __CA_BUNDLE_ACCESS_READONLY__)) { 
 					    return []; 
@@ -3069,10 +3074,10 @@
 							$va_joins = array();
 
 							if (!(bool)$va_state_info['id']) {	// no option
-								$va_wheres[] = $this->ops_browse_table_name.'.'.$t_item->primaryKey()." NOT IN (select row_id from ca_attributes where table_num = ".$t_item->tableNum()." AND element_id = ".$t_element->getPrimaryKey().")";
+								$va_wheres[] = $this->ops_browse_table_name.'.'.$vs_browse_table_pk." NOT IN (select row_id from ca_attributes where table_num = ".$t_item->tableNum()." AND element_id = ".$t_element->getPrimaryKey().")";
 
 							} else {							// yes option
-								$va_joins[] = "LEFT JOIN ca_attributes AS caa ON  ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." = caa.row_id AND ".$t_item->tableNum()." = caa.table_num";
+								$va_joins[] = "LEFT JOIN ca_attributes AS caa ON  ".$this->ops_browse_table_name.'.'.$vs_browse_table_pk." = caa.row_id AND ".$t_item->tableNum()." = caa.table_num";
 
 								$va_wheres[] = "caa.element_id = ".$t_element->getPrimaryKey();
 
@@ -3088,7 +3093,7 @@
 							}
 
 							if (is_array($va_results) && sizeof($va_results)) {
-								$va_wheres[] = $vs_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
+								$va_wheres[] = $vs_browse_table_name.".".$vs_browse_table_pk." IN (".join(",", $va_results).")";
 							}
 
 							if ($va_facet_info['relative_to']) {
@@ -3104,7 +3109,7 @@
 							if ($this->opo_config->get('perform_item_level_access_checking')) {
 								if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 									// Join to limit what browse table items are used to generate facet
-									$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+									$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$vs_browse_table_pk.' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 									$va_wheres[] = "(
 										((
 											(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -3139,7 +3144,7 @@
 								}
 							} else {
 								$vs_sql = "
-									SELECT DISTINCT ".$vs_browse_table_name.'.'.$t_item->primaryKey()."
+									SELECT DISTINCT ".$vs_browse_table_name.'.'.$vs_browse_table_pk."
 									FROM ".$vs_browse_table_name."
 									{$vs_join_sql}
 									{$vs_where_sql}";
@@ -3208,70 +3213,37 @@
 							$va_wheres = array();
 							$va_joins = $va_joins_init;
 							
-							if (!(bool)$va_state_info['id']) {	// no option
-								$vn_num_wheres = sizeof($va_wheres);
-								$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
-								
-								if ($t_rel_item->hasField('deleted')) {
-									$va_wheres[] = "((".$t_rel_item->tableName().".deleted = 0) OR (".$t_rel_item->tableName().".deleted IS NULL))";
-								}
-								if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
-									$va_wheres[] = "((".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess']).")) OR (".$t_rel_item->tableName().".access IS NULL))";
-								}
-
-								if (is_array($va_restrict_to_relationship_types) && (sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
-									$va_wheres[] = "((".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_restrict_to_relationship_types).")) OR (".$t_item_rel->tableName().".type_id IS NULL))";
-								}
-								if (is_array($va_exclude_relationship_types) && (sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
-									$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_exclude_relationship_types)."))";
-								}
-								
-								if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
-									$va_wheres[] = "((".$t_rel_item->tableName().".type_id NOT IN (".join(',', $va_restrict_to_types).")) OR (".$t_rel_item->tableName().".type_id IS NULL))";
-								}
-								
-								if (is_array($va_exclude_types) && sizeof($va_exclude_types)) {
-									$va_wheres[] = "(".$t_rel_item->tableName().".type_id IN (".join(',', $va_exclude_types).")) ";
-								}
-								if (is_array($va_restrict_to_lists) && sizeof($va_restrict_to_lists)) {
-									$va_wheres[] = "((".$t_rel_item->tableName().".list_id NOT IN (".join(',', $va_restrict_to_lists).")) OR (".$t_rel_item->tableName().".list_id IS NULL))";
-								}
-
-								if (is_array($va_wheres) && sizeof($va_wheres) == $vn_num_wheres) {
-									$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
-								}
-							} else {							// yes option
-								$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
-								if ($t_rel_item->hasField('deleted')) {
-									$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
-								}
-								if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
-									$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
-								}
-
-								if (is_array($va_restrict_to_relationship_types) && (sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
-									$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
-								}
-								if (is_array($va_exclude_relationship_types) && (sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
-									$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
-								}
-								
-								if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
-									$va_wheres[] = "(".$t_rel_item->tableName().".type_id IN (".join(',', $va_restrict_to_types)."))";
-								}
-								
-								if (is_array($va_restrict_to_lists) && sizeof($va_restrict_to_lists)) {
-									$va_wheres[] = "(".$t_rel_item->tableName().".list_id IN (".join(',', $va_restrict_to_lists)."))";
-								}
-								
-								if (is_array($va_exclude_types) && sizeof($va_exclude_types)) {
-									$va_wheres[] = "((".$t_rel_item->tableName().".type_id NOT IN (".join(',', $va_exclude_types).")) OR (".$t_rel_item->tableName().".type_id IS NULL))";
-								}
+													// yes option
+							$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
+							if ($t_rel_item->hasField('deleted')) {
+								$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
+							}
+							if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+								$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
 							}
 
+							if (is_array($va_restrict_to_relationship_types) && (sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
+								$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
+							}
+							if (is_array($va_exclude_relationship_types) && (sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
+								$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
+							}
+							
+							if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
+								$va_wheres[] = "(".$t_rel_item->tableName().".type_id IN (".join(',', $va_restrict_to_types)."))";
+							}
+							
+							if (is_array($va_restrict_to_lists) && sizeof($va_restrict_to_lists)) {
+								$va_wheres[] = "(".$t_rel_item->tableName().".list_id IN (".join(',', $va_restrict_to_lists)."))";
+							}
+							
+							if (is_array($va_exclude_types) && sizeof($va_exclude_types)) {
+								$va_wheres[] = "((".$t_rel_item->tableName().".type_id NOT IN (".join(',', $va_exclude_types).")) OR (".$t_rel_item->tableName().".type_id IS NULL))";
+							}
 
+							$vs_item_deleted_sql = "";
 							if ($t_item->hasField('deleted')) {
-								$va_wheres[] = "(".$t_item->tableName().".deleted = 0)";
+								$va_wheres[] = $vs_item_deleted_sql = "(".$t_item->tableName().".deleted = 0)";
 							}
 
 							if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
@@ -3279,7 +3251,7 @@
 							}
 
 							if (is_array($va_results) && sizeof($va_results)) {
-								$va_wheres[] = $vs_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
+								$va_wheres[] = $vs_browse_table_name.".".$vs_browse_table_pk." IN (".join(",", $va_results).")";
 							}
 
 							if ($va_facet_info['relative_to']) {
@@ -3295,7 +3267,7 @@
 							if ($this->opo_config->get('perform_item_level_access_checking')) {
 								if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
 									// Join to limit what browse table items are used to generate facet
-									$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+									$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$vs_browse_table_pk.' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 									$va_wheres[] = "(
 										((
 											(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -3316,24 +3288,50 @@
 							}
 
 							if ($vb_check_availability_only) {
-								$vs_sql = "
-									SELECT 1
-									FROM ".$vs_browse_table_name."
-									{$vs_join_sql}
-									{$vs_where_sql}
-									LIMIT 2
-								";
+								if (!(bool)$va_state_info['id']) {	// no option
+									$vs_sql = "
+										SELECT 1
+										FROM {$vs_browse_table_name}
+										WHERE {$vs_browse_table_pk} NOT IN (
+											SELECT {$vs_browse_table_name}.{$vs_browse_table_pk}
+											FROM {$vs_browse_table_name}
+											{$vs_join_sql}
+											{$vs_where_sql}
+										)".($vs_item_deleted_sql ? " AND {$vs_item_deleted_sql}" : "")."
+										LIMIT 2
+									";
+								} else {	
+									$vs_sql = "
+										SELECT 1
+										FROM {$vs_browse_table_name}
+										{$vs_join_sql}
+										{$vs_where_sql}
+										LIMIT 2
+									";
+								}
 								//print "$vs_sql<hr>";
 								$qr_res = $this->opo_db->query($vs_sql);
 								if ($qr_res->nextRow()) {
 									$va_counts[$vs_state_name] = (int)$qr_res->numRows();
 								}
 							} else {
-								$vs_sql = "
-									SELECT DISTINCT ".$vs_browse_table_name.'.'.$t_item->primaryKey()."
-									FROM ".$vs_browse_table_name."
-									{$vs_join_sql}
-									{$vs_where_sql}";
+								if (!(bool)$va_state_info['id']) {	// no option
+									$vs_sql = "
+										SELECT DISTINCT {$vs_browse_table_pk}
+										FROM {$vs_browse_table_name}
+										WHERE {$vs_browse_table_pk} NOT IN (
+											SELECT {$vs_browse_table_name}.{$vs_browse_table_pk}
+											FROM {$vs_browse_table_name}
+											{$vs_join_sql}
+											{$vs_where_sql}
+										)".($vs_item_deleted_sql ? " AND {$vs_item_deleted_sql}" : "");
+								} else {
+									$vs_sql = "
+										SELECT DISTINCT {$vs_browse_table_name}.{$vs_browse_table_pk}
+										FROM {$vs_browse_table_name}
+										{$vs_join_sql}
+										{$vs_where_sql}";
+								}
 									
 								//print "$vs_sql<hr>";
 								$qr_res = $this->opo_db->query($vs_sql);
