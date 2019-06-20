@@ -1191,7 +1191,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
 
 			$t_item->addLabel(array(
-				'caption' => '['._t('BLANK').']',
+				'caption' => '['.caGetBlankLabelText().']',
 			), $g_ui_locale_id);
 			
 			if ($t_item->numErrors()) {
@@ -2346,8 +2346,9 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		if ($pa_public_access && is_numeric($pa_public_access) && !is_array($pa_public_access)) {
 			$pa_public_access = array($pa_public_access);
 		}
+		if (!is_array($pa_public_access)) { $pa_public_access = []; }
 		for($vn_i=0; $vn_i < sizeof($pa_public_access); $vn_i++) { $pa_public_access[$vn_i] = intval($pa_public_access[$vn_i]); }
-		
+
 		if($pn_user_id){
 			$va_extra_joins = array();
 			$va_sql_wheres = array("(cs.deleted = 0)");

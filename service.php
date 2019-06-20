@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
+	define("__CA_IS_SERVICE_REQUEST__", true);
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');
 
@@ -54,4 +55,3 @@
 	$resp->sendResponse();
 
 	$req->close();
-?>

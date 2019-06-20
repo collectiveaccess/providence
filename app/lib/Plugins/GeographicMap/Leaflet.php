@@ -61,6 +61,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 	 *		delimiter = Delimiter to use to separate content for different items being plotted in the same location (and therefore being put in the same marker detail balloon); default is an HTML line break tag ("<br/>")
 	 *		minZoomLevel = Minimum zoom level to allow; leave null if you don't want to enforce a limit
 	 *		maxZoomLevel = Maximum zoom level to allow; leave null if you don't want to enforce a limit
+	 *		noWrap = Prevent wrapping of map tile background when pan; leave null to allow wrapping
 	 *		zoomLevel = Zoom map to specified level rather than fitting all markers into view; leave null if you don't want to specify a zoom level. IF this option is set minZoomLevel and maxZoomLevel will be ignored.
 	 *		pathColor = used for paths and circles; default is to use 'leaflet_maps_path_color' setting in app.conf
 	 *		pathWeight = used for paths and circles; default is to use 'leaflet_maps_path_weight' setting in app.conf
@@ -91,9 +92,13 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		
 		$vb_show_scale_controls = (bool)caGetOption('showScaleControls', $pa_options, (bool)$this->opo_config->get('leaflet_maps_show_scale_controls'));
 		$vs_delimiter = caGetOption('delimiter', $pa_options, '<br/>');
-		$vn_zoom_level = caGetOption('zoomLevel', $pa_options, 8);
+		$vn_zoom_level = caGetOption('zoomLevel', $pa_options, null);
+		$we_set_zoom = false;
+		if (!$vn_zoom_level) { $vn_zoom_level = 8; $we_set_zoom = true; }
+		
 		$vn_min_zoom_level = caGetOption('minZoomLevel', $pa_options, 0);
 		$vn_max_zoom_level = caGetOption('maxZoomLevel', $pa_options, 18);
+		$vb_no_wrap = (bool)caGetOption('noWrap', $pa_options, null);
 		
 		if (!($vs_path_color = caGetOption('pathColor', $pa_options, $this->opo_config->get('leaflet_maps_path_color')))) { $vs_path_color = '#ff0000'; }
 		if (($vn_path_weight = caGetOption('pathWeight', $pa_options, $this->opo_config->get('leaflet_maps_path_weight'))) < 1) { $vn_path_weight = 1; }
@@ -144,12 +149,15 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				}	
 				
 				if (!($lat && $lng)) { continue; }
+				if (($lat < -90) || ($lat > 90)) { continue; }
+				if (($lng < -180) || ($lng > 180)) { continue; }
+				
 				$vn_angle = isset($content_item['angle']) ? (float)$content_item['angle'] : null;
 				$vs_label = preg_replace("![\n\r]+!", " ", $vs_label);
 				$vs_content = preg_replace("![\n\r]+!", " ", join($vs_delimiter, $va_buf));
 				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? ($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
 				
-        		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label];
+        		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label, 'content' => $vs_content];
         		if ($vn_angle !== 0) { $l['angle'] = $vn_angle; }
         		if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
         		$pointList[] = $l;
@@ -180,7 +188,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				$vs_content = preg_replace("![\n\r]+!", " ", join($vs_delimiter, $va_buf));
 				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? ($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
 				
-        		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label, 'radius' => $vn_radius];
+        		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label,  'content' => $vs_content, 'radius' => $vn_radius];
         		if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
         		$circleList[] = $l;
 			}
@@ -216,7 +224,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		var circleList{$vs_id} = ".json_encode($circleList).";
 		var pathList{$vs_id} = ".json_encode($paths).";
 		var map = L.map('map_{$vs_id}', { zoomControl: ".($vb_show_scale_controls ? "true" : "false").", attributionControl: false, minZoom: {$vn_min_zoom_level}, maxZoom: {$vn_max_zoom_level} }).setView([0, 0], {$vn_zoom_level});
-		var b = L.tileLayer('{$base_map_url}').addTo(map);	
+		var b = L.tileLayer('{$base_map_url}', {noWrap: ".($vb_no_wrap ? "true" : "false")."}).addTo(map);	
 		var g = new L.featureGroup();
 		g.addTo(map);
 		
@@ -226,25 +234,70 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 			var m = L.marker([v.lat, v.lng], opts);
 			
 			if (v.angle != 0) { m.setRotationAngle(v.angle); }
-			if (v.label || v.content) { m.bindPopup(v.label + v.content); }
+			if (v.label || v.content) { 
+			    if (v.ajaxUrl) {
+			        var ajaxUrl = v.ajaxUrl;
+                    m.bindPopup(
+                        (layer)=>{
+                            var el = document.createElement('div');
+                            $.get(ajaxUrl,function(data){
+                                el.innerHTML = data + '<br/>';
+                            });
+
+                            return el;
+                        }, { minWidth: 400, maxWidth : 560 });
+			    } else {
+			        m.bindPopup(v.label + v.content); 
+			    }
+			}
 			m.addTo(g);
 		});
 		
 		jQuery(circleList{$vs_id}).each(function(k, v) {
 			var m = L.circle([v.lat, v.lng], { radius: v.radius, color: '{$vs_path_color}', weight: '{$vn_path_weight}', opacity: '{$vn_path_opacity}', fillColor: '{$vs_fill_color}', fillOpacity: '{$vn_fill_opacity}' });
-			if (v.label || v.content) { m.bindPopup(v.label + v.content); }
+			if (v.label || v.content) { 
+			    if (v.ajaxUrl) {
+			        var ajaxUrl = v.ajaxUrl;
+                    m.bindPopup(
+                        (layer)=>{
+                            var el = document.createElement('div');
+                            $.get(ajaxUrl,function(data){
+                                el.innerHTML = data + '<br/>';
+                            });
+
+                            return el;
+                        }, { minWidth: 400, maxWidth : 560 });
+			    } else {
+			        m.bindPopup(v.label + v.content); 
+			    }
+			}
 			m.addTo(g);
 		});
 		
 		jQuery(pathList{$vs_id}).each(function(k, v) {
 			var splitPts = v.path.map(c => { return [c.latitude, c.longitude] });
 			var m = L.polygon(splitPts, { color: '{$vs_path_color}', weight: '{$vn_path_weight}', opacity: '{$vn_path_opacity}', fillColor: '{$vs_fill_color}', fillOpacity: '{$vn_fill_opacity}' });
-			if (v.label || v.content) { m.bindPopup(v.label + v.content); }
+			if (v.label || v.content) { 
+			    if (v.ajaxUrl) {
+			        var ajaxUrl = v.ajaxUrl;
+                    m.bindPopup(
+                        (layer)=>{
+                            var el = document.createElement('div');
+                            $.get(ajaxUrl,function(data){
+                                el.innerHTML = data + '<br/>';
+                            });
+
+                            return el;
+                        }, { minWidth: 400, maxWidth : 560 });
+			    } else {
+			        m.bindPopup(v.label + v.content); 
+			    }
+			}
 			m.addTo(g);
 		});
 			
 		var bounds = g.getBounds();
-		if (bounds.isValid()) { map.fitBounds(bounds); }
+		if (bounds.isValid()) { map.fitBounds(bounds)".((strlen($vn_zoom_level) && !$we_set_zoom) ? ".setZoom({$vn_zoom_level})" : "")."; }
 </script>\n"; 
 				break;
 			# ---------------------------------

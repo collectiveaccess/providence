@@ -376,6 +376,9 @@
 		$va_contexts = caGetOption('contexts', $pa_options, array(), array('castTo' => 'array'));
 		unset($pa_options['contexts']);
 		
+		
+		if ($purifier = RequestHTTP::getPurifier()) { $ps_search_expression = $purifier->purify($ps_search_expression); }
+		
 		//
 		// Block are lazy-loaded using Ajax requests with additional items as they are scrolled.
 		// "Ajax mode" is used by caPuppySearch to render a single block when it is scrolled
@@ -404,14 +407,10 @@
 			$vb_sort_changed = false;
  			if (!($ps_sort = $po_request->getParameter("{$vs_block}Sort", pString))) {
  				if (isset($va_contexts[$vs_block])) {
- 					if(!($ps_sort = $va_contexts[$vs_block]->getCurrentSort()) && ($va_sorts) && sizeof($va_sorts)) { 
+ 					if((!($ps_sort = $va_contexts[$vs_block]->getCurrentSort()) && ($va_sorts) && sizeof($va_sorts)) || (!in_array($ps_sort, array_keys($va_sorts)))) { 
 						$ps_sort = array_shift(array_keys($va_sorts));
 						$va_contexts[$vs_block]->setCurrentSort($ps_sort); 
 						$vb_sort_changed = true;
-					//} else {
-					//	if (isset($va_sorts[$ps_sort])) { 
-					//		$ps_sort = $va_sorts[$ps_sort];
-					//	}
 					}
  				}
  			}else{
@@ -430,6 +429,8 @@
  					$ps_sort_direction = 'asc';
  				}
  			}
+ 			if(!in_array($ps_sort_direction, ['asc', 'desc'])) {  $ps_sort_direction = 'asc'; }
+ 			
  			$va_contexts[$vs_block]->setCurrentSortDirection($ps_sort_direction); 
  			
  			$va_options['sort'] = $va_sorts[$ps_sort];
@@ -652,6 +653,8 @@
 		$va_for_display = array();
 	 	$va_default_values = $va_values = $va_booleans = array();
 	 	
+	 	$pa_form_values = caPurifyArray($pa_form_values);
+	 	
 	 	foreach($va_form_contents as $vn_i => $vs_element) {
 			$vs_dotless_element = str_replace('.', '_', $vs_element);
 			
@@ -762,9 +765,9 @@
 	function caGetDisplayStringForHTMLFormInput($po_result_context, $pa_options=null) {
 		$pa_form_values = caGetOption('formValues', $pa_options, $_REQUEST);
 		$va_form_contents = explode('|', caGetOption('_formElements', $pa_form_values, ''));
-
 		
-	 	$va_display_string = array();
+	 	$va_display_string = [];
+	 	$pa_form_values = caPurifyArray($pa_form_values);
 	 	
 	 	foreach($va_form_contents as $vn_i => $vs_element) {
 			$vs_dotless_element = str_replace('.', '_', $vs_element);
@@ -807,7 +810,7 @@
 			} else {
 				$va_tmp = explode('.', $vs_element);
 				$vs_possible_element_with_rel = array_pop($va_tmp);
-				$va_tmp2 = explode("/", $vs_possible_element_with_rel);
+				$va_tmp2 = preg_split("![/\|]+!", $vs_possible_element_with_rel);
 				$vs_possible_element = array_shift($va_tmp2);
 				
 				// TODO: display relationship types when defined?
@@ -850,6 +853,8 @@
 		$o_query_parser = new LuceneSyntaxParser();
 		$o_query_parser->setEncoding($o_config->get('character_set'));
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
+		
+		if ($purifier = RequestHTTP::getPurifier()) { $ps_search = $purifier->purify($ps_search); }
 		
 		$pb_omit_field_names = caGetOption(['omitFieldNames', 'omitQualifiers'], $pa_options, false);
 		
@@ -971,7 +976,9 @@
 		
 		$va_values = [];
 		$i = 1;
+		$purifier = RequestHTTP::getPurifier();
 		foreach(array_values($pa_values) as $vs_val) {
+		    if ($purifier) { $vs_val = $purifier->purify($vs_val); }
 			$va_values[$i] = $vs_val;
 			$i++;
 		}
@@ -1384,6 +1391,8 @@
 	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
 		if (caGetOption('disableSorts', $pa_options, false)) { return []; }
 		
+		$o_config = Configuration::load();
+		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_table}/{$pn_type_id}");
 		
 		if (CompositeCache::contains("available_sorts") && is_array($va_cached_data = CompositeCache::fetch("available_sorts")) && isset($va_cached_data[$vs_cache_key])) { return $va_cached_data[$vs_cache_key]; }
@@ -1556,7 +1565,7 @@
 		}
 
 		if($ps_table) {
-			// add user sorts
+			// Add user sorts
 			if(caGetOption('includeUserSorts', $pa_options, true)) {
 				/** @var RequestHTTP $po_request */
 				if(!($po_request = caGetOption('request', $pa_options)) || ($po_request->getUser()->canDoAction('can_use_user_sorts'))) {
@@ -1564,14 +1573,12 @@
 				}
 			}
 
-			// add sortable elements
+			// Add sortable elements
 			require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
 			}
-			
-			
 		
 			// Add interstitial sorts
 			if ($t_rel) {
@@ -1581,6 +1588,12 @@
 				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 					$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
 				}
+			}
+			
+			// Add additional sorts specified in app.conf in <table>_include_result_sorts directives
+			if (is_array($config_sorts = $o_config->get("{$ps_table}_include_result_sorts")) && sizeof($config_sorts)) {
+			    $config_sorts = array_filter($config_sorts, function($v) { return is_string($v); });
+		        $va_base_fields = array_merge($va_base_fields, $config_sorts);
 			}
 
 			if(caGetOption('distinguishNonUniqueNames', $pa_options, true)) {
@@ -1624,7 +1637,7 @@
 		
 		if(is_array($pa_allowed_sorts) && sizeof($pa_allowed_sorts) > 0) {
 			foreach($va_base_fields as $vs_k => $vs_v) {
-				if (!in_array($vs_k, $pa_allowed_sorts)) { unset($va_base_fields[$vs_k]); }
+				if (!in_array($vs_k, $pa_allowed_sorts) && !isset($config_sorts[$vs_k])) { unset($va_base_fields[$vs_k]); }
 			}
 		}
 		
@@ -1640,8 +1653,9 @@
 		if ($pn_display_id > 0) {
             $t_display =  new ca_bundle_displays($pn_display_id); 
             $va_display_bundles = array_map(function ($v) { return $v['bundle_name']; }, $t_display->getPlacements());	
-   
-			$va_base_fields = array_filter($va_base_fields, function($v, $k) use ($va_display_bundles) { 
+			$va_base_fields = array_filter($va_base_fields, function($v, $k) use ($va_display_bundles, $config_sorts) { 
+				
+				if (isset($config_sorts[$k])) { return true; }
 				foreach($va_display_bundles as $b) {
 					if (preg_match("!^{$b}!", $k) || preg_match("!^{$k}!", $b)) { return true; }
 				}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2017 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -233,7 +233,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 				return array(
 					'value_longtext1' => $vs_display_text,	// text
 					'value_longtext2' => $va_tmp[2],		// uri
-					'value_decimal1' => $va_tmp[1], 		// id
+					'value_decimal1' => is_numeric($va_tmp[1]) ? $va_tmp[1] : null, 		// id
 					'value_blob' => caSerializeForDatabase($va_info)
 				);
 			} elseif((sizeof($va_tmp)==1) && (isURL($va_tmp[0], array('strict' => true)) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
@@ -267,6 +267,13 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 
 				CompositeCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");
 				return $va_return;
+			} elseif((sizeof($va_tmp) == 1) && (preg_match("!^\[([0-9]+)\][ ]*(.*)!", $va_tmp[0], $m))) {   // [ID] TEXT format string where ID is numeric
+			    return [
+			        'value_longtext1' => $m[2],
+			        'value_longtext2' => '',
+			        'value_decimal1' => is_numeric($m[1]) ? $m[1] : null,
+			        'value_blob' => null
+			    ];
 			} else { // don't save if value hasn't changed
 				return array('_dont_save' => true);
 			}
@@ -297,75 +304,87 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		$ps_class = caGetOption('class', $pa_options, 'lookupBg');
 		$pb_for_search = caGetOption('forSearch', $pa_options, false);
 
-		$vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
-			caHTMLTextInput(
-				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
-				array(
-					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
-					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'],
-					'value' => '{{'.$pa_element_info['element_id'].'}}',
-					'maxlength' => 512,
-					'id' => "infoservice_".$pa_element_info['element_id']."_autocomplete{n}",
-					'class' => $ps_class
-				)
-			).
-			caHTMLHiddenInput(
-				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-				array(
-					'value' => '{{'.$pa_element_info['element_id'].'}}',
-					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
-				)
-			);
+        if (!$pb_for_search) {
+            $vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
+                caHTMLTextInput(
+                    '{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
+                    array(
+                        'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
+                        'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'],
+                        'value' => '{{'.$pa_element_info['element_id'].'}}',
+                        'maxlength' => 512,
+                        'id' => "infoservice_".$pa_element_info['element_id']."_autocomplete{n}",
+                        'class' => $ps_class
+                    )
+                ).
+                caHTMLHiddenInput(
+                    '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+                    array(
+                        'value' => '{{'.$pa_element_info['element_id'].'}}',
+                        'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
+                    )
+                );
 
-		if ($pa_options['request']) {
-			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'Get', array('max' => 100, 'element_id' => $pa_element_info['element_id']));
-			$vs_detail_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'GetDetail', array('element_id' => $pa_element_info['element_id']));
+            if ($pa_options['request']) {
+                $vs_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'Get', array('max' => 100, 'element_id' => $pa_element_info['element_id']));
+                $vs_detail_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'GetDetail', array('element_id' => $pa_element_info['element_id']));
+            } else {
+                // hardcoded default for testing.
+                $vs_url = '/index.php/lookup/InformationService/Get';
+                $vs_detail_url = '/index.php/lookup/InformationService/GetDetail';
+            }
+
+            $vs_element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
+            $vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($pa_options['request'] ? caBusyIndicatorIcon($pa_options['request']) : '')."</div></div>";
+    
+            $vs_element .= "
+                    <script type='text/javascript'>
+                        jQuery(document).ready(function() {
+                            jQuery('#infoservice_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+                                {
+                                    minLength: 3,delay: 800,
+                                    source: '{$vs_url}',
+                                    html: true,
+                                    select: function(event, ui) {".((!$pb_for_search) ? "
+                                        jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);" : 
+                                        "jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label);"
+                                    )."
+                                    }
+                                }
+                            ).click(function() { this.select(); });
+                    ";
+                
+            $vs_element .= "					if ('{{".$pa_element_info['element_id']."}}') {
+                            jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').on('click', function(e) {
+                                if (jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').css('display') == 'none') {
+                                    jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250, function() {
+                                        jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').load('{$vs_detail_url}/id/{n}');
+                                    });
+                                    jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("Less &rsaquo;"))."');
+                                } else {
+                                    jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250);
+                                    jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("More &rsaquo;"))."');
+                                }
+                                return false;
+                            });
+                        }
+            ";
+        
+            $vs_element .= "
+                        });
+                        </script>";
 		} else {
-			// hardcoded default for testing.
-			$vs_url = '/index.php/lookup/InformationService/Get';
-			$vs_detail_url = '/index.php/lookup/InformationService/GetDetail';
+		    $vs_element .= caHTMLTextInput(
+                    '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+                    array(
+                        'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+                        'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
+                        'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'],
+                        'value' => '{{'.$pa_element_info['element_id'].'}}',
+                        'class' => $ps_class
+                    )
+                );
 		}
-
-		if (!$pb_for_search) {
-			$vs_element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
-			$vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($pa_options['request'] ? caBusyIndicatorIcon($pa_options['request']) : '')."</div></div>";
-		}
-		$vs_element .= "
-				<script type='text/javascript'>
-					jQuery(document).ready(function() {
-						jQuery('#infoservice_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
-							{
-								minLength: 3,delay: 800,
-								source: '{$vs_url}',
-								html: true,
-								select: function(event, ui) {".((!$pb_for_search) ? "
-									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);" : 
-									"jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label);"
-								)."
-								}
-							}
-						).click(function() { this.select(); });
-				";
-		if (!$pb_for_search) {
-			$vs_element .= "					if ('{{".$pa_element_info['element_id']."}}') {
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').on('click', function(e) {
-								if (jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').css('display') == 'none') {
-									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250, function() {
-										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').load('{$vs_detail_url}/id/{n}');
-									});
-									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("Less &rsaquo;"))."');
-								} else {
-									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250);
-									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("More &rsaquo;"))."');
-								}
-								return false;
-							});
-						}
-			";
-		}
-		$vs_element .= "
-					});
-					</script>";
 
 		return $vs_element;
 	}

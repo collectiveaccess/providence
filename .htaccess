@@ -30,5 +30,13 @@ Allow from all
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_URI} !=/favicon.ico
+	RewriteCond %{REQUEST_URI} !=/server-status
+	RewriteCond %{REQUEST_URI} !=/robots.txt
 	RewriteRule ^ index.php%{REQUEST_URI} [L]	
+
+	# Block all TRACE/TRACK requests
+	RewriteCond %{REQUEST_METHOD} ^TRAC[EK]
+	RewriteRule .* - [F]
+
+
 </IfModule>

@@ -1563,6 +1563,14 @@
 				}
 			}
 			
+			// Get user values, which can be used as tags in detault text values
+			$user_values = [];
+			if($user = $po_request->getUser()) {
+				foreach(['fname', 'lname', 'email', 'user_name'] as $uf) {
+					$user_values["currentuser.{$uf}"] = $user->get($uf);
+				}
+			}
+			
 			foreach($va_element_set as $va_element) {
 				$va_element_info[$va_element['element_id']] = $va_element;
 				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
@@ -1609,7 +1617,7 @@
 				$vs_setting = Attribute::getValueDefault($va_element);
 				if (strlen($vs_setting)) {
 					$tmp_element = ca_metadata_elements::getInstance($va_element['element_id']);
-					$va_element_value_defaults[$va_element['element_id']] = $tmp_element->getSetting($vs_setting);
+					$va_element_value_defaults[$va_element['element_id']] = caProcessTemplate($tmp_element->getSetting($vs_setting), $user_values);
 				}
 			}
 			
@@ -2209,26 +2217,31 @@
 				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'placeholderPrefix' => $this->tableName().'.'.$t_element->get('element_code'))));
 			} else {
 				// no template
-				$va_attribute_list = array();
-				foreach($va_tmp as $vn_id => $va_value_list) {
-					foreach($va_value_list as $va_value) {
-						foreach($va_value as $vs_element_code => $vs_value) {
-							if (strlen($vs_value)) { 
-								$va_attribute_list[] = $vs_value;
-							}
-						}
-					}
-				}
+				if(sizeof($va_tmp) > 0) {
+                    $va_attribute_list = array();
+                    foreach($va_tmp as $vn_id => $va_value_list) {
+                        foreach($va_value_list as $va_value) {
+                            foreach($va_value as $vs_element_code => $vs_value) {
+                                if (strlen($vs_value)) { 
+                                    $va_attribute_list[] = $vs_value;
+                                }
+                            }
+                        }
+                    }
 
-				//Allow getAttributesForDisplay to return an array value (for "special" returns such as coordinates or raw dates)
-				// if the value returns only a single value and it's an array. This is useful for getting "specials" via SearchResult::get()
-				if ((sizeof($va_attribute_list) === 1) && (is_array($va_attribute_list[0]))) { return $va_attribute_list[0]; }
-				
-				
-				$vs_text = join($vs_delimiter, $va_attribute_list);
-				
-				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
-					$vs_text = caConvertLineBreaks($vs_text);
+                    //Allow getAttributesForDisplay to return an array value (for "special" returns such as coordinates or raw dates)
+                    // if the value returns only a single value and it's an array. This is useful for getting "specials" via SearchResult::get()
+                    if ((sizeof($va_attribute_list) === 1) && (is_array($va_attribute_list[0]))) { return $va_attribute_list[0]; }
+                
+                
+                    $vs_text = join($vs_delimiter, $va_attribute_list);
+                
+                    if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
+                        $vs_text = caConvertLineBreaks($vs_text);
+                    }
+				} else {
+				    // Return default value for element if no value is available
+				    $vs_text = ca_metadata_elements::getElementDefaultValue($pm_element_code_or_id); 
 				}
 				return $vs_text;
 			}

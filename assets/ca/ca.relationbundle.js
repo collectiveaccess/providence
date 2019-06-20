@@ -263,7 +263,7 @@ var caUI = caUI || {};
 				jQuery(v).detach();
 			});
 
-			var sortUrl = that.sortUrl + '/sortKeys/' + key;
+			var sortUrl = that.sortUrl; // + '/sortKeys/' + key;
 			var sortedValues = {};
 			
 			var sortDirection = jQuery('#' + that.fieldNamePrefix + 'RelationBundleSortDirectionControl').val();
@@ -273,7 +273,7 @@ var caUI = caUI || {};
 			jQuery.ajax({
 				url: sortUrl,
 				type: 'POST',
-				data: { 'ids': Object.keys(indexedValues).join(','), 'sortDirection': sortDirection },
+				data: { 'ids': Object.keys(indexedValues).join(','), 'sortDirection': sortDirection, 'sortKeys': key },
 				dataType: 'json',
 				async: false,
 				success: function(data) {

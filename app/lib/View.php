@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,15 +104,15 @@ class View extends BaseObject {
 			if(file_exists(__CA_THEME_DIR__.'/conf/app.conf')) {
 				$o_config = Configuration::load(__CA_THEME_DIR__.'/conf/app.conf');
 				$i=0;
-				while($vs_inherit_from_theme = trim(trim($o_config->get('inherit_from')), "/")) {
+				while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
 					$i++;
 					$vs_inherited_theme_path = __CA_THEMES_DIR__."/{$vs_inherit_from_theme}/views{$vs_suffix}";
 					if (!in_array($vs_inherited_theme_path, $pm_path) && !in_array($vs_inherited_theme_path.'/', $pm_path)) {
 						array_unshift($pm_path, $vs_inherited_theme_path);
 					}
-					if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { continue; }
+					if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
 					$o_config = Configuration::load(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf", false, false, true);
-					if ($i > 10) {break;} // make 10 levels
+					if ($i > 10) {break;} // max 10 levels
 				}
 			}
 		}
@@ -304,7 +304,7 @@ class View extends BaseObject {
 			}
 		}
 		if (!$pb_dont_do_var_replacement && $vb_output) {
-			$va_compile = $this->compile($vs_path.'/'.$ps_filename, false, $pa_options);
+			$va_compile = $this->compile(($vs_path ? "{$vs_path}/" : "").$ps_filename, false, $pa_options);
 			
 			$va_vars = $this->getAllVars();
 			

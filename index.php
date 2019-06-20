@@ -45,9 +45,6 @@
 			require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
 			exit();
 		}
-		$g_monitor = new ApplicationMonitor();
-		if ($g_monitor->isEnabled()) { $o_db->setMonitor($g_monitor); }
-
 		//
 		// do a sanity check on application and server configuration before servicing a request
 		//
@@ -83,8 +80,8 @@
 		// Security headers
 		$resp->addHeader("X-XSS-Protection", "1; mode=block");
 		$resp->addHeader("X-Frame-Options", "SAMEORIGIN");
-		$resp->addHeader("Content-Security-Policy", "script-src 'self' ajax.googleapis.com maps.googleapis.com cdn.knightlab.com 'unsafe-inline' 'unsafe-eval';"); 
-		$resp->addHeader("X-Content-Security-Policy", "script-src 'self' ajax.googleapis.com maps.googleapis.com cdn.knightlab.com 'unsafe-inline' 'unsafe-eval';"); 
+		$resp->addHeader("Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com 'unsafe-inline' 'unsafe-eval';"); 
+		$resp->addHeader("X-Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com  tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com 'unsafe-inline' 'unsafe-eval';"); 
 
 		//
 		// Don't try to authenticate when doing a login attempt or trying to access the 'forgot password' feature

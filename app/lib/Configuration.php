@@ -788,6 +788,7 @@ class Configuration {
 	 * kind of configuration value was found. If no value is found null is returned.
 	 */
 	public function get($pm_key) {
+	    $assoc_exists = false;
 	    if (!is_array($pm_key)) { $pm_key = [$pm_key]; }
 	    
 	    foreach($pm_key as $ps_key) {
@@ -799,14 +800,14 @@ class Configuration {
                 $vs_tmp = $this->getList($ps_key);
             }
             if (!is_array($vs_tmp) && !strlen($vs_tmp)) {
-                $vs_tmp = $this->getAssoc($ps_key);
+                if (is_array($vs_tmp = $this->getAssoc($ps_key))) { $assoc_exists = true; }
             }
             Configuration::$s_get_cache[$this->ops_md5_path][$ps_key] = $vs_tmp;
             
             if (!$vs_tmp) { continue; }
             return $vs_tmp;
         }
-        return null;
+        return $assoc_exists ? [] : null;
 	}
 	/* ---------------------------------------- */
 	/**

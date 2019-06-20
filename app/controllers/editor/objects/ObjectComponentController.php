@@ -123,8 +123,8 @@
  			
  			// Get default screen (this is all we show in the component editor, even if the UI has multiple screens)
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-				array(),
-				array()
+				[],
+				[]
 			);
 			
 			$this->view->setVar('t_ui', $t_ui);

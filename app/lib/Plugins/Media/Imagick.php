@@ -57,8 +57,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $opo_config;
 	var $opo_external_app_config;
 	
-	var $opa_faces;
-	
 	var $info = array(
 		"IMPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -144,7 +142,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'reference-black'	=> 'W',
 			'reference-white'	=> 'W',
 			'no_upsampling'		=> 'W',
-			'faces'				=> 'W',
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
@@ -533,14 +530,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 										$vb_is_rotated = true;
 										break;
 								}
-								
-								if($vb_is_rotated) {								
-									if ( $this->handle->writeImage($vs_tmp_basename) ) {
-										$va_tmp = $this->handle->getImageGeometry();
-										$this->properties["faces"] = $this->opa_faces = caDetectFaces($vs_tmp_basename, $va_tmp['width'], $va_tmp['height']);
-									}
-									@unlink($vs_tmp_basename);
-								}
 							}
 							$this->metadata['EXIF'] = $va_exif;
 						}
@@ -570,11 +559,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
 						$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugImagick->read()");
 						return false;
-					}
-					
-					
-					if (!$this->properties["faces"]) {
-						$this->properties["faces"] = $this->opa_faces = caDetectFaces($ps_filepath, $va_tmp['width'], $va_tmp['height']);
 					}
 					
 					$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
@@ -775,60 +759,45 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 								return false;
 						}
 						if ($do_fill_box_crop) {
-							// use face detection info to intelligently crop
-							if(is_array($this->properties['faces']) && sizeof($this->properties['faces'])) {
-								$va_info = array_shift($this->properties['faces']);
-								$crop_from_offset_x = ceil($va_info['x'] * (($scale_factor_w > $scale_factor_h) ? $scale_factor_w : $scale_factor_h));
-								$crop_from_offset_x -= ceil(0.15 * $parameters["width"]);	// since face will be tightly cropped give it some room
-								$crop_from_offset_y = ceil($va_info['y'] * (($scale_factor_w > $scale_factor_h) ? $scale_factor_w : $scale_factor_h));
-								$crop_from_offset_y -= ceil(0.15 * $parameters["height"]);	// since face will be tightly cropped give it some room
-								
-								// Don't try to crop beyond image boundaries, you just end up scaling the image, often awkwardly
-								if ($crop_from_offset_x > ($w - $parameters["width"])) { $crop_from_offset_x = 0; }
-								if ($crop_from_offset_y > ($h - $parameters["height"])) { $crop_from_offset_y = 0; }
-								if ($crop_from_offset_x < 0) { $crop_from_offset_x = 0; }
-								if ($crop_from_offset_y < 0) { $crop_from_offset_y = 0; }
-							} else {
-								switch($crop_from) {
-									case 'north_west':
-										$crop_from_offset_y = 0;
-										$crop_from_offset_x = $w - $parameters["width"];
-										break;
-									case 'south_east':
-										$crop_from_offset_x = 0;
-										$crop_from_offset_y = $h - $parameters["height"];
-										break;
-									case 'south_west':
-										$crop_from_offset_x = $w - $parameters["width"];
-										$crop_from_offset_y = $h - $parameters["height"];
-										break;
-									case 'random':
-										$crop_from_offset_x = rand(0, $w - $parameters["width"]);
-										$crop_from_offset_y = rand(0, $h - $parameters["height"]);
-										break;
-									case 'north_east':
-										$crop_from_offset_x = $crop_from_offset_y = 0;
-										break;
-									case 'center':
-									default:
-										$crop_from_offset_x = $crop_from_offset_y = 0;
-										
-										// Get image center
-										$vn_center_x = caGetOption('_centerX', $parameters, 0.5);
-										$vn_center_y = caGetOption('_centerY', $parameters, 0.5);
-										if ($w > $parameters["width"]) {
-											$crop_from_offset_x = ceil($w * $vn_center_x) - ($parameters["width"]/2);
-											if (($crop_from_offset_x + $parameters["width"]) > $w) { $crop_from_offset_x = $w - $parameters["width"]; }
-											if ($crop_from_offset_x < 0) { $crop_from_offset_x = 0; }
-										} else {
-											if ($h > $parameters["height"]) {
-												$crop_from_offset_y = ceil($h * $vn_center_y) - ($parameters["height"]/2);
-												if (($crop_from_offset_y + $parameters["height"]) > $h) { $crop_from_offset_y = $h - $parameters["height"]; }
-												if ($crop_from_offset_y < 0) { $crop_from_offset_y = 0; }
-											}
+							switch($crop_from) {
+								case 'north_west':
+									$crop_from_offset_y = 0;
+									$crop_from_offset_x = $w - $parameters["width"];
+									break;
+								case 'south_east':
+									$crop_from_offset_x = 0;
+									$crop_from_offset_y = $h - $parameters["height"];
+									break;
+								case 'south_west':
+									$crop_from_offset_x = $w - $parameters["width"];
+									$crop_from_offset_y = $h - $parameters["height"];
+									break;
+								case 'random':
+									$crop_from_offset_x = rand(0, $w - $parameters["width"]);
+									$crop_from_offset_y = rand(0, $h - $parameters["height"]);
+									break;
+								case 'north_east':
+									$crop_from_offset_x = $crop_from_offset_y = 0;
+									break;
+								case 'center':
+								default:
+									$crop_from_offset_x = $crop_from_offset_y = 0;
+									
+									// Get image center
+									$vn_center_x = caGetOption('_centerX', $parameters, 0.5);
+									$vn_center_y = caGetOption('_centerY', $parameters, 0.5);
+									if ($w > $parameters["width"]) {
+										$crop_from_offset_x = ceil($w * $vn_center_x) - ($parameters["width"]/2);
+										if (($crop_from_offset_x + $parameters["width"]) > $w) { $crop_from_offset_x = $w - $parameters["width"]; }
+										if ($crop_from_offset_x < 0) { $crop_from_offset_x = 0; }
+									} else {
+										if ($h > $parameters["height"]) {
+											$crop_from_offset_y = ceil($h * $vn_center_y) - ($parameters["height"]/2);
+											if (($crop_from_offset_y + $parameters["height"]) > $h) { $crop_from_offset_y = $h - $parameters["height"]; }
+											if ($crop_from_offset_y < 0) { $crop_from_offset_y = 0; }
 										}
-										break;
-								}
+									}
+									break;
 							}
 							if (!$this->handle->cropImage($parameters["width"], $parameters["height"], $crop_w_edge + $crop_from_offset_x, $crop_h_edge + $crop_from_offset_y )) {
 								$this->postError(1610, _t("Error during crop operation"), "WLPlugImagick->transform()");
@@ -1214,7 +1183,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 			$this->properties["typename"] = $this->handle->getImageFormat();
-			$this->properties["faces"] = $this->opa_faces;
 			return 1;
 		}
 		return false;
@@ -1228,7 +1196,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		$this->metadata = array();
 		$this->errors = array();
-		$this->opa_faces = null;
 	}
 	# ------------------------------------------------
 	private function setResourceLimits($po_handle) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2919 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@ class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCas
 	public function testBasic() {
 		$o_service = new WLPlugInformationServiceULAN();
 		$va_return = $o_service->lookup(array(), 'Keith Haring');
+		$this->assertInternalType('array', $va_return['results']);
 		$this->assertEquals(1, sizeof($va_return['results']));
 	}
 

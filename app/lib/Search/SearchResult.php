@@ -1296,6 +1296,10 @@ class SearchResult extends BaseObject {
 								}
 								
 								if (in_array($t_instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__])) { array_pop($va_hier_ids); }
+								
+								
+								if ($vs_hierarchy_direction === 'asc') { $va_hier_ids = array_reverse($va_hier_ids); }
+								
 								if (!is_null($vn_max_levels_from_top) && ($vn_max_levels_from_top > 0)) {
 									$va_hier_ids = array_slice($va_hier_ids, 0, $vn_max_levels_from_top, true);
 								} elseif (!is_null($vn_max_levels_from_bottom) && ($vn_max_levels_from_bottom > 0)) {
@@ -1303,7 +1307,6 @@ class SearchResult extends BaseObject {
 									$va_hier_ids = array_slice($va_hier_ids, $vn_start, $vn_max_levels_from_bottom, true);
 								}
 								
-								if ($vs_hierarchy_direction === 'asc') { $va_hier_ids = array_reverse($va_hier_ids); }
 							}
 							
 							$vm_val = $vb_return_as_array ?  $va_hier_ids : join($vs_hierarchical_delimiter, $va_hier_ids);
@@ -2147,6 +2150,8 @@ class SearchResult extends BaseObject {
 						} elseif ($vb_element_is_present) {
 							// ca_objects.authority_attr_code
 							$va_auth_spec = array_slice($va_path_components['components'], 2);
+						} else {
+						    $va_auth_spec = [];
 						}
 					}
 					
@@ -2173,8 +2178,9 @@ class SearchResult extends BaseObject {
 										continue;
 									}
 								}
+								
 								$va_val_proc = $qr_res->get(join(".", $va_auth_spec), $va_options);
-							
+								
 								if(is_array($va_val_proc)) {
 									foreach($va_val_proc as $vn_i => $vs_v) {
 										$vn_list_id = null;
@@ -2213,6 +2219,10 @@ class SearchResult extends BaseObject {
                                         case 'width':
                                         case 'height':
                                         case 'mimetype':
+                                        case 'original_filename':
+                                        case 'originalfilename':
+                                        case 'filename':
+                                        case 'id':
                                             $vs_return_type = $vs_e;
                                             break;
                                         default:
@@ -2259,6 +2269,19 @@ class SearchResult extends BaseObject {
 											$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
 											break;
 									}
+									
+									if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
+                                        if (preg_match("!\[([^\]]+)!", $vs_val_proc, $va_matches)) {
+                                            $va_tmp = explode(',', $va_matches[1]);
+                                            if ((sizeof($va_tmp) == 2) && (is_numeric($va_tmp[0])) && (is_numeric($va_tmp[1]))) {
+                                                $vs_val_proc = array('latitude' => trim($va_tmp[0]), 'longitude' => trim($va_tmp[1]), 'path' => trim($va_matches[1]), 'label' => $this->ops_text_value);
+                                            } else {
+                                                $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
+                                            }
+                                        } else {
+                                            $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
+                                        }
+                                    }
 									$vb_dont_return_value = false;
 									break;
 								}
@@ -2341,9 +2364,13 @@ class SearchResult extends BaseObject {
 			}
 		} else {
 			// is blank
+			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
+			
 			if ($pa_options['returnWithStructure'] && $pa_options['returnBlankValues']) {
-				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = '';
-			}	
+				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
+			} elseif ($default_value) {
+			    $va_return_values[(int)$vn_id][null][null][] = $default_value;	
+			}
 		}
 		
 		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
@@ -2487,7 +2514,17 @@ class SearchResult extends BaseObject {
 						if($pa_options['unserialize']) {
 							$va_return_values[$vn_id][$vm_locale_id] = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
 						} elseif ($vs_info_element && (!in_array($vs_info_element, ['url', 'path', 'tag']))) {
-							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $vs_info_element, $pa_options);
+							if(in_array(strtolower($vs_info_element), ['original_filename', 'originalfilename', 'filename'])) {
+								$media_info = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], null, null, $pa_options);
+								$va_return_values[$vn_id][$vm_locale_id] = caGetOption('ORIGINAL_FILENAME', $media_info, pathinfo($this->getMediaPath($va_path_components['table_name'].'.'.$va_path_components['field_name'], 'original', $pa_options), PATHINFO_BASENAME));
+							} elseif(in_array(strtolower($vs_info_element), ['mimetype'])) {
+								$media_info = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'original', null, $pa_options);
+								$va_return_values[$vn_id][$vm_locale_id] = caGetOption('MIMETYPE', $media_info, null);
+							} elseif(in_array(strtolower($vs_info_element), ['id'])) {
+								$va_return_values[$vn_id][$vm_locale_id] = $vn_id;
+							} else {
+								$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $vs_info_element, $pa_options);
+							}
 						} elseif ((isset($pa_options['returnURL']) && ($pa_options['returnURL'])) || ($vs_info_element == 'url')) {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
 						} elseif ((isset($pa_options['returnPath']) && ($pa_options['returnPath'])) || ($vs_info_element == 'path')) {
@@ -2905,6 +2942,8 @@ class SearchResult extends BaseObject {
 			$vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
 		} elseif ($vb_convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
             $vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop);
+		} elseif ($vb_convert_codes_to_display_text && is_array($options = $pt_instance->getFieldInfo($vs_field_name,"OPTIONS")) && (($k = array_search($vs_prop, $options)) !== false)) {
+			$vs_prop = $k;
         } elseif ($vb_convert_codes_to_display_text && ($vs_field_name === 'locale_id') && ((int)$vs_prop > 0)) {
             $t_locale = new ca_locales($vs_prop);
             $vs_prop = $t_locale->getName();

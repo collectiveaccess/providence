@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -650,7 +650,7 @@
 				if (isset($va_submenu_item) && isset($va_submenu_item['default']) && is_array($va_submenu_item['default'])) { $pa_defaults = (isset($va_submenu_item['default']) ? $va_submenu_item['default'] : null); }
 				if (!isset($va_submenu_item['parameters']) || !is_array($va_submenu_item['parameters'])) { $va_submenu_item['parameters'] = array(); }
 				if (isset($va_submenu_item) && isset($va_submenu_item['is_enabled']) && intval($va_submenu_item['is_enabled'])) {
-					$vs_buf .= caNavLink($this->opo_request, $va_submenu_item['displayName'], (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
+					$vs_buf .= caNavLink($this->opo_request, $va_submenu_item['displayName'], (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $this->_parseAdditionalParameters($va_submenu_item['parameters'])));
 				} else {
 					$vs_buf .= "<a href='#'>".$va_submenu_item['displayName']."</a>";
 				}
@@ -763,11 +763,10 @@
 					}
 				} else {
 					if ($va_tmp[0]) {
-						$va_additional_params[$va_tmp[0]] = $this->_parseParameterValue($vs_value);
+						$va_additional_params[$va_tmp[0]] = ($v = $this->_parseParameterValue($vs_value)) ? $v : $vs_value;
 					}
 				}
 			}
-			
 			return $va_additional_params;
 		}
 		# -------------------------------------------------------

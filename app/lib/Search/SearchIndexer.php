@@ -81,8 +81,9 @@ class SearchIndexer extends SearchBase {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
 			}
 			self::$s_search_indexing_queue_inserts = array(); // nuke cache
-
-			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES " . join(',', $va_insert_segments));
+            foreach($va_insert_segments as $x) {
+			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES {$x}");
+            }
 		}
 
 		if(sizeof(self::$s_search_unindexing_queue_inserts) > 0) {
@@ -91,8 +92,9 @@ class SearchIndexer extends SearchBase {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
 			}
 			self::$s_search_unindexing_queue_inserts = array(); // nuke cache
-
-			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES " . join(',',$va_insert_segments));
+            foreach($va_insert_segments as $x) {
+			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES {$x}");
+            }
 		}
 	}
 	# -------------------------------------------------------
@@ -1529,6 +1531,11 @@ class SearchIndexer extends SearchBase {
 								}
 							}
 
+							if (((isset($pa_data['INDEX_AS_IDNO']) && $pa_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $pa_data)) && method_exists($pt_subject, "getIDNoPlugInInstance") && ($o_idno = $pt_subject->getIDNoPlugInInstance())) {
+								$va_values = $o_idno->getIndexValues($vs_value_to_index, $pa_data);
+								$this->opo_engine->indexField($pn_subject_table_num, "A{$vn_element_id}", $pn_row_id, $va_values, $pa_data);
+								$this->_genIndexInheritance($pt_subject, null, "A{$vn_element_id}", $pn_row_id, $pn_row_id, $va_values, $pa_data);
+							}
 							$this->opo_engine->indexField($pn_subject_table_num, 'A'.$vn_element_id, $pn_row_id, [$vs_value_to_index], $pa_data);
 							$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, 'A'.$vn_element_id, $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, [$vs_value_to_index], $pa_data);
 						}
@@ -2483,7 +2490,7 @@ class SearchIndexer extends SearchBase {
 				array_push($va_linking_tables, $vs_related_table);
 				$vs_left_table = $vs_subject_tablename;
 
-				$va_joins = array();
+				$va_joins = [];
 				$vs_rel_type_id_fld = $vs_type_id_fld = null;
 			
 				$vn_t = 1;
@@ -2537,7 +2544,7 @@ class SearchIndexer extends SearchBase {
 						if (($pt_rel_instance = Datamodel::getInstanceByTableName($vs_right_table, true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
 							$vs_rel_type_id_fld = "{$va_alias}.type_id";
 						}
-						$va_joins[] = $vs_join;
+						$va_joins[] = [$vs_join];
 					} else {
 						if ($va_rel = Datamodel::getOneToManyRelations($vs_left_table, $vs_right_table)) {
 							$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
@@ -2550,10 +2557,10 @@ class SearchIndexer extends SearchBase {
 							if(Datamodel::isSelfRelationship($va_rel['many_table'])) {
 								$t_self_rel = Datamodel::getInstanceByTableName($va_rel['many_table'], true);
 							
-								$va_joins[] = array(
+								$va_joins[] = [
 												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql,
 												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql
-											);
+											];
 										
 								if ($t_self_rel->hasField('type_id')) {
 									$vs_rel_type_id_fld = "{$vs_alias}.type_id";
@@ -2566,7 +2573,7 @@ class SearchIndexer extends SearchBase {
 								    $vs_type_id_fld = "{$vs_alias}.type_id";
 								    $vs_rel_type_res_sql .= " AND {$vs_type_id_fld} IN (".join(',', $pa_restrict_to_types).")";
 								}
-								$va_joins[] = "INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql;
+								$va_joins[] = ["INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql];
 							}
 						} elseif ($va_rel = Datamodel::getOneToManyRelations($vs_right_table, $vs_left_table)) {
 							$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
@@ -2579,10 +2586,10 @@ class SearchIndexer extends SearchBase {
 							if(Datamodel::isSelfRelationship($va_rel['many_table'])) {
 								$t_self_rel = Datamodel::getInstanceByTableName($va_rel['many_table'], true);
 							
-								$va_joins[] = array(
+								$va_joins[] = [
 												"INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql,
 												"INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql
-											);
+											];
 										
 								if ($t_self_rel->hasField('type_id')) {
 									$vs_rel_type_id_fld = "{$vs_alias}.type_id";
@@ -2594,7 +2601,7 @@ class SearchIndexer extends SearchBase {
 								    $vs_type_id_fld = "{$vs_alias}.type_id";
 								    $vs_rel_type_res_sql .= " AND {$vs_type_id_fld} IN (".join(',', $pa_restrict_to_types).")";
 								}
-								$va_joins[] = "INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql;
+								$va_joins[] = ["INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql];
 								
 							}
 						}
@@ -2624,7 +2631,7 @@ class SearchIndexer extends SearchBase {
 				// process joins
 				$vn_num_queries_required = 1;
 				foreach($va_joins as $vn_i => $va_join_list) {
-					if(is_array($va_join_list) && (sizeof($va_join_list) > $vn_num_queries_required)) {
+					if(sizeof($va_join_list) > $vn_num_queries_required) {
 						$vn_num_queries_required = sizeof($va_join_list);
 					}
 				}

@@ -405,7 +405,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement->setMode(ACCESS_WRITE);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$t_placement->set('display_id', $vn_display_id);
-		$t_placement->set('bundle_name', $ps_bundle_name);
+		$t_placement->set('bundle_name', trim($ps_bundle_name));
 		$t_placement->set('rank', $pn_rank);
 		
 		if (is_array($pa_settings)) {
@@ -1050,6 +1050,15 @@ if (!$pb_omit_editing_info) {
 				'default' => 100,
 				'label' => _t('Maximum length'),
 				'description' => _t('Maximum length, in characters, of displayed information.')
+			),
+			'format' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 35, 'height' => 5,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Display format'),
+				'description' => _t('Template used to format output.')
 			)
 		);
 		foreach($t_instance->getFormFields() as $vs_f => $va_info) {
@@ -1750,7 +1759,7 @@ if (!$pb_omit_editing_info) {
 	 * @return int Number of placements. 
 	 */
 	public function getPlacementCount($pa_options=null) {
-		return sizeof($this->getPlacementsInDisplay($pa_options));
+		return is_array($p = $this->getPlacementsInDisplay($pa_options)) ? sizeof($p) : 0;
 	}
 	# ------------------------------------------------------
 	#
@@ -2001,12 +2010,18 @@ if (!$pb_omit_editing_info) {
 					$vs_restrict_to_relationship_types = (is_array($pa_options['restrictToRelationshipTypes']) && sizeof($pa_options['restrictToRelationshipTypes'])) ? "restrictToRelationshipTypes=\"".join("|", $pa_options['restrictToRelationshipTypes'])."\"" : "";
 					
 					// resolve template relative to relationship
-					if (is_array($va_path = Datamodel::getPath($po_result->tableName(), $t_instance->tableName()))) {
+					if (is_array($va_path = Datamodel::getPath($po_result->tableName(), $rel_table = $t_instance->tableName()))) {
 						$va_path = array_keys($va_path);
 						
 						$vs_sort_dir_attr = '';
-						if ($vs_sort_attr = ($vs_sort = caGetOption('sort', $pa_options, null, ['castTo' => 'string'])) ? "sort=\"{$vs_sort}\"" : "") {
-						    $vs_sort_dir_attr = ($vs_sort_dir = caGetOption('sortDirection', $pa_options, null, ['castTo' => 'string'])) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
+						if ($vs_sort = caGetOption('sort', $pa_options, null, ['castTo' => 'string'])) {
+						    $vs_sort_dir = caGetOption('sortDirection', $pa_options, null, ['castTo' => 'string']);
+						} else { 
+						    $vs_sort = caGetOption('sort', $va_settings, null, ['castTo' => 'string']); 
+						    $vs_sort_dir = caGetOption('sortDirection', $va_settings, null, ['castTo' => 'string']);
+						}
+						if ($vs_sort_attr = ($vs_sort) ? "sort=\"{$rel_table}.{$vs_sort}\"" : "") {
+						    $vs_sort_dir_attr = ($vs_sort_dir) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
 						}
 						$vs_unit_tag = "<unit relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
 
@@ -2974,7 +2989,7 @@ if (!$pb_omit_editing_info) {
 		$va_errors = $po_request->getActionErrors();							// all errors from all sources
 		$va_general_errors = $po_request->getActionErrors('general');		// just "general" errors - ones that are not attached to a specific part of the form
 		
-		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
+		if(is_array($va_errors) && is_array($va_general_errors) && ((sizeof($va_errors) - sizeof($va_general_errors)) > 0)) {
 			$va_error_list = [];
 			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {

@@ -3306,6 +3306,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// save intrinsic fields
 		if (is_array($va_fields_by_type['intrinsic'])) {
 			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
+			$seen_fields = [];
 			foreach($va_fields_by_type['intrinsic'] as $vs_placement_code => $vs_f) {
 				
 				// convert intrinsics to bare field names if they include tablename (eg. ca_objects.idno => idno)
@@ -3313,6 +3314,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (($this->tableName() === $va_tmp[0]) && $this->hasField($va_tmp[1])) {
 					$vs_f = $va_tmp[1];
 				}
+				
+				if(isset($seen_fields[$vs_f])) { continue; }
+				$seen_fields[$vs_f] = true;
 		
 				if ($vb_batch) { 
 					$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
@@ -3701,7 +3705,7 @@ if (!$vb_batch) {
 									}
 								} else {
 									$this->editLabel($va_label['label_id'],
-										array($this->getLabelDisplayField() => '['._t('BLANK').']'),
+										array($this->getLabelDisplayField() => '['.caGetBlankLabelText().']'),
 										$vn_label_locale_id,
 										$vn_label_type_id,
 										true, array('queueIndexing' => true)
@@ -3751,7 +3755,7 @@ if (!$vb_batch) {
 									foreach($va_labels_for_this_locale as $vn_id => $va_labels_by_locale) {
 						 				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
 						 					foreach($va_labels as $vn_i => $va_label) {
-						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['._t('BLANK').']')) {
+						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['.caGetBlankLabelText().']')) {
 						 							$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 						 						}
 						 					}
@@ -3842,7 +3846,7 @@ if (!$vb_batch) {
 									}
 								} else {
 									$this->editLabel($va_label['label_id'],
-										array($this->getLabelDisplayField() => '['._t('BLANK').']'),
+										array($this->getLabelDisplayField() => '['.caGetBlankLabelText().']'),
 										$vn_label_locale_id,
 										$vn_label_type_id,
 										false, array('queueIndexing' => true)
@@ -3923,6 +3927,7 @@ if (!$vb_batch) {
 						
 						$vs_prefix_stub = $vs_placement_code.$vs_form_prefix.'_';
 						$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
+						$vb_allow_existing_rep = (bool)$this->_CONFIG->get('ca_objects_allow_relationships_to_existing_representations');
 						$va_rep_ids_sorted = $va_rep_sort_order = explode(';',$po_request->getParameter($vs_prefix_stub.'ObjectRepresentationBundleList', pString));
 						sort($va_rep_ids_sorted, SORT_NUMERIC);
 						
@@ -4032,18 +4037,26 @@ if (!$vb_batch) {
                                         'name' => $vs_value
                                     );
                                 }
+								elseif(preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches)){
+										$va_file_list[$vs_key] = array(
+										'tmp_name' => $vs_value,
+										'name' => $vs_value
+									);
+								}
                             }
                         
                             foreach($va_file_list as $vs_key => $va_values) {
                                 $this->clearErrors();
                             
-                                if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
-                            
+								if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls) && (($vb_allow_existing_rep && !preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches))||!$vb_allow_existing_rep) ) { continue; }
                                 if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
                                     $po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
                                 }
                             
-                                $vn_type_id = $po_request->getParameter($vs_prefix_stub.'type_id_new_'.$va_matches[1], pInteger);
+								if($vs_upload_type === "search")
+									$vn_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], pInteger);
+								else
+									$vn_type_id = $po_request->getParameter($vs_prefix_stub.'type_id_new_'.$va_matches[1], pInteger);
                                 if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
                                     $this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
                                 } else {
@@ -4643,7 +4656,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available items for batch editing on representable models
 					case 'ca_object_representations_access_status':		
-						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel')) && ($vs_batch_mode = $_REQUEST[$vs_prefix_stub.'batch_mode']) && ($vs_batch_mode === '_replace_')) {
 							$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access", pString);
 							$vn_status = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_status", pString);
 							
@@ -6219,17 +6232,21 @@ if (!$vb_batch) {
 				$t_parent = Datamodel::getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
 				
-				if ($t_parent->load($vn_parent_id)) {
-					$this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
-					if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
-						$this->set($vs_idno_fld, 
-						    ($t_parent->get($vs_idno_fld)) ? 
-						        $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true)
-						        :
-						        ''
-						);
-					}
-				}
+				if (!$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
+                    if ($t_parent->load($vn_parent_id)) {
+                        $this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
+                        if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
+                            $this->set($vs_idno_fld, 
+                                ($t_parent->get($vs_idno_fld)) ? 
+                                    $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true)
+                                    :
+                                    ''
+                            );
+                        }
+                    }
+                } elseif(!$this->getPrimaryKey()) {
+                    $this->set($this->tableName().".{$vs_idno_fld}", '');
+                }
 			}	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
 			
 			
@@ -7201,11 +7218,19 @@ side. For many self-relations the direction determines the nature and display te
 			$qr_res = $o_db->query("
 				SELECT o.{$vs_pk}, count(*) c
 				FROM {$vs_table} o
-				INNER JOIN {$vs_table} AS p ON p.{$vs_parent_fld} = o.{$vs_pk}
+				LEFT JOIN {$vs_table} AS p ON o.{$vs_pk} = p.{$vs_parent_fld} 
 				WHERE ".(join(" AND ", $va_wheres))."
 				GROUP BY o.{$vs_pk}
 			", $va_params);
 			
+			$qr_childless = $o_db->query("
+				SELECT o.{$vs_pk}
+				FROM {$vs_table} o
+				LEFT JOIN {$vs_table} AS p ON o.{$vs_pk} = p.{$vs_parent_fld} 
+				WHERE ".(join(" AND ", $va_wheres))." AND p.{$vs_pk} is NULL
+				GROUP BY o.{$vs_pk}
+			", $va_params);
+			$childless_ids = $qr_childless->getAllFieldValues($vs_pk);
 	 		$va_hiers = array();
 	 		
 	 		$va_ids = $qr_res->getAllFieldValues($vs_pk);
@@ -7217,9 +7242,10 @@ side. For many self-relations the direction determines the nature and display te
 	 				$vs_pk => $vn_id,
 	 				'name' => caProcessTemplateForIDs($vs_template, $vs_table, array($vn_id)),
 	 				'hierarchy_id' => $vn_id,
-	 				'children' => (int)$qr_res->get('c')
+	 				'children' => in_array($vn_id, $childless_ids) ? 0 : (int)$qr_res->get('c')
 	 			);
 	 		}
+	 		
 	 		return $va_hiers;
 	 	} else {
 	 		// return specific collection as root of hierarchy

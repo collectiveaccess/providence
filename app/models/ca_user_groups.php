@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Code'), 'DESCRIPTION' => _t('Short code (up to 8 characters) for group (must be unique)'),
+				'LABEL' => _t('Code'), 'DESCRIPTION' => _t('Short code identifying group. Can use used by users in <em>Pawtucket</em> to join this group.'),
 				'BOUNDS_LENGTH' => array(1,20)
 		),
 		'description' => array(
@@ -229,6 +229,27 @@ class ca_user_groups extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override insert to set code field
+	 */
+	public function insert($options=null) {
+		if (!$this->get('code')) {
+			do {
+				$code = caGenerateRandomPassword(6, ['uppercase' => true]);
+				$this->set('code', $code); 
+			} while(self::find(['code' => $code], ['returnAs' => 'count']) > 0);
+		}
+		return parent::insert($options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override update to set code field
+	 */
+	public function update($options=null) {
+		if (!$this->get('code')) { $this->set('code', caGenerateRandomPassword(6, ['uppercase' => true])); }
+		return parent::update($options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -754,4 +775,3 @@ class ca_user_groups extends BaseModel {
 	}
 	# ----------------------------------------
 }
-?>

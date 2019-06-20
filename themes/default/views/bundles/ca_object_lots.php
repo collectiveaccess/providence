@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -382,7 +382,7 @@
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($t_subject->tableName() != 'ca_objects') ? ($vb_read_only ? "false" : "true") : "false"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
-			listSortItems: 'div.roundedRel',
+			listSortItems: 'div.roundedRel,div.listRel',
 <?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']))); ?>'

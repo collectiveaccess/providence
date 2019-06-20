@@ -119,7 +119,7 @@
 			'default' => 'value',
 			'width' => 20, 'height' => 1,
 			'label' => _t('Sort suggested values by?'),
-			'description' => _t('If suggestion of existing values is enabled this option determines how returned values are sorted. Choose <i>value</i> to sort alphabetically. Choose <i>most recently added </i> to sort with most recently entered values first.'),
+			'description' => _t('If suggestion of existing values is enabled this option determines how returned values are sorted. Choose <em>value</em> to sort alphabetically. Choose <em>most recently added </em> to sort with most recently entered values first.'),
 			'options' => array(
 				_t('Value') => 'value',
 				_t('Most recently added') => 'recent'
@@ -131,7 +131,7 @@
 			'width' => 70, 'height' => 4,
 			'default' => '',
 			'label' => _t('Default text'),
-			'description' => _t('Text to pre-populate a newly created attribute with')
+			'description' => _t('Text to pre-populate a newly created attribute with. You may use the following tags to include information about the currently logged in user: <em>^currentuser.fname</em> (user first name), <em>^currentuser.lname</em> (user last name), <em>^currentuser.email</em> (user email address) and  <em>^currentuser.user_name</em> (login name),  ')
 		),
 		'canBeUsedInSearchForm' => array(
 			'formatType' => FT_NUMBER,
@@ -172,7 +172,7 @@
 			'width' => 90, 'height' => 4,
 			'label' => _t('Display template'),
 			'validForRootOnly' => 1,
-			'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+			'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <em>^my_element_code</em>.')
 		),
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
@@ -493,4 +493,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

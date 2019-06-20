@@ -43,7 +43,7 @@
 ?></div>
 </h3><h3 class='setStats'><?php print _t('Show %1', $vs_type_name_plural); ?>:
 <div><?php
-			print caFormTag($this->request, 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+			print caFormTag($this->request, 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 	
 			$va_options = array(
 				_t('Available to you') => 0,

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -870,9 +870,11 @@ class MultipartIDNumber extends IDNumber {
 				case 'YEAR':
 					$va_output[$vn_i] = array($va_element_vals[$vn_i]);
 					if (preg_match('!^([0]+)([\d]+)$!', $va_element_vals[$vn_i], $va_matches)) {
-						for($vn_i=0; $vn_i < sizeof($va_matches[1]); $vn_i++) {
-							$va_output[$vn_i][] = substr($va_element_vals[$vn_i], $vn_i);
-						}
+					    if(is_array($va_matches[1])) {
+                            for($vn_i=0; $vn_i < sizeof($va_matches[1]); $vn_i++) {
+                                $va_output[$vn_i][] = substr($va_element_vals[$vn_i], $vn_i);
+                            }
+                        }
 					}
 					break;
 				default:
@@ -943,7 +945,7 @@ class MultipartIDNumber extends IDNumber {
 		}
 		
 		if (isset($pa_options['INDEX_IDNO_PARTS']) || (is_array($pa_options) && (in_array('INDEX_IDNO_PARTS', $pa_options)))) {
-		    if (is_array($va_delimiters = caGetOption('IDNO_DELIMITERS', $pa_options, [$this->getSeparator()])) && sizeof($va_delimiters)) {
+		    if (is_array($va_delimiters = caGetOption('IDNO_DELIMITERS', $pa_options, $this->getSeparator() ? [$this->getSeparator()]: null)) && sizeof($va_delimiters)) {
 		        $va_output_values = array_merge($va_output_values, preg_split("![".preg_quote(join('', $va_delimiters), "!")."]!", $ps_value));
 		    }
 		}
@@ -1235,6 +1237,20 @@ class MultipartIDNumber extends IDNumber {
 						$this->setSequenceMaxValue($this->getFormat(), $vs_element_name, join($vs_separator, $va_tmp), $va_element_values[$ps_name.'_'.$vs_element_name]);
 					}
 				}
+			} elseif(($va_element_info['type'] == 'YEAR') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {  // set constant
+			    $va_date = getdate();
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['year'];
+			} elseif(($va_element_info['type'] == 'MONTH') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {
+			    $va_date = getdate();
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['mon'];
+			} elseif(($va_element_info['type'] == 'DAY') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {
+			    $va_date = getdate();
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['mday'];
+			} elseif($va_element_info['type'] == 'CONSTANT') {
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_element_info['value'];
+			} elseif(($va_element_info['type'] == 'LIST') && (!isset($va_element_values[$ps_name.'_'.$vs_element_name]) || !$va_element_values[$ps_name.'_'.$vs_element_name])) {
+				if (!is_array($va_element_info['values'])) { $va_element_info['values'] = []; }
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_element_info['values'][0];
 			}
 
 			if ($pb_generate_for_search_form) {

@@ -476,8 +476,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	private function _getElementIDForAccessPoint($pn_subject_tablenum, $ps_access_point) {
-		$va_tmp = explode('/', $ps_access_point);
-		list($vs_table, $vs_field, $vs_subfield) = explode('.', $va_tmp[0]);
+		$va_tmp = preg_split('![/\|]+!', $ps_access_point);
+		list($vs_table, $vs_field, $vs_subfield, $vs_subsubfield, $vs_subsubsubfield) = explode('.', $va_tmp[0]);
 		
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
 		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : null;
@@ -491,7 +491,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (strtolower($vs_field) == 'count') {
 			$vs_rel_type = null;
 			
-			if (sizeof($va_rel_type_ids) > 0) {
+			if (is_array($va_rel_type_ids) && (sizeof($va_rel_type_ids) > 0)) {
 				$vn_rel_type = $va_rel_type_ids[0];
 			} else {
 				$va_rel_type_ids = [0];
@@ -931,11 +931,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
 								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
 	
-								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['._t('BLANK').']')) {
+								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['.caGetBlankLabelText().']')) {
 									$t_ap = Datamodel::getInstanceByTableNum($va_access_point_info['table_num'], true);
 									if (is_a($t_ap, 'BaseLabel')) {	// labels have the literal text "[blank]" indexed to "blank" to indicate blank-ness 
 										$vb_is_blank_search = false;
-										$vs_term = _t('blank');
+										$vs_term = caGetBlankLabelText();
 									} else {
 										$vb_is_blank_search = true;
 										$vs_table_num = $va_access_point_info['table_num'];
@@ -1014,7 +1014,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							if ($vs_field = trim($vs_field)) {
 								if (!is_int($vs_field)) {
 									$t_user = new ca_users();
-									if ($t_user->load(array("user_name" => $vs_field))) {
+									if (
+									    $t_user->load(array("user_name" => $vs_field))
+									    ||
+									    ((strpos($vs_field, "_") !== false) && $t_user->load(array("user_name" => str_replace("_", " ", $vs_field))))
+									) {
 										$vn_user_id = (int)$t_user->getPrimaryKey();
 									}
 								} else {
@@ -1562,7 +1566,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					if (!$vs_fld_num && is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $pa_options, null)) && sizeof($va_exclude_fields_from_search)) {
 						$va_field_restrict_sql = [];
 						foreach($va_exclude_fields_from_search as $va_restrict) {
-							$va_field_restrict_sql[] = "'".(int)$va_restrict['table_num']."/".(int)$va_restrict['field_num']."'";
+							$va_field_restrict_sql[] = "'".(int)$va_restrict['table_num']."/".$va_restrict['field_num']."'";
 						}
 						$vs_sql_where .= " AND (CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (".join(",", $va_field_restrict_sql)."))";
 					}

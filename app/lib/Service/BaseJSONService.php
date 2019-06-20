@@ -155,7 +155,7 @@ class BaseJSONService {
 
 		$vb_include_deleted = intval($this->opo_request->getParameter("include_deleted",pInteger));
 
-		$t_instance = Datamodel::getInstanceByTableName($ps_table);
+		$t_instance = Datamodel::getInstance($ps_table);
 
 		if ($pn_id && !is_numeric($pn_id) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && preg_match("!^[A-Za-z0-9_\-\.,\[\]]+$!", $pn_id)) {
 			// User is loading by idno

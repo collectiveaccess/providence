@@ -37,13 +37,13 @@ class DatamodelTest extends PHPUnit_Framework_TestCase {
 
 		foreach($va_tables as $vs_table) {
 			// we do multiple calls to get some cache hits
-			$this->assertInstanceOf($vs_table, Datamodel::getInstanceByTableName($vs_table));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstanceByTableName($vs_table, true));
+			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table));
+			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table, true));
 
 			$vn_table_num = Datamodel::getTableNum($vs_table);
 
-			$this->assertInstanceOf($vs_table, Datamodel::getInstanceByTableNum($vn_table_num));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstanceByTableNum($vn_table_num, true));
+			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vn_table_num));
+			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vn_table_num, true));
 
 			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table));
 			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table, true));

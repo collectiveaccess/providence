@@ -1055,6 +1055,8 @@ class BaseModel extends BaseObject {
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
 				if ($vb_return_with_structure) {
 					$vs_prop = array('start' => $vn_start_date, 'end' => $vn_end_date);
+				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
+					$vs_prop = $vn_start_date."/".$vn_end_date;
 				} elseif (!caGetOption('GET_DIRECT_DATE', $pa_options, false) && !caGetOption('getDirectDate', $pa_options, false) && !caGetOption('rawDate', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
 					if ($ps_field_type == FT_HISTORIC_DATERANGE) {
@@ -1063,8 +1065,6 @@ class BaseModel extends BaseObject {
 						$o_tep->setUnixTimestamps($vn_start_date, $vn_end_date);
 					}
 					$vs_prop = $o_tep->getText($pa_options);
-				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
-					$vs_prop = $vn_start_date; //."/".$vn_timestamp;
 				} else {
 					$vs_prop = $vn_start_date; //array($vn_start_date, $vn_end_date);
 				}
@@ -1351,7 +1351,7 @@ class BaseModel extends BaseObject {
 									}
 								} else {
 									$vm_orig_value = $vm_value;
-									$vm_value = preg_replace("/[^\d-.]+/", "", $vm_value); # strip non-numeric characters
+									$vm_value = preg_replace("/[^\d\-\.]+/", "", $vm_value); # strip non-numeric characters
 									if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
 										$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()", $this->tableName().'.'.$vs_field);
 										return false;
@@ -1636,6 +1636,7 @@ class BaseModel extends BaseObject {
 						
 						$va_matches = null;
 						
+						$vm_value = html_entity_decode($vm_value);
 						if (
 							is_string($vm_value) 
 							&& 
@@ -7885,9 +7886,9 @@ class BaseModel extends BaseObject {
 			while($qr_sort_res->nextHit()) {
 				$va_key = array();
 				foreach($pa_sort as $vs_sort) {
-					$va_key[] = $qr_sort_res->get($vs_sort);
+					$va_key[] = str_pad(substr($qr_sort_res->get($vs_sort), 10), 10, " ", STR_PAD_LEFT);
 				}
-				$va_sort_keys[$vn_i] = join("_", $va_key)."_{$vn_i}";
+				$va_sort_keys[$vn_i] = join("", $va_key)."".str_pad("{$vn_i}", 7, " ", STR_PAD_LEFT);
 				$vn_i++;
 			}
 			
@@ -9884,6 +9885,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->clear();
 				$t_item_rel->setMode(ACCESS_WRITE);
 				unset($va_row[$vs_rel_pk]);
+				$va_row['source_info'] = '';
 				$va_row[$vs_item_pk] = $pn_to_id;
 				 
 				$t_item_rel->set($va_row);
@@ -10224,6 +10226,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of options. Supported options are:
 	 *				purify = if true, comment, name and email are run through HTMLPurifier before being stored in the database. Default is true. 
 	 *				rank = option rank used for sorting. If omitted the tag is added to the end of the display list. [Default is null]
+	 *              forceModeration = force status of newly created tag to moderated. [Default is false]
 	 */
 	public function addTag($ps_tag, $pn_user_id=null, $pn_locale_id=null, $pn_access=0, $pn_moderator=null, $pa_options=null) {
 		global $g_ui_locale_id;
@@ -10273,7 +10276,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!is_null($pn_moderator)) {
 			$t_ixt->set('moderated_by_user_id', $pn_moderator);
 			$t_ixt->set('moderated_on', _t('now'));
-		}elseif($this->_CONFIG->get("dont_moderate_comments")){
+		}elseif(caGetOption('forceModerated', $pa_options, false) || $this->_CONFIG->get("dont_moderate_comments")){
 			$t_ixt->set('moderated_on', _t('now'));
 		}
 		
@@ -11626,7 +11629,9 @@ $pa_options["display_form_field_tips"] = true;
                             if (is_array($vm_value)) {
                                 $va_trans_vals = [];
                                 foreach($vm_value as $vn_j => $vs_value) {
-                                    if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
+                                    if(is_numeric($vs_value)) {
+                                         $va_trans_vals[] = (int)$vs_value;
+                                    } elseif ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vs_value)) {
                                         $va_trans_vals[] = $vn_id;
                                     }
                                     $pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $va_trans_vals];

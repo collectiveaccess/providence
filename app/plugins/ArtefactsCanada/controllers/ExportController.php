@@ -164,15 +164,17 @@ class ExportController extends ActionController {
 			}
 			return $v['display']; 
 		}, $placements)), [_t('Media')]);
-		
 		$headers = array_map(function($v) {
-			$v = preg_replace("![\r\n\t]+!", " ", html_entity_decode($v, ENT_QUOTES, 'UTF-8'));
-			if (preg_match("![^A-Za-z0-9 .;]+!", $v)) {
-				$v = '"'.str_replace('"', '""', $v).'"';
+		    $v = preg_replace("![\r\n\t]+!u", " ", html_entity_decode($v, ENT_QUOTES));
+		    $v = preg_replace("![“”]+!u", '"', $v);
+		    $v = preg_replace("![‘’]+!u", "'", $v);
+			$v = mb_convert_encoding($v, 'ISO-8859-1', 'UTF-8'); //iconv('UTF-8', 'ISO-8859-1', $v);
+			if (preg_match("![^A-Za-z0-9 .;\p{L}]+!u", $v)) {
+				$v = ('"'.str_replace('"', '""', $v).'"');
 			}
 			return $v;
 		; }, $headers);
-		$rows[] = join(",", $headers);
+		$rows[] = join("\t", $headers);
 		
 		$zip = new ZipFile();
 		$seen_idnos = [];
@@ -185,7 +187,7 @@ class ExportController extends ActionController {
 			
 			$row = [];
 			foreach($placements as $placement_id => $placement_info) {
-				$v = preg_replace("![\r\n\t]+!", " ", html_entity_decode($t_display->getDisplayValue($qr, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8'));
+				$v = preg_replace("![\r\n\t]+!", " ", iconv('UTF-8', 'ISO-8859-1', html_entity_decode($t_display->getDisplayValue($qr, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false, 'timeOmit' => true]), ENT_QUOTES, 'UTF-8')));
 				if (preg_match("![^A-Za-z0-9 .;]+!", $v)) {
 					$v = '"'.str_replace('"', '""', $v).'"';
 				}
@@ -198,7 +200,7 @@ class ExportController extends ActionController {
 				    if (!file_exists($media_path)) { continue; }
 					$suffix = 0;
 					do {
-						$id = $idno.($suffix ? "-{$suffix}" : "");
+						$id = preg_replace("![^A-Za-z0-9\-\.]+!", "_", $idno.($suffix ? "-{$suffix}" : ""));
 						$suffix++;
 					} while(isset($seen_idnos[$id]));
 					
@@ -206,13 +208,14 @@ class ExportController extends ActionController {
 				}
 				$seen_idnos[$id] = true;
 			}
-			$row[] = join(",", $media_refs);
+			$row[] = join(";", $media_refs);
+			$row = array_map(function($v) { return preg_replace("![\t]+!", " ", $v); }, $row);
 			
-			$rows[] = join(',', $row);
+			$rows[] = join("\t", $row);
 			$o_progress->next(_t('Processing %1', $idno));
 		}
 		
-		$zip->addFile(join("\n", $rows), "artefacts_data.csv");
+		$zip->addFile(join("\n", $rows), "artefacts_data.txt");
 		
 		$zip_path = $zip->output(ZIPFILE_FILEPATH);
 		

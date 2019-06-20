@@ -20,7 +20,7 @@ monthListDisplay = [Janvier, Février, Mars, Avril, Mai, Juin, Juillet, Août, S
 monthTable = {
 	jan = janvier, janv. = janvier,
 	fév = février, févr. = février, fev = février,
-sftp://seth:@b//data/estee/admin/app/lib/Parsers/TimeExpressionParser/fr_FR.lang	mar = mars, mars = mars,
+	mar = mars, mars = mars,
 	avr = avril, avr. = avril,
 	mai = mai,
 	jun = juin, juin = juin,
@@ -99,6 +99,9 @@ undatedDate = [undated, unknown]
 presentDate = [présent, ?, ??, ???, ????]
 #beforeQualifier = [before]
 beforeQualifier = [avant]
+earlyQualifier = [early]
+midQualifier = [mid, middle]
+lateQualifier = [late]
 #diedQualifier = [d., d, died]
 diedQualifier = [m., m, mort]
 #afterQualifier = [after]

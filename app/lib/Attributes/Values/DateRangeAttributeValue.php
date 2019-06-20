@@ -235,9 +235,10 @@
  		# ------------------------------------------------------------------
  		/**
  		 * Options:
- 		 * 		rawDate - if true, returns date as an array of start and end historic timestames
- 		 *		sortable - if true a language-independent sortable representation is returned.
- 		 *		getDirectDate - get underlying historic timestamp (floatval)
+ 		 * 		rawDate = if true, returns date as an array of start and end historic timestames
+ 		 *		sortable = if true a language-independent sortable representation is returned.
+ 		 *		getDirectDate = get underlying historic timestamp (floatval)
+ 		 *      getUnixTimestamp = Return date value as single Unix timestamp value. Only valid for dates in the Unix timestamp domain (post 1970).
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
@@ -251,6 +252,9 @@
 			}
 			if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
 				return $this->opn_start_date;
+			}
+			if (caGetOption('getUnixTimestamp', $pa_options, false)) {
+				return caHistoricTimestampToUnixTimestamp($this->opn_start_date);
 			}
 			
 			if (isset($pa_options['sortable']) && $pa_options['sortable']) {

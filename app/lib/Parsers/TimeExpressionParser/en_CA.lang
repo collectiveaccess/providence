@@ -65,12 +65,15 @@ nowDate = [now]
 todayDate = [today]
 yesterdayDate = [yesterday]
 tomorrowDate = [tomorrow]
-undatedDate = [undated, unknown]
+undatedDate = [undated, unknown, nd., n.d., nd]
 
 presentDate = [present, ?, ??, ???, ????]
-beforeQualifier = [before, prior to]
+beforeQualifier = [before, prior to, pre]
+earlyQualifier = [early]
+midQualifier = [mid, middle]
+lateQualifier = [late]
 diedQualifier = [d., d, died]
-afterQualifier = [after, later than]
+afterQualifier = [after, later than, post]
 bornQualifier = [b., b, born]
 
 # Text to indicate century (as in "20th century")

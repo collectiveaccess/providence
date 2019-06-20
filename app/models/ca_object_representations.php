@@ -858,7 +858,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
-		if (!$ps_title) { $ps_title = '['._t('BLANK').']'; }
+		if (!$ps_title) { $ps_title = '['.caGetBlankLabelText().']'; }
 		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
 		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
@@ -1901,7 +1901,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * @return int Number of representations
 	 */
 	public function numberOfRepresentationsOfClass($ps_class, $pa_options=null) {
-		return sizeof($this->representationsOfClass($ps_class, $pa_options));
+		$reps = $this->representationsOfClass($ps_class, $pa_options);
+		return is_array($reps) ? sizeof($reps) : 0;
 	}
 	# ------------------------------------------------------
 	/**

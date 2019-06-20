@@ -316,7 +316,7 @@ class Request {
  * @return float Seconds elapsed since request started.
  */	
 	function elapsedTime($pn_decimal_places=4) {
-		return $this->session->elapsedTime($pn_decimal_places);
+		return Session::elapsedTime($pn_decimal_places);
 	}
 	# ----------------------------------------
 	# --- Action errors

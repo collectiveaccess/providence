@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-23 09:11-0500\n"
-"PO-Revision-Date: 2017-04-12 17:09-0500\n"
+"PO-Revision-Date: 2018-12-14 16:55-0500\n"
 "Last-Translator: Seth Kaufman <seth@collectiveaccess.org>\n"
 "Language-Team: English (Australia) (http://www.transifex.com/"
 "collectiveaccess/collectiveaccess-providence/language/en_AU/)\n"
@@ -15,8 +15,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: en_AU\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Basepath: ../../../\n"
+"X-Generator: Poedit 2.2\n"
+"X-Poedit-Basepath: ../../..\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -269,7 +269,7 @@ msgstr ""
 #: app/helpers/displayHelpers.php:3821
 #: themes/default/views/find/Results/quick_search_results_html.php:36
 msgid "idno"
-msgstr ""
+msgstr "work code"
 
 #: app/controllers/administrate/setup/BrowseListItemsController.php:86
 #: app/models/ca_list_items.php:45
@@ -769,8 +769,7 @@ msgstr ""
 
 #: app/controllers/find/BrowseLoansController.php:86
 #: app/controllers/find/SearchLoansAdvancedController.php:101
-#: app/controllers/find/SearchLoansController.php:97
-#: app/models/ca_loans.php:42
+#: app/controllers/find/SearchLoansController.php:97 app/models/ca_loans.php:42
 msgid "loan"
 msgstr ""
 
@@ -881,9 +880,9 @@ msgstr ""
 #: app/models/ca_bookmarks.php:65 app/models/ca_bundle_displays.php:85
 #: app/models/ca_data_exporters.php:80 app/models/ca_data_importers.php:81
 #: app/models/ca_editor_uis.php:84
-#: app/models/ca_metadata_type_restrictions.php:87
-#: app/models/ca_objects.php:52 app/models/ca_search_forms.php:92
-#: app/conf/browse.conf:758 app/conf/browse.conf:846 app/conf/browse.conf:959
+#: app/models/ca_metadata_type_restrictions.php:87 app/models/ca_objects.php:52
+#: app/models/ca_search_forms.php:92 app/conf/browse.conf:758
+#: app/conf/browse.conf:846 app/conf/browse.conf:959
 msgid "objects"
 msgstr ""
 
@@ -950,8 +949,7 @@ msgstr ""
 
 #: app/controllers/find/BrowseToursController.php:84
 #: app/controllers/find/SearchToursAdvancedController.php:97
-#: app/controllers/find/SearchToursController.php:95
-#: app/models/ca_tours.php:40
+#: app/controllers/find/SearchToursController.php:95 app/models/ca_tours.php:40
 msgid "tour"
 msgstr ""
 
@@ -1226,8 +1224,8 @@ msgstr ""
 msgid "Due on"
 msgstr ""
 
-#: app/controllers/library/CheckOutController.php:164
-#: app/models/ca_acl.php:101 app/models/ca_bookmarks.php:101
+#: app/controllers/library/CheckOutController.php:164 app/models/ca_acl.php:101
+#: app/models/ca_bookmarks.php:101
 #: app/models/ca_commerce_fulfillment_events.php:88
 #: app/models/ca_commerce_order_items.php:109
 #: app/models/ca_commerce_transactions.php:81
@@ -1467,13 +1465,11 @@ msgstr ""
 msgid "Please use the checkboxes to select tags for deletion"
 msgstr ""
 
-#: app/controllers/manage/TagsController.php:217
-#: app/models/ca_item_tags.php:41
+#: app/controllers/manage/TagsController.php:217 app/models/ca_item_tags.php:41
 msgid "tag"
 msgstr ""
 
-#: app/controllers/manage/TagsController.php:217
-#: app/models/ca_item_tags.php:42
+#: app/controllers/manage/TagsController.php:217 app/models/ca_item_tags.php:42
 msgid "tags"
 msgstr ""
 
@@ -6019,18 +6015,17 @@ msgstr ""
 #: themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:38
 #: themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:40
 #: themes/default/views/pageFormat/menuBar.php:7
-#: themes/default/views/pageFormat/menuBar.php:32
-#: app/conf/navigation.conf:1152 app/conf/navigation.conf:1283
-#: app/conf/navigation.conf:1491 app/conf/navigation.conf:1554
-#: app/conf/navigation.conf:1658 app/conf/navigation.conf:1721
-#: app/conf/navigation.conf:1825 app/conf/navigation.conf:1888
-#: app/conf/navigation.conf:1995 app/conf/navigation.conf:2061
-#: app/conf/navigation.conf:2165 app/conf/navigation.conf:2228
-#: app/conf/navigation.conf:2335 app/conf/navigation.conf:2401
-#: app/conf/navigation.conf:2510 app/conf/navigation.conf:2576
-#: app/conf/navigation.conf:2870 app/conf/navigation.conf:2928
-#: app/conf/navigation.conf:3311 app/conf/navigation.conf:3338
-#: app/conf/navigation.conf:3361
+#: themes/default/views/pageFormat/menuBar.php:32 app/conf/navigation.conf:1152
+#: app/conf/navigation.conf:1283 app/conf/navigation.conf:1491
+#: app/conf/navigation.conf:1554 app/conf/navigation.conf:1658
+#: app/conf/navigation.conf:1721 app/conf/navigation.conf:1825
+#: app/conf/navigation.conf:1888 app/conf/navigation.conf:1995
+#: app/conf/navigation.conf:2061 app/conf/navigation.conf:2165
+#: app/conf/navigation.conf:2228 app/conf/navigation.conf:2335
+#: app/conf/navigation.conf:2401 app/conf/navigation.conf:2510
+#: app/conf/navigation.conf:2576 app/conf/navigation.conf:2870
+#: app/conf/navigation.conf:2928 app/conf/navigation.conf:3311
+#: app/conf/navigation.conf:3338 app/conf/navigation.conf:3361
 msgid "Search"
 msgstr ""
 
@@ -6353,7 +6348,7 @@ msgstr ""
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:5298
 msgid "Identifier %1 already exists and duplicates are not permitted"
-msgstr ""
+msgstr "Work code %1 already exists and duplicates are not permitted"
 
 #: app/lib/ca/ConfigurationCheck.php:146
 msgid ""
@@ -6944,12 +6939,12 @@ msgstr ""
 #: app/lib/ca/IDNumbering/MultipartIDNumber.php:857
 #: app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:772
 msgid "Identifier is already in use"
-msgstr ""
+msgstr "Work code is already in use"
 
 #: app/lib/ca/IDNumbering/MultipartIDNumber.php:858
 #: app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:773
 msgid "Identifier is already in use %1 times"
-msgstr ""
+msgstr "Work code is already in use %1 times"
 
 #: app/lib/ca/IDNumbering/MultipartIDNumber.php:1079
 #: app/lib/ca/IDNumbering/SMFMultipartIDNumber.php:972
@@ -7263,7 +7258,7 @@ msgstr ""
 #: app/lib/ca/Service/BaseJSONService.php:162
 #: app/lib/ca/Service/BaseJSONService.php:165
 msgid "idno does not exist"
-msgstr ""
+msgstr "Work code does not exist"
 
 #: app/lib/ca/Service/BrowseService.php:54
 #: app/lib/ca/Service/BrowseService.php:97
@@ -7281,7 +7276,7 @@ msgstr ""
 
 #: app/lib/ca/Service/ItemService.php:90
 msgid "No identifier specified"
-msgstr ""
+msgstr "No work code specified"
 
 #: app/lib/ca/Service/ItemService.php:694
 msgid "No intrinsic fields specified"
@@ -7317,16 +7312,16 @@ msgstr ""
 
 #: app/lib/ca/Service/OAIPMHService.php:325
 msgid "Identifier is empty"
-msgstr ""
+msgstr "Work code is empty"
 
 #: app/lib/ca/Service/OAIPMHService.php:338
 #: app/lib/ca/Service/OAIPMHService.php:348
 msgid "Identifier is invalid"
-msgstr ""
+msgstr "Work code is invalid"
 
 #: app/lib/ca/Service/OAIPMHService.php:355
 msgid "Identifier is deleted"
-msgstr ""
+msgstr "Work code is deleted"
 
 #: app/lib/ca/Service/OAIPMHService.php:509
 msgid "Query failed"
@@ -7703,7 +7698,7 @@ msgstr ""
 
 #: app/lib/ca/Utils/CLIUtils.php:350
 msgid "Processing %1 identifiers"
-msgstr ""
+msgstr "Processing %1 work code"
 
 #: app/lib/ca/Utils/CLIUtils.php:376 app/lib/ca/Utils/CLIUtils.php:476
 #: app/lib/ca/Utils/CLIUtils.php:556 app/lib/ca/Utils/CLIUtils.php:1109
@@ -7738,7 +7733,7 @@ msgstr ""
 
 #: app/lib/ca/Utils/CLIUtils.php:394
 msgid "Rebuilds values use to sort by title, name and identifier."
-msgstr ""
+msgstr "Rebuilds values use to sort by title, name and work code."
 
 #: app/lib/ca/Utils/CLIUtils.php:412
 msgid "Loading valid file paths from database"
@@ -8612,8 +8607,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: app/lib/ca/Utils/CLIUtils.php:2503
-#: app/models/ca_data_exporter_items.php:520
+#: app/lib/ca/Utils/CLIUtils.php:2503 app/models/ca_data_exporter_items.php:520
 #: themes/default/views/client/library/loan_pdf_checklist_html.php:36
 #: themes/default/views/client/library/order_overview_html.php:243
 #: themes/default/views/client/orders/order_overview_html.php:248
@@ -8956,7 +8950,7 @@ msgstr ""
 #: app/lib/ca/Utils/DataMigrationUtils.php:754
 #: app/lib/ca/Utils/DataMigrationUtils.php:757
 msgid "Could not update idno for %1 %2: %3"
-msgstr ""
+msgstr "Could not update work code for %1 %2: %3"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:985
 msgid "Trying media %1 in place of %2/%3"
@@ -8992,8 +8986,8 @@ msgstr ""
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:1065
 msgid ""
-"Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::_getID"
-"(): %4"
+"Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::"
+"_getID(): %4"
 msgstr ""
 
 #: app/lib/core/ApplicationChangeLog.php:145
@@ -10451,8 +10445,8 @@ msgstr ""
 
 #: app/lib/core/Plugins/Media/ImageMagick.php:218
 msgid ""
-"Provides image processing and conversion services using ImageMagick via exec"
-"() calls to ImageMagick binaries"
+"Provides image processing and conversion services using ImageMagick via "
+"exec() calls to ImageMagick binaries"
 msgstr ""
 
 #: app/lib/core/Plugins/Media/ImageMagick.php:279
@@ -11343,14 +11337,12 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:92
 #: app/models/ca_loans_x_object_representations.php:99
 #: app/models/ca_loans_x_objects.php:92
-#: app/models/ca_loans_x_occurrences.php:92
-#: app/models/ca_loans_x_places.php:92
+#: app/models/ca_loans_x_occurrences.php:92 app/models/ca_loans_x_places.php:92
 #: app/models/ca_loans_x_storage_locations.php:92
 #: app/models/ca_loans_x_vocabulary_terms.php:92
 #: app/models/ca_metadata_elements.php:116
 #: app/models/ca_metadata_type_restrictions.php:143
-#: app/models/ca_movements.php:135
-#: app/models/ca_movements_x_collections.php:92
+#: app/models/ca_movements.php:135 app/models/ca_movements_x_collections.php:92
 #: app/models/ca_movements_x_entities.php:92
 #: app/models/ca_movements_x_movements.php:93
 #: app/models/ca_movements_x_object_lots.php:92
@@ -11470,9 +11462,8 @@ msgstr ""
 #: app/models/ca_relationship_type_labels.php:63
 #: app/models/ca_representation_annotation_labels.php:64
 #: app/models/ca_representation_annotations.php:66
-#: app/models/ca_search_form_labels.php:63
-#: app/models/ca_set_item_labels.php:63 app/models/ca_set_labels.php:64
-#: app/models/ca_storage_location_labels.php:63
+#: app/models/ca_search_form_labels.php:63 app/models/ca_set_item_labels.php:63
+#: app/models/ca_set_labels.php:64 app/models/ca_storage_location_labels.php:63
 #: app/models/ca_tour_labels.php:63 app/models/ca_tour_stop_labels.php:63
 #: themes/default/views/bundles/ca_attributes.php:206
 #: themes/default/views/bundles/ca_object_representation_captions.php:64
@@ -11493,18 +11484,16 @@ msgstr ""
 
 #: app/models/ca_bookmark_folders.php:48 app/models/ca_bookmarks.php:47
 #: app/models/ca_bundle_displays.php:59 app/models/ca_collections.php:51
-#: app/models/ca_data_exporter_items.php:49
-#: app/models/ca_data_exporters.php:61
+#: app/models/ca_data_exporter_items.php:49 app/models/ca_data_exporters.php:61
 #: app/models/ca_data_importer_groups.php:50
-#: app/models/ca_data_importer_items.php:56
-#: app/models/ca_data_importers.php:62 app/models/ca_editor_ui_screens.php:52
-#: app/models/ca_editor_uis.php:50 app/models/ca_entities.php:50
-#: app/models/ca_ips.php:46 app/models/ca_item_comments.php:50
-#: app/models/ca_item_tags.php:49 app/models/ca_item_views.php:49
-#: app/models/ca_list_items.php:53 app/models/ca_lists.php:59
-#: app/models/ca_loans.php:50 app/models/ca_locales.php:46
-#: app/models/ca_metadata_elements.php:51 app/models/ca_movements.php:50
-#: app/models/ca_object_lots.php:51
+#: app/models/ca_data_importer_items.php:56 app/models/ca_data_importers.php:62
+#: app/models/ca_editor_ui_screens.php:52 app/models/ca_editor_uis.php:50
+#: app/models/ca_entities.php:50 app/models/ca_ips.php:46
+#: app/models/ca_item_comments.php:50 app/models/ca_item_tags.php:49
+#: app/models/ca_item_views.php:49 app/models/ca_list_items.php:53
+#: app/models/ca_lists.php:59 app/models/ca_loans.php:50
+#: app/models/ca_locales.php:46 app/models/ca_metadata_elements.php:51
+#: app/models/ca_movements.php:50 app/models/ca_object_lots.php:51
 #: app/models/ca_object_representations.php:56 app/models/ca_objects.php:59
 #: app/models/ca_occurrences.php:50 app/models/ca_places.php:52
 #: app/models/ca_relationship_types.php:49
@@ -11872,16 +11861,14 @@ msgstr ""
 msgid "Type restrictions"
 msgstr ""
 
-#: app/models/ca_bundle_displays.php:958
-#: app/models/ca_bundle_displays.php:1021
+#: app/models/ca_bundle_displays.php:958 app/models/ca_bundle_displays.php:1021
 #: app/models/ca_bundle_displays.php:1150
 #: app/models/ca_data_exporter_items.php:285
 #: app/models/ca_data_importer_items.php:414
 msgid "Maximum length"
 msgstr ""
 
-#: app/models/ca_bundle_displays.php:959
-#: app/models/ca_bundle_displays.php:1022
+#: app/models/ca_bundle_displays.php:959 app/models/ca_bundle_displays.php:1022
 #: app/models/ca_bundle_displays.php:1151
 msgid "Maximum length, in characters, of displayed information."
 msgstr ""
@@ -12246,9 +12233,8 @@ msgstr ""
 #: app/models/ca_occurrence_labels.php:63 app/models/ca_place_labels.php:63
 #: app/models/ca_relationship_type_labels.php:63
 #: app/models/ca_representation_annotation_labels.php:64
-#: app/models/ca_search_form_labels.php:63
-#: app/models/ca_set_item_labels.php:63 app/models/ca_set_labels.php:64
-#: app/models/ca_storage_location_labels.php:63
+#: app/models/ca_search_form_labels.php:63 app/models/ca_set_item_labels.php:63
+#: app/models/ca_set_labels.php:64 app/models/ca_storage_location_labels.php:63
 #: app/models/ca_tour_labels.php:63 app/models/ca_tour_stop_labels.php:63
 msgid "Locale of label"
 msgstr ""
@@ -12292,8 +12278,7 @@ msgstr ""
 msgid "A unique alphanumeric identifier for this collection."
 msgstr ""
 
-#: app/models/ca_collections.php:100
-#: app/models/ca_data_import_event_log.php:96
+#: app/models/ca_collections.php:100 app/models/ca_data_import_event_log.php:96
 #: app/models/ca_data_import_events.php:94 app/models/ca_entities.php:74
 #: app/models/ca_list_items.php:209 app/models/ca_loans.php:91
 #: app/models/ca_movements.php:84 app/models/ca_object_lots.php:134
@@ -12613,8 +12598,7 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:85
 #: app/models/ca_loans_x_object_representations.php:85
 #: app/models/ca_loans_x_objects.php:85
-#: app/models/ca_loans_x_occurrences.php:85
-#: app/models/ca_loans_x_places.php:85
+#: app/models/ca_loans_x_occurrences.php:85 app/models/ca_loans_x_places.php:85
 #: app/models/ca_loans_x_storage_locations.php:85
 #: app/models/ca_loans_x_vocabulary_terms.php:85
 #: app/models/ca_movements_x_collections.php:85
@@ -12693,8 +12677,7 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:85
 #: app/models/ca_loans_x_object_representations.php:85
 #: app/models/ca_loans_x_objects.php:85
-#: app/models/ca_loans_x_occurrences.php:85
-#: app/models/ca_loans_x_places.php:85
+#: app/models/ca_loans_x_occurrences.php:85 app/models/ca_loans_x_places.php:85
 #: app/models/ca_loans_x_storage_locations.php:85
 #: app/models/ca_loans_x_vocabulary_terms.php:85
 #: app/models/ca_movements_x_collections.php:85
@@ -12776,8 +12759,7 @@ msgstr ""
 #: app/models/ca_loans_x_object_lots.php:92
 #: app/models/ca_loans_x_object_representations.php:99
 #: app/models/ca_loans_x_objects.php:92
-#: app/models/ca_loans_x_occurrences.php:92
-#: app/models/ca_loans_x_places.php:92
+#: app/models/ca_loans_x_occurrences.php:92 app/models/ca_loans_x_places.php:92
 #: app/models/ca_loans_x_storage_locations.php:92
 #: app/models/ca_loans_x_vocabulary_terms.php:92
 #: app/models/ca_movements_x_collections.php:92
@@ -13596,8 +13578,7 @@ msgstr ""
 msgid "Notes pertaining to the refund for this order."
 msgstr ""
 
-#: app/models/ca_commerce_orders.php:430
-#: app/models/ca_object_checkouts.php:152
+#: app/models/ca_commerce_orders.php:430 app/models/ca_object_checkouts.php:152
 msgid "Indicates if the order is deleted or not."
 msgstr ""
 
@@ -14455,8 +14436,7 @@ msgid "Event"
 msgstr ""
 
 #: app/models/ca_data_import_event_log.php:67
-#: app/models/ca_data_importer_log_items.php:67
-#: app/models/ca_item_views.php:87
+#: app/models/ca_data_importer_log_items.php:67 app/models/ca_item_views.php:87
 #: app/widgets/lastLogins/views/main_html.php:38
 #: themes/default/views/client/orders/list_orders_html.php:124
 #: themes/default/views/client/orders/order_fulfillment_events_html.php:54
@@ -14717,8 +14697,8 @@ msgstr ""
 
 #: app/models/ca_data_importer_items.php:254
 msgid ""
-"Skip mapping if value for this element is not equal to the specified value"
-"(s)."
+"Skip mapping if value for this element is not equal to the specified "
+"value(s)."
 msgstr ""
 
 #: app/models/ca_data_importer_items.php:263
@@ -17250,7 +17230,7 @@ msgstr ""
 
 #: app/models/ca_list_items.php:84 app/models/ca_occurrences.php:81
 msgid "Identifier"
-msgstr ""
+msgstr "Work code"
 
 #: app/models/ca_list_items.php:84
 msgid "Unique identifier for this list item"
@@ -17258,11 +17238,11 @@ msgstr ""
 
 #: app/models/ca_list_items.php:92
 msgid "Identifier sort"
-msgstr ""
+msgstr "Work code sort"
 
 #: app/models/ca_list_items.php:92
 msgid "Sortable value for identifier"
-msgstr ""
+msgstr "Sortable value for work code"
 
 #: app/models/ca_list_items.php:100
 msgid "Item value"
@@ -17441,7 +17421,7 @@ msgstr ""
 
 #: app/models/ca_lists.php:80
 msgid "By identifier"
-msgstr ""
+msgstr "By work code"
 
 #: app/models/ca_lists.php:89
 msgid "Is system list"
@@ -18642,13 +18622,13 @@ msgstr ""
 
 #: app/models/ca_objects.php:114
 msgid "Object identifier"
-msgstr ""
+msgstr "Work code"
 
 #: app/models/ca_objects.php:114
 msgid ""
 "A unique alphanumeric identifier for this object. This is usually equivalent "
 "to the \"accession number\" in museum settings."
-msgstr ""
+msgstr "A unique alphanumeric identifier for this object. "
 
 #: app/models/ca_objects.php:136
 msgid "Is deaccessioned"
@@ -23264,8 +23244,7 @@ msgstr ""
 msgid "There are no %1 comments"
 msgstr ""
 
-#: app/widgets/recentTags/recentTagsWidget.php:43
-#: app/conf/navigation.conf:3322
+#: app/widgets/recentTags/recentTagsWidget.php:43 app/conf/navigation.conf:3322
 msgid "Tags"
 msgstr ""
 
@@ -26020,7 +25999,7 @@ msgstr ""
 
 #: themes/default/views/bundles/ca_set_items.php:59
 msgid "identifier"
-msgstr ""
+msgstr "Work code"
 
 #: themes/default/views/bundles/ca_set_items.php:90
 msgid "Edit set item metadata"
@@ -28236,8 +28215,8 @@ msgid ""
 "<div class='error'>An error in your system configuration has been detected</"
 "div>\n"
 "\t    General installation instructions can be found\n"
-"\t    <a href='http://wiki.collectiveaccess.org/index.php?title=Installation_"
-"(Providence)' target='_blank'>here</a>.\n"
+"\t    <a href='http://wiki.collectiveaccess.org/index.php?"
+"title=Installation_(Providence)' target='_blank'>here</a>.\n"
 "\t    For more specific hints on the existing issues please have a look at "
 "the messages below."
 msgstr ""

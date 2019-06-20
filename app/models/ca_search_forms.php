@@ -354,7 +354,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement = new ca_search_form_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('form_id', $vn_form_id);
-		$t_placement->set('bundle_name', $ps_bundle_name);
+		$t_placement->set('bundle_name', trim($ps_bundle_name));
 		$t_placement->set('rank', $pn_rank);
 
 		if (is_array($pa_settings)) {
@@ -1238,7 +1238,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						$vs_query_element = $vs_value;
 					}
-
 					switch($vs_element){
 						case '_fulltext':		// don't qualify special "fulltext" element
 							$va_query_elements[] = $vs_query_element;
@@ -1252,6 +1251,12 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 									$va_data = $o_value->parseValue($vs_query_element, ['settings' => $t_element->getSettings()]);
 								
 									$vs_query_element = $va_data['value_longtext1'];
+									break;
+								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+								    // convert bare ranges to Lucene range syntax
+									if (preg_match("!^([A-Z\$£¥€]+[ ]*[\d\.]+)[ ]*([-–]{1}|to)[ ]*([A-Z\$£¥€]+[ ]*[\d\.]+)$!", trim(str_replace('"', '', $vs_query_element)), $m)) {
+									    $vs_query_element = "[".$m[1]." to ".$m[3]."]";
+									}
 									break;
 							}
 							$va_query_elements[] = "({$vs_element}:{$vs_query_element})";
