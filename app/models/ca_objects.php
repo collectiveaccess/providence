@@ -1039,9 +1039,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
  		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options)) {
  			
- 			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, $pm_type_id)) {
- 				$this->deriveCurrentLocationForBrowse();
- 			}
+ 			// if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, $pm_type_id)) {
+//  				$this->deriveCurrentLocationForBrowse();
+//  			}
  		}
  		
  		return $vn_rc;
