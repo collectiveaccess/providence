@@ -266,12 +266,14 @@ class TimeExpressionParser {
 						case TEP_TOKEN_RANGE_CONJUNCTION:
 							$this->getToken();
 							if ($va_date = $this->_parseDateExpression()) {
-								$va_dates['start'] = array(
-									'month' => null, 'day' => null, 
-									'year' => TEP_START_OF_UNIVERSE,
-									'hours' => null, 'minutes' => null, 'seconds' => null,
-									'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
-								);
+								if (!isset($va_dates['start'])) {
+								    $va_dates['start'] = array(
+                                        'month' => null, 'day' => null, 
+                                        'year' => TEP_START_OF_UNIVERSE,
+                                        'hours' => null, 'minutes' => null, 'seconds' => null,
+                                        'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+                                    );
+                                }
 								$va_dates['end'] = $va_date;
 								$vn_state = TEP_STATE_ACCEPT;
 								$vb_can_accept = true;
@@ -352,7 +354,11 @@ class TimeExpressionParser {
 					}
 					
 					if ($va_date = $this->_parseDateExpression()) {
-						$va_dates['start'] = $va_date;
+						if(!isset($va_dates['start'])) { 
+							$va_dates['start'] = $va_date; 
+						} elseif(!$this->tokens()) {
+							$va_dates['end'] = $va_date; 
+						}
 						$vn_state = TEP_STATE_DATE_RANGE_CONJUNCTION;
 						$vb_can_accept = true;
 						break;
@@ -458,91 +464,14 @@ class TimeExpressionParser {
 								#
 								# is this a century expression?
 								#
-								$this->skipToken();
-								$va_next_token = $this->getToken();
-								
-								$vs_next_token_lc = mb_strtolower($va_next_token['value']);
-								$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
-																
-								if (
-									($vn_use_romans && in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator")) && preg_match("/^([MDCLXVI]+)(.*)$/", $va_token['value'], $va_roman_matches))
-									||	
-									((in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) && (preg_match("/^([\d]+)(.*)$/", $va_token['value'], $va_matches)))
-									||
-									(preg_match("/^([\d]{2})[_]{2}$/", $va_token['value'], $va_matches))
-								) {	
-									$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
-									$va_ordinals[] = $this->opo_language_settings->get("ordinalSuffixDefault");
-
-                                    if ($vn_use_romans && caIsRomanNumerals($va_roman_matches[1])) {
-                                        $vn_century = intval(caRomanArabic($va_roman_matches[1]));
-                                    } else {
-                                        $vn_century = intval($va_matches[1]);
-                                    }
-                                    
-                                    if (in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) {
-                                        $va_next_token = null;
-                                    }
-                                    
-                                    $vn_is_circa = 0;
-                                    if($va_modfier_token = (is_array($va_next_token) ? $va_next_token : $this->peekToken())) {
-                                        $va_next_token = null;
-                                        switch($va_modfier_token['type']) {
-                                            case TEP_TOKEN_ERA:
-                                                if($va_modfier_token['era'] == TEP_ERA_BC) {
-                                                    $vn_century *= -1;
-                                                }
-                                                $this->skipToken();
-                                                break;
-                                            case TEP_TOKEN_QUESTION_MARK_UNCERTAINTY:
-                                                $vn_is_circa = 1;
-                                                $this->skipToken();
-                                                break;
-                                            case TEP_TOKEN_RANGE_CONJUNCTION:
-                                            	$vb_is_range = true;
-                                                $this->skipToken();
-                                            	break;
-                                            default:
-                                               	$this->setParseError($va_modfier_token, TEP_ERROR_TRAILING_JUNK);
-                                                break;
-                                        }
-                                    }
-                                    
-                                    if (preg_match("/^([\d]{2})[_]{2}$/", $va_token['value'])) {
-                                        $vn_century += 1;
-                                    }
-                                    
-                                    if (($vn_century > -100) && ($vn_century < 100)) {
-                                        if ($vn_century < 0) { 
-                                            $vn_start_year = ($vn_century + 1) * 100;
-                                            $vn_end_year = (($vn_century + 1) * 100) - 99;
-                                        } else {
-                                            $vn_start_year = ($vn_century - 1) * 100;
-                                            $vn_end_year = (($vn_century - 1) * 100) + 99;
-                                        }
-                                        
-                                        if (!isset($va_dates['start']) || !$va_dates['start']) {
-                                        	$vn_start_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'start', 'century', $vn_start_year);
-                                        	$va_dates['start'] = array(
-												'month' => 1, 'day' => 1, 'year' => $vn_start_year,
-												'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
-												'dont_window' => true
-											);
-										}
-										if (!$vb_is_range) {
-											$vn_end_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'end', 'century', $vn_end_year);
-											$va_dates['end'] = array(
-												'month' => 12, 'day' => 31, 'year' => $vn_end_year,
-												'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
-												'dont_window' => true
-											);
-										}
-                                        $vn_state = $vb_is_range ? TEP_STATE_BEGIN : TEP_STATE_ACCEPT;
-                                        $vb_can_accept = !$vb_is_range;
-                                        $part_of_range_qualifier = null;
-                                        break;
-                                    }
-                                    $part_of_range_qualifier = null;
+								if (is_array($d = $this->_parseCentury($va_token, $part_of_range_qualifier))) {
+									$vb_can_accept = true;
+									if (!isset($va_dates['start'])) { 
+										$va_dates = $d;
+									} else {
+										$va_dates['end'] = $d['end'];
+									}
+									break;
 								}
 								
 								$this->setParseError($va_token, TEP_ERROR_INVALID_EXPRESSION);
@@ -857,7 +786,7 @@ class TimeExpressionParser {
 		// Convert 19th-century to 19th century
 		if (is_array($va_century = $this->opo_language_settings->getList("centuryIndicator"))) {
 			foreach($va_century as $vs_century) {
-				$ps_expression = preg_replace("/[\-—]+{$vs_century}/", " {$vs_century}", $ps_expression);
+				$ps_expression = preg_replace("/[\-—]+{$vs_century}/i", " {$vs_century}", $ps_expression);
 			}
 		}
 		
@@ -866,9 +795,8 @@ class TimeExpressionParser {
 		if (!is_array($mid = $this->opo_language_settings->getList("midQualifier"))) { $mid = []; }
 		if (!is_array($late = $this->opo_language_settings->getList("lateQualifier"))) { $late = []; }
 		foreach(array_merge($early, $mid, $late) as $q) {
-			$ps_expression = preg_replace("/{$q}[\-—]+/", "{$q} ", $ps_expression);
+			$ps_expression = preg_replace("/{$q}[\-—]+/i", "{$q} ", $ps_expression);
 		}
-		
 		#replace time keywords containing spaces with conf defined replacement, allowing treatments for expression like "av. J.-C." in french
 		if(!is_array($wordsWithSpaces = $this->opo_language_settings->getList("wordsWithSpaces"))) { $wordsWithSpaces = []; }
 		if (!is_array($wordsWithSpacesReplacements = $this->opo_language_settings->getList("wordsWithSpacesReplacements"))) { $wordsWithSpacesReplacements = []; }
@@ -879,7 +807,7 @@ class TimeExpressionParser {
 		# separate '?' from words
 		$ps_expression = preg_replace('!([^\?\/]+)\?{1}([^\?]+)!', '\1 ? \2', $ps_expression);
 		$ps_expression = preg_replace('!([^\?\/]+)\?{1}$!', '\1 ?', $ps_expression);
-		
+
 		# make sure all leading keywords have trailing spaces. Eg. c.1959 => c. 1959
 		foreach(['dateCircaIndicator', 'beforeQualifier', 'afterQualifier'] as $l) {
 			if($keywords = $this->getLanguageSettingsWordList($l)) {
@@ -887,8 +815,9 @@ class TimeExpressionParser {
 					return strlen($b) - strlen($a);
 				});
 				foreach($keywords as $c) {
-					if (!preg_match('!'.preg_quote($c, '!').'([\-\d]+)!i', $ps_expression, $m)) { continue; }
-					$ps_expression = preg_replace('!'.preg_quote($c, '!').'[\-]*!i', "{$c} ", $ps_expression);
+					$ps_expression = preg_replace('!(?<=^|[\b]{1})('.preg_quote($c, '!').')[-–]+!i', "$1 ", $ps_expression);
+					if (!preg_match('!(^|[^A-Za-z]+)'.preg_quote($c, '!').'([\-\d]+)!i', $ps_expression, $m)) { continue; }
+					$ps_expression = preg_replace('!(^|[^A-Za-z]+)'.preg_quote($c, '!').'([\-]*)!i', "$1 {$c} $2", $ps_expression);
 					break;
 				}
 			}
@@ -931,6 +860,7 @@ class TimeExpressionParser {
 		if (!preg_match("!^[\-]{1}[\d]+$!", $ps_expression)) {
 			$ps_expression = preg_replace("![\-\–\—]+!", " - ", $ps_expression);
 		}
+		
 		$va_era_list = array_merge(array_keys($this->opo_language_settings->getAssoc("ADBCTable")), array($this->opo_language_settings->get("dateADIndicator"), $this->opo_language_settings->get("dateBCIndicator")));
 		foreach($va_era_list as $vs_era) {
 			$ps_expression = preg_replace("/([\d]+)".$vs_era."[ ]*/i", "$1 $vs_era ", $ps_expression); #str_replace($vs_era, " ".$vs_era, $ps_expression);
@@ -1622,6 +1552,108 @@ class TimeExpressionParser {
 		return $va_dates;
 	}
 	# -------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	private function _parseCentury($va_token, $part_of_range_qualifier=null) {
+		$va_next_token = $this->peekToken(2);
+		
+		$vs_next_token_lc = mb_strtolower($va_next_token['value']);
+		$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
+										
+		if (
+			($vn_use_romans && in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator")) && preg_match("/^([MDCLXVI]+)(.*)$/", $va_token['value'], $va_roman_matches))
+			||	
+			((in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) && (preg_match("/^([\d]+)(.*)$/", $va_token['value'], $va_matches)))
+			||
+			(preg_match("/^([\d]{2})[_]{2}$/", $va_token['value'], $va_matches))
+		) {	
+			
+			$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
+			$va_ordinals[] = $this->opo_language_settings->get("ordinalSuffixDefault");
+
+			if ($vn_use_romans && caIsRomanNumerals($va_roman_matches[1])) {
+				$vn_century = intval(caRomanArabic($va_roman_matches[1]));
+			} else {
+				$vn_century = intval($va_matches[1]);
+			}
+			
+			if (in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) {
+				$va_next_token = null;
+			}
+			
+			$this->skipToken();
+			$this->skipToken();
+			
+			$vn_is_circa = 0;
+			if($va_modfier_token = (is_array($va_next_token) ? $va_next_token : $this->peekToken())) {
+				$va_next_token = null;
+				switch($va_modfier_token['type']) {
+					case TEP_TOKEN_ERA:
+						if($va_modfier_token['era'] == TEP_ERA_BC) {
+							$vn_century *= -1;
+						}
+						
+						$this->skipToken();
+						$va_next_next_token = $this->peekToken();
+						if (is_array($va_next_next_token) && ($va_next_next_token['type'] == TEP_TOKEN_RANGE_CONJUNCTION)) {
+							$vb_is_range = true;
+							$this->skipToken();
+						}
+						break;
+					case TEP_TOKEN_QUESTION_MARK_UNCERTAINTY:
+						$vn_is_circa = 1;
+						$this->skipToken();
+						break;
+					case TEP_TOKEN_RANGE_CONJUNCTION:
+						$vb_is_range = true;
+						$this->skipToken();
+						break;
+					default:
+						$this->setParseError($va_modfier_token, TEP_ERROR_TRAILING_JUNK);
+						break;
+				}
+			}
+			
+			if (preg_match("/^([\d]{2})[_]{2}$/", $va_token['value'])) {
+				$vn_century += 1;
+			}
+			
+			if (($vn_century > -100) && ($vn_century < 100)) {
+				if ($vn_century < 0) { 
+					$vn_start_year = (($vn_century + 1) * 100) - 99;
+					$vn_end_year = ($vn_century + 1) * 100;
+				} else {
+					$vn_start_year = ($vn_century - 1) * 100;
+					$vn_end_year = (($vn_century - 1) * 100) + 99;
+				}
+				
+				if (!isset($va_dates['start']) || !$va_dates['start']) {
+					$vn_start_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'start', 'century', $vn_start_year);
+					$va_dates['start'] = array(
+						'month' => 1, 'day' => 1, 'year' => $vn_start_year,
+						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
+						'dont_window' => true
+					);
+				}
+				if (!$vb_is_range) {
+					$vn_end_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'end', 'century', $vn_end_year);
+					$va_dates['end'] = array(
+						'month' => 12, 'day' => 31, 'year' => $vn_end_year,
+						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
+						'dont_window' => true
+					);
+				}
+				$vn_state = $vb_is_range ? TEP_STATE_BEGIN : TEP_STATE_ACCEPT;
+				$vb_can_accept = !$vb_is_range;
+				$part_of_range_qualifier = null;
+			}
+			$part_of_range_qualifier = null;
+			return $va_dates;
+		}
+		return null;
+	}
+	# -------------------------------------------------------------------
 	# Lexical analysis
 	# -------------------------------------------------------------------
 	private function tokenize($ps_expression) {
@@ -1787,8 +1819,19 @@ class TimeExpressionParser {
 
 		// century with ordinalSuffix
 		$va_ordinals = $this->getLanguageSettingsWordList("ordinalSuffixes");
-		$va_ordinals[] = $this->opo_language_settings->get("ordinalSuffixDefault");
+		$va_ordinals[] = $ordinal_suffix_default = $this->opo_language_settings->get("ordinalSuffixDefault");
+		if (!is_array($va_ordinal_words = $this->opo_language_settings->getList("ordinalWords"))) { $va_ordinal_words = []; }
+		$va_ordinal_word_alts = array_map(function($v) use ($ordinal_suffix_default) { return preg_replace("!".preg_quote($ordinal_suffix_default, "!")."$!i", "", $v); }, $va_ordinal_words);
+		
 		foreach($va_ordinals as $vs_ordinal){
+		    if (
+		    	(($i = array_search($vs_token_lc, $va_ordinal_words, true)) !== false)
+		    	||
+		    	(($i = array_search($vs_token_lc, $va_ordinal_word_alts, true)) !== false)
+		    ) { // convert text ordinals (Ex. "fourth") to numeric ordinal ("4th")
+		        $ord = isset($va_ordinals[$i]) ? $va_ordinals[$i] : $ordinal_suffix_default;
+		        return array('value' => $i.$ord, 'type' => TEP_TOKEN_ALPHA);	
+		    }
 			if(substr($vs_token_lc, 0 - strlen($vs_ordinal)) == $vs_ordinal){
 				$vn_cent = substr($vs_token_lc,0,strlen($vs_token_lc) - strlen($vs_ordinal));
 				if(preg_match("/^\d+$/",$vn_cent)){ // could use is_numeric here but this seems safer
@@ -2319,6 +2362,16 @@ class TimeExpressionParser {
 			){
 				$this->setParseError(null, TEP_ERROR_RANGE_ERROR);
 				return false;
+			}
+			if (($vn_start_historic < 0) && ($vn_end_historic < 0)) {
+			    if ((int)$vn_start_historic > (int)$vn_end_historic) {
+				    $this->setParseError(null, TEP_ERROR_RANGE_ERROR);
+				    return false;
+				}
+				if (((int)$vn_start_historic === (int)$vn_end_historic) && ($vn_end_historic > $vn_start_historic)) {
+				    $this->setParseError(null, TEP_ERROR_RANGE_ERROR);
+				    return false;
+				}
 			}
 			$this->setHistoricTimestamps($vn_start_historic, $vn_end_historic);
 		}
@@ -2942,8 +2995,14 @@ class TimeExpressionParser {
 							(((int)$va_start_pieces['year'] % 100) == 0) && 
 							(
 								(((int)$va_start_pieces['year'] >= 0) && ((int)$va_end_pieces['year'] == ((int)$va_start_pieces['year'] + 99)))
-								||
-								(((int)$va_start_pieces['year'] <= 0) && ((int)$va_end_pieces['year'] == ((int)$va_start_pieces['year'] - 99)))
+							)
+						) {
+							return $this->makeCenturyString(['start' => $va_start_pieces, 'end' => $va_end_pieces], $pa_options);
+						}
+						if (
+							(((int)$va_end_pieces['year'] % 100) == 0) && 
+							(
+								(((int)$va_start_pieces['year'] <= 0) && ((int)$va_start_pieces['year'] == ((int)$va_end_pieces['year'] - 99)))
 							)
 						) {
 							return $this->makeCenturyString(['start' => $va_start_pieces, 'end' => $va_end_pieces], $pa_options);
@@ -3722,31 +3781,60 @@ class TimeExpressionParser {
 		$w = self::$early_mid_late_range_lengths[$range_type];
 		
 		$ret = null;
-		if ($start_or_end == 'start') {
-			switch($qualifier) {
-				case TEP_TOKEN_EARLY:
-					$ret = $year;
-					break;
-				case TEP_TOKEN_MID:
-					$ret = $year + floor($l/2) - floor($w/2);
-					break;
-				case TEP_TOKEN_LATE:
-					$ret = $year + $l - $w;
-					break;
-			}
-		} else {
-			switch($qualifier) {
-				case TEP_TOKEN_EARLY:
-					$ret = $year - ($l - 1) + $w;
-					break;
-				case TEP_TOKEN_MID:
-					$ret = $year - ($l - 1) + floor($l/2) + floor($w/2);
-					break;
-				case TEP_TOKEN_LATE:
-					$ret = $year;
-					break;
-			}
-		} 
+		
+		if ($year >= 0) {
+            if ($start_or_end == 'start') {
+                switch($qualifier) {
+                    case TEP_TOKEN_EARLY:
+                        $ret = $year;
+                        break;
+                    case TEP_TOKEN_MID:
+                        $ret = $year + floor($l/2) - floor($w/2);
+                        break;
+                    case TEP_TOKEN_LATE:
+                        $ret = $year + $l - $w;
+                        break;
+                }
+            } else {
+                switch($qualifier) {
+                    case TEP_TOKEN_EARLY:
+                        $ret = $year - ($l - 1) + $w;
+                        break;
+                    case TEP_TOKEN_MID:
+                        $ret = $year - ($l - 1) + floor($l/2) + floor($w/2);
+                        break;
+                    case TEP_TOKEN_LATE:
+                        $ret = $year;
+                        break;
+                }
+            } 
+        } else {
+            if ($start_or_end == 'start') {
+                switch($qualifier) {
+                    case TEP_TOKEN_EARLY:
+                        $ret = $year + $w;
+                        break;
+                    case TEP_TOKEN_MID:
+                        $ret = $year + floor($l/2) - floor($w/2);
+                        break;
+                    case TEP_TOKEN_LATE:
+                        $ret = $year + $l - $w - 1;
+                        break;
+                }
+            } else {
+                switch($qualifier) {
+                    case TEP_TOKEN_EARLY:
+                        $ret = $year - $w;
+                        break;
+                    case TEP_TOKEN_MID:
+                        $ret = $year - ($l - 1) + floor($l/2) + floor($w/2);
+                        break;
+                    case TEP_TOKEN_LATE:
+                        $ret = $year - $w;
+                        break;
+                }
+            }
+        }
 
 		return $ret;
 	}
