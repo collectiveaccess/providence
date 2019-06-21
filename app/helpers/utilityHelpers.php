@@ -594,7 +594,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 */
 	function caEscapeSearchForURL($ps_search) {
-		return rawurlencode(str_replace('/', '&#47;', $ps_search)); // encode slashes as html entities to avoid Apache considering it a directory separator
+		return str_replace('/', '&#47;', $ps_search); // encode slashes as html entities to avoid Apache considering it a directory separator
 	}
 	# ----------------------------------------
 	function caSanitizeStringForJsonEncode($ps_text) {
