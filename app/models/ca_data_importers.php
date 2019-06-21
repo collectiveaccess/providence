@@ -1853,7 +1853,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 						// Get location in content tree for addition of new content
 						$va_item_dest = explode(".",  $va_item['destination']);
-						$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
+						if ((sizeof($va_item_dest) == 2) && Datamodel::tableExists($va_item_dest[0]) && ($va_item_dest[1] == 'related')) {
+						    // Rewrite destination <table>.related to <table>. Eg. ca_objects.related => ca_objects
+						    // This is supported for consistency with the notation used in display templates
+						    $vs_item_terminal = $vs_group_destination = $va_item['destination'] = $va_group['destination'] = $va_item_dest[0];
+						    $va_item_dest = $va_group_tmp = [$va_item_dest[0]];
+						} else {
+						    $vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
+						}
 						
 						if (isset($va_item['settings']['filterEmptyValues']) && (bool)$va_item['settings']['filterEmptyValues'] && is_array($va_vals)) {
 						    $va_vals = array_filter($va_vals, function($v) { return strlen($v); });
