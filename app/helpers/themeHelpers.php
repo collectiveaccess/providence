@@ -850,8 +850,10 @@
 		            $t_instance->load($qr_res->get($t_instance->primaryKey(true)));
 		            if ($alt_text_template = Configuration::load()->get("{$vs_table}_alt_text_template")) { 
                         $alt_text = $t_instance->getWithTemplate($alt_text_template);
-                    } else {
+                    } elseif(is_a($t_instance, "LabelableBaseModelWithAttributes")) {
                         $alt_text = $t_instance->get("{$vs_table}.preferred_labels");
+                    } else {
+                        $alt_text = null;
                     }
 			        $va_res[$qr_res->get($vs_pk)] = $qr_res->getMediaTag("media", caGetOption('version', $pa_options, 'icon'), ['alt' => $alt_text]);
 			        break;
