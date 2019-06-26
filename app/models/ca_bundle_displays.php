@@ -1161,6 +1161,19 @@ if (!$pb_omit_editing_info) {
 						)		
 					);
 					break;
+				case __CA_ATTRIBUTE_VALUE_MEDIA__:
+					$va_even_more_settings = [
+					    'appendMultiPagePDFToPDFOutput' => [
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'width' => 10, 'height' => 1,
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Append multipage PDF to output?'),
+							'description' => _t('Check this option if you want PDF media in display appended to the end of PDF display output.')
+						    ]
+						];
+					break;
 				case __CA_ATTRIBUTE_VALUE_CONTAINER__:	// (allows sub-elements to be summarized)
 				case __CA_ATTRIBUTE_VALUE_CURRENCY__: 
 				case __CA_ATTRIBUTE_VALUE_LENGTH__: 

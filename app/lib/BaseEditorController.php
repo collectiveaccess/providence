@@ -798,6 +798,7 @@ class BaseEditorController extends ActionController {
 		$this->view->setVar('bundle_displays', $va_displays);
 
 		// Check validity and access of specified display
+		$media_to_append = [];
 		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$this->view->setVar('display_id', $vn_display_id);
 
@@ -818,10 +819,20 @@ class BaseEditorController extends ActionController {
 					'display' => $vs_header,
 					'settings' => $va_settings
 				);
+				
+				$e = explode(".", $va_display_item['bundle_name'])[1];
+				if ($t_subject->hasElement($e) && (ca_metadata_elements::getElementDatatype($e) === __CA_ATTRIBUTE_VALUE_MEDIA__) && isset($va_settings['appendMultiPagePDFToPDFOutput']) && (bool)$va_settings['appendMultiPagePDFToPDFOutput']) {
+				    $media = $t_subject->get($va_display_item['bundle_name'].'.path', ['returnAsArray' => true, 'version' => 'original']);;
+				    $mimetypes = $t_subject->get($va_display_item['bundle_name'].'.original.mimetype', ['returnAsArray' => true]);
+				    foreach($mimetypes as $i => $mimetype) {
+				        if ($mimetype !== 'application/pdf') { continue; }
+				        $media_to_append[] = $media[$i];
+				    }
+				  
+				}
 			}
-
 			$this->view->setVar('placements', $va_display_list);
-
+ 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
 		} else {
 			$vn_display_id = null;
@@ -873,7 +884,7 @@ class BaseEditorController extends ActionController {
 
                     $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
             
-                    $o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+                    $o_pdf->render($vs_content, array('stream'=> true, 'append' => $media_to_append, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
 
                     $vb_printed_properly = true;
                     break;

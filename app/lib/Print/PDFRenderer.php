@@ -163,11 +163,34 @@
  		 * @param array $pa_options Options include:
  		 *		stream = Send PDF output directly to browser [default=false]
  		 *		filename = If streaming, set filename of PDF [default=output.pdf]
+ 		 *      append = List of absolute PDF file paths to append to end of output. [Default is null]
  		 *
  		 * @return string PDF content
  		 */
  		public function render($ps_content, $pa_options=null) {
  			if (!$this->renderer) { return null; }
+ 			
+ 			if (is_array($append = caGetOption('append', $pa_options, null)) && (sizeof($append) > 0) && caMediaPluginGhostscriptInstalled()) {
+ 			  
+ 			   if ($content = $this->renderer->render($ps_content, array_merge($pa_options, ['stream' => false]))) {
+                    $external_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf');
+                    $ghostscript_path = $external_app_config->get('ghostscript_app');
+                    file_put_contents($basefile = caGetTempFileName("caPDF"), $content);
+                    $outfile = caGetTempFileName("caPDF");
+                    exec("{$ghostscript_path} -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile={$outfile} {$basefile} ".caEscapeShellArg(join(" ", $append)).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+                    $content = file_get_contents($outfile);
+                    @unlink($outfile);
+                    @unlink($basefile);
+ 			   }
+ 			   if(caGetOption('stream', $pa_options, false)) {
+                    header("Cache-Control: private");
+                    header("Content-type: application/pdf");
+                    header("Content-Disposition: attachment; filename=".caGetOption('filename', $pa_options, 'output.pdf'));
+                    print $content;
+ 			   }
+ 			   return $content;
+ 			}
+ 			
  			return $this->renderer->render($ps_content, $pa_options);
  		}
  		# --------------------------------------------------------------------------------
@@ -178,12 +201,12 @@
  		 * @param array $pa_options Options include:
  		 *		stream = Send PDF output directly to browser [default=false]
  		 *		filename = If streaming, set filename of PDF [default=output.pdf]
+ 		 *      append = List of absolute PDF file paths to append to end of output. [Default is null]
  		 *
  		 * @return string PDF content
  		 */
  		public function renderFile($ps_file_path, $pa_options=null) {
- 			if (!$this->renderer) { return null; }
- 			return $this->renderer->render($ps_file_path, $pa_options);
+ 			return $this->render($ps_file_path, $pa_options);
  		}
  		# --------------------------------------------------------------------------------
 		/**
