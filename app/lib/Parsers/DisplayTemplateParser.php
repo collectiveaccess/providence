@@ -1763,8 +1763,12 @@ class DisplayTemplateParser {
             $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
             $va_directives = explode('~', $vs_element);
             $vs_spec = array_shift($va_directives);
-	        $vo_measurement = caParseLengthDimension($pa_vals[$vs_spec]);
-	        
+            
+            try {
+	            $vo_measurement = caParseLengthDimension($pa_vals[$vs_spec]);
+	        } catch (Exception $e) {
+	            continue;
+	        }
 	        $in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
 	        $in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
 	        
