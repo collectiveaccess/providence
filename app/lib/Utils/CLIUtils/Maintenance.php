@@ -710,13 +710,11 @@
 				$vn_rule_num++;
 				$va_expression_tags = caGetTemplateTags($va_rule['expression']);
 
-				$va_tmp = explode(".", $va_rule['bundle_name']);
-				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0]))) {
-					CLIUtils::addError(_t("Table for bundle %1 is not valid", $va_tmp[0]));
+				if (!($t_instance = Datamodel::getInstanceByTableNum($va_rule['table_num']))) {
+					CLIUtils::addError(_t("Table for bundle %1 is not valid", $va_rule['table_num']));
 					continue;
 				}
 
-				$vs_bundle_name_proc = str_replace("{$vs_table_name}.", "", $va_rule['bundle_name']);
 				$vn_table_num = $t_instance->tableNum();
 
 				$qr_records = call_user_func_array(($vs_table_name = $t_instance->tableName())."::find", array(

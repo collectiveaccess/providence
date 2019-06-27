@@ -279,7 +279,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
 		
 		$vs_sql = "
-			SELECT cmdr.rule_id, cmdr.entry_id, cmde.bundle_name, cmde.settings entry_settings, 
+			SELECT cmdr.rule_id, cmdr.entry_id, cmde.bundle_name, cmde.settings entry_settings, cmde.table_num,
 			cmdr.rule_code, cmdr.rule_level, cmdr.expression, cmdr.settings rule_settings
 			FROM ca_metadata_dictionary_rules cmdr
 			INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id
