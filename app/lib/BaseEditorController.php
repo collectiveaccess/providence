@@ -881,6 +881,11 @@ class BaseEditorController extends ActionController {
                     $this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
 
                     $vs_content = $this->render($va_template_info['path']);
+                    
+                    // Printable views can pass back PDFs to append if they want...
+                    if(is_array($media_set_in_view_to_append = $this->view->getVar('append'))) {
+                        $media_to_append = array_merge($media_to_append, $media_set_in_view_to_append);
+                    }
 
                     $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
             
