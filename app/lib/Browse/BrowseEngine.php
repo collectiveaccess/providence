@@ -5639,7 +5639,7 @@
                             $va_params[] = $va_container_ids[$vs_container_code];
                         }
 						$vs_sql = "
-							SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2, ca_attributes.attribute_id
+							SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
 							FROM ca_attributes
 							{$vs_join_sql}
 							WHERE
@@ -5828,7 +5828,7 @@
                             $va_params[] = $va_container_ids[$vs_container_code];
                         }
 						$vs_sql = "
-							SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2, ca_attributes.attribute_id
+							SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
 							FROM ca_attributes
 							{$vs_join_sql}
 							WHERE
