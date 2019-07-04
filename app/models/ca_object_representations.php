@@ -157,6 +157,13 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'LABEL' => _t('Original MIME type'), 'DESCRIPTION' => _t('The MIME type of the media at the time of upload.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'is_transcribable' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Is transcribable?'), 'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
+		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
