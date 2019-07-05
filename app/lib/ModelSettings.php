@@ -123,7 +123,7 @@ class ModelSettings extends BaseSettings {
 							// skip bits if they're not set in the form; otherwise they default to 'No' even
 							// though the default might be set to 'Yes' the settings definition.
 							$vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pString);
-							if($vs_val == '') { continue; }
+							if($vs_val == '') { continue(2); }
 
 							$va_values[$vs_setting] = $vs_val;
 							break;

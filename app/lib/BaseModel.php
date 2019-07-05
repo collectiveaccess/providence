@@ -3610,7 +3610,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$va_media_info["MIRROR_STATUS"][$vs_mirror_code] = ""; // pending
 						$this->setMediaInfo($ps_field, $va_media_info);
 						$this->update();
-						continue;
+						continue(2);
 					} else {
 						$this->postError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $ps_version, $vs_queue),"BaseModel->retryMediaMirror()");
 					}

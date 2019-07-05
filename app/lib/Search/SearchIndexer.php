@@ -1698,7 +1698,7 @@ if (!$for_current_value_reindex) {
 								$o_indexer->opo_engine->commitRowIndexing();
 							}
 						}
-						continue;
+						break;
 					}
 				}
 				break;
