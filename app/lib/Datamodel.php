@@ -297,7 +297,9 @@ class Datamodel {
 	 */
 	static public function getInstance($pm_table_name_or_num, $pb_use_cache=false, $pn_id=null) {
 		if (is_numeric($pm_table_name_or_num)) {
-			$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, $pb_use_cache);
+			if($t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, $pb_use_cache)) {
+				return $t_instance;
+			}
 		}
 		$t_instance = Datamodel::getInstanceByTableName($pm_table_name_or_num, $pb_use_cache);
 		
