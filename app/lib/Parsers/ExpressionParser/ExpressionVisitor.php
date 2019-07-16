@@ -447,6 +447,7 @@ class ExpressionVisitor implements Visitor\Visit {
 						return $value;
 					case 'string':
 						$out = preg_replace('/(^"|"$)/', '', $value);
+						$out = preg_replace("/(^'|'$)/", '', $out);
 						break;
 					case 'regex':
 						// @todo maybe mangle regex?

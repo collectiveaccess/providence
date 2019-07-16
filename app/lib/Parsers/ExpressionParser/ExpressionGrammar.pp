@@ -56,6 +56,7 @@
 // Literals
 %token  number    (0|[1-9]\d*)(\.\d+)?([eE][\+\-]?\d+)?
 %token  string    \"[^"]*\"
+%token  string    \'[^']*\'
 
 // Math
 %token  plus      \+
