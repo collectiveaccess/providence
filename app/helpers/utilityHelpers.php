@@ -3390,7 +3390,7 @@ function caFileIsIncludable($ps_file) {
 	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 28800)); });	// delete any token older than eight hours
 	    	}
 	    	if (sizeof($va_tokens) > 600) { 
-	    		$va_tokens = array_slice($va_tokens, 0, 300, true); // delete last half of token buffer if it gets too long
+	    		$va_tokens = array_slice($va_tokens, 0, 200, true); // delete last third of token buffer if it gets too long
 	    	}
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }
@@ -3418,7 +3418,7 @@ function caFileIsIncludable($ps_file) {
 	    if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
-	        if (caGetOption('remove', $pa_options, true)) {
+	        if (caGetOption('remove', $pa_options, false)) {
 	            unset($va_tokens[$ps_token]);
 	        	PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
 	        }
