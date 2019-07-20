@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -140,6 +140,7 @@ var caUI = caUI || {};
 		// Default handler to call on save for quickadd
 		that.defaultOnSaveHandler = function(resp, textStatus) {
 			if (resp.status == 0) {
+				var rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
 				var inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
 				var itemIDID = jQuery("#" + that.formID).parent().data('autocompleteItemIDID');
 				var typeIDID = jQuery("#" + that.formID).parent().data('autocompleteTypeIDID');
@@ -149,7 +150,7 @@ var caUI = caUI || {};
 				jQuery('#' + itemIDID).val(resp.id);
 				jQuery('#' + typeIDID).val(resp.type_id);
 				
-				if(relationbundle) { relationbundle.select(null, resp); }
+				if(relationbundle) { relationbundle.select(rawID, resp); }
 				jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
 				jQuery("#" + that.formID).parent().data('panel').hidePanel();
 				
