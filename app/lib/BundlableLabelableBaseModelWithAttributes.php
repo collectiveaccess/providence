@@ -1353,6 +1353,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$vs_label = $vs_label_text = null;
 		
+		
+		// Bundle names for attributes are element codes. They may be prefixed with 'ca_attribute_' in older installations.
+		// Since various functions tak straight element codes we have to strip the prefix here
 		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
 		$va_violations = null;
 		
@@ -1531,8 +1534,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				break;
 			# -------------------------------------------------
 			case 'attribute':
-				// bundle names for attributes are simply element codes prefixed with 'ca_attribute_'
-				// since getAttributeHTMLFormBundle() takes a straight element code we have to strip the prefix here
+				// Bundle names for attributes are element codes. They may be prefixed with 'ca_attribute_' in older installations.
+				// Since getAttributeHTMLFormBundle() takes a straight element code we have to strip the prefix here
 				$vs_attr_element_code = str_replace('ca_attribute_', '', $ps_bundle_name);
 				$vs_display_format = $o_config->get('bundle_element_display_format');
 				
@@ -1989,6 +1992,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	  */
  	public function getBundleInfo($ps_bundle_name) {
  		if (isset($this->BUNDLES[$ps_bundle_name])) { return $this->BUNDLES[$ps_bundle_name]; }
+ 		if (isset($this->BUNDLES["ca_attribute_{$ps_bundle_name}"])) { return $this->BUNDLES["ca_attribute_{$ps_bundle_name}"]; }
  		$ps_bundle_name = str_replace($this->tableName().".", "ca_attribute_", $ps_bundle_name);
  		if (isset($this->BUNDLES[$ps_bundle_name])) { return $this->BUNDLES[$ps_bundle_name]; }
  		$ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name);

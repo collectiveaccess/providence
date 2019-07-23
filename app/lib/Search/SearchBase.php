@@ -189,10 +189,16 @@ require_once(__CA_LIB_DIR__."/Db.php");
                 // Convert specific attribute codes to element_ids
                 if (is_array($field_list)) {
                     foreach($field_list as $vs_f => $va_info) {
-                        if ((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches)) {
-                            $vn_element_id = ca_metadata_elements::getElementID($va_matches[1]);
+                        if (
+                        	((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches) && ($element_id = ca_metadata_elements::getElementID($va_matches[1])))
+                        	||
+                        	($element_id = ca_metadata_elements::getElementID($vs_f))
+                        ) {
                             unset($field_list[$vs_f]);
-                            $field_list['_ca_attribute_'.$vn_element_id] = $va_info;
+                            
+                            if (!caGetOption('DONT_INDEX', $va_info, false)) {
+                            	$field_list["_ca_attribute_{$element_id}"] = $va_info;
+                            }
                         }
                     }
                 }
@@ -206,7 +212,6 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		    }
 		    if (!$current_value_fields_only) { $va_fields_to_index = $va_fields_to_index[0]; }
 			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = $va_fields_to_index;
-	
 		}
 		# ------------------------------------------------
 		/**

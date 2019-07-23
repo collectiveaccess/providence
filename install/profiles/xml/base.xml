@@ -3287,9 +3287,6 @@
             <placement code="icon">
               <bundle>icon</bundle>
             </placement>
-            <placement code="validation_format">
-              <bundle>validation_format</bundle>
-            </placement>
             <placement code="ca_settings">
               <bundle>settings</bundle>
             </placement>
@@ -3609,9 +3606,6 @@
             <placement code="form_code">
               <bundle>form_code</bundle>
             </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
-            </placement>
             <placement code="is_system">
               <bundle>is_system</bundle>
             </placement>
@@ -3681,9 +3675,6 @@
             </placement>
             <placement code="display_code">
               <bundle>display_code</bundle>
-            </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
             </placement>
             <placement code="is_system">
               <bundle>is_system</bundle>
@@ -3838,33 +3829,6 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-            <label locale="en_CA">
-              <name>Relationships</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Relations</name>
-            </label>
-            <label locale="sv_SE">
-              <name>Relationer</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_object_lots">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_places</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
       </screens>
     </userInterface>
     <userInterface code="tour_stop_editor_ui" type="ca_tour_stops">
@@ -4013,9 +3977,6 @@
             </placement>
             <placement code="path">
               <bundle>path</bundle>
-            </placement>
-            <placement code="template_id">
-              <bundle>template_id</bundle>
             </placement>
             <placement code="description">
               <bundle>description</bundle>
