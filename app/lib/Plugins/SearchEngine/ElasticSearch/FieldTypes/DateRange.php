@@ -43,7 +43,7 @@ class DateRange extends GenericElement {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		$va_return = array();
 
-		if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return array(); }
+		if (!is_array($pa_parsed_content = caGetISODates($pm_content, ['returnUnbounded' => true]))) { return array(); }
 		$va_return[$this->getTableName().'/'.$this->getElementCode().'_text'] = $pm_content;
 
 		$ps_rewritten_start = caRewriteDateForElasticSearch($pa_parsed_content["start"], true);

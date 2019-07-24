@@ -617,20 +617,6 @@ if (!$for_current_value_reindex) {
 		$va_fields_to_index = $this->getFieldsToIndex($pn_subject_table_num);
 
 		if(is_array($va_fields_to_index)) {
-
-			foreach($va_fields_to_index as $vs_k => $va_data) {
-				if (preg_match('!^ca_attribute_(.*)$!', $vs_k, $va_matches)) {
-					unset($va_fields_to_index[$vs_k]);
-					if ($va_data['DONT_INDEX']) {	// remove attribute from indexing list
-						unset($va_fields_to_index['_ca_attribute_'.$va_matches[1]]);
-					} else {
-						if ($vn_element_id = ca_metadata_elements::getElementID($va_matches[1])) {
-							$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_data;
-						}
-					}
-				}
-			}
-
 			// always index type id if applicable
 			if(method_exists($t_subject, 'getTypeFieldName') && ($vs_type_field = $t_subject->getTypeFieldName()) && !isset($va_fields_to_index[$vs_type_field])) {
 				$va_fields_to_index[$vs_type_field] = array('STORE', 'DONT_TOKENIZE');
@@ -1698,7 +1684,7 @@ if (!$for_current_value_reindex) {
 								$o_indexer->opo_engine->commitRowIndexing();
 							}
 						}
-						continue;
+						break;
 					}
 				}
 				break;

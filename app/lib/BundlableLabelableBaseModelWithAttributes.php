@@ -1353,6 +1353,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$vs_label = $vs_label_text = null;
 		
+		
+		// Bundle names for attributes are element codes. They may be prefixed with 'ca_attribute_' in older installations.
+		// Since various functions tak straight element codes we have to strip the prefix here
 		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
 		$va_violations = null;
 		
@@ -1531,8 +1534,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				break;
 			# -------------------------------------------------
 			case 'attribute':
-				// bundle names for attributes are simply element codes prefixed with 'ca_attribute_'
-				// since getAttributeHTMLFormBundle() takes a straight element code we have to strip the prefix here
+				// Bundle names for attributes are element codes. They may be prefixed with 'ca_attribute_' in older installations.
+				// Since getAttributeHTMLFormBundle() takes a straight element code we have to strip the prefix here
 				$vs_attr_element_code = str_replace('ca_attribute_', '', $ps_bundle_name);
 				$vs_display_format = $o_config->get('bundle_element_display_format');
 				
@@ -1989,6 +1992,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	  */
  	public function getBundleInfo($ps_bundle_name) {
  		if (isset($this->BUNDLES[$ps_bundle_name])) { return $this->BUNDLES[$ps_bundle_name]; }
+ 		if (isset($this->BUNDLES["ca_attribute_{$ps_bundle_name}"])) { return $this->BUNDLES["ca_attribute_{$ps_bundle_name}"]; }
  		$ps_bundle_name = str_replace($this->tableName().".", "ca_attribute_", $ps_bundle_name);
  		if (isset($this->BUNDLES[$ps_bundle_name])) { return $this->BUNDLES[$ps_bundle_name]; }
  		$ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name);
@@ -3514,7 +3518,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									break;
 								case '_replace_':		// remove all existing attributes before trying to save
 									$this->removeAttributes($vn_element_id, array('force' => true));
-									continue;
 									break;
 							}
 						}
@@ -3815,7 +3818,7 @@ if (!$vb_batch) {
 								break;
 							case '_replace_':		// remove all existing preferred labels before trying to save
 								$this->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
-								continue;
+								break;
 							case '_delete_':		// remove all existing preferred labels
 								$this->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
 								continue(2);
@@ -3959,7 +3962,7 @@ if (!$vb_batch) {
 							break;
 						case '_replace_':		// remove all existing nonpreferred labels before trying to save
 							$this->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
-							continue;
+							break;
 						case '_delete_':		// remove all existing nonpreferred labels
 							$this->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
 							continue(2);
@@ -4832,7 +4835,7 @@ if (!$vb_batch) {
 					case 'ca_object_circulation_status':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-						$this->set('circulation_status_id', $x=$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}ca_object_circulation_status", pInteger));
+						$this->set('circulation_status_id', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}ca_object_circulation_status", pInteger));
 						break;
 					# -------------------------------
 					// This bundle is only available items for batch editing on representable models
@@ -5018,7 +5021,7 @@ if (!$vb_batch) {
 						if ($vb_batch) { 
 							$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
 							
-							if($vs_batch_mode == '_disabled_') { continue; }
+							if($vs_batch_mode == '_disabled_') { break; }
 							
 							if (in_array($vs_batch_mode, ['_replace_', '_delete_'])) {
 								$this->removeAllTags();

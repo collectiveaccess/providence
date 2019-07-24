@@ -3488,12 +3488,23 @@ class TimeExpressionParser {
 		$this->opb_debug = ($pn_debug) ? true: false;
 	}
 	# -------------------------------------------------------------------
+	/**
+	 * Convert date value array (array with keys "month", "day", "year", "hours", "minutes", "seconds" used internally by parser) to ISO 8601 date/time expression.
+	 *
+	 * @param array $pa_date
+	 * @param string $ps_mode Part of date range to return. Valid values are "START" (beginning of range) "END" (end of range) and "FULL" (full range). [Default is "START"]
+	 * @param array $pa_options Options include:
+	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
+	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
+	 *
+	 * @return string
+	 */
 	public function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
 		if (!$pa_date['month']) { $pa_date['month'] = ($ps_mode == 'END') ? 12 : 1; }
 		if (!$pa_date['day']) { $pa_date['day'] = ($ps_mode == 'END') ? 31 : 1; }
 		
-		if ($pa_date['year'] == TEP_END_OF_UNIVERSE) { return ''; }
-		if ($pa_date['year'] == TEP_START_OF_UNIVERSE) { return ''; }
+		if (($pa_date['year'] == TEP_END_OF_UNIVERSE) && !caGetOption('returnUnbounded', $pa_options, false)) { return ''; }
+		if ($pa_date['year'] == TEP_START_OF_UNIVERSE && !caGetOption('returnUnbounded', $pa_options, false)) { return ''; }
 		
 		if ($ps_mode == 'FULL') {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);

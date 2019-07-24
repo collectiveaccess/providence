@@ -6291,9 +6291,6 @@ div.dialogHeader {
     padding: 7px 5px 5px 5px;
     margin: 0px;
     font-family: "DIN-Regular";
-    border-radius:4px;
-    -moz-border-radius:4px;
-    -webkit-border-radius:4px;
 }
 
 /* Editor summary download options */
@@ -6401,6 +6398,7 @@ div.quickAddErrorContainer {
     width: 890px;
     display: none;
     z-index:33000;
+    margin-top: 40px;
 }
 
 div.quickAddTypeList {

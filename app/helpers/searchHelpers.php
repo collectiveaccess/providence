@@ -689,7 +689,7 @@
 								$va_values[$vs_search_element.$vs_element_rel_type][] = trim($vs_element_value);
 								$va_booleans["{$vs_search_element}{$vs_element_rel_type}:boolean"][] = isset($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}:boolean"][$vn_j]) ? $pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}:boolean"][$vn_j] : null;
 							}
-							continue;
+							continue(2);
 						}
 						foreach($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}"] as $vn_j => $vs_element_value) {
 							if(!strlen(trim($vs_element_value))) { continue; }
@@ -731,7 +731,7 @@
 							// noop
 							break;
 						case '_fieldlist_field':
-							if(!strlen(trim($pa_form_values['_fieldlist_value'][$vn_i]))) { continue; }
+							if(!strlen(trim($pa_form_values['_fieldlist_value'][$vn_i]))) { continue(2); }
 							$va_query_elements[$vs_element][] = "(".$va_values['_fieldlist_field'][$vn_i].":".$pa_form_values['_fieldlist_value'][$vn_i].")";
 							break;
 						default:
@@ -1419,6 +1419,7 @@
 			foreach($va_screens as $va_screen) {
 				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id']))) {
 					foreach($va_placements as $va_placement) {
+						// Older installations have the bundle name prefixed with "ca_attribute_"
 						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
 						$va_bundle_bits = explode('.', $vs_bundle_name);
 						if (!Datamodel::tableExists($va_bundle_bits[0])) {
