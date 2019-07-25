@@ -1444,6 +1444,7 @@ if (!$for_current_value_reindex) {
 	 * @return bool
 	 */
 	private function _indexAttribute($pt_subject, $pn_row_id, $pm_element_code_or_id, $pa_data, $pa_options=null) {
+		if(!method_exists($pt_subject, "getAttributesByElement")) { return true; } 
 		$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 		$pn_subject_table_num = $pt_subject->tableNum();
 		
