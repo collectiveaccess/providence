@@ -1135,7 +1135,7 @@
 							}
 						}
 					}
-					$t_instance->set('media', $pa_values['media']);
+					$t_instance->set('media', $pa_values['media'], ['original_filename' => basename($pa_values['media'])]);
 				}
 
 				$t_instance->insert();

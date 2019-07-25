@@ -932,8 +932,10 @@ class TimeExpressionParser {
 		
 		$vn_day = $vn_month = $vn_year = null;
 		
-		$vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
-		
+	    if (is_null($vb_month_comes_first = $this->opo_datetime_settings->get('monthComesFirstInDelimitedDate'))) {
+		    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+	    }
+	    
 		$vb_is_circa =  $vb_is_probably = false;
 		while($va_token = $this->peekToken()) {
 			switch($vn_state) {
@@ -1975,7 +1977,9 @@ class TimeExpressionParser {
 				if (preg_match('!^[\?]+$!', $va_tmp[2])) { $va_tmp[2] = 0; }
 				if(!(is_numeric($va_tmp[2]) && ($va_tmp[2] == intval($va_tmp[2])))) { break; }
 				
-				$vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+				if (is_null($vb_month_comes_first = $this->opo_datetime_settings->get('monthComesFirstInDelimitedDate'))) {
+				    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+				}
 				
 				if ($vb_month_comes_first) {
 					$vn_month = $va_tmp[0];
@@ -2904,7 +2908,10 @@ class TimeExpressionParser {
 							} else {
 								if ($vb_full_day_time_range) {
 									// days, but no times
-									if((bool)$this->opo_language_settings->get('monthComesFirstInDelimitedDate')) {
+									if (is_null($vb_month_comes_first = $this->opo_datetime_settings->get('monthComesFirstInDelimitedDate'))) {
+									    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+									}
+									if($vb_month_comes_first) {
 										if((bool)$this->opo_datetime_settings->get('forceCommaAfterDay')) {
 											$pa_options['forceCommaAfterDay'] = true;
 										}
@@ -3248,7 +3255,9 @@ class TimeExpressionParser {
 		
 		$va_date = array();
 		
-		$vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+		if (is_null($vb_month_comes_first = $this->opo_datetime_settings->get('monthComesFirstInDelimitedDate'))) {
+		    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+		}
 		
 		if (($vs_day > 0) && ($pa_options['dateFormat'] != 'delimited') && ($vs_day_suffix = $this->opo_language_settings->get('daySuffix'))){
 			// add day suffix
