@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2018 Whirl-i-Gig
+ * Copyright 2004-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,10 +30,18 @@
 # to save time. If you are using non-JPEG tiles (unlikely, right?) then change the 
 # Content-type header below.
 
+
+$is_windows = (substr(PHP_OS, 0, 3) == 'WIN');
 $filepath = $_REQUEST["p"];
 $tile = $_REQUEST["t"];
-
-$script_path = join("/", array_slice(explode("/", __FILE__), 0, -3));
+$win_disk = '';
+if ($is_windows) {
+        $p = explode(DIRECTORY_SEPARATOR, __FILE__);
+        $script_path = join("/", array_slice($p, 0, -3));
+        $win_disk = $p[0];
+} else {
+        $script_path = join("/", array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3));
+}
 $filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", preg_replace("/\.tpc\$/", "", $filepath));
 
 $fp = explode("/", $filepath); array_shift($fp);
@@ -45,7 +53,7 @@ foreach ($sp as $i => $s) {
     }
     break;
 }
-$script_path = "/".join("/", array_reverse($sp));
+$script_path = $win_disk."/".join("/", array_reverse($sp));
 $filepath = preg_replace("/[^A-Za-z0-9_\-\/]/", "", $filepath);
 
 if (file_exists("{$script_path}{$filepath}.tpc")) {
