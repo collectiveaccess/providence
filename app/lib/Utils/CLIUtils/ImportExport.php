@@ -934,6 +934,7 @@
 				$t_list->set('is_system_list', 1);
 				$t_list->set('is_hierarchical', 1);
 				$t_list->set('use_as_vocabulary', 1);
+				$t_list->set('default_sort', 1); // sory by rank
 				$t_list->insert();
 				
 				if ($t_list->numErrors()) {

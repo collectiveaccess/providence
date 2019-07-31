@@ -3287,6 +3287,8 @@
 								$vs_where_sql = ' WHERE '.join(' AND ', $va_wheres);
 							}
 
+							$id_set = (is_array($va_results) && sizeof($va_results)) ? "{$vs_browse_table_pk} IN (".join(",", $va_results).")" : null;
+
 							if ($vb_check_availability_only) {
 								if (!(bool)$va_state_info['id']) {	// no option
 									$vs_sql = "
@@ -3297,7 +3299,8 @@
 											FROM {$vs_browse_table_name}
 											{$vs_join_sql}
 											{$vs_where_sql}
-										)".($vs_item_deleted_sql ? " AND {$vs_item_deleted_sql}" : "")."
+										)".($vs_item_deleted_sql ? " AND {$vs_item_deleted_sql}" : "")
+										  .($id_set ? " AND {$id_set}" : "")."
 										LIMIT 2
 									";
 								} else {	
@@ -3324,7 +3327,8 @@
 											FROM {$vs_browse_table_name}
 											{$vs_join_sql}
 											{$vs_where_sql}
-										)".($vs_item_deleted_sql ? " AND {$vs_item_deleted_sql}" : "");
+										)".($vs_item_deleted_sql ? " AND {$vs_item_deleted_sql}" : "")
+										  .($id_set ? " AND {$id_set}" : "");
 								} else {
 									$vs_sql = "
 										SELECT DISTINCT {$vs_browse_table_name}.{$vs_browse_table_pk}

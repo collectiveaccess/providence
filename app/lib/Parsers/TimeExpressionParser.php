@@ -932,8 +932,10 @@ class TimeExpressionParser {
 		
 		$vn_day = $vn_month = $vn_year = null;
 		
-		$vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
-		
+	    if (is_null($vb_month_comes_first = $this->opo_datetime_settings->get('monthComesFirstInDelimitedDate'))) {
+		    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+	    }
+	    
 		$vb_is_circa =  $vb_is_probably = false;
 		while($va_token = $this->peekToken()) {
 			switch($vn_state) {
@@ -1975,7 +1977,9 @@ class TimeExpressionParser {
 				if (preg_match('!^[\?]+$!', $va_tmp[2])) { $va_tmp[2] = 0; }
 				if(!(is_numeric($va_tmp[2]) && ($va_tmp[2] == intval($va_tmp[2])))) { break; }
 				
-				$vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+				if (is_null($vb_month_comes_first = $this->opo_datetime_settings->get('monthComesFirstInDelimitedDate'))) {
+				    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+				}
 				
 				if ($vb_month_comes_first) {
 					$vn_month = $va_tmp[0];
@@ -2904,7 +2908,10 @@ class TimeExpressionParser {
 							} else {
 								if ($vb_full_day_time_range) {
 									// days, but no times
-									if((bool)$this->opo_language_settings->get('monthComesFirstInDelimitedDate')) {
+									if (is_null($vb_month_comes_first = $this->opo_datetime_settings->get('monthComesFirstInDelimitedDate'))) {
+									    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+									}
+									if($vb_month_comes_first) {
 										if((bool)$this->opo_datetime_settings->get('forceCommaAfterDay')) {
 											$pa_options['forceCommaAfterDay'] = true;
 										}
@@ -3248,7 +3255,9 @@ class TimeExpressionParser {
 		
 		$va_date = array();
 		
-		$vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+		if (is_null($vb_month_comes_first = $this->opo_datetime_settings->get('monthComesFirstInDelimitedDate'))) {
+		    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
+		}
 		
 		if (($vs_day > 0) && ($pa_options['dateFormat'] != 'delimited') && ($vs_day_suffix = $this->opo_language_settings->get('daySuffix'))){
 			// add day suffix
@@ -3479,12 +3488,23 @@ class TimeExpressionParser {
 		$this->opb_debug = ($pn_debug) ? true: false;
 	}
 	# -------------------------------------------------------------------
+	/**
+	 * Convert date value array (array with keys "month", "day", "year", "hours", "minutes", "seconds" used internally by parser) to ISO 8601 date/time expression.
+	 *
+	 * @param array $pa_date
+	 * @param string $ps_mode Part of date range to return. Valid values are "START" (beginning of range) "END" (end of range) and "FULL" (full range). [Default is "START"]
+	 * @param array $pa_options Options include:
+	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
+	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
+	 *
+	 * @return string
+	 */
 	public function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
 		if (!$pa_date['month']) { $pa_date['month'] = ($ps_mode == 'END') ? 12 : 1; }
 		if (!$pa_date['day']) { $pa_date['day'] = ($ps_mode == 'END') ? 31 : 1; }
 		
-		if ($pa_date['year'] == TEP_END_OF_UNIVERSE) { return ''; }
-		if ($pa_date['year'] == TEP_START_OF_UNIVERSE) { return ''; }
+		if (($pa_date['year'] == TEP_END_OF_UNIVERSE) && !caGetOption('returnUnbounded', $pa_options, false)) { return ''; }
+		if ($pa_date['year'] == TEP_START_OF_UNIVERSE && !caGetOption('returnUnbounded', $pa_options, false)) { return ''; }
 		
 		if ($ps_mode == 'FULL') {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);

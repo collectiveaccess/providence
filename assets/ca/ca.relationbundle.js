@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -141,7 +141,6 @@ var caUI = caUI || {};
 						if (!options.returnTextValues) {
 							if(!parseInt(ui.item.id) && options.quickaddPanel) {
 								var panelUrl = options.quickaddUrl;
-								//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
 								if (options && options.types) {
 									if(Object.prototype.toString.call(options.types) === '[object Array]') {
 										options.types = options.types.join(",");
@@ -151,6 +150,7 @@ var caUI = caUI || {};
 									}
 								}
 								options.quickaddPanel.showPanel(panelUrl, null, null, {q: ui.item._query, field_name_prefix: options.fieldNamePrefix});
+								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteRawID', id);
 								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
 								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
 								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);

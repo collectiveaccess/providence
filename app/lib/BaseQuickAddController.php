@@ -443,7 +443,7 @@
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
 				'relation_id' => $vn_relation_id,
- 				'display' => caStripTagsAndContent($va_name['label']),
+ 				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);
  			

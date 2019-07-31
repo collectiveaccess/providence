@@ -13,6 +13,7 @@ php:
   - 7.0
   - 7.1
   - 7.2
+  - 7.3
 
 
 env:
@@ -42,3 +43,4 @@ branches:
     - master
     - master-fix
     - dev/refactor
+    - dev/locMerge

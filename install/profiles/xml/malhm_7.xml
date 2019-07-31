@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
-  <profileName>MALHM</profileName>
+  <profileName>MALHM (July 2019)</profileName>
   <profileDescription>Minnesota Alliance of Local History Museums</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
@@ -14481,8 +14481,8 @@
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
             </placement>
-            <placement code="ca_attribute_loan_authorizatio">
-              <bundle>ca_attribute_loan_authorization_date</bundle>
+            <placement code="loan_authorizatio">
+              <bundle>loan_authorization_date</bundle>
               <settings>
                 <setting name="description" locale="en_US">The date when the loan was authorized.</setting>
                 <setting name="readonly"/>
@@ -14492,8 +14492,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_term">
-              <bundle>ca_attribute_loan_term</bundle>
+            <placement code="loan_term">
+              <bundle>loan_term</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14502,8 +14502,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_in_date">
-              <bundle>ca_attribute_loan_in_date</bundle>
+            <placement code="loan_in_date">
+              <bundle>loan_in_date</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14512,8 +14512,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_out_date">
-              <bundle>ca_attribute_loan_out_date</bundle>
+            <placement code="loan_out_date">
+              <bundle>loan_out_date</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14522,8 +14522,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_return_date">
-              <bundle>ca_attribute_loan_return_date</bundle>
+            <placement code="loan_return_date">
+              <bundle>loan_return_date</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14532,8 +14532,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_purpose">
-              <bundle>ca_attribute_loan_purpose</bundle>
+            <placement code="loan_purpose">
+              <bundle>loan_purpose</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14542,8 +14542,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_conditions">
-              <bundle>ca_attribute_loan_conditions</bundle>
+            <placement code="loan_conditions">
+              <bundle>loan_conditions</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14552,8 +14552,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_credit_line">
-              <bundle>ca_attribute_credit_line</bundle>
+            <placement code="credit_line">
+              <bundle>credit_line</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14562,8 +14562,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_insurance">
-              <bundle>ca_attribute_insurance</bundle>
+            <placement code="insurance">
+              <bundle>insurance</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14572,8 +14572,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_valuation">
-              <bundle>ca_attribute_valuation</bundle>
+            <placement code="valuation">
+              <bundle>valuation</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14582,8 +14582,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_valuation_notes">
-              <bundle>ca_attribute_valuation_notes</bundle>
+            <placement code="valuation_notes">
+              <bundle>valuation_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14592,8 +14592,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_instructions">
-              <bundle>ca_attribute_instructions</bundle>
+            <placement code="instructions">
+              <bundle>instructions</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14602,8 +14602,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_transportati">
-              <bundle>ca_attribute_loan_transportation</bundle>
+            <placement code="loan_transportati">
+              <bundle>loan_transportation</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14612,8 +14612,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_incoming_loan_con">
-              <bundle>ca_attribute_incoming_loan_condition</bundle>
+            <placement code="incoming_loan_con">
+              <bundle>incoming_loan_condition</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14622,8 +14622,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_outgoing_loan_con">
-              <bundle>ca_attribute_outgoing_loan_condition</bundle>
+            <placement code="outgoing_loan_con">
+              <bundle>outgoing_loan_condition</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14632,8 +14632,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_note">
-              <bundle>ca_attribute_loan_note</bundle>
+            <placement code="loan_note">
+              <bundle>loan_note</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14667,8 +14667,8 @@
                 <setting name="hierarchicalBrowserHeight">200px</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_location_notes">
-              <bundle>ca_attribute_location_notes</bundle>
+            <placement code="location_notes">
+              <bundle>location_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14753,8 +14753,8 @@
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_planned_removal_d">
-              <bundle>ca_attribute_planned_removal_date</bundle>
+            <placement code="planned_removal_d">
+              <bundle>planned_removal_date</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14763,8 +14763,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_removal_date">
-              <bundle>ca_attribute_removal_date</bundle>
+            <placement code="removal_date">
+              <bundle>removal_date</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14773,8 +14773,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_movement_method">
-              <bundle>ca_attribute_movement_method</bundle>
+            <placement code="movement_method">
+              <bundle>movement_method</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14783,8 +14783,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_movement_reason">
-              <bundle>ca_attribute_movement_reason</bundle>
+            <placement code="movement_reason">
+              <bundle>movement_reason</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -14793,8 +14793,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_movement_note">
-              <bundle>ca_attribute_movement_note</bundle>
+            <placement code="movement_note">
+              <bundle>movement_note</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -15068,14 +15068,6 @@
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="validation_format">
-              <bundle>validation_format</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
             <placement code="ca_settings">
               <bundle>settings</bundle>
               <settings>
@@ -15321,8 +15313,8 @@
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="set_description">
+              <bundle>set_description</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -15373,14 +15365,6 @@
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
                 <setting name="usewysiwygeditor"/>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_caption">
-              <bundle>ca_attribute_caption</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -15438,14 +15422,6 @@
             </placement>
             <placement code="form_code">
               <bundle>form_code</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -15553,14 +15529,6 @@
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
             <placement code="is_system">
               <bundle>is_system</bundle>
               <settings>
@@ -15648,20 +15616,20 @@
             <placement code="effective_date">
               <bundle>effective_date</bundle>
             </placement>
-            <placement code="ca_attribute_tempauthor">
-              <bundle>ca_attribute_tempauthor</bundle>
+            <placement code="tempauthor">
+              <bundle>tempauthor</bundle>
             </placement>
-             <placement code="ca_attribute_tempby">
-              <bundle>ca_attribute_tempby</bundle>
+             <placement code="tempby">
+              <bundle>tempby</bundle>
             </placement>
-            <placement code="ca_attribute_tempnotes">
-              <bundle>ca_attribute_tempnotes</bundle>
+            <placement code="tempnotes">
+              <bundle>tempnotes</bundle>
             </placement>
-            <placement code="ca_attribute_tempreason">
-              <bundle>ca_attribute_tempreason</bundle>
+            <placement code="tempreason">
+              <bundle>tempreason</bundle>
             </placement>
-            <placement code="ca_attribute_tempuntil">
-              <bundle>ca_attribute_tempuntil</bundle>
+            <placement code="tempuntil">
+              <bundle>tempuntil</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -15725,8 +15693,8 @@
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_tour_description">
-              <bundle>ca_attribute_tour_description</bundle>
+            <placement code="tour_description">
+              <bundle>tour_description</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -15763,49 +15731,6 @@
               <bundle>status</bundle>
               <settings>
                 <setting name="label" locale="en_US">Record Status</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-            <label locale="en_CA">
-              <name>Relationships</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Relations</name>
-            </label>
-            <label locale="sv_SE">
-              <name>Relationer</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="ca_object_lots">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Related Accession</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_places</bundle>
-              <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
@@ -15872,8 +15797,8 @@
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_tour_stop_descrip">
-              <bundle>ca_attribute_tour_stop_description</bundle>
+            <placement code="tour_stop_descrip">
+              <bundle>tour_stop_description</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -15882,8 +15807,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_tour_stop_georefe">
-              <bundle>ca_attribute_tour_stop_georeference</bundle>
+            <placement code="tour_stop_georefe">
+              <bundle>tour_stop_georeference</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16131,20 +16056,20 @@
                 <setting name="description" locale="en_US">Primary standardized name of the item, focusing on the item's original intended use.</setting> 
               </settings>
             </placement>              
-          <placement code="ca_attribute_chenhall">
-              <bundle>ca_attribute_chenhall</bundle>
+          <placement code="chenhall">
+              <bundle>chenhall</bundle>
             </placement>               
-            <placement code="ca_attribute_alternate_object_name">
-              <bundle>ca_attribute_alternate_object_name</bundle>
+            <placement code="alternate_object_name">
+              <bundle>alternate_object_name</bundle>
             </placement>  
-            <placement code="ca_attribute_title">
-              <bundle>ca_attribute_title</bundle>
+            <placement code="title">
+              <bundle>title</bundle>
             </placement>
-            <placement code="ca_attribute_titlex">
-              <bundle>ca_attribute_titlex</bundle>
+            <placement code="titlex">
+              <bundle>titlex</bundle>
             </placement>            
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="description">
+              <bundle>description</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16153,11 +16078,11 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement> 
-            <placement code="ca_attribute_physdesc">
-              <bundle>ca_attribute_physdesc</bundle>           
+            <placement code="physdesc">
+              <bundle>physdesc</bundle>           
             </placement>            
-            <placement code="ca_attribute_date_created">
-              <bundle>ca_attribute_date_created</bundle>
+            <placement code="date_created">
+              <bundle>date_created</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16166,8 +16091,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>            
-            <placement code="ca_attribute_other_identifiers">
-              <bundle>ca_attribute_other_identifiers</bundle>
+            <placement code="other_identifiers">
+              <bundle>other_identifiers</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16176,35 +16101,35 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_language">
-              <bundle>ca_attribute_language</bundle>           
+            <placement code="language">
+              <bundle>language</bundle>           
             </placement> 
-            <placement code="ca_attribute_number_pages">
-              <bundle>ca_attribute_number_pages</bundle>           
+            <placement code="number_pages">
+              <bundle>number_pages</bundle>           
             </placement> 
-            <placement code="ca_attribute_lc_number">
-              <bundle>ca_attribute_lc_number</bundle>           
+            <placement code="lc_number">
+              <bundle>lc_number</bundle>           
             </placement>  
-           <placement code="ca_attribute_call_number">
-              <bundle>ca_attribute_call_number</bundle>           
+           <placement code="call_number">
+              <bundle>call_number</bundle>           
             </placement>  
-           <placement code="ca_attribute_copy_number">
-              <bundle>ca_attribute_copy_number</bundle>           
+           <placement code="copy_number">
+              <bundle>copy_number</bundle>           
             </placement>
-           <placement code="ca_attribute_isbn">
-              <bundle>ca_attribute_isbn</bundle>           
+           <placement code="isbn">
+              <bundle>isbn</bundle>           
             </placement> 
-           <placement code="ca_attribute_edition">
-              <bundle>ca_attribute_edition</bundle>           
+           <placement code="edition">
+              <bundle>edition</bundle>           
             </placement>
-           <placement code="ca_attribute_series">
-              <bundle>ca_attribute_series</bundle>           
+           <placement code="series">
+              <bundle>series</bundle>           
             </placement>
-            <placement code="ca_attribute_spinelbl">
-              <bundle>ca_attribute_spinelbl</bundle>           
+            <placement code="spinelbl">
+              <bundle>spinelbl</bundle>           
             </placement>
-            <placement code="ca_attribute_pubplace">
-              <bundle>ca_attribute_pubplace</bundle>           
+            <placement code="pubplace">
+              <bundle>pubplace</bundle>           
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -16231,8 +16156,8 @@
                 <setting name="restrict_to_relationship_types">related</setting>                
               </settings>
             </placement>
-            <placement code="ca_attribute_exhibition_label">
-              <bundle>ca_attribute_exhibition_label</bundle>
+            <placement code="exhibition_label">
+              <bundle>exhibition_label</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16241,8 +16166,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="internal_notes">
+              <bundle>internal_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16264,119 +16189,116 @@
           	<restriction type="natural_history_specimen"/>
           </typeRestrictions>
           <bundlePlacements>
-          <placement code="ca_attribute_dimensions">
-              <bundle>ca_attribute_dimensions</bundle>
-          </placement>              
-           <placement code="ca_attribute_date_preparation">
-              <bundle>ca_attribute_date_preparation</bundle>
-            </placement>         
-            <placement code="ca_attribute_life_stage">
-              <bundle>ca_attribute_life_stage</bundle>
+          <placement code="dimensions">
+              <bundle>dimensions</bundle>
+          </placement>                
+            <placement code="life_stage">
+              <bundle>life_stage</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-          <placement code="ca_attribute_count">
-              <bundle>ca_attribute_count</bundle>
+          <placement code="count">
+              <bundle>count</bundle>
           </placement>
-          <placement code="ca_attribute_material">
-              <bundle>ca_attribute_material</bundle>
+          <placement code="material">
+              <bundle>material</bundle>
             </placement>                
-            <placement code="ca_attribute_habitat">
-              <bundle>ca_attribute_habitat</bundle>
+            <placement code="habitat">
+              <bundle>habitat</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_preservation">
-              <bundle>ca_attribute_preservation</bundle>
+            <placement code="preservation">
+              <bundle>preservation</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_specimen_sex">
-              <bundle>ca_attribute_specimen_sex</bundle>
+            <placement code="specimen_sex">
+              <bundle>specimen_sex</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_elements">
-              <bundle>ca_attribute_elements</bundle>
+            <placement code="elements">
+              <bundle>elements</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_side">
-              <bundle>ca_attribute_side</bundle>
+            <placement code="side">
+              <bundle>side</bundle>
             </placement>  
-            <placement code="ca_attribute_completeness">
-              <bundle>ca_attribute_completeness</bundle>
+            <placement code="completeness">
+              <bundle>completeness</bundle>
             </placement>  
-            <placement code="ca_attribute_part">
-              <bundle>ca_attribute_part</bundle>
+            <placement code="part">
+              <bundle>part</bundle>
             </placement>           
-            <placement code="ca_attribute_color">
-              <bundle>ca_attribute_color</bundle>
+            <placement code="color">
+              <bundle>color</bundle>
             </placement> 
-            <placement code="ca_attribute_date_found">
-              <bundle>ca_attribute_date_found</bundle>
+            <placement code="date_found">
+              <bundle>date_found</bundle>
             </placement>            
-            <placement code="ca_attribute_kingdom">
-              <bundle>ca_attribute_kingdom</bundle>
+            <placement code="kingdom">
+              <bundle>kingdom</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_phylum">
-              <bundle>ca_attribute_phylum</bundle>
+            <placement code="phylum">
+              <bundle>phylum</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_class">
-              <bundle>ca_attribute_class</bundle>
+            <placement code="class">
+              <bundle>class</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_order">
-              <bundle>ca_attribute_order</bundle>
+            <placement code="order">
+              <bundle>order</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_family">
-              <bundle>ca_attribute_family</bundle>
+            <placement code="family">
+              <bundle>family</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_sub_family">
-              <bundle>ca_attribute_sub_family</bundle>
+            <placement code="sub_family">
+              <bundle>sub_family</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_genus">
-              <bundle>ca_attribute_genus</bundle>
+            <placement code="genus">
+              <bundle>genus</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_species">
-              <bundle>ca_attribute_species</bundle>
+            <placement code="species">
+              <bundle>species</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
@@ -16395,205 +16317,205 @@
           	<restriction type="geology_specimen"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_dimensions">
-              <bundle>ca_attribute_dimensions</bundle>
+            <placement code="dimensions">
+              <bundle>dimensions</bundle>
           </placement>             
-          <placement code="ca_attribute_count">
-              <bundle>ca_attribute_count</bundle>
+          <placement code="count">
+              <bundle>count</bundle>
           </placement>
-          <placement code="ca_attribute_material">
-              <bundle>ca_attribute_material</bundle>
+          <placement code="material">
+              <bundle>material</bundle>
             </placement>             
-             <placement code="ca_attribute_date_found">
-              <bundle>ca_attribute_date_found</bundle>
+             <placement code="date_found">
+              <bundle>date_found</bundle>
             </placement> 
-            <placement code="ca_attribute_rock_type">
-              <bundle>ca_attribute_rock_type</bundle>
+            <placement code="rock_type">
+              <bundle>rock_type</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_rock_class">
-              <bundle>ca_attribute_rock_class</bundle>
+            <placement code="rock_class">
+              <bundle>rock_class</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_color">
-              <bundle>ca_attribute_color</bundle>
+            <placement code="color">
+              <bundle>color</bundle>
             </placement>
-            <placement code="ca_attribute_rock_origin">
-              <bundle>ca_attribute_rock_origin</bundle>
+            <placement code="rock_origin">
+              <bundle>rock_origin</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_rock_texture">
-              <bundle>ca_attribute_rock_texture</bundle>
+            <placement code="rock_texture">
+              <bundle>rock_texture</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_era">
-              <bundle>ca_attribute_era</bundle>
+            <placement code="era">
+              <bundle>era</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_period">
-              <bundle>ca_attribute_period</bundle>
+            <placement code="period">
+              <bundle>period</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_epoch">
-              <bundle>ca_attribute_epoch</bundle>
+            <placement code="epoch">
+              <bundle>epoch</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_chemical_comp">
-                <bundle>ca_attribute_chemical_comp</bundle>
+            <placement code="chemical_comp">
+                <bundle>chemical_comp</bundle>
                 <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_crystal_system">
-              <bundle>ca_attribute_crystal_system</bundle>
+            <placement code="crystal_system">
+              <bundle>crystal_system</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_formation">
-              <bundle>ca_attribute_formation</bundle>
+            <placement code="formation">
+              <bundle>formation</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_fossils">
-              <bundle>ca_attribute_fossils</bundle>
+            <placement code="fossils">
+              <bundle>fossils</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_fracture">
-              <bundle>ca_attribute_fracture</bundle>
+            <placement code="fracture">
+              <bundle>fracture</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_grain_size">
-              <bundle>ca_attribute_grain_size</bundle>
+            <placement code="grain_size">
+              <bundle>grain_size</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_hardness">
-              <bundle>ca_attribute_hardness</bundle>
+            <placement code="hardness">
+              <bundle>hardness</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_lithology">
-              <bundle>ca_attribute_lithology</bundle>
+            <placement code="lithology">
+              <bundle>lithology</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_luster">
-              <bundle>ca_attribute_luster</bundle>
+            <placement code="luster">
+              <bundle>luster</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_occurrence">
-              <bundle>ca_attribute_occurrence</bundle>
+            <placement code="occurrence">
+              <bundle>occurrence</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_pressure">
-              <bundle>ca_attribute_pressure</bundle>
+            <placement code="pressure">
+              <bundle>pressure</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_gravity">
-              <bundle>ca_attribute_gravity</bundle>
+            <placement code="gravity">
+              <bundle>gravity</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_streak">
-              <bundle>ca_attribute_streak</bundle>
+            <placement code="streak">
+              <bundle>streak</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_stage">
-              <bundle>ca_attribute_stage</bundle>
+            <placement code="stage">
+              <bundle>stage</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_surface_process">
-              <bundle>ca_attribute_surface_process</bundle>
+            <placement code="surface_process">
+              <bundle>surface_process</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_temperature">
-              <bundle>ca_attribute_temperature</bundle>
+            <placement code="temperature">
+              <bundle>temperature</bundle>
               <settings>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_varieties">
-              <bundle>ca_attribute_varieties</bundle>
+            <placement code="varieties">
+              <bundle>varieties</bundle>
             </placement>
-            <placement code="ca_attribute_magnetism">
-              <bundle>ca_attribute_magnetism</bundle>
+            <placement code="magnetism">
+              <bundle>magnetism</bundle>
             </placement>
-            <placement code="ca_attribute_diaphaneity">
-              <bundle>ca_attribute_diaphaneity</bundle>
+            <placement code="diaphaneity">
+              <bundle>diaphaneity</bundle>
             </placement>
-            <placement code="ca_attribute_tenacity">
-              <bundle>ca_attribute_tenacity</bundle>
+            <placement code="tenacity">
+              <bundle>tenacity</bundle>
             </placement>
-            <placement code="ca_attribute_odor">
-              <bundle>ca_attribute_odor</bundle>
+            <placement code="odor">
+              <bundle>odor</bundle>
             </placement>
-            <placement code="ca_attribute_chemistry">
-              <bundle>ca_attribute_chemistry</bundle>
+            <placement code="chemistry">
+              <bundle>chemistry</bundle>
             </placement>
-            <placement code="ca_attribute_structure">
-              <bundle>ca_attribute_structure</bundle>
+            <placement code="structure">
+              <bundle>structure</bundle>
             </placement>
-            <placement code="ca_attribute_organic_matter">
-              <bundle>ca_attribute_organic_matter</bundle>
+            <placement code="organic_matter">
+              <bundle>organic_matter</bundle>
             </placement>
            
           </bundlePlacements>
@@ -16614,8 +16536,8 @@
           	<restriction type="archaeology_object"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_dimensions">
-              <bundle>ca_attribute_dimensions</bundle>
+            <placement code="dimensions">
+              <bundle>dimensions</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16624,20 +16546,20 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_origcopy">
-              <bundle>ca_attribute_origcopy</bundle>
+            <placement code="origcopy">
+              <bundle>origcopy</bundle>
             </placement>            
-            <placement code="ca_attribute_attached_text">
-              <bundle>ca_attribute_attached_text</bundle>
+            <placement code="attached_text">
+              <bundle>attached_text</bundle>
             </placement>
-            <placement code="ca_attribute_count">
-              <bundle>ca_attribute_count</bundle>
+            <placement code="count">
+              <bundle>count</bundle>
             </placement>
-            <placement code="ca_attribute_duration">
-              <bundle>ca_attribute_duration</bundle>
+            <placement code="duration">
+              <bundle>duration</bundle>
             </placement>
-            <placement code="ca_attribute_accessory">
-              <bundle>ca_attribute_accessory</bundle>
+            <placement code="accessory">
+              <bundle>accessory</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16646,8 +16568,8 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_material">
-              <bundle>ca_attribute_material</bundle>
+            <placement code="material">
+              <bundle>material</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16656,17 +16578,17 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-             <placement code="ca_attribute_marks_labels">
-              <bundle>ca_attribute_marks_labels</bundle>
+             <placement code="marks_labels">
+              <bundle>marks_labels</bundle>
             </placement>             
-            <placement code="ca_attribute_primary_format">
-              <bundle>ca_attribute_primary_format</bundle>
+            <placement code="primary_format">
+              <bundle>primary_format</bundle>
             </placement> 
-            <placement code="ca_attribute_additional_format">
-              <bundle>ca_attribute_additional_format</bundle>
+            <placement code="additional_format">
+              <bundle>additional_format</bundle>
             </placement> 
-            <placement code="ca_attribute_format_notes">
-              <bundle>ca_attribute_format_notes</bundle>
+            <placement code="format_notes">
+              <bundle>format_notes</bundle>
             </placement>               
           </bundlePlacements>
         </screen>
@@ -16684,8 +16606,8 @@
                   <setting name="description" locale="en_US">The building, room, cabinet etc. where the item is permanently located or currently stored. Select from the hierarchy.</setting>
               </settings>               
             </placement>
-            <placement code="ca_attribute_location_notes">
-              <bundle>ca_attribute_location_notes</bundle>
+            <placement code="location_notes">
+              <bundle>location_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16768,8 +16690,8 @@
                 <setting name="hierarchicalBrowserHeight">200px</setting>
               </settings>              
             </placement>
-            <placement code="ca_attribute_lcsh_terms">
-              <bundle>ca_attribute_lcsh_terms</bundle>
+            <placement code="lcsh_terms">
+              <bundle>lcsh_terms</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16815,8 +16737,8 @@
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_condition_reporti">
-              <bundle>ca_attribute_condition_reporting</bundle>
+            <placement code="condition_reporti">
+              <bundle>condition_reporting</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16825,14 +16747,14 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_treated2">
-              <bundle>ca_attribute_treated</bundle>
+            <placement code="treated2">
+              <bundle>treated</bundle>
             </placement>
-            <placement code="ca_attribute_priority3">
-              <bundle>ca_attribute_priority</bundle>
+            <placement code="priority3">
+              <bundle>priority</bundle>
             </placement>
-            <placement code="ca_attribute_conservation4">
-              <bundle>ca_attribute_conservation</bundle>
+            <placement code="conservation4">
+              <bundle>conservation</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -16852,8 +16774,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
 "</setting>
               </settings>
             </placement>              
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
+            <placement code="georeference">
+              <bundle>georeference</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16862,11 +16784,11 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_geo_notes">
-              <bundle>ca_attribute_geo_notes</bundle>
+            <placement code="geo_notes">
+              <bundle>geo_notes</bundle>
             </placement>
-            <placement code="ca_attribute_geonames6">
-              <bundle>ca_attribute_geonames</bundle>
+            <placement code="geonames6">
+              <bundle>geonames</bundle>
             </placement>           
           </bundlePlacements>
         </screen>
@@ -16877,8 +16799,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_found">
-              <bundle>ca_attribute_found</bundle>
+            <placement code="found">
+              <bundle>found</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16887,8 +16809,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_provenance">
-              <bundle>ca_attribute_provenance</bundle>
+            <placement code="provenance">
+              <bundle>provenance</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16897,8 +16819,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_rights">
-              <bundle>ca_attribute_rights</bundle>
+            <placement code="rights">
+              <bundle>rights</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16907,17 +16829,17 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_restrictions">
-              <bundle>ca_attribute_restrictions</bundle>
+            <placement code="restrictions">
+              <bundle>restrictions</bundle>
             </placement>
-            <placement code="ca_attribute_publication_notes">
-              <bundle>ca_attribute_publication_notes</bundle>
+            <placement code="publication_notes">
+              <bundle>publication_notes</bundle>
             </placement>
-            <placement code="ca_attribute_reference_bibliography">
-              <bundle>ca_attribute_reference_bibliography</bundle>
+            <placement code="reference_bibliography">
+              <bundle>reference_bibliography</bundle>
             </placement>
-            <placement code="ca_attribute_appraisal_info">
-              <bundle>ca_attribute_appraisal_info</bundle>
+            <placement code="appraisal_info">
+              <bundle>appraisal_info</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16926,8 +16848,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_insvalue">
-              <bundle>ca_attribute_insvalue</bundle>
+            <placement code="insvalue">
+              <bundle>insvalue</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16953,8 +16875,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
           	<restriction type="archaeology_object"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_technique">
-              <bundle>ca_attribute_technique</bundle>
+            <placement code="technique">
+              <bundle>technique</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16963,8 +16885,18 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_medium">
-              <bundle>ca_attribute_medium</bundle>
+            <placement code="medium">
+              <bundle>medium</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>           
+            <placement code="inscription">
+              <bundle>inscription</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16973,11 +16905,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_format">
-              <bundle>ca_attribute_format</bundle>
-            </placement>            
-            <placement code="ca_attribute_inscription">
-              <bundle>ca_attribute_inscription</bundle>
+            <placement code="signature">
+              <bundle>signature</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -16986,24 +16915,14 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_signature">
-              <bundle>ca_attribute_signature</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
+            <placement code="culture">
+              <bundle>culture</bundle>
             </placement>
-            <placement code="ca_attribute_culture">
-              <bundle>ca_attribute_culture</bundle>
+            <placement code="school">
+              <bundle>school</bundle>
             </placement>
-            <placement code="ca_attribute_school">
-              <bundle>ca_attribute_school</bundle>
-            </placement>
-            <placement code="ca_attribute_style">
-              <bundle>ca_attribute_style</bundle>
+            <placement code="style">
+              <bundle>style</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -17014,8 +16933,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
           <bundlePlacements>
-           <placement code="ca_attribute_recommend_deaccession">
-              <bundle>ca_attribute_recommend_deaccession</bundle>
+           <placement code="recommend_deaccession">
+              <bundle>recommend_deaccession</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17074,11 +16993,11 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
           	<restriction type="archaeology_object"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_collection_method">
-              <bundle>ca_attribute_collection_method</bundle>
+            <placement code="collection_method">
+              <bundle>collection_method</bundle>
             </placement>  
-            <placement code="ca_attribute_date_excavated">
-              <bundle>ca_attribute_date_excavated</bundle>
+            <placement code="date_excavated">
+              <bundle>date_excavated</bundle>
             </placement> 
             <placement code="ca_excavated">
               <bundle>ca_entities</bundle>
@@ -17098,41 +17017,41 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>            
-            <placement code="ca_attribute_date_repatriated">
-              <bundle>ca_attribute_date_repatriated</bundle>
+            <placement code="date_repatriated">
+              <bundle>date_repatriated</bundle>
             </placement>  
-            <placement code="ca_attribute_site">
-              <bundle>ca_attribute_site</bundle>
+            <placement code="site">
+              <bundle>site</bundle>
             </placement>   
-            <placement code="ca_attribute_bag_number">
-              <bundle>ca_attribute_bag_number</bundle>
+            <placement code="bag_number">
+              <bundle>bag_number</bundle>
             </placement>   
-            <placement code="ca_attribute_box_number">
-              <bundle>ca_attribute_box_number</bundle>
+            <placement code="box_number">
+              <bundle>box_number</bundle>
             </placement> 
-            <placement code="ca_attribute_dating_method">
-              <bundle>ca_attribute_dating_method</bundle>
+            <placement code="dating_method">
+              <bundle>dating_method</bundle>
             </placement>   
-            <placement code="ca_attribute_datum">
-              <bundle>ca_attribute_datum</bundle>
+            <placement code="datum">
+              <bundle>datum</bundle>
             </placement>   
-            <placement code="ca_attribute_feature">
-              <bundle>ca_attribute_feature</bundle>
+            <placement code="feature">
+              <bundle>feature</bundle>
             </placement>
-            <placement code="ca_attribute_level">
-              <bundle>ca_attribute_level</bundle>
+            <placement code="level">
+              <bundle>level</bundle>
             </placement>   
-            <placement code="ca_attribute_stratum">
-              <bundle>ca_attribute_stratum</bundle>
+            <placement code="stratum">
+              <bundle>stratum</bundle>
             </placement>   
-            <placement code="ca_attribute_unit">
-              <bundle>ca_attribute_unit</bundle>
+            <placement code="unit">
+              <bundle>unit</bundle>
             </placement>
-            <placement code="ca_attribute_assemblage_zone">
-              <bundle>ca_attribute_assemblage_zone</bundle>
+            <placement code="assemblage_zone">
+              <bundle>assemblage_zone</bundle>
             </placement>
-            <placement code="ca_attribute_coords">
-              <bundle>ca_attribute_coords</bundle>
+            <placement code="coords">
+              <bundle>coords</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -17143,8 +17062,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_repat_type">
-              <bundle>ca_attribute_repat_type</bundle>
+            <placement code="repat_type">
+              <bundle>repat_type</bundle>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -17153,20 +17072,20 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="restrict_to_relationship_types">authorizer</setting>
               </settings> 
             </placement>  
-            <placement code="ca_attribute_authorization_date">
-              <bundle>ca_attribute_authorization_date</bundle>
+            <placement code="authorization_date">
+              <bundle>authorization_date</bundle>
             </placement>              
-            <placement code="ca_attribute_min_number">
-              <bundle>ca_attribute_min_number</bundle>
+            <placement code="min_number">
+              <bundle>min_number</bundle>
             </placement> 
-            <placement code="ca_attribute_associated_fo">
-              <bundle>ca_attribute_associated_fo</bundle>
+            <placement code="associated_fo">
+              <bundle>associated_fo</bundle>
             </placement>             
-            <placement code="ca_attribute_repat_region">
-              <bundle>ca_attribute_repat_region</bundle>
+            <placement code="repat_region">
+              <bundle>repat_region</bundle>
             </placement> 
-            <placement code="ca_attribute_cultural_affiliation">
-              <bundle>ca_attribute_cultural_affiliation</bundle>
+            <placement code="cultural_affiliation">
+              <bundle>cultural_affiliation</bundle>
             </placement>    
             <placement code="tribal_contact">
               <bundle>ca_entities</bundle>
@@ -17176,38 +17095,38 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="restrict_to_relationship_types">tribal_contact</setting>
               </settings> 
             </placement> 
-            <placement code="ca_attribute_tribal_letter_sent">
-              <bundle>ca_attribute_tribal_letter_sent</bundle>
+            <placement code="tribal_letter_sent">
+              <bundle>tribal_letter_sent</bundle>
             </placement>             
-            <placement code="ca_attribute_federal_register_number">
-              <bundle>ca_attribute_federal_register_number</bundle>
+            <placement code="federal_register_number">
+              <bundle>federal_register_number</bundle>
             </placement> 
-            <placement code="ca_attribute_notice_date">
-              <bundle>ca_attribute_notice_date</bundle>
+            <placement code="notice_date">
+              <bundle>notice_date</bundle>
             </placement>        
-            <placement code="ca_attribute_notice_number">
-              <bundle>ca_attribute_notice_number</bundle>
+            <placement code="notice_number">
+              <bundle>notice_number</bundle>
             </placement>   
-            <placement code="ca_attribute_analyzed">
-              <bundle>ca_attribute_analyzed</bundle>
+            <placement code="analyzed">
+              <bundle>analyzed</bundle>
             </placement> 
-            <placement code="ca_attribute_ready">
-              <bundle>ca_attribute_ready</bundle>
+            <placement code="ready">
+              <bundle>ready</bundle>
             </placement>    
-            <placement code="ca_attribute_reburial_location">
-              <bundle>ca_attribute_reburial_location</bundle>
+            <placement code="reburial_location">
+              <bundle>reburial_location</bundle>
             </placement>                      
-            <placement code="ca_attribute_reburial_date">
-              <bundle>ca_attribute_reburial_date</bundle>
+            <placement code="reburial_date">
+              <bundle>reburial_date</bundle>
             </placement>            
-            <placement code="ca_attribute_repat_notes">
-              <bundle>ca_attribute_repat_notes</bundle>
+            <placement code="repat_notes">
+              <bundle>repat_notes</bundle>
             </placement>
-            <placement code="ca_attribute_claimant">
-              <bundle>ca_attribute_claimant</bundle>
+            <placement code="claimant">
+              <bundle>claimant</bundle>
             </placement>                            
-            <placement code="ca_attribute_handling_requirements">
-              <bundle>ca_attribute_handling_requirements</bundle>
+            <placement code="handling_requirements">
+              <bundle>handling_requirements</bundle>
             </placement>             
           </bundlePlacements>
         </screen>
@@ -17256,8 +17175,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="usewysiwygeditor"/>
               </settings>
             </placement>            
-            <placement code="ca_attribute_nationalityCreato">
-              <bundle>ca_attribute_nationalityCreator</bundle>
+            <placement code="nationalityCreato">
+              <bundle>nationalityCreator</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17266,8 +17185,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_birthplace">
-              <bundle>ca_attribute_birthplace</bundle>
+            <placement code="birthplace">
+              <bundle>birthplace</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17276,15 +17195,15 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_life_dates">
-              <bundle>ca_attribute_life_dates</bundle>
+            <placement code="life_dates">
+              <bundle>life_dates</bundle>
             </placement>            
-            <placement code="ca_attribute_founding_date">
-              <bundle>ca_attribute_founding_date</bundle>
+            <placement code="founding_date">
+              <bundle>founding_date</bundle>
             </placement>   
 
-            <placement code="ca_attribute_titles">
-              <bundle>ca_attribute_titles</bundle>
+            <placement code="titles">
+              <bundle>titles</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17293,8 +17212,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_occupation">
-              <bundle>ca_attribute_occupation</bundle>
+            <placement code="occupation">
+              <bundle>occupation</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17303,8 +17222,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_education">
-              <bundle>ca_attribute_education</bundle>
+            <placement code="education">
+              <bundle>education</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17313,8 +17232,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_published">
-              <bundle>ca_attribute_published</bundle>
+            <placement code="published">
+              <bundle>published</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17323,8 +17242,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_placeofdeath">
-              <bundle>ca_attribute_placeofdeath</bundle>
+            <placement code="genderCreator">
+              <bundle>genderCreator</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17333,8 +17252,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_genderCreator">
-              <bundle>ca_attribute_genderCreator</bundle>
+            <placement code="biography">
+              <bundle>biography</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17343,18 +17262,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_biography">
-              <bundle>ca_attribute_biography</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="internal_notes">
+              <bundle>internal_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17372,11 +17281,11 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_primary_contact">
-              <bundle>ca_attribute_primary_contact</bundle>
+            <placement code="primary_contact">
+              <bundle>primary_contact</bundle>
             </placement>            
-            <placement code="ca_attribute_address">
-              <bundle>ca_attribute_address</bundle>
+            <placement code="address">
+              <bundle>address</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17385,8 +17294,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_telephone">
-              <bundle>ca_attribute_telephone</bundle>
+            <placement code="telephone">
+              <bundle>telephone</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17395,8 +17304,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_telephone_work">
-              <bundle>ca_attribute_telephone_work</bundle>
+            <placement code="telephone_work">
+              <bundle>telephone_work</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17405,8 +17314,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_telephone_cell">
-              <bundle>ca_attribute_telephone_cell</bundle>
+            <placement code="telephone_cell">
+              <bundle>telephone_cell</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17415,8 +17324,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_fax_number">
-              <bundle>ca_attribute_fax_number</bundle>
+            <placement code="fax_number">
+              <bundle>fax_number</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17425,8 +17334,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_email">
-              <bundle>ca_attribute_email</bundle>
+            <placement code="email">
+              <bundle>email</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17435,8 +17344,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_website">
-              <bundle>ca_attribute_website</bundle>
+            <placement code="website">
+              <bundle>website</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17531,20 +17440,20 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_site">
-              <bundle>ca_attribute_site</bundle>
+            <placement code="site">
+              <bundle>site</bundle>
             </placement>   
-            <placement code="ca_attribute_plss">
-              <bundle>ca_attribute_plss</bundle>
+            <placement code="plss">
+              <bundle>plss</bundle>
             </placement>                      
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
+            <placement code="georeference">
+              <bundle>georeference</bundle>
             </placement>
-            <placement code="ca_attribute_beginend_dates">
-              <bundle>ca_attribute_beginend_dates</bundle>
+            <placement code="beginend_dates">
+              <bundle>beginend_dates</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="description">
+              <bundle>description</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -17716,8 +17625,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="usewysiwygeditor"/>
               </settings>
             </placement>            
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="description">
+              <bundle>description</bundle>
               <settings>
                 <setting name="description" locale="en_US">An account of the exhibition. All information that is in the Description and is required for retrieval should also be indexed in appropriate fields elsewhere in the record.</setting>
                 <setting name="readonly"/>
@@ -17727,8 +17636,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_beginend_dates">
-              <bundle>ca_attribute_beginend_dates</bundle>
+            <placement code="beginend_dates">
+              <bundle>beginend_dates</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17737,8 +17646,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_occurrence_location">
-              <bundle>ca_attribute_occurrence_location</bundle>
+            <placement code="occurrence_location">
+              <bundle>occurrence_location</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17753,8 +17662,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
             </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="internal_notes">
+              <bundle>internal_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17832,8 +17741,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_repository">
-              <bundle>ca_attribute_repository</bundle>
+            <placement code="repository">
+              <bundle>repository</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17854,8 +17763,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="usewysiwygeditor"/>
               </settings>
             </placement>
-            <placement code="ca_attribute_unitdate">
-              <bundle>ca_attribute_unitdate</bundle>
+            <placement code="unitdate">
+              <bundle>unitdate</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17864,8 +17773,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_extentDACS">
-              <bundle>ca_attribute_extentDACS</bundle>
+            <placement code="extentDACS">
+              <bundle>extentDACS</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17893,8 +17802,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_adminbiohist">
-              <bundle>ca_attribute_adminbiohist</bundle>
+            <placement code="adminbiohist">
+              <bundle>adminbiohist</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17948,8 +17857,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="usewysiwygeditor"/>
               </settings>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="description">
+              <bundle>description</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17958,18 +17867,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_date">
-              <bundle>ca_attribute_date</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="internal_notes">
+              <bundle>internal_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17987,8 +17886,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="auto_shrink"/>
               </settings>
             </placement>
-            <placement code="ca_attribute_unitdate">
-              <bundle>ca_attribute_unitdate</bundle>
+            <placement code="unitdate">
+              <bundle>unitdate</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17997,8 +17896,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_extentDACS">
-              <bundle>ca_attribute_extentDACS</bundle>
+            <placement code="extentDACS">
+              <bundle>extentDACS</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18007,8 +17906,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_scopecontent">
-              <bundle>ca_attribute_scopecontent</bundle>
+            <placement code="scopecontent">
+              <bundle>scopecontent</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18017,8 +17916,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_general_notes">
-              <bundle>ca_attribute_general_notes</bundle>
+            <placement code="general_notes">
+              <bundle>general_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18058,8 +17957,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <restriction type="collection"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_scopecontent">
-              <bundle>ca_attribute_scopecontent</bundle>
+            <placement code="scopecontent">
+              <bundle>scopecontent</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18068,8 +17967,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_arrangement">
-              <bundle>ca_attribute_arrangement</bundle>
+            <placement code="arrangement">
+              <bundle>arrangement</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18090,8 +17989,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <restriction type="collection"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_accessrestrict">
-              <bundle>ca_attribute_accessrestrict</bundle>
+            <placement code="accessrestrict">
+              <bundle>accessrestrict</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18100,8 +17999,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_physaccessrestric">
-              <bundle>ca_attribute_physaccessrestrict</bundle>
+            <placement code="physaccessrestric">
+              <bundle>physaccessrestrict</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18110,8 +18009,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_techaccessrestric">
-              <bundle>ca_attribute_techaccessrestrict</bundle>
+            <placement code="techaccessrestric">
+              <bundle>techaccessrestrict</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18120,8 +18019,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_reproduction">
-              <bundle>ca_attribute_reproduction</bundle>
+            <placement code="reproduction">
+              <bundle>reproduction</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18130,8 +18029,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_langmaterial">
-              <bundle>ca_attribute_langmaterial</bundle>
+            <placement code="langmaterial">
+              <bundle>langmaterial</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18140,8 +18039,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_otherfindingaid">
-              <bundle>ca_attribute_otherfindingaid</bundle>
+            <placement code="otherfindingaid">
+              <bundle>otherfindingaid</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18162,8 +18061,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <restriction type="collection"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_custodhist">
-              <bundle>ca_attribute_custodhist</bundle>
+            <placement code="custodhist">
+              <bundle>custodhist</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18172,8 +18071,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_acqinfo">
-              <bundle>ca_attribute_acqinfo</bundle>
+            <placement code="acqinfo">
+              <bundle>acqinfo</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18182,8 +18081,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_appraisal">
-              <bundle>ca_attribute_appraisal</bundle>
+            <placement code="appraisal">
+              <bundle>appraisal</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18192,8 +18091,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_accruals">
-              <bundle>ca_attribute_accruals</bundle>
+            <placement code="accruals">
+              <bundle>accruals</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18214,8 +18113,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <restriction type="collection"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_originalsloc">
-              <bundle>ca_attribute_originalsloc</bundle>
+            <placement code="originalsloc">
+              <bundle>originalsloc</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18224,8 +18123,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_altformavail">
-              <bundle>ca_attribute_altformavail</bundle>
+            <placement code="altformavail">
+              <bundle>altformavail</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18234,8 +18133,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_relation">
-              <bundle>ca_attribute_relation</bundle>
+            <placement code="relation">
+              <bundle>relation</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18244,8 +18143,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_publication_note">
-              <bundle>ca_attribute_publication_note</bundle>
+            <placement code="publication_note">
+              <bundle>publication_note</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18266,8 +18165,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <restriction type="collection"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_general_notes">
-              <bundle>ca_attribute_general_notes</bundle>
+            <placement code="general_notes">
+              <bundle>general_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18276,8 +18175,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_conservation_note">
-              <bundle>ca_attribute_conservation_notes</bundle>
+            <placement code="conservation_note">
+              <bundle>conservation_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18286,8 +18185,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_processInfo">
-              <bundle>ca_attribute_processInfo</bundle>
+            <placement code="processInfo">
+              <bundle>processInfo</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18296,8 +18195,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_preferCite">
-              <bundle>ca_attribute_preferCite</bundle>
+            <placement code="preferCite">
+              <bundle>preferCite</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18315,8 +18214,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_aat">
-              <bundle>ca_attribute_aat</bundle>
+            <placement code="aat">
+              <bundle>aat</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18325,8 +18224,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_ulan">
-              <bundle>ca_attribute_ulan</bundle>
+            <placement code="ulan">
+              <bundle>ulan</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18335,11 +18234,11 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_tgn3">
-              <bundle>ca_attribute_tgn</bundle>
+            <placement code="tgn3">
+              <bundle>tgn</bundle>
             </placement>
-            <placement code="ca_attribute_lcsh_terms">
-              <bundle>ca_attribute_lcsh_terms</bundle>
+            <placement code="lcsh_terms">
+              <bundle>lcsh_terms</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18553,8 +18452,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_price">
-              <bundle>ca_attribute_price</bundle>
+            <placement code="price">
+              <bundle>price</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18563,8 +18462,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>            
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="description">
+              <bundle>description</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18582,11 +18481,11 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
             </placement> 
-            <placement code="ca_attribute_credit_line">
-              <bundle>ca_attribute_credit_line</bundle>
+            <placement code="credit_line">
+              <bundle>credit_line</bundle>
             </placement>
-            <placement code="ca_attribute_restrictions">
-              <bundle>ca_attribute_restrictions</bundle>
+            <placement code="restrictions">
+              <bundle>restrictions</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18595,8 +18494,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="internal_notes">
+              <bundle>internal_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18615,14 +18514,14 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
           <bundlePlacements>   
-            <placement code="ca_attribute_acquisition_date">
-              <bundle>ca_attribute_acquisition_date</bundle>
+            <placement code="acquisition_date">
+              <bundle>acquisition_date</bundle>
             </placement>
-            <placement code="ca_attribute_accession_date">
-              <bundle>ca_attribute_accession_date</bundle>
+            <placement code="accession_date">
+              <bundle>accession_date</bundle>
             </placement>
-            <placement code="ca_attribute_dogsent">
-              <bundle>ca_attribute_dogsent</bundle>
+            <placement code="dogsent">
+              <bundle>dogsent</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18631,8 +18530,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_dogsigned">
-              <bundle>ca_attribute_dogsigned</bundle>
+            <placement code="dogsigned">
+              <bundle>dogsigned</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18641,11 +18540,11 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_dog_letter5">
-              <bundle>ca_attribute_dog_letter</bundle>
+            <placement code="dog_letter5">
+              <bundle>dog_letter</bundle>
             </placement>
-            <placement code="ca_attribute_thankyousent">
-              <bundle>ca_attribute_thankyousent</bundle>
+            <placement code="thankyousent">
+              <bundle>thankyousent</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18654,11 +18553,11 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_thank_you7">
-              <bundle>ca_attribute_thank_you</bundle>
+            <placement code="thank_you7">
+              <bundle>thank_you</bundle>
             </placement>
-            <placement code="ca_attribute_thank_you_deed8">
-              <bundle>ca_attribute_thank_you_deed</bundle>
+            <placement code="thank_you_deed8">
+              <bundle>thank_you_deed</bundle>
             </placement>  
           </bundlePlacements>
         </screen>
@@ -18706,8 +18605,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_image_caption">
-              <bundle>ca_attribute_image_caption</bundle>
+            <placement code="image_caption">
+              <bundle>image_caption</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18733,8 +18632,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_rights">
-              <bundle>ca_attribute_rights</bundle>
+            <placement code="rights">
+              <bundle>rights</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18743,8 +18642,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="internal_notes">
+              <bundle>internal_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18845,14 +18744,6 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
               <bundle>status</bundle>
               <settings>
                 <setting name="label" locale="en_US">Record Status</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-              <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
@@ -18976,14 +18867,6 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </placement>
             <placement code="color">
               <bundle>color</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="editor_type">
-              <bundle>editor_type</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>

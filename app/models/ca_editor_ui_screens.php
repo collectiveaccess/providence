@@ -263,7 +263,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Add bundle placement to currently loaded screen
 	 *
-	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name)
+	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name). Until version 1.7.9 metadata element codes had to be prefixed with "ca_attribute_"; as of version 1.7.9 the prefix is no longer required.
 	 * @param array $pa_settings Placement settings array; keys should be valid setting names
 	 * @param int $pn_rank Optional value that determines sort order of bundles in the screen. If omitted, placement is added to the end of the screen.
 	 * @param array $pa_options Optional array of options. Supports the following options:
@@ -276,6 +276,28 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		unset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]);
 		
+		$table_name = Datamodel::getTableName($table_num = $this->getTableNum());
+		if (!($t_instance = Datamodel::getInstance($table_name, true))) { 
+			$this->postError(1100, _t("Could not created user interface placement: user interface table '%1' is not valid", $table_name), "ca_editor_ui_screens::addPlacement");
+			return false;
+		}
+		
+		if ((substr($ps_bundle_name, 0, 13) === 'ca_attribute_') && ca_metadata_elements::getElementID(substr($ps_bundle_name, 13))) {
+			$ps_bundle_name = substr($ps_bundle_name, 13);
+		}
+		if (ca_metadata_elements::getElementID($ps_bundle_name)) {
+			$ps_bundle_name =  "{$table_name}.{$ps_bundle_name}";
+		}
+		
+		if(defined("__CollectiveAccess_Installer__") && __CollectiveAccess_Installer__) {
+			$t_instance->reloadLabelDefinitions();	// force refresh of cache when installing, otherwise we'll get false failures for getBundleInfo()
+		}
+		if (!$t_instance->getBundleInfo($ps_bundle_name)) { 
+			$this->postError(1100, $c=_t("Could not create user interface placement: bundle '%1' is not valid", $ps_bundle_name), "ca_editor_ui_screens::addPlacement");
+			// print "x={$c}<br>";
+// 			$this->getUI()->dump();
+			return false;
+		}
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
@@ -1972,6 +1994,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$t_ui = new ca_editor_uis($vn_ui_id);
 		
 		return ca_editor_ui_screens::$s_table_num_cache[$vn_ui_id] = $t_ui->get('editor_type');
+	}
+	# ------------------------------------------------------
+	/** 
+	 *
+	 */
+	public function getUI() {
+		if (!($vn_ui_id = $this->get('ui_id'))) { return null; }
+		$t_ui = new ca_editor_uis($vn_ui_id);
+		
+		return $t_ui->isLoaded() ? $t_ui : null;
 	}
 	# ------------------------------------------------------
 	# Bundles
