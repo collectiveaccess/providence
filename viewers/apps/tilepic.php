@@ -40,7 +40,7 @@ if ($is_windows) {
         $script_path = join("/", array_slice($p, 0, -3));
         $win_disk = $p[0];
 } else {
-        $script_path = join("/", array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3));
+    	$script_path = join("/", array_slice(explode(DIRECTORY_SEPARATOR, isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__), 0, -3));
 }
 $filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", preg_replace("/\.tpc\$/", "", $filepath));
 
