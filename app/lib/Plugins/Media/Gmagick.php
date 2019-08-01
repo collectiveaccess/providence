@@ -303,7 +303,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 			} 
 		} catch (Exception $e) {
-		    die($e->getMessage());
 			# is it a tilepic?
 			$tp = new TilepicParser();
 			if ($tp->isTilepic($ps_filepath)) {
