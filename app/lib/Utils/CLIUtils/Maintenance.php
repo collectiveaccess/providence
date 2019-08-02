@@ -300,6 +300,8 @@
 		 * Permanently remove records marked as deleted
 		 */
 		public static function purge_deleted($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/Logging/Downloadlog.php");
+		
 			CLIUtils::addMessage(_t("Are you sure you want to PERMANENTLY remove all deleted records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
             flush();
             ob_flush();
@@ -316,19 +318,26 @@
 			$vn_t = 0;
 			foreach($va_tables as $vs_table) {
 				if(is_array($va_tables_to_process) && sizeof($va_tables_to_process) && !in_array($vs_table, $va_tables_to_process)) { continue; }
-				if (!$t_instance = Datamodel::getInstanceByTableName($vs_table, true)) { continue; }
+				if (!$t_instance = Datamodel::getInstanceByTableName($vs_table)) { continue; }
 				if (!$t_instance->hasField('deleted')) { continue; }
 			
 				$t_instance->setMode(ACCESS_WRITE);
+				$pk = $t_instance->primaryKey();
 
-				$qr_del = $o_db->query("SELECT * FROM {$vs_table} WHERE deleted=1");
+				$qr_del = $o_db->query("SELECT {$pk} FROM {$vs_table} WHERE deleted = 1");
 				if($qr_del->numRows() > 0) {
 					print CLIProgressBar::start($qr_del->numRows(), _t('Removing deleted %1 from database', $t_instance->getProperty('NAME_PLURAL')));
 
+					$row_ids = $qr_del->getAllFieldValues($pk);
+					
+					if ($vs_table === 'ca_object_representations') {
+						Downloadlog::purgeForRepresentation($row_ids);
+					}
 					$vn_c = 0;
-					while($qr_del->nextRow()) {
+					//while($qr_del->nextRow()) {
+					foreach($row_ids as $row_id) {
 						print CLIProgressBar::next();
-						$t_instance->load($qr_del->get($t_instance->primaryKey()));
+						$t_instance->load($row_id);
 						$t_instance->setMode(ACCESS_WRITE);
 						$t_instance->removeAllLabels();
 						$t_instance->delete(true, array('hard' => true));
