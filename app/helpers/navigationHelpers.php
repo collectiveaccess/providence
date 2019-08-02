@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -816,7 +816,7 @@
 				$vs_fa_class = 'fa-file-image-o';
 				break;	
 			case __CA_NAV_ICON_DOT__:
-				$vs_fa_class = 'fa-dot-cirle-o';
+				$vs_fa_class = 'fa-dot-circle-o';
 				break;	
 			case __CA_NAV_ICON_PDF__:
 				$vs_fa_class = 'fa-file-pdf-o';
