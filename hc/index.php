@@ -30,8 +30,10 @@
 	define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
 	require("../app/helpers/errorHelpers.php");
 	
-	define("__CA_BASE_DIR__", "/var/www/html/admin");
-	define("__CA_URL_ROOT__", "/admin");
+	$s = explode("/", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__);
+	array_pop($s); array_pop($s);
+	define("__CA_BASE_DIR__", join("/", $s));
+	
 	if (!file_exists('../setup.php')) {
 		print "No setup.php found";
 		http_response_code(500);
