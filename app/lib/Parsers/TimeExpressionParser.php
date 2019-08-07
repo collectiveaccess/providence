@@ -2473,7 +2473,8 @@ class TimeExpressionParser {
 			$va_normalized = $this->normalizeDateRange($va_dates['start'], $va_dates['end'], $ps_normalization);
 			$vs_start = array_shift($va_normalized);
 			$vs_end = array_pop($va_normalized);
-			
+			if ($vs_start === $vs_end) { return $vs_start; }
+			if ($vs_start && !$vs_end) { return $vs_start; }
 			$o_tep = new TimeExpressionParser();
 			$vs_default_conjunction = array_shift($this->opo_language_settings->getList("rangeConjunctions"));
 			if ($o_tep->parse("{$vs_start} {$vs_default_conjunction} {$vs_end}")) {
