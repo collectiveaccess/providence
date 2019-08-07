@@ -1061,7 +1061,7 @@
 				if ($vs_sql_where) { $vs_sql_where .= " AND mimetype = 'application/pdf'"; } else { $vs_sql_where = " WHERE mimetype = 'application/pdf'"; }
 
 				$qr_reps = $o_db->query("
-					SELECT *
+					SELECT representation_id, media
 					FROM ca_object_representations
 					{$vs_sql_where}
 					ORDER BY representation_id
