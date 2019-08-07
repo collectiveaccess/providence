@@ -96,7 +96,7 @@
 			foreach($pa_content as $vs_val => $vs_opt) {
 				if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
 				if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-				if (!($SELECTED = (($vs_selected_val == $vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
+				if (!($SELECTED = (((string)$vs_selected_val === (string)$vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
 					$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
 				}
 				$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
@@ -106,7 +106,8 @@
 			if ($vb_content_is_list) {
 				foreach($pa_content as $vs_val) {
 					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-					if (!($SELECTED = ($vs_selected_val == $vs_val) ? ' selected="1"' : '')) {
+					
+					if (!($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
 					}
 					$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
@@ -116,8 +117,9 @@
 				foreach($pa_content as $vs_opt => $vs_val) {
 					if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
 					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-					if (!($SELECTED = ($vs_selected_val == $vs_val) ? ' selected="1"' : '')) {
-						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
+				
+					if (!($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
+						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
 					}
 					$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
 					$vs_element .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'{$SELECTED}{$DISABLED}{$COLOR}>".$vs_opt."</option>\n";
