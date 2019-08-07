@@ -33,7 +33,14 @@
 $filepath = $_REQUEST["p"];
 $tile = $_REQUEST["t"];
 
-$script_path = join("/", array_slice(explode("/", __FILE__), 0, -3));
+$win_disk = '';
+if ($is_windows) {
+        $p = explode(DIRECTORY_SEPARATOR, __FILE__);
+        $script_path = join("/", array_slice($p, 0, -3));
+        $win_disk = $p[0];
+} else {
+    	$script_path = join("/", array_slice(explode(DIRECTORY_SEPARATOR, isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__), 0, -3));
+}
 $filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", preg_replace("/\.tpc\$/", "", $filepath));
 
 $fp = explode("/", $filepath); array_shift($fp);
