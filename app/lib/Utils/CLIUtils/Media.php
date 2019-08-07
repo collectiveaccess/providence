@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,6 @@
  */
  
 	trait CLIUtilsMedia { 
-		# -------------------------------------------------------
 		# -------------------------------------------------------
 		/**
 		 * Reprocess media
@@ -328,7 +327,7 @@
 				if ($vs_sql_where) { $vs_sql_where .= " AND mimetype = 'application/pdf'"; } else { $vs_sql_where = " WHERE mimetype = 'application/pdf'"; }
 
 				$qr_reps = $o_db->query("
-					SELECT *
+					SELECT representation_id, media_id
 					FROM ca_object_representations
 					{$vs_sql_where}
 					ORDER BY representation_id
