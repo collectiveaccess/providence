@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -183,6 +183,7 @@
  		 *
  		 * @param $pa_options array Options are:
  		 *		returnAsDecimalMetric = return weight in kilograms as decimal number
+ 		 *		units = force units used for display. Values are: metric, english, as_entered. [Default is to use units system of as entered value]
  		 *
  		 * @return mixed Values as string or decimal
  		 */
@@ -190,7 +191,19 @@
 			if (caGetOption('returnAsDecimalMetric', $pa_options, false)) {
 				return $this->opn_decimal_value;
 			}
-			return $this->ops_text_value;
+			switch(caGetOption('units', $pa_options, null)) {
+ 				case 'metric':
+ 					$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
+ 					return $vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 2);
+ 					break;
+ 				case 'english':
+ 					$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
+ 					return $vo_measurement->convertTo(Zend_Measure_Weight::POUND, 2);
+ 					break;
+				default: // show value in unit entered
+					return $this->ops_text_value;
+					break;
+ 			}	
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {

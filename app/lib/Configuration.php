@@ -57,33 +57,40 @@ class Configuration {
 	 *
 	 * @access private
 	 */
-	var $ops_config_settings;
+	private $ops_config_settings;
 
 	/**
 	 * Error message
 	 *
 	 * @access private
 	 */
-	var $ops_error="";		#  error message - blank if no error
+	private $ops_error="";		#  error message - blank if no error
 
 	/**
 	 * Absolute path to configuration file
 	 *
 	 * @access private
 	 */
-	var $ops_config_file_path;
+	private $ops_config_file_path;
 
 	/**
 	 * Display debugging info
 	 *
 	 * @access private
 	 */
-	var $opb_debug = false;
+	private $opb_debug = false;
+	
+	/**
+	 * MD5 hash for current configuration file path
+	 *
+	 * @access private
+	 */
+	private $ops_md5_path;
 
 	static $s_get_cache;
 	static $s_config_cache = null;
 	static $s_have_to_write_config_cache = false;
-	private $ops_md5_path;
+	
 
 	/* ---------------------------------------- */
 	/**
@@ -942,6 +949,37 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	/**
+	 * Return currently loaded configuration file as JSON
+	 *
+	 * @return string
+	 */
+	public function toJson() {
+		$config = array_merge(
+			is_array($this->ops_config_settings["scalars"]) ? $this->ops_config_settings["scalars"] : [], 
+			is_array($this->ops_config_settings["lists"]) ? $this->ops_config_settings["lists"] : [], 
+			is_array($this->ops_config_settings["assoc"]) ? $this->ops_config_settings["assoc"] : []
+		);	
+		return caFormatJson(json_encode($config));
+	}
+	/* ---------------------------------------- */
+	/**
+	 * Validate currently loaded configuration file against schema
+	 *
+	 * @return Opis\JsonSchema\ValidationResult Returns null if schema could not be loaded, either because it is invalid or does not exist.
+	 */
+	public function validate() {
+		$f = pathinfo($this->ops_config_file_path, PATHINFO_BASENAME);
+		
+		$v = new \Opis\JsonSchema\Validator();	
+		$loader = new \Opis\JsonSchema\Loaders\File("https://collectiveaccess.org", [__CA_LIB_DIR__."/Configuration/".ucfirst(strtolower(__CA_APP_TYPE__))."/schemas"]);
+		if (!($schema = $loader->loadSchema("https://collectiveaccess.org/{$f}.schema.json"))) { return null; } 	// no schema loaded
+
+		$result = $v->schemaValidation(json_decode($this->toJson()), $schema);
+		
+		return $result;
+	}
+	/* ---------------------------------------- */
+	/**
 	 * Find out if there was an error processing the configuration file
 	 *
 	 * @return bool Returns true if error occurred, false if not
@@ -1003,7 +1041,7 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	/**
-	 * Removes all cached configuration
+	 * Remove all cached configuration
 	 */
 	public static function clearCache() {
 		ExternalCache::delete('ConfigurationCache');

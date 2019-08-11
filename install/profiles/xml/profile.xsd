@@ -786,6 +786,7 @@
 
                   <!-- entry attributes -->
                   <xs:attribute name="bundle" type="bundleType" use="required"/>
+                  <xs:attribute name="table" type="xs:string" use="required"/>
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
 
                 </xs:complexType>

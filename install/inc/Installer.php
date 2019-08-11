@@ -875,9 +875,14 @@ class Installer {
 
 		foreach($this->opo_profile->metadataDictionary->children() as $vo_entry) {
 			$vs_field = self::getAttribute($vo_entry, "bundle");
-
+			$vs_table = self::getAttribute($vo_entry, "table");
 			if(strlen($vs_field)<1) {
 				$this->addError("No bundle specified in a metadata dictionary entry. Skipping row.");
+				continue;
+			}
+			
+			if(!($vn_table_num = Datamodel::getTableNum($vs_table))) {
+				$this->addError("Table {$vs_table} is invalid for metadata dictionary entry. Skipping row.");
 				continue;
 			}
 
@@ -885,6 +890,7 @@ class Installer {
 			$t_entry = new ca_metadata_dictionary_entries();
 			$t_entry->setMode(ACCESS_WRITE);
 			$t_entry->set('bundle_name', $vs_field);
+			$t_entry->set('table_num', $vn_table_num);
 			$this->_processSettings($t_entry, $vo_entry->settings);
 
 			$t_entry->insert();
@@ -1151,7 +1157,9 @@ class Installer {
 					$va_settings = $this->_processSettings(null, $vo_placement->settings, ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($va_available_bundles[$vs_bundle]['settings']) ? $va_available_bundles[$vs_bundle]['settings'] : [])]);
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $vs_bundle, $vs_placement_code, $vs_screen_idno, $vs_ui_code));
 
-					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					if (!$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']))) {
+						$this->logStatus(join("; ", $t_ui_screens->getErrors()));
+					}
 				}
 
 				// create ui screen type restrictions

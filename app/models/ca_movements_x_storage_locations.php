@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_movements_x_storage_locations'] = array(
@@ -95,6 +96,9 @@ BaseModel::$s_ca_models_definitions['ca_movements_x_storage_locations'] = array(
 );
 
 class ca_movements_x_storage_locations extends BaseRelationshipModel {
+
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -211,10 +215,18 @@ class ca_movements_x_storage_locations extends BaseRelationshipModel {
 	 */
 	public function insert($pa_options=null) {
 		if (!$this->get('effective_date', array('getDirectDate' => true))) {  
-			$this->set('effective_date', $this->_getMovementDate()); 
-			$this->set('source_info', $this->_getStorageLocationInfo());
+			//$this->set('effective_date', $this->_getMovementDate()); 
+			//$this->set('source_info', $this->_getStorageLocationInfo());
+			
+			$this->set('effective_date', _t('now')); 
 		}
-		return parent::insert($pa_options);
+		
+		try {
+			return parent::insert($pa_options);
+		} catch (Exception $e) {
+			// Dupes will throw exception
+			return false;
+		}
 	}
 	# ------------------------------------------------------
 	/**
@@ -222,39 +234,47 @@ class ca_movements_x_storage_locations extends BaseRelationshipModel {
 	 */
 	public function update($pa_options=null) {
 		if (!$this->get('effective_date', array('getDirectDate' => true))) { 
-			$this->set('effective_date',  $this->_getMovementDate()); 
-			$this->set('source_info', $this->_getStorageLocationInfo());
+			//$this->set('effective_date',  $this->_getMovementDate()); 
+			//$this->set('source_info', $this->_getStorageLocationInfo());
+			
+			$this->set('effective_date', _t('now')); 
 		}
-		return parent::update($pa_options);
+		
+		try {
+			return parent::update($pa_options);
+		} catch (Exception $e) {
+			// Dupes will throw exception
+			return false;
+		}
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	private function _getMovementDate() {
-	 	$vs_date = null;
-	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
-			$t_movement = new ca_movements($this->get('movement_id'));
-			if ($t_movement->getPrimaryKey()) {
-				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");
-			}
-		}
-		return ($vs_date) ? $vs_date : _t('now');
-	}
+	// private function _getMovementDate() {
+// 	 	$vs_date = null;
+// 	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
+// 			$t_movement = new ca_movements($this->get('movement_id'));
+// 			if ($t_movement->getPrimaryKey()) {
+// 				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");
+// 			}
+// 		}
+// 		return ($vs_date) ? $vs_date : _t('now');
+// 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	private function _getStorageLocationInfo() {
-		$t_loc = new ca_storage_locations($this->get('location_id'));
-		if ($t_loc->getPrimaryKey()) {
-			return array(
-				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
-				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
-			);
-		} else {
-			return array('path' => array('?'), 'ids' => array(0));
-		}
-	}	
+	// private function _getStorageLocationInfo() {
+// 		$t_loc = new ca_storage_locations($this->get('location_id'));
+// 		if ($t_loc->getPrimaryKey()) {
+// 			return array(
+// 				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
+// 				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
+// 			);
+// 		} else {
+// 			return array('path' => array('?'), 'ids' => array(0));
+// 		}
+// 	}	
 	# ------------------------------------------------------
 }

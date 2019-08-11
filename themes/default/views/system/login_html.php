@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,6 +70,7 @@
 							<input type="password" name="password" size="25"/>
 						</div>
 						<input name="redirect" type="hidden" value="<?php echo htmlspecialchars($this->getVar('redirect'), ENT_QUOTES); ?>" />
+						<input name="local" type="hidden" value="<?php echo (bool)$_REQUEST['local'] ? 1 : 0; ?>" />
 						<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
 					</form>
 <?php if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { ?>

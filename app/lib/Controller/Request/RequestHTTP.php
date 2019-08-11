@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -790,7 +790,7 @@ class RequestHTTP extends Request {
                     $vs_tmp1 = $vs_tmp2 = null;
                     if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
                         if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
-                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
                             $vb_login_successful = false;
                         } else {
                             $vb_login_successful = true;
@@ -800,7 +800,7 @@ class RequestHTTP extends Request {
 
                     if (!$vb_login_successful) {																	// throw user to login screen
                         if (!$pa_options["dont_redirect_to_login"]) {
-                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
                             $vs_redirect = $this->getRequestUrl(true);
 
                             if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
@@ -808,13 +808,22 @@ class RequestHTTP extends Request {
                             } else {
                                 $vs_redirect = '?redirect=' . urlencode($vs_redirect);
                             }
+                            if ($_REQUEST['local']) { 
+                            	$vs_redirect .= ($vs_redirect ? "&" : "?")."local=1";
+                            }
                             $this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path") . $vs_redirect);
                         }
                         return false;
                     }
                 } else {
                 	// Redirect to external auth?
-                	return $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]);
+                	try {
+                		return $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]);
+                	} catch (Exception $e) {
+                		$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with exception '".$e->getMessage()." (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                		$this->opo_response->addHeader("Location", $vs_auth_login_url);
+                		return false;
+                	}
                 }
 			}
 		} 
@@ -844,7 +853,7 @@ class RequestHTTP extends Request {
 			$this->user = new ca_users();															// auth failed
 																								// throw user to login screen
 			if ($pa_options["user_name"]) {
-				$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+				$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
 			}
 			if (!$pa_options["dont_redirect_to_login"]) {
 				$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
@@ -852,7 +861,7 @@ class RequestHTTP extends Request {
 			}
 			return false;
 		} else {		
-			$o_event_log->log(array("CODE" => "LOGN", "SOURCE" => "Auth", "MESSAGE" => "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".$_SERVER["HTTP_USER_AGENT"]));
+			$o_event_log->log(array("CODE" => "LOGN", "SOURCE" => "Auth", "MESSAGE" => "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".RequestHTTP::ip()));
 		    
 		    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
 			
@@ -894,7 +903,7 @@ class RequestHTTP extends Request {
 	 * @return (string) - the IP address of the remote client
 	 */
 	public function getClientIP() {
-		return $_SERVER["REMOTE_ADDR"];
+		return self::ip();
 	}
 	# ----------------------------------------
 	public function deauthenticate() {
@@ -952,6 +961,16 @@ class RequestHTTP extends Request {
 			$this->getScriptName() .
 			($this->isLoggedIn() ? $this->getUserID() : '')
 		);
+	}
+	# ----------------------------------------
+	/** 
+	 * Return IP address for current requestor
+	 *
+	 * @return string
+	 */
+	static public function ip() {
+		if (isset($_SERVER['HTTP_X_REAL_IP']) && $_SERVER['HTTP_X_REAL_IP']) { return $_SERVER['HTTP_X_REAL_IP']; }
+		return $_SERVER['REMOTE_ADDR'];
 	}
 	# ----------------------------------------
 }

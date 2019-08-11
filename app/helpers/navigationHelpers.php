@@ -488,10 +488,12 @@
 			$vs_extra = "jQuery(\"#isSaveAndReturn\").val(\"1\");";
 		}
 		
+		$css_id = caGetOption('id', $pa_options, null);
+		
 		if ($pb_prevent_duplicate_submits) {
-			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "").">";
 		} else {
-			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "").">";
 		}
 		
 		if (!$pb_no_background) { 
@@ -553,7 +555,9 @@
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
-		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
+		if($vs_classname = (!$pb_no_background) ? 'form-button' : '') {
+			$pa_attributes['class'] .= " {$vs_classname}";
+		}
 		
 		$va_attr = array();
 		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
@@ -563,7 +567,7 @@
 			}
 		}
 		
-		$vs_button = "<a class='{$vs_classname}' ".join(' ', $va_attr).">";
+		$vs_button = "<a ".join(' ', $va_attr).">";
 		if (!$pb_no_background) { 
 			$vs_button .= "<span class='form-button'>"; 
 			$vn_padding = ($ps_content) ? 10 : 0;

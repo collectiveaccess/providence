@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,7 +57,9 @@ class AuthenticationManager {
 			AuthenticationManager::$g_authentication_conf = $o_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 
 			$vs_auth_adapter = (!is_null($ps_adapter)) ? $ps_adapter : $o_auth_config->get('auth_adapter');
-
+            
+		    if ($is_local = (isset($_REQUEST['local']) && $_REQUEST['local'])) { $vs_auth_adapter = 'CaUsers'; }
+		
 			$vs_auth_adapter_file = __CA_LIB_DIR__."/Auth/Adapters/".$vs_auth_adapter.".php";
 			if(file_exists($vs_auth_adapter_file)) {
 				require_once($vs_auth_adapter_file);
@@ -83,7 +85,6 @@ class AuthenticationManager {
 	 */
 	public static function authenticate($ps_username, $ps_password="", $pa_options=null) {
 		self::init();
-
 		if ($vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options)) {
 			return $vn_rc;
 		}
@@ -187,9 +188,13 @@ class AuthenticationManager {
 	public static function getUserInfo($ps_username, $ps_password, $pa_options=null) {
 		self::init();
 
-		if ($vn_rc = self::$g_authentication_adapter->getUserInfo($ps_username, $ps_password, $pa_options)) {
-			return $vn_rc;
-		}
+        try {
+            if ($vn_rc = self::$g_authentication_adapter->getUserInfo($ps_username, $ps_password, $pa_options)) {
+                return $vn_rc;
+            }
+        } catch(Exception $e) {
+            // noop
+        }
 
 		if ((AuthenticationManager::$g_authentication_conf->get('allow_fallback_to_ca_users_auth')) && !self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
 			// fall back to ca_users "native" authentication

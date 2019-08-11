@@ -795,7 +795,8 @@
 									}
 								}
 							}
-
+                            $va_names_to_match = array_unique($va_names_to_match);
+                            
 							$o_log->logDebug("Names to match: ".print_r($va_names_to_match, true));
 
 							foreach($va_names_to_match as $vs_match_name) {
@@ -836,7 +837,7 @@
 													break;
 											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-												$va_values[$vs_fld] = array($vs_fld => array('name' => $vs_match_value));
+												$va_values[$vs_fld] = ['name' => $vs_match_value];
 											} elseif(sizeof($va_flds = explode('.', $vs_fld)) > 1) {
 												$va_values[$va_flds[0]][$va_flds[1]] = $vs_match_value;
 											} else {
@@ -845,6 +846,7 @@
 										}
 										
 										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
+
 
 										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool, 'restrictToTypes' => $va_limit_matching_to_type_ids)))) {
 											if ($t_instance->load($vn_id)) {
@@ -866,7 +868,7 @@
 						}
 					}
 				}
-			
+
 				if (!$t_instance->getPrimaryKey() && ($vs_import_mode !== 'DONT_MATCH')) {
 					// Use filename as idno if all else fails
 					if ($t_instance->load(array('idno' => $f, 'deleted' => 0))) {

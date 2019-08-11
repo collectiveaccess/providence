@@ -100,6 +100,10 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	 * @seealso wkhtmltopdf::renderFile()
 	 */
 	public function render($ps_content, $pa_options=null) {
+	    // Force backtrack limit high to allow regex on very large strings
+	    // If we don't do this preg_replace will fail silently on large PDFs
+	    ini_set('pcre.backtrack_limit', '100000000');
+	    
 		// Extract header and footer
 		$vs_header = preg_match("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", $ps_content, $va_matches) ? $va_matches[1] : '';
 		$vs_footer = preg_match("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", $ps_content, $va_matches) ? $va_matches[1] : '';

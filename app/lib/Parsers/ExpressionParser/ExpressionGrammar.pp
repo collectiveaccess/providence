@@ -56,6 +56,7 @@
 // Literals
 %token  number    (0|[1-9]\d*)(\.\d+)?([eE][\+\-]?\d+)?
 %token  string    \"[^"]*\"
+%token  string_single_quote    \'[^']*\'
 
 // Math
 %token  plus      \+
@@ -149,6 +150,7 @@ comp_eq:
 scalar:
     (primary() ( ::plus:: #addition scalar() )?)
   | (<string> ( ::plus:: #stradd scalar())?)
+  | (<string_single_quote> ( ::plus:: #stradd scalar())?)
   | <variable>
 
 primary:

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,6 +59,7 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 	public function testIn() {
 		$this->assertTrue(ExpressionParser::evaluate('"Seth" IN ["Julia", "Sophie", "Maria", "Seth"]'));
 		$this->assertFalse(ExpressionParser::evaluate('"Joe" IN ["Julia", "Sophie", "Maria", "Seth"]'));
+		$this->assertFalse(ExpressionParser::evaluate("'Joe' IN ['Julia', 'Sophie', 'Maria', 'Seth']"));
 	}
 
 	public function testAndOr() {

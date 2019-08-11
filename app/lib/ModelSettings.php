@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -123,7 +123,7 @@ class ModelSettings extends BaseSettings {
 							// skip bits if they're not set in the form; otherwise they default to 'No' even
 							// though the default might be set to 'Yes' the settings definition.
 							$vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pString);
-							if($vs_val == '') { continue; }
+							if($vs_val == '') { continue(2); }
 
 							$va_values[$vs_setting] = $vs_val;
 							break;
@@ -134,12 +134,18 @@ class ModelSettings extends BaseSettings {
 
 				}
 			}
-
-			foreach($va_values as $vs_setting_key => $vs_value) {
-				$this->setSetting($vs_setting, $vs_value);
-			}
+		}
+		foreach($va_values as $vs_setting_key => $vs_value) {
+			$this->setSetting($vs_setting_key, $vs_value);
 		}
 		return $this->o_instance->update();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function _getInstance() {
+		return $this->o_instance;
 	}
 	# ------------------------------------------------------
 }

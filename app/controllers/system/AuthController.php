@@ -48,7 +48,8 @@
 				if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 			}
 			// Redirect to the default action
-			$vs_redirect = $this->request->getParameter('redirect', pString);
+			$vs_redirect = $this->request->getParameter('redirect', pString, null, ['forcePurify' => true]);
+	
 			$this->getView()->setVar('redirect', $vs_redirect);
  			$this->render('login_html.php');
  		}
@@ -61,7 +62,7 @@
  		    }
  			global $g_ui_locale;
  			
-			$vs_redirect_url = $this->request->getParameter('redirect', pString) ?: caNavUrl($this->request, null, null, null);
+			$vs_redirect_url = $this->request->getParameter('redirect', pString, null, ['forcePurify' => true]) ?: caNavUrl($this->request, null, null, null);
 			if (!$this->request->doAuthentication(array('dont_redirect_to_login' => true, 'redirect' => $vs_redirect_url, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
  				

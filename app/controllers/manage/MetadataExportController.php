@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -203,6 +203,42 @@ class MetadataExportController extends ActionController {
 
 			$this->render('export/export_destination_html.php');
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Export single record (usually via inspector)
+	 */
+	public function ExternalExportSingle() {
+		require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+		$target = $this->request->getParameter('target', pString);
+		$id = $this->request->getParameter('item_id', pInteger);
+		
+		if (!is_array($target_info = ExternalExportManager::getTargetInfo($target))) { 
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+		
+		if (!($t_subject = Datamodel::getInstance($target_info['table'], true))) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		// Can user export records of this type?
+		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3430?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+		// Can user read this particular item?
+		if(!caCanRead($this->getRequest()->getUserID(), $target_info['table'], $id)) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+		
+		$t_exporter = new ExternalExportManager();
+		$this->view->setVar('export_file', $f =array_shift($t_exporter->process($target_info['table'], $id, null, ['target' => $target])));
+		$this->view->setVar('file_name', pathinfo($f, PATHINFO_BASENAME));
+		$this->view->setVar('export_content_type', 'application/octet-stream'); 
+		$this->render('export/download_export_binary.php');
 	}
 	# -------------------------------------------------------
 	public function ProcessDestination() {

@@ -102,6 +102,7 @@ class BaseEditorController extends ActionController {
 				'duplicate_nonpreferred_labels' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_nonpreferred_labels'),
 				'duplicate_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_attributes'),
 				'duplicate_relationships' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationships'),
+				'duplicate_current_relationships_only' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_current_relationships_only'),
 				'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
 				'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
 				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
@@ -212,6 +213,10 @@ class BaseEditorController extends ActionController {
 
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
+
+		// Are there metadata dictionary alerts?
+		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
+		$this->getView()->setVar('show_show_notifications', (is_array($violations_to_prompt) && (sizeof($violations_to_prompt) > 0)));
 
 		$this->render("{$vs_view}.php");
 	}
@@ -437,6 +442,10 @@ class BaseEditorController extends ActionController {
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
+		// Are there metadata dictionary alerts?
+		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
+		$this->getView()->setVar('show_show_notifications', (sizeof($violations_to_prompt) > 0));
+		
 		$this->render('screen_html.php');
 	}
 	# -------------------------------------------------------
@@ -743,7 +752,7 @@ class BaseEditorController extends ActionController {
 		
 		// Summary formats list
 		$formats = [];
-		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName()]))) {
+		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName(), 'restrictToTypes' => $t_subject->getTypeID()]))) {
             $num_available_templates = sizeof($available_templates);
             foreach($available_templates as $k => $v) {
                 if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
@@ -789,6 +798,7 @@ class BaseEditorController extends ActionController {
 		$this->view->setVar('bundle_displays', $va_displays);
 
 		// Check validity and access of specified display
+		$media_to_append = [];
 		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$this->view->setVar('display_id', $vn_display_id);
 
@@ -809,10 +819,20 @@ class BaseEditorController extends ActionController {
 					'display' => $vs_header,
 					'settings' => $va_settings
 				);
+				
+				$e = explode(".", $va_display_item['bundle_name'])[1];
+				if ($t_subject->hasElement($e) && (ca_metadata_elements::getElementDatatype($e) === __CA_ATTRIBUTE_VALUE_MEDIA__) && isset($va_settings['appendMultiPagePDFToPDFOutput']) && (bool)$va_settings['appendMultiPagePDFToPDFOutput']) {
+				    $media = $t_subject->get($va_display_item['bundle_name'].'.path', ['returnAsArray' => true, 'version' => 'original']);;
+				    $mimetypes = $t_subject->get($va_display_item['bundle_name'].'.original.mimetype', ['returnAsArray' => true]);
+				    foreach($mimetypes as $i => $mimetype) {
+				        if ($mimetype !== 'application/pdf') { continue; }
+				        $media_to_append[] = $media[$i];
+				    }
+				  
+				}
 			}
-
 			$this->view->setVar('placements', $va_display_list);
-
+ 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
 		} else {
 			$vn_display_id = null;
@@ -861,10 +881,15 @@ class BaseEditorController extends ActionController {
                     $this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
 
                     $vs_content = $this->render($va_template_info['path']);
+                    
+                    // Printable views can pass back PDFs to append if they want...
+                    if(is_array($media_set_in_view_to_append = $this->view->getVar('append'))) {
+                        $media_to_append = array_merge($media_to_append, $media_set_in_view_to_append);
+                    }
 
                     $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
             
-                    $o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+                    $o_pdf->render($vs_content, array('stream'=> true, 'append' => $media_to_append, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
 
                     $vb_printed_properly = true;
                     break;
@@ -1202,8 +1227,12 @@ class BaseEditorController extends ActionController {
 		$this->view->setVar('subject_id', $vn_subject_id);
 		$this->view->setVar('t_subject', $t_subject);
 
-		MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));
-
+        if ($t_subject->getAppConfig()->get($t_subject->tableName().'_dont_use_labels')) {
+            MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')) : _t('new %1', $t_subject->getTypeName())));
+        } else {
+		    MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));
+        }
+        
 		// pass relationship parameters to Save() action from Edit() so
 		// that we can create a relationship for a newly created object
 		if($vs_rel_table = $this->getRequest()->getParameter('rel_table', pString)) {
@@ -1229,6 +1258,14 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('above_id', $vn_above_id = $this->request->getParameter('above_id', pInteger));
 				$this->view->setVar('after_id', $vn_after_id = $this->request->getParameter('after_id', pInteger));
 				$t_subject->set($vs_parent_id_fld, $vn_parent_id);
+
+				if ($vn_above_id > 0) { 
+				    Session::setVar('default_hierarchy_add_mode', 'above');
+				} elseif($vn_after_id > 0) {
+				    Session::setVar('default_hierarchy_add_mode', 'next_to');
+				} else {
+				    Session::setVar('default_hierarchy_add_mode', 'under');
+				}
 
 				$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
 				if (
@@ -2300,61 +2337,6 @@ class BaseEditorController extends ActionController {
 		$this->render('object_representation_process_media_json.php');
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function MediaReplicationControls($pt_representation=null) {
-		if ($pt_representation) {
-			$pn_representation_id = $pt_representation->getPrimaryKey();
-			$t_rep = $pt_representation;
-		} else {
-			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-			$t_rep = new ca_object_representations($pn_representation_id);
-		}
-		$this->view->setVar('target_list', $t_rep->getAvailableMediaReplicationTargetsAsHTMLFormElement('target', 'media'));
-		$this->view->setVar('representation_id', $pn_representation_id);
-		$this->view->setVar('t_representation', $t_rep);
-
-		$this->render('object_representation_media_replication_controls_html.php');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function StartMediaReplication() {
-		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-		$ps_target = $this->request->getParameter('target', pString);
-		$t_rep = new ca_object_representations($pn_representation_id);
-
-		$this->view->setVar('target_list', $t_rep->getAvailableMediaReplicationTargetsAsHTMLFormElement('target', 'media'));
-		$this->view->setVar('representation_id', $pn_representation_id);
-		$this->view->setVar('t_representation', $t_rep);
-		$this->view->setVar('selected_target', $ps_target);
-
-		$t_rep->replicateMedia('media', $ps_target);
-
-		$this->MediaReplicationControls($t_rep);
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function RemoveMediaReplication() {
-		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-		$ps_target = $this->request->getParameter('target', pString);
-		$ps_key = urldecode($this->request->getParameter('key', pString));
-		$t_rep = new ca_object_representations($pn_representation_id);
-
-		$this->view->setVar('target_list', $t_rep->getAvailableMediaReplicationTargetsAsHTMLFormElement('target', 'media'));
-		$this->view->setVar('representation_id', $pn_representation_id);
-		$this->view->setVar('t_representation', $t_rep);
-		$this->view->setVar('selected_target', $ps_target);
-
-		$t_rep->removeMediaReplication('media', $ps_target, $ps_key);
-
-		$this->MediaReplicationControls($t_rep);
-	}
-	# -------------------------------------------------------
 	# File download
 	# -------------------------------------------------------
 	/**
@@ -2457,7 +2439,7 @@ class BaseEditorController extends ActionController {
 							}
 							$vs_file_name = join('_', $va_tmp);
 						} else {
-							$vs_file_name = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version;
+							$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						}
 
 						if (isset($va_file_names[$vs_file_name.'.'.$va_rep_info['EXTENSION']])) {

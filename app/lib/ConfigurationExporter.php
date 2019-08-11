@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -452,7 +452,7 @@ final class ConfigurationExporter {
 							// we export all settings (not just non-default) when we're running diff exports ..
 							// otherwise we only care about non default ones
 							if($this->opn_modified_after || ($vs_value != $va_available_settings[$vs_setting]["default"])) {
-								$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								$vo_settings->appendChild($vo_setting);
 								$vb_append_settings_element = true;
@@ -514,7 +514,7 @@ final class ConfigurationExporter {
 					$vo_settings = $this->opo_dom->createElement("settings");
 
 					foreach($va_restriction_settings as $vs_setting => $vs_value) {
-						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -577,7 +577,7 @@ final class ConfigurationExporter {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
 					foreach($va_values as $vs_value) {
-						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -628,6 +628,7 @@ final class ConfigurationExporter {
 			$vo_entry = $this->opo_dom->createElement("entry");
 			$vo_dict->appendChild($vo_entry);
 			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
+			$vo_entry->setAttribute('table', Datamodel::getTableName($t_entry->get('table_num')));
 
 			if(is_array($t_entry->getSettings())) {
 				$va_settings = array();
@@ -684,11 +685,11 @@ final class ConfigurationExporter {
 					$vo_rule->setAttribute('level', $va_rule['rule_level']);
 
 					// expression
-					if(isset($va_rule['expression']) && is_array($va_rule['expression']) && sizeof($va_rule['expression']) > 0) {
-						$vo_expression = $this->opo_dom->createElement('expression');
+					$vo_expression = $this->opo_dom->createElement('expression');
+					if(isset($va_rule['expression']) && $va_rule['expression']) {	
 						$vo_expression->appendChild(new DOMCdataSection($va_rule['expression']));
-						$vo_rule->appendChild($vo_expression);
 					}
+					$vo_rule->appendChild($vo_expression);
 
 					// rule settings
 					if(isset($va_rule['settings']) && is_array($va_rule['settings'])) {
@@ -759,10 +760,12 @@ final class ConfigurationExporter {
 		$qr_uis = $this->opo_db->query("SELECT * FROM ca_editor_uis ORDER BY ui_id");
 
 		while($qr_uis->nextRow()) {
+			$vs_type = Datamodel::getTableName($qr_uis->get("editor_type"));
+			if (!$vs_type) { continue; }
+			
 			$vo_ui = $this->opo_dom->createElement("userInterface");
 			$t_ui = new ca_editor_uis($qr_uis->get("ui_id"));
 
-			$vs_type = Datamodel::getTableName($qr_uis->get("editor_type"));
 
 			if(strlen($vs_code = $qr_uis->get("editor_code")) > 0) {
 				$vo_ui->setAttribute("code", $this->makeIDNO($vs_code));
@@ -918,12 +921,12 @@ final class ConfigurationExporter {
 
 				//$vo_type_restrictions = null;
 				if(is_array($t_screen->getTypeRestrictions()) && sizeof($t_screen->getTypeRestrictions())>0) {
-					//$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
+					$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
 
 					$va_types = [];
 					$vb_include_subtypes = false;
 					foreach($t_screen->getTypeRestrictions() as $va_restriction) {
-						//$vo_type_restriction = $this->opo_dom->createElement("restriction");
+						$vo_type_restriction = $this->opo_dom->createElement("restriction");
 
 						$t_instance = Datamodel::getInstanceByTableNum($va_restriction["table_num"]);
 						if($t_instance instanceof BaseRelationshipModel) {
@@ -938,7 +941,7 @@ final class ConfigurationExporter {
 						}
 
 						if ($va_restriction['include_subtypes'] && !$vb_include_subtypes)  { $vb_include_subtypes = true; }
-						//$vo_type_restrictions->appendChild($vo_type_restriction);
+						$vo_type_restrictions->appendChild($vo_type_restriction);
 					}
 
 					if (is_array($va_types) && (sizeof($va_types) > 0)) {
@@ -1441,13 +1444,13 @@ final class ConfigurationExporter {
 					if(is_array($va_value)) {
 						foreach($va_value as $vs_value) {
 							if(!is_array($vs_value)) { // ignore legacy search form settings which usually have nested arrays
-								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								$vo_settings->appendChild($vo_setting);
 							}
 						}
 					} else {
-						$vo_setting = $this->opo_dom->createElement("setting",$va_value);
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($va_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -1502,7 +1505,7 @@ final class ConfigurationExporter {
 					foreach($t_placement->getSettings() as $vs_setting => $va_values) {
 						if(is_array($va_values)) {
 							foreach($va_values as $vs_key => $vs_value) {
-								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								if($vs_setting=="label" || $vs_setting=="add_label") {
 									if(is_numeric($vs_key)) { $vs_key = $this->opt_locale->localeIDToCode($vs_key); }
@@ -1511,7 +1514,7 @@ final class ConfigurationExporter {
 								$vo_settings->appendChild($vo_setting);
 							}
 						} else {
-							$vo_setting = $this->opo_dom->createElement("setting",$va_values);
+							$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($va_values));
 							$vo_setting->setAttribute("name", $vs_setting);
 							$vo_settings->appendChild($vo_setting);
 						}

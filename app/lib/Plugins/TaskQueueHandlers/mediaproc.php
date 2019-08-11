@@ -312,7 +312,8 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 						"HASH" => $vs_dirhash,
 						"MAGIC" => $vs_magic,
 						"EXTENSION" => $vs_ext,
-						"MD5" => md5_file($vs_filepath)
+						"MD5" => md5_file($vs_filepath),
+						"FILE_LAST_MODIFIED" => filemtime($vs_filepath)
 					);
 				} else {
 					$o_media->set('version', $v);
@@ -349,7 +350,8 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 					}
 					$vs_magic = rand(0,99999);
 					$vs_filepath = $va_volume_info["absolutePath"]."/".$vs_dirhash."/".$vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v;
-												
+							
+					$o_media->set('colorspace', 'RGB');					
 					if (!($vs_output_file = $o_media->write($vs_filepath, $vs_output_mimetype, $va_options))) {
 						$this->error = $o_media->errors[0];
 						$o_media->cleanup();
@@ -429,7 +431,8 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 							"HASH" => $vs_dirhash,
 							"MAGIC" => $vs_magic,
 							"EXTENSION" => $vs_ext,
-							"MD5" => md5_file($vs_filepath.".".$vs_ext)
+							"MD5" => md5_file($vs_filepath.".".$vs_ext),
+							"FILE_LAST_MODIFIED" => filemtime($vs_filepath.".".$vs_ext)
 						);
 					}
 				}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2012 Whirl-i-Gig
+ * Copyright 2004-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -126,8 +126,8 @@ class ZipFile {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
-		$this->_tmp_data_path = tempnam(caGetTempDirPath(), "ZIP");
+	public function __construct($tmp_dir=null) {
+		$this->_tmp_data_path = tempnam($tmp_dir ? $tmp_dir : caGetTempDirPath(), "ZIP");
 		$this->_tmp_data = fopen($this->_tmp_data_path, "w+");
 	}
 	# ----------------------------------------------------------------------

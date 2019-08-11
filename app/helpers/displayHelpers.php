@@ -197,6 +197,20 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		return caExtractValuesByUserLocale($va_values);
 	}
 	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caExtractSettingsValueByUserLocale($setting, array $setting_values, $options=null) {
+		global $g_ui_locale;
+		if(!isset($setting_values[$setting])) { return null; }
+		if (!is_array($v = $setting_values[$setting])) { return null; }
+		
+		if (isset($v[$locale])) {
+			return $v[$locale];
+		}
+		return array_shift($v);
+	}
+	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocaleFromHierarchyChildList($pa_list, $ps_primary_key_name, $ps_label_display_field, $ps_use_if_no_label_field, $ps_default_text='???') {
 		if (!is_array($pa_list)) { return array(); }
 		$va_values = array();
@@ -267,6 +281,34 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$vs_output .= caHTMLHiddenInput($vs_f, array('value' => $vs_v));
 		}
 		$vs_output .= caHTMLHiddenInput($t_instance->primaryKey(), array('value' => $t_instance->getPrimaryKey()));
+		$vs_output .= "</form>\n";
+		
+		return $vs_output;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caDeleteMultipleWarningBox($po_request, $t_instance, $row_ids, $message, $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters) {
+		if ($vs_warning = isset($pa_parameters['warning']) ? $pa_parameters['warning'] : null) {
+			$vs_warning = '<br/>'.$vs_warning;
+		}
+		
+		$vs_output = caFormTag($po_request, 'Delete', 'caDeleteForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false,'disableUnsavedChangesWarning' => true));
+		$vs_output .= "<div class='delete-control-box'>".caFormControlBox(
+			"<div class='delete_warning_box'>"._t('Really delete %1?', $message)."</div>",
+			$vs_warning,
+			caFormSubmitButton($po_request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
+			caFormNavButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters)
+		)."</div>\n";
+		
+		
+		foreach(array_merge($pa_parameters, array('confirm' => 1)) as $vs_f => $vs_v) {
+			$vs_output .= caHTMLHiddenInput($vs_f, array('value' => $vs_v));
+		}
+		foreach($row_ids as $row_id) {
+			$vs_output .= caHTMLHiddenInput("row_id[]", array('value' => $row_id));
+		}
 		$vs_output .= "</form>\n";
 		
 		return $vs_output;
@@ -915,28 +957,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
 				} else {
 					if ($po_view->request->user->canDoAction('can_see_current_location_in_inspector_ca_objects')) {
-						if (($t_ui && method_exists($t_item, "getObjectHistory")) && (is_array($va_placements = $t_ui->getPlacementsForBundle('ca_objects_history')) && (sizeof($va_placements) > 0))) {
-							//
-							// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
-							//
-							$va_placement = array_shift($va_placements);
-							$va_bundle_settings = caConvertCurrentLocationCriteriaToBundleSettings(); //$va_placement['settings'];
-							if (is_array($va_history = $t_item->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
-								$va_current_location = array_shift(array_shift($va_history));
-
-								if(!($vs_inspector_current_location_label = $po_view->request->config->get("ca_objects_inspector_current_location_label"))) {
-									$vs_inspector_current_location_label = _t('Current');
-								}
-								if ($va_current_location['display']) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>".$vs_inspector_current_location_label.':</strong><br/>'.$va_current_location['display']."</div>"; }
-							}
-						} elseif (method_exists($t_item, "getLastLocationForDisplay")) {
-							// If no ca_objects_history bundle is configured then display the last storage location
-							if ($vs_current_location = $t_item->getLastLocationForDisplay("<ifdef code='ca_storage_locations.parent.preferred_labels'>^ca_storage_locations.parent.preferred_labels ➜ </ifdef>^ca_storage_locations.preferred_labels.name")) {
-								$vs_buf .= "<br/><div class='inspectorCurrentLocation'>"._t('Location: %1', $vs_current_location)."</div>\n";
-								$vs_full_location_hierarchy = $t_item->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_");
-								if ($vs_full_location_hierarchy !== $vs_current_location) { TooltipManager::add(".inspectorCurrentLocation", $vs_full_location_hierarchy); }
-							}
-						}
+						if (method_exists($t_item, "getHistory") && ($inspector_current_value_label = $t_item->getInspectorHistoryTrackingDisplayPolicy('label'))) {
+							if ($inspector_current_value = $t_item->getCurrentValueForDisplay()) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$inspector_current_value}</div>"; }
+						} 
 					}
 				}
 				
@@ -1243,18 +1266,6 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 			}
 			
-			
-			// export options		
-			if ($vn_item_id && $vs_select = $po_view->getVar('available_mappings_as_html_select')) {
-				$vs_more_info .= "<div class='inspectorExportControls'>".caFormTag($po_view->request, 'exportItem', 'caExportForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-				$vs_more_info .= $vs_select;
-				$vs_more_info .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
-				$vs_more_info .= caHTMLHiddenInput('download', array('value' => 1));
-				$vs_more_info .= caFormSubmitLink($po_view->request, 'Export &rsaquo;', 'button', 'caExportForm');
-				$vs_more_info .= "</form></div>";
-			}
-			
-			
 			$va_creation = $t_item->getCreationTimestamp();
 			$va_last_change = $t_item->getLastChangeTimestamp();
 			
@@ -1283,15 +1294,47 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					TooltipManager::add("#caInspectorChangeDate", "<h2>"._t('Last changed on')."</h2>"._t('Last changed on %1', caGetLocalizedDate($va_last_change['timestamp'], array('dateFormat' => 'delimited'))));
 				}
 				
-				if (method_exists($t_item, 'getMetadataDictionaryRuleViolations') && is_array($va_violations = $t_item->getMetadataDictionaryRuleViolations()) && (($vn_num_violations = (sizeof($va_violations))) > 0)) {
-					$va_violation_messages = array();
+				if (method_exists($t_item, 'getMetadataDictionaryRuleViolations') && is_array($va_violations = $t_item->getMetadataDictionaryRuleViolations()) && (($total_num_violations = (sizeof($va_violations))) > 0)) {
+					if (!is_array($violations_for_current_screen = $t_item->getMetadataDictionaryRuleViolations(null, ['screen_id' => $po_view->request->getActionExtra()]))) { $violations_for_current_screen = []; }
+					$total_num_violations_for_current_screen = sizeof($violations_for_current_screen);
+					
+					$va_violation_messages = [];
 					foreach($va_violations as $vn_violation_id => $va_violation) {
 						$vs_label = $t_item->getDisplayLabel($va_violation['bundle_name']);
-						$va_violation_messages[] = "<li><em><u>{$vs_label}</u></em> ".$va_violation['violationMessage']."</li>";
+						$screen = '';
+						$in_this_tab = false;
+						if (isset($violations_for_current_screen[$vn_violation_id])) { 
+						    $screen = _t('(on this tab)');
+						    $in_this_tab = true;
+						} else {
+						    $b = explode(".", $va_violation['bundle_name']);
+						    $bundle = array_pop($b);
+						    
+						    $placements = $t_ui->getPlacementsForBundle($bundle, $po_view->request, []);
+						    if (!is_array($placements) || !sizeof($placements)) {
+						        $placements = $t_ui->getPlacementsForBundle("ca_attribute_{$bundle}", $po_view->request, []);
+						    }
+						    if(is_array($placements)) {
+						        $placement = array_shift($placements);
+						        $screen = _t("(on tab <em>%1</em>)", $placement['screen_label']);
+						    }
+						}
+						$va_violation_messages[] = "<li ".($in_this_tab ? "class='caMetadataDictionaryViolationInCurrentTab'" : "class='caMetadataDictionaryViolationNotInCurrentTab'")."><em><u>{$vs_label}</u></em> ".caExtractSettingsValueByUserLocale('violationMessage', $va_violation)." {$screen}</li>";
 					}
 					
-					$vs_more_info .= "<div id='caInspectorViolationsList'>".($vs_num_violations_display = "<img src='".$po_view->request->getThemeUrlPath()."/graphics/icons/warning_small.gif' border='0'/> ".(($vn_num_violations > 1) ? _t('%1 problems require attention', $vn_num_violations) : _t('%1 problem requires attention', $vn_num_violations)))."</div>\n"; 
-					TooltipManager::add("#caInspectorViolationsList", "<h2>{$vs_num_violations_display}</h2><ol>".join("\n", $va_violation_messages))."</ol>\n";
+					$vs_num_violations_display = null;
+					if($total_num_violations_for_current_screen > 0) {
+					    if ($total_num_violations_for_current_screen != $total_num_violations) {
+					        $vs_more_info .= "<div id='caInspectorViolationsList'>".caNavIcon(__CA_NAV_ICON_ALERT__, "14px")." ".($vs_num_violations_display = (($total_num_violations_for_current_screen > 1) ? _t('%1 problems on this tab require attention (of %2 total)', $total_num_violations_for_current_screen, $total_num_violations) : _t('%1 problem on this tab requires attention (of %2 total)', $total_num_violations_for_current_screen, $total_num_violations)))."</div>\n"; 
+					    } else {
+					        $vs_more_info .= "<div id='caInspectorViolationsList'>".caNavIcon(__CA_NAV_ICON_ALERT__, "14px")." ".($vs_num_violations_display = (($total_num_violations_for_current_screen > 1) ? _t('%1 problems on this tab require attention', $total_num_violations) : _t('%1 problem on this tab requires attention', $total_num_violations)))."</div>\n"; 
+					    }
+					} else {
+					    $vs_more_info .= "<div id='caInspectorViolationsList'>".caNavIcon(__CA_NAV_ICON_ALERT__, "14px")." ".($vs_num_violations_display = (($total_num_violations > 1) ? _t('%1 problems require attention', $total_num_violations) : _t('%1 problem requires attention', $total_num_violations)))."</div>\n"; 
+					}
+					if($vs_num_violations_display) { 
+					    TooltipManager::add("#caInspectorViolationsList", "<h2>{$vs_num_violations_display}</h2><ol>".join("\n", $va_violation_messages))."</ol>\n";
+				    }
 				}
 				
 				$vs_more_info .= "</div>\n";
@@ -1790,27 +1833,52 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		
 		
 
-		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
-			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
+		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey()) {
+			if (ca_data_exporters::getExporters($t_item->tableNum(), ['countOnly' => true]) > 0) {
+				$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
 				
-			$vs_buf .= _t('Export this %1', mb_strtolower($vs_type_name, 'UTF-8'))." ";
-			$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
+				$vs_buf .= _t('Export data')." ";
+				$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
 
-			$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-			$vs_buf .= "<div id='exporterFormList'>";
-			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
-			$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
-			$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
-			$vs_buf .= "</div>\n";
-			$vs_buf .= "</form>";
+
+				$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+				$vs_buf .= "<div id='exporterFormList'>";
+				$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
+				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+				$vs_buf .= "</div>\n";
+				$vs_buf .= "</form>";
 				
-			$vs_buf .= "</div>";
+				$vs_buf .= "</div>";
 
-			$vs_buf .= "<script type='text/javascript'>";
-			$vs_buf .= "jQuery(document).ready(function() {";
-			$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
-			$vs_buf .= "});";
-			$vs_buf .= "</script>";
+				$vs_buf .= "<script type='text/javascript'>";
+				$vs_buf .= "jQuery(document).ready(function() {";
+				$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
+				$vs_buf .= "});";
+				$vs_buf .= "</script>";
+			}
+			
+			require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+			if (ExternalExportManager::getTargets(['countOnly' => true, 'table' => $t_item->tableNum(), 'restrictToTypes' => [$t_item->getTypeCode()]]) > 0) {
+				$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExternalExportItemButton">';
+				$vs_buf .= _t('Export to external repository')." ";
+				$vs_buf .= "<a class='button' onclick='jQuery(\"#externalExporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
+
+				$vs_buf .= caFormTag($po_view->request, 'ExternalExportSingle', 'caExternalExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+				$vs_buf .= "<div id='externalExporterFormList'>";
+				$vs_buf .= ExternalExportManager::getTargetListAsHTMLFormElement('target', $t_item->tableNum(), array('id' => 'caExternalExporterList'), array('width' => '120px', 'restrictToTypes' => [$t_item->getTypeCode()]));
+				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExternalExportForm");
+				$vs_buf .= "</div>\n";
+				$vs_buf .= "</form>";
+				$vs_buf .= "</div>";
+
+				$vs_buf .= "<script type='text/javascript'>";
+				$vs_buf .= "jQuery(document).ready(function() {";
+				$vs_buf .= "jQuery(\"#externalExporterFormList\").hide();";
+				$vs_buf .= "});";
+				$vs_buf .= "</script>";
+			}
 		}
 		
 		
@@ -2291,6 +2359,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @param array $pa_directives
 	 * @param array $pa_options Options include:
 	 *      omitUnits = Omit unit specifier on dimensional quantities. [Default is false]
+	 *      forceEnglishUnits = 
+	 *      forceMetricUnits = 
 	 *
 	 * @return string
 	 */
@@ -2299,6 +2369,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
 
 		$pb_omit_units = caGetOption('omitUnits', $pa_options, false);
+		$force_english_units = caGetOption('forceEnglishUnits', $pa_options, null, ['validValues' => ['ft', 'in']]);
+		$force_metric_units = caGetOption('forceMetricUnits', $pa_options, null, ['validValues' => ['m', 'cm', 'mm']]);
 		
 		$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
 		$va_add_periods_list = $o_dimensions_config->get('add_period_after_units');
@@ -2314,7 +2386,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                         $vo_measurement = caParseLengthDimension($ps_value);
                         
                         $vs_measure_conv = null;
-                        switch($vs_units = strtolower($va_tmp[1])) {
+                        $vs_units = strtolower($va_tmp[1]);
+                        if ($force_english_units && in_array($vs_units, ['in', 'in.', 'inches', 'inch', '"', 'ft', 'ft.', 'foot', 'feet', "'"])) {
+                            $vs_units = $force_english_units;
+                        }
+                        if ($force_metric_units && in_array($vs_units, ['m', 'cm'])) {
+                            $vs_units = $force_metric_units;
+                        }
+                        switch($vs_units) {
                             case 'infrac':
                             case 'english':
                             case 'fractionalenglish':
@@ -2325,11 +2404,12 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                                 $vs_in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
                                 $vn_value_in_inches = (float)preg_replace("![^0-9\.]+!", "", $vs_in_inches);
                                 $va_measure_conv = [];
-                                if ($vn_value_in_inches > $o_dimensions_config->get('use_feet_for_display_up_to')) {
+                                
+                                if (!$force_english_units && ($vn_value_in_inches > $o_dimensions_config->get('use_feet_for_display_up_to'))){
                                     if ($vn_in_miles = (int)($vn_value_in_inches / (12 * 5280))) { $va_measure_conv[] = "{$vn_in_miles} miles".((!$pb_omit_units && in_array('MILE', $va_add_periods_list)) ? '.' : ''); }
                                     $vn_value_in_inches -= ($vn_in_miles * (12 * 5280));
                                 }
-                                if ($vn_value_in_inches > $o_dimensions_config->get('use_inches_for_display_up_to')) {
+                                if (($force_english_units == 'ft') || (!$force_english_units && ($vn_value_in_inches > $o_dimensions_config->get('use_inches_for_display_up_to')))) {
                                     if ($vn_in_feet = (int)($vn_value_in_inches / 12)) { $va_measure_conv[] = "{$vn_in_feet} ft".((!$pb_omit_units && in_array('FEET', $va_add_periods_list)) ? '.' : ''); }
                                     $vn_value_in_inches -= (12 * $vn_in_feet);
                                 }
@@ -2343,11 +2423,12 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                             case 'metric':
                                 $vs_in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
                                 $vn_value_in_cm = (float)preg_replace("![^0-9\.]+!", "", $vs_in_cm);
-                                if ($vn_value_in_cm <= $o_dimensions_config->get('use_millimeters_for_display_up_to')) {
+                                
+                                if (($force_metric_units == 'mm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_millimeters_for_display_up_to')))) {
                                     $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::MILLIMETER, (int)$o_dimensions_config->get('millimeter_decimal_precision')).((!$pb_omit_units && in_array('MILLIMETER', $va_add_periods_list)) ? '.' : '');
-                                } elseif ($vn_value_in_cm <= $o_dimensions_config->get('use_centimeters_for_display_up_to')) {
+                                } elseif (($force_metric_units == 'cm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_centimeters_for_display_up_to')))) {
                                     $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, (int)$o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
-                                } elseif ($vn_value_in_cm <= $o_dimensions_config->get('use_meters_for_display_up_to')) {
+                                } elseif (($force_metric_units == 'm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_meters_for_display_up_to')))) {
                                     $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, (int)$o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
                                 } else {
                                     $vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::KILOMETER, $o_dimensions_config->get('kilometer_decimal_precision')).((!$pb_omit_units && in_array('KILOMETER', $va_add_periods_list)) ? '.' : '');
@@ -2853,7 +2934,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						$va_item['type_id'] = $qr_rel_items->get("{$vs_rel_table}.{$vs_type_id_fld}");
 					}
 					
-					$va_item['_display'] = caProcessTemplateForIDs("<span>{$vs_template}</span>", $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
+					$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
 					$va_item['label'] = mb_strtolower($qr_rel_items->get("{$vs_table}.preferred_labels"));
 					if ($vs_idno_fld) { $va_item['idno'] = mb_strtolower($qr_rel_items->get("{$vs_table}.{$vs_idno_fld}")); }
 					
@@ -3003,7 +3084,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	/**
 	 *
 	 */
-	function caObjectsDisplayDownloadLink($po_request, $pn_object_id = null) {
+	function caObjectsDisplayDownloadLink($po_request, $pn_object_id = null, $pt_representation = null) {
 		$o_config = caGetDetailConfig();
 		$vn_can_download = false;
 		if($vs_allow = $o_config->get(['allowObjectRepresentationDownload', 'allow_ca_objects_representation_download'])){
@@ -3039,6 +3120,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$t_list_item = new ca_list_items($t_object->get("type_id"));
 			$va_object_type_code = $t_list_item->get("idno");
 			if(!in_array($va_object_type_code, $va_types)){
+				$vn_can_download = false;
+			}
+		}	
+		$va_download_access_settings = $po_request->config->get("download_access_settings");
+		if((!$po_request->config->get("dont_enforce_access_settings")) && $pt_representation && is_array($va_download_access_settings) && sizeof($va_download_access_settings)){
+			$vn_rep_access = $pt_representation->get("access");
+			if($vn_rep_access && !in_array($vn_rep_access, $va_download_access_settings)){
 				$vn_can_download = false;
 			}
 		}
@@ -3244,7 +3332,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
 		global $g_ui_locale;
 		
-		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
+		$definition = caGetOption($g_ui_locale, $pa_settings['definition'], null);
+		if(is_array($definition)) { $definition = join ("", $definition); }
+		if (!($vs_definition = trim($definition))) { return ''; }
 		
 		$vs_buf = '';
 		$vs_buf .= "<span class='iconButton'>";
@@ -3806,7 +3896,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
 			$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' title='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
 		}
-		if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id)){
+		if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id, $pt_representation)){
 			# -- get version to download configured in media_display.conf
 			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
@@ -4496,14 +4586,21 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                                     $ps_text = str_replace($vs_tag, '', $ps_text); // remove tag that cannot be resolved.
                                     continue; 
                                 }
+                                
+                                if (!($caption = trim($qr_m->get('caption')))) { $caption = null; }
+                                if (!($title = trim($qr_m->get('title')))) { $title = null; }
+                                if (!($idno = trim($qr_m->get('idno')))) { $idno = null; }
+                                
+                                $alt_text = caGetOption(['caption', 'title', 'idno'], ['caption' => $caption, 'title' => $title, 'idno' => $idno], null);
+                                 
                                 if ($vs_template = $va_l['content']) {
-                                    $vs_template = str_replace("^title", $qr_m->get('title'), $vs_template);
-                                    $vs_template = str_replace("^caption", $qr_m->get('caption'), $vs_template);
-                                    $vs_template = str_replace("^idno", $qr_m->get('idno'), $vs_template);
-                                    $vs_template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media')))), $vs_template);
+                                    $vs_template = str_replace("^title", $title, $vs_template);
+                                    $vs_template = str_replace("^caption", $caption, $vs_template);
+                                    $vs_template = str_replace("^idno", $idno, $vs_template);
+                                    $vs_template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $vs_template);
                                     $ps_text = str_replace($vs_tag, $vs_template, $ps_text);
                                 } else {
-                                    $ps_text = str_replace($vs_tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media')))), $ps_text);
+                                    $ps_text = str_replace($vs_tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $ps_text);
                                 }
                                 
                                 break;
@@ -4614,5 +4711,15 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			return $g_blank_label_text = _t($label_text);
 		}
 		return $g_blank_label_text = _t('BLANK');
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetDisplayLabelForBundle($bundle) {
+		$tmp = explode('.', $bundle);
+		if (!($t = Datamodel::getInstance($tmp[0], true))) { return null; }
+		
+		return $t->getDisplayLabel($bundle);
 	}
 	# ------------------------------------------------------------------

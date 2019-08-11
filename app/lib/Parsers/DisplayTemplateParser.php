@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2018 Whirl-i-Gig
+ * Copyright 2015-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,11 @@ class DisplayTemplateParser {
 	 *
 	 */
 	static $value_count_cache = null;
+	
+	/**
+	 *
+	 */
+	static $join_tag_vals = [];
 	
 	# -------------------------------------------------------------------
 	/**
@@ -149,6 +154,9 @@ class DisplayTemplateParser {
 			'useLocaleCodes') as $vs_k) {
 			unset($pa_options[$vs_k]);
 		}
+		
+		self::$join_tag_vals = [];
+		
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		unset($pa_options['returnAsArray']);
@@ -419,11 +427,15 @@ class DisplayTemplateParser {
 					break;
 				case 'ifdef':
 				case 'ifnotdef':
-					$vb_defined = DisplayTemplateParser::_evaluateCodeAttribute($pr_res, $o_node, ['filters' => caGetOption('filters', $pa_options, null), 'index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present']);
+					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
+					$opts = ['filters' => caGetOption('filters', $pa_options, null), 'index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present'];
+					if (!is_null($vb_omit_blanks)) { $opts['includeBlankValuesInArray'] = !$vb_omit_blanks; }
+					
+					$vb_defined = DisplayTemplateParser::_evaluateCodeAttribute($pr_res, $o_node, $opts);
 					
 					if ((($vs_tag == 'ifdef') && $vb_defined) || (($vs_tag == 'ifnotdef') && $vb_defined)) {
 						// Make sure returned values are not empty
-						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);
+						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $v=DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);
 						if ($pb_is_case) { break(2); }
 					}
 					break;
@@ -441,13 +453,19 @@ class DisplayTemplateParser {
 					$va_exclude_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 					$va_restrict_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
 					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
-		
+					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
+					
+					$va_get_options = ['limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $pa_check_access, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types];
+					if (!is_null($vb_omit_blanks)) { 
+						$pa_options['includeBlankValuesInArray'] = $va_get_options['includeBlankValuesInArray'] = !$vb_omit_blanks; 
+					}
+					
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
 					
 					if (($vn_limit = ($vn_max > 0) ? $vn_max : $vn_min) == 0) { $vn_limit = 1; }
 					$vn_limit++;
 					foreach($va_codes as $vs_code) {
-						$vn_count = (int)$pr_res->get($vs_code, ['limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $pa_check_access, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
+						$vn_count = (int)$pr_res->get($vs_code, $va_get_options);
 
                         if ($vb_bool == 'AND') {
                             $vm_count += $vn_count;
@@ -534,7 +552,7 @@ class DisplayTemplateParser {
 				case 'unit':
 					$va_relative_to_tmp = $o_node->relativeTo ? explode(".", $o_node->relativeTo) : [$ps_tablename];
 				
-					if ($va_relative_to_tmp[0] && !($t_rel_instance = Datamodel::getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
+					if ($va_relative_to_tmp[0] && !($t_rel_instance = Datamodel::getInstanceByTableName($va_relative_to_tmp[0], true))) { continue(2); }
 					
 					$vn_last_unit_omit_count = 0;
 					
@@ -542,6 +560,7 @@ class DisplayTemplateParser {
 					$vs_unit_delimiter = $o_node->delimiter ? (string)$o_node->delimiter : $ps_delimiter;
 					$vb_unique = $o_node->unique ? (bool)$o_node->unique : false;
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
+					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 
 					$vb_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
 					if(!$vb_filter_non_primary_reps || (($o_node->filterNonPrimaryRepresentations == '0') || (strtolower($o_node->filterNonPrimaryRepresentations) == 'no'))) {
@@ -651,6 +670,7 @@ class DisplayTemplateParser {
 							$o_node->getInnerText(), $ps_tablename, $va_relative_ids,
 							array_merge(
 								$pa_options,
+								!is_null($vb_omit_blanks) ? ['includeBlankValuesInArray' => !$vb_omit_blanks] : [],
 								[
 									'sort' => $va_get_options['sort'],
 									'sortDirection' => $va_get_options['sortDirection'],
@@ -805,6 +825,7 @@ class DisplayTemplateParser {
 							$o_node->getInnerText(), $va_relative_to_tmp[0], $va_relative_ids,
 							array_merge(
 								$pa_options,
+								!is_null($vb_omit_blanks) ? ['includeBlankValuesInArray' => !$vb_omit_blanks] : [],
 								[
 									'sort' => $va_get_options['sort'],
 									'sortDirection' => $va_get_options['sortDirection'],
@@ -1211,6 +1232,7 @@ class DisplayTemplateParser {
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
+		    if (isset(self::$join_tag_vals[$vs_code]) && strlen(self::$join_tag_vals[$vs_code])) { return true; }
 			$va_parsed_tag_opts = DisplayTemplateParser::_parseTagOpts($vs_code);
 			$va_val_list = $pr_res->get($va_parsed_tag_opts['tag'], array_merge($va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true, 'convertCodesToDisplayText' => true, 'returnAsDecimal' => true, 'getDirectDate' => true]));
 			if(!is_array($va_val_list)) {  // no value
@@ -1625,6 +1647,7 @@ class DisplayTemplateParser {
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
+		    if (isset(self::$join_tag_vals[$vs_code]) && strlen(self::$join_tag_vals[$vs_code])) { return true; }
 			$vm_val = isset($pa_values[$vs_code]) ? $pa_values[$vs_code] : null;
 			$vb_value_present = (bool)$vm_val;
 			
@@ -1647,6 +1670,7 @@ class DisplayTemplateParser {
 	 *			removePrefix = string to remove from tags extracted from template before doing lookup into value array
 	 *			getFrom = a model instance to draw data from. If set, $pa_values is ignored.
 	 *			quote = quote replacement values (Eg. ^ca_objects.idno becomes "2015.001" rather than 2015.001). Value containing quotes will be escaped with a backslash. [Default is false]
+	 *          skipTagsWithoutValues = Don't process tags without a corresponding value in $pa_values. [Default is false]
 	 *
 	 * @return string Output of processed template
 	 */
@@ -1656,6 +1680,7 @@ class DisplayTemplateParser {
 		$ps_prefix = caGetOption('prefix', $pa_options, null);
 		$ps_remove_prefix = caGetOption('removePrefix', $pa_options, null);
 		$pb_quote = caGetOption('quote', $pa_options, false);
+		$pb_skip_tags_without_values = caGetOption('skipTagsWithoutValues', $pa_options, false);
 		
 		$va_tags = caGetTemplateTags($ps_template);
 		
@@ -1665,6 +1690,8 @@ class DisplayTemplateParser {
 		}
 		
 		foreach($va_tags as $vs_tag) {
+		    if ($pb_skip_tags_without_values && !isset($pa_values[$vs_tag])){ continue; }
+		    
 		    $va_tmp = (substr($vs_tag, 0, 5) === '^join') ? [$vs_tag] : explode("~", $vs_tag);
             $vs_proc_tag = $vs_tag;
             
@@ -1730,12 +1757,45 @@ class DisplayTemplateParser {
 	    $vb_omit_repeating_units_for_measurements_in_templates = (bool)$o_dim_config->get('omit_repeating_units_for_measurements_in_templates');
 	    
 	    $vs_last_units = null;
+	    
+        $force_english_units = $force_metric_units = null;
+	    foreach(array_reverse($va_elements) as $vs_element) {
+            $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
+            $va_directives = explode('~', $vs_element);
+            $vs_spec = array_shift($va_directives);
+            
+            try {
+	            $vo_measurement = caParseLengthDimension($pa_vals[$vs_spec]);
+	        } catch (Exception $e) {
+	            continue;
+	        }
+	        $in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
+	        $in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+	        
+	        if (!$force_english_units) {
+                if ((($threshold = $o_dim_config->get('force_feet_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {
+                    $force_english_units = 'ft';
+                } elseif ((($threshold = $o_dim_config->get('force_inches_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {
+                    $force_english_units = 'in';
+                }
+            }
+            if (!$force_metric_units) {
+                if ((($threshold = $o_dim_config->get('force_meters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'm';
+                } elseif ((($threshold = $o_dim_config->get('force_centimeters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'cm';
+                } elseif ((($threshold = $o_dim_config->get('force_millimeters_for_all_when_dimension_exceeds')) > 0) && ($in_cm > $threshold)) {
+                    $force_metric_units = 'mm';
+                }
+            }
+        }
         
+        $j = 1;
         foreach(array_reverse($va_elements) as $vs_element) {
             $vs_element = trim(str_replace($vs_relative_to_container, '', $vs_element), '.');
             $va_directives = explode('~', $vs_element);
             $vs_spec = array_shift($va_directives);
-            $vs_val = caProcessTemplateTagDirectives($pa_vals[$vs_spec], $va_directives);
+            $vs_val = caProcessTemplateTagDirectives($pa_vals[$vs_spec], $va_directives, ['forceEnglishUnits' => $force_english_units,  'forceMetricUnits' => $force_metric_units]);
             $va_val = ['val' => $vs_val, 'proc' => $vs_val, 'units' => null];
            
             if ($vb_omit_repeating_units_for_measurements_in_templates) {
@@ -1760,6 +1820,9 @@ class DisplayTemplateParser {
             }
             
             $va_acc[] = $va_val;
+            
+            self::$join_tag_vals["join_{$j}"] = 1;
+            $j++;
         }
         
         $va_acc = array_reverse($va_acc);

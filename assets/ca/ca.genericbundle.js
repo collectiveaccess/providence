@@ -272,9 +272,6 @@ var caUI = caUI || {};
 
 				var info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
-					if (!this.initialValues[id]) {
-						console.log("err", this.initialValues, this.initialValues[id], id, info, info[1]);
-					}
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}

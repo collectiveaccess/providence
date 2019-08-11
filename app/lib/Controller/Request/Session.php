@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2018 Whirl-i-Gig
+ * Copyright 2000-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -275,6 +275,17 @@ class Session {
 	 */
 	public static function getVarKeys() {
 		return is_array(Session::$s_session_vars) ? array_keys(Session::$s_session_vars) : array();
+	}
+	# ----------------------------------------
+	/**
+	 * Determine if session variable has been set
+	 * 
+	 * @param string $key 
+	 *
+	 * @return bool
+	 */
+	public static function varExists($key) {
+		return is_array(Session::$s_session_vars) ? isset(Session::$s_session_vars[$key]) : false;
 	}
 	# ----------------------------------------
 	/**

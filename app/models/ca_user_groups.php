@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,6 +79,13 @@ BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Description'), 'DESCRIPTION' => _t('Description of group. This text will be displayed to system administrators only and should clearly document the purpose of the group.'),
 				'BOUNDS_LENGTH' => array(0,65535)
+		),
+		'for_public_use' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('For public use?'), 'DESCRIPTION' => _t('If set, public users will be able to join this group using the group code.')
 		),
 		'user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

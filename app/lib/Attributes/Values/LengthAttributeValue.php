@@ -192,7 +192,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
             
             if (!in_array($vs_units, ['metric', 'english','as_entered'])) {
                 $vs_as_entered_units = caParseLengthDimension($pa_value_array['value_longtext1'])->getType();
-                $vs_units = 'as_entered'; //(in_array($vs_as_entered_units, [Zend_Measure_Length::INCH, Zend_Measure_Length::FEET, Zend_Measure_Length::MILE])) ? 'english' : 'metric';
+                $vs_units = 'as_entered'; 
             }
             
             switch($vs_units) {

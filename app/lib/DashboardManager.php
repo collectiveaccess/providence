@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,9 +137,10 @@
 		 * Adds widget to dashboard
 		 */ 
 		public function addWidget($ps_widget_name, $pn_column, $pa_settings=null) {
+			$col_count = is_array($this->opa_dashboard_config['columns'][$pn_column]) ? sizeof($this->opa_dashboard_config['columns'][$pn_column]) : 1;
 			$this->opa_dashboard_config['columns'][$pn_column][] = array(
 				'widget' => $ps_widget_name,
-				'widget_id' => md5($ps_widget_name.time().rand(0,100000).$pn_column.sizeof($this->opa_dashboard_config['columns'][$pn_column])),
+				'widget_id' => md5($ps_widget_name.time().rand(0,100000).$pn_column.$col_count),
 				'settings' => is_array($pa_settings) ? $pa_settings : array()
 			);
 			$this->opo_request->user->setVar('dashboard_config', $this->opa_dashboard_config);
@@ -296,5 +297,4 @@
 			return true;
 		}
 		# -------------------------------------------------------
-	
 	}
