@@ -570,7 +570,7 @@
 				}
 			
 				if ($t_rep->getPreferredLabelCount() == 0) {
-					$vs_label = (isset($pa_values['name']) && $pa_values['name']) ? $pa_values['name'] : '['._t('BLANK').']';
+					$vs_label = (isset($pa_values['name']) && $pa_values['name']) ? $pa_values['name'] : '['.caGetBlankLabelText().']';
 			
 					$t_rep->addLabel(array('name' => $vs_label), $pn_locale_id, null, true);
 					if ($t_rep->numErrors()) {

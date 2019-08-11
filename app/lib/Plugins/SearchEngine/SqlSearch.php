@@ -931,11 +931,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
 								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
 	
-								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['._t('BLANK').']')) {
+								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['.caGetBlankLabelText().']')) {
 									$t_ap = Datamodel::getInstanceByTableNum($va_access_point_info['table_num'], true);
 									if (is_a($t_ap, 'BaseLabel')) {	// labels have the literal text "[blank]" indexed to "blank" to indicate blank-ness 
 										$vb_is_blank_search = false;
-										$vs_term = _t('blank');
+										$vs_term = caGetBlankLabelText();
 									} else {
 										$vb_is_blank_search = true;
 										$vs_table_num = $va_access_point_info['table_num'];

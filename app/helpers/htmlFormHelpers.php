@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,7 @@
 	 *		values				= an array of values for the element, when the <select> allows multiple selections
 	 *		disabledOptions		= an associative array indicating whether options are disabled or not; keys are option *values*, values are boolean (true=disabled; false=enabled)
 	 *		contentArrayUsesKeysForValues = normally the keys of the $pa_content array are used as display options and the values as option values. Setting 'contentArrayUsesKeysForValues' to true will reverse the interpretation, using keys as option values.
+	 *		useOptionsForValues = set values to be the same as option text. [Default is false]
 	 *		width				= width of select in characters or pixels. If specifying pixels use "px" as the units (eg. 100px)
 	 *		colors				=
 	 * @return string HTML code representing the drop-down list
@@ -87,9 +88,12 @@
 			$va_colors = $pa_options['colors'];
 		}
 		
+		$vb_use_options_for_values = caGetOption('useOptionsForValues', $pa_options, false);
+		
 		$vb_uses_color = false;
 		if (isset($pa_options['contentArrayUsesKeysForValues']) && $pa_options['contentArrayUsesKeysForValues']) {
 			foreach($pa_content as $vs_val => $vs_opt) {
+				if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
 				if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 				if (!($SELECTED = (($vs_selected_val == $vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
 					$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
@@ -109,6 +113,7 @@
 				}
 			} else {
 				foreach($pa_content as $vs_opt => $vs_val) {
+					if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
 					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 					if (!($SELECTED = ($vs_selected_val == $vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
@@ -542,4 +547,3 @@ $vs_tag = "
 		return $vs_formatted_element;
 	}
 	# ------------------------------------------------------------------------------------------------
-?>
