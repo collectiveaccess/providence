@@ -585,12 +585,11 @@ class MultipartIDNumber extends IDNumber {
 		if (!$pm_value) { $pm_value = $this->getValue(); }
 		$va_element_info = $this->getElementInfo($ps_element_name);
 
-		$vs_table = $va_element_info['table'];
-		$vs_field = $va_element_info['field'];
-		$vs_sort_field = $va_element_info['sort_field'];
-
-		if (!$vs_table) { return 'ERR';}
-		if (!$vs_field) { return 'ERR';}
+		$vs_table = $this->getFormat();
+		if(!Datamodel::tableExists($vs_table)) { return 'ERR'; }
+		$vs_field = Datamodel::getTableProperty($vs_table, 'ID_NUMBERING_ID_FIELD');
+		if(!$vs_field) { return 'ERR'; }
+		$vs_sort_field = Datamodel::getTableProperty($vs_table, 'ID_NUMBERING_SORT_FIELD');
 		if (!$vs_sort_field) { $vs_sort_field = $vs_field; }
 
 		$vs_separator = $this->getSeparator();
