@@ -3014,6 +3014,12 @@ class ca_users extends BaseModel {
 					if(in_array($vs_k, array('roles', 'groups'))) { continue; }
 					$this->set($vs_k, $vs_v);
 				}
+				
+				if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ === "PROVIDENCE")) {
+				    $this->set('userclass', 0);
+				} else {
+				    $this->set('userclass', 1);
+				}
 
 				$vn_mode = $this->getMode();
 				$this->setMode(ACCESS_WRITE);
