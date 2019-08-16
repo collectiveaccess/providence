@@ -604,6 +604,7 @@
 			}
 
 			$vs_sql = null;
+			$pad_keys = false;
 
 			switch($vn_datatype = (int)$t_element->get('datatype')) {
 				case __CA_ATTRIBUTE_VALUE_LIST__:
@@ -646,6 +647,31 @@
 							(attr.row_id IN (?))
 						";
 					break;
+				case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+				    if (
+				        ($list_code = $t_element->getSetting('sortUsingList'))
+				        &&
+				        (($list_id = (int)caGetListID($list_code)) > 0)
+				    ) {
+                        $vs_sortable_value_fld = 'attr_vals.value_longtext2';
+                        $vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+				        
+				        $vs_sql = "
+							SELECT attr.row_id, LPAD(li.rank,9, '0') {$vs_sort_field}
+							FROM ca_attributes attr
+							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+							LEFT JOIN ca_list_items AS li ON attr_vals.value_longtext2 = li.idno
+							WHERE
+								(attr_vals.element_id = ?) AND
+								(attr.table_num = ?) AND
+								(attr_vals.{$vs_sort_field} IS NOT NULL) AND
+								(attr.row_id IN (?)) AND
+								(li.list_id = {$list_id})
+						";
+						
+						$pad_keys = true;
+				    }
+				    break;
 				default:
 					$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
 					$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
@@ -670,6 +696,9 @@
 			while($qr_sort->nextRow()) {
 				$va_row = $qr_sort->getRow();
 				$va_sort_keys[$va_row['row_id']] = $va_row[$vs_sort_field];
+			}
+			foreach($pa_hits as $id) {
+			    if(!isset($va_sort_keys[$id])) { $va_sort_keys[$id] = $pad_keys ? '000000000' : ''; }
 			}
 			return $va_sort_keys;
 		}
