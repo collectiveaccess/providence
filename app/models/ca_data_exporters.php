@@ -754,7 +754,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					if ($vs_mode == 'Constant') {
 						if(strlen($vs_source)<1) { // ignore constant rows without value
-							continue;
+							continue(2);
 						}
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
@@ -792,7 +792,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings') {
 						if(strlen($vs_source) < 1) { // ignore repitition rows without value
-							continue;
+							continue(2);
 						}
 
 						$va_new_items = array();

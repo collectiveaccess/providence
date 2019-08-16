@@ -541,7 +541,7 @@ class ItemService extends BaseJSONService {
 		}
 		
 		// tags
-		if(is_array($tags = $t_instance->getTags(null)) && sizeof($tags)) {
+		if(is_array($tags = $t_instance->getTags()) && sizeof($tags)) {
 		    $va_return['tags'] = $tags;
         } else {
             $va_return['tags'] = [];

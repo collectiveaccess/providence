@@ -294,8 +294,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		}
 		if (!$t_instance->getBundleInfo($ps_bundle_name)) { 
 			$this->postError(1100, $c=_t("Could not create user interface placement: bundle '%1' is not valid", $ps_bundle_name), "ca_editor_ui_screens::addPlacement");
-			// print "x={$c}<br>";
-// 			$this->getUI()->dump();
 			return false;
 		}
 		
@@ -865,7 +863,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						
 						break;
 					} else {
-						if (!($t_rel = Datamodel::getInstanceByTableName($vs_bundle, true))) { continue; }
+						if (!($t_rel = Datamodel::getInstanceByTableName($vs_bundle, true))) { continue(2); }
 						$va_path = array_keys(Datamodel::getPath($t_instance->tableName(), $vs_bundle));
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(

@@ -647,6 +647,13 @@
 					return urldecode($pn_row_id);
 					break;
 				# -----------------------------------------------------
+				case 'tags':
+					if ($tag = ca_item_tags::find(['tag_id' => $pn_row_id], ['returnAs' => 'firstModelInstance'])) {
+					    return $tag->get('ca_item_tags.tag');
+					}
+					return urldecode($pn_row_id);
+					break;
+				# -----------------------------------------------------
 				case 'checkouts':
 					$vs_status_text = null;
 					$vs_status_code = (isset($va_facet_info['status']) && $va_facet_info['status']) ? $va_facet_info['status'] : $pn_row_id;
@@ -1494,7 +1501,7 @@
 											foreach($va_value as $vs_f => $vs_v) {
 												switch($vn_datatype) {			
 													case __CA_ATTRIBUTE_VALUE_LIST__:
-														if ($vs_f != 'item_id') { continue; }
+														if ($vs_f != 'item_id') { continue(2); }
 
 														// Include sub-items
 														$t_list_item = new ca_list_items();

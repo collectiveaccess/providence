@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,7 +52,6 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 	var $opt_role;
 	# -------------------------------------------------------
 	protected function setUp(){
-		$o_dm = new Datamodel(true); // PHPUnit seems to barf on the caching code if we don't instanciate a Datamodel instance
 		Datamodel::getTableNum("ca_objects");
 
 		// set up test role

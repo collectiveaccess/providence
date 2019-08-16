@@ -213,7 +213,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 								    }
 								} else {
 								    foreach($va_data['nonpreferred_labels'] as $loc => $labels) {
-								        $ret = array_merge($ret, array_map(function($v) use ($vs_display_field) { return $v[$vs_display_field]; }, $labels));
+								        $ret = array_merge($ret, array_map(function($v) use ($vs_display_field) { return is_array($v) ? $v[$vs_display_field] : null; }, $labels));
 								    }
 								}
 								return $ret;
@@ -423,8 +423,11 @@ class CollectiveAccessDataReader extends BaseDataReader {
 							} else {
 								$va_rels[] = isset($va_rel[$va_col[1].'_code']) ? $va_rel[$va_col[1].'_code'] : $va_rel[$va_col[1]];
 							}
+						} else {
+						    $va_rels[] = '';
 						}
 					}
+					
 					if ($pb_return_as_array) {
 						return $va_rels;
 					} else {

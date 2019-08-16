@@ -1,4 +1,4 @@
-# README: Providence version 1.7.7
+# README: Providence version 1.7.8
 
 [![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
 
@@ -8,9 +8,9 @@ CollectiveAccess is a web-based suite of applications providing a framework for 
 
 CollectiveAccess is freely available under the open source GNU Public License version 3.
 
-### About CollectiveAccess 1.7.7
+### About CollectiveAccess 1.7.8
 
-Version 1.7.7 is a maintenance release with many bug fixes and a handful of new features. It is the first release compatible with PHP 7.2. Note that it has not been fully tested with PHP 7.3 or MySQL 8.0.
+Version 1.7.8 is a maintenance release with a handful of bug fixes. It is the first release compatible with PHP 7.2. Note that it has not been fully tested with PHP 7.3 or MySQL 8.0.
 
 
 ### Installation
@@ -21,7 +21,7 @@ First make sure your server meets all of the [requirements](https://docs.collect
 
 NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
 
-To update from a version 1.7.x installation decompress the CollectiveAccess Providence 1.7.7 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), any local print templates (`app/printTemplates`) and your setup.php file.
+To update from a version 1.7.x installation decompress the CollectiveAccess Providence 1.7.8 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), any local print templates (`app/printTemplates`) and your setup.php file.
 
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
@@ -36,9 +36,9 @@ The migration number may vary depending upon the version you're upgrading from. 
 
 NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
 
-To update from a version 1.6.x or older installation decompress the CollectiveAccess Providence 1.7.7 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), and any local print templates (`app/printTemplates`). 
+To update from a version 1.6.x or older installation decompress the CollectiveAccess Providence 1.7.8 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), and any local print templates (`app/printTemplates`). 
 
-Next rename your existing setup.php to something else (Eg. `setup.php-old`). Then copy the version 1.7.7 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your old setup.php file as-is. Only the format of the setup.php file has changed. 
+Next rename your existing setup.php to something else (Eg. `setup.php-old`). Then copy the version 1.7.8 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your old setup.php file as-is. Only the format of the setup.php file has changed. 
 
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
@@ -68,7 +68,7 @@ Be sure to run it as a user that has write permissions on all media.
 * Upgrade instructions: https://docs.collectiveaccess.org/wiki/Upgrading_Providence
 * Release Notes:  
   * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7
-  * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7.7
+  * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7.8
 * Forum: https://www.collectiveaccess.org/support/forum
 * Bug Tracker: https://clangers.collectiveaccess.org
 

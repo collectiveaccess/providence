@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -850,7 +850,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
  	 */
  	public function isSaveable($po_request, $ps_bundle_name=null) {
  		// Check actions
- 		if ($po_request->user->canDoAction('is_administrator')) {
+ 		if ($po_request->user->canDoAction('is_administrator') || $po_request->user->canDoAction('can_configure_relationship_types')) {
  			return true;
  		}
  		
@@ -865,7 +865,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
  		if (!$this->getPrimaryKey()) { return false; }
  			
  		// Check actions
- 		if ($this->getPrimaryKey() && $po_request->user->canDoAction('is_administrator')) {
+ 		if ($this->getPrimaryKey() && ($po_request->user->canDoAction('is_administrator') || $po_request->user->canDoAction('can_configure_relationship_types'))) {
  			return true;
  		}
  		

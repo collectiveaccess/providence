@@ -3014,6 +3014,12 @@ class ca_users extends BaseModel {
 					if(in_array($vs_k, array('roles', 'groups'))) { continue; }
 					$this->set($vs_k, $vs_v);
 				}
+				
+				if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ === "PROVIDENCE")) {
+				    $this->set('userclass', 0);
+				} else {
+				    $this->set('userclass', 1);
+				}
 
 				$vn_mode = $this->getMode();
 				$this->setMode(ACCESS_WRITE);
@@ -3245,7 +3251,17 @@ class ca_users extends BaseModel {
 		if (isset(ca_users::$s_user_action_access_cache[$vs_cache_key])) { return ca_users::$s_user_action_access_cache[$vs_cache_key]; }
 
 		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
-		if(!ca_user_roles::isValidAction($ps_action)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; }	// return false if action is not valid	
+		if(!ca_user_roles::isValidAction($ps_action)) { 
+		    // check for alternatives...
+		    if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $ps_action, $m)) {
+		        if (ca_user_roles::isValidAction("can_configure_".$m[2])) {
+		            return self::canDoAction("can_configure_".$m[2]);
+		        }
+		    }
+		    
+			// return false if action is not valid	
+		    return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; 
+		}
 		
 		// is user administrator?
 		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
