@@ -2778,7 +2778,7 @@ var methods = {
                                 var latest_img = null;
                                 for (var url in layer.tiles) {
                                     img = layer.tiles[url];
-                                    if(img.loaded == false && img.loading == false && (latest_img == null || img.timestamp > latest_img.timestamp)) {
+                                    if(img.loaded == false && ((img.loading == false) || (img.loading == 'auto')) && (latest_img == null || img.timestamp > latest_img.timestamp)) {
                                         latest_img = img;
                                     }
                                 }
