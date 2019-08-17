@@ -571,8 +571,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// is this relationship part of a policy?
 					foreach($history_tracking_policies as $policy) {
 						if (!$table::historyTrackingPolicyUses($policy, $vs_rel_table)) { continue; }
-						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy]))) { continue; }
-						
+						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy])) || !sizeof($h)) { continue; }
+					
 						$current = array_shift(array_shift($h));
 						if ($current['current_table_num'] === Datamodel::getTableNum($vs_rel_table)) {
 							$limit_to_relation_ids = [$current['tracked_row_id']];
@@ -3091,6 +3091,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 
 		$va_path = array_keys(Datamodel::getPath($this->tableName(), $vs_table_name));
+		require_once(__CA_MODELS_DIR__."/{$vs_table_name}.php");
 		$t_item = new $vs_table_name;
 		/** @var BaseRelationshipModel $t_item_rel */
 		$t_item_rel = Datamodel::getInstance($va_path[1]);
