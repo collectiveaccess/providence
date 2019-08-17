@@ -811,7 +811,7 @@ class Configuration {
             }
             Configuration::$s_get_cache[$this->ops_md5_path][$ps_key] = $vs_tmp;
             
-            if (!$vs_tmp) { continue; }
+            if (is_array($vs_tmp) || !strlen($vs_tmp)) { continue; }
             return $vs_tmp;
         }
         return $assoc_exists ? [] : null;
