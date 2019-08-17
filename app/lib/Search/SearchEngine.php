@@ -543,7 +543,7 @@ class SearchEngine extends SearchBase {
 	 */
 	private function _rewriteTerm($po_term, $pb_sign) {
 		$vs_fld = $po_term->getTerm()->field;
-		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
+		if (is_array(($va_access_points = $this->getAccessPoints($this->opn_tablenum)) && sizeof($va_access_points))) {
 			// if field is access point then do rewrite
 			$va_fld_tmp = preg_split("![/\|]+!", mb_strtolower($vs_fld));
 			$vs_fld_lc = $va_fld_tmp[0];
