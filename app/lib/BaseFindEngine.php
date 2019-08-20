@@ -596,10 +596,26 @@
 			if (!($t_element = ca_metadata_elements::getInstance($ps_element_code))) {
 				return false;
 			}
+			
+			$datatype = $t_element->get('datatype');
+			if ($datatype == 0) {
+			    // is container
+			    $elements = $t_element->getElementsInSet();
+			    $concatenated_keys = [];
+			    foreach($elements as $e) {
+			        if ($e['datatype'] == 0) { continue; }
+			        $keys = $this->_getSortKeysForElement($e['element_code'], $pn_table_num, $pa_hits);
+			        foreach($keys as $id => $val) {
+			            $sv = mb_substr($val, 0, 30);
+			            $concatenated_keys[$id] = str_pad($sv, 30, " ", is_numeric($sv) ? STR_PAD_LEFT : STR_PAD_RIGHT);
+			        }
+			    }
+			    return $concatenated_keys;
+			}
 
 			// is metadata element
 			$vn_element_id = $t_element->getPrimaryKey();
-			if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
+			if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($datatype))) {
 				return false;
 			}
 
@@ -695,10 +711,18 @@
 			$va_sort_keys = array();
 			while($qr_sort->nextRow()) {
 				$va_row = $qr_sort->getRow();
-				$va_sort_keys[$va_row['row_id']] = $va_row[$vs_sort_field];
+				$va_sort_keys[$va_row['row_id']][] = $va_row[$vs_sort_field];
 			}
 			foreach($pa_hits as $id) {
-			    if(!isset($va_sort_keys[$id])) { $va_sort_keys[$id] = $pad_keys ? '000000000' : ''; }
+			    if(!isset($va_sort_keys[$id])) { $va_sort_keys[$id] = [$pad_keys ? '000000000' : '']; }
+			}
+			foreach($va_sort_keys as $row_id => $keys) {
+			    if (sizeof(array_filter($keys, function($v) { return is_numeric($v); })) > 0) {
+			        sort($keys, SORT_NUMERIC);
+			    } else {
+			        sort($keys, SORT_REGULAR);
+			    }
+			    $va_sort_keys[$row_id] = join(";", $keys);
 			}
 			return $va_sort_keys;
 		}
