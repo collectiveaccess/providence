@@ -806,14 +806,14 @@
 		 *
 		 */
 		public static function load_ULANShortHelp() {
-			return _t("Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess.");
+			return _t("Load Getty Union List of Artist Names (ULAN) into CollectiveAccess.");
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function load_ULANHelp() {
-			return _t("Loads the AAT from a Getty-provided XML file.");
+			return _t("Loads the ULAN from a Getty-provided XML file.");
 		}
 		# -------------------------------------------------------
 		/**
