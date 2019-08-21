@@ -498,14 +498,36 @@
 
 		    foreach($va_name as $i => $vs_name) {
                 $vs_idno = $va_idno[$i];
-                $vs_type = $va_type[$i];
+               	$vs_type = $va_type[$i];
+                $vs_rel_type = null;
+                
+                if ($vs_rel_type_opt = $pa_related_options['extractRelationshipTypes']) {
+                	switch($vs_rel_type_opt) {
+						default:
+							$pat = "\\(([^\\)]+)\\)";
+							break;
+						case '[]':
+						case '[':
+							$pat = "\\[([^\\)]+)\\]";
+							break;
+						case '{}':
+						case '{':
+							$pat = "\\{([^\\)]+)\\}";
+							break;
+					}
+					if (preg_match("!{$pat}!", $vs_name, $m)) { 
+						$vs_rel_type = $m[1];
+						$vs_name = str_replace($m[0], "", $vs_name);
+					}
+                }
+                
                 $vs_parent_id = $va_parent_id[$i];
                 if (!$vs_name) { $vs_name = $vs_idno; }
                 if (!$vs_name) { continue; }
 
                 if(!$vs_type) { $vs_type = $va_type[sizeof($va_type) - 1]; }
                 if(!$vs_parent_id) { $vs_parent_id = $va_parent_id[sizeof($va_parent_id) - 1]; }
-        
+                
                 if ($ps_related_table == 'ca_entities') {
                     $t_entity = new ca_entities();
                     if ($o_trans) { $t_entity->setTransaction($o_trans); }
@@ -622,7 +644,7 @@
                 if ($vn_id) {
                     $va_attr_vals['_related_related'][$ps_related_table][] = array(
                         'id' => $vn_id,
-                        '_relationship_type' => $pa_related_options['relationshipType']
+                        '_relationship_type' => $vs_rel_type ? $vs_rel_type : $pa_related_options['relationshipType']
                     );
                 }
             }
