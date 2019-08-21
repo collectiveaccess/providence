@@ -950,6 +950,29 @@
 					} elseif ((sizeof($va_group_dest) == 1) && ($vs_terminal == $ps_table)) {
 						// Set relationship type
 						if (
+							($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_extractRelationshipType"])
+						) {
+							switch($vs_rel_type_opt) {
+								default:
+									$pat = "\\(([^\\)]+)\\)";
+									break;
+								case '[]':
+								case '[':
+									$pat = "\\[([^\\)]+)\\]";
+									break;
+								case '{}':
+								case '{':
+									$pat = "\\{([^\\)]+)\\}";
+									break;
+							}
+							if (preg_match("!{$pat}!", $vs_item, $m)) { 
+								$va_val['_relationship_type'] = $m[1];
+								$vs_item = str_replace($m[0], "", $vs_item);
+							}
+						}
+						if (
+							(!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) 
+							&&
 							($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipType"])
 						) {
 							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader));
