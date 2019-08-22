@@ -472,7 +472,7 @@
 			$output_format = strtolower((string)$po_opts->getOption('outputFormat'));
 			if (!in_array($output_format, ['csv', 'tab'])) { 
 				CLITools::addMessage(_t("No output format was specified. Defaulting to CSV."));
-				$format = 'csv'; 
+				$output_format = 'csv'; 
 			}
 			
 			$xml = simplexml_load_file($file_path);
