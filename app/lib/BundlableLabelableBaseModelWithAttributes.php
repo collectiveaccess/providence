@@ -4831,7 +4831,29 @@ if (!$vb_batch) {
 						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 					
-						// NOOP (for now)
+						// Save checkout/return note edits
+					    require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
+					    
+					    $edits = [];
+						foreach($_REQUEST as $k => $v) {
+						    if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}(checkout|return)_notes_([\d]+)$!", $k, $m)) {
+						        $edits[$m[2]][$m[1]] = $v;
+						    }
+						}
+					
+					    foreach($edits as $checkout_id => $data) {
+					        if ($tc = ca_object_checkouts::find(['checkout_id' => $checkout_id], ['returnAs' => 'firstModelInstance'])) {
+                                if((int)$tc->get('object_id') === (int)$this->getPrimaryKey()) {
+                                    $tc->setMode(ACCESS_WRITE);
+                                    $tc->set('checkout_notes', $data['checkout']);
+                                    $tc->set('return_notes', $data['return']);
+                                    $tc->update();
+                                    if ($tc->numErrors()) {
+                                        $po_request->addActionErrors($tc->errors(), 'ca_object_checkouts', 'general');
+                                    }
+                                }
+                            }
+                        }
 					
 						break;
 					# -------------------------------
