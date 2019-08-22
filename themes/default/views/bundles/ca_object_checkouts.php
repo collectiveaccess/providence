@@ -113,7 +113,7 @@
 							<tbody>
 <?php
 					foreach($va_history as $va_event) {
-						print "<tr class='caLibraryHistory'><td class='caLibraryHistory'>".$va_event['user_name']."</td><td class='caLibraryHistory'>".$va_event['checkout_date']."</td><td class='caLibraryHistory'>".$va_event['checkout_notes']."</td><td class='caLibraryHistory'>".$va_event['due_date']."</td><td>".$va_event['return_date']."</td><td class='caLibraryHistory'>".$va_event['return_notes']."</td></td></tr>\n";
+						print "<tr class='caLibraryHistory'><td class='caLibraryHistory'>".$va_event['user_name']."</td><td class='caLibraryHistory'>".$va_event['checkout_date']."</td><td class='caLibraryHistory'>".caHTMLTextInput("{$vs_id_prefix}checkout_notes_".$va_event['checkout_id'], ['value' => $va_event['checkout_notes']], ['width' => '175px', 'height' => '50px'])."</td><td class='caLibraryHistory'>".$va_event['due_date']."</td><td>".$va_event['return_date']."</td><td class='caLibraryHistory'>".caHTMLTextInput("{$vs_id_prefix}return_notes_".$va_event['checkout_id'], ['value' => $va_event['return_notes']], ['width' => '175px', 'height' => '50px'])."</td></td></tr>\n";
 					}
 ?>
 							</tbody>
@@ -122,7 +122,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</div>s
 </div>
 
 <script type="text/javascript">
