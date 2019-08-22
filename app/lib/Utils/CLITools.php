@@ -536,14 +536,14 @@
 		 *
 		 */
 		public static function convert_xml_to_delimitedHelp() {
-			return _t("Convert a selected tags in an XML file to delimited text (CSV or tab-delimited).");
+			return _t("Convert selected tags in an XML file to delimited text (CSV or tab-delimited).");
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function convert_xml_to_delimitedShortHelp() {
-			return _t("Convert a selected tags in an XML file to delimited text (CSV or tab-delimited). All sub-tags of selected tags are output into delimited rows of data. Tags may be selected using an XPath expression or with file format presets. For example, the input format \"PastPerfect\" will employ the XPath expression //export to select all <export> tags and output data tags contained within into rows of delimited data.");
+			return _t("Convert selected tags in an XML file to delimited text (CSV or tab-delimited). All sub-tags of selected tags are output into delimited rows of data. Tags may be selected using an XPath expression or with file format presets. For example, the input format \"PastPerfect\" will employ the XPath expression //export to select all <export> tags and output data tags contained within into rows of delimited data.");
 		}
 		# -------------------------------------------------------
 	}
