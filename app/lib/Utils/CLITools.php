@@ -546,4 +546,89 @@
 			return _t("Convert selected tags in an XML file to delimited text (CSV or tab-delimited). All sub-tags of selected tags are output into delimited rows of data. Tags may be selected using an XPath expression or with file format presets. For example, the input format \"PastPerfect\" will employ the XPath expression //export to select all <export> tags and output data tags contained within into rows of delimited data.");
 		}
 		# -------------------------------------------------------
+		# Filter invalid characters thay may be embedded in XML files. 
+		# PastPerfect loves to do this.
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function filter_invalid_xml_characters($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/Import/DataReaders/ExifDataReader.php");
+			
+			$file_path = (string)$po_opts->getOption('file');
+			if (!$file_path) { 
+				CLITools::addError(_t("You must specify a file", $file_path));
+				return false;
+			}
+			if (!file_exists($file_path)) { 
+				CLITools::addError(_t("File '%1' does not exist", $file_path));
+				return false;
+			}
+			if (is_dir($file_path)) { 
+				CLITools::addError(_t("'%1' must not be a directory", $file_path));
+				return false;
+			}
+			if (!($output_path = (string)$po_opts->getOption('out'))) {
+				CLITools::addError(_t("You must specify an output file"));
+				return false;
+			}
+			if (!is_writeable(pathinfo($output_path, PATHINFO_DIRNAME))) { 
+				CLITools::addError(_t("Cannot write to %1", $output_path));
+				return false;
+			}
+			
+			if (!($fp_in = fopen($file_path, "r"))) {
+				CLITools::addError(_t("Could not open input file %1", $file_path));
+				return;
+			}
+			if (!($fp_out = fopen($output_path, "w"))) {
+				CLITools::addError(_t("Could not open output file %1", $output_path));
+				return;
+			}
+			$l = 1;
+			while(($line = fgets($fp_in)) !== false) {
+				if(preg_match("![^\x{0009}\x{000A}\x0D\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+!u", $line, $m)) {
+					CLITools::addError(_t("Found invalid character at line %1: %2", $l, $line));
+					$line = preg_replace("![^\x{0009}\x{000A}\x0D\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]+!u", "", $line);
+				}
+				fputs($fp_out, $line);
+				$l++;
+			}
+			fclose($fp_in);
+			fclose($fp_out);
+			
+			CLITools::addMessage(_t("Wrote output to '%1'", $output_path));
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function filter_invalid_xml_charactersParamList() {
+			return array(
+				"file|f-s" => _t('XML file to convert.'),
+				"out|o-s" => _t('File to write filtered output to.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function filter_invalid_xml_charactersUtilityClass() {
+			return _t('Data conversion tools');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function filter_invalid_xml_charactersHelp() {
+			return _t("Remove invalid characters from an XML file.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function filter_invalid_xml_charactersShortHelp() {
+			return _t("Filters invalid characters from XML files that may prevent parsing and validation. Some XML producers occassionally add these invalid characters due to improper validation of source data or unintended behavior.");
+		}
+		# -------------------------------------------------------
 	}
