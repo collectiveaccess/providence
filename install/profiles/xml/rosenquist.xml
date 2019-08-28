@@ -10238,7 +10238,6 @@
         <permission table="ca_objects" bundle="ca_attribute_source_types" access="none"/>
         <permission table="ca_objects" bundle="status" access="none"/>
         <permission table="ca_objects" bundle="ca_attribute_studio" access="none"/>
-        <permission table="ca_objects" bundle="ca_attribute_traveling_frame_yn" access="none"/>
         <permission table="ca_objects" bundle="ca_attribute_verified" access="none"/>
         <permission table="ca_objects" bundle="ca_attribute_website_yn" access="none"/>
         <permission table="ca_objects" bundle="ca_attribute_workshop_id" access="none"/>
@@ -10283,7 +10282,6 @@
         <permission table="ca_object_lots" bundle="status" access="none"/>
         <permission table="ca_entities" bundle="access" access="none"/>
         <permission table="ca_entities" bundle="ca_attribute_address_ind" access="none"/>
-        <permission table="ca_entities" bundle="ca_attribute_address_org" access="none"/>
         <permission table="ca_entities" bundle="authority_references_list" access="none"/>
         <permission table="ca_entities" bundle="ca_collections" access="none"/>
         <permission table="ca_entities" bundle="ca_collections_related_list" access="none"/>
@@ -10522,7 +10520,6 @@
         <permission table="ca_storage_locations" bundle="source_id" access="none"/>
         <permission table="ca_storage_locations" bundle="status" access="none"/>
         <permission table="ca_loans" bundle="access" access="none"/>
-        <permission table="ca_loans" bundle="ca_attribute_address_org" access="none"/>
         <permission table="ca_loans" bundle="authority_references_list" access="none"/>
         <permission table="ca_loans" bundle="ca_collections" access="none"/>
         <permission table="ca_loans" bundle="ca_collections_related_list" access="none"/>
