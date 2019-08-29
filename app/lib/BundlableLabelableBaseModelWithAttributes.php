@@ -571,8 +571,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// is this relationship part of a policy?
 					foreach($history_tracking_policies as $policy) {
 						if (!$table::historyTrackingPolicyUses($policy, $vs_rel_table)) { continue; }
-						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy]))) { continue; }
-						
+						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy])) || !sizeof($h)) { continue; }
+					
 						$current = array_shift(array_shift($h));
 						if ($current['current_table_num'] === Datamodel::getTableNum($vs_rel_table)) {
 							$limit_to_relation_ids = [$current['tracked_row_id']];
@@ -3091,6 +3091,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 
 		$va_path = array_keys(Datamodel::getPath($this->tableName(), $vs_table_name));
+		require_once(__CA_MODELS_DIR__."/{$vs_table_name}.php");
 		$t_item = new $vs_table_name;
 		/** @var BaseRelationshipModel $t_item_rel */
 		$t_item_rel = Datamodel::getInstance($va_path[1]);
@@ -4830,7 +4831,29 @@ if (!$vb_batch) {
 						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 					
-						// NOOP (for now)
+						// Save checkout/return note edits
+					    require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
+					    
+					    $edits = [];
+						foreach($_REQUEST as $k => $v) {
+						    if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}(checkout|return)_notes_([\d]+)$!", $k, $m)) {
+						        $edits[$m[2]][$m[1]] = $v;
+						    }
+						}
+					
+					    foreach($edits as $checkout_id => $data) {
+					        if ($tc = ca_object_checkouts::find(['checkout_id' => $checkout_id], ['returnAs' => 'firstModelInstance'])) {
+                                if((int)$tc->get('object_id') === (int)$this->getPrimaryKey()) {
+                                    $tc->setMode(ACCESS_WRITE);
+                                    $tc->set('checkout_notes', $data['checkout']);
+                                    $tc->set('return_notes', $data['return']);
+                                    $tc->update();
+                                    if ($tc->numErrors()) {
+                                        $po_request->addActionErrors($tc->errors(), 'ca_object_checkouts', 'general');
+                                    }
+                                }
+                            }
+                        }
 					
 						break;
 					# -------------------------------

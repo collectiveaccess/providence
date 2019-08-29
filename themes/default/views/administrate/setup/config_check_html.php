@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,14 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 			<tr>
 				<td><?php print _t('Last change log ID'); ?></td>
 				<td><?php print $this->getVar('last_change_log_id'); ?></td>
+			</tr>
+			<tr>
+				<td><?php print _t('PHP version'); ?></td>
+				<td><?php print caGetPHPVersion()['version']; ?></td>
+			</tr>
+			<tr>
+				<td><?php print _t('Operating system'); ?></td>
+				<td><?php print php_uname(); ?></td>
 			</tr>
 		</tbody>
 	</table>

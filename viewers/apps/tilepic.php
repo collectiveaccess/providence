@@ -30,7 +30,6 @@
 # to save time. If you are using non-JPEG tiles (unlikely, right?) then change the 
 # Content-type header below.
 
-
 $is_windows = (substr(PHP_OS, 0, 3) == 'WIN');
 $filepath = $_REQUEST["p"];
 $tile = $_REQUEST["t"];

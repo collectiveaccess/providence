@@ -328,7 +328,7 @@
 			}
 			if (!($t_element = ca_metadata_elements::getInstance($t_attr->get('element_id')))) { return false; }
 			
-			if ($vb_require_value = (bool)$t_element->getSetting('requireValue')) {
+			if (($vb_require_value = (bool)$t_element->getSetting('requireValue')) && (!isset($pa_options['dontCheckMinMax']))) {
 				$pa_options['dontCheckMinMax'] = false;
 			}
 			

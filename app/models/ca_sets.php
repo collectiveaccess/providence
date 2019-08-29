@@ -1611,6 +1611,19 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return items in set as a search result
+	 *
+	 * @param array $options Options are passed through to caMakeSearchResult()
+	 * @seealso caMakeSearchResult()
+	 */
+	public function getItemsAsSearchResult($pa_options=null) {
+		if(!$this->isLoaded()) { return null; }
+		$ids = $this->getItems(['idsOnly' => true]);
+
+		return caMakeSearchResult(Datamodel::getTableName($this->get('ca_sets.table_num')), $ids, $options);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns information on items in current set
 	 *
 	 * @param array $pa_options Optional array of options. Supported options are:
