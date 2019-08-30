@@ -14460,7 +14460,7 @@
 
   </elementSets>
   <metadataDictionary>
-    <entry bundle="ca_objects.idno">
+    <entry bundle="ca_objects.idno" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Enter the unique object number assigned to the item. <br/>The ideal format is: the the four digit year (YYYY), then the accession lot number, then the item number.  For example:  1986.0001.0034
@@ -14469,7 +14469,7 @@ Do not enter colons, commas, semicolons or symbols as part of an Accession Numbe
         <setting name="mandatory">1</setting>
       </settings>
     </entry>
-    <entry bundle="ca_object_lots.idno_stub">
+    <entry bundle="ca_object_lots.idno_stub" table="ca_object_lots">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Enter the unique accession number assigned to the incoming lot of items. The ideal format is: the four digit year the lot was accepted (YYYY), then the accession lot number. <br/> Some institutions start at 1 each new year, others just continue lot numbers in sequence, regardless of the year.
@@ -14477,42 +14477,42 @@ Do not enter colons, commas, semicolons or symbols as part of an Accession Numbe
         <setting name="mandatory">1</setting>
       </settings>
     </entry>
-    <entry bundle="ca_object_lots.preferred_labels">
+    <entry bundle="ca_object_lots.preferred_labels" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[A text descriptio​n of the contents of the Accession Lot, used for administra​tive, identifica​tion, and reporting purposes. The information in this open text field will appear as the title of the accession when searching accession records. You may wish to use keywords to help you recognize the accession.]]></setting>
         <setting name="mandatory">1</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.preferred_labels">
+    <entry bundle="ca_objects.preferred_labels" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Select the name of the item from the Object Term (fourth level) Nomenclature drop down list. Always focus on the item’s original intended use. <br/> If there is more than one name for the item, use the Alternative Object Name field to record other terms. Do not add qualifying data or extra details this field.]]></setting>
         <setting name="mandatory">1</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.date_created">
+    <entry bundle="ca_objects.date_created" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Enter a numeric date or date range to denote when the object was made. For archival documents such as diaries or ledgers, enter the date range for when the document was edited. If the year alone is not precise enough, record a more precise date, such as May 13, 1942. If a date is not known, determine a possible date range based on available information, such as 1900 to 1970. Qualifying terms can be used: Circa = approximate date, determined by researching other sources.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.alternate_object_name">
+    <entry bundle="ca_objects.alternate_object_name" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Enter any name variations for the item, such as local slang terms, colloquialisms, alternate spellings, etc. <br/> If multiple alternatives exist, click Add Name to duplicate the field and enter each one on its own line. Attributed or uncertain alternate names should be followed by a space and ?]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.dimensions">
+    <entry bundle="ca_objects.dimensions" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Enter the greatest overall metric dimensions of the object using the applicable fields. Enter the numerical value with the appropriate metric unit, i.e. 20.3 cm. For objects with parts, record the overall dimensions of the object assembled. Measurements for significant parts (important for research or storage purposes) should be recorded under Dimension Remarks and specifically identified with the part number, for example: The print (part A) was measured without being removed from the frame (part B).]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_object_lots">
+    <entry bundle="ca_object_lots" table="ca_object_lots">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Enter the unique accession number assigned to the incoming lot of items.  The ideal format is: the four digit year the lot was accepted (YYYY), then the accession lot number. <br/> Some institutions start at 1 each new year, others just continue lot numbers in sequence, regardless of the year.
@@ -14520,28 +14520,28 @@ Do not enter colons, commas, semicolons or symbols as part of an Accession Numbe
         <setting name="mandatory">1</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.title">
+    <entry bundle="ca_objects.title" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Formal Titles are creator-given titles found on books, paintings, CD's, songs, and other works of art. If the item has a formal title, enter it as written with no quotation marks or other punctuation. <br/> If no formal title exists, you should create a descriptive title that contains relevant specific information about the item. For information on how to create descriptive titles for photographs and other resources see Minnesota Digital Library Guidelines. https://mndigital.org/standards-best-practices/minnesota-reflections-metadata-entry-guidelines]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.georeference">
+    <entry bundle="ca_objects.georeference" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Map any locations related to the object, such as where a photograph was taken or where an object was made. Pinpoint a location by typing the place name in the search bar. Hit enter or click the magnifying glass icon and the map will reposition to the location and insert a dot. For street level locations, zoom in to make sure the dot was put in the right spot. If necessary, move the dot by clicking and dragging it to the correct location. You can also map an area, such as an archaeological site, property boundaries, etc. To do this, search for your location and then select one of the outline tools. Click to create boundary points and draw the desired area. Double-click to stop drawing, and save the record.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.material">
+    <entry bundle="ca_objects.material" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Select all relevant materials from the drop down list. The list can be customized through Manage > Lists and Vocabularies.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.description">
+    <entry bundle="ca_objects.description" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Provide a physical description of the item to create an accurate picture of it with words. <br/> You can also use this field to record information about the people, places, events and themes related to the item. The description should be written in complete sentences.
@@ -14550,42 +14550,42 @@ If the item has parts, be sure to include the letter or number designation for t
         <setting name="mandatory">1</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.geonames">
+    <entry bundle="ca_objects.geonames" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Select appropriate locations from the GeoNames list to link those locations to this item. You can easily add locations at http://www.geonames.org/. <br/> Minnesota Digital Library requires GeoNames for their entries. <br/> Once you select locations and save, you will see a link in Collective Access that will bring you to the GeoNames website with maps and more information about the specific location.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_list_items">
+    <entry bundle="ca_list_items" table="ca_list_items">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Select keywords from the heierarchy that will help you find this record.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_occurrences">
+    <entry bundle="ca_occurrences" table="ca_occurrences">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[This field draws from the exhibition list in the database, so once you begin typing an exhibition name the system will generate suggestions from which to choose. If no exhibition record has been created, go to New – Exhibition, and create a record for the exhibition. The item can then be linked as being part of the exhibition.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_loans">
+    <entry bundle="ca_loans" table="ca_loans">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[This field draws from the loans list in the database, so once you begin typing a loan number, the system will generate suggestions from which to choose. If no loan record has been created, go to New – Loan, and create a record for the loan. The item can then be linked as being part of the loan.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.culture">
+    <entry bundle="ca_objects.culture" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[This field identifies the culture associated with the object based on its social/geographic origin. Open text field.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_storage_locations">
+    <entry bundle="ca_storage_locations" table="ca_storage_locations">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[This field indicates the building, room, cabinet etc. where the item is permanently located or currently stored. Storage Locations are pre-set in the database as a hierarchy. Click on the arrow beside ‘Storage Location’ and then click on the appropriate building (Example: Emily Carr House), then click on the appropriate room (Example: Display Room), etc. You can be as specific as you'd like by adding cabinets, shelves and drawers.
@@ -14593,7 +14593,7 @@ If the required building, room, cabinet is not in the pre-set entries, add them
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_places">
+    <entry bundle="ca_places" table="ca_place">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[This field is for related places. Places can include but are not limited to: cities, villages, buildings, parks, and sites. Places are pre-set in the database as a hierarchy. 
@@ -14601,7 +14601,7 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.condition_reporting">
+    <entry bundle="ca_objects.condition_reporting" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[This field is used to describe the condition of an item. Use the notes field to describe the details about the item's condition. You may keep a history of the condition of the item by creating separate entries with dates. Note any changes when you are performing routine maintenance, or as damage occurs. <br/>Upload any documentation you have, such as handwritten condition reports. <br/>Select the condition rating from the drop down list which best describes the overall condition of the object at the time of acquisition.
@@ -14615,7 +14615,7 @@ Unknown – the current condition of the object is unknown]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects.chenhall">
+    <entry bundle="ca_objects.chenhall" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[This field is used to group items based on their original use and is a preset drop down menu. Select the most appropriate name from the fourth level "object term" or lower from the drop-down list. Alternately, you can type into the search box and select the appropriate sub-classification. <br/> If an object had multiple uses and fits more than one Object Term, the field can be duplicated and the appropriate information selected from the dropdown menu by clicking on Add Category. 
@@ -14623,21 +14623,21 @@ Do not enter all three levels of Category, Classification and Sub-Classification
         <setting name="mandatory">1</setting>
       </settings>
     </entry>
-    <entry bundle="ca_entities">
+    <entry bundle="ca_entities" table="ca_entities">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Use this field to link individuals and organizations to the item or record. Creators, past owners, donors, subjects, are all entities that should be connected to the item. Begin typing the name into the search box and select from the list. If the person or organization is not on the list, you can quick add an entity from here, or go to NEW>Entity from the menu at the top of the page. <br/>  Select the relationship of the individual or organization to the object.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_objects">
+    <entry bundle="ca_objects" table="ca_objects">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Items from your collection linked to this item or record. For example, objects connected to a loan or exhibit. Or a photograph in your collection that depicts a three-dimensional object in your collection.]]></setting>
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_collections">
+    <entry bundle="ca_collections" table="ca_collections">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[Use this field to link the Collection to the item or record. ]]></setting>
