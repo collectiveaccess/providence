@@ -14593,7 +14593,7 @@ If the required building, room, cabinet is not in the pre-set entries, add them
         <setting name="mandatory">0</setting>
       </settings>
     </entry>
-    <entry bundle="ca_places" table="ca_place">
+    <entry bundle="ca_places" table="ca_places">
       <settings>
         <setting name="label"/>
         <setting name="definition"><![CDATA[This field is for related places. Places can include but are not limited to: cities, villages, buildings, parks, and sites. Places are pre-set in the database as a hierarchy. 
