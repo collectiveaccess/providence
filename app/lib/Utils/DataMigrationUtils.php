@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -602,7 +602,14 @@
 				$va_name['surname'] = $va_tmp[0];
 				
 				if(sizeof($va_tmp) > 1) {
-					$va_name['forename'] = $va_tmp[1];
+					$va_tmp2 = array_filter(preg_split("![ ]+!", $va_tmp[1]), function($v) { return (bool)strlen(trim($v)); });
+					
+					if (sizeof($va_tmp2) > 1) {
+						$va_name['middlename'] = array_pop($va_tmp2);
+						$va_name['forename'] = join(" ", $va_tmp2);
+					} else {
+						$va_name['forename'] = $va_tmp[1];
+					}
 				}
 			} elseif (strpos($ps_text, '_') !== false) {
 				// is underscore delimited
@@ -734,7 +741,11 @@
                                 $pt_instance->addAttribute(
                                     array_merge($va_v, array(
                                         'locale_id' => $pn_locale_id
-                                    )), $vs_element, null, ['skipExistingValues' => (caGetOption('skipExistingValues', $pa_options, false) || caGetOption('skipExistingValues', $va_values, false)), 'matchOn' => caGetOption('matchOn', $va_values, null)]);
+                                    )), $vs_element, null, [
+                                    	'skipExistingValues' => (caGetOption('skipExistingValues', $pa_options, true) 
+                                    		|| 
+                                    		caGetOption('skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
+                                    	'matchOn' => caGetOption('matchOn', $va_values, null)]);
                             }
 						} else {
 							// scalar value (simple single value attribute)
