@@ -703,7 +703,20 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * Set attributes on instance from values array
 		 *
+		 * @param BundleableLabelableBaseModel $pt_instance
+		 * @param int $pn_locale_id
+		 * @param array $pa_values
+		 * @param array Options include:
+		 *		skipExistingValues = Skip add of value if it already exists for this instance. [Default is true]
+		 *		log = If KLogger instance is passed then actions will be logged. [Default is null]
+		 *		separateUpdatesForAttributes = Perform a separate update() for each attribute. This will ensure that an error triggered by any value will not affect setting on others, but is detrimental to performance. [Default is false]
+		 *		delimiter = Delimiter to split values on. [Default is null]
+		 *		matchOn = Optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
+		 *		outputErrors = Print errors to console. [Default is false]
+		 *
+		 * @return bool True on success, false on error 		
 		 */
 		private static function _setAttributes($pt_instance, $pn_locale_id, $pa_values, $pa_options=null) {
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
@@ -866,6 +879,8 @@
 		 *				  ignoreParent = Don't take into account parent_id value when looking for matching rows [Default is false]
 		 *				  ignoreType = Don't take into account type_id value when looking for matching rows [Default is false]
 		 *				  separateUpdatesForAttributes = Perform a separate update() for each attribute. This will ensure that an error triggered by any value will not affect setting on others, but is detrimental to performance. [Default is false]
+		 *				  skipExistingValues = Skip add of value if it already exists for this instance. [Default is true]
+		 *
 		 * @return bool|BaseModel|mixed|null
 		 */
 		static function getIDFor($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
