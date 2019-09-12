@@ -3963,7 +3963,10 @@
 				case 'current_value':
 					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
 					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, 'ca_objects_location') < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
-		
+		            if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+					if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item)))) { $va_restrict_to_types = []; }
+					$va_restrict_to_types = array_filter($va_restrict_to_types, "strlen");
+						
 					$policy = caGetOption('policy', $va_facet_info, $t_item->getDefaultHistoryTrackingCurrentValuePolicy());
 
 					$vs_sort_field = null;
@@ -3987,6 +3990,11 @@
 
 					if ($vs_browse_type_limit_sql) {
 						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+					
+					if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
+					    $va_wheres[] = "({$vs_browse_table_name}.type_id IN (?))";
+					    $params[] = $va_restrict_to_types;
 					}
 
 					if ($vs_browse_source_limit_sql) {

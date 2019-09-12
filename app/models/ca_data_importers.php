@@ -833,17 +833,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
-						
-						// Test whether the JSON is valid
-						json_decode($vs_options_json, TRUE);
-						if(json_last_error()){
-							// try encode newlines
-							$vs_options_json = preg_replace("![\r\n]!", "\\\\n", $vs_options_json);	
-						}
-						if (is_null($va_options = @json_decode($vs_options_json, true))) {
+						if (is_null($va_options = @json_decode(caRepairJson($vs_options_json), true))) {
 							// Error while json decode
-							$pa_errors[] = _t("Warning: invalid json in \"options\" column for group %1/source %2. Json was: %3", $vs_group, $vs_source, $vs_options_json);
-							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid json in \"options\" column for group %2/source %3. Json was: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json)); }
+							$pa_errors[] = _t("Warning: invalid json in \"options\" column at line %4  for group %1/source %2. Json was: %3", $vs_group, $vs_source, $vs_options_json, $vn_row_num);
+							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid json in \"options\" column at line %5  for group %2/source %3. Json was: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json, $vn_row_num)); }
 							return;
 						}
 					}
@@ -855,10 +848,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
                             $pa_errors[] = _t("Warning: refinery %1 does not exist", $vs_refinery)."\n";
                             if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3", $ps_source, $vs_group, $vs_source)); }
                         } else {
-                            if (is_null($va_refinery_options = json_decode($vs_refinery_options_json, true))) {
+                            // Test whether the JSON is valid
+                            if (is_null($va_refinery_options = json_decode(caRepairJson($vs_refinery_options_json), true))) {
                                 // Error while json decode
-                                $pa_errors[] = _t("invalid json for refinery options for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json);
-                                if ($o_log) { $o_log->logError( _t("[loadImporterFromFile:%1] invalid json for refinery options for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json)); }
+                                $pa_errors[] = _t("invalid json for refinery options at line %4 for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json, $vn_row_num);
+                                if ($o_log) { $o_log->logError( _t("[loadImporterFromFile:%1] invalid json for refinery options at line %5 for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json, $vn_row_num)); }
                                 return;
                             }
                         }

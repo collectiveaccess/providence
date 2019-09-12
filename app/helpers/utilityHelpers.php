@@ -607,6 +607,28 @@ function caFileIsIncludable($ps_file) {
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
 		//return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
+	# ---------------------------------------
+	/**
+	  * Repair common errors in hand-written JSON
+	  *
+	  * @param string $json The JSON-encoded data as a string
+	  * @return mixed Decoded JSON data as data structure (Eg. array)
+	  */
+	function caRepairJson($json) {
+	    json_decode($json, TRUE);
+	    if(json_last_error()){
+            // try encode newlines
+            //$json = preg_replace("![\r\n]!", "\\\\n", $json);	
+            
+            // try to remove training commas
+            $json = preg_replace('/[,]{1}[\n\r\t ]*([\]\}]+)/i', '\1', $json);
+            
+            // try to convert curly quotes
+            $json = preg_replace('/[“”]+/', '"', $json);
+               
+        }
+        return $json;
+	}
 	# ----------------------------------------
 	/**
 	 * Return text with quotes escaped for use in a tab or comma-delimited file
