@@ -1753,6 +1753,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$t_subject->load($va_ids[0]);
 									$o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy));
 									break;
+								} else {
+								    $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true)));
 								}
 							}
 							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
@@ -1766,6 +1768,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$t_subject->load($va_ids[0]);
 								$o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 								$vb_was_preferred_label_match = true;
+							} else {
+							    $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_R($va_pref_label_values, true), print_r($va_base_criteria, true)));
 							}
 							break;	
 						case 'overwrite_on_idno_and_preferred_labels':
@@ -1787,6 +1791,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$t_subject->clear();
 										break;
 									}
+								} else {
+								    $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true)));
 								}
 							}
 							if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
@@ -1808,6 +1814,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									break;
 								}
 								$t_subject->clear();
+							} else {
+							    $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_R($va_pref_label_values, true), print_r($va_base_criteria, true)));
 							}
 							break;
 					}
