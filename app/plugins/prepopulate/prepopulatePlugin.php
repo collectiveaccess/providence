@@ -27,22 +27,23 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_APP_DIR__."/plugins/prepopulate/lib/applyPrepopulateRulesTool.php");
 
 class prepopulatePlugin extends BaseApplicationPlugin {
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	/**
 	 * Plugin config
 	 * @var Configuration
 	 */
 	var $opo_plugin_config = null;
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	public function __construct($ps_plugin_path) {
 		$this->description = _t('This plugin allows prepopulating field values based on display templates. See http://docs.collectiveaccess.org/wiki/Prepopulate for more info.');
 		parent::__construct();
 
 		$this->opo_plugin_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'prepopulate.conf');
 	}
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	/**
 	 * 
 	 */
@@ -54,20 +55,48 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			'available' => (bool) $this->opo_plugin_config->get('enabled')
 		);
 	}
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	public function hookSaveItem(&$pa_params) {
 		if($this->opo_plugin_config->get('prepopulate_fields_on_save')) {
 			$this->prepopulateFields($pa_params['instance']);
 		}
 		return true;
 	}
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	public function hookEditItem(&$pa_params) {
 		if($this->opo_plugin_config->get('prepopulate_fields_on_edit')) {
 			$this->prepopulateFields($pa_params['instance']);
 		}
 		return true;
 	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function hookCLICaUtilsGetCommands() {
+	    return [
+	        'Maintenance' => [
+	            'apply_prepopulate_rules' => [
+	                'Command' => 'apply-prepopulate-rules',
+	                'Options' => [],
+	                'Help' => _t('Help to come'),
+	                'ShortHelp' => _t('Short help to come'),
+	            ]
+	        ]
+	    ];
+	}
+	# -------------------------------------------------------
+    /**
+     * Run commands from CLI caUtils
+     */
+    public function hookCLICaUtilsGetToolWithSettings(&$pa_params) {
+        $tool = new applyPrepopulateRulesTool(['prepopulateInstance' => $this]);
+        $tool->setSettings($pa_params[1]);
+        $tool->setMode($pa_params[2]);
+        
+        $pa_params['tool'] = $tool;
+        return $pa_params;
+    }
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Prepopulate record fields according to rules in prepopulate.conf
