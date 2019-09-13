@@ -3061,7 +3061,7 @@
  					if (is_array($va_ancestors)) { array_pop($va_ancestors); } // remove hierarchy root
  				}
  				
- 				if (sizeof($va_ancestors) > 1) {
+ 				if (is_array($va_ancestors) && (sizeof($va_ancestors) > 1)) {
  					$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL) OR ((camtr.include_subtypes = 1) AND camtr.type_id IN ('.join(',', $va_ancestors).'))) AND ';
  				} else {
  					$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND ';
