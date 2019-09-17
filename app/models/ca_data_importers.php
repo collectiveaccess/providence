@@ -395,6 +395,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('Set the locale used for all imported data. Leave on "DEFAULT" to use the system default locale. Otherwise set it to a valid locale code (Ex. en_US, es_MX, fr_CA).')
 		);
 		
+		$va_settings['sourceUrl'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 100, 'height' => 1,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Source URL'),
+			'description' => _t('URL importer worksheet was fetched from. Will be null if importer was directly uploaded.')
+		);
+		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
@@ -1016,6 +1026,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		unset($va_settings['table']);
 		foreach($va_settings as $vs_k => $vs_v) {
 			$t_importer->setSetting($vs_k, $vs_v);
+		}
+		if ($source_url = caGetOption('sourceUrl', $pa_options, null)) {
+			$t_importer->setSetting('sourceUrl', $source_url);
 		}
 		$t_importer->insert();
 		
