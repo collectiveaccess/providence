@@ -682,7 +682,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function get($ps_field, $pa_options=null) {
 		$vn_s = sizeof($va_tmp = explode('.', $ps_field));
 		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->TABLE) && ($vs_field = $va_tmp[1]))) {
-			if ($this->hasField($vs_field)) { return BaseModel::get($vs_field, $pa_options); }
+			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { return BaseModel::get($vs_field, $pa_options); }
 		}
 		if($this->_rowAsSearchResult) {
 			if (method_exists($this->_rowAsSearchResult, "filterNonPrimaryRepresentations")) {

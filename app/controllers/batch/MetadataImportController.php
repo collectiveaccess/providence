@@ -259,14 +259,15 @@
 			fclose($r_outgoing_fp);
 			
 			$errors = [];
+			$is_new = true;
 			try {
-				$t_importer = ca_data_importers::loadImporterFromFile($tmp_file, $errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO, 'sourceUrl' => $transformed_url));
+				$t_importer = ca_data_importers::loadImporterFromFile($tmp_file, $errors, ['logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO, 'sourceUrl' => $transformed_url], $is_new);
 			} catch (Exception $e) {
 				$t_importer = null; 
 				$errors = [_t('Could not read Excel data')];
 			}
 			if ($t_importer) {
-				$this->notification->addNotification(_t("Added import worksheet"), __NOTIFICATION_TYPE_INFO__);
+				$this->notification->addNotification($is_new ? _t("Added import worksheet %1", $t_importer->get('importer_code')) : _t("Updated import worksheet %1", $t_importer->get('importer_code')), __NOTIFICATION_TYPE_INFO__);
 			} else {
 				$this->notification->addNotification(_t("Could not add import worksheet: %1", join("; ", $errors)), __NOTIFICATION_TYPE_ERROR__);
 			}

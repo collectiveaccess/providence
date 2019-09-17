@@ -755,12 +755,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public static function loadImporterFromFile($ps_source, &$pa_errors, $pa_options=null) {
+	public static function loadImporterFromFile($ps_source, &$pa_errors, $pa_options=null, &$is_new=null) {
 		global $g_ui_locale_id;
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 		$pa_errors = array();
 		
 		$o_config = Configuration::load();
+		
+		$is_new = true;
 		
 		if (!is_array($pa_options) || !isset($pa_options['logDirectory']) || !$pa_options['logDirectory'] || !file_exists($pa_options['logDirectory'])) {
 			if (!($pa_options['logDirectory'] = $o_config->get('batch_metadata_import_log_directory'))) {
@@ -773,7 +775,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
-		//$o_excel->setActiveSheet(1);
 		$o_sheet = $o_excel->getActiveSheet();
 		
 		$vn_row = 0;
@@ -1009,6 +1010,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Remove any existing mapping
 		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {
+			if ((!(bool)$t_importer->get('deleted'))) { $is_new = false; }
 			$t_importer->delete(true, array('hard' => true));
 			if ($t_importer->numErrors()) {
 				$pa_errors[] = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_importer->getErrors()))."\n";
