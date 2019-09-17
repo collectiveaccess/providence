@@ -230,10 +230,10 @@
  			$google_url_parsed = parse_url($google_url);
  			
  			$tmp = explode('/', $google_url_parsed['path']);
- 			$tmp[-1] = 'export';
+ 			array_pop($tmp); $tmp[] = 'export';
  			$path = join("/", $tmp);
- 			$transformed_url = $google_url_parsed['scheme']."://".$google_url_parsed['host'].$google_url_parsed['path']."?format=xlsx";
- 			
+ 			$transformed_url = $google_url_parsed['scheme']."://".$google_url_parsed['host'].$path."?format=xlsx";
+ 
  			if (!isUrl($transformed_url) || !preg_match('!^https://docs.google.com/spreadsheets/d/!', $transformed_url)) {
  				$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
  				return $this->Index();
@@ -259,7 +259,13 @@
 			fclose($r_outgoing_fp);
 			
 			$errors = [];
-			if ($t_importer = ca_data_importers::loadImporterFromFile($tmp_file, $errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO, 'sourceUrl' => $transformed_url))) {
+			try {
+				$t_importer = ca_data_importers::loadImporterFromFile($tmp_file, $errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO, 'sourceUrl' => $transformed_url));
+			} catch (Exception $e) {
+				$t_importer = null; 
+				$errors = [_t('Could not read Excel data')];
+			}
+			if ($t_importer) {
 				$this->notification->addNotification(_t("Added import worksheet"), __NOTIFICATION_TYPE_INFO__);
 			} else {
 				$this->notification->addNotification(_t("Could not add import worksheet: %1", join("; ", $errors)), __NOTIFICATION_TYPE_ERROR__);
