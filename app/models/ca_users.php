@@ -140,7 +140,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '',
+				'DEFAULT' => 1,
 				'LABEL' => _t('Account is activated?'), "DESCRIPTION" => "If checked, indicates user account is active. Only active users are allowed to log into the system.",
 				'BOUNDS_VALUE' => array(0,1)
 		),
