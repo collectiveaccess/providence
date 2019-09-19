@@ -138,9 +138,13 @@ final class ConfigurationExporter {
 		$vo_root->appendChild($o_exporter->getRelationshipTypesAsDOM());
 		$vo_root->appendChild($o_exporter->getRolesAsDOM());
 		$vo_root->appendChild($o_exporter->getGroupsAsDOM());
-
+		
+		if($users = $o_exporter->getUsersAsDOM()) {
+			$vo_root->appendChild($users);
+		}
+		
+		
 		/* hack to import string XML to existing document, have to rewrite display exporter at some point */
-
 		$vo_fragment = $o_exporter->getDOM()->createDocumentFragment();
 		$vo_fragment->appendXML($o_exporter->getDisplaysAsXML());
 		$o_exporter->getDOM()->getElementsByTagName('profile')->item(0)->appendChild($vo_fragment);
@@ -1371,6 +1375,53 @@ final class ConfigurationExporter {
 		}
 
 		return $vo_groups;
+	}
+	# -------------------------------------------------------
+	public function getUsersAsDOM() {
+		if (!$this->opo_config->get('configuration_export_user_logins')) { return null; }
+	
+		$t_user = new ca_users();
+
+		$vo_logins = $this->opo_dom->createElement("logins");
+
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_role->tableNum(), 'code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_role = $this->opo_dom->createElement("role");
+				$vo_roles->appendChild($vo_role);
+				$vo_role->setAttribute("code", $vs_deleted_idno);
+				$vo_role->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted role %1", $vs_deleted_idno));
+			}
+		}
+
+		$qr_users = $this->opo_db->query("SELECT * FROM ca_users WHERE active = 1");
+
+		while($qr_users->nextRow()) {
+			$this->printStatus(_t("Exporting changes for user login %1", $qr_users->get("user_name")));
+
+			$t_user->load($qr_users->get("user_id"));
+
+			$vo_login = $this->opo_dom->createElement("login");
+			$vo_login->setAttribute("user_name", $t_user->get("user_name"));
+			$vo_login->setAttribute("password", caGenerateRandomPassword(8));
+			$vo_login->setAttribute("fname", $t_user->get("fname"));
+			$vo_login->setAttribute("lname", $t_user->get("lname"));
+			$vo_login->setAttribute("email", $t_user->get("email"));
+			
+			$roles = $t_user->getUserRoles();
+			if(is_array($roles) && sizeof($roles)) { 
+				foreach($roles as $role) {
+					$vo_role = $this->opo_dom->createElement("role", $role['name']);
+					$vo_role->setAttribute("code", $role['code']);
+					$vo_login->appendChild($vo_role);
+				}
+			}
+
+			$vo_logins->appendChild($vo_login);
+		}
+
+		return $vo_logins;
 	}
 	# -------------------------------------------------------
 	public function getSearchFormsAsDOM() {
