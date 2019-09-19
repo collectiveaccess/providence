@@ -239,7 +239,6 @@ class TimeExpressionParser {
 		if ($ps_expression == __TEP_NOW__) {
 			$ps_expression = array_shift($this->opo_language_settings->getList("nowDate"));		
 		}
-		$ps_expression = caRemoveAccents($ps_expression);
 		
 		if (!$pa_options) { $pa_options = array(); }
 		$this->init();
@@ -3359,8 +3358,7 @@ class TimeExpressionParser {
 		if (TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]) { return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]; }
 		
 		$va_values = $this->opo_language_settings->getList($ps_key);
-		$va_list_lc = is_array($va_values) ? array_map('strtolower', $va_values) : array();
-		
+		$va_list_lc = is_array($va_values) ? array_map('mb_strtolower', $va_values) : [];
 		return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key] = $va_list_lc;
 	}
 	# -------------------------------------------------------------------
