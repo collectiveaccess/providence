@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2018 Whirl-i-Gig
+ * Copyright 2000-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -510,7 +510,7 @@ class Configuration {
 							# -------------------
 							case '}':
 								if ($vn_in_quote || $vb_escape_set) {
-									$vs_scalar_value .= "}";
+									$vs_assoc_key .= "}";
 								} else {
 									if (sizeof($va_assoc_pointer_stack) > 1) {
 										if ($vs_assoc_key) {
