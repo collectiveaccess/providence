@@ -4184,3 +4184,27 @@ function caFileIsIncludable($ps_file) {
 		return $pw;
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caFetchFileFromUrl($url, $dest=null) {
+		$tmp_file = $dest ? $dest : tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
+		$r_incoming_fp = @fopen($url, 'r');
+		if(!$r_incoming_fp) {
+			throw new ApplicationException(_t("Cannot open remote URL [%1] to fetch media", $url));
+		}
+
+		$r_outgoing_fp = @fopen($tmp_file, 'w');
+		if(!$r_outgoing_fp) {
+			throw new ApplicationException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
+		}
+
+		while(($content = fgets($r_incoming_fp, 4096)) !== false) {
+			fwrite($r_outgoing_fp, $content);
+		}
+		fclose($r_incoming_fp);
+		fclose($r_outgoing_fp);
+		
+		return $tmp_file;
+	}
+	# ----------------------------------------

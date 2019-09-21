@@ -184,6 +184,25 @@
  			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
  				$va_last_settings['fileImportPath'] = $vs_file_import_path;
  			}
+ 			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
+ 				$va_last_settings['fileImportPath'] = $vs_file_import_path;
+ 			}
+ 			
+ 			if ($va_last_settings['fileInput'] === 'googledrive') {
+ 				if ($google_url = caValidateGoogleSheetsUrl($google_url_orig = $this->request->getParameter('google_drive_url', pString))) {
+ 					try {
+						$tmp_file = caFetchFileFromUrl($google_url);
+					} catch (ApplicationException $e) {
+						$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+						return $this->Run();
+					}
+					$va_last_settings['googleDriveUrl'] = $google_url_orig;
+					$_FILES['sourceFile']['tmp_name'] = $tmp_file;
+ 				} else {
+ 					$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
+ 					return $this->Run();
+ 				}
+ 			}
  			
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
  			
@@ -226,42 +245,23 @@
  		 * 
  		 */
  		public function Load() {
- 			$google_url = urldecode($this->request->getParameter('google_drive_url', pString));
- 			$google_url_parsed = parse_url($google_url);
- 			
- 			$tmp = explode('/', $google_url_parsed['path']);
- 			array_pop($tmp); $tmp[] = 'export';
- 			$path = join("/", $tmp);
- 			$transformed_url = $google_url_parsed['scheme']."://".$google_url_parsed['host'].$path."?format=xlsx";
- 
- 			if (!isUrl($transformed_url) || !preg_match('!^https://docs.google.com/spreadsheets/d/!', $transformed_url)) {
+ 			$google_url = caValidateGoogleSheetsUrl($this->request->getParameter('google_drive_url', pString));
+ 			if (!$google_url) {
  				$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
  				return $this->Index();
  			}
  			
- 			$tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
-			$r_incoming_fp = @fopen($transformed_url, 'r');
-			if(!$r_incoming_fp) {
-				$this->notification->addNotification(_t("Cannot open remote URL [%1] to fetch media", $transformed_url), __NOTIFICATION_TYPE_ERROR__);
+ 			try {
+ 				$tmp_file = caFetchFileFromUrl($google_url);
+ 			} catch (ApplicationException $e) {
+ 				$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
 				return $this->Index();
-			}
-
-			$r_outgoing_fp = @fopen($tmp_file, 'w');
-			if(!$r_outgoing_fp) {
-				$this->notification->addNotification(_t("Cannot open temporary file for media fetched from URL [%1]", $transformed_url), __NOTIFICATION_TYPE_ERROR__);
-				return $this->Index();
-			}
-
-			while(($content = fgets($r_incoming_fp, 4096)) !== false) {
-				fwrite($r_outgoing_fp, $content);
-			}
-			fclose($r_incoming_fp);
-			fclose($r_outgoing_fp);
+ 			}
 			
 			$errors = [];
 			$is_new = true;
 			try {
-				$t_importer = ca_data_importers::loadImporterFromFile($tmp_file, $errors, ['logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO, 'sourceUrl' => $transformed_url], $is_new);
+				$t_importer = ca_data_importers::loadImporterFromFile($tmp_file, $errors, ['logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO, 'sourceUrl' => $google_url], $is_new);
 			} catch (Exception $e) {
 				$t_importer = null; 
 				$errors = [_t('Could not read Excel data')];

@@ -57,7 +57,7 @@ if (!$this->request->isAjax()) {
 	<div style="margin: 10px 0 0 0;">
 <?php 
 			print caFormTag($this->request, 'Load', 'caLoadFromGoogleDrive', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'submitOnReturn' => true, 'noCSRFToken' => true]);
-			print _t('Load importer worksheet from Google Drive: %1', caHTMLTextInput('google_drive_url', [], ['width' => '300px'])); 
+			print _t('Load importer worksheet from GoogleDrive: %1', caHTMLTextInput('google_drive_url', ['class' => 'urlBg'], ['width' => '300px'])); 
 			print caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, "", 'caLoadFromGoogleDrive', ['size' => '24px']);
 ?>
 			</form>
@@ -95,7 +95,7 @@ if (!$this->request->isAjax()) {
 	if(sizeof($va_importer_list) == 0) {
 ?>
 			<tr>
-				<td colspan='6'>
+				<td colspan='7'>
 					<div align="center"><?php print _t('No importers defined'); ?></div>
 				</td>
 			</tr>

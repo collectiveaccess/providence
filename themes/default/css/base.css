@@ -6941,12 +6941,12 @@ table.caFileSourceControls {
 }
 
 td.caFileSourceControls {
-	vertical-align: top;
+	vertical-align: middle;
 	padding-top: 4px;
 }
 
 td.caSourceFileControlRadio {
-	vertical-align: top;
+	vertical-align: middle;
 	width: 30px;
 	height: 35px;
 }

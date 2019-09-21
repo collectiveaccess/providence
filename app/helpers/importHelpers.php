@@ -1444,3 +1444,20 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 		return false;
 	}
+	# ---------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caValidateGoogleSheetsUrl($url) {
+		if (!is_array($parsed_url = parse_url(urldecode($url)))) { return null; }
+ 			
+		$tmp = explode('/', $parsed_url['path']);
+		array_pop($tmp); $tmp[] = 'export';
+		$path = join("/", $tmp);
+		$transformed_url = $parsed_url['scheme']."://".$parsed_url['host'].$path."?format=xlsx";
+		if (!isUrl($transformed_url) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file)/d/!', $transformed_url)) {
+			return null;
+		}
+		return $transformed_url;
+	}
+	# ---------------------------------------------------------------------
