@@ -1272,25 +1272,44 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			if ($va_creation['timestamp'] || $va_last_change['timestamp']) {
 				$vs_more_info .= "<div class='inspectorChangeDateList'>";
 				
+				$localized_divisors = json_encode([
+					31536000 => ['singular' => _t('year'), 'plural' => _t('years'), 'divisor' => 31536000],
+					2628000 => ['singular' => _t('month'), 'plural' => _t('months'), 'divisor' => 2628000],
+					86400 => ['singular' => _t('day'), 'plural' => _t('days'), 'divisor' => 86400],
+					3600 => ['singular' => _t('hour'), 'plural' => _t('hours'), 'divisor' => 3600],
+					60 => ['singular' => _t('minute'), 'plural' => _t('minutes'), 'divisor' => 60],
+					1 => ['singular' => _t('second'), 'plural' => _t('seconds'), 'divisor' => 1]
+				]);
+				
 				if($va_creation['timestamp']) {
 					if (!trim($vs_name = $va_creation['fname'].' '.$va_creation['lname'])) { $vs_name = null; }
-					$vs_interval = (($vn_t = (time() - $va_creation['timestamp'])) == 0) ? _t('Just now') : _t('%1 ago', caFormatInterval($vn_t , 2));
+					$vs_interval = (($vn_t = (time() - $va_creation['timestamp'])) == 0) ? _t('Just now') : caFormatInterval($vn_t , 1);
 					
 					$vs_more_info .= "<div class='inspectorChangeDateListLine'  id='caInspectorCreationDate'>".
-						($vs_name ? _t('<strong>Created</strong><br/>%1 by %2', $vs_interval, $vs_name) : _t('<strong>Created</strong><br/>%1', $vs_interval)).
+						($vs_name ? _t('<strong>Created</strong><br/><span id=\'caInspectorCreationDateInterval\'>%1</span> ago by %2', $vs_interval, $vs_name) : _t('<strong>Created</strong><br/>%1', $vs_interval)).
 						"</div>";
 					
+					$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { 
+						setInterval(function() {
+							jQuery('#caInspectorCreationDateInterval').html(caUI.utils.formatInterval(".$va_creation['timestamp'].", 1, ', ', {$localized_divisors}));
+						}, 5000);
+					}); </script>";
 					TooltipManager::add("#caInspectorCreationDate", "<h2>"._t('Created on')."</h2>"._t('Created on %1', caGetLocalizedDate($va_creation['timestamp'], array('dateFormat' => 'delimited'))));
 				}
 				
 				if ($va_last_change['timestamp'] && ($va_creation['timestamp'] != $va_last_change['timestamp'])) {
 					if (!trim($vs_name = $va_last_change['fname'].' '.$va_last_change['lname'])) { $vs_name = null; }
-					$vs_interval = (($vn_t = (time() - $va_last_change['timestamp'])) == 0) ? _t('Just now') : _t('%1 ago', caFormatInterval($vn_t , 2));
+					$vs_interval = (($vn_t = (time() - $va_last_change['timestamp'])) == 0) ? _t('Just now') : caFormatInterval($vn_t , 1);
 					
 					$vs_more_info .= "<div class='inspectorChangeDateListLine' id='caInspectorChangeDate'>".
-						($vs_name ? _t('<strong>Last changed</strong><br/>%1 by %2', $vs_interval, $vs_name) : _t('<strong>Last changed</strong><br/>%1', $vs_interval)).
+						($vs_name ? _t('<strong>Last changed</strong><br/><span id=\'caInspectorLastChangeDateInterval\'>%1</span> ago by %2', $vs_interval, $vs_name) : _t('<strong>Last changed</strong><br/>%1', $vs_interval)).
 						"</div>";
 					
+					$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { 
+						setInterval(function() {
+							jQuery('#caInspectorLastChangeDateInterval').html(caUI.utils.formatInterval(".$va_last_change['timestamp'].", 1, ', ', {$localized_divisors}));
+						}, 5000);
+					}); </script>";
 					TooltipManager::add("#caInspectorChangeDate", "<h2>"._t('Last changed on')."</h2>"._t('Last changed on %1', caGetLocalizedDate($va_last_change['timestamp'], array('dateFormat' => 'delimited'))));
 				}
 				

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -225,6 +225,60 @@ var caUI = caUI || {};
 					};
 				};
 				return filesize;
+			};
+			
+			// --------------------------------------------------------------------------------
+			// Convert time interval in seconds into readable version
+			//
+			// @param string Readable version of time interval
+			//
+			caUI.utils.formatInterval = function(seconds, precision, separator, divisors) {
+				if (divisors === undefined) {
+					divisors = {
+						31536000: {'singular': 'year', 'plural': 'years', 'divisor': 31536000 },
+						2628000: {'singular': 'month', 'plural': 'months', 'divisor': 2628000 },
+						86400: {'singular': 'day', 'plural': 'days', 'divisor': 86400 },
+						3600: {'singular': 'hour', 'plural': 'hours', 'divisor': 3600 },
+						60: {'singular': 'minute', 'plural': 'minutes', 'divisor': 60 },
+						1: {'singular': 'second', 'plural': 'seconds', 'divisor': 1 }
+					};
+				}
+				
+				if(precision === undefined) { precision = -1; }
+				if(separator === undefined) { separator = ', '; }
+				
+				var interval = (Date.now()/1000) - seconds;
+				var out = [];
+				var divisorList = [31536000, 2628000, 86400, 3600, 60 , 1];
+				
+				for(i in divisorList) {
+					divisor = divisorList[i];
+					// If there is at least 1 of the divisor's time period
+					var value = Math.floor(interval / divisor);
+					if(value > 0) {
+						// Add the formatted value - divisor pair to the output array.
+						// Omits the plural for a singular value.
+						if(value == 1) {
+							out.push(value + " " + divisors[divisor]['singular']);
+						} else {
+							out.push(value + " " + divisors[divisor]['plural']);
+						}
+
+						// Stop looping if we've hit the precision limit
+						precision--;
+						if(precision === 0) {
+							break;
+						}
+					}
+
+					// Strip this divisor from the total seconds
+					interval %= divisor;
+				}
+
+				if (out.length === 0) {
+					out.push("0 " + divisors[divisor]['plural']);
+				}
+				return out.join(separator);
 			};
 		
 			caUI.utils.formatNumber = function formatNumber( number, decimals, dec_point, thousands_sep ) {
