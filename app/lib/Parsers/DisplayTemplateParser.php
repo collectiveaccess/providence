@@ -966,7 +966,8 @@ class DisplayTemplateParser {
 				if (isset($va_parsed_tag_opts['options']['restrictToRelationshipTypes']) && is_array($va_parsed_tag_opts['options']['restrictToRelationshipTypes']) && sizeof($va_parsed_tag_opts['options']['restrictToRelationshipTypes'])) {
 					unset($va_remove_opts_for_related['restrictToRelationshipTypes']);
 				}
-				if (isset($va_parsed_tag_opts['options']['restrictToTypes']) && is_array($va_parsed_tag_opts['options']['restrictToTypes']) && sizeof($va_parsed_tag_opts['options']['restrictToTypes'])) {
+
+				if (isset($va_parsed_tag_opts['options']['restrictToTypes']) &&  is_array($va_parsed_tag_opts['options']['restrictToTypes']) && sizeof($va_parsed_tag_opts['options']['restrictToTypes'])) {
 					unset($va_remove_opts_for_related['restrictToTypes']);
 				}
 			}
