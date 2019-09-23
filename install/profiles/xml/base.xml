@@ -5523,35 +5523,6 @@
       </roles>
     </group>
   </groups>
-  <displays>
-    <display code="researcher_display" type="ca_objects" system="1">
-      <labels>
-        <label locale="en_US">
-          <name>Researcher Display</name>
-        </label>
-      </labels>
-      <bundlePlacements>
-        <placement code="idno">
-          <bundle>ca_objects.idno</bundle>
-        </placement>        
-        <placement code="preferred_labels">
-          <bundle>ca_objects.preferred_labels</bundle>
-        </placement>
-        <placement code="description">
-          <bundle>ca_objects.description</bundle>
-        </placement>
-        <placement code="date">
-          <bundle>ca_objects.date</bundle>
-        </placement>
-        <placement code="type">
-          <bundle>ca_objects.type_id</bundle>
-        </placement>        
-        <placement code="entities">
-          <bundle>ca_entities</bundle>
-        </placement>       
-      </bundlePlacements>
-    </display>   
-  </displays>
   
    <searchForms>
   	<searchForm code="ca_objects_adv_search" type="ca_objects" system="1">
