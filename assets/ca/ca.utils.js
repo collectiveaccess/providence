@@ -228,9 +228,14 @@ var caUI = caUI || {};
 			};
 			
 			// --------------------------------------------------------------------------------
-			// Convert time interval in seconds into readable version
+			// Convert time interval between a timestamp and now into readable version
 			//
-			// @param string Readable version of time interval
+			// @param seconds int Start of interval as Unix timestamp
+			// @param precision int Maximum levels of precision (Eg. if set to 2 show minutes and seconds; if set to 1 show only minutes). Default is no limit.
+			// @param separator string separator between quantities. Default is a comma.
+			// @param divisors object Optional block of terms associated with divisors. Used to localized output. If omitted default English terms are used.
+			//
+			// @return string Readable version of time interval
 			//
 			caUI.utils.formatInterval = function(seconds, precision, separator, divisors) {
 				if (divisors === undefined) {
