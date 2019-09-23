@@ -5149,7 +5149,7 @@ if (!$vb_batch) {
 			$vs_key = $va_rel_item['_key'];
 			
 			$vn_rank = null;
-			if (($vn_rank_index = array_search($va_rel_item['relation_id'], $va_rel_sort_order)) !== false) {
+			if ((($vn_rank_index = array_search($va_rel_item['relation_id'], $va_rel_sort_order)) !== false) && (!isset($pa_settings['disableSorts']) || !$pa_settings['disableSorts'])) {
 				$vn_rank = $va_rel_ids_sorted[$vn_rank_index];
 			}
 			
