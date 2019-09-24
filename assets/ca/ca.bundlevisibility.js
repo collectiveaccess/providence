@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -118,6 +118,13 @@ var caUI = caUI || {};
 				} else {
 					jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 0, animateTo: 180 });
 				}
+				
+				// Look for Leaflet based maps implementing invalidateSize()
+				// When opening a closed bundle the map may require redraw
+				jQuery(".mapholder").each(function(k, id) {
+				    var map = jQuery(this).data('map');
+				    if (map && map.invalidateSize) { map.invalidateSize(); }
+				});
 			}
 			return false;
 		};
