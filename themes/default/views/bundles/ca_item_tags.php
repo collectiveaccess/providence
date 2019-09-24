@@ -58,8 +58,8 @@
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
 	
-	print "<div class='bundleSubLabel'>";	
-	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
+	//print "<div class='bundleSubLabel'>";	
+	//print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
 	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
@@ -154,7 +154,7 @@
 <?php
 	if (sizeof($va_errors)) {
 ?>
-		<span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
+		    <span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
 <?php
 	}
 ?>
