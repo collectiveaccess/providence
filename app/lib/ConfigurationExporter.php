@@ -139,17 +139,16 @@ final class ConfigurationExporter {
 		$vo_root->appendChild($o_exporter->getRolesAsDOM());
 		$vo_root->appendChild($o_exporter->getGroupsAsDOM());
 		
-		if($users = $o_exporter->getUsersAsDOM()) {
-			$vo_root->appendChild($users);
-		}
-		
-		
 		/* hack to import string XML to existing document, have to rewrite display exporter at some point */
 		$vo_fragment = $o_exporter->getDOM()->createDocumentFragment();
 		$vo_fragment->appendXML($o_exporter->getDisplaysAsXML());
 		$o_exporter->getDOM()->getElementsByTagName('profile')->item(0)->appendChild($vo_fragment);
 
 		$vo_root->appendChild($o_exporter->getSearchFormsAsDOM());
+		
+		if($users = $o_exporter->getUsersAsDOM()) {
+			$vo_root->appendChild($users);
+		}
 
 		/* hack for decent formatting */
 		$vs_string = $o_exporter->getDOM()->saveXML();
@@ -1412,7 +1411,7 @@ final class ConfigurationExporter {
 			$roles = $t_user->getUserRoles();
 			if(is_array($roles) && sizeof($roles)) { 
 				foreach($roles as $role) {
-					$vo_role = $this->opo_dom->createElement("role", $role['name']);
+					$vo_role = $this->opo_dom->createElement("role");
 					$vo_role->setAttribute("code", $role['code']);
 					$vo_login->appendChild($vo_role);
 				}
