@@ -125,7 +125,7 @@
 					//
 					// Does user have access to row?
 					//
-					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
+					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 						continue;		// skip
 					}
 
@@ -262,7 +262,7 @@
 					}
 
 					// Does user have access to row?
-					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
+					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 						continue; // skip
 					}
 
@@ -390,7 +390,7 @@
 					}
 
 					// Does user have access to row?
-					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
+					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 						continue; // skip
 					}
 
