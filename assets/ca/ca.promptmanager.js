@@ -43,9 +43,7 @@ var caUI = caUI || {};
 		 * @param message
 		 */
 		that.addPrompt = function(id, message) {
-			jQuery("#" + id + " .bundleLabel").attr('data-intro', message);
-			//jQuery("#" + id).data('intro', 'hello');
-			//jQuery("#" + id).data('step', that.prompt.length);
+			jQuery("#" + id + " .bundleLabel").attr('data-intro', message).attr('data-position', 'top');
 			that.prompts.push({id: id, prompt: message });
 		};
 		
