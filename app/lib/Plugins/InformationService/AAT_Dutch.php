@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/InformationService/AAT.php :
+ * app/lib/core/Plugins/InformationService/AAT.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -36,7 +36,7 @@ require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseGettyLODServicePlug
 global $g_information_service_settings_AAT;
 $g_information_service_settings_AAT = array();
 
-class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements IWLPlugInformationService {
+class WLPlugInformationServiceAAT_Dutch extends BaseGettyLODServicePlugin implements IWLPlugInformationService {
 	# ------------------------------------------------
 	static $s_settings;
 	# ------------------------------------------------
@@ -46,11 +46,11 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	public function __construct() {
 		global $g_information_service_settings_AAT;
 
-		WLPlugInformationServiceAAT::$s_settings = $g_information_service_settings_AAT;
+        WLPlugInformationServiceAAT_Dutch::$s_settings = $g_information_service_settings_AAT;
 		parent::__construct();
-		$this->info['NAME'] = 'AAT';
-		
-		$this->description = _t('Provides access to Getty Linked Open Data AAT service');
+		$this
+        ->info['NAME'] = 'AAT_Dutch';
+		$this->description = _t('Provides access to Getty Linked Open Data Dutch AAT service');
 	}
 	# ------------------------------------------------
 	protected function getConfigName() {
@@ -85,9 +85,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		$va_service_conf = $this->opo_linked_data_conf->get('aat');
 		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
 
-        if(!($vs_default_lang = $this->opo_linked_data_conf->get('getty_default_language'))) {
-            $vs_default_lang = 'en';
-        }
+        $vs_default_lang = 'nl';
 
 		$pb_phrase = (bool) caGetOption('phrase', $pa_options, false);
 		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
@@ -109,14 +107,14 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 			$vs_search = join(' AND ', $va_search);
 		}
 
-        $vs_query = urlencode ('SELECT ?ID (?term as ?TermPrefLabel) ?Parents ?ParentsFull{
+        $vs_query = urlencode ('SELECT ?ID (?nlterm as ?TermPrefLabel) ?Parents ?ParentsFull{
             ?ID a skos:Concept; luc:term "'.$vs_search.'*"; skos:inScheme aat:;
 	gvp:prefLabelGVP [xl:literalForm ?prefterm]
-	{{?ID xl:prefLabel|xl:altLabel [xl:literalForm ?term; dct:language gvp_lang:'.$vs_default_lang.']}{{filter(regex(?term, "'.$vs_search.'"))}}}
+	{{?ID xl:prefLabel|xl:altLabel [xl:literalForm ?nlterm; dct:language gvp_lang:'.$vs_default_lang.']}{{filter(regex(?nlterm, "'.$vs_search.'"))}}}
 	{?ID gvp:parentStringAbbrev ?Parents}
 	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
-} ORDER BY ?term LIMIT '.$pn_limit);
+} ORDER BY ?nlterm LIMIT '.$pn_limit);
 
 		$va_results = parent::queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }

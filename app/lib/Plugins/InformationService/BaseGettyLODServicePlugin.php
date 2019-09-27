@@ -98,8 +98,35 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
 
 			// only display if there's content
-			if(strlen($vs_content = self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node)) > 0) {
-				$vs_display .= "<div class='formLabel'>";
+
+            if (strripos($pa_settings['service'],"dutch") == FALSE) {
+                if (!($vs_default_lang = $this->opo_linked_data_conf->get('getty_default_language'))) {
+                    $vs_default_lang = 'en';
+                }
+            } else {
+                $vs_default_lang = 'nl';
+            }
+
+            if ($vs_default_lang == 'en') {
+                $vs_content = self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node);
+            } else { // SPA: get literal out of language depended SPARQL expression
+                $vs_content = "";
+                $SubjectID = substr($ps_url,strrpos($ps_url,"/")+1);
+                $vs_query_hierarchy = urlencode ('select  ?parents ?term {
+                aat:'.$SubjectID.' gvp:broaderPreferredExtended ?parents
+                {?parents  xl:prefLabel [xl:literalForm ?term; dct:language gvp_lang:'.$vs_default_lang.']}
+                  }order by ?parents');
+                $va_results = self::queryGetty($vs_query_hierarchy);
+                $first = true;
+                foreach($va_results as $va_values) {
+                    if (!$first)  $vs_content .= ' > ';
+                    $vs_content .= htmlentities($va_values['term']['value']);
+                    $first = false;
+                }
+            }
+
+            if(strlen($vs_content) > 0){
+                $vs_display .= "<div class='formLabel'>";
 				$vs_display .= isset($va_node['label']) ? $va_node['label'].": " : "";
 				$vs_display .= "<span class='formLabelPlain'>".$vs_content."</span>";
 				$vs_display .= "</div>\n";
