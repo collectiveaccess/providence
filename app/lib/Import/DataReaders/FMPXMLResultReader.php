@@ -177,6 +177,32 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	/**
 	 * 
 	 * 
+	 * @return mixed
+	 */
+	public function nextRow() {
+		if ($rc = parent::nextRow()) {
+			$row = $this->opa_row_buf['/COL'];
+			$row_with_labels = [];
+			foreach($this->opa_metadata as $i => $l) {
+				$row_with_labels[$l] = $row[$i];
+			}
+			$this->opa_row_buf = $row_with_labels;
+		}
+		return $rc;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return mixed
+	 */
+	public function getRow($pa_options=null) {
+		return is_array($this->opa_row_buf) ? $this->opa_row_buf : null;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
 	 * @return int
 	 */
 	public function getInputType() {
