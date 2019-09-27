@@ -1900,6 +1900,9 @@
 			//
 			// Occurrence update
 			//
+			$o_view->setVar('occurrence_types', []);
+			$o_view->setVar('occurrence_relationship_types', []);
+			$o_view->setVar('occurrence_relationship_types_by_sub_type', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_occurrences')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if (($t_occ_rel = Datamodel::getInstance($linking_table, true)) && ($t_occ = Datamodel::getInstance('ca_occurrences', true))) {
@@ -1917,6 +1920,7 @@
 			//
 			// Collection update
 			//
+			$o_view->setVar('collection_types', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_collections')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if (($t_coll_rel = Datamodel::getInstance($linking_table, true)) && ($t_coll = Datamodel::getInstance('ca_collections', true))) {
@@ -1934,6 +1938,9 @@
 			//
 			// Entity update
 			//
+			$o_view->setVar('entity_types', []);
+			$o_view->setVar('entity_relationship_types', []);
+			$o_view->setVar('entity_relationship_types_by_sub_type', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_entities')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if (($t_entity_rel = Datamodel::getInstance($linking_table, true)) && ($t_entity = Datamodel::getInstance('ca_entities', true))) {
@@ -1951,6 +1958,8 @@
 			//
 			// Loan update
 			//
+			$o_view->setVar('loan_relationship_types', []);
+			$o_view->setVar('loan_relationship_types_by_sub_type', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_loans')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if ($t_loan_rel = Datamodel::getInstance($linking_table, true)) {
@@ -1962,6 +1971,8 @@
 			//
 			// Movement update
 			//
+			$o_view->setVar('movement_relationship_types', []);
+			$o_view->setVar('movement_relationship_types_by_sub_type', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_movements')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if ($t_movement_rel = Datamodel::getInstance($linking_table, true)) {
@@ -1973,6 +1984,8 @@
 			//
 			// Object update
 			//
+			$o_view->setVar('object_relationship_types', []);
+			$o_view->setVar('object_relationship_types_by_sub_type', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_objects')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if ($t_object_rel = Datamodel::getInstance($linking_table, true)) {
@@ -1984,6 +1997,8 @@
 			//
 			// Location update
 			//
+			$o_view->setVar('location_relationship_types', []);
+			$o_view->setVar('location_relationship_types_by_sub_type', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_storage_locations')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if ($t_location_rel = Datamodel::getInstance($linking_table, true)) {
