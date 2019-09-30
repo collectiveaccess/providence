@@ -454,12 +454,12 @@
 				switch($input_format) {
 					case 'fmpxml':
 					case 'fmpxmlresult':
-						require_once(__CA_LIB_DIR__."/import/DataReaders/FMPXMLResultReader.php");
+						require_once(__CA_LIB_DIR__."/Import/DataReaders/FMPXMLResultReader.php");
 						$reader = new FMPXMLResultReader();
 						break;
 					case 'pastperfect':
 					case 'pp':
-						require_once(__CA_LIB_DIR__."/import/DataReaders/PastPerfectXMLReader.php");
+						require_once(__CA_LIB_DIR__."/Import/DataReaders/PastPerfectXMLReader.php");
 						$reader = new PastPerfectXMLReader();
 						break;
 					default:
