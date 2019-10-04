@@ -886,13 +886,13 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 *
+	 * 
 	 */
-	public function getInstance() {
+	public function getInstance($always_return=false) {
 		if(($id = $this->opo_engine_result->get($this->opo_subject_instance->primaryKey())) && $this->opo_subject_instance->load($id)) {
 		    return $this->opo_subject_instance;
 		}
-		return null;
+		return $always_return ? $this->opo_subject_instance : null;
 	}
 	# ------------------------------------------------------------------
 	/**
