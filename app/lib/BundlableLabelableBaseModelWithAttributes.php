@@ -5846,6 +5846,10 @@ if (!$vb_batch) {
 				}
 			}
 			$va_rels = $va_sorted_rels;
+			
+			if ($ps_return_as !== 'data') {
+				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, $t_rel_item->primaryKey());
+			}
 
 			//
 			// END - traverse self relation
@@ -5993,6 +5997,10 @@ if (!$vb_batch) {
 						$va_rels[$vs_v]['label'] = array_shift($va_tmp2);
 					}
 				}
+			}
+			
+			if ($ps_return_as !== 'data') {
+				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, $t_rel_item->primaryKey());
 			}
 			
 			//
