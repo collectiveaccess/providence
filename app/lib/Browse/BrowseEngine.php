@@ -1511,6 +1511,33 @@
 														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
 														$va_attr_values[] = array_map(function($v) { return (int)$v; }, array_unique($va_item_ids));
 														break;
+													case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+                                                    case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+                                                    case __CA_ATTRIBUTE_VALUE_PLACES__:
+                                                    case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+                                                    case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+                                                    case __CA_ATTRIBUTE_VALUE_LOANS__:
+                                                    case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+                                                    case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+                                                    case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
+                                                        if ($vs_f == 'value_integer1') {
+															$va_attr_sql[] = "(ca_attribute_values.value_integer1 = ?)";
+															$va_attr_values[] = $va_value['value_integer1'];
+														}
+                                                        break;
+													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+														if($vs_f == '_dont_save') {
+															$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
+															$va_attr_values[] = $vn_row_id;
+															break(2);
+														}
+														break;
+													case __CA_ATTRIBUTE_VALUE_LCSH__:
+														if ($vs_f == 'value_longtext2') {
+															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
+															$va_attr_values[] = $va_value['value_longtext2'];
+														}
+														break;
 													default:
 														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
 														$va_attr_values[] = $vs_v;
@@ -3711,7 +3738,7 @@
 							$va_suppress_values = caGetOption('exclude_values', $va_facet_info, null);
 						}
 
-						
+						$access = null;
 						switch($vn_element_type) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['restrict_to_types'], array('instance' => new ca_list_items(), 'dontExpandHierarchically' => true)))) { $va_restrict_to_types = array(); }
@@ -3862,6 +3889,15 @@
 							case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
 								if ($t_rel_item = AuthorityAttributeValue::elementTypeToInstance($vn_element_type)) {
 									$va_ids = $qr_res->getAllFieldValues('value_integer1');
+									
+									if(is_array($access = $t_rel_item->getFieldValuesForIDs($va_ids, ['access']))) {
+									    $va_ids = [];
+									    foreach($access as $id => $acc) {
+									        if ($acc != 1) { $va_ids[] = $id; }
+									    }
+									}
+									
+									
 									$va_auth_items = $t_rel_item->getPreferredDisplayLabelsForIDs($va_ids);
 									$qr_res->seek(0);
 								}
@@ -3878,7 +3914,7 @@
 							if (!($vs_val = trim($o_attr->getDisplayValue()))) { continue; }
 							if (is_array($va_suppress_values) && (in_array($vs_val, $va_suppress_values))) { continue; }
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
-
+                            if(is_array($access) && isset($access[$qr_res->get('value_integer1')]) && ($access[$qr_res->get('value_integer1')] != 1)) { continue; } 
 							switch($vn_element_type) {
 								case __CA_ATTRIBUTE_VALUE_LIST__:
 									$vn_child_count = 0;

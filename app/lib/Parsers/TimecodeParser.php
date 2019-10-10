@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2017 Whirl-i-Gig
+ * Copyright 2004-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -221,20 +221,23 @@ class TimecodeParser {
 		switch(strtolower($ps_format)) {
 			case 'delimited':
 			case 'colon':
+			case 'colon_delimited':
 				$ps_format = 'COLON_DELIMITED';
 				break;
 			case 'hms':
 			case 'time':
+			case 'hours_minutes_seconds':
 				$ps_format = 'HOURS_MINUTES_SECONDS';
 				break;
 			case 'hm':
+			case 'hours_minutes':
 				$ps_format = 'HOURS_MINUTES';
 				break;
 			case 'raw':
 				$ps_format = 'RAW';
 				break;
 		}
-	
+		
 		switch($ps_format) {
 			case 'COLON_DELIMITED':
 			case 'HOURS_MINUTES_SECONDS':
