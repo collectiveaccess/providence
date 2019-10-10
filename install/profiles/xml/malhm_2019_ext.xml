@@ -2659,6 +2659,14 @@
             </label>
           </labels>
         </item>
+        <item idno="non_binary" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>non-binary</name_singular>
+              <name_plural>non-binary</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="unknown" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -16512,14 +16520,7 @@ Do not enter all three levels of Category, Classification and Sub-Classification
                 <setting name="display_template">^ca_entities.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="restrict_to_relationship_types">creator</setting>
-                <setting name="restrict_to_relationship_types">collector</setting>
-                <setting name="restrict_to_relationship_types">author</setting>
-                <setting name="restrict_to_relationship_types">publisher</setting>
-                <setting name="restrict_to_relationship_types">contributor</setting>
-                <setting name="restrict_to_relationship_types">subject</setting>
-                <setting name="restrict_to_relationship_types">related</setting>                
+                <setting name="showCurrentOnly">0</setting>     
               </settings>
             </placement>
             <placement code="ca_attribute_exhibition_label">
@@ -17569,6 +17570,7 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </placement>
             <placement code="ca_attribute_birthplace">
               <bundle>ca_attribute_birthplace</bundle>
+
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17577,13 +17579,15 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+              <placement code="ca_entities">
+                <bundle>ca_entities</bundle>
+            </placement>
             <placement code="ca_attribute_life_dates">
               <bundle>ca_attribute_life_dates</bundle>
             </placement>            
             <placement code="ca_attribute_founding_date">
               <bundle>ca_attribute_founding_date</bundle>
             </placement>   
-
             <placement code="ca_attribute_titles">
               <bundle>ca_attribute_titles</bundle>
               <settings>
@@ -18971,6 +18975,33 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <placement code="ca_attribute_thank_you_deed8">
               <bundle>ca_attribute_thank_you_deed</bundle>
             </placement>  
+          </bundlePlacements>
+        </screen>
+        <screen idno="media" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+              <settings>
+                <setting name="description" locale="en_US">Use this field to upload deeds of gift and other documents pertaining to this accession.</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_object_representations.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+              </settings>
+            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -20559,7 +20590,7 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
         </type>
-        <type code="related" default="0">
+        <type code="related" default="1">
           <labels>
             <label locale="en_US">
               <typename>is associated with</typename>
