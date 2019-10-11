@@ -112,7 +112,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
         $vs_query = urlencode ('SELECT ?ID (?term as ?TermPrefLabel) ?Parents ?ParentsFull{
             ?ID a skos:Concept; luc:term "'.$vs_search.'*"; skos:inScheme aat:;
 	gvp:prefLabelGVP [xl:literalForm ?prefterm]
-	{{?ID xl:prefLabel|xl:altLabel [xl:literalForm ?term; dct:language gvp_lang:'.$vs_default_lang.']}{{filter(regex(?term, "'.$vs_search.'"))}}}
+	{{?ID xl:prefLabel [xl:literalForm ?term; dct:language gvp_lang:'.$vs_default_lang.']}{{filter(regex(?term, "'.$vs_search.'","i"))}}}
 	{?ID gvp:parentStringAbbrev ?Parents}
 	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
