@@ -794,7 +794,7 @@ class ca_users extends BaseModel {
 
 		$o_db = $this->getDb();
 		
-		$va_valid_sorts = array('lname,fname', 'user_name', 'email', 'last_login', 'active');
+		$va_valid_sorts = array('lname,fname', 'user_name', 'email', 'last_login', 'active', 'registered_on');
 		if (!in_array($ps_sort_field, $va_valid_sorts)) {
 			$ps_sort_field = 'lname,fname';
 		}
