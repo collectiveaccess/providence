@@ -2659,6 +2659,14 @@
             </label>
           </labels>
         </item>
+        <item idno="non_binary" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>non-binary</name_singular>
+              <name_plural>non-binary</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="unknown" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -12973,7 +12981,7 @@
       <settings>
         <setting name="canBeUsedInSearchForm">0</setting>
         <setting name="canBeUsedInDisplay">0</setting>
-        <setting name="displayTemplate">^address1 ^address2&#13;
+        <setting name="displayTemplate">^address1 ^address2
 ^city, ^stateprovince ^postalcode ^country</setting>
       </settings>
       <elements>
@@ -13602,19 +13610,19 @@
         <setting name="fieldWidth">640px</setting>
         <setting name="fieldHeight">10</setting>
         <setting name="usewysiwygeditor">1</setting>
-        <setting name="default_text">&lt;p class="normal" style="margin-bottom:.0001pt;text-align:justify;margin:0in 0in 10pt;"&gt;&lt;span style="font-size:12pt;"&gt;&lt;span style="line-height:normal;"&gt;&lt;span style="font-family:'Times New Roman';"&gt;&lt;span style="color:#000000;"&gt;&lt;span style="font-size:10pt;"&gt;&lt;span style="font-family:Arial;"&gt;The items listed below are left in the custody of the [INSTITUTION] to be considered for donation:&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&#13;
-          &#13;
-          &lt;p class="normal" style="margin-bottom:.0001pt;text-align:justify;margin:0in 0in 10pt;"&gt;&lt;span style="font-size:12pt;"&gt;&lt;span style="line-height:normal;"&gt;&lt;span style="font-family:'Times New Roman';"&gt;&lt;span style="color:#000000;"&gt;&lt;span style="font-size:10pt;"&gt;&lt;span style="font-family:Arial;"&gt;The [INSTNAME] reserves the right to keep, lend or otherwise dispose of the material.&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&#13;
-          &#13;
-          &lt;p class="normal" style="margin-top:0in;margin-right:0in;margin-bottom:.0001pt;margin-left:.5in;text-align:justify;margin:0in 0in 10pt;"&gt;&lt;span style="font-size:12pt;"&gt;&lt;span style="line-height:115%;"&gt;&lt;span style="font-family:'Times New Roman';"&gt;&lt;span style="color:#000000;"&gt;&lt;b&gt;&lt;span style="font-size:8pt;"&gt;&lt;span style="line-height:115%;"&gt;&lt;span style="font-family:Arial;"&gt;I own the items described below and desire to give said items to the museum. I do hereby irrevocably and unconditionally give and transfer to the museum all right, title, and interest, including all copyright, trademark, and related interest, in and to the following described property.  It is understood that I hereby bind myself, my heirs, executors and administrators. Possible uses of disposed material include educational, teaching or prop collections or sold to benefit the collections.   I acknowledge that because of the policy of changing exhibitions, the [INSTITUTION] has not promised, and is not obligated, to exhibit the property.&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/b&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&#13;
-          &#13;
-          &lt;ul&gt;&#13;
-          &lt;li style="list-style-type:none;"&gt;&#13;
-          &lt;ul style="list-style-type:circle;"&gt;&#13;
-          &lt;li class="normalCxSpLast" style="margin-top:0in;margin-right:0in;margin-bottom:.0001pt;text-align:justify;"&gt;&lt;span style="line-height:normal;"&gt;&lt;span style="font-size:10pt;"&gt;&lt;span style="font-family:Arial;"&gt;Please check here if the item(s) are only given to be considered for acquisition into the collection.  If not accepted into the collection, the donor shall be notified and will 90 days to pick up the item(s) or make other arrangements for disposal.  &lt;b&gt;After 90 days the item(s) will become the property of the museum.&lt;/b&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/li&gt;&#13;
-          &lt;/ul&gt;&#13;
-          &lt;/li&gt;&#13;
-          &lt;/ul&gt;&#13;
+        <setting name="default_text"><![CDATA[<p class="normal" style="margin-bottom:.0001pt;text-align:justify;margin:0in 0in 10pt;"><span style="font-size:12pt;"><span style="line-height:normal;"><span style="font-family:'Times New Roman';"><span style="color:#000000;"><span style="font-size:10pt;"><span style="font-family:Arial;">The items listed below are left in the custody of the [INSTITUTION] to be considered for donation:</span></span></span></span></span></span></p>
+          
+          <p class="normal" style="margin-bottom:.0001pt;text-align:justify;margin:0in 0in 10pt;"><span style="font-size:12pt;"><span style="line-height:normal;"><span style="font-family:'Times New Roman';"><span style="color:#000000;"><span style="font-size:10pt;"><span style="font-family:Arial;">The [INSTNAME] reserves the right to keep, lend or otherwise dispose of the material.</span></span></span></span></span></span></p>
+          
+          <p class="normal" style="margin-top:0in;margin-right:0in;margin-bottom:.0001pt;margin-left:.5in;text-align:justify;margin:0in 0in 10pt;"><span style="font-size:12pt;"><span style="line-height:115%;"><span style="font-family:'Times New Roman';"><span style="color:#000000;"><b><span style="font-size:8pt;"><span style="line-height:115%;"><span style="font-family:Arial;">I own the items described below and desire to give said items to the museum. I do hereby irrevocably and unconditionally give and transfer to the museum all right, title, and interest, including all copyright, trademark, and related interest, in and to the following described property.  It is understood that I hereby bind myself, my heirs, executors and administrators. Possible uses of disposed material include educational, teaching or prop collections or sold to benefit the collections.   I acknowledge that because of the policy of changing exhibitions, the [INSTITUTION] has not promised, and is not obligated, to exhibit the property.</span></span></span></b></span></span></span></span></p>
+          
+          <ul>
+          <li style="list-style-type:none;">
+          <ul style="list-style-type:circle;">
+          <li class="normalCxSpLast" style="margin-top:0in;margin-right:0in;margin-bottom:.0001pt;text-align:justify;"><span style="line-height:normal;"><span style="font-size:10pt;"><span style="font-family:Arial;">Please check here if the item(s) are only given to be considered for acquisition into the collection.  If not accepted into the collection, the donor shall be notified and will 90 days to pick up the item(s) or make other arrangements for disposal.  <b>After 90 days the item(s) will become the property of the museum.</b></span></span></span></li>
+          </ul>
+          </li>
+          </ul>]]>
         </setting>
       </settings>
       <typeRestrictions>
@@ -13639,13 +13647,13 @@
         <setting name="fieldWidth">640px</setting>
         <setting name="fieldHeight">10</setting>
         <setting name="usewysiwygeditor">1</setting>
-        <setting name="default_text">On behalf of the Officers and Directors of the [INSTITUTION], the community, and visiting researchers, I would like to thank you for your recent gift to the museum. No goods or services were exchanged for this donation.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          Long-term care and preservation of artifacts does not happen without resources. It costs us approximately $40 in supplies, staff time, and building costs to keep an average archival box on the shelf for one year. Any financial support that you are able to provide towards the preservation of your donation would be greatly appreciated.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          If you have any more information you would like to add about the history of the item(s) included in this donation, please let me know and we will add it to our records.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          Again, thank you for your generous gift.</setting>
+        <setting name="default_text"><![CDATA[On behalf of the Officers and Directors of the [INSTITUTION], the community, and visiting researchers, I would like to thank you for your recent gift to the museum. No goods or services were exchanged for this donation.<br />
+          <br />
+          Long-term care and preservation of artifacts does not happen without resources. It costs us approximately $40 in supplies, staff time, and building costs to keep an average archival box on the shelf for one year. Any financial support that you are able to provide towards the preservation of your donation would be greatly appreciated.<br />
+          <br />
+          If you have any more information you would like to add about the history of the item(s) included in this donation, please let me know and we will add it to our records.<br />
+          <br />
+          Again, thank you for your generous gift.]]></setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -13669,15 +13677,15 @@
         <setting name="fieldWidth">640px</setting>
         <setting name="fieldHeight">10</setting>
         <setting name="usewysiwygeditor">1</setting>
-        <setting name="default_text">On behalf of the Officers and Directors of the [INSTITUTION], the community, and visiting researchers, I would like to thank you for your recent gift to the museum. No goods or services were exchanged for this donation.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          In order to complete the donation, please sign both copies of the enclosed Deed of Gift. Please return the original in the self-addressed, stamped envelope enclosed. You may retain the copy for your records.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          Long-term care and preservation of artifacts does not happen without resources. It costs us approximately $40 in supplies, staff time, and building costs to keep an average archival box on the shelf for one year. Any financial support that you are able to provide towards the preservation of your donation would be greatly appreciated.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          If you have any more information you would like to add about the history of the item(s) included in this donation, please let me know and we will add it to our records.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          Again, thank you for your generous gift.</setting>
+        <setting name="default_text"><![CDATA[On behalf of the Officers and Directors of the [INSTITUTION], the community, and visiting researchers, I would like to thank you for your recent gift to the museum. No goods or services were exchanged for this donation.<br />
+          <br />
+          In order to complete the donation, please sign both copies of the enclosed Deed of Gift. Please return the original in the self-addressed, stamped envelope enclosed. You may retain the copy for your records.<br />
+          <br />
+          Long-term care and preservation of artifacts does not happen without resources. It costs us approximately $40 in supplies, staff time, and building costs to keep an average archival box on the shelf for one year. Any financial support that you are able to provide towards the preservation of your donation would be greatly appreciated.<br />
+          <br />
+          If you have any more information you would like to add about the history of the item(s) included in this donation, please let me know and we will add it to our records.<br />
+          <br />
+          Again, thank you for your generous gift.]]></setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -16390,14 +16398,14 @@ Do not enter all three levels of Category, Classification and Sub-Classification
                 <setting name="list_format">list</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">	&lt;l&gt;^ca_object_lots.idno_stub&lt;/l&gt;&#13;
-	&lt;br/&gt;&#13;
-&lt;unit relativeTo="ca_entities" restrictToRelationshipTypes="donor" delimiter="&lt;br&gt;"&lt;/unit&gt;&lt;ifdef code="ca_entities.preferred_labels.displayname" restrictToRelationshipTypes="donor"&gt;&lt;b&gt;Donor:&lt;/b&gt; ^ca_entities.preferred_labels.displayname&lt;/ifdef&gt;&lt;/unit&gt;&#13;
-&lt;br/&gt;	&#13;
-&lt;unit&gt;&#13;
-	&lt;ifdef code="ca_object_lots.credit_line"&gt;&lt;b&gt;Credit Line:&lt;/b&gt; ^ca_object_lots.credit_line&lt;br/&gt;&lt;/ifdef&gt;&#13;
-	&lt;ifdef code="ca_object_lots.restrictions"&gt;&lt;b&gt;Restrictions:&lt;/b&gt; ^ca_object_lots.restrictions&lt;br/&gt;&lt;/ifdef&gt;&#13;
-&lt;/unit&gt;</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_object_lots.idno_stub</l>
+	<br/>
+<unit relativeTo="ca_entities" restrictToRelationshipTypes="donor" delimiter="<br>"</unit><ifdef code="ca_entities.preferred_labels.displayname" restrictToRelationshipTypes="donor"><b>Donor:</b> ^ca_entities.preferred_labels.displayname</ifdef></unit>
+<br/>	
+<unit>
+	<ifdef code="ca_object_lots.credit_line"><b>Credit Line:</b> ^ca_object_lots.credit_line<br/></ifdef>
+	<ifdef code="ca_object_lots.restrictions"><b>Restrictions:</b> ^ca_object_lots.restrictions<br/></ifdef>
+</unit>]]></setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -16512,14 +16520,7 @@ Do not enter all three levels of Category, Classification and Sub-Classification
                 <setting name="display_template">^ca_entities.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="restrict_to_relationship_types">creator</setting>
-                <setting name="restrict_to_relationship_types">collector</setting>
-                <setting name="restrict_to_relationship_types">author</setting>
-                <setting name="restrict_to_relationship_types">publisher</setting>
-                <setting name="restrict_to_relationship_types">contributor</setting>
-                <setting name="restrict_to_relationship_types">subject</setting>
-                <setting name="restrict_to_relationship_types">related</setting>                
+                <setting name="showCurrentOnly">0</setting>     
               </settings>
             </placement>
             <placement code="ca_attribute_exhibition_label">
@@ -17569,6 +17570,7 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </placement>
             <placement code="ca_attribute_birthplace">
               <bundle>ca_attribute_birthplace</bundle>
+
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17577,13 +17579,15 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+              <placement code="ca_entities">
+                <bundle>ca_entities</bundle>
+            </placement>
             <placement code="ca_attribute_life_dates">
               <bundle>ca_attribute_life_dates</bundle>
             </placement>            
             <placement code="ca_attribute_founding_date">
               <bundle>ca_attribute_founding_date</bundle>
             </placement>   
-
             <placement code="ca_attribute_titles">
               <bundle>ca_attribute_titles</bundle>
               <settings>
@@ -18877,7 +18881,7 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
-                 <setting name="display_template">&lt;unit relativeTo="ca_objects"&gt;&lt;l&gt;^ca_objects.preferred_labels (^ca_objects.idno)&lt;/&gt;&lt;/unit&gt;</setting>
+                 <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects"><l>^ca_objects.preferred_labels (^ca_objects.idno)</></unit>]]></setting>
               </settings>
             </placement> 
             <placement code="ca_entities">
@@ -18971,6 +18975,33 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <placement code="ca_attribute_thank_you_deed8">
               <bundle>ca_attribute_thank_you_deed</bundle>
             </placement>  
+          </bundlePlacements>
+        </screen>
+        <screen idno="media" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+              <settings>
+                <setting name="description" locale="en_US">Use this field to upload deeds of gift and other documents pertaining to this accession.</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_object_representations.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+              </settings>
+            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -20559,7 +20590,7 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
         </type>
-        <type code="related" default="0">
+        <type code="related" default="1">
           <labels>
             <label locale="en_US">
               <typename>is associated with</typename>

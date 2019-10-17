@@ -843,7 +843,7 @@
 									case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 										if(is_array($va_date = caDateToHistoricTimestamps($vm_value))) {
 											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?)))";
-											array_push($va_attr_params, $va_date['start'], $va_date['end'], $va_date['start'], $va_date['end']);
+											$va_attr_params[] = [$va_date['start'], $va_date['end'], $va_date['start'], $va_date['end']];
 										} else {
 											continue(2);
 										}
@@ -851,7 +851,7 @@
 									case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 										if (is_array($va_parsed_value = caParseCurrencyValue($vm_value))) {
 											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_longtext1 = ?) OR (ca_attribute_values.value_decimal1 {$vs_op} ?)))";
-											array_push($va_attr_params, $va_parsed_value['currency'], $va_parsed_value['value']);
+											$va_attr_params[] = [$va_parsed_value['currency'], $va_parsed_value['value']];
 										} else {
 											continue(2);
 										}
@@ -898,7 +898,7 @@
 			
 			if (($vn_attr_count == 1) || (($vn_attr_count > 0) && strtolower($ps_boolean) !== 'and')) {
 			    $va_label_sql = array_merge($va_label_sql, $va_attr_sql);
-			    $va_sql_params = array_merge($va_sql_params, $va_attr_params);
+			    $va_sql_params = array_merge($va_sql_params, caFlattenArray($va_attr_params));
 			} 
 			
 			if (!sizeof($va_label_sql) && ($vn_attr_count == 0)) { return null; }
@@ -928,7 +928,8 @@
 			if (($vn_attr_count > 1) && (strtolower($ps_boolean) == 'and')) {
 			    $va_ids = null;
 			    foreach($va_attr_sql as $i => $vs_attr_sql) {
-			        $qr_p = $o_db->query("SELECT t.{$vs_table_pk} FROM {$vs_table} t INNER JOIN ca_attributes ON ca_attributes.table_num = {$vn_table_num} AND ca_attributes.row_id = t.{$vs_table_pk} INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id WHERE {$vs_attr_sql}", [$va_attr_params[$i]]);
+			        $qr_p = $o_db->query("SELECT t.{$vs_table_pk} FROM {$vs_table} t INNER JOIN ca_attributes ON ca_attributes.table_num = {$vn_table_num} AND ca_attributes.row_id = t.{$vs_table_pk} INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id WHERE {$vs_attr_sql}", $va_attr_params[$i]);
+			        
 			        if (is_null($va_ids)) { 
 			            $va_ids = array_unique($qr_p->getAllFieldValues($vs_table_pk));
 			        } else {
@@ -966,7 +967,6 @@
 			}
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-	
 			$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {

@@ -453,9 +453,9 @@ var caUI = caUI || {};
 							console.log(that.excludeItemIDs, item);
 								continue;
 							}
-							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
-								that.selectedItemIDs[0] = item['item_id'];
-							}
+							// if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
+// 								that.selectedItemIDs[0] = item['item_id'];
+// 							}
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
 							}
