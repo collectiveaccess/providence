@@ -101,7 +101,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "1934.123123595900");
 		$this->assertEquals($va_parse[0], "1923.010100000000");
 		$this->assertEquals($va_parse[1], "1934.123123595900");	
-		$this->assertEquals($o_tep->getText(), "mid 1920s - early 1930s");
+		$this->assertEquals($o_tep->getText(), "1923 – 1934");		// Don't output mid-decade dates and they're confusing to users
 		
 		$vb_res = $o_tep->parse('late 1920s - early 1930s');
 		$this->assertEquals($vb_res, true);
