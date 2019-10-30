@@ -5828,9 +5828,11 @@ if (!$vb_batch) {
 				$vn_i++;
 			}
 
-			if($pb_show_current_only && $t_item_rel) {
+			if($pb_show_current_only && $t_item_rel && is_array($va_rels_by_date)) {
 				ksort($va_rels_by_date);
-				$va_rels = array_pop($va_rels_by_date);
+				if(is_array($va_new_rel = array_pop($va_rels_by_date))) {
+				    $va_rels = $va_new_rel;
+				}
 			}
 			
 			ksort($va_rels);	// sort by sort key... we'll remove the sort key in the next loop while we add the labels
