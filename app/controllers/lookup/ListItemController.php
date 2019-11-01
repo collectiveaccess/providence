@@ -165,10 +165,10 @@
 			
 				$va_list_items_sortable = [];
 				foreach($va_list_items as $vn_item_id => $va_item) {
-					$va_list_items_sortable[caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_item['name_plural'])))).'_'.$vn_item_id] = $va_item;
+					$va_list_items_sortable[caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_item['name'])))).'_'.$vn_item_id] = $va_item;
 				}
+				ksort($va_list_items_sortable);
 				$va_list_items = $va_list_items_sortable;
-				
  				$va_list_items['_sortOrder'] = array_keys($va_list_items);
 
 				$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
