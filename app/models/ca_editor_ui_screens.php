@@ -598,7 +598,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, array());
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-		$va_defined_bundles = $t_instance->getBundleList(array('includeBundleInfo' => true));		// these are the bundles defined for this type of editor
+		$va_defined_bundles = method_exists($t_instance, "getBundleList") ? $t_instance->getBundleList(array('includeBundleInfo' => true)) : [];		// these are the bundles defined for this type of editor
 		
 		$va_available_bundles = array();
 		
