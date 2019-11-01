@@ -862,6 +862,20 @@ final class ConfigurationExporter {
 					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
 				}
 			}
+			
+			$va_roles = $t_ui->getUserRoles();
+			if(is_array($va_roles) && (sizeof($va_roles)>0)) {
+				$vo_role_access = $this->opo_dom->createElement("roleAccess");
+				$vo_ui->appendChild($vo_role_access);
+
+				foreach($va_roles as $va_role_info) {
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_role_access->appendChild($vo_permission);
+
+					$vo_permission->setAttribute("role", $va_role_info["code"]);
+					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_role_info['access'])));
+				}
+			}
 
 			// screens
 			$vo_screens = $this->opo_dom->createElement("screens");
@@ -921,6 +935,49 @@ final class ConfigurationExporter {
 				}
 
 				$vo_screen->appendChild($vo_labels);
+				
+				// User and group access
+                $va_users = $t_screen->getUsers();
+                if(is_array($va_users) && (sizeof($va_users)>0)) {
+                    $vo_user_access = $this->opo_dom->createElement("userAccess");
+                    $vo_screen->appendChild($vo_user_access);
+
+                    foreach($va_users as $va_user_info) {
+                        $vo_permission = $this->opo_dom->createElement("permission");
+                        $vo_user_access->appendChild($vo_permission);
+
+                        $vo_permission->setAttribute("user", $va_user_info["user_name"]);
+                        $vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_user_info['access'])));
+                    }
+                }
+
+                $va_groups = $t_screen->getUserGroups();
+                if(is_array($va_groups) && (sizeof($va_groups)>0)) {
+                    $vo_group_access = $this->opo_dom->createElement("groupAccess");
+                    $vo_screen->appendChild($vo_group_access);
+
+                    foreach($va_groups as $va_group_info) {
+                        $vo_permission = $this->opo_dom->createElement("permission");
+                        $vo_group_access->appendChild($vo_permission);
+
+                        $vo_permission->setAttribute("group", $va_group_info["code"]);
+                        $vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
+                    }
+                }
+            
+                $va_roles = $t_screen->getUserRoles();
+                if(is_array($va_roles) && (sizeof($va_roles)>0)) {
+                    $vo_role_access = $this->opo_dom->createElement("roleAccess");
+                    $vo_screen->appendChild($vo_role_access);
+
+                    foreach($va_roles as $va_role_info) {
+                        $vo_permission = $this->opo_dom->createElement("permission");
+                        $vo_role_access->appendChild($vo_permission);
+
+                        $vo_permission->setAttribute("role", $va_role_info["code"]);
+                        $vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_role_info['access'])));
+                    }
+                }
 
 				//$vo_type_restrictions = null;
 				if(is_array($t_screen->getTypeRestrictions()) && sizeof($t_screen->getTypeRestrictions())>0) {
@@ -1537,6 +1594,20 @@ final class ConfigurationExporter {
 					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
 				}
 			}
+			
+			$va_roles = $t_form->getUserRoles();
+			if(is_array($va_roles) && (sizeof($va_roles)>0)) {
+				$vo_role_access = $this->opo_dom->createElement("roleAccess");
+				$vo_form->appendChild($vo_role_access);
+
+				foreach($va_roles as $va_role_info) {
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_role_access->appendChild($vo_permission);
+
+					$vo_permission->setAttribute("role", $va_role_info["code"]);
+					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_role_info['access'])));
+				}
+			}
 
 			$vo_placements = $this->opo_dom->createElement("bundlePlacements");
 			$qr_placements = $this->opo_db->query("SELECT * FROM ca_search_form_placements WHERE form_id=? ORDER BY placement_id",$qr_forms->get("form_id"));
@@ -1676,6 +1747,16 @@ final class ConfigurationExporter {
 				}
 
 				$vs_buf .= "\t\t</groupAccess>\n";
+			}
+			
+			$va_roles = $t_display->getUserRoles();
+			if(is_array($va_roles) && (sizeof($va_roles)>0)) {
+				$vs_buf .= "\t\t<roleAccess>\n";
+				foreach($va_roles as $va_role_info) {
+					$vs_buf .= "\t\t\t<permission role='".$va_role_info["code"]."' access='".$this->_convertUserGroupAccessToString(intval($va_role_info['access']))."'/>\n";
+				}
+
+				$vs_buf .= "\t\t</roleAccess>\n";
 			}
 
 			$va_placements = $t_display->getPlacements();
