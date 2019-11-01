@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2018 Whirl-i-Gig
+ * Copyright 2011-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1174,8 +1174,11 @@ class Installer {
                             $this->addError("Role code or access value invalid for UI screen {$vs_screen_idno} (permission item with role code '{$vs_role}')");
                         }
                     }
-
-                    if(sizeof($va_ui_screen_roles)>0) {
+                    if(sizeof($va_ui_screen_roles)>0) {   
+						$all_roles = $t_role->getRoleList();
+						foreach($all_roles as $role_id => $role_info) {
+							if (!isset($va_ui_screen_roles[$role_id])) { $va_ui_screen_roles[$role_id] = 0; }
+						}
                         $t_ui_screens->addUserRoles($va_ui_screen_roles);
                     }
                 }
@@ -1336,6 +1339,10 @@ class Installer {
 				}
 
 				if(sizeof($va_ui_roles)>0) {
+					$all_roles = $t_role->getRoleList();
+					foreach($all_roles as $role_id => $role_info) {
+						if (!isset($va_ui_roles[$role_id])) { $va_ui_roles[$role_id] = 0; }
+					}
 					$t_ui->addUserRoles($va_ui_roles);
 				}
 			}
@@ -1854,6 +1861,10 @@ class Installer {
 				}
 
 				if(sizeof($va_display_roles)>0) {
+					$all_roles = $t_role->getRoleList();
+					foreach($all_roles as $role_id => $role_info) {
+						if (!isset($va_display_roles[$role_id])) { $va_display_roles[$role_id] = 0; }
+					}
 					$t_display->addUserRoles($va_display_roles);
 				}
 			}
@@ -2060,6 +2071,10 @@ class Installer {
 				}
 
 				if(sizeof($va_form_roles)>0) {
+					$all_roles = $t_role->getRoleList();
+					foreach($all_roles as $role_id => $role_info) {
+						if (!isset($va_form_roles[$role_id])) { $va_form_roles[$role_id] = 0; }
+					}
 					$t_form->addUserRoles($va_form_roles);
 				}
 			}
@@ -2420,6 +2435,10 @@ class Installer {
 				}
 
 				if(sizeof($va_form_roles)>0) {
+					$all_roles = $t_role->getRoleList();
+					foreach($all_roles as $role_id => $role_info) {
+						if (!isset($va_form_roles[$role_id])) { $va_form_roles[$role_id] = 0; }
+					}
 					$t_md_alert->addUserRoles($va_form_roles);
 				}
 			}
