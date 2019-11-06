@@ -2204,28 +2204,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			
 			if (!caTableIsActive($vn_table_num)) { continue; }
 			$vs_table_name = Datamodel::getTableName($vn_table_num);
-			
-			switch($vs_table_name) {
-				case 'ca_occurrences':
-					$t_occ = new ca_occurrences();	
-					$va_types = $t_occ->getTypeList();
-					$va_type_labels = array();
-					foreach($va_types as $vn_item_id => $va_type_info) {
-						$va_type_labels[] = mb_strtolower($va_type_info['name_plural'], 'UTF-8');
-					}
-					if (sizeof($va_type_labels)) {
-						if (mb_strlen($vs_label = join('/', $va_type_labels)) > 50) {
-							$vs_label = mb_substr($vs_label, 0, 60).'...';
-						}
-						$va_filtered_tables[$vs_label] = $vn_table_num;
-					} else {
-						$va_filtered_tables[$vs_display_name] = $vn_table_num;
-					}
-					break;
-				default:	
-					$va_filtered_tables[$vs_display_name] = $vn_table_num;
-					break;
-			}
+			$va_filtered_tables[$vs_display_name] = $vn_table_num;
 		}
 		
 		if (caGetOption("sort", $pa_options, true)) {

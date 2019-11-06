@@ -1491,6 +1491,75 @@ if (!$pb_omit_editing_info) {
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
+		
+		
+		    $va_additional_settings = array(
+				'display_template' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.submitted_by_user';
+			$vs_label = _t('Submitted by user');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_submitted_by_user'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Submitted by user')."</div>";
+			$vs_description = _t('Name and email address user that submitted item');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_submitted_by_user",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+			
+			$va_additional_settings = array(
+				'display_template' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.submission_group';
+			$vs_label = _t('Submitted by group');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_submission_group'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Submission group')."</div>";
+			$vs_description = _t('Group item was submitted under');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_submission_group",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
 		}
 		
 		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {

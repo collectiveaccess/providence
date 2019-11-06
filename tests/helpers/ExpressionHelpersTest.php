@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@ class ExpressionHelpersTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	public function testAgeCalculation() {
 		// this test will fail on my father's birthday every year. Nie vergessen.
-		$this->assertEquals(89, caCalculateAgeInYears('1929/10/07', "now"));
+		$this->assertEquals(90, caCalculateAgeInYears('1929/10/07', "now"));
 
 		// Alan Turing, pre-Unix time
 		$this->assertEquals(41, caCalculateAgeInYears('23 June 1912', '7 June 1954'));

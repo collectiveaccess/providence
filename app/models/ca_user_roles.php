@@ -312,7 +312,10 @@ class ca_user_roles extends BaseModel {
 			ca_user_roles::$s_bundle_list[$ps_table] = array_keys($t_ui_screens->getAvailableBundles($ps_table,array('dontCache' => true)));
 		}
 		if(!in_array($ps_bundle, ca_user_roles::$s_bundle_list[$ps_table])) {
-			return false; 
+			$ps_bundle = "ca_attribute_{$ps_bundle}";	// rewrite straight element codes with prefix
+			if(!in_array($ps_bundle, ca_user_roles::$s_bundle_list[$ps_table])) {
+				return false; 
+			}
 		}
 
 		$va_vars['bundle_access_settings'][$ps_table.".".$ps_bundle] = $pn_access;

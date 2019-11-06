@@ -766,12 +766,12 @@ class DisplayTemplateParser {
 								        $va_relation_ids = is_array($rels) ? array_keys($rels) : [];
 								    }
 									$va_relationship_type_ids = array();
-									if($t_rel_instance->isRelationship()) {
-										// return type on relationship
-										$va_relationship_type_ids = $pr_res->get($t_rel_instance->tableName().".type_id", ['returnAsArray' => true]);
-									} elseif (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
+									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
 										$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
 										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
+									} elseif($t_rel_instance->isRelationship()) {
+										// return type on relationship
+										$va_relationship_type_ids = $pr_res->get($t_rel_instance->tableName().".type_id", ['returnAsArray' => true]);
 									} elseif(($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) && Datamodel::isRelationship($vs_rel_tablename)) {
 										// grab type from adjacent relationship table
 										$va_relationship_type_ids = $pr_res->get("{$vs_rel_tablename}.type_id", ['returnAsArray' => true]);

@@ -238,13 +238,18 @@
 	 * 
 	 */
 	function caBatchGetMediaFilenameToIdnoRegexList($pa_options=null) {
-		// Get list of regex packages that user can use to extract object idno's from filenames
 		$o_config = Configuration::load();
-		
 		$va_regex_list = $o_config->getAssoc('mediaFilenameToObjectIdnoRegexes');
- 		if (!is_array($va_regex_list)) { $va_regex_list = array(); }
- 		
- 		return $va_regex_list;
+ 		return is_array($va_regex_list) ? $va_regex_list : [];
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 */
+	function caBatchGetIdnoRegexList($pa_options=null) {
+		$o_config = Configuration::load();
+		$va_regex_list = $o_config->getAssoc('mediaObjectIdnoRegexes');
+ 		return is_array($va_regex_list) ? $va_regex_list : [];
 	}
 	# ---------------------------------------
 	/**

@@ -598,7 +598,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, array());
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-		$va_defined_bundles = $t_instance->getBundleList(array('includeBundleInfo' => true));		// these are the bundles defined for this type of editor
+		$va_defined_bundles = method_exists($t_instance, "getBundleList") ? $t_instance->getBundleList(array('includeBundleInfo' => true)) : [];		// these are the bundles defined for this type of editor
 		
 		$va_available_bundles = array();
 		
@@ -1936,13 +1936,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		if (!($pn_table_num = $this->getTableNum())) { return null; }
 		
 		if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return null; }
+		$table = $t_instance->tableName();
 		
 		if(!is_array($va_placements = $this->getPlacements($pa_options))) { $va_placements = array(); }
 		
 		$va_placements_in_screen = array();
 		foreach($va_placements as $vn_placement_id => $va_placement) {
-			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $va_placement['bundle_name']);
-			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
+			$vs_bundle_proc = preg_replace("!^(ca_attribute_|{$table}\.)!", '', $va_placement['bundle_name']);
+			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($table.'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
 				if ($vs_user_set_label = array_shift($va_tmp)) {
@@ -1958,7 +1959,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			$va_placements_in_screen[$vn_placement_id] = $va_placement;
 			
-			$vs_description = $t_instance->getDisplayDescription($t_instance->tableName().'.'.$vs_bundle_proc);
+			$vs_description = $t_instance->getDisplayDescription($table.'.'.$vs_bundle_proc);
 			TooltipManager::add(
 				"#uiEditor_{$vn_placement_id}",
 				"<h2>{$vs_label}</h2>".

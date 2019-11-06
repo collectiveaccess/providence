@@ -90,6 +90,17 @@
             <setting name="entity_class">ORG</setting>
           </settings>
         </item>
+        <item idno="fam" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Family</name_singular>
+              <name_plural>Families</name_plural>
+            </label>
+          </labels>
+          <settings>
+            <setting name="entity_class">ORG</setting>
+          </settings>
+        </item>
       </items>
     </list>
     <list code="entity_sources" hierarchical="1" system="0" vocabulary="0">
@@ -326,26 +337,26 @@
         </item>
       </items>
     </list>
-    <list code="yn" hierarchical="0" system="0" vocabulary="0">
+    <list code="yn" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
       <labels>
         <label locale="en_US">
           <name>Yes/No</name>
         </label>
       </labels>
       <items>
-        <item idno="yes" enabled="1" default="0">
+        <item idno="yes" rank="1" value="10" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>yes</name_singular>
-              <name_plural>yes</name_plural>
+              <name_singular>Yes</name_singular>
+              <name_plural>Yes</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="no" enabled="1" default="0">
+        <item idno="no" rank="2" value="20" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>no</name_singular>
-              <name_plural>no</name_plural>
+              <name_singular>No</name_singular>
+              <name_plural>No</name_plural>
             </label>
           </labels>
         </item>
@@ -3761,6 +3772,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="loans">
+          <table>ca_loans</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
         <restriction code="object_lots">
           <table>ca_object_lots</table>
           <settings>
@@ -4189,6 +4208,48 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="upload" datatype="Media">
+      <labels>
+        <label locale="en_US">
+          <name>Form Upload</name>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_occurrences">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_movements">
+          <table>ca_movements</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -6113,24 +6174,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="loan_upload" datatype="Media">
-      <labels>
-        <label locale="en_US">
-          <name>Loan Form Upload</name>
-        </label>
-      </labels>
-      <settings/>
-      <typeRestrictions>
-        <restriction code="ca_loans">
-          <table>ca_loans</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="loan_terms" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -6330,6 +6373,27 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="deed_gift" datatype="List" list="yn">
+      <labels>
+        <label locale="en_US">
+          <name>Deed of Gift?</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_object_lots">
@@ -6884,21 +6948,20 @@
               <bundle>ca_loans</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Patron Use(s)</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_loans.preferred_labels</l><unit relativeTo="ca_loans_x_objects" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_objects.effective_date"> DATE USED: ^ca_loans_x_objects.effective_date</ifdef></unit>]]></setting>
                 <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_types">patron</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
               </settings>
             </placement>
-            <placement code="ca_objects_history">
-              <bundle>ca_objects_history</bundle>
+            <placement code="history_tracking_chronology18">
+              <bundle>history_tracking_chronology</bundle>
               <settings>
                 <setting name="label" locale="en_US">Current Location of Item</setting>
                 <setting name="readonly"/>
                 <setting name="policy">current_location</setting>
                 <setting name="displayMode">tabs</setting>
-                <setting name="expand_collapse_value">expand</setting>
-                <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="dateMode">use_dates</setting>
                 <setting name="useAppConfDefaults">1</setting>
                 <setting name="sortDirection">ASC</setting>
@@ -6916,7 +6979,7 @@
                 <setting name="hide_add_to_entity_controls">1</setting>
                 <setting name="hide_add_to_object_controls">1</setting>
                 <setting name="useHierarchicalBrowser">1</setting>
-                <setting name="hide_value_interstitial_edit"/>
+                <setting name="hide_value_interstitial_edit">1</setting>
                 <setting name="hide_value_delete"/>
                 <setting name="ca_object_lots_accession_includeFromChildren">0</setting>
                 <setting name="ca_occurrences_event_includeFromChildren">0</setting>
@@ -7336,6 +7399,9 @@
               <name>Basic Info</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="org" type="org"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -7362,6 +7428,147 @@
               <bundle>ca_attribute_LcshNames</bundle>
               <settings>
                 <setting name="label" locale="en_US">Library of Congress Record for Entity</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_life_dates">
+              <bundle>ca_attribute_life_dates</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Dates</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_biography">
+              <bundle>ca_attribute_biography</bundle>
+              <settings>
+                <setting name="label" locale="en_US">History</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_address">
+              <bundle>ca_attribute_address</bundle>
+              <settings>
+                 <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_telephone">
+              <bundle>ca_attribute_telephone</bundle>
+              <settings>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_email">
+              <bundle>ca_attribute_email</bundle>
+              <settings>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_object_lots">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Accessions</setting>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+           <placement code="ca_archival">
+            <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Archival Items</setting>
+                <setting name="display_template"><![CDATA[^ca_objects.preferred_labels<ifdef code="ca_objects.idno"> (^ca_objects.idno)</ifdef></l>]]></setting>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Collections</setting>
+                <setting name="display_template"><![CDATA[^ca_collections.hierarchy.preferred_labels]]></setting>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Entities</setting>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Events</setting>
+                <setting name="restrict_to_types">event</setting>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_exh">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Exhibitions</setting>
+                <setting name="restrict_to_types">exhibition</setting>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_movements">
+              <bundle>ca_movements</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Conservations</setting>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_loans">
+              <bundle>ca_loans</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Loans</setting>
+                <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="restrict_to_types">loan</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_fam" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="fam" type="fam"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Entity Indentifier</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Preferred Form of Name</setting>
+              </settings>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Alternate Form of Name</setting>
+                <setting name="add_label" locale="en_US">Add Name</setting> 
+                 <setting name="expand_collapse_value">expand</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_LcshNames">
+              <bundle>ca_attribute_LcshNames</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Library of Congress Record for Family</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_life_dates">
@@ -7655,6 +7862,12 @@
                 <setting name="expand_collapse_no_value">collapse</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_upload">
+              <bundle>ca_attribute_upload</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Exhibition Form Upload</setting>
+              </settings>
+            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -7789,6 +8002,7 @@
               <bundle>ca_loans</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Patron Use(s)</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_loans.preferred_labels</l><unit relativeTo="ca_loans_x_collections" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef></unit>]]></setting>
                 <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_types">patron</setting>
@@ -7906,10 +8120,56 @@
               <bundle>ca_loans</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Patron Use(s)</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_loans.preferred_labels</l><unit relativeTo="ca_loans_x_collections" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef></unit>]]></setting>
                 <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_types">patron</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
+              </settings>
+            </placement>
+            <placement code="history_tracking_chronology15">
+              <bundle>history_tracking_chronology</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Current Location of Collection</setting>
+                <setting name="readonly"/>
+                <setting name="policy">collections_location</setting>
+                <setting name="displayMode">tabs</setting>
+                <setting name="dateMode">use_dates</setting>
+                <setting name="useAppConfDefaults">1</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="currentValueColor">#EEEEEE</setting>
+                <setting name="futureValueColor">#EEEEEE</setting>
+                <setting name="pastValueColor">#EEEEEE</setting>
+                <setting name="expand_collapse">dont_force</setting>
+                <setting name="hide_include_child_history_controls">1</setting>
+                <setting name="hide_add_to_loan_controls"/>
+                <setting name="hide_add_to_movement_controls">1</setting>
+                <setting name="hide_update_location_controls"/>
+                <setting name="hide_add_to_occurrence_controls"/>
+                <setting name="add_to_occurrence_types">104</setting>
+                <setting name="hide_add_to_collection_controls">1</setting>
+                <setting name="hide_add_to_entity_controls">1</setting>
+                <setting name="hide_add_to_object_controls">1</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hide_value_interstitial_edit">1</setting>
+                <setting name="hide_value_delete"/>
+                <setting name="ca_object_lots_accession_includeFromChildren">0</setting>
+                <setting name="ca_occurrences_event_includeFromChildren">0</setting>
+                <setting name="ca_occurrences_exhibition_includeFromChildren">0</setting>
+                <setting name="ca_collections_collection_includeFromChildren">0</setting>
+                <setting name="ca_collections_folder_includeFromChildren">0</setting>
+                <setting name="ca_collections_record_group_includeFromChildren">0</setting>
+                <setting name="ca_collections_series_includeFromChildren">0</setting>
+                <setting name="ca_collections_subseries_includeFromChildren">0</setting>
+                <setting name="ca_entities_ind_includeFromChildren">0</setting>
+                <setting name="ca_entities_org_includeFromChildren">0</setting>
+                <setting name="ca_movements_conservation_includeFromChildren">0</setting>
+                <setting name="ca_loans_loan_includeFromChildren">0</setting>
+                <setting name="ca_loans_patron_includeFromChildren">0</setting>
+                <setting name="ca_objects_item_includeFromChildren">0</setting>
+                <setting name="ca_storage_locations_includeFromChildren">0</setting>
+                <setting name="showDeaccessionInformation"/>
+                <setting name="deaccession_includeFromChildren">0</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -8191,6 +8451,30 @@
 
       </screens>
     </userInterface>
+    <userInterface code="collections_x_storage" type="ca_collections_x_storage_locations" typeRestrictions="related" includeSubtypes="0">
+      <labels>
+        <label locale="en_US">
+          <name>Collections x Storage</name>
+        </label>
+      </labels>
+      <userAccess>
+        <permission user="admin" access="edit"/>
+      </userAccess>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="effective_date1">
+              <bundle>effective_date</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
     <userInterface code="standard_storage_locations_ui" type="ca_storage_locations">
       <labels>
         <label locale="en_US">
@@ -8241,6 +8525,19 @@
               <settings>
                 <setting name="label" locale="en_US">Related Archival Items (All Stored)</setting>
                 <setting name="display_template"><![CDATA[^ca_objects.preferred_labels<ifdef code="ca_objects.idno"> (^ca_objects.idno)</ifdef></l>]]></setting>
+              </settings>
+            </placement>
+            <placement code="history_tracking_current_1">
+              <bundle>history_tracking_current_contents</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Collections Currently Stored</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="policy">collections_location</setting>
+                <setting name="colorItem">#ffffff</setting>
+                <setting name="displayTemplate"><![CDATA[</l>^ca_collections.hierarchy.preferred_labels.name%delimiter=_➔_</l> (^ca_collections.idno)]]></setting>
               </settings>
             </placement>
             <placement code="ca_collections">
@@ -8302,6 +8599,9 @@
                 <setting name="label" locale="en_US">Method of Acquisition</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_deed_gift">
+              <bundle>ca_attribute_deed_gift</bundle>
+            </placement>
             <placement code="ca_attribute_common_date">
               <bundle>ca_attribute_common_date</bundle>
               <settings>
@@ -8325,6 +8625,12 @@
                <settings>
                 <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_upload">
+              <bundle>ca_attribute_upload</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Accession Form Upload</setting>
               </settings>
             </placement>
          <placement code="ca_archival">
@@ -8567,8 +8873,11 @@
                 <setting name="restrict_to_relationship_types">related</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_loan_upload">
-              <bundle>ca_attribute_loan_upload</bundle>
+            <placement code="ca_attribute_upload">
+              <bundle>ca_attribute_upload</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Loan Form Upload</setting>
+              </settings>
             </placement> 
           </bundlePlacements>
         </screen>
@@ -8616,14 +8925,20 @@
             <placement code="ca_attribute_general_notes">
               <bundle>ca_attribute_general_notes</bundle>
               <settings>
-                <setting name="label" locale="en_US">Note</setting>
+                <setting name="label" locale="en_US">Notes</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_upload">
+              <bundle>ca_attribute_upload</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Patron Use Form Upload</setting>
               </settings>
             </placement>
             <placement code="ca_archival">
             <bundle>ca_objects</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Archival Item(s)</setting>
-                <setting name="display_template"><![CDATA[^ca_objects.preferred_labels<ifdef code="ca_objects.idno"> (^ca_objects.idno)</ifdef></l><ifdef code="ca_loans_x_objects.effective_date"> DATE USED: ^ca_loans_x_objects.effective_date</ifdef>]]></setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.preferred_labels<ifdef code="ca_objects.idno"> (^ca_objects.idno)</ifdef></l><unit relativeTo="ca_loans_x_objects" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_objects.effective_date"> DATE USED: ^ca_loans_x_objects.effective_date</ifdef></unit>]]></setting>
                <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
@@ -8633,51 +8948,55 @@
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Collection(s)</setting>
-                <setting name="display_template"><![CDATA[^ca_collections.hierarchy.preferred_labels<ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef>]]></setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.hierarchy.preferred_labels<ifdef code="ca_collection.idno"> (^ca_collections.idno)</ifdef></l><unit relativeTo="ca_loans_x_collections" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef></unit>]]></setting>
                <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
                 <setting name="restrict_to_types">collection</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">1</setting>
               </settings>
             </placement>
             <placement code="ca_record">
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Record Group(s)</setting>
-                <setting name="display_template"><![CDATA[^ca_collections.hierarchy.preferred_labels<ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef>]]></setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.hierarchy.preferred_labels<ifdef code="ca_collection.idno"> (^ca_collections.idno)</ifdef></l><unit relativeTo="ca_loans_x_collections" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef></unit>]]></setting>
                <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
                 <setting name="restrict_to_types">record_group</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">1</setting>
               </settings>
             </placement>
             <placement code="ca_subseries">
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Series</setting>
-                <setting name="display_template"><![CDATA[^ca_collections.hierarchy.preferred_labels<ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef>]]></setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.hierarchy.preferred_labels<ifdef code="ca_collection.idno"> (^ca_collections.idno)</ifdef></l><unit relativeTo="ca_loans_x_collections" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef></unit>]]></setting>
                <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
                 <setting name="restrict_to_types">series</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">1</setting>
               </settings>
             </placement>
             <placement code="ca_subsubseries">
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Subseries</setting>
-                <setting name="display_template"><![CDATA[^ca_collections.hierarchy.preferred_labels<ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef>]]></setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.hierarchy.preferred_labels<ifdef code="ca_collection.idno"> (^ca_collections.idno)</ifdef></l><unit relativeTo="ca_loans_x_collections" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef></unit>]]></setting>
                <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
                 <setting name="restrict_to_types">subseries</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">1</setting>
               </settings>
             </placement>
             <placement code="ca_folder">
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Folder(s)</setting>
-                <setting name="display_template"><![CDATA[^ca_collections.hierarchy.preferred_labels<ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef>]]></setting>
+                <setting name="display_template"><![CDATA[<l>^ca_collections.hierarchy.preferred_labels<ifdef code="ca_collection.idno"> (^ca_collections.idno)</ifdef></l><unit relativeTo="ca_loans_x_collections" restrictToRelationshipTypes="used"><ifdef code="ca_loans_x_collections.effective_date"> DATE USED: ^ca_loans_x_collections.effective_date</ifdef></unit>]]></setting>
                <setting name="expand_collapse_value">expand</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
@@ -8764,6 +9083,12 @@
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
             </placement>
+            <placement code="ca_attribute_upload">
+              <bundle>ca_attribute_upload</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Conservation Form Upload</setting>
+              </settings>
+            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -8795,7 +9120,7 @@
     <userInterface code="collections_x_loans" type="ca_loans_x_collections" typeRestrictions="used" includeSubtypes="0">
       <labels>
         <label locale="en_US">
-          <name>Interstitial Object x Loans</name>
+          <name>Interstitial Collection x Loans</name>
         </label>
       </labels>
       <screens>
@@ -10756,7 +11081,7 @@
         <permission table="ca_loans" bundle="ca_attribute_loan_renewal_date" access="edit"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_return_date" access="edit"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_terms" access="edit"/>
-        <permission table="ca_loans" bundle="ca_attribute_loan_upload" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_upload" access="edit"/>
         <permission table="ca_loans" bundle="nonpreferred_labels" access="edit"/>
         <permission table="ca_loans" bundle="preferred_labels" access="edit"/>
         <permission table="ca_loans" bundle="rank" access="edit"/>
@@ -11007,6 +11332,7 @@
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_entities" type="ind" access="edit"/>
         <permission table="ca_entities" type="org" access="edit"/>
+        <permission table="ca_entities" type="fam" access="edit"/>
         <permission table="ca_entities" type="Root node for entity_types" access="none"/>
         <permission table="ca_places" type="other" access="edit"/>
         <permission table="ca_places" type="city" access="edit"/>
@@ -11739,7 +12065,7 @@
         <permission table="ca_loans" bundle="ca_attribute_loan_renewal_date" access="read"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_return_date" access="read"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_terms" access="read"/>
-        <permission table="ca_loans" bundle="ca_attribute_loan_upload" access="read"/>
+        <permission table="ca_loans" bundle="ca_attribute_upload" access="read"/>
         <permission table="ca_loans" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_loans" bundle="preferred_labels" access="read"/>
         <permission table="ca_loans" bundle="rank" access="read"/>
@@ -12589,7 +12915,7 @@
         <permission table="ca_loans" bundle="ca_attribute_loan_renewal_date" access="none"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_return_date" access="none"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_terms" access="none"/>
-        <permission table="ca_loans" bundle="ca_attribute_loan_upload" access="none"/>
+        <permission table="ca_loans" bundle="ca_attribute_upload" access="none"/>
         <permission table="ca_loans" bundle="nonpreferred_labels" access="none"/>
         <permission table="ca_loans" bundle="preferred_labels" access="none"/>
         <permission table="ca_loans" bundle="rank" access="none"/>
@@ -12845,6 +13171,7 @@
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_entities" type="ind" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
+        <permission table="ca_entities" type="fam" access="read"/>
         <permission table="ca_entities" type="Root node for entity_types" access="none"/>
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="city" access="read"/>
@@ -13564,7 +13891,7 @@
         <permission table="ca_loans" bundle="ca_attribute_loan_renewal_date" access="edit"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_return_date" access="edit"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_terms" access="edit"/>
-        <permission table="ca_loans" bundle="ca_attribute_loan_upload" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_upload" access="edit"/>
         <permission table="ca_loans" bundle="nonpreferred_labels" access="edit"/>
         <permission table="ca_loans" bundle="preferred_labels" access="edit"/>
         <permission table="ca_loans" bundle="rank" access="edit"/>
@@ -14614,7 +14941,7 @@
         <permission table="ca_loans" bundle="ca_attribute_loan_renewal_date" access="edit"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_return_date" access="edit"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_terms" access="edit"/>
-        <permission table="ca_loans" bundle="ca_attribute_loan_upload" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_upload" access="edit"/>
         <permission table="ca_loans" bundle="nonpreferred_labels" access="edit"/>
         <permission table="ca_loans" bundle="preferred_labels" access="edit"/>
         <permission table="ca_loans" bundle="rank" access="edit"/>
@@ -14865,6 +15192,7 @@
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_entities" type="ind" access="edit"/>
         <permission table="ca_entities" type="org" access="edit"/>
+        <permission table="ca_entities" type="fam" access="edit"/>
         <permission table="ca_entities" type="Root node for entity_types" access="none"/>
         <permission table="ca_places" type="other" access="edit"/>
         <permission table="ca_places" type="city" access="edit"/>
@@ -14996,7 +15324,6 @@
           <bundle>ca_object_lots.description</bundle>
           <settings>
             <setting name="label" locale="en_US">Accession Description</setting>
-            <setting name="format"><![CDATA[]]></setting>
             <setting name="delimiter"><![CDATA[]]></setting>
             <setting name="maximum_length"><![CDATA[2048]]></setting>
             <setting name="filter"><![CDATA[]]></setting>
@@ -15207,6 +15534,22 @@
             <setting name="label" locale="en_US">Dates</setting>
           </settings>
         </placement>
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Archival Items</setting>
+            <setting name="delimiter"><![CDATA[; ]]></setting>
+            <setting name="format"><![CDATA[<l>^ca_objects.preferred_labels</l><ifdef code="ca_objects.idno"> (^ca_objects.idno)</ifdef>]]></setting>
+          </settings>
+        </placement>
+        <placement code="ca_collections">
+          <bundle>ca_collections</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Related Collections</setting>
+            <setting name="delimiter"><![CDATA[; >]]></setting>
+            <setting name="format"><![CDATA[<l>^ca_collections.hierarchy.preferred_labels.name%delimiter=_➔_</l>]]></setting>
+          </settings>
+        </placement>
       </bundlePlacements>
     </display>
     <display code="general_loans" type="ca_loans" system="1" typeRestrictions="loan" includeSubtypes="0">
@@ -15278,21 +15621,11 @@
           <bundle>ca_loans.patron_type</bundle>
         </placement>
         <placement code="ca_loans_request_recieved">
-          <bundle>ca_loans.request_recieved</bundle>
+          <bundle>ca_loans.patron_use_dates</bundle>
           <settings>
-            <setting name="label" locale="en_US"/>
-            <setting name="format"><![CDATA[]]></setting>
-            <setting name="delimiter"><![CDATA[; ]]></setting>
-            <setting name="maximum_length"><![CDATA[2048]]></setting>
-            <setting name="filter"><![CDATA[]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_loans_request_completed">
-          <bundle>ca_loans.request_completed</bundle>
-          <settings>
-            <setting name="label" locale="en_US"/>
-            <setting name="format"><![CDATA[]]></setting>
-            <setting name="delimiter"><![CDATA[; ]]></setting>
+            <setting name="label" locale="en_US">Request &amp; Completed Dates</setting>
+            <setting name="format"><![CDATA[^ca_loans.patron_use_dates.request_recieved - ^ca_loans.patron_use_dates.request_completed]]></setting>
+            <setting name="delimiter"><![CDATA[<br>]]></setting>
             <setting name="maximum_length"><![CDATA[2048]]></setting>
             <setting name="filter"><![CDATA[]]></setting>
           </settings>
@@ -15304,7 +15637,6 @@
           <bundle>ca_loans.internal_notes</bundle>
           <settings>
             <setting name="label" locale="en_US">Notes</setting>
-            <setting name="format"><![CDATA[]]></setting>
             <setting name="delimiter"><![CDATA[]]></setting>
             <setting name="maximum_length"><![CDATA[2048]]></setting>
             <setting name="filter"><![CDATA[]]></setting>
@@ -15343,7 +15675,6 @@
         <placement code="ca_movements_conservation_notes">
           <bundle>ca_movements.conservation_notes</bundle>
           <settings>
-            <setting name="format"><![CDATA[]]></setting>
             <setting name="filter"><![CDATA[]]></setting>
             <setting name="label" locale="en_US"/>
             <setting name="delimiter"><![CDATA[; ]]></setting>
