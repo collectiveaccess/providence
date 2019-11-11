@@ -396,7 +396,7 @@ class Configuration {
 					# ------------------------------------
 					# handle list values
 					case 30:
-					    if($vb_quoted_item_is_closed && (!in_array($vs_token, [',', ']', ')']))) { break; }
+					    if($vb_quoted_item_is_closed && (!in_array(trim($vs_token), [',', ']', ')']))) { break; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
@@ -466,7 +466,7 @@ class Configuration {
 					# handle associative array values
 					# get associative key
 					case 40:
-					    if($vb_quoted_item_is_closed && (!in_array($vs_token, [',', '=', '}', ')']))) { break; }
+					    if($vb_quoted_item_is_closed && (!in_array(trim($vs_token), [',', '=', '}', ')']))) { break; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
@@ -563,7 +563,7 @@ class Configuration {
 					# ------------------------------------
 					# handle associative value
 					case 50:
-					    if($vb_quoted_item_is_closed && (!in_array($vs_token, [',', '{', '}', ',', ')']))) { break; }
+					    if($vb_quoted_item_is_closed && (!in_array(trim($vs_token), [',', '{', '}', ',', ')']))) { break; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
@@ -674,7 +674,7 @@ class Configuration {
 					# ------------------------------------
 					# handle list values nested in assoc
 					case 60:
-					    if($vb_quoted_item_is_closed && (!in_array($vs_token, [',', ']', ')']))) { break; }
+					    if($vb_quoted_item_is_closed && (!in_array(trim($vs_token), [',', ']', ')']))) { break; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
