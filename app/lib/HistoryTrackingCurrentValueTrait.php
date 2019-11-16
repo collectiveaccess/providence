@@ -1921,6 +1921,8 @@
 			// Collection update
 			//
 			$o_view->setVar('collection_types', []);
+			$o_view->setVar('collection_relationship_types', []);
+			$o_view->setVar('collection_relationship_types_by_sub_type', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_collections')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if (($t_coll_rel = Datamodel::getInstance($linking_table, true)) && ($t_coll = Datamodel::getInstance('ca_collections', true))) {
@@ -2164,7 +2166,7 @@
 								$field_class = '';
 								break;
 						}
-						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'id' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'value' => _t('today'), 'classname' => $field_class])."</td>";
+						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".'{n}', 'id' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".'{n}', 'value' => _t('today'), 'classname' => $field_class])."</td>";
 					} else {
 						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($request, null, $element_code, $placement_code, $settings, ['elementsOnly' => true])."</td>";
 					}	
@@ -2197,12 +2199,12 @@
 				if (is_array($interstitial_elements = caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $settings, array()))) {
 					foreach($interstitial_elements as $element_code) {
 						if ($t_item_rel->hasField($element_code)) {
-							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter("{$placement_code}{$form_prefix}_{$type_id}_{$element_code}new_0", pString));
+							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter("{$placement_code}{$form_prefix}_{$type}_{$element_code}new_0", pString));
 						} elseif ($element_id = ca_metadata_elements::getElementID($element_code)) {
 							$sub_element_ids = ca_metadata_elements::getElementsForSet($element_id, ['idsOnly' => true]);
 							$vals = [];
 							foreach($sub_element_ids as $sub_element_id) {
-								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter("{$placement_code}{$form_prefix}_{$type_id}_{$sub_element_id}_new_0", pString);
+								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter("{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", pString);
 							}
 							$t_item_rel->addAttribute($vals, $element_code);
 						}

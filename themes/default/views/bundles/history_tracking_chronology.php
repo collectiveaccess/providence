@@ -597,6 +597,7 @@ if($show_entity_controls) {
 		
 			jQuery("#caHistoryTrackingEntry<?php print $vs_id_prefix; ?>" + table + "-" + relation_id).remove();
 			jQuery("#<?php print $vs_id_prefix; ?>").append("<input type='hidden' name='<?php print $vs_id_prefix; ?>_delete_" + table + "[]' value='" +relation_id + "'/>");
+			e.preventDefault();
 		});
 		
 	<?php if($display_mode === 'tabs') { ?>

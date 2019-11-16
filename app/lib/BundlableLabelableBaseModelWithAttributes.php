@@ -4674,7 +4674,7 @@ if (!$vb_batch) {
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
-											ca_storage_locations::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_location', $t_item_rel, $vn_location_id, $processed_bundle_settings);							
+											ca_storage_locations::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_storage_locations', $t_item_rel, $vn_location_id, $processed_bundle_settings);							
 										}									
 								
 										$change_has_been_made = true;
@@ -4693,7 +4693,7 @@ if (!$vb_batch) {
 									if ($this->numErrors()) {
 										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									} else {
-										ca_loans::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_loan', $t_item_rel, $vn_loan_id, $processed_bundle_settings);								
+										ca_loans::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_loans', $t_item_rel, $vn_loan_id, $processed_bundle_settings);								
 									}		
 									
 									$change_has_been_made = true;
@@ -4711,7 +4711,7 @@ if (!$vb_batch) {
 									if ($this->numErrors()) {
 										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									} else {
-										ca_movements::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_movement', $t_item_rel, $vn_movement_id, $processed_bundle_settings);								
+										ca_movements::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_movements', $t_item_rel, $vn_movement_id, $processed_bundle_settings);								
 									}		
 									
 									$change_has_been_made = true;
@@ -4725,7 +4725,7 @@ if (!$vb_batch) {
 							// set occurrence
 							require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
 							$t_occ = new ca_occurrences();
-							$va_occ_types = $t_occ->getTypeList();
+							$va_occ_types = $t_occ->getTypeList(); 
 							foreach($va_occ_types as $vn_type_id => $vn_type_info) {
 								if ($vn_occurrence_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_idnew_0", pInteger)) {
 									if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_type_idnew_0", pInteger)) {
@@ -4733,7 +4733,7 @@ if (!$vb_batch) {
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
-											ca_occurrences::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_occurrence', $t_item_rel, $vn_occurrence_id, $processed_bundle_settings);					
+											ca_occurrences::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_occurrences', $t_item_rel, $vn_occurrence_id, $processed_bundle_settings);					
 										}	
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_occurrences', $vn_occurrence_id);
@@ -4755,7 +4755,7 @@ if (!$vb_batch) {
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
-											ca_collections::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_collection', $t_item_rel, $vn_collection_id, $processed_bundle_settings);
+											ca_collections::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_collections', $t_item_rel, $vn_collection_id, $processed_bundle_settings);
 										}
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_collections', $vn_collection_id);
@@ -4777,7 +4777,7 @@ if (!$vb_batch) {
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
-											ca_entities::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_entity', $t_item_rel, $vn_entity_id, $processed_bundle_settings);
+											ca_entities::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_entities', $t_item_rel, $vn_entity_id, $processed_bundle_settings);
 										}
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_entities', $vn_entity_id);
@@ -4795,7 +4795,7 @@ if (!$vb_batch) {
 									if ($this->numErrors()) {
 										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									} else {
-										ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_object', $t_item_rel, $vn_object_id, $processed_bundle_settings);								
+										ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_objects', $t_item_rel, $vn_object_id, $processed_bundle_settings);								
 									}		
 									
 									$change_has_been_made = true;
