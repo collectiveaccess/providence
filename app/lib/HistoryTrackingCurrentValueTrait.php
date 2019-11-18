@@ -1647,7 +1647,7 @@
 					$loc_table_num = Datamodel::getTableNum('ca_storage_locations');
 					$rel_table_num = Datamodel::getTableNum($linking_table);
 				
-					while($qr_locations->nextHit()) {
+					while($qr_locations->nextHit()) {app/lib/HistoryTrackingCurrentValueTrait.php
 						if ((string)$qr_locations->get('ca_storage_locations.deleted') !== '0') { continue; }	// filter out deleted
 					    
 					    $vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
