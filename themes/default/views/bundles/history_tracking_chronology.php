@@ -382,8 +382,13 @@ if ($show_location_controls) {
 							}
 						}
 					);
-					
-					//jQuery('#<?php print $vs_id_prefix; ?>_ca_storage_locations__effective_date{n}').datepicker({dateFormat: 'yy-mm-dd'});  // attempt to add date picker
+<?php
+    if (caGetOption('ca_storage_locations_useDatePicker', $settings, false)) {
+?>
+					jQuery('#<?php print $vs_id_prefix; ?>_ca_storage_locations__effective_date{n}').datepicker({dateFormat: 'yy-mm-dd'});  // attempt to add date picker
+<?php
+    }
+?>
 				});
 			</script>
 <?php
