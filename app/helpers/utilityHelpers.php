@@ -594,7 +594,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 */
 	function caEscapeSearchForURL($ps_search) {
-		return str_replace('/', '&#47;', $ps_search); // encode slashes as html entities to avoid Apache considering it a directory separator
+		return rawurlencode(str_replace('/', '&#47;', $ps_search)); // encode slashes as html entities to avoid Apache considering it a directory separator
 	}
 	# ----------------------------------------
 	function caSanitizeStringForJsonEncode($ps_text) {
@@ -775,7 +775,10 @@ function caFileIsIncludable($ps_file) {
 	function caModRewriteIsAvailable() {
 		global $g_mod_write_is_available;
 		if (is_bool($g_mod_write_is_available)) { return $g_mod_write_is_available; }
-		if (function_exists('apache_get_modules')) {
+		if (strpos($_SERVER['SERVER_SOFTWARE'], 'nginx') !== false) {
+		    $g_mod_write_is_available = true;
+		    return true; // assume you have rules set up in you nginx config to handle index.php rewrite
+		} elseif (function_exists('apache_get_modules')) {
 			return $g_mod_write_is_available = (bool)in_array('mod_rewrite', apache_get_modules());
 		} else {
 			return $g_mod_write_is_available = (bool)((getenv('HTTP_MOD_REWRITE') == 'On') ? true : false);
