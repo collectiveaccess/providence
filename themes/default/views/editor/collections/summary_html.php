@@ -46,10 +46,10 @@
 			$vs_class = "";
 			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
 				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-				$vs_display_value = "&lt;"._t('not defined')."&gt;";
+				$vs_display_value = "<"._t('not defined').">";
 				$vs_class = " notDefined";
 			}
-			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".$va_info['display'].":</span> ".$vs_display_value."</div>\n";
+			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".$va_info['display']."</span><span class='summaryData'> ".$vs_display_value."</span></div>\n";
 		}
 		
 		

@@ -167,6 +167,7 @@
 							if(!is_array($config)) { break; }
 							if ($table === 'ca_storage_locations') { 
 								$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
+								$bundle_settings["{$table}_useDatePicker"] = $config['useDatePicker'];
 							} else {
 								$bundle_settings["{$table}_{$type}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 							}
@@ -176,7 +177,7 @@
 						
 							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
 						
-							if ((sizeof($path) === 3) && ($rel_types = caGetOption('restrictToRelationshipTypes', $config, null)) && $path[1]) { 
+							if ((sizeof($path) === 3) && ($rel_types = caGetOption(['restrictToRelationshipTypes', 'showRelationshipTypes'], $config, null)) && $path[1]) { 
 								$bundle_settings["{$table}_showRelationshipTypes"] = [];
 								foreach($rel_types as $rel_type) {
 									if (($rel_type_id = $t_rel_type->getRelationshipTypeID($path[1], $rel_type)) && !in_array($rel_type_id, $bundle_settings["{$table}_showRelationshipTypes"])) { 
@@ -1626,7 +1627,7 @@
 					$va_child_locations = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_locations = array_merge($va_locations, $va_child_locations); }
 				}
-		
+
 				if(is_array($va_location_types = caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)) && is_array($va_locations)) {	
 					require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
 					$t_location = new ca_storage_locations();
@@ -1665,7 +1666,7 @@
 						);
 
 						if (!$va_date['sortable']) { continue; }
-						if (!in_array($vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id"), $va_location_types)) { continue; }
+						if (sizeof($va_location_types) && !in_array($vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id"), $va_location_types)) { continue; }
 						
 						if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 						
@@ -1906,14 +1907,16 @@
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_occurrences')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if (($t_occ_rel = Datamodel::getInstance($linking_table, true)) && ($t_occ = Datamodel::getInstance('ca_occurrences', true))) {
-					$va_occ_types = $t_occ->getTypeList();
-					$va_occ_types_to_show =  caGetOption('add_to_occurrence_types', $pa_bundle_settings, array(), ['castTo' => 'array']);
-					foreach($va_occ_types as $vn_type_id => $va_type_info) {
-						if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
-					}
-					$o_view->setVar('occurrence_types', $va_occ_types);
-					$o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					$va_occ_types_to_show =  array_filter(caGetOption('add_to_occurrence_types', $pa_bundle_settings, array(), ['castTo' => 'array']), function($v) { return (bool)$v; });
+					if(sizeof($va_occ_types_to_show) > 0) {
+                        $va_occ_types = $t_occ->getTypeList();
+                        foreach($va_occ_types as $vn_type_id => $va_type_info) {
+                            if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
+                        }
+                        $o_view->setVar('occurrence_types', $va_occ_types);
+                        $o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+                        $o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+                    }
 				}
 			}
 			
@@ -1921,6 +1924,8 @@
 			// Collection update
 			//
 			$o_view->setVar('collection_types', []);
+			$o_view->setVar('collection_relationship_types', []);
+			$o_view->setVar('collection_relationship_types_by_sub_type', []);
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_collections')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if (($t_coll_rel = Datamodel::getInstance($linking_table, true)) && ($t_coll = Datamodel::getInstance('ca_collections', true))) {
@@ -2010,7 +2015,7 @@
 			$h = $this->getHistory(array_merge($pa_bundle_settings, $pa_options));
 			$o_view->setVar('child_count', $child_count = sizeof(array_filter($h, function($v) { return sizeof(array_filter($v, function($x) { return $x['hasChildren']; })); })));
 			$o_view->setVar('history', $h);
-		
+			
 			return $o_view->render('history_tracking_chronology.php');
 		}
 		# ------------------------------------------------------
@@ -2058,7 +2063,7 @@
 		
 			$h = $x = $this->getHistory();
 		
-			$last_location = array_shift(array_shift($x));// $this->getLastLocation(array());
+			$last_location = array_shift(array_shift($x));
 			if (!($t_last_location = Datamodel::getInstance($last_location['tracked_table_num']))) { throw new ApplicationException(_t('Invalid table')); }
 			$t_last_location->load($last_location['tracked_row_id']);
 			$vs_display_template = null;
@@ -2164,7 +2169,7 @@
 								$field_class = '';
 								break;
 						}
-						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'id' => $id_prefix."_{$rel_table}_".$element_code.'{n}', 'value' => _t('today'), 'classname' => $field_class])."</td>";
+						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".'{n}', 'id' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".'{n}', 'value' => _t('today'), 'classname' => $field_class])."</td>";
 					} else {
 						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($request, null, $element_code, $placement_code, $settings, ['elementsOnly' => true])."</td>";
 					}	
@@ -2197,12 +2202,13 @@
 				if (is_array($interstitial_elements = caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $settings, array()))) {
 					foreach($interstitial_elements as $element_code) {
 						if ($t_item_rel->hasField($element_code)) {
-							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter("{$placement_code}{$form_prefix}_{$type_id}_{$element_code}new_0", pString));
+							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter(["{$placement_code}{$form_prefix}_{$type}_{$element_code}new_0", "{$placement_code}{$form_prefix}__{$element_code}new_0"], pString));
 						} elseif ($element_id = ca_metadata_elements::getElementID($element_code)) {
 							$sub_element_ids = ca_metadata_elements::getElementsForSet($element_id, ['idsOnly' => true]);
 							$vals = [];
+							
 							foreach($sub_element_ids as $sub_element_id) {
-								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter("{$placement_code}{$form_prefix}_{$type_id}_{$sub_element_id}_new_0", pString);
+								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter(["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0"], pString);
 							}
 							$t_item_rel->addAttribute($vals, $element_code);
 						}
