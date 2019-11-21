@@ -612,7 +612,7 @@ if($show_entity_controls) {
 	<?php if($display_mode === 'tabs') { ?>
 			jQuery("#<?php print $vs_id_prefix; ?>Tabs").tabs({ selected: 0 });	
 	<?php } ?>	
-	
+	<?php
 			if (caUI.initPanel) {
 				caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
 					panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
