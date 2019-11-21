@@ -12639,6 +12639,28 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="placeofdeath" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Birthplace</name>
+          <description>Enter the place of death of the entity.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_entities</table>
+          <type>ind</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="life_dates" datatype="DateRange">
       <labels>
         <label locale="en_US">
@@ -16949,7 +16971,7 @@ Do not enter all three levels of Category, Classification and Sub-Classification
               </settings>
             </placement>
             <placement code="ca_attribute_materials_legacy">
-              <bundle>ca_attribute_material_legacy</bundle>
+              <bundle>ca_attribute_materials_legacy</bundle>
             </placement>
              <placement code="ca_attribute_marks_labels">
               <bundle>ca_attribute_marks_labels</bundle>
@@ -17040,6 +17062,7 @@ Do not enter all three levels of Category, Classification and Sub-Classification
               <bundle>ca_objects</bundle>
               <settings>
                 <setting name="description" locale="en_US">Items from your collection linked to this item or record. For example, objects connected to a loan or exhibit. Or a photograph in your collection that depicts a three-dimensional object in your collection.</setting>
+              <setting name="restrict_to_relationship_types">permanent</setting>
               </settings>
             </placement>
             <placement code="keywords">
@@ -17570,7 +17593,16 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </placement>
             <placement code="ca_attribute_birthplace">
               <bundle>ca_attribute_birthplace</bundle>
-
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_placeofdeath">
+              <bundle>ca_attribute_placeofdeath</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -17620,16 +17652,6 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </placement>
             <placement code="ca_attribute_published">
               <bundle>ca_attribute_published</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_placeofdeath">
-              <bundle>ca_attribute_placeofdeath</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
