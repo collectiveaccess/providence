@@ -131,6 +131,24 @@
 				'label' => _t('Do not create new records'),
 				'description' => _t('If set splitter will only match on existing records and will not create new ones.')
 			),
+			'listItemSplitter_hierarchicalDelimiter' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchical delimiter'),
+				'description' => _t('Sets the value of the delimiter to break hierarchical values on.')
+			),
+			'listItemSplitter_hierarchicalListItemTypes' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchical list item types'),
+				'description' => _t('A semicolon-delimited list of list item types to apply to hierarchical list items extracted using the hierarchical delimiter.')
+			),
 			'listItemSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,

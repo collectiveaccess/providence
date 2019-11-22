@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -277,7 +277,7 @@
  					$this->postError(1970, _t('Address or georeference was blank.'), 'GeocodeAttributeValue->parseValue()');
  					return false;
  				} else {
-					return null;
+					return ['value_longtext1' => '', 'value_longtxt2' => '', 'value_decimal1' => null, 'value_decimal2' => null];
 				}
  			}
  			
