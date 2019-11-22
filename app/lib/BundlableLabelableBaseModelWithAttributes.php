@@ -682,7 +682,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function get($ps_field, $pa_options=null) {
 		$vn_s = sizeof($va_tmp = explode('.', $ps_field));
 		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->TABLE) && ($vs_field = $va_tmp[1]))) {
-			if ($this->hasField($vs_field)) { return BaseModel::get($vs_field, $pa_options); }
+			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { return BaseModel::get($vs_field, $pa_options); }
 		}
 		if($this->_rowAsSearchResult) {
 			if (method_exists($this->_rowAsSearchResult, "filterNonPrimaryRepresentations")) {
@@ -4657,8 +4657,9 @@ if (!$vb_batch) {
 					    
 					    if (!caGetOption('hide_update_location_controls', $va_bundle_settings, false)) {
 							// set storage location
-							if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
+							if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations_idnew_0", pInteger)) {
 								$t_loc = Datamodel::getInstance('ca_storage_locations', true);
+								
 								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
 								if ($t_loc->load($vn_location_id)) {
 									if ($policy) {
@@ -4666,15 +4667,16 @@ if (!$vb_batch) {
 										$vn_relationship_type_id = caGetOption('trackingRelationshipType', $policy_info, null);
 									}
 									if (!$vn_relationship_type_id) { $vn_relationship_type_id = $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'); }
+									
 									if ($vn_relationship_type_id) {
 										// is effective date set?
-										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_datenew_0", pString);
+										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations__effective_datenew_0", pString);
 						
 										$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id);
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
-											ca_storage_locations::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_location', $t_item_rel, $vn_location_id, $processed_bundle_settings);							
+											ca_storage_locations::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_storage_locations', $t_item_rel, $vn_location_id, $processed_bundle_settings);							
 										}									
 								
 										$change_has_been_made = true;
@@ -4687,13 +4689,13 @@ if (!$vb_batch) {
 						
 						if (!caGetOption('hide_add_to_loan_controls', $va_bundle_settings, false)) {
 							// set loan
-							if ($vn_loan_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_idnew_0", pInteger)) {
-								if ($vn_loan_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_type_idnew_0", pInteger)) {
+							if ($vn_loan_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_loans_idnew_0", pInteger)) {
+								if ($vn_loan_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_loans_type_idnew_0", pInteger)) {
 									$t_item_rel = $this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
 									if ($this->numErrors()) {
 										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									} else {
-										ca_loans::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_loan', $t_item_rel, $vn_loan_id, $processed_bundle_settings);								
+										ca_loans::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_loans', $t_item_rel, $vn_loan_id, $processed_bundle_settings);								
 									}		
 									
 									$change_has_been_made = true;
@@ -4705,13 +4707,15 @@ if (!$vb_batch) {
 						
 						if (!caGetOption('hide_add_to_movement_controls', $va_bundle_settings, false)) {
 							// set movement
-							if ($vn_movement_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_movement_idnew_0", pInteger)) {
-								if ($vn_movement_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_movement_type_idnew_0", pInteger)) {
+							if ($vn_movement_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_movements_idnew_0", pInteger)) {
+							
+								if ($vn_movement_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_movements_type_idnew_0", pInteger)) {
+									
 									$t_item_rel = $this->addRelationship('ca_movements', $vn_movement_id, $vn_movement_type_id);
 									if ($this->numErrors()) {
 										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									} else {
-										ca_movements::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_movement', $t_item_rel, $vn_movement_id, $processed_bundle_settings);								
+										ca_movements::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_movements', $t_item_rel, $vn_movement_id, $processed_bundle_settings);								
 									}		
 									
 									$change_has_been_made = true;
@@ -4725,15 +4729,15 @@ if (!$vb_batch) {
 							// set occurrence
 							require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
 							$t_occ = new ca_occurrences();
-							$va_occ_types = $t_occ->getTypeList();
+							$va_occ_types = $t_occ->getTypeList(); 
 							foreach($va_occ_types as $vn_type_id => $vn_type_info) {
-								if ($vn_occurrence_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_idnew_0", pInteger)) {
-									if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_type_idnew_0", pInteger)) {
+								if ($vn_occurrence_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_occurrences_{$vn_type_id}_idnew_0", pInteger)) {
+									if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_occurrences_{$vn_type_id}_type_idnew_0", pInteger)) {
 										$t_item_rel = $this->addRelationship('ca_occurrences', $vn_occurrence_id, $vn_occ_type_id);
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
-											ca_occurrences::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_occurrence', $t_item_rel, $vn_occurrence_id, $processed_bundle_settings);					
+											ca_occurrences::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_occurrences', $t_item_rel, $vn_occurrence_id, $processed_bundle_settings);					
 										}	
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_occurrences', $vn_occurrence_id);
@@ -4749,13 +4753,13 @@ if (!$vb_batch) {
 							$t_coll = new ca_collections();
 							$va_coll_types = $t_coll->getTypeList();
 							foreach($va_coll_types as $vn_type_id => $vn_type_info) {
-								if ($vn_collection_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_collection_{$vn_type_id}_idnew_0", pInteger)) {
-									if ($vn_coll_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_collection_{$vn_type_id}_type_idnew_0", pInteger)) {
+								if ($vn_collection_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_collections_{$vn_type_id}_idnew_0", pInteger)) {
+									if ($vn_coll_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_collections_{$vn_type_id}_type_idnew_0", pInteger)) {
 										$t_item_rel = $this->addRelationship('ca_collections', $vn_collection_id, $vn_coll_type_id);
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
-											ca_collections::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_collection', $t_item_rel, $vn_collection_id, $processed_bundle_settings);
+											ca_collections::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_collections', $t_item_rel, $vn_collection_id, $processed_bundle_settings);
 										}
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_collections', $vn_collection_id);
@@ -4771,13 +4775,13 @@ if (!$vb_batch) {
 							$t_entity = new ca_entities();
 							$va_entity_types = $t_entity->getTypeList();
 							foreach($va_entity_types as $vn_type_id => $vn_type_info) {
-								if ($vn_entity_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_entity_{$vn_type_id}_idnew_0", pInteger)) {
-									if ($vn_entity_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_entity_{$vn_type_id}_type_idnew_0", pInteger)) {
+								if ($vn_entity_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_entities_{$vn_type_id}_idnew_0", pInteger)) {
+									if ($vn_entity_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_entities_{$vn_type_id}_type_idnew_0", pInteger)) {
 										$t_item_rel = $this->addRelationship('ca_entities', $vn_entity_id, $vn_entity_type_id);
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
-											ca_entities::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_entity', $t_item_rel, $vn_entity_id, $processed_bundle_settings);
+											ca_entities::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_entities', $t_item_rel, $vn_entity_id, $processed_bundle_settings);
 										}
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_entities', $vn_entity_id);
@@ -4789,13 +4793,13 @@ if (!$vb_batch) {
 						
 						if (!caGetOption('hide_add_to_object_controls', $va_bundle_settings, false)) {
 							// set object
-							if ($vn_object_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_object_idnew_0", pInteger)) {
-								if ($vn_object_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_object_type_idnew_0", pInteger)) {
+							if ($vn_object_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_objects_idnew_0", pInteger)) {
+								if ($vn_object_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_objects_type_idnew_0", pInteger)) {
 									$t_item_rel = $this->addRelationship('ca_objects', $vn_object_id, $vn_object_type_id);
 									if ($this->numErrors()) {
 										$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 									} else {
-										ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_object', $t_item_rel, $vn_object_id, $processed_bundle_settings);								
+										ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_objects', $t_item_rel, $vn_object_id, $processed_bundle_settings);								
 									}		
 									
 									$change_has_been_made = true;
@@ -5149,7 +5153,7 @@ if (!$vb_batch) {
 			$vs_key = $va_rel_item['_key'];
 			
 			$vn_rank = null;
-			if (($vn_rank_index = array_search($va_rel_item['relation_id'], $va_rel_sort_order)) !== false) {
+			if ((($vn_rank_index = array_search($va_rel_item['relation_id'], $va_rel_sort_order)) !== false) && (!isset($pa_settings['disableSorts']) || !$pa_settings['disableSorts'])) {
 				$vn_rank = $va_rel_ids_sorted[$vn_rank_index];
 			}
 			
@@ -5292,13 +5296,13 @@ if (!$vb_batch) {
  	 *
  	 */
  	public function getRelatedItemsAsSearchResult($pm_rel_table_name_or_num, $pa_options=null) {
- 		if (is_array($va_related_ids = $this->getRelatedItems($pm_rel_table_name_or_num, array_merge($pa_options, array('idsOnly' => true))))) {
+ 		if (is_array($va_related_ids = $this->getRelatedItems($pm_rel_table_name_or_num, array_merge($pa_options, array('idsOnly' => true, 'sort' => null))))) {
  			
- 			$va_ids = array_map(function($pn_v) {
+ 			$va_ids = array_filter($va_related_ids, function($pn_v) {
  				return ($pn_v > 0) ? true : false;
- 			}, $va_related_ids);
+ 			});
  			
- 			return $this->makeSearchResult($pm_rel_table_name_or_num, $va_ids);
+ 			return $this->makeSearchResult($pm_rel_table_name_or_num, $va_ids, $pa_options);
  		}
  		return null;
  	}
@@ -5828,9 +5832,11 @@ if (!$vb_batch) {
 				$vn_i++;
 			}
 
-			if($pb_show_current_only && $t_item_rel) {
+			if($pb_show_current_only && $t_item_rel && is_array($va_rels_by_date)) {
 				ksort($va_rels_by_date);
-				$va_rels = array_pop($va_rels_by_date);
+				if(is_array($va_new_rel = array_pop($va_rels_by_date))) {
+				    $va_rels = $va_new_rel;
+				}
 			}
 			
 			ksort($va_rels);	// sort by sort key... we'll remove the sort key in the next loop while we add the labels
@@ -5846,6 +5852,10 @@ if (!$vb_batch) {
 				}
 			}
 			$va_rels = $va_sorted_rels;
+			
+			if ($ps_return_as !== 'data') {
+				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, $t_rel_item->primaryKey());
+			}
 
 			//
 			// END - traverse self relation
@@ -5993,6 +6003,10 @@ if (!$vb_batch) {
 						$va_rels[$vs_v]['label'] = array_shift($va_tmp2);
 					}
 				}
+			}
+			
+			if ($ps_return_as !== 'data') {
+				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, $t_rel_item->primaryKey());
 			}
 			
 			//

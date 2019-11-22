@@ -395,6 +395,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('Set the locale used for all imported data. Leave on "DEFAULT" to use the system default locale. Otherwise set it to a valid locale code (Ex. en_US, es_MX, fr_CA).')
 		);
 		
+		$va_settings['sourceUrl'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 100, 'height' => 1,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Source URL'),
+			'description' => _t('URL importer worksheet was fetched from. Will be null if importer was directly uploaded.')
+		);
+		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
@@ -745,12 +755,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public static function loadImporterFromFile($ps_source, &$pa_errors, $pa_options=null) {
+	public static function loadImporterFromFile($ps_source, &$pa_errors, $pa_options=null, &$is_new=null) {
 		global $g_ui_locale_id;
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 		$pa_errors = array();
 		
 		$o_config = Configuration::load();
+		
+		$is_new = true;
 		
 		if (!is_array($pa_options) || !isset($pa_options['logDirectory']) || !$pa_options['logDirectory'] || !file_exists($pa_options['logDirectory'])) {
 			if (!($pa_options['logDirectory'] = $o_config->get('batch_metadata_import_log_directory'))) {
@@ -763,7 +775,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
-		//$o_excel->setActiveSheet(1);
 		$o_sheet = $o_excel->getActiveSheet();
 		
 		$vn_row = 0;
@@ -833,17 +844,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
-						
-						// Test whether the JSON is valid
-						json_decode($vs_options_json, TRUE);
-						if(json_last_error()){
-							// try encode newlines
-							$vs_options_json = preg_replace("![\r\n]!", "\\\\n", $vs_options_json);	
-						}
-						if (is_null($va_options = @json_decode($vs_options_json, true))) {
+						if (is_null($va_options = @json_decode(caRepairJson($vs_options_json), true))) {
 							// Error while json decode
-							$pa_errors[] = _t("Warning: invalid json in \"options\" column for group %1/source %2. Json was: %3", $vs_group, $vs_source, $vs_options_json);
-							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid json in \"options\" column for group %2/source %3. Json was: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json)); }
+							$pa_errors[] = _t("Warning: invalid json in \"options\" column at line %4  for group %1/source %2. Json was: %3", $vs_group, $vs_source, $vs_options_json, $vn_row_num);
+							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid json in \"options\" column at line %5  for group %2/source %3. Json was: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json, $vn_row_num)); }
 							return;
 						}
 					}
@@ -855,10 +859,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
                             $pa_errors[] = _t("Warning: refinery %1 does not exist", $vs_refinery)."\n";
                             if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3", $ps_source, $vs_group, $vs_source)); }
                         } else {
-                            if (is_null($va_refinery_options = json_decode($vs_refinery_options_json, true))) {
+                            // Test whether the JSON is valid
+                            if (is_null($va_refinery_options = json_decode(caRepairJson($vs_refinery_options_json), true))) {
                                 // Error while json decode
-                                $pa_errors[] = _t("invalid json for refinery options for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json);
-                                if ($o_log) { $o_log->logError( _t("[loadImporterFromFile:%1] invalid json for refinery options for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json)); }
+                                $pa_errors[] = _t("invalid json for refinery options at line %4 for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json, $vn_row_num);
+                                if ($o_log) { $o_log->logError( _t("[loadImporterFromFile:%1] invalid json for refinery options at line %5 for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json, $vn_row_num)); }
                                 return;
                             }
                         }
@@ -1005,6 +1010,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Remove any existing mapping
 		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {
+			if ((!(bool)$t_importer->get('deleted'))) { $is_new = false; }
 			$t_importer->delete(true, array('hard' => true));
 			if ($t_importer->numErrors()) {
 				$pa_errors[] = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_importer->getErrors()))."\n";
@@ -1022,6 +1028,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		unset($va_settings['table']);
 		foreach($va_settings as $vs_k => $vs_v) {
 			$t_importer->setSetting($vs_k, $vs_v);
+		}
+		if ($source_url = caGetOption('sourceUrl', $pa_options, null)) {
+			$t_importer->setSetting('sourceUrl', $source_url);
 		}
 		$t_importer->insert();
 		
@@ -1753,6 +1762,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$t_subject->load($va_ids[0]);
 									$o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy));
 									break;
+								} else {
+								    $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true)));
 								}
 							}
 							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
@@ -1766,6 +1777,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$t_subject->load($va_ids[0]);
 								$o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 								$vb_was_preferred_label_match = true;
+							} else {
+							    $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_R($va_pref_label_values, true), print_r($va_base_criteria, true)));
 							}
 							break;	
 						case 'overwrite_on_idno_and_preferred_labels':
@@ -1787,6 +1800,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$t_subject->clear();
 										break;
 									}
+								} else {
+								    $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true)));
 								}
 							}
 							if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
@@ -1808,6 +1823,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									break;
 								}
 								$t_subject->clear();
+							} else {
+							    $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_R($va_pref_label_values, true), print_r($va_base_criteria, true)));
 							}
 							break;
 					}

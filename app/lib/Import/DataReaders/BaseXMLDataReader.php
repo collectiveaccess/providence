@@ -178,10 +178,13 @@ class BaseXMLDataReader extends BaseDataReader {
 		for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
 			$o_node = $o_row->childNodes->item($vn_i);
 			if ($o_node->nodeName === '#text') { continue; }
+			
+			$v = html_entity_decode((string)$o_node->nodeValue, null, 'UTF-8');
+			
 			$vs_key = $ps_base_key.'/'.$o_node->nodeName;
-			$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
+			$this->opa_row_buf[$vs_key][] = $v;
 			if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
-				$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue; 
+				$this->opa_row_buf[strtolower($vs_key)][] = $v; 
 			}
 			
 			if ($o_node->hasChildNodes()) {
@@ -195,17 +198,20 @@ class BaseXMLDataReader extends BaseDataReader {
 		 	
 			for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
 				$o_node = $o_attributes->item($vn_i);
+				
+				$v = html_entity_decode((string)$o_node->nodeValue, null, 'UTF-8');
+				
 				$vs_key = $ps_base_key.'/@'.$o_node->nodeName;
- 				$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
+ 				$this->opa_row_buf[$vs_key][] = $v;
  				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
- 					$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
+ 					$this->opa_row_buf[strtolower($vs_key)][] = $v;
  				}
  				
  				if ($this->opb_use_row_tag_attributes_as_row_level_values) {
  					$vs_key = $ps_base_key.'/'.$o_node->nodeName;
-					$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
+					$this->opa_row_buf[$vs_key][] = $v;
 					if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
-						$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
+						$this->opa_row_buf[strtolower($vs_key)][] = $v;
 					}
  				}
  			}
@@ -276,7 +282,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		
 		$va_values = array();
 		foreach($o_node_list as $o_node) {
-			$va_values[] = ($vs_xml = $this->getInnerXML($o_node)) ? $vs_xml : $o_node->nodeValue;
+			$va_values[] = html_entity_decode(($vs_xml = $this->getInnerXML($o_node)) ? $vs_xml : $o_node->nodeValue, null, 'UTF-8');
 		}
 		
 		if ($vb_return_as_array) { return $va_values; }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,6 +88,15 @@ print $vs_control_box = caFormControlBox(
 		$va_attr = array('value' => 'import',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileBrowserRadio');
 		if (caGetOption('fileInput', $va_last_settings, 'file') === 'import') { $va_attr['checked'] = 'checked'; }	
 		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From the import directory')." <div id='caFileBrowserContainer'>".$this->getVar('file_browser')."</div>";
+?>
+								</td>
+							</tr>
+							<tr class="caFileSourceControls" id='caFileGoogleDriveContainer'>
+								<td class="caSourceFileControlRadio">
+<?php		
+		$va_attr = array('value' => 'googledrive',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileGoogleDriveRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'googledrive') { $va_attr['checked'] = 'checked'; }	
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From GoogleDrive')." <span id='caFileGoogleDriveInputContainer'>".caHTMLTextInput('google_drive_url', ['value' => caGetOption('googleDriveUrl', $va_last_settings, ''), 'class' => 'urlBg', 'id' => 'caFileGoogleDriveInput'], ['width' => '500px'])."</span>";
 ?>
 								</td>
 							</tr>
@@ -242,13 +251,28 @@ print $vs_control_box = caFormControlBox(
 				jQuery('#caImportAllDatasetsContainer').hide(dontAnimate ? 0 : 150);
 			}
 		}
+		
+		if(currentFormat.toLowerCase() !== 'xlsx') {
+			jQuery("#caFileGoogleDriveContainer").hide();
+			if(jQuery("#caFileGoogleDriveRadio").is(":checked")) {
+				jQuery("#caFileInputRadio").attr('checked', true);
+			}
+		}  else {
+			jQuery("#caFileGoogleDriveContainer").show();
+		}
 			
 		if (jQuery("#caFileInputRadio").is(":checked")) {
-			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150).attr('disabled', false);
 			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', true);
+		} else if(jQuery("#caFileGoogleDriveRadio").is(":checked")) {
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150).attr('disabled', true);
+			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', false);
 		} else {
-			jQuery("#caFileInputContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileInputContainer").attr('disabled', true);
 			jQuery("#caFileBrowserContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', true);
 		}
 	}
 	

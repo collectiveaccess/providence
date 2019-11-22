@@ -732,29 +732,35 @@ class BaseModel extends BaseObject {
 		}
 		
 		$va_tmp = explode('.', $ps_field);
-		if (sizeof($va_tmp) > 1) {
-			if ($va_tmp[0] === $this->tableName()) {
-				// 
-				// Return created on or last modified
-				//
-				if (in_array($va_tmp[1], array('created', 'lastModified'))) {
-					if ($vb_return_as_array) {
-						return ($va_tmp[1] == 'lastModified') ? $this->getLastChangeTimestamp() : $this->getCreationTimestamp();
-					} else {
-						$va_data = ($va_tmp[1] == 'lastModified') ? $this->getLastChangeTimestamp() : $this->getCreationTimestamp();
-						$vs_subfield = (isset($va_tmp[2]) && isset($va_data[$va_tmp[2]])) ? $va_tmp[2] : 'timestamp';
-						
-						$vm_val = $va_data[$vs_subfield];
+		
+		// 
+		// Return created on or last modified
+		//
+		if (
+			((sizeof($va_tmp) > 1) && in_array($va_tmp[1], array('created', 'lastModified'))) 
+			||
+			((sizeof($va_tmp) === 1) && in_array($va_tmp[0], array('created', 'lastModified'))) 
+		)  {
+			if ($vb_return_as_array) {
+				return ($va_tmp[1] == 'lastModified') ? $this->getLastChangeTimestamp() : $this->getCreationTimestamp();
+			} else {
+				$va_data = ($va_tmp[1] == 'lastModified') ? $this->getLastChangeTimestamp() : $this->getCreationTimestamp();
+				$vs_subfield = (isset($va_tmp[2]) && isset($va_data[$va_tmp[2]])) ? $va_tmp[2] : 'timestamp';
 				
-						if ($vs_subfield == 'timestamp') {
-							$o_tep = new TimeExpressionParser();
-							$o_tep->setUnixTimestamps($vm_val, $vm_val);
-							$vm_val = $o_tep->getText($pa_options);
-						}
-						return $vm_val;
-					}
+				$vm_val = $va_data[$vs_subfield];
+		
+				if ($vs_subfield == 'timestamp') {
+					$o_tep = new TimeExpressionParser();
+					$o_tep->setUnixTimestamps($vm_val, $vm_val);
+					$vm_val = $o_tep->getText($pa_options);
 				}
-				
+				return $vm_val;
+			}
+		}
+		
+		
+		if (sizeof($va_tmp) > 1) {
+			if ($va_tmp[0] === $this->tableName()) {	
 				//
 				// Generalized get
 				//
@@ -1550,7 +1556,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
+							$vm_value = str_replace("&amp;", "&", BaseModel::getPurifier()->purify((string)$vm_value));
 						}
 						
 						if ($this->getFieldInfo($vs_field, "DISPLAY_TYPE") == DT_LIST_MULTIPLE) {

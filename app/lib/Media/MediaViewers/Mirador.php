@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -133,7 +133,7 @@
 				
 					$vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $pa_data['display'], null);
 					if (((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) && !$vn_use_mirador_for_image_list_length) {
-						$pa_data['resources'] = $t_instance->getFileList();
+						$pa_data['resources'] = $t_instance->getFileList(null, null, null, [$vs_display_version, 'preview']);
 					} elseif (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && $vn_use_mirador_for_image_list_length && ($va_reps = $pa_data['t_subject']->getRepresentations(['small', $vs_display_version, 'original'], null, []))) {
 						$t_rep = new ca_object_representations();
 						

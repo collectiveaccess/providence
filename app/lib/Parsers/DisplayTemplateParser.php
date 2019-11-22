@@ -428,7 +428,8 @@ class DisplayTemplateParser {
 				case 'ifdef':
 				case 'ifnotdef':
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
-					$opts = ['filters' => caGetOption('filters', $pa_options, null), 'index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present'];
+					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
+					$opts = ['index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present', 'filter' => $vs_filter, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)];
 					if (!is_null($vb_omit_blanks)) { $opts['includeBlankValuesInArray'] = !$vb_omit_blanks; }
 					
 					$vb_defined = DisplayTemplateParser::_evaluateCodeAttribute($pr_res, $o_node, $opts);
@@ -454,18 +455,27 @@ class DisplayTemplateParser {
 					$va_restrict_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
 					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
+					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
 					
 					$va_get_options = ['limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $pa_check_access, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types];
 					if (!is_null($vb_omit_blanks)) { 
 						$pa_options['includeBlankValuesInArray'] = $va_get_options['includeBlankValuesInArray'] = !$vb_omit_blanks; 
 					}
 					
+					$vs_filter_regex = $vs_filter ? self::_makeFilterRegex((string)$vs_filter) : null;
+					
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
 					
 					if (($vn_limit = ($vn_max > 0) ? $vn_max : $vn_min) == 0) { $vn_limit = 1; }
 					$vn_limit++;
 					foreach($va_codes as $vs_code) {
-						$vn_count = (int)$pr_res->get($vs_code, $va_get_options);
+						if($vs_filter_regex) {
+							$vals = $pr_res->get($vs_code, array_merge($va_get_options, ['returnAsCount' => false, 'returnAsArray' => true]));
+							$vals = array_filter($vals, function($v) use ($vs_filter_regex) { return preg_match($vs_filter_regex, $v); });
+							$vn_count = sizeof($vals);
+						} else {
+							$vn_count = (int)$pr_res->get($vs_code, $va_get_options);
+						}
 
                         if ($vb_bool == 'AND') {
                             $vm_count += $vn_count;
@@ -571,6 +581,8 @@ class DisplayTemplateParser {
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					$vs_unit_skip_when = (string)$o_node->skipWhen;
 					
+					$vs_unit_filter_regex = self::_makeFilterRegex((string)$o_node->filter);
+					
 					$vn_start = (int)$o_node->start;
 					$vn_length = (int)$o_node->length;
 					
@@ -594,7 +606,7 @@ class DisplayTemplateParser {
 						$va_get_options['sort'] = preg_split('![ ,;]+!', $o_node->sort);
 						$va_get_options['sortDirection'] = $o_node->sortDirection;
 					}
-	
+
 					$va_relation_ids = $va_relationship_type_ids = null;
 					if (
 						((sizeof($va_relative_to_tmp) == 1) && ($va_relative_to_tmp[0] == $ps_tablename))
@@ -698,6 +710,11 @@ class DisplayTemplateParser {
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
+						
+						if ($vs_unit_filter_regex) {
+							$va_tmpl_val = array_filter($va_tmpl_val, function($v) use ($vs_unit_filter_regex) { return preg_match($vs_unit_filter_regex, $v); });
+						}
+						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
@@ -852,8 +869,11 @@ class DisplayTemplateParser {
 						);
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						if (($vn_start > 0) || !is_null($vn_length)) { 
-							//$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); 
 							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
+						}
+						
+						if ($vs_unit_filter_regex) {
+							$va_tmpl_val = array_filter($va_tmpl_val, function($v) use ($vs_unit_filter_regex) { return preg_match($vs_unit_filter_regex, $v); });
 						}
 						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
@@ -1021,7 +1041,7 @@ class DisplayTemplateParser {
                     }
                     if (!preg_match("!^{$vs_relative_to_container}!", $vs_get_spec)) { $vs_get_spec = $vs_relative_to_container.".".$vs_get_spec; }
 
-                    $va_vals = $pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
+                    $va_vals = $pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['sort' => '', 'filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
         
                     if (is_array($va_vals)) {
                         foreach($va_vals as $vn_index => $vs_val) {
@@ -1034,7 +1054,7 @@ class DisplayTemplateParser {
                     $va_sortables = array();
                     if (!is_array($va_parsed_tag_opts['options'])) { $va_parsed_tag_opts['options'] = []; }
                     foreach($pa_options['sort'] as $vs_sort_spec) {
-                        $va_sortables[] = $pr_res->get($vs_sort_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
+                        $va_sortables[] = $pr_res->get($vs_sort_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['sort' => '', 'filters' => $va_parsed_tag_opts['filters'], 'sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
                     }
                 
                     if(is_array($va_sortables)) {
@@ -1227,17 +1247,20 @@ class DisplayTemplateParser {
 		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
 		$pb_mode = caGetOption('mode', $pa_options, 'present');	// value 'present' or 'not_present'
 		$pn_index = caGetOption('index', $pa_options, null);
-		
-		$va_filter_opts = caGetOption('filters', $pa_options, [], ['castTo' => 'array']);
+		$ps_filter = caGetOption('filter', $pa_options, null);
+		$filter_regex = self::_makeFilterRegex($ps_filter);
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
 		    if (isset(self::$join_tag_vals[$vs_code]) && strlen(self::$join_tag_vals[$vs_code])) { return true; }
 			$va_parsed_tag_opts = DisplayTemplateParser::_parseTagOpts($vs_code);
-			$va_val_list = $pr_res->get($va_parsed_tag_opts['tag'], array_merge($va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true, 'convertCodesToDisplayText' => true, 'returnAsDecimal' => true, 'getDirectDate' => true]));
+			$va_val_list = $pr_res->get($va_parsed_tag_opts['tag'], array_merge($va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true, 'convertCodesToDisplayText' => true, 'returnAsDecimal' => true, 'getDirectDate' => true, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)]));
 			if(!is_array($va_val_list)) {  // no value
 				$vb_value_present = false;
 			} else {
+				if ($filter_regex) { 
+					$va_val_list = array_filter($va_val_list, function($v) use ($filter_regex) { return preg_match($filter_regex, $v); });
+				}
 				if(!is_null($pn_index)) {
 					if (!isset($va_val_list[$pn_index]) || ((is_numeric($va_val_list[$pn_index]) && (float)$va_val_list[$pn_index] == 0) || !strlen(trim($va_val_list[$pn_index])))) {
 						$vb_value_present = false;			// no value
@@ -1838,5 +1861,21 @@ class DisplayTemplateParser {
         
 	    return join(caGetOption('delimiter', $pa_parsed_tag_opts['options'], '; '), $va_acc);
 	}
+	# -------------------------------------------------------------------
+	/**
+	 *
+	 */
+	static private function _makeFilterRegex($filter) {
+		$filter_regex = null;
+		if ($filter = trim($filter)) {
+			if (preg_match("!^/.*?/[a-z]*$!", $filter)) { // is regex
+				$filter_regex = $filter;
+			} else {	// is text
+				$filter_terms = array_map(function($v) { return preg_quote($v, "!"); }, explode("|", $filter));
+				$filter_regex = "!".join("|", $filter_terms)."!i";
+			}
+		}
+		return $filter_regex;
+	}					
 	# -------------------------------------------------------------------
 }

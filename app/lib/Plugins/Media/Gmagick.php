@@ -551,6 +551,10 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->handle->annotateimage($d,$inset, $size + $inset, 0, $parameters['text']);
 					break;
 				# -----------------------
+				case 'STRIP':	
+			        $this->handle->stripimage();	// remove all lingering metadata
+			        break;
+				# -----------------------
 				case 'WATERMARK':
 					if (!file_exists($parameters['image'])) { break; }
 					
@@ -886,8 +890,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
-			
-			$this->handle->stripimage();	// remove all lingering metadata
 			
 			# write the file
 			try {

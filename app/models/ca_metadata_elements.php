@@ -415,15 +415,15 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Return array of information about elements with a setting set to a given value.
 	 *
 	 * @param string $ps_setting Setting code
-	 * @param mixed $pm_value  Setting value
+	 * @param mixed $pm_value  Setting value. If set to null or omitted any element with a setting value that evaluates to true will be returned.
 	 * @param array $pa_options No options are currently supported
 	 *
 	 * @return array
 	 */
-	public static function getElementSetsWithSetting($ps_setting, $pm_value, $pa_options=null) {
+	public static function getElementSetsWithSetting($ps_setting, $pm_value=null, $pa_options=null) {
 	    return array_map(function($v) { $v['settings'] = caUnserializeForDatabase($v['settings']); return $v; }, array_filter(ca_metadata_elements::find('*', ['returnAs' => 'arrays']), function($v) use ($ps_setting, $pm_value) {
 	        $va_settings = caUnserializeForDatabase($v['settings']);
-	        if (isset($va_settings[$ps_setting]) && ($va_settings[$ps_setting] == $pm_value)) {
+	        if (isset($va_settings[$ps_setting]) && ((!is_null($pm_value) && ($va_settings[$ps_setting] == $pm_value)) || (is_null($pm_value) && (bool)$va_settings[$ps_setting]))) {
 	            return true;
 	        }
 	        return false;

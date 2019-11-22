@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -224,7 +224,10 @@
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
- 			if(!DateRangeAttributeValue::$o_tep) { DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); }
+ 			if(!DateRangeAttributeValue::$o_tep) { 
+ 				DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); 
+ 				DateRangeAttributeValue::$o_tep->setLanguage(__CA_DEFAULT_LOCALE__);
+ 			}
  		}
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {

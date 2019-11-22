@@ -36,6 +36,7 @@
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
+	$vs_criteria_summary 	= $this->getVar('criteria_summary');
 
 	$vn_ratio_pixels_to_excel_height = 0.85;
 	$vn_ratio_pixels_to_excel_width = 0.135;
@@ -194,6 +195,35 @@
 	foreach(range('A','Z') as $vs_chr) {
 		if ($o_sheet->getColumnDimension($vs_chr)->getWidth() == -1) {
 			$o_sheet->getColumnDimension($vs_chr)->setAutoSize(true);	
+		}
+	}
+	
+	if($this->request->config->get('excel_report_header_enabled') || $this->request->config->get('excel_report_footer_enabled')){
+		$o_sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
+		$o_sheet->getPageMargins()->setTop(1);
+		$o_sheet->getPageMargins()->setRight(0.75);
+		$o_sheet->getPageMargins()->setLeft(0.75);
+		$o_sheet->getPageMargins()->setBottom(1);
+		$o_sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1,1);
+		
+		if($this->request->config->get('excel_report_header_enabled')){
+			if(file_exists($this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img'))){
+				$vs_logo_path = $this->request->getThemeDirectoryPath().'/graphics/logos/'.$this->request->config->get('report_img');
+			}
+			$objDrawing = new PHPExcel_Worksheet_HeaderFooterDrawing();
+			$objDrawing->setName('Image');
+			$objDrawing->setPath($vs_logo_path);
+			$objDrawing->setHeight(36);
+			$o_sheet->getHeaderFooter()->addImage($objDrawing, PHPExcel_Worksheet_HeaderFooter::IMAGE_HEADER_LEFT);
+			$vs_criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($vs_criteria_summary)));
+			$vs_criteria_summary = (strlen($vs_criteria_summary) > 90) ? mb_substr($vs_criteria_summary, 0, 90)."..." : $vs_criteria_summary;
+			$vs_criteria_summary = wordwrap($vs_criteria_summary, 50, "\n", true);
+			$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($this->request->config->get('excel_report_show_search_term')) ? '&R&B&12 '.$vs_criteria_summary : ''));
+			
+		}
+		if($this->request->config->get('excel_report_footer_enabled')){
+			$t_instance = Datamodel::getInstanceByTableName($vo_result->tableName(), true);
+			$o_sheet->getHeaderFooter()->setOddFooter('&L&10'.ucfirst($t_instance->getProperty('NAME_SINGULAR').' report').' &C&10Page &P of &N &R&10 '.date("m/t/y"));
 		}
 	}
 	

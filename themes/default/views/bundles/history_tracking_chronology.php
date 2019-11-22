@@ -90,7 +90,7 @@
 			if(!$read_only && !caGetOption('hide_update_location_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
                 $show_location_controls = true;
 ?>
-				<div style='float: left;'  class='button caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Update location'); ?></a></div>
+				<div style='float: left;'  class='button caChangeLocationButton <?php print $vs_id_prefix; ?>caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Update location'); ?></a></div>
 <?php
 			}
 			
@@ -100,7 +100,7 @@
 				foreach($occ_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_occurrences', $va_type_info['idno'])) { continue; }
 ?>
-				<div style='float: left;'  class='button caAddOccurrenceButton caAddOccurrenceButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddOcc<?php print $vn_type_id; ?>"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
+				<div style='float: left;'  class='button caAddOccurrenceButton <?php print $vs_id_prefix; ?>caAddOccurrenceButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddOcc<?php print $vn_type_id; ?>"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
@@ -138,7 +138,7 @@
 				<br style='clear: both;'/>
 			</div>
 					
-		<div class="caLocationList"> </div>
+		<div class="<?php print $vs_id_prefix; ?>caLocationList"> </div>
 		<div class="caLoanList"> </div>
 		<div class="caMovementList"> </div>
 		<div class="caObjectList"> </div>
@@ -147,11 +147,11 @@ if($show_occurrence_controls) {
 	foreach($occ_types as $vn_type_id => $va_type_info) {
 		if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_occurrences', $va_type_info['idno'])) { continue; }
 ?>
-		<div class="caOccurrenceList<?php print $vn_type_id; ?>"> </div>
+		<div class="<?php print $vs_id_prefix; ?>caOccurrenceList<?php print $vn_type_id; ?>"> </div>
 <?php
 	}
 }
-if($show_colletion_controls) {
+if($show_collection_controls) {
 	foreach($coll_types as $vn_type_id => $va_type_info) {
 		if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_collections', $va_type_info['idno'])) { continue; }
 ?>
@@ -291,22 +291,24 @@ switch($display_mode) {
 	//
 	// Template to generate controls for creating new storage location
 	//
+    if ($show_location_controls) {
 ?>
-	<textarea class='caHistoryTrackingSetLocationTemplate' style='display: none;'>
+	<textarea class='<?php print $vs_id_prefix; ?>caHistoryTrackingSetLocationTemplate' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Location_{n}" class="labelInfo caRelatedLocation">
+		<div id="<?php print $vs_id_prefix; ?>Location_{n}" class="labelInfo caRelatedLocation <?php print $vs_id_prefix; ?>caRelatedLocation">
 			<h2 class="caHistoryTrackingSetLocationHeading"><?php print _t('Update location'); ?></h2>
 <?php
+if ($show_location_controls) {
 	if (!(bool)$settings['useHierarchicalBrowser']) {
 ?>
 			<table class="caListItem">
 				<tr>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_location_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_location_autocomplete{n}" class="lookupBg"/>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_location_id{n}" id="<?php print $vs_id_prefix; ?>_location_id{n}" value="{id}"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_ca_storage_locations_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_ca_storage_locations_autocomplete{n}" class="lookupBg"/>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_storage_locations_id{n}" id="<?php print $vs_id_prefix; ?>_ca_storage_locations_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteLocationButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteLocationButton <?php print $vs_id_prefix; ?>caDeleteLocationButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 					</td>
 				</tr>
 			</table>
@@ -314,7 +316,7 @@ switch($display_mode) {
 <?php
 	} else {
 ?>
-			<div style="float: right;"><a href="#" class="caDeleteLocationButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+			<div style="float: right;"><a href="#" class="caDeleteLocationButton <?php print $vs_id_prefix; ?>caDeleteLocationButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			
 			<div style='width: 700px; height: 200px;'>				
 				<div style="float: right;">
@@ -328,7 +330,7 @@ switch($display_mode) {
 				</div><!-- end hierarchyBrowser -->	
 				
 				<div class="hierarchyBrowserCurrentSelectionText">
-					<input type="hidden" name="<?php print $vs_id_prefix; ?>_location_id{n}" id="<?php print $vs_id_prefix; ?>_location_id{n}" value="{id}"/>
+					<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_storage_locations_id{n}" id="<?php print $vs_id_prefix; ?>_ca_storage_locations_id{n}" value="{id}"/>
 				
 					<span class="hierarchyBrowserCurrentSelectionText" id="<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}"> </span>
 				</div>
@@ -356,6 +358,7 @@ switch($display_mode) {
 					
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
+						currentSelectionIDID: '<?php print $vs_id_prefix; ?>_ca_storage_locations_id{n}',
 					
 						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
@@ -364,7 +367,7 @@ switch($display_mode) {
 						displayCurrentSelectionOnLoad: false,
 						currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
 						onSelection: function(item_id, parent_id, name, display, type_id) {
-							caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', {id: item_id, type_id: type_id}, display);
+							caRelationBundle<?php print $vs_id_prefix; ?>_ca_storage_locations.select('{n}', {id: item_id, type_id: type_id}, display);
 						}
 					});
 				
@@ -380,8 +383,13 @@ switch($display_mode) {
 							}
 						}
 					);
-					
-					jQuery('#<?php print $vs_id_prefix; ?>_location_effective_date{n}').datepicker({dateFormat: 'yy-mm-dd'});  // attempt to add date picker
+<?php
+    if (caGetOption('ca_storage_locations_useDatePicker', $settings, false)) {
+?>
+					jQuery('#<?php print $vs_id_prefix; ?>_ca_storage_locations__effective_date{n}').datepicker({dateFormat: 'yy-mm-dd'});  // attempt to add date picker
+<?php
+    }
+?>
 				});
 			</script>
 <?php
@@ -390,21 +398,22 @@ switch($display_mode) {
 		</div>
 	</textarea>
 <?php
+}
 
 if($show_loan_controls) {
 ?>
 	<textarea class='caHistoryTrackingSetLoanTemplate' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Loan_{n}" class="labelInfo caRelatedLoan">
+		<div id="<?php print $vs_id_prefix; ?>_ca_loans_{n}" class="labelInfo caRelatedLoan">
 			<table class="caListItem">
 				<tr>
 					<td><h2><?php print _t('Add to loan'); ?></h2></td>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_loan_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_loan_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_ca_loans_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_ca_loans_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
-						<select name="<?php print $vs_id_prefix; ?>_loan_type_id{n}" id="<?php print $vs_id_prefix; ?>_loan_type_id{n}" style="display: none;"></select>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_loan_id{n}" id="<?php print $vs_id_prefix; ?>_loan_id{n}" value="{id}"/>
+						<select name="<?php print $vs_id_prefix; ?>_ca_loans_type_id{n}" id="<?php print $vs_id_prefix; ?>_ca_loans_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_loans_id{n}" id="<?php print $vs_id_prefix; ?>_ca_loans_id{n}" value="{id}"/>
 					</td>
 					<td>
 						<a href="#" class="caDeleteLoanButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
@@ -421,16 +430,16 @@ if($show_loan_controls) {
 ?>
 	<textarea class='caHistoryTrackingSetMovementTemplate' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>movement_{n}" class="labelInfo caRelatedMovement">
+		<div id="<?php print $vs_id_prefix; ?>_ca_movements_{n}" class="labelInfo caRelatedMovement">
 			<table class="caListItem">
 				<tr>
 					<td><h2><?php print _t('Add to movement'); ?></h2></td>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_movement_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_movement_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_ca_movements_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_ca_movements_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
-						<select name="<?php print $vs_id_prefix; ?>_movement_type_id{n}" id="<?php print $vs_id_prefix; ?>_movement_type_id{n}" style="display: none;"></select>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_movement_id{n}" id="<?php print $vs_id_prefix; ?>_movement_id{n}" value="{id}"/>
+						<select name="<?php print $vs_id_prefix; ?>_ca_movements_type_id{n}" id="<?php print $vs_id_prefix; ?>_ca_movements_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_movements_id{n}" id="<?php print $vs_id_prefix; ?>_ca_movements_id{n}" value="{id}"/>
 					</td>
 					<td>
 						<a href="#" class="caDeleteMovementButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
@@ -447,16 +456,16 @@ if($show_loan_controls) {
 ?>
 	<textarea class='caHistoryTrackingSetObjectTemplate' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Object_{n}" class="labelInfo caRelatedObject">
+		<div id="<?php print $vs_id_prefix; ?>_ca_objects_{n}" class="labelInfo caRelatedObject">
 			<table class="caListItem">
 				<tr>
 					<td><h2><?php print _t('Add to object'); ?></h2></td>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_object_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_object_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_ca_objects_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_ca_objects_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
-						<select name="<?php print $vs_id_prefix; ?>_object_type_id{n}" id="<?php print $vs_id_prefix; ?>_object_type_id{n}" style="display: none;"></select>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_object_id{n}" id="<?php print $vs_id_prefix; ?>_object_id{n}" value="{id}"/>
+						<select name="<?php print $vs_id_prefix; ?>_ca_objects_type_id{n}" id="<?php print $vs_id_prefix; ?>_ca_objects_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_objects_id{n}" id="<?php print $vs_id_prefix; ?>_ca_objects_id{n}" value="{id}"/>
 					</td>
 					<td>
 						<a href="#" class="caDeleteObjectButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
@@ -472,21 +481,21 @@ if($show_loan_controls) {
 if($show_occurrence_controls) {
 	foreach($occ_types as $vn_type_id => $va_type_info) {
 ?>
-	<textarea class='caHistoryTrackingSetOccurrenceTemplate<?php print $vn_type_id; ?>' style='display: none;'>
+	<textarea class='<?php print $vs_id_prefix; ?>caHistoryTrackingSetOccurrenceTemplate<?php print $vn_type_id; ?>' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Occurrence_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedOccurrence">
+		<div id="<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedOccurrence <?php print $vs_id_prefix; ?>caRelatedOccurrence">
 			<table class="caListItem">
 				<tr>
 					<td><h2><?php print _t('Add to %1', $va_type_info['name_singular']); ?></h2></td>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
-						<select name="<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_type_id{n}" style="display: none;"></select>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
+						<select name="<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteOccurrenceButton<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a>
+						<a href="#" class="<?php print $vs_id_prefix; ?>caDeleteOccurrenceButton<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a>
 					</td>
 				</tr>
 			</table>
@@ -502,16 +511,16 @@ if($show_collection_controls) {
 ?>
 	<textarea class='caHistoryTrackingSetCollectionTemplate<?php print $vn_type_id; ?>' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Collection_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedCollection">
+		<div id="<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedCollection">
 			<table class="caListItem">
 				<tr>
 					<td><h2><?php print _t('Add to %1', $va_type_info['name_singular']); ?></h2></td>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
-						<select name="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_type_id{n}" style="display: none;"></select>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
+						<select name="<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
 						<a href="#" class="caDeleteCollectionButton<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a>
@@ -530,16 +539,16 @@ if($show_entity_controls) {
 ?>
 	<textarea class='caHistoryTrackingSetEntityTemplate<?php print $vn_type_id; ?>' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>entity_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedEntity">
+		<div id="<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedEntity">
 			<table class="caListItem">
 				<tr>
 					<td><h2><?php print _t('Add to %1', $va_type_info['name_singular']); ?></h2></td>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
-						<select name="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_type_id{n}" style="display: none;"></select>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
+						<select name="<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
 						<a href="#" class="caDeleteEntityButton<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a>
@@ -597,6 +606,7 @@ if($show_entity_controls) {
 		
 			jQuery("#caHistoryTrackingEntry<?php print $vs_id_prefix; ?>" + table + "-" + relation_id).remove();
 			jQuery("#<?php print $vs_id_prefix; ?>").append("<input type='hidden' name='<?php print $vs_id_prefix; ?>_delete_" + table + "[]' value='" +relation_id + "'/>");
+			e.preventDefault();
 		});
 		
 	<?php if($display_mode === 'tabs') { ?>
@@ -642,19 +652,19 @@ if($show_entity_controls) {
 <?php	
 	if($show_location_controls) {
 ?>	
-			caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_location_',
+			caRelationBundle<?php print $vs_id_prefix; ?>_ca_storage_locations = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_storage_locations_',
 				templateValues: ['label', 'type_id', 'id'],
 				initialValues: [],
 				initialValueOrder: [],
-				itemID: '<?php print $vs_id_prefix; ?>Location_',
+				itemID: '<?php print $vs_id_prefix; ?>_ca_storage_locations_',
 				placementID: '<?php print $vn_placement_id; ?>',
-				templateClassName: 'caHistoryTrackingSetLocationTemplate',
+				templateClassName: '<?php print $vs_id_prefix; ?>caHistoryTrackingSetLocationTemplate',
 				initialValueTemplateClassName: null,
-				itemListClassName: 'caLocationList',
-				listItemClassName: 'caRelatedLocation',
-				addButtonClassName: 'caChangeLocationButton',
-				deleteButtonClassName: 'caDeleteLocationButton',
+				itemListClassName: '<?php print $vs_id_prefix; ?>caLocationList',
+				listItemClassName: '<?php print $vs_id_prefix; ?>caRelatedLocation',
+				addButtonClassName: '<?php print $vs_id_prefix; ?>caChangeLocationButton',
+				deleteButtonClassName: '<?php print $vs_id_prefix; ?>caDeleteLocationButton',
 				showEmptyFormsOnLoad: 0,
 				relationshipTypes: <?php print json_encode($this->getVar('location_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', []); ?>',
@@ -681,11 +691,11 @@ if($show_entity_controls) {
 	if($show_loan_controls) {
 ?>			
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_loans = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_loan_',
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_loans_',
 				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 				initialValues: [],
 				initialValueOrder: [],
-				itemID: '<?php print $vs_id_prefix; ?>Loan_',
+				itemID: '<?php print $vs_id_prefix; ?>_ca_loans_',
 				placementID: '<?php print $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetLoanTemplate',
 				initialValueTemplateClassName: null,
@@ -720,11 +730,11 @@ if($show_entity_controls) {
 	if($show_movement_controls) {
 ?>			
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_movements = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_movement_',
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_movements_',
 				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 				initialValues: [],
 				initialValueOrder: [],
-				itemID: '<?php print $vs_id_prefix; ?>Movement_',
+				itemID: '<?php print $vs_id_prefix; ?>_ca_movements_',
 				placementID: '<?php print $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetMovementTemplate',
 				initialValueTemplateClassName: null,
@@ -759,11 +769,11 @@ if($show_entity_controls) {
 	if($show_object_controls) {
 ?>
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_objects = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_object_',
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_objects_',
 				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 				initialValues: [],
 				initialValueOrder: [],
-				itemID: '<?php print $vs_id_prefix; ?>Object_',
+				itemID: '<?php print $vs_id_prefix; ?>_ca_objects_',
 				placementID: '<?php print $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetObjectTemplate',
 				initialValueTemplateClassName: null,
@@ -799,18 +809,18 @@ if($show_entity_controls) {
 		foreach($occ_types as $vn_type_id => $va_type_info) {
 ?>
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_',
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_',
 				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 				initialValues: [],
 				initialValueOrder: [],
-				itemID: '<?php print $vs_id_prefix; ?>Occurrence_<?php print $vn_type_id; ?>_',
+				itemID: '<?php print $vs_id_prefix; ?>_ca_occurrences_<?php print $vn_type_id; ?>_',
 				placementID: '<?php print $vn_placement_id; ?>',
-				templateClassName: 'caHistoryTrackingSetOccurrenceTemplate<?php print $vn_type_id; ?>',
+				templateClassName: '<?php print $vs_id_prefix; ?>caHistoryTrackingSetOccurrenceTemplate<?php print $vn_type_id; ?>',
 				initialValueTemplateClassName: null,
-				itemListClassName: 'caOccurrenceList<?php print $vn_type_id; ?>',
-				listItemClassName: 'caRelatedOccurrence',
-				addButtonClassName: 'caAddOccurrenceButton<?php print $vn_type_id; ?>',
-				deleteButtonClassName: 'caDeleteOccurrenceButton<?php print $vn_type_id; ?>',
+				itemListClassName: '<?php print $vs_id_prefix; ?>caOccurrenceList<?php print $vn_type_id; ?>',
+				listItemClassName: '<?php print $vs_id_prefix; ?>caRelatedOccurrence',
+				addButtonClassName: '<?php print $vs_id_prefix; ?>caAddOccurrenceButton<?php print $vn_type_id; ?>',
+				deleteButtonClassName: '<?php print $vs_id_prefix; ?>caDeleteOccurrenceButton<?php print $vn_type_id; ?>',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
 				relationshipTypes: <?php print json_encode($this->getVar('occurrence_relationship_types_by_sub_type')); ?>,
@@ -840,11 +850,11 @@ if($show_entity_controls) {
 		foreach($coll_types as $vn_type_id => $va_type_info) {
 	?>
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_collection_<?php print $vn_type_id; ?>_',
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_',
 				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 				initialValues: [],
 				initialValueOrder: [],
-				itemID: '<?php print $vs_id_prefix; ?>Collection_<?php print $vn_type_id; ?>_',
+				itemID: '<?php print $vs_id_prefix; ?>_ca_collections_<?php print $vn_type_id; ?>_',
 				placementID: '<?php print $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetCollectionTemplate<?php print $vn_type_id; ?>',
 				initialValueTemplateClassName: null,
@@ -881,11 +891,11 @@ if($show_entity_controls) {
 		foreach($entity_types as $vn_type_id => $va_type_info) {
 	?>
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_entity_<?php print $vn_type_id; ?>_',
+				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_',
 				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 				initialValues: [],
 				initialValueOrder: [],
-				itemID: '<?php print $vs_id_prefix; ?>entity_<?php print $vn_type_id; ?>_',
+				itemID: '<?php print $vs_id_prefix; ?>_ca_entities_<?php print $vn_type_id; ?>_',
 				placementID: '<?php print $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetEntityTemplate<?php print $vn_type_id; ?>',
 				initialValueTemplateClassName: null,

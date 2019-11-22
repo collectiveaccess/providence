@@ -113,7 +113,8 @@ var caUI = caUI || {};
             }
         };
         
-        that.processDependentTemplate = function(template, values, init, omitRepeatingUnits=false) {
+        that.processDependentTemplate = function(template, values, init, omitRepeatingUnits) {
+            if(!omitRepeatingUnits) { omitRepeatingUnits = false; }
         	if (!template) return '';
             
             // get tags from template
@@ -140,7 +141,7 @@ var caUI = caUI || {};
                         var tagRoot = tagBits[0].replace("^", "");
                         elementVals.push(jQuery(values[tagRoot]).val());
                     }
-                    var elementCount = elementVals.filter((v) => (v !== null) && v.length > 0).length;
+                    var elementCount = elementVals.filter(function(v) { return (v !== null) && v.length > 0; }).length;
                     
                     var acc = [];
                     for(var i in opts['elements']) {

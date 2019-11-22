@@ -128,7 +128,7 @@ var caUI = caUI || {};
 		
 		that.useAsRootID = parseInt(that.useAsRootID);
 		
-		that.excludeItemIDs = that.excludeItemIDs.map(x => x + "");		// force all ids to string to ensure comparisons work (item ids from service are strings)
+		that.excludeItemIDs = that.excludeItemIDs.map(function(x) { return x + ""; });		// force all ids to string to ensure comparisons work (item ids from service are strings)
 
 		if (!that.levelDataUrl) {
 			alert("No level data url specified for " + that.name + "!");
@@ -216,7 +216,8 @@ var caUI = caUI || {};
 		//
 		// @param bool
 		//
-		that.isReadOnly = function(readonly, animate=true) {
+		that.isReadOnly = function(readonly, animate) {
+		    if(animate === undefined) { animate = true; }
 			if (readonly !== null) {
 				that.readOnly = readonly;
 				
@@ -452,9 +453,9 @@ var caUI = caUI || {};
 							console.log(that.excludeItemIDs, item);
 								continue;
 							}
-							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
-								that.selectedItemIDs[0] = item['item_id'];
-							}
+							// if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
+// 								that.selectedItemIDs[0] = item['item_id'];
+// 							}
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
 							}

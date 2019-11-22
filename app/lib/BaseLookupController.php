@@ -131,8 +131,9 @@
 						
 							if (!$pb_no_subtypes) {
 								foreach($va_ids as $vn_id) {
-									$va_children = $t_list->getItemsForList($this->opo_item_instance->getTypeListCode(), array('item_id' => $vn_id, 'idsOnly' => true));
-									$va_ids = array_merge($va_ids, $va_children);
+									if (is_array($va_children = $t_list->getItemsForList($this->opo_item_instance->getTypeListCode(), array('item_id' => $vn_id, 'idsOnly' => true)))) {
+										$va_ids = array_merge($va_ids, $va_children);
+									}
 								}
 								$va_ids = array_flip(array_flip($va_ids));
 							}

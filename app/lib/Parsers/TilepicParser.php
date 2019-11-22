@@ -1293,7 +1293,6 @@ class TilepicParser {
 		#
 		try {
 			$h = new Gmagick($ps_filepath);
-			$h->stripimage();
 			$this->setResourceLimits_gmagick($h);
 			$h->setimageindex(0);	// force use of first image in multi-page TIFF
 		} catch (Exception $e){

@@ -264,7 +264,8 @@
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
  				'display' => 'relation',
  				'bundleDisplay' => $va_bundle_values,
- 				'errors' => $va_error_list
+ 				'errors' => $va_error_list,
+ 				'time' => time()
  			);
  			
  			$this->view->setVar('response', $va_response);

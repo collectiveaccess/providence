@@ -2659,6 +2659,14 @@
             </label>
           </labels>
         </item>
+        <item idno="non_binary" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>non-binary</name_singular>
+              <name_plural>non-binary</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="unknown" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -7252,7 +7260,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-
     <metadataElement code="other_identifiers" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -7287,6 +7294,14 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">7</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_object_lots</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">7</setting>
@@ -7544,7 +7559,27 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-
+    <metadataElement code="import_source" datatype="Text">
+      <labels>
+        <label locale="en_CA">
+          <name>Import Source</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">640px</setting>
+        <setting name="maxChars">255</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!--Dates-->
     <metadataElement code="date_created" datatype="DateRange">
       <labels>
@@ -8055,7 +8090,7 @@
           <type>physical_object</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">25</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -8235,6 +8270,73 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="materials_legacy" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Material (Legacy)</name>
+          <description>Materials values imported from old systems. Use the "Material" dropdown instead.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>physical_object</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>document</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>still_image</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>archaeology_object</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>geology_specimen</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>natural_history_specimen</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="miac_material" datatype="List" list="miac_materials">
       <labels>
         <label locale="en_US">
@@ -8302,7 +8404,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <metadataElement code="medium" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -12537,6 +12639,28 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="placeofdeath" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Birthplace</name>
+          <description>Enter the place of death of the entity.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_entities</table>
+          <type>ind</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="life_dates" datatype="DateRange">
       <labels>
         <label locale="en_US">
@@ -12879,7 +13003,7 @@
       <settings>
         <setting name="canBeUsedInSearchForm">0</setting>
         <setting name="canBeUsedInDisplay">0</setting>
-        <setting name="displayTemplate">^address1 ^address2&#13;
+        <setting name="displayTemplate">^address1 ^address2
 ^city, ^stateprovince ^postalcode ^country</setting>
       </settings>
       <elements>
@@ -13508,19 +13632,19 @@
         <setting name="fieldWidth">640px</setting>
         <setting name="fieldHeight">10</setting>
         <setting name="usewysiwygeditor">1</setting>
-        <setting name="default_text">&lt;p class="normal" style="margin-bottom:.0001pt;text-align:justify;margin:0in 0in 10pt;"&gt;&lt;span style="font-size:12pt;"&gt;&lt;span style="line-height:normal;"&gt;&lt;span style="font-family:'Times New Roman';"&gt;&lt;span style="color:#000000;"&gt;&lt;span style="font-size:10pt;"&gt;&lt;span style="font-family:Arial;"&gt;The items listed below are left in the custody of the [INSTITUTION] to be considered for donation:&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&#13;
-          &#13;
-          &lt;p class="normal" style="margin-bottom:.0001pt;text-align:justify;margin:0in 0in 10pt;"&gt;&lt;span style="font-size:12pt;"&gt;&lt;span style="line-height:normal;"&gt;&lt;span style="font-family:'Times New Roman';"&gt;&lt;span style="color:#000000;"&gt;&lt;span style="font-size:10pt;"&gt;&lt;span style="font-family:Arial;"&gt;The [INSTNAME] reserves the right to keep, lend or otherwise dispose of the material.&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&#13;
-          &#13;
-          &lt;p class="normal" style="margin-top:0in;margin-right:0in;margin-bottom:.0001pt;margin-left:.5in;text-align:justify;margin:0in 0in 10pt;"&gt;&lt;span style="font-size:12pt;"&gt;&lt;span style="line-height:115%;"&gt;&lt;span style="font-family:'Times New Roman';"&gt;&lt;span style="color:#000000;"&gt;&lt;b&gt;&lt;span style="font-size:8pt;"&gt;&lt;span style="line-height:115%;"&gt;&lt;span style="font-family:Arial;"&gt;I own the items described below and desire to give said items to the museum. I do hereby irrevocably and unconditionally give and transfer to the museum all right, title, and interest, including all copyright, trademark, and related interest, in and to the following described property.  It is understood that I hereby bind myself, my heirs, executors and administrators. Possible uses of disposed material include educational, teaching or prop collections or sold to benefit the collections.   I acknowledge that because of the policy of changing exhibitions, the [INSTITUTION] has not promised, and is not obligated, to exhibit the property.&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/b&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&#13;
-          &#13;
-          &lt;ul&gt;&#13;
-          &lt;li style="list-style-type:none;"&gt;&#13;
-          &lt;ul style="list-style-type:circle;"&gt;&#13;
-          &lt;li class="normalCxSpLast" style="margin-top:0in;margin-right:0in;margin-bottom:.0001pt;text-align:justify;"&gt;&lt;span style="line-height:normal;"&gt;&lt;span style="font-size:10pt;"&gt;&lt;span style="font-family:Arial;"&gt;Please check here if the item(s) are only given to be considered for acquisition into the collection.  If not accepted into the collection, the donor shall be notified and will 90 days to pick up the item(s) or make other arrangements for disposal.  &lt;b&gt;After 90 days the item(s) will become the property of the museum.&lt;/b&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/li&gt;&#13;
-          &lt;/ul&gt;&#13;
-          &lt;/li&gt;&#13;
-          &lt;/ul&gt;&#13;
+        <setting name="default_text"><![CDATA[<p class="normal" style="margin-bottom:.0001pt;text-align:justify;margin:0in 0in 10pt;"><span style="font-size:12pt;"><span style="line-height:normal;"><span style="font-family:'Times New Roman';"><span style="color:#000000;"><span style="font-size:10pt;"><span style="font-family:Arial;">The items listed below are left in the custody of the [INSTITUTION] to be considered for donation:</span></span></span></span></span></span></p>
+          
+          <p class="normal" style="margin-bottom:.0001pt;text-align:justify;margin:0in 0in 10pt;"><span style="font-size:12pt;"><span style="line-height:normal;"><span style="font-family:'Times New Roman';"><span style="color:#000000;"><span style="font-size:10pt;"><span style="font-family:Arial;">The [INSTNAME] reserves the right to keep, lend or otherwise dispose of the material.</span></span></span></span></span></span></p>
+          
+          <p class="normal" style="margin-top:0in;margin-right:0in;margin-bottom:.0001pt;margin-left:.5in;text-align:justify;margin:0in 0in 10pt;"><span style="font-size:12pt;"><span style="line-height:115%;"><span style="font-family:'Times New Roman';"><span style="color:#000000;"><b><span style="font-size:8pt;"><span style="line-height:115%;"><span style="font-family:Arial;">I own the items described below and desire to give said items to the museum. I do hereby irrevocably and unconditionally give and transfer to the museum all right, title, and interest, including all copyright, trademark, and related interest, in and to the following described property.  It is understood that I hereby bind myself, my heirs, executors and administrators. Possible uses of disposed material include educational, teaching or prop collections or sold to benefit the collections.   I acknowledge that because of the policy of changing exhibitions, the [INSTITUTION] has not promised, and is not obligated, to exhibit the property.</span></span></span></b></span></span></span></span></p>
+          
+          <ul>
+          <li style="list-style-type:none;">
+          <ul style="list-style-type:circle;">
+          <li class="normalCxSpLast" style="margin-top:0in;margin-right:0in;margin-bottom:.0001pt;text-align:justify;"><span style="line-height:normal;"><span style="font-size:10pt;"><span style="font-family:Arial;">Please check here if the item(s) are only given to be considered for acquisition into the collection.  If not accepted into the collection, the donor shall be notified and will 90 days to pick up the item(s) or make other arrangements for disposal.  <b>After 90 days the item(s) will become the property of the museum.</b></span></span></span></li>
+          </ul>
+          </li>
+          </ul>]]>
         </setting>
       </settings>
       <typeRestrictions>
@@ -13545,13 +13669,13 @@
         <setting name="fieldWidth">640px</setting>
         <setting name="fieldHeight">10</setting>
         <setting name="usewysiwygeditor">1</setting>
-        <setting name="default_text">On behalf of the Officers and Directors of the [INSTITUTION], the community, and visiting researchers, I would like to thank you for your recent gift to the museum. No goods or services were exchanged for this donation.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          Long-term care and preservation of artifacts does not happen without resources. It costs us approximately $40 in supplies, staff time, and building costs to keep an average archival box on the shelf for one year. Any financial support that you are able to provide towards the preservation of your donation would be greatly appreciated.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          If you have any more information you would like to add about the history of the item(s) included in this donation, please let me know and we will add it to our records.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          Again, thank you for your generous gift.</setting>
+        <setting name="default_text"><![CDATA[On behalf of the Officers and Directors of the [INSTITUTION], the community, and visiting researchers, I would like to thank you for your recent gift to the museum. No goods or services were exchanged for this donation.<br />
+          <br />
+          Long-term care and preservation of artifacts does not happen without resources. It costs us approximately $40 in supplies, staff time, and building costs to keep an average archival box on the shelf for one year. Any financial support that you are able to provide towards the preservation of your donation would be greatly appreciated.<br />
+          <br />
+          If you have any more information you would like to add about the history of the item(s) included in this donation, please let me know and we will add it to our records.<br />
+          <br />
+          Again, thank you for your generous gift.]]></setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -13575,15 +13699,15 @@
         <setting name="fieldWidth">640px</setting>
         <setting name="fieldHeight">10</setting>
         <setting name="usewysiwygeditor">1</setting>
-        <setting name="default_text">On behalf of the Officers and Directors of the [INSTITUTION], the community, and visiting researchers, I would like to thank you for your recent gift to the museum. No goods or services were exchanged for this donation.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          In order to complete the donation, please sign both copies of the enclosed Deed of Gift. Please return the original in the self-addressed, stamped envelope enclosed. You may retain the copy for your records.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          Long-term care and preservation of artifacts does not happen without resources. It costs us approximately $40 in supplies, staff time, and building costs to keep an average archival box on the shelf for one year. Any financial support that you are able to provide towards the preservation of your donation would be greatly appreciated.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          If you have any more information you would like to add about the history of the item(s) included in this donation, please let me know and we will add it to our records.&lt;br /&gt;&#13;
-          &lt;br /&gt;&#13;
-          Again, thank you for your generous gift.</setting>
+        <setting name="default_text"><![CDATA[On behalf of the Officers and Directors of the [INSTITUTION], the community, and visiting researchers, I would like to thank you for your recent gift to the museum. No goods or services were exchanged for this donation.<br />
+          <br />
+          In order to complete the donation, please sign both copies of the enclosed Deed of Gift. Please return the original in the self-addressed, stamped envelope enclosed. You may retain the copy for your records.<br />
+          <br />
+          Long-term care and preservation of artifacts does not happen without resources. It costs us approximately $40 in supplies, staff time, and building costs to keep an average archival box on the shelf for one year. Any financial support that you are able to provide towards the preservation of your donation would be greatly appreciated.<br />
+          <br />
+          If you have any more information you would like to add about the history of the item(s) included in this donation, please let me know and we will add it to our records.<br />
+          <br />
+          Again, thank you for your generous gift.]]></setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -14439,7 +14563,194 @@
     </metadataElement>
 
   </elementSets>
-  
+  <metadataDictionary>
+    <entry bundle="ca_objects.idno" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Enter the unique object number assigned to the item. <br/>The ideal format is: the the four digit year (YYYY), then the accession lot number, then the item number.  For example:  1986.0001.0034
+Do not enter colons, commas, semicolons or symbols as part of an Accession Number. You may use different institutional numbering systems as necessary. <br/> You may also assign a temporary ""Found in Collection"" number.
+]]></setting>
+        <setting name="mandatory">1</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_object_lots.idno_stub" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Enter the unique accession number assigned to the incoming lot of items. The ideal format is: the four digit year the lot was accepted (YYYY), then the accession lot number. <br/> Some institutions start at 1 each new year, others just continue lot numbers in sequence, regardless of the year.
+Do not enter colons, commas, semicolons or symbols as part of an Accession Number. You may use different institutional numbering systems as necessary. <br/> You may also wish to assign temporary custody numbers to unaccessioned donations and update once the accession is official.]]></setting>
+        <setting name="mandatory">1</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_object_lots.preferred_labels" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[A text descriptio​n of the contents of the Accession Lot, used for administra​tive, identifica​tion, and reporting purposes. The information in this open text field will appear as the title of the accession when searching accession records. You may wish to use keywords to help you recognize the accession.]]></setting>
+        <setting name="mandatory">1</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.preferred_labels" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Select the name of the item from the Object Term (fourth level) Nomenclature drop down list. Always focus on the item’s original intended use. <br/> If there is more than one name for the item, use the Alternative Object Name field to record other terms. Do not add qualifying data or extra details this field.]]></setting>
+        <setting name="mandatory">1</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.date_created" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Enter a numeric date or date range to denote when the object was made. For archival documents such as diaries or ledgers, enter the date range for when the document was edited. If the year alone is not precise enough, record a more precise date, such as May 13, 1942. If a date is not known, determine a possible date range based on available information, such as 1900 to 1970. Qualifying terms can be used: Circa = approximate date, determined by researching other sources.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.alternate_object_name" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Enter any name variations for the item, such as local slang terms, colloquialisms, alternate spellings, etc. <br/> If multiple alternatives exist, click Add Name to duplicate the field and enter each one on its own line. Attributed or uncertain alternate names should be followed by a space and ?]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.dimensions" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Enter the greatest overall metric dimensions of the object using the applicable fields. Enter the numerical value with the appropriate metric unit, i.e. 20.3 cm. For objects with parts, record the overall dimensions of the object assembled. Measurements for significant parts (important for research or storage purposes) should be recorded under Dimension Remarks and specifically identified with the part number, for example: The print (part A) was measured without being removed from the frame (part B).]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_object_lots" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Enter the unique accession number assigned to the incoming lot of items.  The ideal format is: the four digit year the lot was accepted (YYYY), then the accession lot number. <br/> Some institutions start at 1 each new year, others just continue lot numbers in sequence, regardless of the year.
+Do not enter colons, commas, semicolons or symbols as part of an Accession Number. You may use different institutional numbering systems as necessary.]]></setting>
+        <setting name="mandatory">1</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.title" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Formal Titles are creator-given titles found on books, paintings, CD's, songs, and other works of art. If the item has a formal title, enter it as written with no quotation marks or other punctuation. <br/> If no formal title exists, you should create a descriptive title that contains relevant specific information about the item. For information on how to create descriptive titles for photographs and other resources see Minnesota Digital Library Guidelines. https://mndigital.org/standards-best-practices/minnesota-reflections-metadata-entry-guidelines]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.georeference" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Map any locations related to the object, such as where a photograph was taken or where an object was made. Pinpoint a location by typing the place name in the search bar. Hit enter or click the magnifying glass icon and the map will reposition to the location and insert a dot. For street level locations, zoom in to make sure the dot was put in the right spot. If necessary, move the dot by clicking and dragging it to the correct location. You can also map an area, such as an archaeological site, property boundaries, etc. To do this, search for your location and then select one of the outline tools. Click to create boundary points and draw the desired area. Double-click to stop drawing, and save the record.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.material" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Select all relevant materials from the drop down list. The list can be customized through Manage > Lists and Vocabularies.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.description" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Provide a physical description of the item to create an accurate picture of it with words. <br/> You can also use this field to record information about the people, places, events and themes related to the item. The description should be written in complete sentences.
+All information that is in the Description and is required for retrieval should also be indexed in appropriate fields elsewhere in the record. 
+If the item has parts, be sure to include the letter or number designation for that part at the beginning of its description.]]></setting>
+        <setting name="mandatory">1</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.geonames" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Select appropriate locations from the GeoNames list to link those locations to this item. You can easily add locations at http://www.geonames.org/. <br/> Minnesota Digital Library requires GeoNames for their entries. <br/> Once you select locations and save, you will see a link in Collective Access that will bring you to the GeoNames website with maps and more information about the specific location.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_list_items" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Select keywords from the hierarchy that will help you find this record.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_occurrences" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[This field draws from the exhibition list in the database, so once you begin typing an exhibition name the system will generate suggestions from which to choose. If no exhibition record has been created, go to New – Exhibition, and create a record for the exhibition. The item can then be linked as being part of the exhibition.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_loans" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[This field draws from the loans list in the database, so once you begin typing a loan number, the system will generate suggestions from which to choose. If no loan record has been created, go to New – Loan, and create a record for the loan. The item can then be linked as being part of the loan.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.culture" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[This field identifies the culture associated with the object based on its social/geographic origin. Open text field.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_storage_locations" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[This field indicates the building, room, cabinet etc. where the item is permanently located or currently stored. Storage Locations are pre-set in the database as a hierarchy. Click on the arrow beside ‘Storage Location’ and then click on the appropriate building (Example: Emily Carr House), then click on the appropriate room (Example: Display Room), etc. You can be as specific as you'd like by adding cabinets, shelves and drawers.
+If the required building, room, cabinet is not in the pre-set entries, add them under NEW - STORAGE LOCATION. ]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_places" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[This field is for related places. Places can include but are not limited to: cities, villages, buildings, parks, and sites. Places are pre-set in the database as a hierarchy. 
+If the required place is not in the pre-set entries, add them under NEW - PLACES.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.condition_reporting" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[This field is used to describe the condition of an item. Use the notes field to describe the details about the item's condition. You may keep a history of the condition of the item by creating separate entries with dates. Note any changes when you are performing routine maintenance, or as damage occurs. <br/>Upload any documentation you have, such as handwritten condition reports. <br/>Select the condition rating from the drop down list which best describes the overall condition of the object at the time of acquisition.
+Excellent – no damage/deterioration
+Very Good – normal signs of wear
+Good – slight damage/deterioration, dirty
+Fair – problems more severe, handling and exhibit concerns
+Poor – unstable, difficult handling, needs attention
+Very Poor – severe deterioration, should not be handled or used for exhibits
+Unknown – the current condition of the object is unknown]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects.chenhall" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[This field is used to group items based on their original use and is a preset drop down menu. Select the most appropriate name from the fourth level "object term" or lower from the drop-down list. Alternately, you can type into the search box and select the appropriate sub-classification. <br/> If an object had multiple uses and fits more than one Object Term, the field can be duplicated and the appropriate information selected from the dropdown menu by clicking on Add Category. 
+Do not enter all three levels of Category, Classification and Sub-Classification. The drop down menu is a hierarchy and the system understands which Category and Classification apply once the Object Term has been selected.]]></setting>
+        <setting name="mandatory">1</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_entities" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Use this field to link individuals and organizations to the item or record. Creators, past owners, donors, subjects, are all entities that should be connected to the item. Begin typing the name into the search box and select from the list. If the person or organization is not on the list, you can quick add an entity from here, or go to NEW>Entity from the menu at the top of the page. <br/>  Select the relationship of the individual or organization to the object.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_objects" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Items from your collection linked to this item or record. For example, objects connected to a loan or exhibit. Or a photograph in your collection that depicts a three-dimensional object in your collection.]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+    <entry bundle="ca_collections" table="ca_objects">
+      <settings>
+        <setting name="label"/>
+        <setting name="definition"><![CDATA[Use this field to link the Collection to the item or record. ]]></setting>
+        <setting name="mandatory">0</setting>
+      </settings>
+    </entry>
+
+  </metadataDictionary>
+
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
       <labels>
@@ -16109,14 +16420,14 @@
                 <setting name="list_format">list</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">	&lt;l&gt;^ca_object_lots.idno_stub&lt;/l&gt;&#13;
-	&lt;br/&gt;&#13;
-&lt;unit relativeTo="ca_entities" restrictToRelationshipTypes="donor" delimiter="&lt;br&gt;"&lt;/unit&gt;&lt;ifdef code="ca_entities.preferred_labels.displayname" restrictToRelationshipTypes="donor"&gt;&lt;b&gt;Donor:&lt;/b&gt; ^ca_entities.preferred_labels.displayname&lt;/ifdef&gt;&lt;/unit&gt;&#13;
-&lt;br/&gt;	&#13;
-&lt;unit&gt;&#13;
-	&lt;ifdef code="ca_object_lots.credit_line"&gt;&lt;b&gt;Credit Line:&lt;/b&gt; ^ca_object_lots.credit_line&lt;br/&gt;&lt;/ifdef&gt;&#13;
-	&lt;ifdef code="ca_object_lots.restrictions"&gt;&lt;b&gt;Restrictions:&lt;/b&gt; ^ca_object_lots.restrictions&lt;br/&gt;&lt;/ifdef&gt;&#13;
-&lt;/unit&gt;</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_object_lots.idno_stub</l>
+	<br/>
+<unit relativeTo="ca_entities" restrictToRelationshipTypes="donor" delimiter="<br>"</unit><ifdef code="ca_entities.preferred_labels.displayname" restrictToRelationshipTypes="donor"><b>Donor:</b> ^ca_entities.preferred_labels.displayname</ifdef></unit>
+<br/>	
+<unit>
+	<ifdef code="ca_object_lots.credit_line"><b>Credit Line:</b> ^ca_object_lots.credit_line<br/></ifdef>
+	<ifdef code="ca_object_lots.restrictions"><b>Restrictions:</b> ^ca_object_lots.restrictions<br/></ifdef>
+</unit>]]></setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -16165,7 +16476,17 @@
                 <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
-            </placement>            
+            </placement>    
+             <placement code="ca_attribute_acquisition_date">
+              <bundle>ca_attribute_acquisition_date</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement> 
             <placement code="ca_attribute_other_identifiers">
               <bundle>ca_attribute_other_identifiers</bundle>
               <settings>
@@ -16221,14 +16542,7 @@
                 <setting name="display_template">^ca_entities.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="restrict_to_relationship_types">creator</setting>
-                <setting name="restrict_to_relationship_types">collector</setting>
-                <setting name="restrict_to_relationship_types">author</setting>
-                <setting name="restrict_to_relationship_types">publisher</setting>
-                <setting name="restrict_to_relationship_types">contributor</setting>
-                <setting name="restrict_to_relationship_types">subject</setting>
-                <setting name="restrict_to_relationship_types">related</setting>                
+                <setting name="showCurrentOnly">0</setting>     
               </settings>
             </placement>
             <placement code="ca_attribute_exhibition_label">
@@ -16656,6 +16970,9 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_materials_legacy">
+              <bundle>ca_attribute_materials_legacy</bundle>
+            </placement>
              <placement code="ca_attribute_marks_labels">
               <bundle>ca_attribute_marks_labels</bundle>
             </placement>             
@@ -16745,6 +17062,7 @@
               <bundle>ca_objects</bundle>
               <settings>
                 <setting name="description" locale="en_US">Items from your collection linked to this item or record. For example, objects connected to a loan or exhibit. Or a photograph in your collection that depicts a three-dimensional object in your collection.</setting>
+              <setting name="restrict_to_relationship_types">permanent</setting>
               </settings>
             </placement>
             <placement code="keywords">
@@ -17062,6 +17380,13 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
+            <placement code="import_source">
+              <bundle>import_source</bundle>
+              <settings>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="archaeology" default="0">
@@ -17276,13 +17601,25 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_placeofdeath">
+              <bundle>ca_attribute_placeofdeath</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+              <placement code="ca_entities">
+                <bundle>ca_entities</bundle>
+            </placement>
             <placement code="ca_attribute_life_dates">
               <bundle>ca_attribute_life_dates</bundle>
             </placement>            
             <placement code="ca_attribute_founding_date">
               <bundle>ca_attribute_founding_date</bundle>
             </placement>   
-
             <placement code="ca_attribute_titles">
               <bundle>ca_attribute_titles</bundle>
               <settings>
@@ -17315,16 +17652,6 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </placement>
             <placement code="ca_attribute_published">
               <bundle>ca_attribute_published</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_placeofdeath">
-              <bundle>ca_attribute_placeofdeath</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18576,7 +18903,7 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
-                 <setting name="display_template">&lt;unit relativeTo="ca_objects"&gt;&lt;l&gt;^ca_objects.preferred_labels (^ca_objects.idno)&lt;/&gt;&lt;/unit&gt;</setting>
+                 <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects"><l>^ca_objects.preferred_labels (^ca_objects.idno)</></unit>]]></setting>
               </settings>
             </placement> 
             <placement code="ca_entities">
@@ -18597,6 +18924,16 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </placement>
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_other_identifiers">
+              <bundle>ca_attribute_other_identifiers</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -18660,6 +18997,33 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <placement code="ca_attribute_thank_you_deed8">
               <bundle>ca_attribute_thank_you_deed</bundle>
             </placement>  
+          </bundlePlacements>
+        </screen>
+        <screen idno="media" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+              <settings>
+                <setting name="description" locale="en_US">Use this field to upload deeds of gift and other documents pertaining to this accession.</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_object_representations.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+              </settings>
+            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -20248,7 +20612,7 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             </label>
           </labels>
         </type>
-        <type code="related" default="0">
+        <type code="related" default="1">
           <labels>
             <label locale="en_US">
               <typename>is associated with</typename>
@@ -20261,6 +20625,14 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
             <label locale="en_US">
               <typename>inventoried by</typename>
               <typename_reverse>inventoried</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="donor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>donated by</typename>
+              <typename_reverse>donated</typename_reverse>
             </label>
           </labels>
         </type>
@@ -21482,7 +21854,6 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
         </placement>
       </bundlePlacements>
     </display>
-
     <display code="finding_aid" type="ca_collections" system="1">
       <labels>
         <label locale="en_US">
@@ -21910,7 +22281,6 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
         </placement>
       </bundlePlacements>
     </display>
-
     <display code="entity_summary_basic" type="ca_entities" typeRestrictions="ind" system="1">
       <labels>
         <label locale="en_US">
@@ -22324,7 +22694,6 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
         </placement>
       </bundlePlacements>
     </display>
-
     <display code="loan_summary" type="ca_loans" system="1">
       <labels>
         <label locale="en_US">
@@ -22409,6 +22778,1058 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
         <permission user="administrator" access="edit"/>
       </userAccess>
       <bundlePlacements> </bundlePlacements>
+    </display>
+    <display code="backup_accessions" type="ca_object_lots" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Backup Accessions</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="show_empty_values"><![CDATA[0]]></setting>
+        <setting name="bottom_line"><![CDATA[]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_thumbnail]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_full]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_list]]></setting>
+        <setting name="show_only_in"><![CDATA[editor_summary]]></setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="ca_object_lots_idno_stub">
+          <bundle>ca_object_lots.idno_stub</bundle>
+        </placement>
+        <placement code="ca_object_lots_description">
+          <bundle>ca_object_lots.description</bundle>
+        </placement>
+        <placement code="ca_object_lots_source_id">
+          <bundle>ca_object_lots.source_id</bundle>
+        </placement>
+        <placement code="ca_object_lots_type_id">
+          <bundle>ca_object_lots.type_id</bundle>
+        </placement>
+        <placement code="ca_object_lots_acquisition_date">
+          <bundle>ca_object_lots.acquisition_date</bundle>
+        </placement>
+        <placement code="ca_object_lots_accession_date">
+          <bundle>ca_object_lots.accession_date</bundle>
+        </placement>
+        <placement code="ca_object_lots_dogsent">
+          <bundle>ca_object_lots.dogsent</bundle>
+        </placement>
+        <placement code="ca_object_lots_dogsigned">
+          <bundle>ca_object_lots.dogsigned</bundle>
+        </placement>
+        <placement code="ca_object_lots_thankyousent">
+          <bundle>ca_object_lots.thankyousent</bundle>
+        </placement>
+        <placement code="ca_object_lots_preferred_labels">
+          <bundle>ca_object_lots.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_object_lots_access">
+          <bundle>ca_object_lots.access</bundle>
+        </placement>
+        <placement code="ca_object_lots_status">
+          <bundle>ca_object_lots.status</bundle>
+        </placement>
+        <placement code="ca_object_lots_lot_status_id">
+          <bundle>ca_object_lots.lot_status_id</bundle>
+        </placement>
+        <placement code="ca_object_lots_restrictions">
+          <bundle>ca_object_lots.restrictions</bundle>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+        </placement>
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+        </placement>
+        <placement code="ca_storage_locations">
+          <bundle>ca_storage_locations</bundle>
+        </placement>
+        <placement code="ca_object_lots_internal_notes">
+          <bundle>ca_object_lots.internal_notes</bundle>
+        </placement>
+        <placement code="ca_object_representations">
+          <bundle>ca_object_representations</bundle>
+        </placement>
+        <placement code="ca_loans">
+          <bundle>ca_loans</bundle>
+        </placement>
+        <placement code="ca_list_items">
+          <bundle>ca_list_items</bundle>
+        </placement>
+        <placement code="ca_object_lots_nonpreferred_labels">
+          <bundle>ca_object_lots.nonpreferred_labels</bundle>
+        </placement>
+        <placement code="ca_object_lots_credit_line">
+          <bundle>ca_object_lots.credit_line</bundle>
+        </placement>
+        <placement code="ca_object_lots_instructions">
+          <bundle>ca_object_lots.instructions</bundle>
+        </placement>
+        <placement code="ca_object_lots_related">
+          <bundle>ca_object_lots.related</bundle>
+        </placement>
+        <placement code="ca_object_lots_created">
+          <bundle>ca_object_lots.created</bundle>
+        </placement>
+        <placement code="ca_object_lots_lastModified">
+          <bundle>ca_object_lots.lastModified</bundle>
+        </placement>
+        <placement code="ca_object_lots_price">
+          <bundle>ca_object_lots.price</bundle>
+        </placement>
+        <placement code="ca_collections">
+          <bundle>ca_collections</bundle>
+        </placement>
+        <placement code="ca_places">
+          <bundle>ca_places</bundle>
+        </placement>
+        <placement code="ca_object_lots_extent">
+          <bundle>ca_object_lots.extent</bundle>
+        </placement>
+        <placement code="ca_occurrences">
+          <bundle>ca_occurrences</bundle>
+        </placement>
+        <placement code="ca_object_lots_extent_units">
+          <bundle>ca_object_lots.extent_units</bundle>
+        </placement>
+        <placement code="ca_object_lots__generic_bundle_">
+          <bundle>ca_object_lots._generic_bundle_</bundle>
+        </placement>
+        <placement code="ca_object_lots_rank">
+          <bundle>ca_object_lots.rank</bundle>
+        </placement>
+        <placement code="ca_object_lots_lot_id">
+          <bundle>ca_object_lots.lot_id</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="backup_collections" type="ca_collections" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Backup Collections</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="show_empty_values"><![CDATA[1]]></setting>
+        <setting name="bottom_line"><![CDATA[]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_thumbnail]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_full]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_list]]></setting>
+        <setting name="show_only_in"><![CDATA[editor_summary]]></setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="ca_collections_idno">
+          <bundle>ca_collections.idno</bundle>
+        </placement>
+        <placement code="ca_collections_preferred_labels">
+          <bundle>ca_collections.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_collections_nonpreferred_labels">
+          <bundle>ca_collections.nonpreferred_labels</bundle>
+        </placement>
+        <placement code="ca_collections_description">
+          <bundle>ca_collections.description</bundle>
+        </placement>
+        <placement code="ca_collections_scopecontent">
+          <bundle>ca_collections.scopecontent</bundle>
+        </placement>
+        <placement code="ca_collections_source_id">
+          <bundle>ca_collections.source_id</bundle>
+        </placement>
+        <placement code="ca_collections_acqinfo">
+          <bundle>ca_collections.acqinfo</bundle>
+        </placement>
+        <placement code="ca_list_items">
+          <bundle>ca_list_items</bundle>
+        </placement>
+        <placement code="ca_collections_otherfindingaid">
+          <bundle>ca_collections.otherfindingaid</bundle>
+        </placement>
+        <placement code="ca_object_representations">
+          <bundle>ca_object_representations</bundle>
+        </placement>
+        <placement code="ca_object_lots">
+          <bundle>ca_object_lots</bundle>
+        </placement>
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+        </placement>
+        <placement code="ca_loans">
+          <bundle>ca_loans</bundle>
+        </placement>
+        <placement code="ca_collections_related">
+          <bundle>ca_collections.related</bundle>
+        </placement>
+        <placement code="ca_occurrences">
+          <bundle>ca_occurrences</bundle>
+        </placement>
+        <placement code="ca_collections_internal_notes">
+          <bundle>ca_collections.internal_notes</bundle>
+        </placement>
+        <placement code="ca_collections_accessrestrict">
+          <bundle>ca_collections.accessrestrict</bundle>
+        </placement>
+        <placement code="ca_collections_provenance">
+          <bundle>ca_collections.provenance</bundle>
+        </placement>
+        <placement code="ca_collections_unitdate">
+          <bundle>ca_collections.unitdate</bundle>
+        </placement>
+        <placement code="ca_collections_type_id">
+          <bundle>ca_collections.type_id</bundle>
+        </placement>
+        <placement code="ca_collections_created">
+          <bundle>ca_collections.created</bundle>
+        </placement>
+        <placement code="ca_collections_lastModified">
+          <bundle>ca_collections.lastModified</bundle>
+        </placement>
+        <placement code="ca_collections_extentDACS">
+          <bundle>ca_collections.extentDACS</bundle>
+        </placement>
+        <placement code="ca_collections_physaccessrestrict">
+          <bundle>ca_collections.physaccessrestrict</bundle>
+        </placement>
+        <placement code="ca_collections_general_notes">
+          <bundle>ca_collections.general_notes</bundle>
+        </placement>
+        <placement code="ca_collections__generic_bundle_">
+          <bundle>ca_collections._generic_bundle_</bundle>
+        </placement>
+        <placement code="ca_collections_access">
+          <bundle>ca_collections.access</bundle>
+        </placement>
+        <placement code="ca_collections_locale_id">
+          <bundle>ca_collections.locale_id</bundle>
+        </placement>
+        <placement code="ca_collections_relation">
+          <bundle>ca_collections.relation</bundle>
+        </placement>
+        <placement code="ca_collections_originalsloc">
+          <bundle>ca_collections.originalsloc</bundle>
+        </placement>
+        <placement code="ca_collections_altformavail">
+          <bundle>ca_collections.altformavail</bundle>
+        </placement>
+        <placement code="ca_collections_reproduction">
+          <bundle>ca_collections.reproduction</bundle>
+        </placement>
+        <placement code="ca_collections_aat">
+          <bundle>ca_collections.aat</bundle>
+        </placement>
+        <placement code="ca_collections_accruals">
+          <bundle>ca_collections.accruals</bundle>
+        </placement>
+        <placement code="ca_collections_tgn">
+          <bundle>ca_collections.tgn</bundle>
+        </placement>
+        <placement code="ca_collections_custodhist">
+          <bundle>ca_collections.custodhist</bundle>
+        </placement>
+        <placement code="ca_collections_ulan">
+          <bundle>ca_collections.ulan</bundle>
+        </placement>
+        <placement code="ca_collections_conservation_notes">
+          <bundle>ca_collections.conservation_notes</bundle>
+        </placement>
+        <placement code="ca_collections_acl_inherit_from_parent">
+          <bundle>ca_collections.acl_inherit_from_parent</bundle>
+        </placement>
+        <placement code="ca_collections_adminbiohist">
+          <bundle>ca_collections.adminbiohist</bundle>
+        </placement>
+        <placement code="ca_collections_langmaterial">
+          <bundle>ca_collections.langmaterial</bundle>
+        </placement>
+        <placement code="ca_places">
+          <bundle>ca_places</bundle>
+        </placement>
+        <placement code="ca_collections_lcsh_terms">
+          <bundle>ca_collections.lcsh_terms</bundle>
+        </placement>
+        <placement code="ca_storage_locations">
+          <bundle>ca_storage_locations</bundle>
+        </placement>
+        <placement code="ca_collections_preferCite">
+          <bundle>ca_collections.preferCite</bundle>
+        </placement>
+        <placement code="ca_collections_processInfo">
+          <bundle>ca_collections.processInfo</bundle>
+        </placement>
+        <placement code="ca_collections_publication_note">
+          <bundle>ca_collections.publication_note</bundle>
+        </placement>
+        <placement code="ca_collections_techaccessrestrict">
+          <bundle>ca_collections.techaccessrestrict</bundle>
+        </placement>
+        <placement code="ca_collections_arrangement">
+          <bundle>ca_collections.arrangement</bundle>
+        </placement>
+        <placement code="ca_collections_status">
+          <bundle>ca_collections.status</bundle>
+        </placement>
+        <placement code="ca_collections_rank">
+          <bundle>ca_collections.rank</bundle>
+        </placement>
+        <placement code="ca_collections_repository">
+          <bundle>ca_collections.repository</bundle>
+        </placement>
+        <placement code="ca_collections_collection_id">
+          <bundle>ca_collections.collection_id</bundle>
+        </placement>
+        <placement code="ca_collections_appraisal">
+          <bundle>ca_collections.appraisal</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="backup_entities" type="ca_entities" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Backup Entities</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="show_empty_values"><![CDATA[1]]></setting>
+        <setting name="bottom_line"><![CDATA[]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_thumbnail]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_full]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_list]]></setting>
+        <setting name="show_only_in"><![CDATA[editor_summary]]></setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="ca_entities_preferred_labels">
+          <bundle>ca_entities.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_entities_nonpreferred_labels">
+          <bundle>ca_entities.nonpreferred_labels</bundle>
+        </placement>
+        <placement code="ca_entities_type_id">
+          <bundle>ca_entities.type_id</bundle>
+        </placement>
+        <placement code="ca_entities_related">
+          <bundle>ca_entities.related</bundle>
+        </placement>
+        <placement code="ca_object_lots">
+          <bundle>ca_object_lots</bundle>
+        </placement>
+        <placement code="ca_collections">
+          <bundle>ca_collections</bundle>
+        </placement>
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+        </placement>
+        <placement code="ca_object_representations">
+          <bundle>ca_object_representations</bundle>
+        </placement>
+        <placement code="ca_list_items">
+          <bundle>ca_list_items</bundle>
+        </placement>
+        <placement code="ca_loans">
+          <bundle>ca_loans</bundle>
+        </placement>
+        <placement code="ca_places">
+          <bundle>ca_places</bundle>
+        </placement>
+        <placement code="ca_entities_founding_date">
+          <bundle>ca_entities.founding_date</bundle>
+        </placement>
+        <placement code="ca_entities_lifespan">
+          <bundle>ca_entities.lifespan</bundle>
+        </placement>
+        <placement code="ca_entities_life_dates">
+          <bundle>ca_entities.life_dates</bundle>
+        </placement>
+        <placement code="ca_entities_birthplace">
+          <bundle>ca_entities.birthplace</bundle>
+        </placement>
+        <placement code="ca_entities_genderCreator">
+          <bundle>ca_entities.genderCreator</bundle>
+        </placement>
+        <placement code="ca_entities_biography">
+          <bundle>ca_entities.biography</bundle>
+        </placement>
+        <placement code="ca_entities_nationalityCreator">
+          <bundle>ca_entities.nationalityCreator</bundle>
+        </placement>
+        <placement code="ca_entities_occupation">
+          <bundle>ca_entities.occupation</bundle>
+        </placement>
+        <placement code="ca_entities_education">
+          <bundle>ca_entities.education</bundle>
+        </placement>
+        <placement code="ca_entities_published">
+          <bundle>ca_entities.published</bundle>
+        </placement>
+        <placement code="ca_entities_titles">
+          <bundle>ca_entities.titles</bundle>
+        </placement>
+        <placement code="ca_entities_locale_id">
+          <bundle>ca_entities.locale_id</bundle>
+        </placement>
+        <placement code="ca_entities_primary_contact">
+          <bundle>ca_entities.primary_contact</bundle>
+        </placement>
+        <placement code="ca_entities_address">
+          <bundle>ca_entities.address</bundle>
+        </placement>
+        <placement code="ca_entities_telephone">
+          <bundle>ca_entities.telephone</bundle>
+        </placement>
+        <placement code="ca_entities_telephone_cell">
+          <bundle>ca_entities.telephone_cell</bundle>
+        </placement>
+        <placement code="ca_entities_telephone_work">
+          <bundle>ca_entities.telephone_work</bundle>
+        </placement>
+        <placement code="ca_entities_fax_number">
+          <bundle>ca_entities.fax_number</bundle>
+        </placement>
+        <placement code="ca_entities_email">
+          <bundle>ca_entities.email</bundle>
+        </placement>
+        <placement code="ca_entities_website">
+          <bundle>ca_entities.website</bundle>
+        </placement>
+        <placement code="ca_entities_internal_notes">
+          <bundle>ca_entities.internal_notes</bundle>
+        </placement>
+        <placement code="ca_entities_created">
+          <bundle>ca_entities.created</bundle>
+        </placement>
+        <placement code="ca_entities_lastModified">
+          <bundle>ca_entities.lastModified</bundle>
+        </placement>
+        <placement code="ca_occurrences">
+          <bundle>ca_occurrences</bundle>
+        </placement>
+        <placement code="ca_storage_locations">
+          <bundle>ca_storage_locations</bundle>
+        </placement>
+        <placement code="ca_entities_lcsh_terms">
+          <bundle>ca_entities.lcsh_terms</bundle>
+        </placement>
+        <placement code="ca_entities__generic_bundle_">
+          <bundle>ca_entities._generic_bundle_</bundle>
+        </placement>
+        <placement code="ca_entities_access">
+          <bundle>ca_entities.access</bundle>
+        </placement>
+        <placement code="ca_entities_source_id">
+          <bundle>ca_entities.source_id</bundle>
+        </placement>
+        <placement code="ca_entities_status">
+          <bundle>ca_entities.status</bundle>
+        </placement>
+        <placement code="ca_entities_rank">
+          <bundle>ca_entities.rank</bundle>
+        </placement>
+        <placement code="ca_entities_idno">
+          <bundle>ca_entities.idno</bundle>
+        </placement>
+        <placement code="ca_entities_entity_id">
+          <bundle>ca_entities.entity_id</bundle>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="backup_objects" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Backup Objects</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="show_empty_values"><![CDATA[0]]></setting>
+        <setting name="bottom_line"><![CDATA[]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_thumbnail]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_full]]></setting>
+        <setting name="show_only_in"><![CDATA[search_browse_list]]></setting>
+        <setting name="show_only_in"><![CDATA[editor_summary]]></setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="ca_object_representations_media_small">
+          <bundle>ca_object_representations.media.small</bundle>
+        </placement>
+        <placement code="ca_objects_idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_description">
+          <bundle>ca_objects.description</bundle>
+        </placement>
+        <placement code="ca_objects_preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_objects_nonpreferred_labels">
+          <bundle>ca_objects.nonpreferred_labels</bundle>
+        </placement>
+        <placement code="ca_objects_title">
+          <bundle>ca_objects.title</bundle>
+        </placement>
+        <placement code="ca_object_lots">
+          <bundle>ca_object_lots</bundle>
+        </placement>
+        <placement code="ca_collections">
+          <bundle>ca_collections</bundle>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entities</bundle>
+        </placement>
+        <placement code="ca_objects_chenhall">
+          <bundle>ca_objects.chenhall</bundle>
+        </placement>
+        <placement code="ca_storage_locations">
+          <bundle>ca_storage_locations</bundle>
+        </placement>
+        <placement code="ca_places">
+          <bundle>ca_places</bundle>
+        </placement>
+        <placement code="ca_objects_created">
+          <bundle>ca_objects.created</bundle>
+        </placement>
+        <placement code="ca_objects_lastModified">
+          <bundle>ca_objects.lastModified</bundle>
+        </placement>
+        <placement code="ca_list_items">
+          <bundle>ca_list_items</bundle>
+        </placement>
+        <placement code="ca_loans">
+          <bundle>ca_loans</bundle>
+        </placement>
+        <placement code="ca_objects_lot_id">
+          <bundle>ca_objects.lot_id</bundle>
+        </placement>
+        <placement code="ca_objects_accession_date">
+          <bundle>ca_objects.accession_date</bundle>
+        </placement>
+        <placement code="ca_objects_accessory">
+          <bundle>ca_objects.accessory</bundle>
+        </placement>
+        <placement code="ca_objects_access">
+          <bundle>ca_objects.access</bundle>
+        </placement>
+        <placement code="ca_objects_item_status_id">
+          <bundle>ca_objects.item_status_id</bundle>
+        </placement>
+        <placement code="ca_objects_acquisition_date">
+          <bundle>ca_objects.acquisition_date</bundle>
+        </placement>
+        <placement code="ca_objects_acquisition_type_id">
+          <bundle>ca_objects.acquisition_type_id</bundle>
+        </placement>
+        <placement code="ca_objects_additional_format">
+          <bundle>ca_objects.additional_format</bundle>
+        </placement>
+        <placement code="ca_objects_alternate_object_name">
+          <bundle>ca_objects.alternate_object_name</bundle>
+        </placement>
+        <placement code="ca_objects_analyzed">
+          <bundle>ca_objects.analyzed</bundle>
+        </placement>
+        <placement code="ca_objects_appraisal_info">
+          <bundle>ca_objects.appraisal_info</bundle>
+        </placement>
+        <placement code="ca_objects_assemblage_zone">
+          <bundle>ca_objects.assemblage_zone</bundle>
+        </placement>
+        <placement code="ca_objects_attached_text">
+          <bundle>ca_objects.attached_text</bundle>
+        </placement>
+        <placement code="ca_objects_authorization_date">
+          <bundle>ca_objects.authorization_date</bundle>
+        </placement>
+        <placement code="ca_objects_bag_number">
+          <bundle>ca_objects.bag_number</bundle>
+        </placement>
+        <placement code="ca_objects_box_number">
+          <bundle>ca_objects.box_number</bundle>
+        </placement>
+        <placement code="ca_objects_call_number">
+          <bundle>ca_objects.call_number</bundle>
+        </placement>
+        <placement code="ca_objects_chemical_comp">
+          <bundle>ca_objects.chemical_comp</bundle>
+        </placement>
+        <placement code="ca_objects_chemistry">
+          <bundle>ca_objects.chemistry</bundle>
+        </placement>
+        <placement code="ca_objects_circulation_status_id">
+          <bundle>ca_objects.circulation_status_id</bundle>
+        </placement>
+        <placement code="ca_objects_claimant">
+          <bundle>ca_objects.claimant</bundle>
+        </placement>
+        <placement code="ca_objects_class">
+          <bundle>ca_objects.class</bundle>
+        </placement>
+        <placement code="ca_objects_rock_class">
+          <bundle>ca_objects.rock_class</bundle>
+        </placement>
+        <placement code="ca_objects_collection_method">
+          <bundle>ca_objects.collection_method</bundle>
+        </placement>
+        <placement code="ca_objects_color">
+          <bundle>ca_objects.color</bundle>
+        </placement>
+        <placement code="ca_objects_completeness">
+          <bundle>ca_objects.completeness</bundle>
+        </placement>
+        <placement code="ca_objects_condition_reporting">
+          <bundle>ca_objects.condition_reporting</bundle>
+        </placement>
+        <placement code="ca_objects_conservation">
+          <bundle>ca_objects.conservation</bundle>
+        </placement>
+        <placement code="ca_objects_copy_number">
+          <bundle>ca_objects.copy_number</bundle>
+        </placement>
+        <placement code="ca_objects_count">
+          <bundle>ca_objects.count</bundle>
+        </placement>
+        <placement code="ca_objects_credit_line">
+          <bundle>ca_objects.credit_line</bundle>
+        </placement>
+        <placement code="ca_objects_crystal_system">
+          <bundle>ca_objects.crystal_system</bundle>
+        </placement>
+        <placement code="ca_objects_cultural_affiliation">
+          <bundle>ca_objects.cultural_affiliation</bundle>
+        </placement>
+        <placement code="ca_objects_culture">
+          <bundle>ca_objects.culture</bundle>
+        </placement>
+        <placement code="ca_objects_ca_objects_location">
+          <bundle>ca_objects.ca_objects_location</bundle>
+        </placement>
+        <placement code="ca_objects_date_created">
+          <bundle>ca_objects.date_created</bundle>
+        </placement>
+        <placement code="ca_objects_date_excavated">
+          <bundle>ca_objects.date_excavated</bundle>
+        </placement>
+        <placement code="ca_objects_date_found">
+          <bundle>ca_objects.date_found</bundle>
+        </placement>
+        <placement code="ca_objects_date_inventoried">
+          <bundle>ca_objects.date_inventoried</bundle>
+        </placement>
+        <placement code="ca_objects_deaccession_date">
+          <bundle>ca_objects.deaccession_date</bundle>
+        </placement>
+        <placement code="ca_objects_deaccession_disposal_date">
+          <bundle>ca_objects.deaccession_disposal_date</bundle>
+        </placement>
+        <placement code="ca_objects_notice_date">
+          <bundle>ca_objects.notice_date</bundle>
+        </placement>
+        <placement code="ca_objects_date_repatriated">
+          <bundle>ca_objects.date_repatriated</bundle>
+        </placement>
+        <placement code="ca_objects_dating_method">
+          <bundle>ca_objects.dating_method</bundle>
+        </placement>
+        <placement code="ca_objects_datum">
+          <bundle>ca_objects.datum</bundle>
+        </placement>
+        <placement code="ca_objects_deaccession_notes">
+          <bundle>ca_objects.deaccession_notes</bundle>
+        </placement>
+        <placement code="ca_objects_deaccession_type_id">
+          <bundle>ca_objects.deaccession_type_id</bundle>
+        </placement>
+        <placement code="ca_objects_diaphaneity">
+          <bundle>ca_objects.diaphaneity</bundle>
+        </placement>
+        <placement code="ca_objects_dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+        </placement>
+        <placement code="ca_objects_duration">
+          <bundle>ca_objects.duration</bundle>
+        </placement>
+        <placement code="ca_objects_edition">
+          <bundle>ca_objects.edition</bundle>
+        </placement>
+        <placement code="ca_objects_elements">
+          <bundle>ca_objects.elements</bundle>
+        </placement>
+        <placement code="ca_objects_epoch">
+          <bundle>ca_objects.epoch</bundle>
+        </placement>
+        <placement code="ca_objects_era">
+          <bundle>ca_objects.era</bundle>
+        </placement>
+        <placement code="ca_objects_event">
+          <bundle>ca_objects.event</bundle>
+        </placement>
+        <placement code="ca_objects_exhibition_label">
+          <bundle>ca_objects.exhibition_label</bundle>
+        </placement>
+        <placement code="ca_objects_extent">
+          <bundle>ca_objects.extent</bundle>
+        </placement>
+        <placement code="ca_objects_extent_units">
+          <bundle>ca_objects.extent_units</bundle>
+        </placement>
+        <placement code="ca_objects_family">
+          <bundle>ca_objects.family</bundle>
+        </placement>
+        <placement code="ca_objects_format_notes">
+          <bundle>ca_objects.format_notes</bundle>
+        </placement>
+        <placement code="ca_objects_feature">
+          <bundle>ca_objects.feature</bundle>
+        </placement>
+        <placement code="ca_objects_federal_register_number">
+          <bundle>ca_objects.federal_register_number</bundle>
+        </placement>
+        <placement code="ca_objects_formation">
+          <bundle>ca_objects.formation</bundle>
+        </placement>
+        <placement code="ca_objects_fossils">
+          <bundle>ca_objects.fossils</bundle>
+        </placement>
+        <placement code="ca_objects_found">
+          <bundle>ca_objects.found</bundle>
+        </placement>
+        <placement code="ca_objects_fracture">
+          <bundle>ca_objects.fracture</bundle>
+        </placement>
+        <placement code="ca_objects__generic_bundle_">
+          <bundle>ca_objects._generic_bundle_</bundle>
+        </placement>
+        <placement code="ca_objects_genus">
+          <bundle>ca_objects.genus</bundle>
+        </placement>
+        <placement code="ca_objects_geo_notes">
+          <bundle>ca_objects.geo_notes</bundle>
+        </placement>
+        <placement code="ca_objects_geonames">
+          <bundle>ca_objects.geonames</bundle>
+        </placement>
+        <placement code="ca_objects_georeference">
+          <bundle>ca_objects.georeference</bundle>
+        </placement>
+        <placement code="ca_objects_aat">
+          <bundle>ca_objects.aat</bundle>
+        </placement>
+        <placement code="ca_objects_tgn">
+          <bundle>ca_objects.tgn</bundle>
+        </placement>
+        <placement code="ca_objects_ulan">
+          <bundle>ca_objects.ulan</bundle>
+        </placement>
+        <placement code="ca_objects_grain_size">
+          <bundle>ca_objects.grain_size</bundle>
+        </placement>
+        <placement code="ca_objects_habitat">
+          <bundle>ca_objects.habitat</bundle>
+        </placement>
+        <placement code="ca_objects_handling_requirements">
+          <bundle>ca_objects.handling_requirements</bundle>
+        </placement>
+        <placement code="ca_objects_hardness">
+          <bundle>ca_objects.hardness</bundle>
+        </placement>
+        <placement code="ca_objects_treated">
+          <bundle>ca_objects.treated</bundle>
+        </placement>
+        <placement code="ca_objects_import_source">
+          <bundle>ca_objects.import_source</bundle>
+        </placement>
+        <placement code="ca_objects_acl_inherit_from_ca_collections">
+          <bundle>ca_objects.acl_inherit_from_ca_collections</bundle>
+        </placement>
+        <placement code="ca_objects_access_inherit_from_parent">
+          <bundle>ca_objects.access_inherit_from_parent</bundle>
+        </placement>
+        <placement code="ca_objects_acl_inherit_from_parent">
+          <bundle>ca_objects.acl_inherit_from_parent</bundle>
+        </placement>
+        <placement code="ca_objects_inscription">
+          <bundle>ca_objects.inscription</bundle>
+        </placement>
+        <placement code="ca_objects_insvalue">
+          <bundle>ca_objects.insvalue</bundle>
+        </placement>
+        <placement code="ca_objects_is_deaccessioned">
+          <bundle>ca_objects.is_deaccessioned</bundle>
+        </placement>
+        <placement code="ca_objects_isbn">
+          <bundle>ca_objects.isbn</bundle>
+        </placement>
+        <placement code="ca_objects_kingdom">
+          <bundle>ca_objects.kingdom</bundle>
+        </placement>
+        <placement code="ca_objects_language">
+          <bundle>ca_objects.language</bundle>
+        </placement>
+        <placement code="ca_objects_level">
+          <bundle>ca_objects.level</bundle>
+        </placement>
+        <placement code="ca_object_checkouts">
+          <bundle>ca_object_checkouts</bundle>
+        </placement>
+        <placement code="ca_objects_lc_names">
+          <bundle>ca_objects.lc_names</bundle>
+        </placement>
+        <placement code="ca_objects_lc_number">
+          <bundle>ca_objects.lc_number</bundle>
+        </placement>
+        <placement code="ca_objects_lcsh_terms">
+          <bundle>ca_objects.lcsh_terms</bundle>
+        </placement>
+        <placement code="ca_objects_life_stage">
+          <bundle>ca_objects.life_stage</bundle>
+        </placement>
+        <placement code="ca_objects_lithology">
+          <bundle>ca_objects.lithology</bundle>
+        </placement>
+        <placement code="ca_objects_locale_id">
+          <bundle>ca_objects.locale_id</bundle>
+        </placement>
+        <placement code="ca_objects_coords">
+          <bundle>ca_objects.coords</bundle>
+        </placement>
+        <placement code="ca_objects_location_notes">
+          <bundle>ca_objects.location_notes</bundle>
+        </placement>
+        <placement code="ca_objects_luster">
+          <bundle>ca_objects.luster</bundle>
+        </placement>
+        <placement code="ca_objects_magnetism">
+          <bundle>ca_objects.magnetism</bundle>
+        </placement>
+        <placement code="ca_objects_marks_labels">
+          <bundle>ca_objects.marks_labels</bundle>
+        </placement>
+        <placement code="ca_objects_material">
+          <bundle>ca_objects.material</bundle>
+        </placement>
+        <placement code="ca_objects_medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="ca_objects_min_number">
+          <bundle>ca_objects.min_number</bundle>
+        </placement>
+        <placement code="ca_objects_min_max_val">
+          <bundle>ca_objects.min_max_val</bundle>
+        </placement>
+        <placement code="ca_objects_repat_region">
+          <bundle>ca_objects.repat_region</bundle>
+        </placement>
+        <placement code="ca_objects_internal_notes">
+          <bundle>ca_objects.internal_notes</bundle>
+        </placement>
+        <placement code="ca_objects_notice_number">
+          <bundle>ca_objects.notice_number</bundle>
+        </placement>
+        <placement code="ca_objects_number_pages">
+          <bundle>ca_objects.number_pages</bundle>
+        </placement>
+        <placement code="ca_objects_occurrence">
+          <bundle>ca_objects.occurrence</bundle>
+        </placement>
+        <placement code="ca_objects_odor">
+          <bundle>ca_objects.odor</bundle>
+        </placement>
+        <placement code="ca_objects_order">
+          <bundle>ca_objects.order</bundle>
+        </placement>
+        <placement code="ca_objects_organic_matter">
+          <bundle>ca_objects.organic_matter</bundle>
+        </placement>
+        <placement code="ca_objects_rock_origin">
+          <bundle>ca_objects.rock_origin</bundle>
+        </placement>
+        <placement code="ca_objects_origcopy">
+          <bundle>ca_objects.origcopy</bundle>
+        </placement>
+        <placement code="ca_objects_other_identifiers">
+          <bundle>ca_objects.other_identifiers</bundle>
+        </placement>
+        <placement code="ca_objects_part">
+          <bundle>ca_objects.part</bundle>
+        </placement>
+        <placement code="ca_objects_period">
+          <bundle>ca_objects.period</bundle>
+        </placement>
+        <placement code="ca_objects_phylum">
+          <bundle>ca_objects.phylum</bundle>
+        </placement>
+        <placement code="ca_objects_physdesc">
+          <bundle>ca_objects.physdesc</bundle>
+        </placement>
+        <placement code="ca_objects_pubplace">
+          <bundle>ca_objects.pubplace</bundle>
+        </placement>
+        <placement code="ca_objects_preservation">
+          <bundle>ca_objects.preservation</bundle>
+        </placement>
+        <placement code="ca_objects_pressure">
+          <bundle>ca_objects.pressure</bundle>
+        </placement>
+        <placement code="ca_objects_primary_format">
+          <bundle>ca_objects.primary_format</bundle>
+        </placement>
+        <placement code="ca_objects_provenance">
+          <bundle>ca_objects.provenance</bundle>
+        </placement>
+        <placement code="ca_objects_publication_notes">
+          <bundle>ca_objects.publication_notes</bundle>
+        </placement>
+        <placement code="ca_objects_ready">
+          <bundle>ca_objects.ready</bundle>
+        </placement>
+        <placement code="ca_objects_reburial_date">
+          <bundle>ca_objects.reburial_date</bundle>
+        </placement>
+        <placement code="ca_objects_reburial_location">
+          <bundle>ca_objects.reburial_location</bundle>
+        </placement>
+        <placement code="ca_objects_recommend_deaccession">
+          <bundle>ca_objects.recommend_deaccession</bundle>
+        </placement>
+        <placement code="ca_objects_reference_bibliography">
+          <bundle>ca_objects.reference_bibliography</bundle>
+        </placement>
+        <placement code="ca_objects_related">
+          <bundle>ca_objects.related</bundle>
+        </placement>
+        <placement code="ca_objects_repat_notes">
+          <bundle>ca_objects.repat_notes</bundle>
+        </placement>
+        <placement code="ca_objects_repat_type">
+          <bundle>ca_objects.repat_type</bundle>
+        </placement>
+        <placement code="ca_object_representations_md5">
+          <bundle>ca_object_representations.md5</bundle>
+        </placement>
+        <placement code="ca_object_representations_original_filename">
+          <bundle>ca_object_representations.original_filename</bundle>
+        </placement>
+        <placement code="ca_object_representations_mimetype">
+          <bundle>ca_object_representations.mimetype</bundle>
+        </placement>
+        <placement code="ca_object_representations">
+          <bundle>ca_object_representations</bundle>
+        </placement>
+        <placement code="ca_objects_restrictions">
+          <bundle>ca_objects.restrictions</bundle>
+        </placement>
+        <placement code="ca_objects_rights">
+          <bundle>ca_objects.rights</bundle>
+        </placement>
+        <placement code="ca_objects_school">
+          <bundle>ca_objects.school</bundle>
+        </placement>
+        <placement code="ca_objects_series">
+          <bundle>ca_objects.series</bundle>
+        </placement>
+        <placement code="ca_objects_specimen_sex">
+          <bundle>ca_objects.specimen_sex</bundle>
+        </placement>
+        <placement code="ca_objects_side">
+          <bundle>ca_objects.side</bundle>
+        </placement>
+        <placement code="ca_objects_signature">
+          <bundle>ca_objects.signature</bundle>
+        </placement>
+        <placement code="ca_objects_site">
+          <bundle>ca_objects.site</bundle>
+        </placement>
+        <placement code="ca_objects_rank">
+          <bundle>ca_objects.rank</bundle>
+        </placement>
+        <placement code="ca_objects_source_id">
+          <bundle>ca_objects.source_id</bundle>
+        </placement>
+        <placement code="ca_objects_species">
+          <bundle>ca_objects.species</bundle>
+        </placement>
+        <placement code="ca_objects_gravity">
+          <bundle>ca_objects.gravity</bundle>
+        </placement>
+        <placement code="ca_objects_spinelbl">
+          <bundle>ca_objects.spinelbl</bundle>
+        </placement>
+        <placement code="ca_objects_stage">
+          <bundle>ca_objects.stage</bundle>
+        </placement>
+        <placement code="ca_objects_status">
+          <bundle>ca_objects.status</bundle>
+        </placement>
+        <placement code="ca_objects_stratum">
+          <bundle>ca_objects.stratum</bundle>
+        </placement>
+        <placement code="ca_objects_streak">
+          <bundle>ca_objects.streak</bundle>
+        </placement>
+        <placement code="ca_objects_structure">
+          <bundle>ca_objects.structure</bundle>
+        </placement>
+        <placement code="ca_objects_style">
+          <bundle>ca_objects.style</bundle>
+        </placement>
+        <placement code="ca_objects_sub_family">
+          <bundle>ca_objects.sub_family</bundle>
+        </placement>
+        <placement code="ca_objects_surface_process">
+          <bundle>ca_objects.surface_process</bundle>
+        </placement>
+        <placement code="ca_objects_technique">
+          <bundle>ca_objects.technique</bundle>
+        </placement>
+        <placement code="ca_objects_temperature">
+          <bundle>ca_objects.temperature</bundle>
+        </placement>
+        <placement code="ca_objects_tenacity">
+          <bundle>ca_objects.tenacity</bundle>
+        </placement>
+        <placement code="ca_objects_rock_texture">
+          <bundle>ca_objects.rock_texture</bundle>
+        </placement>
+        <placement code="ca_objects_titlex">
+          <bundle>ca_objects.titlex</bundle>
+        </placement>
+        <placement code="ca_objects_priority">
+          <bundle>ca_objects.priority</bundle>
+        </placement>
+        <placement code="ca_objects_tribal_letter_sent">
+          <bundle>ca_objects.tribal_letter_sent</bundle>
+        </placement>
+        <placement code="ca_objects_type_id">
+          <bundle>ca_objects.type_id</bundle>
+        </placement>
+        <placement code="ca_objects_rock_type">
+          <bundle>ca_objects.rock_type</bundle>
+        </placement>
+        <placement code="ca_objects_unit">
+          <bundle>ca_objects.unit</bundle>
+        </placement>
+        <placement code="ca_objects_used">
+          <bundle>ca_objects.used</bundle>
+        </placement>
+        <placement code="ca_objects_valuation">
+          <bundle>ca_objects.valuation</bundle>
+        </placement>
+        <placement code="ca_objects_valuation_notes">
+          <bundle>ca_objects.valuation_notes</bundle>
+        </placement>
+        <placement code="ca_objects_varieties">
+          <bundle>ca_objects.varieties</bundle>
+        </placement>
+        <placement code="ca_occurrences">
+          <bundle>ca_occurrences</bundle>
+        </placement>
+        <placement code="ca_objects_object_id">
+          <bundle>ca_objects.object_id</bundle>
+        </placement>
+        <placement code="ca_objects_associated_fo">
+          <bundle>ca_objects.associated_fo</bundle>
+        </placement>
+      </bundlePlacements>
     </display>
 
   </displays>
@@ -22696,8 +24117,8 @@ If the required place is not in the pre-set entries, add them under NEW - PLACE
     </searchForm>
   </searchForms>
   <logins>
-    <login user_name="administrator" password="minn2019" fname="CollectiveAccess" lname="Administrator"
-      email="info@collectiveaccess.org">
+    <login user_name="administrator" password="minn2019" fname="CollectiveAccess"
+      lname="Administrator" email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
     </login>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2018 Whirl-i-Gig
+ * Copyright 2000-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -261,7 +261,7 @@ class Configuration {
 
 		$vs_key = $vs_scalar_value = $vs_assoc_key = "";
 		$vn_in_quote = $vn_state = 0;
-		$vb_escape_set = false;
+		$vb_escape_set = $vb_quoted_item_is_closed = false;
 		$va_assoc_pointer_stack = array();
 
 		$va_token_history = array();
@@ -396,6 +396,7 @@ class Configuration {
 					# ------------------------------------
 					# handle list values
 					case 30:
+					    if($vb_quoted_item_is_closed && (!in_array(trim($vs_token), [',', ']', ')']))) { break; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
@@ -406,6 +407,7 @@ class Configuration {
 										$vn_in_quote = 1;
 									} else {
 										$vn_in_quote = 0;
+										$vb_quoted_item_is_closed = true;
 									}
 								}
 								$vb_escape_set = false;
@@ -419,8 +421,9 @@ class Configuration {
 										$this->ops_config_settings["lists"][$vs_key][] = $vs_item;
 									}
 									$vs_scalar_value = "";
+									$vb_quoted_item_is_closed = false;
 								}
-								$vb_escape_set = false;
+								$vb_escape_set  = false;
 								break;
 							# -------------------
 							case ']':
@@ -433,6 +436,7 @@ class Configuration {
 									}
 									# initialize
 									$vn_state = -1;
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;
@@ -462,6 +466,7 @@ class Configuration {
 					# handle associative array values
 					# get associative key
 					case 40:
+					    if($vb_quoted_item_is_closed && (!in_array(trim($vs_token), [',', '=', '}', ')']))) { break; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
@@ -471,6 +476,7 @@ class Configuration {
 									if (!$vn_in_quote) {
 										$vn_in_quote = 1;
 									} else {
+									    $vb_quoted_item_is_closed = true;
 										$vn_in_quote = 0;
 									}
 								}
@@ -488,8 +494,9 @@ class Configuration {
 										if ($pb_die_on_error) { $this->_dieOnError(); }
 										return false;
 									}
-
+                                    
 									$vn_state = 50;
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;
@@ -504,13 +511,14 @@ class Configuration {
 									$vs_assoc_key = "";
 									$vs_scalar_value = "";
 									$vn_state = 40;
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;
 							# -------------------
 							case '}':
 								if ($vn_in_quote || $vb_escape_set) {
-									$vs_scalar_value .= "}";
+									$vs_assoc_key .= "}";
 								} else {
 									if (sizeof($va_assoc_pointer_stack) > 1) {
 										if ($vs_assoc_key) {
@@ -527,6 +535,7 @@ class Configuration {
 									}
 									$vs_key = $vs_assoc_key = $vs_scalar_value = "";
 									$vn_in_quote = 0;
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;
@@ -538,6 +547,7 @@ class Configuration {
 									$vb_escape_set = true;
 								}
 								break;
+							# -------------------
 							default:
 								if (preg_match("/^#/", trim($vs_token))) {
 									// comment
@@ -553,6 +563,7 @@ class Configuration {
 					# ------------------------------------
 					# handle associative value
 					case 50:
+					    if($vb_quoted_item_is_closed && (!in_array(trim($vs_token), [',', '{', '}', ',', ')']))) { break; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
@@ -560,8 +571,10 @@ class Configuration {
 									$vs_scalar_value .= '"';
 								} else {
 									if (!$vn_in_quote) {
+									    if (preg_match("!^[ \t\n\r]+$!", $vs_scalar_value)) { $vs_scalar_value = ''; }
 										$vn_in_quote = 1;
 									} else {
+									    $vb_quoted_item_is_closed = true;
 										$vn_in_quote = 0;
 									}
 								}
@@ -578,6 +591,7 @@ class Configuration {
 									$vs_assoc_key = "";
 									$vs_scalar_value = "";
 									$vn_state = 40;
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;
@@ -594,6 +608,7 @@ class Configuration {
 									$vn_state = 40;
 									$vs_key = $vs_assoc_key = $vs_scalar_value = "";
 									$vn_in_quote = 0;
+									$vb_quoted_item_is_closed = false;
 								} else {
 									$vs_scalar_value .= $vs_token;
 								}
@@ -619,6 +634,7 @@ class Configuration {
 									}
 									$vs_key = $vs_assoc_key = $vs_scalar_value = "";
 									$vn_in_quote = 0;
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;
@@ -635,6 +651,7 @@ class Configuration {
 									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[$i][$vs_assoc_key];
 									$vn_state = 60;
 									$vn_in_quote = 0;
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;
@@ -657,6 +674,7 @@ class Configuration {
 					# ------------------------------------
 					# handle list values nested in assoc
 					case 60:
+					    if($vb_quoted_item_is_closed && (!in_array(trim($vs_token), [',', ']', ')']))) { break; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
@@ -667,6 +685,7 @@ class Configuration {
 										$vn_in_quote = 1;
 									} else {
 										$vn_in_quote = 0;
+										$vb_quoted_item_is_closed = true;
 									}
 								}
 								$vb_escape_set = false;
@@ -680,6 +699,7 @@ class Configuration {
 										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = $vs_item;
 									}
 									$vs_scalar_value = "";
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;
@@ -696,6 +716,7 @@ class Configuration {
 									# initialize
 									$vn_state = 40;
 									$vs_assoc_key = '';
+									$vb_quoted_item_is_closed = false;
 								}
 								$vb_escape_set = false;
 								break;

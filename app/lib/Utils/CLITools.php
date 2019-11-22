@@ -425,8 +425,6 @@
 		 *
 		 */
 		public static function convert_xml_to_delimited($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Import/DataReaders/ExifDataReader.php");
-			
 			$file_path = (string)$po_opts->getOption('file');
 			if (!$file_path) { 
 				CLITools::addError(_t("You must specify a file", $file_path));
@@ -454,9 +452,15 @@
 				$input_format = strtolower((string)$po_opts->getOption('format'));
 			
 				switch($input_format) {
+					case 'fmpxml':
+					case 'fmpxmlresult':
+						require_once(__CA_LIB_DIR__."/Import/DataReaders/FMPXMLResultReader.php");
+						$reader = new FMPXMLResultReader();
+						break;
 					case 'pastperfect':
 					case 'pp':
-						$xpath = "//export";
+						require_once(__CA_LIB_DIR__."/Import/DataReaders/PastPerfectXMLReader.php");
+						$reader = new PastPerfectXMLReader();
 						break;
 					default:
 						if ($input_format) {
@@ -475,9 +479,7 @@
 				$output_format = 'csv'; 
 			}
 			
-			$xml = simplexml_load_file($file_path);
-			
-			$q = $xml->xpath($xpath);
+			$reader->read($file_path);
 			
 			$headers = [];
 			$c = 0;
@@ -488,21 +490,23 @@
 				CLITools::addError(_t("Could not open output file %1", $output_path));
 				return;
 			}
-			foreach($q as $e) {
-				$line = [];
-				foreach($e->children() as $t) {
-					if ($c == 0) {
-						$headers[] = $t->getName();
-					}
-					$line[] = (string)$t;
+			
+			while($reader->nextRow()) {
+				$row = $reader->getRow();
+				if ($c == 0) {
+					$headers = array_keys($row);
 				}
+				$line = array_values($row);
+				
 				if ($c == 0) {
 					fwrite($fp, join($delimiter, array_map(function($v) {
-						return '"'.str_replace('"', '""', $v).'"';
+						if (is_array($v)) { $v = join("|", $v); }
+						return '"'.str_replace('"', '""', trim($v)).'"';
 					}, $headers))."\n");
 				}
 				fwrite($fp, join($delimiter, array_map(function($v) {
-					return '"'.str_replace('"', '""', $v).'"';
+					if (is_array($v)) { $v = join("|", $v); }
+					return '"'.str_replace('"', '""', trim($v)).'"';
 				}, $line))."\n");
 				
 				$c++;
@@ -519,7 +523,7 @@
 			return array(
 				"file|f-s" => _t('XML file to convert.'),
 				"out|o-s" => _t('File to write delimited output to.'),
-				"format|i=s" => _t('XML format of input file. Only valid option is "PastPerfect" (PastPerfect XML export files).'),
+				"format|i=s" => _t('XML format of input file. Valid options are "PastPerfect" (PastPerfect XML export files), "FMPXML" (FileMaker Pro XML Result format).'),
 				"xpath|x=s" => _t('XPath expression to select XML tags for conversion. If set, input format option is igored.'),
 				"outputFormat|t=s" => _t('Format of output (CSV or tab-delimited). Default is CSV.'),
 			);
@@ -553,8 +557,6 @@
 		 *
 		 */
 		public static function filter_invalid_xml_characters($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Import/DataReaders/ExifDataReader.php");
-			
 			$file_path = (string)$po_opts->getOption('file');
 			if (!$file_path) { 
 				CLITools::addError(_t("You must specify a file", $file_path));
