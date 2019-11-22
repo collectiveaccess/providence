@@ -12642,7 +12642,7 @@
     <metadataElement code="placeofdeath" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Birthplace</name>
+          <name>Place of Death</name>
           <description>Enter the place of death of the entity.</description>
         </label>
       </labels>
