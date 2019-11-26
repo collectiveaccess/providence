@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,6 +60,8 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 		
 		$options = new Options();
 		$options->set('isRemoteEnabled', TRUE);
+		$options->set('logOutputFile', __CA_APP_DIR__.'/tmp/log.htm');
+    	$optionw->set('tempDir', __CA_APP_DIR__.'/tmp');
 		$this->renderer = new DOMPDF($options);
 	}
 	# ------------------------------------------------
@@ -131,17 +133,14 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
 		
-		if (!($vb_phantom_js = caPhantomJSInstalled()) && !($vb_wkhtmltopdf = caWkhtmltopdfInstalled())) {
+		if (!($vb_wkhtmltopdf = caWkhtmltopdfInstalled())) {
 			$va_status['available'] = true;
 		} else {
 			$va_status['available'] = false;
 			if ($vb_wkhtmltopdf) {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because wkhtmltopdf is available and preferred");
-			} elseif($vb_phantom_js) {
-				$va_status['unused'] = true;
-				$va_status['warnings'][] = _t("Didn't load because PhantomJS is available and preferred");
-			}
+			} 
 		}
 		
 		return $va_status;
