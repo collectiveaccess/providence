@@ -377,7 +377,10 @@
  			
  			$va_ancestors = array();
  			if ($t_item->getPrimaryKey()) {
- 				$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
+ 			    if(!is_array($va_ancestors = $t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)))) {
+ 			        $va_ancestors = [];
+ 			    }
+ 				$va_ancestors = array_reverse($va_ancestors);
 				if($this->request->getAppConfig()->get($t_item->tableName().'_hierarchy_browser_hide_root')) {
 					if(($k = array_search($t_item->getHierarchyRootID(), $va_ancestors)) !== false) {
 						unset($va_ancestors[$k]);

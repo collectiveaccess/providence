@@ -1428,7 +1428,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		
 		// Analyze mapping for figure out where type, idno, preferred label and other mandatory fields are coming from
-		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = null;
+		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = $vn_list_mapping_list_id = null;
 		$va_preferred_label_mapping_ids = $va_nonpreferred_label_mapping_ids = array();
 		$va_mandatory_field_mapping_ids = array();
 		
@@ -1468,6 +1468,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				case "{$vs_subject_table}.{$vs_idno_fld}":
 					$vn_idno_mapping_item_id = $vn_item_id;
 					break;
+				case 'ca_list_items.list_id':
+				    $vn_list_mapping_list_id = $vn_item_id;
+				    break;
 			}
 			
 			foreach($va_mandatory_fields as $vs_mandatory_field) {
@@ -1715,6 +1718,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vb_was_preferred_label_match = false;
 				
 				$va_base_criteria = ($vs_type) ? ['type_id' => $vs_type] : [];
+				if($vn_list_mapping_list_id !== null ) {
+				    $va_base_criteria['list_id'] = $vn_list_mapping_list_id;
+				}  
 				
 				if (is_array($pa_force_import_for_primary_keys) && sizeof($pa_force_import_for_primary_keys) > 0) {
 					$vn_id = array_shift($pa_force_import_for_primary_keys);

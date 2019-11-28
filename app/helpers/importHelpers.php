@@ -671,7 +671,7 @@
 		
 		$pn_value_index = caGetOption('valueIndex', $pa_options, 0);
 		
-		// We can probably always use the item destination Ğ using group destination is a vestige of older code and no longer is used
+		// We can probably always use the item destination â€“ using group destination is a vestige of older code and no longer is used
 		// but we're leaving it in for now as a fallback it item dest is not set for some reason
 		$va_group_dest = (isset($pa_item['destination']) && $pa_item['destination']) ? explode(".", $pa_item['destination']) : explode(".", $pa_group['destination']);
 		
@@ -819,7 +819,7 @@
 								}
 							}
 							
-							$va_item_hier = preg_split("!(".join("|", $va_hier_delimiter).")!", $vs_item);
+							$va_item_hier = array_map(function($v) { return trim($v); }, preg_split("!(".join("|", $va_hier_delimiter).")!", $vs_item));
 							
 							if (sizeof($va_item_hier) > 1) {
 					
@@ -846,10 +846,12 @@
 									
 									switch($ps_refinery_name) {
 										case 'storageLocationSplitter':
-											$vn_hier_item_id = DataMigrationUtils::getStorageLocationID($vs_parent, $vn_hier_item_id, $vs_type, $g_ui_locale_id, ['idno' => $vs_parent, 'parent_id' => $vn_hier_item_id], $pa_options);
+											$vn_hier_item_id = DataMigrationUtils::getStorageLocationID($vs_parent, $vn_hier_item_id, $vs_type, $g_ui_locale_id, ['idno' => $vs_parent], array_merge($pa_options, ['ignoreType' => true, 'ignoreParent' => is_null($vn_hier_item_id)]));
 											break;
 										case 'listItemSplitter':
-											$vn_hier_item_id = DataMigrationUtils::getListItemID($pa_items['settings']['listItemSplitter_list'], $vs_parent, $vs_type, $g_ui_locale_id, ['idno' => $vs_parent, 'parent_id' => $vn_hier_item_id], $pa_options);
+										    $vals = ['idno' => $vs_parent];
+										    if(!is_null($vn_hier_item_id)) { $vals['parent_id'] = $vn_hier_item_id; }
+											$vn_hier_item_id = DataMigrationUtils::getListItemID($pa_items['settings']['listItemSplitter_list'], $vs_parent, $vs_type, $g_ui_locale_id, $vals, array_merge($pa_options, ['ignoreType' => true, 'ignoreParent' => is_null($vn_hier_item_id)]));
 											break;
 									}
 								}
