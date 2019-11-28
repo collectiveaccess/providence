@@ -298,7 +298,6 @@ switch($display_mode) {
 		<div id="<?php print $vs_id_prefix; ?>Location_{n}" class="labelInfo caRelatedLocation <?php print $vs_id_prefix; ?>caRelatedLocation">
 			<h2 class="caHistoryTrackingSetLocationHeading"><?php print _t('Update location'); ?></h2>
 <?php
-if ($show_location_controls) {
 	if (!(bool)$settings['useHierarchicalBrowser']) {
 ?>
 			<table class="caListItem">

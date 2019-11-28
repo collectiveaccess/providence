@@ -570,7 +570,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				
 				
  				if($va_properties['showMediaElementBundles']) {
- 				    $va_restrictions = $this->getTypeRestrictions();
+ 				    if (!is_array($va_restrictions = $this->getTypeRestrictions())) { $va_restrictions = []; }
  				    
                     $va_select_opts = ['-' => ''];
  				    foreach($va_restrictions as $va_restriction) {
