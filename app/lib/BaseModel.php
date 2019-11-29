@@ -10459,29 +10459,37 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @param $pn_comment_id [integer] a valid comment_id to be removed; must be related to the currently loaded row (mandatory)
 	 * @param $pn_user_id [integer] a valid ca_users.user_id value; if specified then only comments by the specified user will be deleted (optional - default is null)
+	 * @param $options Options include:
+	 *         force = Remove comment even if it's not parent of the current or created by the current user. [Default is false]
+	 *
+	 * @return bool
 	 */
-	public function removeComment($pn_comment_id, $pn_user_id=null) {
-		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
+	public function removeComment($pn_comment_id, $pn_user_id=null, $options=null) {
+	    $force = caGetOption('force', $options, false);
+		if (!($vn_row_id = $this->getPrimaryKey()) && !$force) { return null; }
 		
 		$t_comment = new ca_item_comments($pn_comment_id);
 		if (!$t_comment->getPrimaryKey()) {
 			$this->postError(2800, _t('Comment id is invalid'), 'BaseModel->removeComment()', 'ca_item_comments');
 			return false;
 		}
-		if (
-			($t_comment->get('table_num') != $this->tableNum()) ||
-			($t_comment->get('row_id') != $vn_row_id)
-		) {
-			$this->postError(2810, _t('Comment is not part of the current row'), 'BaseModel->removeComment()', 'ca_item_comments');
-			return false;
-		}
 		
-		if ($pn_user_id) {
-			if ($t_comment->get('user_id') != $pn_user_id) {
-				$this->postError(2820, _t('Comment was not created by specified user'), 'BaseModel->removeComment()', 'ca_item_comments');
-				return false;
-			}
-		}
+		if (!$force) {
+            if (
+                ($t_comment->get('table_num') != $this->tableNum()) ||
+                ($t_comment->get('row_id') != $vn_row_id)
+            ) {
+                $this->postError(2810, _t('Comment is not part of the current row'), 'BaseModel->removeComment()', 'ca_item_comments');
+                return false;
+            }
+        
+            if ($pn_user_id) {
+                if ($t_comment->get('user_id') != $pn_user_id) {
+                    $this->postError(2820, _t('Comment was not created by specified user'), 'BaseModel->removeComment()', 'ca_item_comments');
+                    return false;
+                }
+            }
+        }
 		
 		$t_comment->delete();
 		
@@ -10533,41 +10541,68 @@ $pa_options["display_form_field_tips"] = true;
      *			count					= the number of matches
      *
      *			The default is array
+     *      request = the current request (optional)
      *
      * @return array
      */
 	public function getComments($pn_user_id=null, $pb_moderation_status=null, $pa_options=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 
+        $o_request = caGetOption('request', $pa_options, null);
         $o_trans = caGetOption('transaction', $pa_options, null);
         $vs_return_as = caGetOption('returnAs', $pa_options, 'array');
 
 		$o_db = $o_trans ? $o_trans->getDb() : $this->getDb();
 		
-		$vs_user_sql = ($pn_user_id) ? ' AND (user_id = '.intval($pn_user_id).')' : '';
+		$vs_user_sql = ($pn_user_id) ? ' AND (c.user_id = '.intval($pn_user_id).')' : '';
 		
 		$vs_moderation_sql = '';
 		if (!is_null($pb_moderation_status)) {
-			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
+			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (c.moderated_on IS NOT NULL)' : ' AND (c.moderated_on IS NULL)';
 		}
 		
 		$qr_comments = $o_db->query("
-			SELECT *
-			FROM ca_item_comments
+			SELECT 
+			    c.comment_id, c.row_id set_item_id, c.user_id, c.locale_id, c.comment, c.media1, c.media2, c.media3, c.media4, 
+			    c.rating, c.email, c.name, c.created_on, c.access, c.ip_addr, c.moderated_on, c.moderated_by_user_id, c.location,
+			    u.fname, u.lname, u.email user_email
+			FROM ca_item_comments c
+			LEFT JOIN ca_users AS u ON c.user_id = u.user_id
 			WHERE
-				(table_num = ?) AND (row_id = ?) {$vs_user_sql} {$vs_moderation_sql}
+				(c.table_num = ?) AND (c.row_id = ?) 
+				
+				{$vs_user_sql} {$vs_moderation_sql}
 		", array($this->tableNum(), $vn_row_id));
-
+		
+		$pk = $this->primaryKey();
+		$qr_set_comments = $o_db->query("
+			SELECT 
+			    c.comment_id, c.row_id set_item_id, c.user_id, c.locale_id, c.comment, c.media1, c.media2, c.media3, c.media4, 
+			    c.rating, c.email, c.name, c.created_on, c.access, c.ip_addr, c.moderated_on, c.moderated_by_user_id, c.location,
+			    csi.row_id, csi.table_num, csi.set_id, csi.rank,
+			    cs.set_code, csl.name set_name,
+			    u.fname, u.lname, u.email user_email
+			FROM ca_item_comments c
+			INNER JOIN ca_set_items AS csi ON csi.item_id = c.row_id AND csi.table_num = ?
+			INNER JOIN ca_sets AS cs ON cs.set_id = csi.set_id
+			INNER JOIN ca_set_labels AS csl ON csl.set_id = cs.set_id 
+			LEFT JOIN ca_users AS u ON c.user_id = u.user_id
+			WHERE
+				(c.table_num = 105) AND (csi.row_id = ?)
+				
+				{$vs_user_sql} {$vs_moderation_sql}
+		", array($this->tableNum(), $vn_row_id));
+		
         switch($vs_return_as) {
             case 'count':
-                return $qr_comments->numRows();
+                return $qr_comments->numRows() + $qr_set_comments->numRows();
                 break;
             case 'ids':
             case 'firstId':
             case 'searchResult':
             case 'modelInstances':
             case 'firstModelInstance':
-                $va_ids = $qr_comments->getAllFieldValues('comment_id');
+                $va_ids = ($qr_comments->getAllFieldValues('comment_id') + $qr_set_comments->getAllFieldValues('comment_id'));
                 if ($vs_return_as === 'ids') { return $va_ids; }
                 if ($vs_return_as === 'firstId') { return array_shift($va_ids); }
                 if (($vs_return_as === 'modelInstances') || ($vs_return_as === 'firstModelInstance')) {
@@ -10585,7 +10620,8 @@ $pa_options["display_form_field_tips"] = true;
             default:
                 $va_comments = array();
                 while ($qr_comments->nextRow()) {
-                    $va_comments[$qr_comments->get("comment_id")] = $qr_comments->getRow();
+                    $comment_id = $qr_comments->get("comment_id");
+                    $va_comments[$comment_id] = $qr_comments->getRow();
                     foreach (array("media1", "media2", "media3", "media4") as $vs_media_field) {
                         $va_media_versions = array();
                         $va_media_versions = $qr_comments->getMediaVersions($vs_media_field);
@@ -10598,12 +10634,54 @@ $pa_options["display_form_field_tips"] = true;
                                 $va_image_info["URL"] = $qr_comments->getMediaUrl($vs_media_field, $vs_version);
                                 $va_media[$vs_version] = $va_image_info;
                             }
-                            $va_comments[$qr_comments->get("comment_id")][$vs_media_field] = $va_media;
+                            $va_comments[][$vs_media_field] = $va_media;
+                        }
+                        $va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
+                        
+                        if ($va_comments[$comment_id]['user_id']) {
+                            $va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
+                            $va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
+                        }
+                    }
+                }
+                 while ($qr_set_comments->nextRow()) {
+                    $comment_id = $qr_set_comments->get("comment_id");
+                    $va_comments[$comment_id] = $qr_set_comments->getRow();
+                    foreach (array("media1", "media2", "media3", "media4") as $vs_media_field) {
+                        $va_media_versions = array();
+                        $va_media_versions = $qr_set_comments->getMediaVersions($vs_media_field);
+                        $va_media = array();
+                        if (is_array($va_media_versions) && (sizeof($va_media_versions) > 0)) {
+                            foreach ($va_media_versions as $vs_version) {
+                                $va_image_info = array();
+                                $va_image_info = $qr_set_comments->getMediaInfo($vs_media_field, $vs_version);
+                                $va_image_info["TAG"] = $qr_set_comments->getMediaTag($vs_media_field, $vs_version);
+                                $va_image_info["URL"] = $qr_set_comments->getMediaUrl($vs_media_field, $vs_version);
+                                $va_media[$vs_version] = $va_image_info;
+                            }
+                            $va_comments[$comment_id][$vs_media_field] = $va_media;
+                        }
+                        $va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
+                        
+                        if ($va_comments[$comment_id]['user_id']) {
+                            $va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
+                            $va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
+                        }
+                        
+                        if ($o_request) {
+                            $va_comments[$comment_id]['set_message'] = _t("Comment made in set %1", caEditorLink($o_request, $qr_set_comments->get('set_name'), '', 'ca_sets', $va_comments[$comment_id]['set_id']));
                         }
                     }
                 }
                 break;
         }
+        
+        $va_comments = array_map(function($v) { $v['moderation_message'] = $v['access'] ? '' : _t('Needs moderation'); return $v; }, $va_comments);
+        ksort($va_comments);
+        
+		if (caGetOption('sortDirection', $pa_options, 'ASC', ['validValues' => ['ASC', 'DESC'], 'forceToUppercase' => true]) === 'DESC') {
+		    $va_comments = array_reverse($va_comments);
+		}
 		return $va_comments;
 	}
 	# --------------------------------------------------------------------------------------------

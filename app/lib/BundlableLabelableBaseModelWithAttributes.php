@@ -1911,6 +1911,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getItemTagHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						break;
 					# -------------------------------
+					//
+					case 'ca_item_comments':
+						$vs_element .= $this->getItemCommentHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						break;
+					# -------------------------------
 					default:
 						$vs_element = "'{$ps_bundle_name}' is not a valid bundle name";
 						break;
@@ -5087,6 +5092,31 @@ if (!$vb_batch) {
 						
 						break;
 					# -------------------------------
+					//
+					case 'ca_item_comments':
+						if ($vb_batch) { 
+							$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
+							
+							if($vs_batch_mode == '_disabled_') { break; }
+							
+							if (in_array($vs_batch_mode, ['_replace_', '_delete_'])) {
+								$this->removeAllComments();
+							}
+						}
+						
+						if (!$vb_batch || ($vb_batch && in_array($vs_batch_mode, ['_add_', '_replace_']))) {
+							foreach($_REQUEST as $vs_key => $vs_val) {
+								if (is_array($vs_val)) { continue; }
+								if (!($vs_val = trim($vs_val))) { continue; }
+								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
+									$this->removeComment($va_matches[1], null, ['force' => true]);
+								}
+							}
+						}
+						
+						
+						break;
+					# -------------------------------
 				}
 			}
 		}
@@ -7762,7 +7792,7 @@ side. For many self-relations the direction determines the nature and display te
 	# Bundles
 	# ------------------------------------------------------
 	/**
-	 * Renders and returns HTML form bundle for management of tags in the currently record
+	 * Renders and returns HTML form bundle for management of tags in the currently loaded record
 	 * 
 	 * @param object $po_request The current request object
 	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
@@ -7790,6 +7820,37 @@ side. For many self-relations the direction determines the nature and display te
 		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
 		
 		return $o_view->render('ca_item_tags.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of user comments in the currently loaded record
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getItemCommentHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_subject', $this);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
+		$o_view->setVar('request', $po_request);
+		$o_view->setVar('batch', caGetOption('batch', $pa_options, false));
+		
+		$initial_values = [];
+		foreach(($this->getPrimaryKey() ? $this->getComments(null, null, ['request' => $po_request, 'sortDirection' => $pa_bundle_settings['sortDirection']]) : []) as $v) {
+			$initial_values[$v['comment_id']] = $v;
+		}
+		
+		$o_view->setVar('initialValues', $initial_values);
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		
+		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
+		
+		return $o_view->render('ca_item_comments.php');
 	}
 	# -------------------------------------------------------
 }
