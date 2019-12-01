@@ -10719,19 +10719,27 @@ $pa_options["display_form_field_tips"] = true;
 	
 		$vs_moderation_sql = '';
 		if (!is_null($pb_moderation_status)) {
-			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
+			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (c.moderated_on IS NOT NULL)' : ' AND (c.moderated_on IS NULL)';
 		}
 		
 		$o_db = $this->getDb();
 		$qr_comments = $o_db->query("
 			SELECT count(*) c
-			FROM ca_item_comments
+			FROM ca_item_comments c
 			WHERE
-				(comment != '') AND (table_num = ?) AND (row_id = ?) {$vs_moderation_sql}
+				(c.comment != '') AND (c.table_num = ?) AND (c.row_id = ?) {$vs_moderation_sql}
+		", $this->tableNum(), $vn_row_id);
+		
+	    $qr_set_comments = $o_db->query("
+			SELECT count(*) c
+			FROM ca_item_comments c
+			INNER JOIN ca_set_items AS csi ON c.row_id = csi.item_id 
+			WHERE
+				(c.comment != '') AND (c.table_num = 105) AND (csi.table_num = ?) AND (csi.row_id = ?) {$vs_moderation_sql}
 		", $this->tableNum(), $vn_row_id);
 		
 		if ($qr_comments->nextRow()) {
-			return round($qr_comments->get('c'));
+			return round($qr_comments->get('c')) + round($qr_set_comments->get('c'));
 		} else {
 			return null;
 		}
@@ -10745,23 +10753,35 @@ $pa_options["display_form_field_tips"] = true;
 
 		$vs_moderation_sql = '';
 		if (!is_null($pb_moderation_status)) {
-			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
+			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (c.moderated_on IS NOT NULL)' : ' AND (c.moderated_on IS NULL)';
 		}
 		
 		if (!($vn_table_num = Datamodel::getTableNum(get_called_class()))) { return null; }
 		
 		$o_db = ($o_trans = caGetOption('transaction', $pa_options, null)) ? $o_trans->getDb() : new Db();
 		$qr_comments = $o_db->query("
-			SELECT row_id, count(*) c
-			FROM ca_item_comments
+			SELECT c.row_id, count(*) c
+			FROM ca_item_comments c
 			WHERE
-				(comment != '') AND (table_num = ?) AND (row_id IN (?)) {$vs_moderation_sql}
-			GROUP BY row_id
+				(c.comment != '') AND (c.table_num = ?) AND (c.row_id IN (?)) {$vs_moderation_sql}
+			GROUP BY c.row_id
 		", array($vn_table_num, $pa_ids));
 		
-		$va_counts = array();
+		$qr_set_comments = $o_db->query("
+			SELECT csi.row_id, count(*) c
+			FROM ca_item_comments c
+			INNER JOIN ca_set_items AS csi ON c.row_id = csi.item_id 
+			WHERE
+				(c.comment != '') AND (c.table_num = 105) AND (csi.table_num = ?) AND (csi.row_id IN (?)) {$vs_moderation_sql}
+			GROUP BY csi.row_id
+		", array($vn_table_num, $pa_ids));
+		
+		$va_counts = [];
 		while ($qr_comments->nextRow()) {
 			$va_counts[(int)$qr_comments->get('row_id')] = (int)$qr_comments->get('c');
+		}
+		while ($qr_set_comments->nextRow()) {
+			$va_counts[(int)$qr_set_comments->get('row_id')] = (int)$qr_set_comments->get('c');
 		}
 		return $va_counts;
 	}
