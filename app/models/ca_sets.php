@@ -530,6 +530,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			publicUsers =
 	 *			name = 
 	 *          byUser = return sets grouped by user with access. The array will be key'ed by sortable user name. Each entry includes a 'user' array with information about the user and a 'sets' array with the list of sets that user has access to. [Default is false]
+	 *          item_id = Get set that contains specified item_id
 	 *
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
@@ -542,6 +543,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$pb_set_ids_only = isset($pa_options['setIDsOnly']) ? (bool)$pa_options['setIDsOnly'] : false;
 		$pb_omit_counts = isset($pa_options['omitCounts']) ? (bool)$pa_options['omitCounts'] : false;
 		$ps_set_name = isset($pa_options['name']) ? $pa_options['name'] : null;
+		$pn_item_id = isset($pa_options['item_id']) ? (int)$pa_options['item_id'] : null;
 		
 		$pb_by_user = caGetOption('byUser', $pa_options, null);
 		
@@ -640,6 +642,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (!is_null($pa_public_access) && is_array($pa_public_access) && sizeof($pa_public_access)) {
 			$va_sql_wheres[] = "(cs.access IN (?))";
 			$va_sql_params[] = $pa_public_access;
+		}
+		
+		if (isset($pn_item_id) && ($pn_item_id > 0)) {
+			$va_extra_joins[] = "INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id";
+		    $va_sql_wheres[] = "(csi.item_id IN (?))";
+			$va_sql_params[] = is_array($pn_item_id) ? $pn_item_id : [$pn_item_id];
 		}
 		
 		if (isset($pm_type) && $pm_type) {
@@ -2822,10 +2830,42 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	 *		access = Consider set to exist if user has at least the specified access level. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then a set will be considered to exist if the user has at least read access. 
 	 *		checkAccess = Consider set to exist if it has a public access level with the specified values. Can be a single value or array if you wish to filter on multiple public access values.
 	 *			
-	 * @return strung
+	 * @return string
 	 */
 	static public function setContentsAsJSON($set_code, $options=null) {
 		return json_encode(self::setContents($set_code, $options));
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Return table_num/row_id pairs for all items ids. Item ids do not need to be in the same set.
+	 *
+	 * @param string $set_code
+	 * @param array $options Options include:
+	 *		versions = Considers set existance subject to acccess the user. 
+	 *		access = Consider set to exist if user has at least the specified access level. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then a set will be considered to exist if the user has at least read access. 
+	 *		checkAccess = Consider set to exist if it has a public access level with the specified values. Can be a single value or array if you wish to filter on multiple public access values.
+	 *			
+	 * @return string
+	 */
+	static public function getRowIDsForItemIDs($item_ids, $options=null) {
+	    if (!is_array($item_ids)) { return false; }
+	    $item_ids = array_map(function($v) { return (int)$v; }, array_filter($item_ids, function($v) { return (int)$v > 0; }));
+		if (!sizeof($item_ids)) { return false; }
+		 
+		$o_db = new Db();
+		
+		$qr = $o_db->query("
+		    SELECT *
+		    FROM ca_set_items
+		    WHERE 
+		        item_id IN (?)
+		", [$item_ids]);
+		
+		$row_ids = [];
+		while($qr->nextRow()) {
+		    $row_ids[$qr->get('table_num')][$qr->get('item_id')] = $qr->get('row_id');
+		}
+		return $row_ids;
 	}
 	# ---------------------------------------------------------------
 }
