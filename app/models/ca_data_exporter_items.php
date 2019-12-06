@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -410,6 +410,16 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Omit if not empty'),
 			'description' => _t('Omit this item and all its children if this CollectiveAccess bundle specifier returns a non-empty result.')
+		);
+		
+		$va_settings['omitIfNoChildren'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Omit if no children are present'),
+			'description' => _t('Omit this item if it has no children.')
 		);
 
 		$va_settings['context'] = array(

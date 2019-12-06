@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1801,7 +1801,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return array();
 			}
 		}
-
+		
 		// if omitIfNotEmpty is set and get() returns a value, we ignore this exporter item and all children
 		if($vs_omit_if_not_empty = $t_exporter_item->getSetting('omitIfNotEmpty')) {
 			if(strlen($t_instance->get($vs_omit_if_not_empty))>0) {
@@ -2177,6 +2177,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		}
+		
+		
+		if ($t_exporter_item->getSetting('omitIfNoChildren')) {
+		    if (sizeof(array_filter($va_info['children'], function($v) { return substr($v['element'], 0, 1) !== '@'; })) === 0) {
+		        return [];
+		    }
+		}
+
 
 		return $va_item_info;
 	}
