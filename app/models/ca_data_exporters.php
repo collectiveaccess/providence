@@ -754,7 +754,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					if ($vs_mode == 'Constant') {
 						if(strlen($vs_source)<1) { // ignore constant rows without value
-							continue;
+							continue(2);
 						}
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
@@ -792,7 +792,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings') {
 						if(strlen($vs_source) < 1) { // ignore repitition rows without value
-							continue;
+							continue(2);
 						}
 
 						$va_new_items = array();
@@ -976,9 +976,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if (is_array($va_info['original_values']) && sizeof($va_info['original_values'])) {
-			    $va_item_settings['original_values'] = join("\n", $va_info['original_values']);
+			    $va_item_settings['original_values'] .= "\n".join("\n", $va_info['original_values']);
 			    if (is_array($va_info['replacement_values']) && sizeof($va_info['replacement_values'])) {
-			        $va_item_settings['replacement_values'] = join("\n", $va_info['replacement_values']);  
+			        $va_item_settings['replacement_values'] .= "\n".join("\n", $va_info['replacement_values']);  
 			    }  
 			}
 
@@ -1473,7 +1473,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()) {
-
 		// The variable cache is valid for the whole record export.
 		// It's being modified in ca_data_exporters::processExporterItem
 		// and then reset here if we move on to the next record.
