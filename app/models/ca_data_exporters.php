@@ -726,6 +726,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					$o_source = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
 					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
+					$o_orig_values = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
+					$o_replacement_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
 
 					if($vs_id = trim((string)$o_id->getValue())) {
 						$va_ids[] = $vs_id;
@@ -744,10 +746,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 
 					$vs_source = trim((string)$o_source->getValue());
+					
+                    $va_original_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_orig_values->getValue()));
+                    array_walk($va_original_values, function(&$v) { $v = trim($v); });
+                    $va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
+                    array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
 
 					if ($vs_mode == 'Constant') {
 						if(strlen($vs_source)<1) { // ignore constant rows without value
-							continue;
+							continue(2);
 						}
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
@@ -778,12 +785,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						'element' => $vs_element,
 						'source' => ($vs_mode == "RepeatMappings" ? null : $vs_source),
 						'options' => $va_options,
+						'original_values' => $va_original_values,
+						'replacement_values' => $va_replacement_values
 					);
 
 					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings') {
 						if(strlen($vs_source) < 1) { // ignore repitition rows without value
-							continue;
+							continue(2);
 						}
 
 						$va_new_items = array();
@@ -964,6 +973,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 
 				}
+			}
+			
+			if (is_array($va_info['original_values']) && sizeof($va_info['original_values'])) {
+			    $va_item_settings['original_values'] .= "\n".join("\n", $va_info['original_values']);
+			    if (is_array($va_info['replacement_values']) && sizeof($va_info['replacement_values'])) {
+			        $va_item_settings['replacement_values'] .= "\n".join("\n", $va_info['replacement_values']);  
+			    }  
 			}
 
 			$vn_parent_id = null;
@@ -1457,7 +1473,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()) {
-
 		// The variable cache is valid for the whole record export.
 		// It's being modified in ca_data_exporters::processExporterItem
 		// and then reset here if we move on to the next record.
@@ -1620,10 +1635,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
             if (sizeof($tmp = explode('.', $vs_context)) == 2) {
                 // convert <table>.<spec> contexts to just <spec> when table i
                 $vn_new_table_num = Datamodel::getTableNum($tmp[0]);
-                $vs_new_table_name = Datamodel::getTableName($tmp[0]);
-                $vs_context = $tmp[1];
                 
-                $vs_key = Datamodel::primaryKey($tmp[0]);
+                if ($pn_table_num != $vn_new_table_num) {
+                    $vs_new_table_name = Datamodel::getTableName($tmp[0]);
+                    $vs_context = $tmp[1];
+                
+                    $vs_key = Datamodel::primaryKey($tmp[0]);
+                } else {
+                    $vn_new_table_num = null;
+                }
             } else {
                 if($vn_new_table_num = Datamodel::getTableNum($vs_context)) { // switch to new table
                     $vs_key = Datamodel::primaryKey($vs_context);
@@ -1810,7 +1830,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_get_options['locale'] = $vs_locale;
 		}
-
+		
 		// AttributeValue settings that are simply passed through by the exporter
 		if($t_exporter_item->getSetting('convertCodesToDisplayText')) {
 			$va_get_options['convertCodesToDisplayText'] = true;		// try to return text suitable for display for system lists stored in intrinsics (ex. ca_objects.access, ca_objects.status, ca_objects.source_id)
@@ -1889,9 +1909,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_values = $t_attr->getAttributeValues();
 
 				$va_src_tmp = explode('.', $vs_source);
+				$vs_modifier = null;
 				if(sizeof($va_src_tmp) == 2) {
 					if($t_attr->get('table_num') == Datamodel::getTableNum($va_src_tmp[0])) {
 						$vs_source = $va_src_tmp[1];
+					} else {
+					    $vs_source = $va_src_tmp[0];
+					    $vs_modifier = $va_src_tmp[1];
 					}
 				}
 
@@ -1908,6 +1932,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
 
 					foreach ($va_values as $vo_val) {
+					    if ($vo_val->getElementCode() !== $vs_source)  { continue; }
+					
 						$va_display_val_options = array();
 						switch($vo_val->getDatatype()) {
 							case __CA_ATTRIBUTE_VALUE_LIST__: //if ($vo_val instanceof ListAttributeValue) {
@@ -1925,19 +1951,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 								break;
 							case __CA_ATTRIBUTE_VALUE_LCSH__:
-								switch($va_src_tmp[0]) {
+								switch($vs_modifier) {
 									case 'text':
 									default:
 										$vs_display_value = $vo_val->getDisplayValue(['text' => true]);
 										break;
 									case 'id':
+										$vs_display_value = $vo_val->getDisplayValue(['n' => true]);
+										break;
 									case 'url':
 										$vs_display_value = $vo_val->getDisplayValue(['idno' => true]);
 										break;
 								}
 								break;
 							case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-								switch($va_src_tmp[0]) {
+								switch($vs_modifier) {
 									case 'text':
 									default:
 										$vs_display_value = $vo_val->getDisplayValue();
@@ -2069,7 +2097,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vs_original_values = $t_exporter_item->getSetting('original_values');
 		$vs_replacement_values = $t_exporter_item->getSetting('replacement_values');
-
+		
 		$va_replacements = ca_data_exporter_items::getReplacementArray($vs_original_values,$vs_replacement_values);
 
 		foreach($va_item_info as $vn_key => &$va_item) {
