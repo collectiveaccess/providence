@@ -2234,4 +2234,116 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 	}
 	# ------------------------------------------------------
+	/**
+	 * Write exporter to Excel (XLSX) file.
+	 *
+	 * @param string $exporter_code
+	 * @param string $file
+	 * @return bool
+	 */
+	static public function writeExporterToFile($exporter_code, $file) {
+		if (!($exporter = self::loadExporterByCode($exporter_code))) {
+		    throw new ApplicationException(_t('Exporter mapping %1 does not exist', $exporter_code));
+		}
+		
+	    $a_to_z = range('A', 'Z');
+		
+	    $workbook = new PHPExcel();
+	    $o_sheet = $workbook->getActiveSheet();
+	    $columntitlestyle = array(
+			'font'=>array(
+					'name' => 'Arial',
+					'size' => 12,
+					'bold' => true),
+			'alignment'=>array(
+					'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+					'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+					'wrap' => true,
+					'shrinkToFit'=> true),
+			'borders' => array(
+					'allborders'=>array(
+							'style' => PHPExcel_Style_Border::BORDER_THICK)));
+        $cellstyle = array(
+                'font'=>array(
+                        'name' => 'Arial',
+                        'size' => 11,
+                        'bold' => false),
+                'alignment'=>array(
+                        'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                        'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                        'wrap' => true,
+                        'shrinkToFit'=> true),
+                'borders' => array(
+                        'allborders'=>array(
+                                'style' => PHPExcel_Style_Border::BORDER_THIN)));
+
+        $o_sheet->getDefaultStyle()->applyFromArray($cellstyle);
+        $o_sheet->setTitle(_t("Exporter %1", $exporter_code));
+        
+        $o_sheet->getRowDimension($vn_line)->setRowHeight(30);
+        
+        $col = 0;
+        $line = 1;
+        foreach(["Rule type","ID","Parent ID","Element","Source","Options","Notes"] as $h) {
+            $o_sheet->setCellValue($a_to_z[$col].$line,$h);
+            $o_sheet->getStyle($a_to_z[$col].$line)->applyFromArray($columntitlestyle);
+            $col++;
+        }
+        
+        
+        // Settings
+        if (!is_array($settings = $exporter->getSettings())) { 
+            $settings = [];
+        }
+        $settings['code'] = $exporter->get('exporter_code');
+        $settings['name'] = $exporter->getLabelForDisplay();
+        $settings['table'] = Datamodel::getTableName($exporter->get('table_num'));
+        $line++;
+        foreach($settings as $k => $v) {
+            $o_sheet->setCellValue($a_to_z[0].$line, "Setting");
+            $o_sheet->setCellValue($a_to_z[1].$line, $k);
+            $o_sheet->setCellValue($a_to_z[2].$line, $v);
+            $line++;
+        }
+        
+        // Mappings
+        if (is_array($items = $exporter->getItems())) {
+            $ids = [];
+            foreach($items as $item) {
+                $item_settings = caUnserializeForDatabase($item['settings']);
+                $id = $item_settings['_id'];
+                unset($item_settings['_id']);
+                
+                $line++;
+                $source = $item['source'];
+                
+                if (preg_match("!^_CONSTANT_:!", $source)) {
+                    $o_sheet->setCellValue($a_to_z[0].$line, "Constant");
+                    $source = preg_replace("!^_CONSTANT_:!", "", $item['source']);
+                } else {
+                    $o_sheet->setCellValue($a_to_z[0].$line, "Mapping");
+                    $source = $item['source'];
+                }
+                $ids[$item['item_id']] = $id;
+                $parent_id = isset($ids[$item['parent_id']]) ? $ids[$item['parent_id']] : '';
+                $o_sheet->setCellValue($a_to_z[1].$line, $id);
+                $o_sheet->setCellValue($a_to_z[2].$line, $parent_id);
+                $o_sheet->setCellValue($a_to_z[3].$line, $item['element']);
+                $o_sheet->setCellValue($a_to_z[4].$line, $source);
+                $o_sheet->setCellValue($a_to_z[5].$line, (is_array($item_settings) && sizeof($item_settings)) ? json_encode($item_settings) : '');
+            }
+        }
+        
+        // set column width to auto for all columns where we haven't set width manually yet
+        foreach(range('A','Z') as $c) {
+            if ($o_sheet->getColumnDimension($c)->getWidth() == -1) {
+                $o_sheet->getColumnDimension($c)->setAutoSize(true);	
+            }
+        }
+        
+        $o_writer = new PHPExcel_Writer_Excel2007($workbook);
+ 	    $o_writer->save($file);
+        return true;   
+	}
+	# ------------------------------------------------------
 }
