@@ -1688,9 +1688,9 @@ class SearchResult extends BaseObject {
 			if (is_array($va_keys) && sizeof($va_keys)) {
 				if ($vb_return_with_structure) {
 				    $vs_sort_desc = caGetOption('sortDirection', $pa_options, 'ASC');
-				    
 				    $vb_is_three_level_array = false;
 				    foreach($vm_val as $vn_top_level_id => $va_data) {
+				        if (!is_array($va_data)) { continue; }
 				        foreach($va_data as $k => $v) {
 				            if (is_array($v)) { $vb_is_three_level_array = true; }
 				            break(2);
