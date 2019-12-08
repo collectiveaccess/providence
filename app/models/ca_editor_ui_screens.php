@@ -843,24 +843,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Relationship display template'),
 								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
 							)
-						);
+						);	
 						
-						// if (($t_instance->tableName() == 'ca_storage_locations') && ($t_rel->tableName() == 'ca_objects')) {
-// 							$va_additional_settings['locationTrackingMode'] = array(
-// 										'formatType' => FT_TEXT,
-// 										'displayType' => DT_SELECT,
-// 										'options' => array(
-// 											_t('none') => '',
-// 											_t('movements') => 'ca_movements',
-// 											_t('object-location relationships') => 'ca_storage_locations'
-// 										),
-// 										'default' => '',
-// 										'width' => "275px", 'height' => 1,
-// 										'label' => _t('Only show items currently in this location using'),
-// 										'description' => ''
-// 									);
-// 						}
-						
+						if ($vs_rel_table == 'ca_object_representations') {
+						    unset($va_additional_settings['restrict_to_search']);
+						}
 						break;
 					} else {
 						if (!($t_rel = Datamodel::getInstanceByTableName($vs_bundle, true))) { continue(2); }
@@ -1079,6 +1066,55 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							)
 						);
 					}
+											
+                    if ($vs_bundle == 'ca_object_representations') {
+                        unset($va_additional_settings['restrict_to_search']);
+                        unset($va_additional_settings['restrict_to_access_point']);
+                        unset($va_additional_settings['disableQuickadd']);
+                        unset($va_additional_settings['prepopulateQuickaddFields']);
+                        unset($va_additional_settings['showCurrentOnly']);
+                        unset($va_additional_settings['showCurrentUsingDate']);
+                        unset($va_additional_settings['colorFirstItem']);
+                        unset($va_additional_settings['colorLastItem']);
+                        unset($va_additional_settings['colorItem']);
+                        
+						$va_additional_settings['dontShowPreferredLabel'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not show representation preferred label?'),
+							'description' => _t('Do not show representation preferred label.')
+						);
+						$va_additional_settings['dontShowIdno'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not show representation identifier?'),
+							'description' => _t('Do not show representation identifier.')
+						);
+                        $va_additional_settings['dontShowStatus'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not show status?'),
+							'description' => _t('Do not show status drop-down.')
+						);
+						$va_additional_settings['dontShowAccess'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not show access?'),
+							'description' => _t('Do not show access drop-down.')
+						);
+                    }
 
 					if($vs_bundle == 'ca_sets') {
 						unset($va_additional_settings['restrict_to_relationship_types']);
