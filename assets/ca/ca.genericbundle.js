@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,7 +71,7 @@ var caUI = caUI || {};
 			partialLoadUrl: null,
 			loadFrom: 0,
 			loadSize: 5,
-			partialLoadMessage: "Load next %",
+			partialLoadMessage: "Load next %num",
 			partialLoadIndicator: null,
 			onPartialLoad: null,	// called after partial data load is completed
 
@@ -149,9 +149,9 @@ var caUI = caUI || {};
 			var end = (that.loadFrom + that.loadSize)
 			if (end > that.totalValueCount) { end = that.totalValueCount % that.loadSize; } else { end = that.loadSize; }
 
-			var msg = that.partialLoadMessage.replace("%", end + "/" + that.totalValueCount);
+			var msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
 			jQuery(that.container + " ." + that.itemListClassName).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
-			jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__next').on('click', function(e) {
+			jQuery(that.container + " ." + that.itemListClassName).on('click', '.caItemLoadNextBundles', function(e) {
 				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').show();
 				that.loadNextValues();
 				e.preventDefault();

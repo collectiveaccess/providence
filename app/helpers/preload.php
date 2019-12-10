@@ -85,3 +85,21 @@ TooltipManager::init();
 
 PHPExcel_Shared_Font::setTrueTypeFontPath(__CA_APP_DIR__.'/fonts/');
 PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
+
+spl_autoload_register(function ($class) {
+    // Anything prefixed with "ca_" is a model
+    if (substr($class, 0, 3) === 'ca_') {
+        if(require(__CA_MODELS_DIR__."/{$class}.php")) { return true; }
+    }
+    
+    // search common locations for class
+    $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers'];
+    foreach($paths as $path) {
+        if(file_exists("{$path}/{$class}.php")) {
+            if(require("{$path}/{$class}.php")) { return true; }   
+        }
+    }
+    
+    //
+    return false;
+});
