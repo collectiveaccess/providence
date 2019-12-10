@@ -1866,9 +1866,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					foreach($va_items as $vn_item_id => $va_item) {
 						if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 							// Force repeating values to be imported as a single value
-							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'log' => $o_log, 'logIdno' => $vs_idno)));
+							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'hierarchicalDelimiter' => caGetOption('hierarchicalDelimiter', $va_item['settings'], null), 'log' => $o_log, 'logIdno' => $vs_idno)));
 						} else {
-							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'log' => $o_log, 'logIdno' => $vs_idno));
+							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'hierarchicalDelimiter' => caGetOption('hierarchicalDelimiter', $va_item['settings'], null), 'log' => $o_log, 'logIdno' => $vs_idno));
 						}
 					
 						if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
@@ -3184,6 +3184,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pa_environment = caGetOption('environment', $pa_options, array(), array('castTo' => 'array'));
 		$pa_other_values = caGetOption('otherValues', $pa_options, array(), array('castTo' => 'array'));
 		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
+		$hierarchical_delimiter = caGetOption('hierarchicalDelimiter', $pa_options, null);
 		$pn_lookahead = caGetOption('lookahead', $pa_options, 0, array('castTo' => 'int'));
 		
 		if (preg_match('!^_CONSTANT_:[^:]+:(.*)$!', $pa_item['source'], $va_matches)) {
@@ -3201,7 +3202,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vb_did_seek = true;
 			}
 			if ($po_reader->valuesCanRepeat()) {
-				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true, 'filterToTypes' => $va_filter_to_types, 'filterToRelationshipTypes' => $va_filter_to_relationship_types));
+				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true, 'filterToTypes' => $va_filter_to_types, 'filterToRelationshipTypes' => $va_filter_to_relationship_types, 'hierarchicalDelimiter' => $hierarchical_delimiter));
 				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
 				foreach($vm_value as $vs_k => $vs_v) {
 					if (is_array($vs_v)) { continue; }	// skip odd mappings that return arrays of arrays
