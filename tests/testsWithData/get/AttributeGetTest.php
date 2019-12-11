@@ -207,7 +207,7 @@ class AttributeGetTest extends BaseTestWithData {
 		// informationservice attributes in container
 		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
 		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
-		$this->assertContains('Burr shot his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
+		$this->assertContains('Burr shot his political rival Alexander Hamilton in an 1804 duel', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
 	}
 	# -------------------------------------------------------
 	public function testGetCounts() {
