@@ -201,7 +201,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
 		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
 		// subfield notation for "extra info"
-		$this->assertContains('Burr shot his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
+		$this->assertContains('Burr shot his political rival Alexander Hamilton in an 1804 duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
 		$this->assertEquals('40.5667', $this->opt_object->get('ca_objects.tgn.lat'));
 
 		// informationservice attributes in container
