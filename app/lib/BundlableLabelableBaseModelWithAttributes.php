@@ -4031,43 +4031,43 @@ if (!$vb_batch) {
 							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
 								
-								if (strlen($po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['representation_id'], pInteger)) > 0) {
-									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['representation_id']])) {
+								if (strlen($po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['relation_id'], pInteger)) > 0) {
+									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['relation_id']])) {
 										$va_tmp = explode('/', $vs_path);
 										$vs_original_name = array_pop($va_tmp);
 									} else {
-										$vs_path = $_FILES[$vs_prefix_stub.'media_'.$va_rep['representation_id']]['tmp_name'];
-										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_rep['representation_id']]['name'];
+										$vs_path = $_FILES[$vs_prefix_stub.'media_'.$va_rep['relation_id']]['tmp_name'];
+										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_rep['relation_id']]['name'];
 									}
 									
-									$vn_is_primary = ($po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pString) != '') ? $po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pInteger) : null;
-									$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_'.$va_rep['representation_id'], pInteger);
-									$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_'.$va_rep['representation_id'], pString);
-									$vn_access = $po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['representation_id'], pInteger);
-									$vn_status = $po_request->getParameter($vs_prefix_stub.'status_'.$va_rep['representation_id'], pInteger);
-									$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_'.$va_rep['representation_id'], pString));
-									//$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id'.$va_rep['representation_id'], pInteger);
+									$vn_is_primary = ($po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['relation_id'], pString) != '') ? $po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['relation_id'], pInteger) : null;
+									$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_'.$va_rep['relation_id'], pInteger);
+									$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_'.$va_rep['relation_id'], pString);
+									$vn_access = $po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['relation_id'], pInteger);
+									$vn_status = $po_request->getParameter($vs_prefix_stub.'status_'.$va_rep['relation_id'], pInteger);
+									$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_'.$va_rep['relation_id'], pString));
+									//$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id'.$va_rep['relation_id'], pInteger);
 									
 									// Get user-specified center point (images only)
-									$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_'.$va_rep['representation_id'], pString);
-									$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_'.$va_rep['representation_id'], pString);
+									$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_'.$va_rep['relation_id'], pString);
+									$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_'.$va_rep['relation_id'], pString);
 									
 									$vn_rank = null;
-									if (($vn_rank_index = array_search($va_rep['representation_id'], $va_rep_sort_order)) !== false) {
+									if (($vn_rank_index = array_search($va_rep['relation_id'], $va_rep_sort_order)) !== false) {
 										$vn_rank = $va_rep_ids_sorted[$vn_rank_index];
 									}
 									
 									$this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('idno' => $vs_idno), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
 									if ($this->numErrors()) {
-										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['representation_id']);
+										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
 												case 795:
 													// field conflicts
-													$po_request->addActionError($o_e, $vs_f, $va_rep['representation_id']);
+													$po_request->addActionError($o_e, $vs_f, $va_rep['relation_id']);
 													break;
 												default:
-													$po_request->addActionError($o_e, $vs_f, $va_rep['representation_id']);
+													$po_request->addActionError($o_e, $vs_f, $va_rep['relation_id']);
 													break;
 											}
 										}
@@ -4082,18 +4082,18 @@ if (!$vb_batch) {
 										if ($t_rep->load($va_rep['representation_id'])) {
 											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true, array('queueIndexing' => true));
 											if ($t_rep->numErrors()) {
-												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_rep['representation_id']);
+												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_rep['relation_id']);
 											}
 										}
 									}
 								} else {
 									// is it a delete key?
 									$this->clearErrors();
-									if (($po_request->getParameter($vs_prefix_stub.$va_rep['representation_id'].'_delete', pInteger)) > 0) {
+									if (($po_request->getParameter($vs_prefix_stub.$va_rep['relation_id'].'_delete', pInteger)) > 0) {
 										// delete!
 										$this->removeRepresentation($va_rep['representation_id']);
 										if ($this->numErrors()) {
-											$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['representation_id']);
+											$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
 										}
 									}
 								}
