@@ -338,6 +338,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 		noCache = don't use cached values. Default is false (ie. use cached values)
 	 */
 	static public function getElementsForSet($pn_element_id, $pa_options=null) {
+	    if(!is_numeric($pn_element_id)) { $pn_element_id = self::getElementID($pn_element_id); }
 		$t_element = new ca_metadata_elements();
 		return $t_element->getElementsInSet($pn_element_id, !caGetOption('noCache', $pa_options, false), $pa_options);
 	}
