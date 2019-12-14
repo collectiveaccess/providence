@@ -3058,8 +3058,27 @@ class ca_users extends BaseModel {
         if ($vs_username) {
             try {
                 if(AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-                    $this->load($vs_username);
-                    return true;
+                    if ($this->load($vs_username)) {
+                        if (
+                            defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && 
+                            $this->canDoAction('can_not_login') &&
+                            ($this->getPrimaryKey() != $this->_CONFIG->get('administrator_user_id')) &&
+                            !$this->canDoAction('is_administrator')
+                        ) {
+                            $this->opo_log->log(array(
+                                'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                                'MESSAGE' => _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username)
+                            ));
+                            return false;
+                        }
+                        return true;
+                    } else {
+                        $this->opo_log->log(array(
+                            'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                            'MESSAGE' => _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username)
+                        ));
+                        return false;
+                    }
                 }
             }  catch (Exception $e) {
                 $this->opo_log->log(array(

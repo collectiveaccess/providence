@@ -1108,7 +1108,6 @@
 			return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from the American Association of State and Local History (AASLH).');
 		}
 		# -------------------------------------------------------
-		
 		/**
 		 * @param Zend_Console_Getopt|null $po_opts
 		 * @return bool
@@ -1168,6 +1167,68 @@
 		 */
 		public static function run_external_exportHelp() {
 			return _t('To come.');
+        }
+        # -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function write_exporter_to_file($po_opts=null) {
+            require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+            
+            $file = $po_opts->getOption('file');
+            if (!$file) {
+				CLIUtils::addError(_t('A file must be specified'));
+				return;
+			}
+			
+			if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
+				CLIUtils::addError(_t('Cannot write to file %1', $file));
+				return;
+			}
+			
+			$mapping = $po_opts->getOption('mapping');
+			if (!$mapping) {
+				CLIUtils::addError(_t('An export mapping must be specified'));
+				return;
+			}
+			
+			
+			try {
+			    ca_data_exporters::writeExporterToFile($mapping, $file);
+			} catch (Exception $e) {
+			    CLIUtils::addError(_t('Could not export %1: %2', $mapping, $e->getMessage()));
+			    return;
+			}
+			CLIUtils::addMessage(_t('Exported %1', $mapping));
+		}
+		# -------------------------------------------------------
+		public static function write_exporter_to_fileParamList() {
+			return [
+				"mapping|m=s" => _t('Required. Exporter mapping to write to file.'),
+				"file|f=s" => _t('Required. File to save exporter to.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_exporter_to_fileUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_exporter_to_fileShortHelp() {
+			return _t('Write exporter mapping to Excel-format file.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_exporter_to_fileHelp() {
+			return _t('Write exporter mapping to Excel-format file.');
         }
 		# -------------------------------------------------------
     }

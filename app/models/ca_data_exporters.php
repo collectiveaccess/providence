@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -697,6 +697,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		global $g_ui_locale_id;
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 
+        $vs_log_dir = caGetOption('logDirectory', $pa_options, __CA_APP_DIR__."/log");
+		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
+			$vs_log_dir = caGetTempDirPath();
+		}
+
+		if(!($vn_log_level = caGetOption('logLevel',$pa_options))) {
+			$vn_log_level = KLogger::INFO;
+		}
+
+		$o_log = new KLogger($vs_log_dir, $vn_log_level);
+
+
 		$pa_errors = array();
 
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
@@ -735,13 +747,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					if($vs_parent_id = trim((string)$o_parent->getValue())) {
 						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)) {
-							$pa_errors[] = _t("Warning: skipped mapping at row %1 because parent id was invalid",$vn_row);
+							$pa_errors[] = $m = _t("Warning: skipped mapping at row %1 because parent id was invalid",$vn_row);
+							$o_log->logWarn($m);
 							continue(2);
 						}
 					}
 
 					if (!($vs_element = trim((string)$o_element->getValue()))) {
-						$pa_errors[] = _t("Warning: skipped mapping at row %1 because element was not defined",$vn_row);
+						$pa_errors[] = $m = _t("Warning: skipped mapping at row %1 because element was not defined",$vn_row);
+						$o_log->logWarn($m);
 						continue(2);
 					}
 
@@ -763,7 +777,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						if(preg_match("/^[A-Za-z0-9\_\-]+$/",$vs_element)) {
 							$vs_element = "_VARIABLE_:{$vs_element}";
 						} else {
-							$pa_errors[] = _t("Variable name %1 is invalid. It should only contain ASCII letters, numbers, hyphens and underscores. The variable was not created.",$vs_element);
+							$pa_errors[] = $m = _t("Variable name %1 is invalid. It should only contain ASCII letters, numbers, hyphens and underscores. The variable was not created.",$vs_element);
+							$o_log->logError($m);
 							continue(2);
 						}
 
@@ -772,7 +787,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) {
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
-							$pa_errors[] = _t("Warning: options for element %1 are not in proper JSON",$vs_element);
+							$pa_errors[] = $m = _t("Warning: options for element %1 are not in proper JSON",$vs_element);
+							$o_log->logWarn($m);
 						}
 					}
 
@@ -802,7 +818,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
 							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
 							if(!is_array($va_mapping[$vs_mapping_item_to_repeat])) {
-								$pa_errors[] = _t("Couldn't repeat mapping item %1",$vs_mapping_item_to_repeat);
+								$pa_errors[] = $m = _t("Couldn't repeat mapping item %1",$vs_mapping_item_to_repeat);
+							    $o_log->logError($m);
 								continue;
 							}
 
@@ -873,7 +890,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$o_replace = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 
 				if(!isset($va_mapping[$vs_mapping_num])) {
-					$pa_errors[] = _t("Warning: Replacement sheet references invalid mapping number '%1'. Ignoring row.",$vs_mapping_num);
+					$pa_errors[] = $m = _t("Warning: Replacement sheet references invalid mapping number '%1'. Ignoring row.",$vs_mapping_num);
+					$o_log->logWarn($m);
 					continue;
 				}
 
@@ -881,7 +899,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$vs_replace = (string)$o_replace->getValue();
 
 				if(!$vs_search) {
-					$pa_errors[] = _t("Warning: Search must be set for each row in the replacement sheet. Ignoring row for mapping '%1'",$vs_mapping_num);
+					$pa_errors[] = $m = _t("Warning: Search must be set for each row in the replacement sheet. Ignoring row for mapping '%1'",$vs_mapping_num);
+				    $o_log->logWarn($m);
 					continue;
 				}
 
@@ -904,12 +923,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// Do checks on mapping
 		if (!$va_settings['code']) {
-			$pa_errors[] = _t("Error: You must set a code for your mapping!");
+			$pa_errors[] = $m = _t("Error: You must set a code for your mapping!");
+		    $o_log->logError($m);
 			return;
 		}
 
 		if (!($t_instance = Datamodel::getInstanceByTableName($va_settings['table']))) {
-			$pa_errors[] = _t("Error: Mapping target table %1 is invalid!", $va_settings['table']);
+			$pa_errors[] = $m = _t("Error: Mapping target table %1 is invalid!", $va_settings['table']);
+			$o_log->logError($m);
 			return;
 		}
 
@@ -922,7 +943,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if ($t_exporter->load(array('exporter_code' => $va_settings['code']))) {
 			$t_exporter->delete(true, array('hard' => true));
 			if ($t_exporter->numErrors()) {
-				$pa_errors[] = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_exporter->getErrors()));
+				$pa_errors[] = $m = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_exporter->getErrors()));
+				$o_log->logError($m);
 				return;
 			}
 		}
@@ -943,14 +965,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$t_exporter->insert();
 
 		if ($t_exporter->numErrors()) {
-			$pa_errors[] = _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()));
+			$pa_errors[] = $m = _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()));
+			$o_log->logError($m);
 			return;
 		}
 
 		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
 
 		if ($t_exporter->numErrors()) {
-			$pa_errors[] = _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()));
+			$pa_errors[] = $m = _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()));
+			$o_log->logError($m);
 			return;
 		}
 
@@ -963,7 +987,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					switch($vs_k) {
 						case 'replacement_values':
 						case 'original_values':
-							if(sizeof($vs_v)>0) {
+							if(is_array($vs_v) && (sizeof($vs_v)>0)) {
 								$va_item_settings[$vs_k] = join("\n",$vs_v);
 							}
 							break;
@@ -988,7 +1012,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
 
 			if ($t_exporter->numErrors()) {
-				$pa_errors[] = _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()));
+				$pa_errors[] = $m = _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()));
+				$o_log->logError($m);
 				return;
 			}
 
@@ -1801,7 +1826,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return array();
 			}
 		}
-
+		
 		// if omitIfNotEmpty is set and get() returns a value, we ignore this exporter item and all children
 		if($vs_omit_if_not_empty = $t_exporter_item->getSetting('omitIfNotEmpty')) {
 			if(strlen($t_instance->get($vs_omit_if_not_empty))>0) {
@@ -2177,6 +2202,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		}
+		
+		
+		if ($t_exporter_item->getSetting('omitIfNoChildren')) {
+		    if (sizeof(array_filter($va_info['children'], function($v) { return substr($v['element'], 0, 1) !== '@'; })) === 0) {
+		        return [];
+		    }
+		}
+
 
 		return $va_item_info;
 	}
@@ -2224,6 +2257,118 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id] = $t_instance;
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Write exporter to Excel (XLSX) file.
+	 *
+	 * @param string $exporter_code
+	 * @param string $file
+	 * @return bool
+	 */
+	static public function writeExporterToFile($exporter_code, $file) {
+		if (!($exporter = self::loadExporterByCode($exporter_code))) {
+		    throw new ApplicationException(_t('Exporter mapping %1 does not exist', $exporter_code));
+		}
+		
+	    $a_to_z = range('A', 'Z');
+		
+	    $workbook = new PHPExcel();
+	    $o_sheet = $workbook->getActiveSheet();
+	    $columntitlestyle = array(
+			'font'=>array(
+					'name' => 'Arial',
+					'size' => 12,
+					'bold' => true),
+			'alignment'=>array(
+					'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+					'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+					'wrap' => true,
+					'shrinkToFit'=> true),
+			'borders' => array(
+					'allborders'=>array(
+							'style' => PHPExcel_Style_Border::BORDER_THICK)));
+        $cellstyle = array(
+                'font'=>array(
+                        'name' => 'Arial',
+                        'size' => 11,
+                        'bold' => false),
+                'alignment'=>array(
+                        'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                        'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                        'wrap' => true,
+                        'shrinkToFit'=> true),
+                'borders' => array(
+                        'allborders'=>array(
+                                'style' => PHPExcel_Style_Border::BORDER_THIN)));
+
+        $o_sheet->getDefaultStyle()->applyFromArray($cellstyle);
+        $o_sheet->setTitle(_t("Exporter %1", $exporter_code));
+        
+        $o_sheet->getRowDimension($vn_line)->setRowHeight(30);
+        
+        $col = 0;
+        $line = 1;
+        foreach(["Rule type","ID","Parent ID","Element","Source","Options","Notes"] as $h) {
+            $o_sheet->setCellValue($a_to_z[$col].$line,$h);
+            $o_sheet->getStyle($a_to_z[$col].$line)->applyFromArray($columntitlestyle);
+            $col++;
+        }
+        
+        
+        // Settings
+        if (!is_array($settings = $exporter->getSettings())) { 
+            $settings = [];
+        }
+        $settings['code'] = $exporter->get('exporter_code');
+        $settings['name'] = $exporter->getLabelForDisplay();
+        $settings['table'] = Datamodel::getTableName($exporter->get('table_num'));
+        $line++;
+        foreach($settings as $k => $v) {
+            $o_sheet->setCellValue($a_to_z[0].$line, "Setting");
+            $o_sheet->setCellValue($a_to_z[1].$line, $k);
+            $o_sheet->setCellValue($a_to_z[2].$line, $v);
+            $line++;
+        }
+        
+        // Mappings
+        if (is_array($items = $exporter->getItems())) {
+            $ids = [];
+            foreach($items as $item) {
+                $item_settings = caUnserializeForDatabase($item['settings']);
+                $id = $item_settings['_id'];
+                unset($item_settings['_id']);
+                
+                $line++;
+                $source = $item['source'];
+                
+                if (preg_match("!^_CONSTANT_:!", $source)) {
+                    $o_sheet->setCellValue($a_to_z[0].$line, "Constant");
+                    $source = preg_replace("!^_CONSTANT_:!", "", $item['source']);
+                } else {
+                    $o_sheet->setCellValue($a_to_z[0].$line, "Mapping");
+                    $source = $item['source'];
+                }
+                $ids[$item['item_id']] = $id;
+                $parent_id = isset($ids[$item['parent_id']]) ? $ids[$item['parent_id']] : '';
+                $o_sheet->setCellValue($a_to_z[1].$line, $id);
+                $o_sheet->setCellValue($a_to_z[2].$line, $parent_id);
+                $o_sheet->setCellValue($a_to_z[3].$line, $item['element']);
+                $o_sheet->setCellValue($a_to_z[4].$line, $source);
+                $o_sheet->setCellValue($a_to_z[5].$line, (is_array($item_settings) && sizeof($item_settings)) ? json_encode($item_settings) : '');
+            }
+        }
+        
+        // set column width to auto for all columns where we haven't set width manually yet
+        foreach(range('A','Z') as $c) {
+            if ($o_sheet->getColumnDimension($c)->getWidth() == -1) {
+                $o_sheet->getColumnDimension($c)->setAutoSize(true);	
+            }
+        }
+        
+        $o_writer = new PHPExcel_Writer_Excel2007($workbook);
+ 	    $o_writer->save($file);
+        return true;   
 	}
 	# ------------------------------------------------------
 }

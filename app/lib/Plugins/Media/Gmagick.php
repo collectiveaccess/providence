@@ -62,6 +62,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $opo_external_app_config;
 	
 	var $filepath;
+	var $tmpfiles_to_delete = [];
 	
 	var $info = array(
 		'IMPORT' => array(
@@ -1127,6 +1128,12 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function destruct() {
 		if(is_object($this->handle)) { $this->handle->destroy(); }
 		if(is_object($this->ohandle)) { $this->ohandle->destroy(); }
+		
+		if(is_array($this->tmpfiles_to_delete)) {
+		    foreach($this->tmpfiles_to_delete as $f) {
+		        @unlink($tmpfiles_to_delete);
+		    }
+		}
 	}
 	# ------------------------------------------------
 	public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
@@ -1156,6 +1163,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return false;
 		}
 
+        $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
+        $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
 		return $vs_tmp_name.'.tiff';
 	}
 	# ----------------------------------------------------------------------

@@ -619,6 +619,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
+				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
 				'timestamp' => $qr_res->get('log_datetime'),
 				'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),

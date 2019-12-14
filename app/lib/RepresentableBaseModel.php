@@ -1212,7 +1212,9 @@
                         $vn_primary_id = $va_rep['representation_id'];
                     }
                 
-                    $va_initial_values[$va_rep['representation_id']] = array(
+                    $va_initial_values[$va_rep['relation_id']] = array(
+                        'representation_id' => $va_rep['representation_id'], 
+                        'relation_id' => $va_rep['relation_id'], 
                         'idno' => $va_rep['idno'], 
                         '_display' => ($vs_bundle_template && isset($va_display_template_values[$vn_i])) ? $va_display_template_values[$vn_i] : '',
                         'status' => $va_rep['status'], 

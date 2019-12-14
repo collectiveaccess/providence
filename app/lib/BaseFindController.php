@@ -226,8 +226,26 @@
 					}
 					
 					if (isset($va_attribute_list[$va_tmp[1]]) && $va_sortable_elements[$va_attribute_list[$va_tmp[1]]]) {
-						$va_display_list[$vn_i]['is_sortable'] = true;
-						$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+                        $va_display_list[$vn_i]['is_sortable'] = true;
+                        $va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+					    if(ca_metadata_elements::getElementDatatype($va_tmp[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+					        // If container includes a field type this is typically "preferred" for sorting use that in place of the container aggregate
+					        $elements = ca_metadata_elements::getElementsForSet($va_tmp[1]);
+					        foreach($elements as $e) {
+					            switch($e['datatype']) {
+					                case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+					                case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+					                case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+					                case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+					                case __CA_ATTRIBUTE_VALUE_INTEGER__:
+					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+					                case __CA_ATTRIBUTE_VALUE_LENGTH__:
+					                    $va_display_list[$vn_i]['bundle_sort'] = "{$va_display_item['bundle_name']}.{$e['element_code']}";
+					                    break(2);
+					            }
+					        }
+					    }
 						continue;
 					}
 				}
