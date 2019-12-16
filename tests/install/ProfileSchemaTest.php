@@ -29,11 +29,12 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_APP_DIR__.'/helpers/configurationHelpers.php');
 require_once(dirname(__FILE__).'/../../install/inc/Installer.php');
 
-class ProfileSchemaTest extends PHPUnit_Framework_TestCase {
+class ProfileSchemaTest extends TestCase {
 
 	public function testAvailableProfilesConformToSchema() {
 		$va_profiles = caGetAvailableXMLProfiles(dirname(__FILE__).'/../../install/');

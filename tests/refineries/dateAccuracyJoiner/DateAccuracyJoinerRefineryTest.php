@@ -29,17 +29,18 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once __CA_APP_DIR__ . '/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php';
 
-class DateAccuracyJoinerRefineryTest extends PHPUnit_Framework_TestCase {
+class DateAccuracyJoinerRefineryTest extends TestCase {
 
 	/** @var  DateAccuracyJoinerRefinery */
 	private $opo_refinery;
 
 	private $opa_default_settings;
 
-	protected function setUp(){
+	protected function setUp() : void {
 		$this->opo_refinery = new DateAccuracyJoinerRefinery();
 		$this->opa_default_settings = array_merge(
 			array_map(

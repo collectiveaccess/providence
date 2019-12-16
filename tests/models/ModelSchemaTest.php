@@ -29,17 +29,19 @@
  * 
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/Db.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
-class ModelSchemaTest extends PHPUnit_Framework_TestCase {
+class ModelSchemaTest extends TestCase {
 	# -------------------------------------------------------
 	private $opo_dm;
 	# -------------------------------------------------------
-	protected function setUp(){
-		
+	protected function setUp() : void {
+		// noop
 	}
 	# -------------------------------------------------------
 	/**
@@ -179,5 +181,3 @@ class ModelSchemaTest extends PHPUnit_Framework_TestCase {
 	}
 	# -------------------------------------------------------
 }
-
-?>

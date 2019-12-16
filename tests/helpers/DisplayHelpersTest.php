@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
+ 
 require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
 
-class DisplayHelpersTest extends PHPUnit_Framework_TestCase {
+class DisplayHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testTags() {
 		$va_tags = caGetTemplateTags('Here is a simple CA field spec: ^ca_objects.idno');

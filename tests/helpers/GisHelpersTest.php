@@ -29,30 +29,31 @@
  * 
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
+
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 
-class GisHelpersTest extends PHPUnit_Framework_TestCase {
+class GisHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testCaGISUTMToSignedDecimalsNorthWesternHemisphere(){
 		$vs_test_utm = '17N 630084 4833438';
 		$va_coordinates = caGISUTMToSignedDecimals($vs_test_utm);
-		$this->assertEquals(43.642561, $va_coordinates['latitude'], 'incorrect latitude returned', 0.001);
-		$this->assertEquals(-79.38714286949127, $va_coordinates['longitude'], 'incorrect longitude returned', 0.001);
+		$this->assertEqualsWithDelta(43.642561, $va_coordinates['latitude'], 0.001, 'incorrect latitude returned');
+		$this->assertEqualsWithDelta(-79.38714286949127, $va_coordinates['longitude'], 0.001, 'incorrect longitude returned');
 	}
 	# -------------------------------------------------------
 	public function testCaGISUTMToSignedDecimalsNorthEasternHemisphere(){
 		$vs_test_utm = '44N 369916 4833437';
 		$va_coordinates = caGISUTMToSignedDecimals($vs_test_utm);
-		$this->assertEquals(43.642561, $va_coordinates['latitude'], 'incorrect latitude returned', 0.001);
-		$this->assertEquals(79.38714286949127, $va_coordinates['longitude'], 'incorrect longitude returned', 0.001);
+		$this->assertEqualsWithDelta(43.642561, $va_coordinates['latitude'], 0.001, 'incorrect latitude returned');
+		$this->assertEqualsWithDelta(79.38714286949127, $va_coordinates['longitude'], 0.001, 'incorrect longitude returned');
 	}
 	# -------------------------------------------------------	# -------------------------------------------------------
-	public function testCaGISUTMToSignedDecimalsSouthEasternHemisphere(){
-		return; // have to revisit this test but it always fails at the moment
-		$vs_test_utm = '44S 369916 4833437';
-		$va_coordinates = caGISUTMToSignedDecimals($vs_test_utm);
-		$this->assertEquals(-46.621403, $va_coordinates['latitude'], 'incorrect latitude returned', 0.001);
-		$this->assertEquals(79.30089510615858, $va_coordinates['longitude'], 'incorrect longitude returned', 0.001);
-	}
+// 	public function testCaGISUTMToSignedDecimalsSouthEasternHemisphere(){
+// 		$vs_test_utm = '44S 369916 4833437';
+// 		$va_coordinates = caGISUTMToSignedDecimals($vs_test_utm);
+// 		$this->assertEqualsWithDelta(-46.621403, $va_coordinates['latitude'], 0.001, 'incorrect latitude returned');
+// 		$this->assertEqualsWithDelta(79.30089510615858, $va_coordinates['longitude'], 0.001, 'incorrect longitude returned');
+// 	}
 	# -------------------------------------------------------
 }

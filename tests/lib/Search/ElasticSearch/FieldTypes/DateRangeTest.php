@@ -29,11 +29,12 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/DateRange.php');
 
-class DateRangeTest extends PHPUnit_Framework_TestCase {
+class DateRangeTest extends TestCase {
 	public function testDateRanges() {
 		$o_range = new ElasticSearch\FieldTypes\DateRange(
 			'ca_objects', 'dates_value'
