@@ -752,7 +752,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			WHERE
 				(ceus.ui_id = ?) AND (ceuibp.screen_id = ?) {$vs_bundle_list_sql}
 			ORDER BY 
-				ceuibp.rank
+				ceuibp.`rank`
 		", $va_params);
 		
 		$va_placements = [];
@@ -1078,7 +1078,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
-			SELECT cauis.screen_id, cauis.rank
+			SELECT cauis.screen_id, cauis.`rank`
 			FROM ca_editor_ui_screens cauis
 			WHERE
 				cauis.ui_id = ? AND cauis.parent_id IS NOT NULL

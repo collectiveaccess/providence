@@ -437,7 +437,7 @@ class ca_bookmark_folders extends BaseModel {
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
-			SELECT b.bookmark_id, b.rank
+			SELECT b.bookmark_id, b.`rank`
 			FROM ca_bookmarks b
 			WHERE
 				b.folder_id = ?

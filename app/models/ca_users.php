@@ -1439,7 +1439,7 @@ class ca_users extends BaseModel {
 				LEFT JOIN ca_users AS wu ON wug.user_id = wu.user_id
 				INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wug.group_id
 				WHERE wuxg.user_id = ?
-				ORDER BY wug.rank
+				ORDER BY wug.`rank`
 			", array((int)$pn_user_id));
 			$va_groups = array();
 			while($qr_res->nextRow()) {

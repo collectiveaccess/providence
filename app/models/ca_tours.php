@@ -453,12 +453,12 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
-			SELECT tsl.stop_id, tsl.rank
+			SELECT tsl.stop_id, tsl.`rank`
 			FROM ca_tour_stops tsl
 			WHERE
 				tsl.tour_id = ? AND tsl.deleted = 0
 			ORDER BY 
-				tsl.rank ASC
+				tsl.`rank` ASC
 		", (int)$vn_tour_id);
 		$va_stops = array();
 		

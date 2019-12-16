@@ -525,11 +525,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
-			SELECT placement_id, bundle_name, placement_code, settings, rank
+			SELECT placement_id, bundle_name, placement_code, settings, `rank`
 			FROM ca_editor_ui_bundle_placements
 			WHERE
 				screen_id = ?
-			ORDER BY rank
+			ORDER BY `rank`
 		", [(int)$vn_screen_id]);
 		
 		$va_available_bundles = ($pb_settings_only) ? array() : $this->getAvailableBundles();

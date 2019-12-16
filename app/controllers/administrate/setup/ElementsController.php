@@ -80,7 +80,7 @@ class ElementsController extends BaseEditorController {
 				WHERE
 					cme.parent_id = ?
 				ORDER BY
-					cme.rank
+					cme.`rank`
 			",(int)$t_element->get('element_id'));
 			
 			while($qr_result->nextRow()){
@@ -361,7 +361,7 @@ class ElementsController extends BaseEditorController {
 		$t_element = $this->getElementObject();
 		$vo_db = new Db();
 		$qr_tmp = $vo_db->query("
-			SELECT element_id, rank
+			SELECT element_id, `rank`
 			FROM ca_metadata_elements
 			WHERE
 				(`rank` < ?)
@@ -400,7 +400,7 @@ class ElementsController extends BaseEditorController {
 		$t_element = $this->getElementObject();
 		$vo_db = new Db();
 		$qr_tmp = $vo_db->query("
-			SELECT element_id,rank
+			SELECT element_id, `rank`
 			FROM ca_metadata_elements
 			WHERE
 				(`rank` > ?)
@@ -496,7 +496,7 @@ class ElementsController extends BaseEditorController {
 						AND
 						(rank>?)
 					ORDER BY
-						rank
+						`rank`
 			",$pn_parent_id,$vn_rank);
 			while($qr_res->nextRow()){
 				$t_element->load($qr_res->get('element_id'));
@@ -512,7 +512,7 @@ class ElementsController extends BaseEditorController {
 						AND
 						(`rank`=?)
 					ORDER BY
-						rank
+						`rank`
 			",$pn_parent_id,$vn_rank);
 			$i=0;
 			while($qr_res->nextRow()){

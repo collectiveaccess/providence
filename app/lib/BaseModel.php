@@ -7252,7 +7252,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			// Fall back to default sorts if no explicit sort
 			if (!$vs_order_by) {
 				if ($vs_rank_fld = $this->getProperty('RANK')) { 
-					$vs_order_by = "`".$this->tableName().'.'.$vs_rank_fld."`";
+					$vs_order_by = $this->tableName().'.`'.$vs_rank_fld."`";
 				} else {
 					$vs_order_by = $this->tableName().".".$this->primaryKey();
 				}
@@ -10290,7 +10290,7 @@ $pa_options["display_form_field_tips"] = true;
 			INNER JOIN ca_items_x_tags AS cixt ON cit.tag_id = cixt.tag_id
 			WHERE
 				(cixt.table_num = ?) AND (cixt.row_id = ?) {$vs_user_sql} {$vs_moderation_sql}
-			ORDER BY cixt.rank
+			ORDER BY cixt.`rank`
 		", $this->tableNum(), $vn_row_id);
 		
 		return array_map(function($v) { $v['moderation_message'] = $v['access'] ? '' : _t('Needs moderation'); return $v; }, $qr_comments->getAllRows());

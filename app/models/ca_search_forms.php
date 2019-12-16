@@ -477,7 +477,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_search_form_placements
 			WHERE
 				form_id = ?
-			ORDER BY rank
+			ORDER BY `rank`
 		", (int)$vn_form_id);
 
 		$va_available_bundles = ($pb_settings_only) ? [] : $this->getAvailableBundles();
