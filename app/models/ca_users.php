@@ -1044,7 +1044,7 @@ class ca_users extends BaseModel {
 			} else {
 				$o_db = $this->getDb();
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`, wur.vars
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
@@ -1344,7 +1344,7 @@ class ca_users extends BaseModel {
 			} else {
 				$o_db = $this->getDb();
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`, wur.vars
 					FROM ca_user_roles wur
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id

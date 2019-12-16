@@ -442,7 +442,7 @@ class ca_bookmark_folders extends BaseModel {
 			WHERE
 				b.folder_id = ?
 			ORDER BY 
-				b.rank ASC
+				b.`rank` ASC
 		", (int)$vn_folder_id);
 		$va_bookmarks = array();
 		

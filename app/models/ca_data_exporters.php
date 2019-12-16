@@ -393,7 +393,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($vb_order_for_delete_cascade) {
 			$vs_order = "parent_id DESC";
 		} else {
-			$vs_order = "rank ASC";
+			$vs_order = "`rank` ASC";
 		}
 
 		$qr_items = $vo_db->query("

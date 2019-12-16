@@ -720,7 +720,7 @@ class SearchResult extends BaseObject {
 						$va_fields[] = $va_rel['many_table'].'.type_id rel_type_id';
 					}
 					if ($t_link->hasField('rank')) { 
-						$va_order_bys[] = $t_link->tableName().'.rank';
+						$va_order_bys[] = $t_link->tableName().'.`rank`';
 					}
 				} else {
 					if (($va_rels = Datamodel::getOneToManyRelations($vs_right_table)) && is_array($va_rels[$vs_left_table])) {

@@ -472,7 +472,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			WHERE
 				 ".join(" AND ", $va_wheres)."
 			ORDER BY 
-				ceus.rank, ceus.screen_id
+				ceus.`rank`, ceus.screen_id
 		", $va_params);
 		
 		$va_screens = [];
@@ -1083,7 +1083,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			WHERE
 				cauis.ui_id = ? AND cauis.parent_id IS NOT NULL
 			ORDER BY 
-				cauis.rank ASC
+				cauis.`rank` ASC
 		", (int)$vn_ui_id);
 		$va_screens = [];
 		

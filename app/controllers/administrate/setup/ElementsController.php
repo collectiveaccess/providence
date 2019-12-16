@@ -364,11 +364,11 @@ class ElementsController extends BaseEditorController {
 			SELECT element_id, rank
 			FROM ca_metadata_elements
 			WHERE
-				(rank < ?)
+				(`rank` < ?)
 				AND
 				(parent_id = ?)
 			ORDER BY
-				rank DESC
+				`rank` DESC
 		",$t_element->get('rank'),$t_element->get('parent_id'));
 		if(!$qr_tmp->nextRow()){
 			$this->notification->addNotification(_t("This element is at the top of the list"), __NOTIFICATION_TYPE_ERROR__);
@@ -403,11 +403,11 @@ class ElementsController extends BaseEditorController {
 			SELECT element_id,rank
 			FROM ca_metadata_elements
 			WHERE
-				(rank > ?)
+				(`rank` > ?)
 				AND
 				(parent_id = ?)
 			ORDER BY
-				rank
+				`rank`
 		",$t_element->get('rank'),$t_element->get('parent_id'));
 		if(!$qr_tmp->nextRow()){
 			$this->notification->addNotification(_t("This element is at the bottom of the list"), __NOTIFICATION_TYPE_ERROR__);
@@ -464,10 +464,10 @@ class ElementsController extends BaseEditorController {
 		$vo_db = new Db();
 		$qr_res = $vo_db->query("
 			SELECT * FROM
-				(SELECT rank,count(*) as count
+				(SELECT `rank`,count(*) as count
 					FROM ca_metadata_elements
 					WHERE parent_id=?
-					GROUP BY rank) as `lambda`
+					GROUP BY `rank) as `lambda`
 			WHERE
 				count > 1;
 		",$pn_parent_id);
@@ -510,7 +510,7 @@ class ElementsController extends BaseEditorController {
 					WHERE
 						(parent_id=?)
 						AND
-						(rank=?)
+						(`rank`=?)
 					ORDER BY
 						rank
 			",$pn_parent_id,$vn_rank);

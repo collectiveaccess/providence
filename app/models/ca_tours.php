@@ -384,7 +384,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 			WHERE
 				(ts.tour_id = ?) AND (ts.deleted = 0)
 			ORDER BY 
-				ts.rank, ts.stop_id
+				ts.`rank`, ts.stop_id
 		", (int)$this->getPrimaryKey());
 		
 		$va_stops = array();
