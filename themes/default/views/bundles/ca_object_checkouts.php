@@ -122,7 +122,7 @@
 				</div>
 			</div>
 		</div>
-	</div>s
+	</div>
 </div>
 
 <script type="text/javascript">
