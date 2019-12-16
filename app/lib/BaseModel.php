@@ -2928,7 +2928,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
-						$vs_sql .= "{$vs_field} = {$vm_val},";
+						$vs_sql .= "`{$vs_field}` = {$vm_val},";
 						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
