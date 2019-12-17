@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,11 +76,10 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
     public function lookup($pa_settings, $ps_search, $pa_options = null)
     {
         $vo_client = $this->getClient();
-        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP, [
+        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?query=".urlencode("cql.any all {$ps_search}"), [
             'headers' => [
                 'Accept' => 'application/json'
-            ],
-            ['query' => "'".$ps_search."'"]
+            ]
         ]);
         #$vo_request->setHeader('Accept', 'application/json');
         #$vo_request->getQuery()->add('query', "'".$ps_search."'");
