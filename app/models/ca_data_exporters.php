@@ -1639,7 +1639,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logInfo(_t("Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]", $pn_item_id, $pn_table_num, $pn_record_id));
 
 		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
-		$t_instance = ca_data_exporters::loadInstanceByID($pn_record_id,$pn_table_num);
+		if (!($t_instance = ca_data_exporters::loadInstanceByID($pn_record_id,$pn_table_num))) {
+			throw new ApplicationException(_t("Record with ID %1 does not exist in table %2", $pn_record_id, $pn_table_num));
+		}
 
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
@@ -2046,7 +2048,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			} else {
 				if(!$vb_repeat) {
-
 					$vs_get = $t_instance->get($vs_source,$va_get_options);
 
 					$o_log->logDebug(_t("Source is a simple get() for some bundle. Value for this mapping is '%1'", $vs_get));
@@ -2251,8 +2252,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(isset(ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id])) {
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id];
 		} else {
-			$t_instance = Datamodel::getInstanceByTableNum($pn_table_num);
-			if(!$t_instance->load($pn_record_id)) {
+			if (!($table = Datamodel::getTableName($pn_table_num))) { return false; }
+			
+			$t_instance = null;
+			if (is_numeric($pn_record_id)) {
+				// Try numeric id
+				$t_instance = $table::find($pn_record_id, ['returnAs' => 'firstModelInstance']);
+			}
+			if(!$t_instance) {
+				$t_instance = $table::find([Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD') => $pn_record_id], ['returnAs' => 'firstModelInstance']);
+			}
+			
+			if (!$t_instance) {
 				return false;
 			}
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id] = $t_instance;
