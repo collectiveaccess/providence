@@ -334,8 +334,10 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                                     $vb_is_set = false;
 									foreach ($vo_attr->getValues() as $o_val) {
 										if ($o_val->getElementCode() != $va_parts[2]) {
-											$va_value[$o_val->getElementCode()] = $v = $o_val->getDisplayValue(['idsOnly' => true]);
-											if (strlen($v) > 0) { $vb_is_set = true; }
+											if (strlen($v) > 0) { 
+												$va_value[$o_val->getElementCode()] = $v = $o_val->getDisplayValue(['idsOnly' => true]);
+												$vb_is_set = true; 
+											}
 										}
 									}
                                     if (($vs_mode === 'overwrite') || $vb_is_set) {

@@ -866,7 +866,9 @@
 														$vm_value[$vn_i] = is_numeric($vm_list_value) ? (int)$vm_list_value : (int)caGetListItemID($t_element->get('list_id'), $vm_list_value);
 													}
 												} else {
-													$vm_value = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($t_element->get('list_id'), $vm_value);
+													if(!($vm_value = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($t_element->get('list_id'), $vm_value))) {
+													    $vm_value = -1;     // make sure no matches
+													}
 												}
 											}
 										}
