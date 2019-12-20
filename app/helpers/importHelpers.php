@@ -78,7 +78,7 @@
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
 
 			if (!$vs_name && !$vs_idno) { continue; }
-			if (!$vs_name && isset($va_parent['name'])) { continue; }//$vs_name = $vs_idno; }
+			if (!$vs_name && isset($va_parent['name'])) { continue; }
 			
 			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
 		
