@@ -301,7 +301,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Map to table'),
-			'description' => _t('Sets the CollectiveAccess table for the imported data.  Pending implementation.')
+			'description' => _t('Sets the CollectiveAccess table for the imported data.')
 		);
 		$va_settings['existingRecordPolicy'] = array(
 			'formatType' => FT_TEXT,
@@ -325,6 +325,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			),
 			'label' => _t('Existing record policy'),
 			'description' => _t('Determines how existing records are checked for and handled by the import mapping.  Pending implementation.')
+		);
+		$va_settings['ignoreTypeForExistingRecordPolicy'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Ignore record type when looking for existing records as specified by the existing records policy.'),
+			'description' => _t('.')
 		);
 		$va_settings['dontDoImport'] = array(
 			'formatType' => FT_NUMBER,
@@ -1717,7 +1726,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				$vb_was_preferred_label_match = false;
 				
-				$va_base_criteria = ($vs_type) ? ['type_id' => $vs_type] : [];
+				$va_base_criteria = ($vs_type && !(bool)$t_mapping->getSetting('ignoreTypeForExistingRecordPolicy')) ? ['type_id' => $vs_type] : [];
 				if($vn_list_mapping_list_id !== null ) {
 				    $va_base_criteria['list_id'] = $vn_list_mapping_list_id;
 				}  
