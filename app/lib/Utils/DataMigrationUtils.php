@@ -314,7 +314,14 @@
 				return null;
 			}
 			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) {
-				if ($o_log) { $o_log->logNotice(_t("Not adding \"%1\" to list %2 as dontCreate option is set", $ps_item_idno, $pm_list_code_or_id)); }
+				if ($o_log) { 
+					$o_config = Configuration::load();
+					if((bool)$o_config->get('log_import_dont_create_events_as_errors')) {
+						$o_log->logError(_t("Not adding \"%1\" to list %2 because dontCreate option is set", $ps_item_idno, $pm_list_code_or_id)); 
+					} else {
+						$o_log->logNotice(_t("Not adding \"%1\" to list %2 because dontCreate option is set", $ps_item_idno, $pm_list_code_or_id)); 
+					}
+				}
 				return false;
 			}
 			//
@@ -1104,7 +1111,17 @@
 				//
 				// Create new row
 				//
-				if (caGetOption('dontCreate', $pa_options, false)) { return false; }
+				if (caGetOption('dontCreate', $pa_options, false)) { 
+					if ($o_log) { 
+						$o_config = Configuration::load();
+						if((bool)$o_config->get('log_import_dont_create_events_as_errors')) {
+							$o_log->logError(_t("Not adding \"%1\" (%2) as %3 because dontCreate option is set", $vs_label, $vs_idno, $ps_table)); 
+						} else {
+							$o_log->logNotice(_t("Not adding \"%1\" (%2) as %3 because dontCreate option is set", $vs_label, $vs_idno, $ps_table)); 
+						}
+					}
+					return false; 
+				}
 				if ($o_event) { $o_event->beginItem($ps_event_source, $vs_table_class, 'I'); }
 
 				// If we're creating a new item, it's probably a good idea to *NOT* use a
