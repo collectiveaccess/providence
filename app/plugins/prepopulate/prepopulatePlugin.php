@@ -327,6 +327,20 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 						case 1:
 							switch ($vs_mode) {
 								case 'overwrite':
+									$vo_attr = array_pop($va_attr);
+									$va_value = array($va_parts[2] => $vs_value);
+
+                                    $vb_is_set = false;
+									foreach ($vo_attr->getValues() as $o_val) {
+										if ($o_val->getElementCode() != $va_parts[2]) {
+											$va_value[$o_val->getElementCode()] = $v = $o_val->getDisplayValue(['idsOnly' => true]);
+											$vb_is_set = true; 
+										}
+									}
+                                    if (($vs_mode === 'overwrite') || $vb_is_set) {
+									    $t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
+									}
+									break;
 								case 'overwriteifset':
 									$vo_attr = array_pop($va_attr);
 									$va_value = array($va_parts[2] => $vs_value);
