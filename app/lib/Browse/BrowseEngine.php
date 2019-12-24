@@ -624,7 +624,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'field':
-					if (!($t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
+					if (!($t_item = Datamodel::getInstanceByTableName($va_facet_info['relative_to'] ? $va_facet_info['relative_to'] : $this->ops_browse_table_name, true))) { break; }
 					if($vb_is_bit = ($t_item->getFieldInfo($va_facet_info['field'], 'FIELD_TYPE') == FT_BIT)) {
 						return ((bool)$pn_row_id) ? caGetOption('label_yes', $va_facet_info, _t('Yes')) : caGetOption('label_no', $va_facet_info, _t('No'));
 					}

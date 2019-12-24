@@ -162,7 +162,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Is transcribable?'), 'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
+				'LABEL' => _t('Transcribe?'), 'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
 		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 

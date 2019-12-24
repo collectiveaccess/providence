@@ -1114,6 +1114,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Do not show access?'),
 							'description' => _t('Do not show access drop-down.')
 						);
+						
+						if($this->getAppConfig()->get('allow_transcription')) {
+							$va_additional_settings['dontShowTranscribe'] = array(
+								'formatType' => FT_NUMBER,
+								'displayType' => DT_CHECKBOXES,
+								'takesLocale' => false,
+								'default' => 0,
+								'multiple' => false,
+								'label' => _t('Do not show transcription control?'),
+								'description' => _t('Do not show transcription drop-down.')
+							);
+						}
                     }
 
 					if($vs_bundle == 'ca_sets') {

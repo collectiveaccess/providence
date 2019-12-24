@@ -43,6 +43,7 @@
 	$dont_show_idno = caGetOption('dontShowIdno', $va_settings, false);
 	$dont_show_access = caGetOption('dontShowAccess', $va_settings, false);
 	$dont_show_status = caGetOption('dontShowStatus', $va_settings, false);
+	$dont_show_transcribe = $this->request->getAppConfig()->get('allow_transcription') ? caGetOption('dontShowTranscribe', $va_settings, false) : true;
 	
 	
 	$vs_rel_dir         = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
@@ -177,6 +178,11 @@
 									<h3><?php print _t('Status'); ?></h3> {status_display}
 <?php
     }
+    if(!$dont_show_transcribe) {
+?>
+									<br/><h3><?php print _t('Transcribable?'); ?></h3> {is_transcribable_display}
+<?php
+    }
 ?>
 								</div>
 						
@@ -212,6 +218,11 @@
     if (!$dont_show_status) {
 ?>
 								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('status', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "{status}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
+<?php
+    }
+    if (!$dont_show_transcribe) {
+?>
+								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('is_transcribable', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}is_transcribable_{n}", 'name' => "{fieldNamePrefix}is_transcribable_{n}", "value" => "{is_transcribable}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
 <?php
     }
 ?>					
@@ -345,6 +356,11 @@
 				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}status_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('status', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
 <?php
     }
+    if(!$dont_show_transcribe) {
+?>
+				<br/><div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}is_transcribable_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('is_transcribable', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}is_transcribable_{n}", 'name' => "{fieldNamePrefix}is_transcribable_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
+<?php
+    }
 ?>		
 				<br class="clear"/>
 			</div>
@@ -392,6 +408,11 @@
     if (!$dont_show_status) {
 ?>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('status', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
+<?php
+    }
+    if (!$dont_show_transcribe) {
+?>
+				<br/><div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('is_transcribable', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}is_transcribable_{n}", 'name' => "{fieldNamePrefix}is_transcribable_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
 <?php
     }
 ?>		
@@ -532,7 +553,7 @@
 	jQuery(document).ready(function() {
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
+			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
