@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/ULAN.php");
 
-class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
+class ULANInformationServiceAttributeValueTest extends TestCase {
 
 	public function testBasic() {
 		$o_service = new WLPlugInformationServiceULAN();

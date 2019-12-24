@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Attributes/Values/GeocodeAttributeValue.php");
 
-class GeocodeAttributeValueTest extends PHPUnit_Framework_TestCase {
+class GeocodeAttributeValueTest extends TestCase {
 
 	public function testWithCoordinates(){
 		$o_val = new GeocodeAttributeValue();

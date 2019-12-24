@@ -89,9 +89,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			SELECT DISTINCT
 				wcl.log_id, wcl.log_datetime log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
 				 wcl.unit_id, wu.email, wu.fname, wu.lname, wcls.subject_table_num, wcls.subject_row_id /* wclsnap.snapshot, */
-			FROM ".$this->ops_change_log_database.".ca_change_log wcl
-			INNER JOIN ".$this->ops_change_log_database.".ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
-			LEFT JOIN ".$this->ops_change_log_database.".ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
+			FROM ".$this->ops_change_log_database."ca_change_log wcl
+			INNER JOIN ".$this->ops_change_log_database."ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
+			LEFT JOIN ".$this->ops_change_log_database."ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
 			LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
 			WHERE
 				(

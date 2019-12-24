@@ -29,13 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Cache/ExternalCache.php');
 
-class ExternalCacheTest extends PHPUnit_Framework_TestCase {
+class ExternalCacheTest extends TestCase {
 
-	public function setUp() {
+	protected function setUp() : void {
 		ExternalCache::flush('default'); // might have side-effects on other tests?
 		ExternalCache::flush('barNamespace');
 		ExternalCache::setInvalidationMode(Stash\Invalidation::NONE);

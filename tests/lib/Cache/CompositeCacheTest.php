@@ -29,13 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Cache/CompositeCache.php');
 
-class CompositeCacheTest extends PHPUnit_Framework_TestCase {
+class CompositeCacheTest extends TestCase {
 
-	public function setUp() {
+	protected function setUp() : void {
 		CompositeCache::flush(); // might have side-effects on other tests?
 	}
 

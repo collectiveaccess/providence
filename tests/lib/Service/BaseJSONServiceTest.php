@@ -29,11 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
 require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
 require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
 
-class BaseJSONServiceTest extends PHPUnit_Framework_TestCase {
+class BaseJSONServiceTest extends TestCase {
 	# -------------------------------------------------------
 	public function testProperInstantiation(){
 		global $_SERVER; // emulate client request

@@ -29,10 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 
-class ExpressionParserTest extends PHPUnit_Framework_TestCase {
+class ExpressionParserTest extends TestCase {
 
 	public function testParens() {
 		$this->assertEquals(13, ExpressionParser::evaluate('5 + (4 * 2)'));

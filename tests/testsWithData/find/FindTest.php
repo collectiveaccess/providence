@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -50,7 +51,7 @@ class FindTest extends BaseTestWithData {
 	 */
 	private $opn_object_id2 = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 

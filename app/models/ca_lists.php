@@ -553,7 +553,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$vs_order_by = 'clil.name_plural';
 					break;
 				case __CA_LISTS_SORT_BY_RANK__:	// by rank
-					$vs_order_by = 'cli.rank';
+					$vs_order_by = 'cli.`rank`';
 					break;
 				case __CA_LISTS_SORT_BY_VALUE__:	// by value
 					$vs_order_by = 'cli.item_value';
@@ -783,7 +783,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_order_by = 'clil.name_plural';
 				break;
 			case __CA_LISTS_SORT_BY_RANK__:	// by rank
-				$vs_order_by = 'cli.rank';
+				$vs_order_by = 'cli.`rank`';
 				break;
 			case __CA_LISTS_SORT_BY_VALUE__:	// by value
 				$vs_order_by = 'cli.item_value';

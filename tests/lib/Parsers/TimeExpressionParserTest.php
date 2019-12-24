@@ -29,11 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 
-class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
+class TimeExpressionParserTest extends TestCase {
 
-	public function setUp() {
+	protected function setUp() : void {
 		// most of the comparisons below rely on Eastern time zone
 		date_default_timezone_set('America/New_York');
 	}

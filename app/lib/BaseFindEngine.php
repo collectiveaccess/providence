@@ -673,7 +673,7 @@
                         $vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
 				        
 				        $vs_sql = "
-							SELECT attr.row_id, LPAD(li.rank,9, '0') {$vs_sort_field}
+							SELECT attr.row_id, LPAD(li.`rank`,9, '0') {$vs_sort_field}
 							FROM ca_attributes attr
 							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
 							LEFT JOIN ca_list_items AS li ON attr_vals.value_longtext2 = li.idno

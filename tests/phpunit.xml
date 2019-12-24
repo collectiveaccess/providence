@@ -8,15 +8,13 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          forceCoversAnnotation="false"
-         mapTestClassNameToCoveredClassName="false"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"
          stopOnIncomplete="false"
          stopOnSkipped="false"
-         strict="false"
          bootstrap="./setup-tests.php"
-         verbose="false">
+         verbose="true">
 
   <testsuites>
     <testsuite name="Helpers Test Suite">

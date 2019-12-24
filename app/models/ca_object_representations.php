@@ -510,7 +510,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					WHERE
 						oxor.representation_id = ? AND oxor.is_primary = 1 AND o_r.deleted = 0
 					ORDER BY
-						oxor.rank, oxor.relation_id
+						oxor.`rank`, oxor.relation_id
 				", (int)$vn_representation_id);
 				while($qr_res->nextRow()) {
 					// nope - force this one to be primary
