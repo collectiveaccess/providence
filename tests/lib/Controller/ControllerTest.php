@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__.'/Controller/AppController.php');
 
-class ControllerTest extends PHPUnit_Framework_TestCase {
+class ControllerTest extends TestCase {
 
 
 	public function testRequestDispatch() {

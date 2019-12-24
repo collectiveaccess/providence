@@ -269,6 +269,11 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 						case 'overwrite': // always set
 							$t_instance->set($va_parts[1], $vs_value);
 							break;
+						case 'overwriteifset': // set if value is not empty
+						    if(strlen($vs_value) > 0) {
+							    $t_instance->set($va_parts[1], $vs_value);
+							}
+							break;
 						case 'addifempty':
 						default:
 							if(!$t_instance->get($va_parts[1])) {
@@ -294,6 +299,14 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 								'locale_id' => $g_ui_locale_id
 							), $va_parts[1]);
 							break;
+						case 'overwriteifset': 
+						    if(strlen($vs_value) > 0) {
+                                $t_instance->replaceAttribute(array(
+                                    $va_parts[1] => $vs_value,
+                                    'locale_id' => $g_ui_locale_id
+                                ), $va_parts[1]);
+                            }
+							break;
 						default:
 						case 'addifempty': // only add value if none exists
 							if(!$t_instance->get($vs_target)) {
@@ -317,13 +330,33 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 									$vo_attr = array_pop($va_attr);
 									$va_value = array($va_parts[2] => $vs_value);
 
+                                    $vb_is_set = false;
 									foreach ($vo_attr->getValues() as $o_val) {
 										if ($o_val->getElementCode() != $va_parts[2]) {
-											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue(['idsOnly' => true]);
+											$va_value[$o_val->getElementCode()] = $v = $o_val->getDisplayValue(['idsOnly' => true]);
+											$vb_is_set = true; 
 										}
 									}
+                                    if (($vs_mode === 'overwrite') || $vb_is_set) {
+									    $t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
+									}
+									break;
+								case 'overwriteifset':
+									$vo_attr = array_pop($va_attr);
+									$va_value = array($va_parts[2] => $vs_value);
 
-									$t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
+                                    $vb_is_set = false;
+									foreach ($vo_attr->getValues() as $o_val) {
+										if ($o_val->getElementCode() != $va_parts[2]) {
+											if (strlen($v) > 0) { 
+												$va_value[$o_val->getElementCode()] = $v = $o_val->getDisplayValue(['idsOnly' => true]);
+												$vb_is_set = true; 
+											}
+										}
+									}
+                                    if (($vs_mode === 'overwrite') || $vb_is_set) {
+									    $t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
+									}
 									break;
 								case 'addifempty':
 									$vo_attr = array_pop($va_attr);
@@ -371,6 +404,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 						case 1:
 							switch ($vs_mode) {
 								case 'overwrite':
+								case 'overwriteifset':
 								case 'addifempty':
 								    $va_labels = caExtractValuesByUserLocale($t_instance->getLabels(null, $vb_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__));
 									
@@ -382,9 +416,12 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							            $is_blank = (isset($va_label[$label_fld]) && ($va_label[$label_fld] == '['._t('BLANK').']'));
 										
 										$vb_update = false;
-										if(strtolower($vs_mode) == 'overwrite') {
+										if($vs_mode == 'overwrite') {
 											$va_label[$va_parts[2]] = $vs_value;
 											$vb_update = true;
+										} elseif(($vs_mode == 'overwriteifset') && (strlen($vs_value) > 0))  {
+                                            $va_label[$va_parts[2]] = $vs_value;
+                                            $vb_update = true;
 										} else {
 										    $l = trim($va_label[$va_parts[2]]);
 											if((strlen($l) == 0) || ($is_blank)) { // in addifempty mode only edit label when field is not set
@@ -398,7 +435,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 												$va_label['label_id'], $va_label, $g_ui_locale_id, null, $vb_preferred
 											);
 										}
-									} else {
+									} elseif (($vs_mode !== 'overwriteifset') || (strlen($vs_value) > 0)) {
 										$t_instance->addLabel(array(
 											$va_parts[2] => $vs_value,
 										), $g_ui_locale_id, null, $vb_preferred);

@@ -1,20 +1,21 @@
 language: php
 sudo: required
-dist: trusty
+dist: bionic
 
 addons:
   apt:
     packages:
-    - mysql-server-5.6
-    - mysql-client-core-5.6
-    - mysql-client-5.6
+    - mysql-server-5.7
+    - mysql-client-core-5.7
+    - mysql-client-5.7
     
 php:
-  - 7.0
-  - 7.1
   - 7.2
   - 7.3
+  - 7.4
 
+services:
+  - mysql
 
 env:
   # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
@@ -42,5 +43,3 @@ branches:
     - develop
     - master
     - master-fix
-    - dev/refactor
-    - dev/locMerge

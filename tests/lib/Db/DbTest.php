@@ -29,16 +29,18 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+ 
 require_once(__CA_LIB_DIR__."/Db.php");
 
-class DbTest extends PHPUnit_Framework_TestCase {
+class DbTest extends TestCase {
 
 	/**
 	 * @var null|Db
 	 */
 	var $db = null;
 
-	public function setUp() {
+	protected function setUp() : void {
 		$this->db = new Db();
 		$this->db->query("CREATE TABLE IF NOT EXISTS foo (
 			id INT,
@@ -273,7 +275,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 
 	# ----------------------------
 
-	public function tearDown() {
+	protected function tearDown() : void {
 		$this->db->query("DROP TABLE IF EXISTS foo");
 		$this->db->query("DROP TABLE IF EXISTS bar");
 	}

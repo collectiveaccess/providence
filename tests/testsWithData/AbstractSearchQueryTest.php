@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');

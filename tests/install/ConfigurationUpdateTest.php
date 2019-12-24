@@ -29,12 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/install/inc/Installer.php');
 
-class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
+class ConfigurationUpdateTest extends TestCase {
 
-	public function tearDown() {
+	protected function tearDown() : void {
 		parent::tearDown(); // TODO: Actually tearDown correctly instead of delete()-ing things in the tests
 	}
 

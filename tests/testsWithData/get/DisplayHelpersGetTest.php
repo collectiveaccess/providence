@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
@@ -46,7 +47,7 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 	 */
 	private $opn_entity_id = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 

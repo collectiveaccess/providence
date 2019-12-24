@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
+
 require_once(__CA_APP_DIR__.'/helpers/expressionHelpers.php');
 
-class ExpressionHelpersTest extends PHPUnit_Framework_TestCase {
+class ExpressionHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testAgeCalculation() {
 		// this test will fail on my father's birthday every year. Nie vergessen.

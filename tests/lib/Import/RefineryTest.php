@@ -29,14 +29,16 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
 require_once(__CA_LIB_DIR__.'/Import/DataReaders/ExcelDataReader.php');
 
-class RefineryText extends PHPUnit_Framework_TestCase {
+class RefineryText extends TestCase {
     protected $data;
     protected $item;
     
-	public function setUp() {
+	protected function setUp() : void {
 		$this->data = [
 	        1 => "Verdun",
 	        2 => ['Cambrai', 'Arras'],

@@ -572,7 +572,7 @@
 				// then fallback to app.conf defaults
 				if (!$vb_has_sort_by_rank) {
 					$va_sort_values = $this->getRequest()->config->getList("{$this->ops_table_name}_hierarchy_browser_sort_values");
-					if ((sizeof($va_sort_values) < 1) || ($va_sort_values[0] != "{$this->ops_table_name}.{$vs_rank_fld}")) {
+					if ((sizeof($va_sort_values) < 1) || ($va_sort_values[0] != "`{$this->ops_table_name}.{$vs_rank_fld}`")) {
 						throw new ApplicationException(_t('%1 must have sort configured to use rank', $t_item->getProperty('NAME_SINGULAR')));
 					}
 				}

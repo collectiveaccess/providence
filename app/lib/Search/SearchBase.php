@@ -250,7 +250,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			if (is_numeric($pm_subject_table)) {
 				$pm_subject_table = Datamodel::getTableName($pm_subject_table);
 			}
-			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
+			if(!$va_info = $this->opo_search_indexing_config->getAssoc($pm_subject_table)) {
 				return null;
 			}
 	
@@ -281,7 +281,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			if (is_numeric($pm_content_table)) {
 				$pm_content_table = Datamodel::getTableName($pm_content_table);
 			}
-			if(!is_array($va_info = $this->opo_search_indexing_config->get($pm_subject_table))) {
+			if(!is_array($va_info = $this->opo_search_indexing_config->getAssoc($pm_subject_table))) {
 				return null;
 			}
 			// 'tables' is optional for one-many relations but its absence would be felt upstream
@@ -315,7 +315,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			if (is_numeric($pm_content_table)) {
 				$pm_content_table = Datamodel::getTableName($pm_content_table);
 			}
-			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
+			if(!$va_info = $this->opo_search_indexing_config->getAssoc($pm_subject_table)) {
 				return null;
 			}
 	
@@ -332,7 +332,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			if (is_numeric($pm_subject_table)) {
 				$pm_subject_table = Datamodel::getTableName($pm_subject_table);
 			}
-			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
+			if(!$va_info = $this->opo_search_indexing_config->getAssoc($pm_subject_table)) {
 				return null;
 			}
 			$va_access_points =  $va_info['_access_points'];
@@ -354,7 +354,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			if (is_numeric($pm_subject_table)) {
 				$pm_subject_table = Datamodel::getTableName($pm_subject_table);
 			}
-			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
+			if(!$va_info = $this->opo_search_indexing_config->getAssoc($pm_subject_table)) {
 				return null;
 			}
 	

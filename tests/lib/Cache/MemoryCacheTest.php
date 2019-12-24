@@ -29,13 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Cache/MemoryCache.php');
 
-class MemoryCacheTest extends PHPUnit_Framework_TestCase {
+class MemoryCacheTest extends TestCase {
 
-	public function setUp() {
+	protected function setUp() : void {
 		MemoryCache::flush('default');
 		MemoryCache::flush('barNamespace');
 	}

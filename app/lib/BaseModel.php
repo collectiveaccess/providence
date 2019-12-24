@@ -2451,10 +2451,10 @@ class BaseModel extends BaseObject {
 								//$qr_fmax->nextRow();
 								//$vs_field_value = $qr_fmax->get("m")+1;
 								//$this->set($vs_field, $vs_field_value);
-								$va_need_to_set_rank_for[] = $vs_field;
+								$va_need_to_set_rank_for[] = "{$vs_field}";
 							}
 						//}
-						$vs_fields .= "$vs_field,";
+						$vs_fields .= "`{$vs_field}`,";
 						$v = $vs_field_value;
 						if (!trim($v)) { $v = 0; }
 						if (!is_numeric($v)) {
@@ -2545,7 +2545,7 @@ class BaseModel extends BaseObject {
 					if (sizeof($va_need_to_set_rank_for)) {
 						$va_sql_sets = array();
 						foreach($va_need_to_set_rank_for as $vs_rank_fld) {
-							$va_sql_sets[] = "{$vs_rank_fld} = {$vn_new_id}";
+							$va_sql_sets[] = "`{$vs_rank_fld}` = {$vn_new_id}";
 						}
 						$o_db->query("
 							UPDATE ".$this->TABLE." SET ".join(", ", $va_sql_sets)." WHERE {$vs_pk} = {$vn_new_id}
@@ -2928,7 +2928,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
-						$vs_sql .= "{$vs_field} = {$vm_val},";
+						$vs_sql .= "`{$vs_field}` = {$vm_val},";
 						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
@@ -6908,7 +6908,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							{$vs_deleted_sql}
 							{$vs_additional_wheres}
 						ORDER BY
-							{$vs_table_name}.{$vs_rank_fld}
+							{$vs_table_name}.`{$vs_rank_fld}`
 					";
 					//print $vs_sql;
 					$qr_hier = $o_db->query($vs_sql);
@@ -7252,7 +7252,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			// Fall back to default sorts if no explicit sort
 			if (!$vs_order_by) {
 				if ($vs_rank_fld = $this->getProperty('RANK')) { 
-					$vs_order_by = $this->tableName().'.'.$vs_rank_fld;
+					$vs_order_by = $this->tableName().'.`'.$vs_rank_fld."`";
 				} else {
 					$vs_order_by = $this->tableName().".".$this->primaryKey();
 				}
@@ -10290,7 +10290,7 @@ $pa_options["display_form_field_tips"] = true;
 			INNER JOIN ca_items_x_tags AS cixt ON cit.tag_id = cixt.tag_id
 			WHERE
 				(cixt.table_num = ?) AND (cixt.row_id = ?) {$vs_user_sql} {$vs_moderation_sql}
-			ORDER BY cixt.rank
+			ORDER BY cixt.`rank`
 		", $this->tableNum(), $vn_row_id);
 		
 		return array_map(function($v) { $v['moderation_message'] = $v['access'] ? '' : _t('Needs moderation'); return $v; }, $qr_comments->getAllRows());
@@ -10579,7 +10579,7 @@ $pa_options["display_form_field_tips"] = true;
 			SELECT 
 			    c.comment_id, c.row_id set_item_id, c.user_id, c.locale_id, c.comment, c.media1, c.media2, c.media3, c.media4, 
 			    c.rating, c.email, c.name, c.created_on, c.access, c.ip_addr, c.moderated_on, c.moderated_by_user_id, c.location,
-			    csi.row_id, csi.table_num, csi.set_id, csi.rank,
+			    csi.row_id, csi.table_num, csi.set_id, csi.`rank`,
 			    cs.set_code, csl.name set_name,
 			    u.fname, u.lname, u.email user_email
 			FROM ca_item_comments c
@@ -11454,6 +11454,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
  	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
+ 	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false] 
  	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11492,12 +11493,12 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_type_restriction_sql = '';
 		$va_type_restriction_params = [];
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
-			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
 				$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}
 		}
-			
 		
 		//
 		// Convert type id
@@ -12229,8 +12230,8 @@ $pa_options["display_form_field_tips"] = true;
 
 		$vs_order_by = '';
 		if ($t_item_rel && $t_item_rel->hasField('rank')) {
-			$va_selects[] = $t_item_rel->tableName().'.rank';
-			$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
+			$va_selects[] = $t_item_rel->tableName().'.`rank`';
+			$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.`rank`';
 		} else {
 			if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 				$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
@@ -12345,11 +12346,11 @@ $pa_options["display_form_field_tips"] = true;
 		// If "after_id" is null then change ranks such that the "id" row is at the beginning
 		if (!$pn_after_id) {
 			$qr_res = $o_db->query("
-				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} ".($vs_parent_sql ? "WHERE {$vs_parent_sql}" : "")." ORDER BY {$vs_rank_fld} LIMIT 1
+				SELECT {$vs_item_pk}, `{$vs_rank_fld}` FROM {$vs_item_table} ".($vs_parent_sql ? "WHERE {$vs_parent_sql}" : "")." ORDER BY `{$vs_rank_fld}` LIMIT 1
 			", $va_params);
 		} else {
 			$qr_res = $o_db->query("
-				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_item_pk} = ? ".($vs_parent_sql ? "AND {$vs_parent_sql}" : "")." ORDER BY {$vs_rank_fld} LIMIT 1
+				SELECT {$vs_item_pk}, `{$vs_rank_fld}` FROM {$vs_item_table} WHERE {$vs_item_pk} = ? ".($vs_parent_sql ? "AND {$vs_parent_sql}" : "")." ORDER BY `{$vs_rank_fld}` LIMIT 1
 			", $va_params);
 		}
 	
@@ -12369,12 +12370,12 @@ $pa_options["display_form_field_tips"] = true;
 		$va_params[] = $vn_after_rank;
 		
 		$qr_res = $o_db->query("
-			UPDATE {$vs_item_table} SET {$vs_rank_fld} = {$vs_rank_fld} + 1 WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." {$vs_rank_fld} > ?
+			UPDATE {$vs_item_table} SET `{$vs_rank_fld}` = `{$vs_rank_fld}` + 1 WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." `{$vs_rank_fld}` > ?
 		", $va_params);
 		
 		// Log changes to ranks
 		$qr_res = $o_db->query("
-			SELECT * FROM {$vs_item_table} WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." {$vs_rank_fld} > ?
+			SELECT * FROM {$vs_item_table} WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." `{$vs_rank_fld}` > ?
 		", $va_params);
 		while($qr_res->nextRow()) {
 			$this->logChange("U", null, ['row_id' => $qr_res->get($vs_item_pk), 'snapshot' => $qr_res->getRow()]);

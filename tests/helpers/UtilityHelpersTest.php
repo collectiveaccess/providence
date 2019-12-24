@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
+
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
-class UtilityHelpersTest extends PHPUnit_Framework_TestCase {
+class UtilityHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testCaFormatJson(){
 		// actually valid JSON, perl-programmer style!

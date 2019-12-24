@@ -311,7 +311,7 @@ class Db_mysqli extends DbDriverBase {
 		}
 
 		if (!($r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {
-			//print "<pre>".caPrintStacktrace()."</pre>\n";
+			print "<pre>".caPrintStacktrace()."</pre>\n";
 			$po_statement->postError($this->nativeToDbError(mysqli_errno($this->opr_db)), mysqli_error($this->opr_db), "Db->mysqli->execute()");
 			throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
 		}
