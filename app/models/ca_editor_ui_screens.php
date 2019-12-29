@@ -1728,6 +1728,32 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                                     )
                                 ];
 							    break;
+							case 'ca_representation_transcriptions':
+							    $va_additional_settings = [
+                                    'sortDirection' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_SELECT,
+                                        'width' => "200px", 'height' => "1",
+                                        'takesLocale' => false,
+                                        'default' => 'ASC',
+                                        'options' => array(
+                                            _t('Ascending') => 'ASC',
+                                            _t('Descending') => 'DESC'
+                                        ),
+                                        'label' => _t('Sort direction'),
+                                        'description' => _t('Direction of sort.')
+                                    ),
+                                    'dontShowDeleteButton' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_CHECKBOXES,
+                                        'width' => "10", 'height' => "1",
+                                        'takesLocale' => false,
+                                        'default' => '0',
+                                        'label' => _t('Do not show delete button'),
+                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                    )
+                                ];
+							    break;
 						}
 						$va_additional_settings['documentation_url'] = array(
 							'formatType' => FT_TEXT,

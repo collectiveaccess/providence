@@ -665,7 +665,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 
-		if($va_restrict_to_types = caGetOption('restrict_to_types', $pa_options, false)) {
+		if($va_restrict_to_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $pa_options, false)) {
+			if(!is_array($va_restrict_to_types)) { $va_restrict_to_types = [$va_restrict_to_types]; }
 			$va_restrict_to_type_ids = array();
 			foreach($va_restrict_to_types as $vm_type) {
 				if(is_numeric($vm_type)){
@@ -1795,6 +1796,11 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
 			$qr_res->seek(0);
 		}
+		if ($vs_rep_join_sql) {
+			$alt_text_template = Configuration::load()->get($t_rel_table->tableName()."_alt_text_template");
+			$va_alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^".$t_rel_table->tableName().".preferred_labels", $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$qr_res->seek(0);
+		}
 		$va_items = array();
 
 		while($qr_res->nextRow()) {
@@ -1822,8 +1828,11 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				$vb_has_access_to_media = in_array($va_row['rep_access'], $pa_options['checkAccess']);
 			}
 			if ($vs_rep_join_sql && $vb_has_access_to_media) {
+				if(is_array($va_alt_tags) && sizeof($va_alt_tags)) {
+					$vs_alt_text = array_shift($va_alt_tags);
+				}
 				if (isset($pa_options['thumbnailVersion'])) {
-					$va_row['representation_tag'] = $qr_res->getMediaTag('media', $pa_options['thumbnailVersion']);
+					$va_row['representation_tag'] = $qr_res->getMediaTag('media', $pa_options['thumbnailVersion'], array("alt" => $vs_alt_text));
 					$va_row['representation_url'] = $qr_res->getMediaUrl('media', $pa_options['thumbnailVersion']);
 					$va_row['representation_path'] = $qr_res->getMediaPath('media', $pa_options['thumbnailVersion']);
 					$va_row['representation_width'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'WIDTH');
@@ -1832,7 +1841,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				
 				if (isset($pa_options['thumbnailVersions']) && is_array($pa_options['thumbnailVersions'])) {
 					foreach($pa_options['thumbnailVersions'] as $vs_version) {
-						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version);
+						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text));
 						$va_row['representation_url_'.$vs_version] = $qr_res->getMediaUrl('media', $vs_version);
 						$va_row['representation_path_'.$vs_version] = $qr_res->getMediaPath('media', $vs_version);
 						$va_row['representation_width_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'WIDTH');
