@@ -111,10 +111,10 @@
 		if(!file_exists($vs_path = __CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$ps_locale}.lang")) { return null; }
 		$o_config = Configuration::load(__CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$ps_locale}.lang");
 	
-		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'definitite') {
+		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'definite') {
 			return $o_config->getList('definiteArticles');
 		}
-		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'indefinitite') {
+		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'indefinite') {
 			return $o_config->getList('indefiniteArticles');
 		}
 		return array_merge($o_config->getList('definiteArticles'), $o_config->getList('indefiniteArticles'));
