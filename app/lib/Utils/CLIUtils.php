@@ -136,7 +136,7 @@
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Setting up hierarchies")); }
 			$vo_installer->processMiscHierarchicalSetup();
-			
+
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata alerts")); }
 			$vo_installer->processMetadataAlerts();
 
@@ -585,7 +585,7 @@
 				if(is_array($va_tables_to_process) && sizeof($va_tables_to_process) && !in_array($vs_table, $va_tables_to_process)) { continue; }
 				if (!$t_instance = Datamodel::getInstanceByTableName($vs_table, true)) { continue; }
 				if (!$t_instance->hasField('deleted')) { continue; }
-			
+
 				$t_instance->setMode(ACCESS_WRITE);
 
 				$qr_del = $o_db->query("SELECT * FROM {$vs_table} WHERE deleted=1");
@@ -604,11 +604,11 @@
 
 					CLIUtils::addMessage(_t('Removed %1 %2', $vn_c, $t_instance->getProperty(($vn_c == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), array('color' => 'green'));
 					print CLIProgressBar::finish();
-					
+
 					$vn_t += $vn_c;
 				}
 			}
-			
+
 			if ($vn_t > 0) {
 				CLIUtils::addMessage(_t('Done!'), array('color' => 'green'));
 			} else {
@@ -782,7 +782,7 @@
 			$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
-			
+
 			if (in_array('all', $pa_kinds) || in_array('ca_object_representations', $pa_kinds)) {
 				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
 				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
@@ -829,7 +829,7 @@
 					foreach($va_object_ids as $vn_i => $vn_object_id) {
 						$va_object_ids[$vn_i] = (int)$vn_object_id;
 					}
-					
+
 					$vs_sql_where = ($vs_sql_where ? "WHERE " : " AND ")."(ca_objects_x_object_representations.object_id IN (?))";
 					$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.representation_id = ca_object_representations.representation_id";
 					$va_params[] = $va_object_ids;
@@ -921,10 +921,10 @@
 					}
 				}
 			}
-			
+
 			if ((in_array('all', $pa_kinds)  || in_array('icons', $pa_kinds)) && (!$vn_start && !$vn_end)) {
 				$icon_tables = ['ca_list_items', 'ca_storage_locations', 'ca_editor_uis', 'ca_editor_ui_screens', 'ca_tours', 'ca_tour_stops'];
-				
+
 				foreach($icon_tables as $icon_table) {
 					if (!($t_instance = Datamodel::getInstance($icon_table, true))) { continue; }
 					if (!$quiet) { print CLIProgressBar::start($icon_table::find('*', ['returnAs' => 'count']), _t('Re-processing icons')); }
@@ -945,7 +945,7 @@
 							if ($t_instance->numErrors()) {
 								CLIUtils::addError(_t("Error processing icon media: %1", join('; ', $t_instance->getErrors())));
 							}
-						}	
+						}
 					}
 					if (!$quiet) { print CLIProgressBar::finish(); }
 				}
@@ -1324,7 +1324,7 @@
 				CLIUtils::addError(_t('Mapping %1 does not exist', $vs_mapping));
 				return false;
 			}
-			
+
 			if (($vs_add_to_set = $po_opts->getOption('add-to-set')) && (!($t_set = ca_sets::find(['set_code' => $vs_add_to_set], ['returnAs' => 'firstModelInstance'])))) {
 				CLIUtils::addError(_t('Set %1 does not exist', $vs_add_to_set));
 				return false;
@@ -1337,8 +1337,9 @@
 			$vb_import_all_datasets = (bool)$po_opts->getOption('import-all-datasets');
 			$vb_direct = (bool)$po_opts->getOption('direct');
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
-			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback'); 
+			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback');
 
+			$vb_dryrun = (bool)$po_opts->getOption('dryrun');
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
 			$vn_log_level = CLIUtils::getLogLevel($po_opts);
@@ -1347,7 +1348,7 @@
 				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 			}
 
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'importAllDatasets' => $vb_import_all_datasets))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'importAllDatasets' => $vb_import_all_datasets))) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
@@ -1913,13 +1914,13 @@
 				CLIUtils::addError(_t("You must specify a user"));
 				return false;
 			}
-			
+
 			$t_user = new ca_users();
 			if ((!$t_user->load(array("user_name" => $vs_user_name)))) {
 				CLIUtils::addError(_t("User name %1 does not exist", $vs_user_name));
 				return false;
 			}
-			
+
 			if (!($vs_password = (string)$po_opts->getOption('password'))) {
 				$vs_password = CLIUtils::_getPassword(_t('Password: '), true);
 				print "\n\n";
@@ -1928,7 +1929,7 @@
 				CLIUtils::addError(_t("You must specify a password"));
 				return false;
 			}
-			
+
 			$t_user->setMode(ACCESS_WRITE);
 			$t_user->set('password', $vs_password);
 			$t_user->update();
@@ -1938,7 +1939,7 @@
 			}
 			CLIUtils::addMessage(_t('Changed password for user %1', $vs_user_name), array('color' => 'bold_green'));
 			return true;
-			
+
 			CLIUtils::addError(_t("You must specify a user"));
 			return false;
 		}
@@ -2095,7 +2096,7 @@
 				if(!is_array($va_tables)) { $va_tables = array(); }
 				$va_tables = array_map('strip_tags', $va_tables);
 				$va_tables = array_filter($va_tables,'strlen');
-				
+
 				$va_types = preg_split("![;,\|\r\n]{1}!", $va_data[4]);
 				if(!is_array($va_types)) { $va_types = array(); }
 				$va_types = array_map('strip_tags', $va_types);
@@ -2301,7 +2302,7 @@
 
 
 			$quiet = $po_opts->getOption('quiet');
-			
+
 			$ps_email = caGetOption('email', $po_opts, null, ['castTo' => 'string']);
 			if ($ps_email && !caCheckEmailAddress($ps_email)) {
 				CLIUtils::addError(_t("Email address is invalid"));
@@ -2311,9 +2312,9 @@
 				CLIUtils::addError(_t("You must specify an output file or email address"));
 				return false;
 			}
-			
+
 			$ps_file_path = str_replace("%date", date("Y-m-d_h\hi\m"), $ps_file_path);
-			
+
 			switch($ps_format = caGetOption('format', $po_opts, 'text', ['forceLowercase' => true, 'validValues' => ['text', 'tab', 'csv'], 'castTo' => 'string'])) {
 				case 'tab':
 					$mimetype = 'text/tab-separated-values'; $extension = 'tab';
@@ -2326,11 +2327,11 @@
 					$mimetype = 'text/plain'; $extension = 'txt';
 					break;
 			}
-			
-			
+
+
 			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes'], 'delimiter' => [',', ';']]);
-			
+
 			$o_db = new Db();
 			$t_rep = new ca_object_representations();
 
@@ -2377,20 +2378,20 @@
 						}
 					}
 				}
-				
+
 				if ($vs_object_ids = (string)$po_opts->getOption('object_ids')) {
 					$va_object_ids = explode(",", $vs_object_ids);
 					foreach($va_object_ids as $vn_i => $vn_object_id) {
 						$va_object_ids[$vn_i] = (int)$vn_object_id;
 					}
-					
-					if (sizeof($va_object_ids)) { 
+
+					if (sizeof($va_object_ids)) {
 						$va_sql_wheres[] = "(oxor.object_id IN (?))";
 						$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations AS oxor ON oxor.representation_id = o_r.representation_id";
 						$va_params[] = $va_object_ids;
 					}
 				}
-				
+
 				// Verify object representations
 				$qr_reps = $o_db->query("
 					SELECT o_r.representation_id, o_r.idno, o_r.media 
@@ -2399,10 +2400,10 @@
 					WHERE 
 						".join(" AND ", $va_sql_wheres), $va_params
 				);
-				
+
 				if (!$quiet) { print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n"; }
 				$vn_errors = 0;
-				
+
 				if ($qr_reps->numRows() > 0) {
                     $counts[] = _t('%1 media representations', $qr_reps->numRows());
                     while($qr_reps->nextRow()) {
@@ -2438,8 +2439,8 @@
                     }
                 }
 
-				if (!$quiet) { 
-					print CLIProgressBar::finish(); 				
+				if (!$quiet) {
+					print CLIProgressBar::finish();
 					if ($vn_errors == 1) {
 						CLIUtils::addMessage(_t('%1 error for %2 representations', $vn_errors, $vn_rep_count));
 					} else {
@@ -2522,12 +2523,12 @@
 								}
 							}
 						}
-						
+
 						if ((sizeof($va_elements) > 0) && ($c > 0)) {
 						    $counts[] = _t('%1 media in %2 metadata elements', sizeof($va_elements), $c);
 						}
-						if (!$quiet) { 
-							print CLIProgressBar::finish(); 
+						if (!$quiet) {
+							print CLIProgressBar::finish();
 							if($vn_errors == 1) {
 								CLIUtils::addMessage(_t('%1 error for %2 attributes', $vn_errors, $vn_rep_count));
 							} else {
@@ -2561,7 +2562,7 @@
 								$t_attr_val = new ca_attribute_values($vn_value_id);
 								if ($t_attr_val->getPrimaryKey()) {
 									$c++;
-									
+
 									$t_attr_val->setMode(ACCESS_WRITE);
 									$t_attr_val->useBlobAsFileField(true);
 
@@ -2607,11 +2608,11 @@
 								}
 							}
 						}
-						
+
 						if((sizeof($va_elements) > 0) && ($c > 0)) {
 						    $counts[] = _t('%1 files in %2 metadata elements', $c, sizeof($va_elements));
 						}
-						if (!$quiet) { 
+						if (!$quiet) {
 							print CLIProgressBar::finish();
 							if ($vn_errors == 1) {
 								CLIUtils::addMessage(_t('%1 error for %2 attributes', $vn_errors, $vn_rep_count));
@@ -2622,11 +2623,11 @@
 					}
 				}
 			}
-			
+
 			if ($ps_file_path) {
 				file_put_contents($ps_file_path, $vs_report_output);
 			}
-			
+
 			$o_request = new RequestHTTP(null, [
 				'no_headers' => true,
 				'simulateWith' => [
@@ -2641,7 +2642,7 @@
 					file_put_contents($ps_file_path, $vs_report_output);
 					$vb_delete_file = true;
 				}
-				
+
 				$a = $o_request->config->get('app_display_name');
 				$attachment = null;
 				if($vn_errors > 0) {
@@ -2651,16 +2652,16 @@
 						'mimetype' => $mimetyype
 					];
 				}
-				
+
 				if (sizeof($counts) > 0) {
                     if (!caSendMessageUsingView(
-                        $o_request, 
-                        [$ps_email], 
-                        [__CA_ADMIN_EMAIL__], 
-                        _t('[%1] Media fixity report for %2', $a, $d = caGetLocalizedDate()), 
-                        'check_media_fixity_report.tpl', 
-                        ['date' => $d, 'app_name' => $a, 'num_errors' => $vn_errors, 'counts' => caMakeCommaListWithConjunction($counts)], 
-                        null, null, 
+                        $o_request,
+                        [$ps_email],
+                        [__CA_ADMIN_EMAIL__],
+                        _t('[%1] Media fixity report for %2', $a, $d = caGetLocalizedDate()),
+                        'check_media_fixity_report.tpl',
+                        ['date' => $d, 'app_name' => $a, 'num_errors' => $vn_errors, 'counts' => caMakeCommaListWithConjunction($counts)],
+                        null, null,
                         ['attachment' => $attachment])
                     ) {
                         global $g_last_email_error;
@@ -2723,7 +2724,7 @@
 
 			$pb_clear = ((bool)$po_opts->getOption('clear'));
 			$pa_sizes = caGetOption('sizes', $po_opts, null, ['delimiter' => [',', ';']]);
-			
+
 			foreach($pa_sizes as $vn_i => $vn_size) {
 				$vn_size = (int)$vn_size;
 				if (!$vn_size || ($vn_size <= 0)) { unset($pa_sizes[$vn_i]); continue; }
@@ -2989,26 +2990,26 @@
 		 *
 		 */
 		public static function do_configuration_check($po_opts=null) {
-			
+
 			include_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
 			include_once(__CA_LIB_DIR__."/Media.php");
 			include_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 			include_once(__CA_LIB_DIR__."/ConfigurationCheck.php");
 			require_once(__CA_LIB_DIR__."/Configuration.php");
-			
+
 			// Media
 			$t_media = new Media();
 			$va_plugin_names = $t_media->getPluginNames();
-			
-			
+
+
 			CLIUtils::addMessage(_t("Checking media processing plugins..."), array('color' => 'bold_blue'));
 			foreach($va_plugin_names as $vs_plugin_name) {
 				if ($va_plugin_status = $t_media->checkPluginStatus($vs_plugin_name)) {
 					CLIUtils::addMessage("\t"._t("Found %1", $vs_plugin_name));
 				}
 			}
-			CLIUtils::addMessage("\n"); 
-		
+			CLIUtils::addMessage("\n");
+
 			// Application plugins
 			CLIUtils::addMessage(_t("Checking application plugins..."), array('color' => 'bold_blue'));
 			$va_plugin_names = ApplicationPluginManager::getPluginNames();
@@ -3019,7 +3020,7 @@
 				}
 			}
 			CLIUtils::addMessage("\n");
-		
+
 			// Barcode generation
 			CLIUtils::addMessage(_t("Checking for barcode dependencies..."), array('color' => 'bold_blue'));
 			$vb_gd_is_available = caMediaPluginGDInstalled(true);
@@ -3223,34 +3224,34 @@
 			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
 			require_once(__CA_MODELS_DIR__."/ca_movements_x_storage_locations.php");
 			require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
-			
+
 			$o_config = Configuration::load();
 			$o_db = new Db();
-			
+
 			// Reload movements-objects
 			if ($vs_movement_storage_element = $o_config->get('movement_storage_location_date_element')) {
 				$qr_movements = ca_movements::find(['deleted' => 0], ['returnAs' => 'searchResult']);
-			
+
 				print CLIProgressBar::start($qr_movements->numHits(), "Reloading movement dates");
-				
+
 				while($qr_movements->nextHit()) {
 					if ($va_dates = $qr_movements->get("ca_movements.{$vs_movement_storage_element}", ['returnAsArray' => true, 'rawDate' => true])) {
 						$va_date = array_shift($va_dates);
-						
+
 						// get movement-object relationships
-						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_objects.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_objects.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {
 							$qr_res = $o_db->query(
-								"UPDATE ca_movements_x_objects SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								"UPDATE ca_movements_x_objects SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)",
 								array($va_date['start'], $va_date['end'], $va_rel_ids)
 							);
 						}
 						// get movement-location relationships
-						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_storage_locations.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_storage_locations.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {
 							$qr_res = $o_db->query(
-								"UPDATE ca_movements_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								"UPDATE ca_movements_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)",
 								array($va_date['start'], $va_date['end'], $va_rel_ids)
 							);
-							
+
 							// check to see if archived storage locations are set in ca_movements_x_storage_locations.source_info
 							// Databases created prior to the October 2015 location tracking changes won't have this
 							$qr_rels = caMakeSearchResult('ca_movements_x_storage_locations', $va_rel_ids);
@@ -3258,7 +3259,7 @@
 								if (!is_array($va_source_info = $qr_rels->get('source_info')) || !isset($va_source_info['path'])) {
 									$vn_rel_id = $qr_rels->get('ca_movements_x_storage_locations.relation_id');
 									$qr_res = $o_db->query(
-										"UPDATE ca_movements_x_storage_locations SET source_info = ? WHERE relation_id = ?", 
+										"UPDATE ca_movements_x_storage_locations SET source_info = ? WHERE relation_id = ?",
 											array(caSerializeForDatabase(array(
 												'path' => $qr_rels->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
 												'ids' => $qr_rels->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
@@ -3270,10 +3271,10 @@
 						print CLIProgressBar::next();
 					}
 				}
-				
+
 				print CLIProgressBar::finish();
 			}
-            
+
             $qr_loc_rels = ca_objects_x_storage_locations::find('*', ['returnAs' => 'searchResult']);
             print CLIProgressBar::start($qr_loc_rels->numHits(), "Reloading location dates");
             while($qr_loc_rels->nextHit()) {
@@ -3281,7 +3282,7 @@
                     if (($ts = $qr_loc_rels->get('ca_objects_x_storage_locations.lastModified')) && ($start_end = caDateToHistoricTimestamps($ts))) {
                         try {
                            $qr_res = $o_db->query(
-                                "UPDATE ca_objects_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id = ?", 
+                                "UPDATE ca_objects_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id = ?",
                                 [$start_end[0], $start_end[1], $qr_loc_rels->get('ca_objects_x_storage_locations.relation_id')]
                             );
                         } catch (Exception $e) {
@@ -3291,7 +3292,7 @@
                 }
                 print CLIProgressBar::next();
             }
-	
+
 			return true;
 		}
 		# -------------------------------------------------------
@@ -3330,7 +3331,7 @@
 		public static function precache_search_index($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/Db.php");
 			$o_db = new Db();
-			
+
 			CLIUtils::addMessage(_t("Preloading primary search index..."), array('color' => 'bold_blue'));
 			$o_db->query("SELECT * FROM ca_sql_search_word_index", array(), array('resultMode' => MYSQLI_USE_RESULT));
 			CLIUtils::addMessage(_t("Preloading index i_index_table_num..."), array('color' => 'bold_blue'));
@@ -3347,7 +3348,7 @@
 		 */
 		public static function precache_search_indexParamList() {
 			return array(
-				
+
 			);
 		}
 		# -------------------------------------------------------
@@ -3378,21 +3379,21 @@
 		 */
 		public static function precache_content($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/Db.php");
-			
+
 			$o_config = Configuration::load();
-			if(!(bool)$o_config->get('do_content_caching')) { 
+			if(!(bool)$o_config->get('do_content_caching')) {
 				CLIUtils::addError(_t("Content caching is not enabled"));
 				return;
 			}
 			$o_cache_config = Configuration::load(__CA_CONF_DIR__."/content_caching.conf");
 			if(!is_array($va_exclude_from_precache = $o_cache_config->get('exclude_from_precache'))) { $va_exclude_from_precache = []; }
-			
+
 			$va_cached_actions = $o_cache_config->getAssoc('cached_actions');
-			if(!is_array($va_cached_actions)) { 
+			if(!is_array($va_cached_actions)) {
 				CLIUtils::addError(_t("No actions are configured for caching"));
 				return;
 			}
-			
+
 			$o_request = new RequestHTTP(null, [
 				'no_headers' => true,
 				'simulateWith' => [
@@ -3400,12 +3401,12 @@
 					'SCRIPT_NAME' => 'index.php'
 				]
 			]);
-			
+
 			$vs_site_protocol = $o_config->get('site_protocol');
 			if (!($vs_site_hostname = $o_config->get('site_hostname'))) {
 				$vs_site_hostname = "localhost";
 			}
-			
+
 			foreach($va_cached_actions as $vs_controller => $va_actions) {
 			    if(in_array($vs_controller, $va_exclude_from_precache)) { continue; }
 				switch($vs_controller) {
@@ -3418,21 +3419,21 @@
 						$va_tmp = explode("/", $vs_controller);
 						$vs_controller = array_pop($va_tmp);
 						$vs_module_path = join("/", $va_tmp);
-						
+
 						$o_detail_config = caGetDetailConfig();
 						$va_detail_types = $o_detail_config->getAssoc('detailTypes');
-						
+
 						foreach($va_actions as $vs_action => $vn_ttl) {
 							if (is_array($va_detail_types[$vs_action])) {
 								$vs_table = $va_detail_types[$vs_action]['table'];
 								$va_types = $va_detail_types[$vs_action]['restrictToTypes'];
 								if (!file_exists(__CA_MODELS_DIR__."/{$vs_table}.php")) { continue; }
 								require_once(__CA_MODELS_DIR__."/{$vs_table}.php");
-								
+
 								if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action)) {
 									// get ids
 									$va_ids = call_user_func_array(array($vs_table, 'find'), array(['deleted' => 0], ['restrictToTypes' => $va_types, 'returnAs' => 'ids']));
-								
+
 									if (is_array($va_ids) && sizeof($va_ids)) {
 										foreach($va_ids as $vn_id) {
 											CLIUtils::addMessage(_t("Preloading from %1::%2 (%3)", $vs_controller, $vs_action, $vn_id), array('color' => 'bold_blue'));
@@ -3443,7 +3444,7 @@
 							} else {
 								CLIUtils::addMessage(_t("Preloading from %1::%2 failed because there is no detail configured for %2", $vs_controller, $vs_action), array('color' => 'yellow'));
 							}
-							
+
 						}
 						break;
 					case 'splash':
@@ -3453,17 +3454,17 @@
 						$vs_module_path = join("/", $va_tmp);
 						foreach($va_actions as $vs_action => $vn_ttl) {
 							if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action, array('noCache' => 1))) {
-							
+
 								CLIUtils::addMessage(_t("Preloading from %1::%2", $vs_controller, $vs_action), array('color' => 'bold_blue'));
 								$vs_url = $vs_site_protocol."://".$vs_site_hostname.$vs_url;
 							 	file_get_contents($vs_url);
 							}
-							
+
 						}
 					    break;
 				}
 			}
-			
+
 			return true;
 		}
 		# -------------------------------------------------------
@@ -3472,7 +3473,7 @@
 		 */
 		public static function precache_contentParamList() {
 			return array(
-				
+
 			);
 		}
 		# -------------------------------------------------------
@@ -3507,7 +3508,7 @@
 
 			$t_list = new ca_lists();
 			$o_db = $t_list->getDb();
-			
+
 			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
 
 			if (!($ps_source = (string)$po_opts->getOption('file'))) {
@@ -3518,12 +3519,12 @@
 				CLIUtils::addError(_t("You must specify a valid file"));
 				return false;
 			}
-			
+
 			if (!($ps_list_code = (string)$po_opts->getOption('list'))) {
 				CLIUtils::addError(_t("You must specify a list"));
 				return false;
 			}
-			
+
 			$pb_update = (bool)$po_opts->getOption('update'); 	// "update" parameter; we only allow updating of a list if this is explicitly set
 			$vb_is_update = false; // flag indicated if we're actually updating an existing list
 
@@ -3533,15 +3534,15 @@
 				CLIUtils::addError(_t("You must specify a valid Excel .xls or .xlsx file: %1", $e->getMessage()));
 				return false;
 			}
-			
+
 			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading non-preferred terms'));
 			// Get non-preferred terms
 			$o_file->setActiveSheetIndex(1);
 			$o_sheet = $o_file->getActiveSheet();
 			$o_rows = $o_sheet->getRowIterator();
-			
+
 			$o_rows->next();
-				
+
 			$va_non_preferred_terms = [];
 			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
 				$o_cells = $o_row->getCellIterator();
@@ -3556,19 +3557,19 @@
 
 					if ($vn_c > 3) { break; }
 				}
-				
+
 				$va_non_preferred_terms[$va_data[1]][] = $va_data[0];
-				
+
 				$o_rows->next();
 				CLIProgressBar::next();
 			}
 			CLIProgressBar::finish();
-			
+
 
 			// get list
-			
+
 			print CLIProgressBar::start(1, _t('Creating list'));
-			
+
 			if (!($t_list = ca_lists::find(['list_code' => $ps_list_code], ['returnAs' => 'firstModelInstance']))) {
 				$t_list = new ca_lists();
 				$t_list->setMode(ACCESS_WRITE);
@@ -3577,18 +3578,18 @@
 				$t_list->set('is_hierarchical', 1);
 				$t_list->set('use_as_vocabulary', 1);
 				$t_list->insert();
-				
+
 				if ($t_list->numErrors()) {
 					CLIUtils::addError(_t("Could not create list %1: %2", $ps_list_code, join("; ", $t_list->getErrors())));
 					return false;
 				}
-				
+
 				$t_list->addLabel(['name' => 'Chenhall Nomenclature'], $vn_locale_id, null, true);
 				if ($t_list->numErrors()) {
 					CLIUtils::addError(_t("Could not label list %1: %2", $ps_list_code, join("; ", $t_list->getErrors())));
 					return false;
 				}
-				
+
 			} elseif (($t_list->numItemsInList($ps_list_code) > 0)) {
 				if ($pb_update) {
 					$vb_is_update = true;
@@ -3598,23 +3599,23 @@
 				}
 			}
 			CLIProgressBar::finish();
-			
-			
+
+
 			$vn_list_id = $t_list->getPrimaryKey();
 
 			// Get preferred terms
-			
+
 			$o_file->setActiveSheetIndex(0);
 			$o_sheet = $o_file->getActiveSheet();
 			$o_rows = $o_sheet->getRowIterator();
 			$vn_add_count = 0;
 
 			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading preferred terms'));
-			
+
 			$o_rows->next(); // skip first line
-			
+
 			$va_parents = [];
-			
+
 			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false);
@@ -3647,7 +3648,7 @@
 				}
 				$o_rows->next();
 
-				
+
 				$va_acc = [];
 				foreach($va_data as $vn_col => $vs_term) {
 					if(!$vs_term) { continue; }
@@ -3659,7 +3660,7 @@
 				if (!($vn_parent_id = $va_parents[$vs_key])) {
 					$vn_parent_id = $t_list->getRootListItemID();
 				}
-				
+
 				$t_item = null;
 				$vb_is_existing_item = false;
 				if ($vb_is_update) {
@@ -3671,11 +3672,11 @@
 							}
 						}
 						$vb_is_existing_item = true;
-						
+
 						if (!$t_item->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__)) {
 							CLIUtils::addError(_t("Could not remove nonpreferred labels for update for term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
 						}
-						
+
 						if ($vn_parent_id != $t_item->get('ca_list_items.parent_id')) {
 							$t_item->setMode(ACCESS_WRITE);
 							$t_item->set('parent_id', $vn_parent_id);
@@ -3685,7 +3686,7 @@
 						}
 					}
 				}
-				
+
 				if (!$t_item) {
 					if (!($t_item = $t_list->addItem($vs_term, true, false, $vn_parent_id, null, $vs_term, '', 0, 1))) {
 						CLIUtils::addError(_t("Could not add term %1: %2", $vs_term, join("; ", $t_list->getErrors())));
@@ -3700,7 +3701,7 @@
 				}
 				print CLIProgressBar::next(1, _t($vb_is_existing_item ? 'Updated preferred term %1' : 'Added preferred term %1', $vs_term));
 				$va_parents[md5(join("|", array_merge($va_acc, [$vs_term])))] = $t_item->getPrimaryKey();
-				
+
 				if(is_array($va_non_preferred_terms[$vs_term])) {
 					foreach($va_non_preferred_terms[$vs_term] as $vs_non_preferred_term) {
 						if (!($t_item->addLabel(['name_singular' => $vs_non_preferred_term, 'name_plural' => $vs_non_preferred_term, 'description' => ''], $vn_locale_id, null, false))) {
@@ -4139,12 +4140,12 @@
 		 */
 		public static function scan_site_page_templates($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/SitePageTemplateManager.php");
-			
+
 			CLIUtils::addMessage(_t("Scanning templates for tags"));
 			$va_results = SitePageTemplateManager::scan();
-			
+
 			CLIUtils::addMessage(_t("Added %1 templates; updated %2 templates", $va_results['insert'],$va_results['update']));
-			
+
 			if (is_array($va_results['errors']) && sizeof($va_results['errors'])) {
 				CLIUtils::addError(_t("Templates with errors: %1", join(", ", array_keys($va_results['errors']))));
 			}
@@ -4217,18 +4218,18 @@
 		 */
 		public static function precache_simple_services($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/SitePageTemplateManager.php");
-			
-		
+
+
 		    $o_app_conf = Configuration::load();
             $o_service_conf = Configuration::load(__CA_APP_DIR__.'/conf/services.conf');
             $va_endpoints = $o_service_conf->get('simple_api_endpoints');
-            
+
             $ps_password = $vs_auth = null;
             if ($ps_username = $po_opts->getOption('username')) {
                 $ps_password = $po_opts->getOption('password');
-                
+
                 $vs_auth = "{$ps_username}:{$ps_password}@";
-                
+
             }
 
             foreach($va_endpoints as $vs_endpoint => $va_endpoint_info) {
@@ -4237,7 +4238,7 @@
                         continue;
                     }
                     $vs_pk = $t_instance->primaryKey(true);
-                            
+
                     switch($va_endpoint_info['type']) {
                         case 'search':
                         case 'refineablesearch':
@@ -4250,10 +4251,10 @@
                                             if (!($t_tag = Datamodel::getInstanceByTableName($va_tmp[0],true))) {
                                                 continue;
                                             }
-                                            
+
                                             $qr_tag_vals = $va_tmp[0]::find('*', ['returnAs' => 'searchResult']);
                                             $va_tag_vals = $qr_tag_vals->getAllFieldValues($vs_tag);
-                                          
+
                                             foreach($va_tag_vals as $vs_val) {
                                                 $vs_search_proc = caProcessTemplate($vs_search, [$vs_tag => $vs_val]);
                                                 file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}?noCache=1&q=".urlencode($vs_search_proc));
@@ -4268,7 +4269,7 @@
                             }
                             break;
                          case 'detail':
-                           
+
                             if ($qr_res = $vs_table::find('*', ['returnAs' => 'searchResult'])) {
                                 while($qr_res->nextHit()) {
                                     file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}/id/".$qr_res->get($vs_pk));
@@ -4280,7 +4281,7 @@
                     }
                 }
             }
-			
+
 			CLIUtils::addMessage(_t("Added %1 templates; updated %2 templates"));
 		}
 		# -------------------------------------------------------
@@ -4317,8 +4318,8 @@
 		 */
 		public static function import_media($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/BatchProcessor.php");
-			
-			
+
+
 			if (!caCheckMediaDirectoryPermissions()) {
 			    CLIUtils::addError(_t('The media directory is not writeable by the current user. Try again, running the import as the web server user.'));
 				return false;
@@ -4332,7 +4333,7 @@
 				CLIUtils::addError(_t('You must specify a source'));
 				return false;
 			}
-			
+
 			if (($vs_add_to_set = $po_opts->getOption('add-to-set')) && (!($t_set = ca_sets::find(['set_code' => $vs_add_to_set], ['returnAs' => 'firstModelInstance'])))) {
 				CLIUtils::addError(_t('Set %1 does not exist', $vs_add_to_set));
 				return false;
@@ -4341,7 +4342,7 @@
 				CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
 				return false;
 			}
-			
+
 			$vn_user_id = null;
 			if ($vs_user_name = $po_opts->getOption('username')) {
 				if ($t_user = ca_users::find(['user_name' => $vs_user_name], ['returnAs' => 'firstModelInstance'])) {
@@ -4354,7 +4355,7 @@
 			    CLIUtils::addError(_t('A user name to attribute the import to must be specified'));
 				return false;
 			}
-			
+
 			$vs_import_mode = $po_opts->getOption('import-mode');
 			if (!in_array($vs_import_mode, ['TRY_TO_MATCH', 'ALWAYS_MATCH'])) {
 				CLIUtils::addMessage(_t('Setting import mode to default value TRY_TO_MATCH'));
@@ -4370,7 +4371,7 @@
 				CLIUtils::addMessage(_t('Setting match type to default value EXACT'));
 				$vs_match_type = 'EXACT';
 			}
-			
+
 			if (!($vs_import_target = $po_opts->getOption('import-target'))) {
 			    $vs_import_target = 'ca_objects';
 			    CLIUtils::addMessage(_t('Setting import target to default %1.', $vs_import_target));
@@ -4394,7 +4395,7 @@
 				CLIUtils::addMessage(_t('Setting representation identifier type to default value AUTO'));
 				$vs_representation_idno_mode = '';
 			}
-		
+
 			$vn_type_id = null;
 			if ($vs_import_target_type = $po_opts->getOption('import-target-type')) {
 			    $vn_type_id = $t_instance->getTypeIDForCode($vs_import_target_type);
@@ -4403,7 +4404,7 @@
 			    $vn_type_id = array_shift($t_instance->getTypeList(['idsOnly' => true]));
 			    CLIUtils::addMessage(_t('Setting target type to default %1', $t_instance->getTypeCodeForID($vn_type_id)));
 			}
-			
+
 			$vn_rep_type_id = null;
 			$t_rep = new ca_object_representations();
 			if ($vs_rep_type = $po_opts->getOption('representation-type')) {
@@ -4413,7 +4414,7 @@
 			    $vn_rep_type_id = array_shift($t_rep->getTypeList(['idsOnly' => true]));
 			    CLIUtils::addMessage(_t('Setting representation type to default %1', $t_rep->getTypeCodeForID($vn_rep_type_id)));
 			}
-			
+
 			$vn_access = null;
 			if ($vs_import_target_access = $po_opts->getOption('import-target-access')) {
 			    $vn_access = caGetListItemID('access_statuses', $vs_import_target_access);
@@ -4433,7 +4434,7 @@
 			    $vn_rep_access = caGetListItemValueForID($vn_id);
 			    CLIUtils::addMessage(_t('Setting representation access to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
-			
+
 			$vn_status = null;
 			if ($vs_import_target_status = $po_opts->getOption('import-target-status')) {
 			    $vn_status = caGetListItemID('workflow_statuses', $vs_import_target_status);
@@ -4453,7 +4454,7 @@
 			    $vn_rep_status = caGetListItemValueForID($vn_id);
 			    CLIUtils::addMessage(_t('Setting representation status to default %1', caGetListItemByIDForDisplay($vn_id)));
 			}
-			
+
 			$vn_mapping_id = null;
 			if ($vs_mapping_code = $po_opts->getOption('representation-mapping')) {
 			    if($t_mapping = ca_data_importers::mappingExists($vs_mapping_code)) {
@@ -4466,14 +4467,14 @@
 			        CLIUtils::addError(_t('Mapping %1 is not for target %2', $vs_mapping_code, $vs_import_target));
 			    }
 			}
-			
-			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback'); 
+
+			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback');
 
 			$vs_log_dir = $po_opts->getOption('log');
 			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 
             $va_opts = [
-                'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 
+                'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback,
                 'addToSet' => $vs_add_to_set,
                 'importTarget' => $vs_import_target,
                 'user_id' => $vn_user_id,
@@ -4484,23 +4485,23 @@
                 'allowDuplicateMedia' => (bool)$po_opts->getOption('allow-duplicate-media'),
                 'includeSubDirectories' => (bool)$po_opts->getOption('include-subdirectories'),
                 'deleteMediaOnImport' => (bool)$po_opts->getOption('delete-media-on-import'),
-                
+
                 'idno' => (string)$po_opts->getOption('import-target-idno'),
                 'idnoMode' => $vs_import_target_idno_mode,
                 'representationIdnoMode' => $vs_representation_idno_mode,
                 'representation_idno' => (string)$po_opts->getOption('representation-idno'),
-                
+
                 $vs_import_target.'__mapping_id' => $vn_mapping_id,
-                
+
                 $vs_import_target.'_type_id' => $vn_type_id,
                 'ca_object_representations_type_id' => $vn_rep_type_id,
-                
+
                 $vs_import_target.'_access' => $vn_access,
                 'ca_object_representations_access' => $vn_rep_access,
-                
+
                 $vs_import_target.'_status' => $vn_status,
                 'ca_object_representations_status' => $vn_rep_status,
-                
+
                 'progressCallback' => function($r, $c, $total, $message, $time, $memory, $notices, $errors) {
                     print CLIProgressBar::seek($c, $message);
                 },
@@ -4509,7 +4510,7 @@
                 }
             ];
             $va_counts = caGetDirectoryContentsCount($vs_data_source, (bool)$po_opts->getOption('include-subdirectories'));
-            
+
             if ((bool)$po_opts->getOption('include-subdirectories')) {
                 CLIUtils::addMessage(_t('Found %1 files in %2 directories', $va_counts['files'], $va_counts['directories']));
             } else {
@@ -4529,31 +4530,31 @@
 		 *
 		 */
 		public static function import_mediaParamList() {
-		
+
 			$access_status_values = caGetListItems('access_statuses', ['index' => 'item_value', 'value' => 'name_plural']);
 			$access_status_default = caGetListItems('access_statuses', ['index' => 'item_value', 'value' => 'name_plural', 'defaultOnly' => true]);
-			
+
 			$access_status_list_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $access_status_values, array_keys($access_status_values)));
 			$access_status_default_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $access_status_default, array_keys($access_status_default)));
-			
+
 			$workflow_status_values = caGetListItems('workflow_statuses', ['index' => 'item_value', 'value' => 'name_plural']);
 			$workflow_status_default = caGetListItems('workflow_statuses', ['index' => 'item_value', 'value' => 'name_plural', 'defaultOnly' => true]);
-			
+
 			$workflow_status_list_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $workflow_status_values, array_keys($workflow_status_values)));
 			$workflow_status_default_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $workflow_status_default, array_keys($workflow_status_default)));
-			
+
 			$object_type_values = caGetListItems('object_types', ['index' => 'item_value', 'value' => 'name_plural']);
 			$object_type_default = caGetListItems('object_types', ['index' => 'item_value', 'value' => 'name_plural', 'defaultOnly' => true]);
-			
+
 			$object_type_list_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $object_type_values, array_keys($object_type_values)));
 			$object_type_default_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $object_type_default, array_keys($object_type_default)));
-			
+
 			$representation_type_values = caGetListItems('object_representation_types', ['index' => 'item_value', 'value' => 'name_plural']);
 			$representation_type_default = caGetListItems('object_representation_types', ['index' => 'item_value', 'value' => 'name_plural', 'defaultOnly' => true]);
-			
+
 			$representation_type_list_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $representation_type_values, array_keys($representation_type_values)));
 			$representation_type_default_str = join(", ", array_map(function($v, $k) { return "{$k} ({$v})"; }, $representation_type_default, array_keys($representation_type_default)));
-			
+
 			return array(
 				"source|s=s" => _t('Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.'),
 				"username|u-s" => _t('User name of user to log import against.'),
@@ -4610,17 +4611,17 @@
 		public static function regenerate_dependent_field_values($po_opts=null) {
 			// Find containers with dependent fields
 			$va_elements = ca_metadata_elements::getElementSetsWithSetting("isDependentValue", 1);
-			
-			
+
+
 			$c = 0;
 			foreach($va_elements as $va_element) {
 			    $t_element = ca_metadata_elements::getInstance($va_element['element_code']);
 			    $t_root = ca_metadata_elements::getInstance($va_element['hier_element_id']);
 			    $vs_root_code = $t_root->get('element_code');
 			    $vn_root_id = $t_root->get('element_id');
-			    
+
 			    CLIUtils::addMessage(_t('Processing %1.%2', $vs_root_code, $va_element['element_code']));
-			    
+
 			    // get type restrictions
 			    $va_type_res_list = $t_element->getTypeRestrictions();
 			    foreach($va_type_res_list as $va_type_res) {
@@ -4631,14 +4632,14 @@
 			        } else {
 			            $qr_res = call_user_func("{$vs_table_name}::find", ["*"], ['returnAs' => 'searchResult']);
 			        }
-			        
+
 			        while($qr_res->nextHit()) {
 			            $va_value_list = $qr_res->get("{$vs_table_name}.{$vs_root_code}", ["returnWithStructure" => true]);
 			            foreach($va_value_list as $vn_row_id => $va_values_by_attribute_id) {
 			                CLIUtils::addMessage(_t('Processing row %1 for %2.%3', $vn_row_id, $vs_root_code, $va_element['element_code']));
 			                foreach($va_values_by_attribute_id as $vn_attr_id => $va_values) {
 			                    $vs_processed_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $va_values);
-			                    
+
 			                    $va_values[$va_element['element_code']] = $vs_processed_value;
 			                    if (!$t_instance->load($vn_row_id)) { continue; }
 			                    $t_instance->setMode(ACCESS_WRITE);
@@ -4655,7 +4656,7 @@
 			        }
 			    }
 			}
-			
+
 			CLIUtils::addMessage(_t("Regenerated %1 values", $c));
 		}
 		# -------------------------------------------------------
@@ -4729,11 +4730,11 @@
 		public static function check_relationship_type_roots($po_opts=null) {
             require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
             require_once(__CA_MODELS_DIR__."/ca_locales.php");
-            
-			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();	
-			
+
+			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
+
 			$va_tables = Datamodel::getTableNames();
-		    
+
 		    $c = 0;
 			foreach($va_tables as $vs_table) {
 				if (!preg_match('!_x_!', $vs_table)) { continue; }
@@ -4742,7 +4743,7 @@
 				if (!$t_table->hasField('type_id')) { continue; }
 				$vs_pk = $t_table->primaryKey();
 				$vn_table_num = $t_table->tableNum();
-				
+
 				// Create root ca_relationship_types row for table
 				if (!$t_root = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num], ['returnAs' => 'firstModelInstance'])) {
 				    $t_root = new ca_relationship_types();
@@ -4754,7 +4755,7 @@
 					$t_root->set('is_default', 0);
 					$t_root->set('parent_id', null);
 					$t_root->insert();
-					
+
 					if ($t_root->numErrors()) {
 						 CLIUtils::addError(_t("Could not create root for relationship %1: %2", $vs_table, join('; ', $t_root->getErrors())));
 						continue;
@@ -4773,7 +4774,7 @@
 					$c++;
 				}
 			}
-			
+
 			CLIUtils::addMessage(($c == 1) ? _t("Recreated %1 root record", $c) : _t("Recreated %1 root records", $c));
 		}
 		# -------------------------------------------------------
@@ -4808,7 +4809,7 @@
 		 */
 		public static function clear_search_indexing_queue_lock_file($po_opts=null) {
             require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
-			
+
 			if (ca_search_indexing_queue::lockExists()) {
 			    if (ca_search_indexing_queue::lockCanBeRemoved()) {
 			        ca_search_indexing_queue::lockRelease();
