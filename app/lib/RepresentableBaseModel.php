@@ -36,6 +36,7 @@
  
  require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
+ require_once(__CA_MODELS_DIR__."/ca_representation_transcriptions.php");
  
 	class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 		# ------------------------------------------------------
@@ -175,6 +176,7 @@
 				}
 			
 				$va_tmp['num_multifiles'] = $t_rep->numFiles($vn_rep_id);
+				$va_tmp['num_transcriptions'] = $t_rep->numTranscriptions($vn_rep_id);
 
 				$va_captions = $t_rep->getCaptionFileList($vn_rep_id);
 				if(is_array($va_captions) && (sizeof($va_captions)>0)){
@@ -1232,6 +1234,7 @@
                         'rep_label' => $va_rep['label'],
                         'is_transcribable' => (int)$va_rep['is_transcribable'],
                         'is_transcribable_display' => ($va_rep['is_transcribable'] == 1) ? _t('Yes') : _t('No'), 
+                        'num_transcriptions' => $va_rep['num_transcriptions'],
                         'is_primary' => (int)$va_rep['is_primary'],
                         'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
                         'locale_id' => $va_rep['locale_id'], 
@@ -1358,5 +1361,74 @@
 			}
 			return null;
 		}	
-		# -------------------------------------------------------
+		# ------------------------------------------------------
+		/**
+		 * Returns the current transcription status for representable items with the specified ids.
+		 * An array is returned with status information for each id. Keys are ids. Values are arrays with the
+		 * following keys:
+		 *		status = One of the following constants: __CA_TRANSCRIPTION_STATUS_NOT_STARTED__, __CA_TRANSCRIPTION_STATUS_IN_PROGRESS__, __CA_TRANSCRIPTION_STATUS_COMPLETED__
+		 *		has_transcription = True if at least one transcription exists
+		 *		is_completed = Set to the Unix timestamp of the data/time of completion, or null if not complete
+		 * 
+		 * @param array $ids
+		 * @param array $options No options are currently supported.
+		 *
+		 * @return array
+		 */
+		public static function getTranscriptionStatusForIDs(array $ids, array $options=null) {
+			$db = new Db();
+			
+			$table = get_called_class();
+			
+			$path = Datamodel::getPath($table, 'ca_object_representations');
+			if (!is_array($path) || (sizeof($path) !== 3)) { return null; }
+			$path = array_keys($path);
+			
+			$pk = Datamodel::primaryKey($table);
+			$qr = $db->query("
+				SELECT o_r.representation_id, t.{$pk}, o_r.is_transcribable, tr.transcription_id, tr.transcription, tr.completed_on
+				FROM {$table} t
+				INNER JOIN {$path[1]} AS l ON t.{$pk} = l.{$pk} 
+				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = l.representation_id
+				LEFT JOIN ca_representation_transcriptions AS tr ON o_r.representation_id = tr.representation_id
+				WHERE
+					t.{$pk} IN (?)
+			", [$ids]);
+			
+			$reps = $items = [];
+			while($qr->nextRow()) {
+				$rep_id = $qr->get('representation_id');
+				
+				if(isset($reps[$rep_id]) && ($reps[$rep_id]['status'] == __CA_TRANSCRIPTION_STATUS_COMPLETED__)) {
+					continue;
+				}
+				
+				$reps[$rep_id] = [
+					'has_transcription' => ($qr->get('transcription_id') > 0),
+					'is_completed' => $qr->get('completed_on')
+				];
+				if ($reps[$rep_id]['is_completed']) {
+					$reps[$rep_id]['status'] = __CA_TRANSCRIPTION_STATUS_COMPLETED__;
+				} else if ($reps[$rep_id]['has_transcription']) {
+					$reps[$rep_id]['status'] = __CA_TRANSCRIPTION_STATUS_IN_PROGRESS__;
+				} else {
+					$reps[$rep_id]['status'] = __CA_TRANSCRIPTION_STATUS_NOT_STARTED__;
+				}
+				if (!isset($items[$item_id = $qr->get($pk)])) { $items[$item_id] = []; }
+				
+				if ($reps[$rep_id]['has_transcription']) {
+					$items[$item_id]['has_transcription'] = true;
+					$items[$item_id]['is_completed'] = $reps[$rep_id]['is_completed'];
+				}
+				if ($items[$item_id]['is_completed']) {
+					$items[$item_id]['status'] = __CA_TRANSCRIPTION_STATUS_COMPLETED__;
+				} else if ($items[$item_id]['has_transcription']) {
+					$items[$item_id]['status'] = __CA_TRANSCRIPTION_STATUS_IN_PROGRESS__;
+				} else {
+					$items[$item_id]['status'] = __CA_TRANSCRIPTION_STATUS_NOT_STARTED__;
+				}
+			}
+			return ['representations' => $reps, 'items' => $items];
+		}
+		# ------------------------------------------------------
 	}

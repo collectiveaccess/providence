@@ -10528,7 +10528,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		If you want both moderated and unmoderated comments to be returned then omit the parameter or pass a null value
 	 *
 	 * @param int $pn_user_id A valid ca_users.user_id value. If specified, only comments by the specified user will be returned. (optional - default is null)
-	 * @param bool $pn_moderation_status  To return only unmoderated comments set to FALSE; to return only moderated comments set to TRUE; to return all comments set to null or omit
+	 * @param bool $pb_moderation_status  To return only unmoderated comments set to FALSE; to return only moderated comments set to TRUE; to return all comments set to null or omit
 	 * @param array $pa_options Options include:
      * 	    transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
      *		returnAs = what to return; possible values are:
@@ -10636,13 +10636,13 @@ $pa_options["display_form_field_tips"] = true;
                             }
                             $va_comments[][$vs_media_field] = $va_media;
                         }
-                        $va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
-                        
-                        if ($va_comments[$comment_id]['user_id']) {
-                            $va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
-                            $va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
-                        }
                     }
+                    
+                    $va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
+					if ($va_comments[$comment_id]['user_id']) {
+						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
+						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
+					}
                 }
                  while ($qr_set_comments->nextRow()) {
                     $comment_id = $qr_set_comments->get("comment_id");
@@ -10661,17 +10661,18 @@ $pa_options["display_form_field_tips"] = true;
                             }
                             $va_comments[$comment_id][$vs_media_field] = $va_media;
                         }
-                        $va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
-                        
-                        if ($va_comments[$comment_id]['user_id']) {
-                            $va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
-                            $va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
-                        }
-                        
-                        if ($o_request) {
-                            $va_comments[$comment_id]['set_message'] = _t("Comment made in set %1", caEditorLink($o_request, $qr_set_comments->get('set_name'), '', 'ca_sets', $va_comments[$comment_id]['set_id']));
-                        }
                     }
+                    
+					$va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
+					
+					if ($va_comments[$comment_id]['user_id']) {
+						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
+						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
+					}
+					
+					if ($o_request) {
+						$va_comments[$comment_id]['set_message'] = _t("Comment made in set %1", caEditorLink($o_request, $qr_set_comments->get('set_name'), '', 'ca_sets', $va_comments[$comment_id]['set_id']));
+					}
                 }
                 break;
         }

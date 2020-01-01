@@ -33,6 +33,9 @@
  /**
    *
    */
+define("__CA_TRANSCRIPTION_STATUS_NOT_STARTED__", 1);
+define("__CA_TRANSCRIPTION_STATUS_IN_PROGRESS__", 2);
+define("__CA_TRANSCRIPTION_STATUS_COMPLETED__", 3);
 
 BaseModel::$s_ca_models_definitions['ca_representation_transcriptions'] = array(
  	'NAME_SINGULAR' 	=> _t('Object representation transcription'),
@@ -96,12 +99,12 @@ BaseModel::$s_ca_models_definitions['ca_representation_transcriptions'] = array(
 				'BOUNDS_LENGTH' => array(0,39)
 		),
 		'user_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true, 
-			'DEFAULT' => null,
-			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this transcription.')
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => null,
+				'DONT_ALLOW_IN_UI' => true,
+				'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this transcription.')
 		),
  	)
 );
@@ -202,6 +205,17 @@ class ca_representation_transcriptions extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded transcription is marked as complete
+	 *
+	 * @return int Unix timestamp for date/time completed, null if no transcription is loaded, or false if the transcription is not complete.
+	 */
+	public function isComplete() {
+		if(!$this->isLoaded()) { return null; }
+		$completed_on = $this->get('completed_on', ['getDirectDate' => true]);
+		return ($completed_on > 0) ? $completed_on : false;
 	}
 	# ------------------------------------------------------
 }

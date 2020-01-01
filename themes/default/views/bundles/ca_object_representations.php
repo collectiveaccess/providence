@@ -181,6 +181,7 @@
     if(!$dont_show_transcribe) {
 ?>
 									<br/><h3><?php print _t('Transcribable?'); ?></h3> {is_transcribable_display}
+									<h3><?php print _t('Transcriptions'); ?></h3> {num_transcriptions}
 <?php
     }
 ?>
@@ -553,7 +554,7 @@
 	jQuery(document).ready(function() {
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
+			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'num_transcriptions', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
