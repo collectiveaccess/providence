@@ -2688,6 +2688,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
 												$va_opts['matchOn'] = $va_match_on;
 											}
+
+											$vs_locale = $t_mapping->getSetting('locale');
+											$va_opts['locale'] = $vs_locale;
 											$t_subject->addAttribute($va_element_content, $vs_element, null, $va_opts);
 											$t_subject->update(['queueIndexing' => true]);
 											
