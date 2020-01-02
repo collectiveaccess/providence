@@ -223,12 +223,10 @@
  		static private $s_date_cache = array();
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
- 			global $g_ui_locale;
-
  			parent::__construct($pa_value_array);
  			if(!DateRangeAttributeValue::$o_tep) { 
  				DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); 
- 				DateRangeAttributeValue::$o_tep->setLanguage($g_ui_locale);
+ 				DateRangeAttributeValue::$o_tep->setLanguage(__CA_DEFAULT_LOCALE__);
  			}
  		}
  		# ------------------------------------------------------------------
