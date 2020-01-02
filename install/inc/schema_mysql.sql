@@ -539,10 +539,11 @@ create table ca_object_representations
    `rank`                           int unsigned                   not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
-   submission_user_id               int unsigned                   null,
+   submission_user_id             int unsigned                   null,
    submission_group_id            int unsigned                   null,
-   submission_status_id              int unsigned                   null,
+   submission_status_id           int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   is_transcribable               tinyint unsigned               not null default 0,
    
    primary key (representation_id),
    constraint fk_ca_object_representations_type_id foreign key (type_id)
@@ -580,6 +581,7 @@ create index i_submission_user_id on ca_object_representations(submission_user_i
 create index i_submission_group_id on ca_object_representations(submission_group_id);
 create index i_submission_status_id on ca_object_representations(submission_status_id);
 create index i_submission_via_form on ca_object_representations(submission_via_form);
+create index i_is_transcribable on ca_object_representations(is_transcribable);
 
 
 /*==========================================================================*/
@@ -7232,6 +7234,30 @@ create table if not exists ca_ip_bans (
 
 
 /*==========================================================================*/
+create table if not exists ca_representation_transcriptions (
+   transcription_id          int unsigned                   not null AUTO_INCREMENT,
+   representation_id         int unsigned                   not null references ca_object_representations(representation_id),
+   transcription             longtext                       not null,
+   created_on                int unsigned                   not null,
+   completed_on              int unsigned                   null,
+   validated_on              int unsigned                   null,
+   is_primary                tinyint unsigned               not null default 0,
+   
+   ip_addr		             varchar(39)                    not null,
+   user_id                   int unsigned                   null references ca_users(user_id),
+   
+   primary key (transcription_id),
+
+   index i_created_on			    (created_on),
+   index i_completed_on      	    (completed_on, is_primary),
+   index i_validated_on      	    (validated_on),
+   index i_ip_addr				    (ip_addr),
+   unique index i_user_id           (user_id, representation_id),
+   index i_representation_id        (representation_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7242,4 +7268,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (161, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (162, unix_timestamp());
