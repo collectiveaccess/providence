@@ -308,6 +308,8 @@
  			);
  			
 			if ($ps_value) {
+				$vs_locale = caGetOption('locale', $pa_options, __CA_DEFAULT_LOCALE__);
+				DateRangeAttributeValue::$o_tep->setLanguage($vs_locale);
 				if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) { 
 					// invalid date
 					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
