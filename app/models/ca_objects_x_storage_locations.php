@@ -241,16 +241,17 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	 *
 	 */
 	private function _getStorageLocationInfo() {
-	    require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
-		$t_loc = new ca_storage_locations($this->get('location_id'));
-		if ($t_loc->getPrimaryKey()) {
-			return array(
-				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
-				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
-			);
-		} else {
-			return array('path' => array('?'), 'ids' => array(0));
-		}
+		return null;
+	    // require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
+// 		$t_loc = new ca_storage_locations($this->get('location_id'));
+// 		if ($t_loc->getPrimaryKey()) {
+// 			return array(
+// 				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
+// 				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
+// 			);
+// 		} else {
+// 			return array('path' => array('?'), 'ids' => array(0));
+// 		}
 	}	
 	# ------------------------------------------------------
 }
