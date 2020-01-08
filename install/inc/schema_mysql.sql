@@ -1738,7 +1738,7 @@ create table ca_objects
    acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
    acl_inherit_from_parent         tinyint unsigned              not null default 0,
    access_inherit_from_parent      tinyint unsigned              not null default 0,
-   home_location_id               int unsigned,
+   home_location_id               int unsigned null,
    accession_sdatetime            decimal(30,20),
    accession_edatetime            decimal(30,20),
    deaccession_sdatetime          decimal(30,20),
