@@ -6255,24 +6255,24 @@ table.caConfirmBatchExecutionPanelAlertControls {
     -webkit-border-radius:4px;
 }
 
-#caTypeChangePanel .close a, #caCreateChildPanel .close a{
+#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a{
     text-decoration:none;
     font-size:16px;
 }
 
-#caTypeChangePanelContentArea, #caCreateChildPanelContentArea {
+#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table {
     width: 100%;
 }
-#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left {
+#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
 	margin-top:-10px;
 }
 .addChild {
@@ -6293,6 +6293,23 @@ div.dialogHeader {
     margin: 0px;
     font-family: "DIN-Regular";
 }
+
+/* Set home location */
+#caSetHomeLocationPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+}
+
 
 /* Editor summary download options */
 #caSummaryDownloadOptionsPanel {
