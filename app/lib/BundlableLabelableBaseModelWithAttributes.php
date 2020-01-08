@@ -2575,7 +2575,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
-				$va_definition_bundle_names[(!Datamodel::tableExists($va_bundle['bundle_name']) ? "{$vs_table_name}." : "").str_replace("ca_attribute_", "", $va_bundle['bundle_name'])] = 1;
+				$va_definition_bundle_names[((!Datamodel::tableExists($va_bundle['bundle_name']) && !preg_match("!^{$vs_table_name}\.!", $va_bundle['bundle_name'])) ? "{$vs_table_name}." : "").str_replace("ca_attribute_", "", $va_bundle['bundle_name'])] = 1;
 			}
 			ca_metadata_dictionary_entries::preloadDefinitions(array_keys($va_definition_bundle_names));
 		
@@ -5179,7 +5179,7 @@ if (!$vb_batch) {
 		$va_bundle_names = array();
 		foreach($va_bundles as $va_bundle) {
 			$vs_bundle_name = str_replace('ca_attribute_', '', $va_bundle['bundle_name']);
-			if (!Datamodel::getInstanceByTableName($vs_bundle_name, true)) {
+			if (!Datamodel::getInstanceByTableName($vs_bundle_name, true) && !preg_match("!^".$this->tableName()."\.!", $vs_bundle_name)) {
 				$vs_bundle_name = $this->tableName().'.'.$vs_bundle_name;
 			}
 			
@@ -6004,8 +6004,8 @@ if (!$vb_batch) {
 				if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 				
 				if ($vb_uses_relationship_types)  {
-					$va_rel_types = $t_rel->getRelationshipInfo($vs_item_rel_table_name);
-					$vs_left_table = $t_item_rel->getLeftTableName();
+					$va_rel_types = $t_rel->getRelationshipInfo($this->tableName());
+					$vs_left_table = $this->getLeftTableName();
 					$vs_direction = ($vs_left_table == $vs_subject_table_name) ? 'ltor' : 'rtol';
 				}
 				
@@ -6017,12 +6017,7 @@ if (!$vb_batch) {
 					if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 						if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 					}
-					
-					// if ($ps_return_as !== 'data') {
-// 						$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
-// 						continue;
-// 					}
-
+			
 					$va_row = $qr_res->getRow();
 					$vs_v = $va_row['row_id'].'/'.$va_row[$vs_key];
 
@@ -7710,8 +7705,11 @@ side. For many self-relations the direction determines the nature and display te
 	 	while($qr_res->nextRow()) {
 	 		$bundle_name = $qr_res->get('bundle_name'); 
 	 		$bundle_elements = explode('.', $bundle_name);
-	 		if (sizeof($bundle_elements) > 1) { array_shift($bundle_elements); }
-	 		if (is_array($bundles_on_screen) && !in_array(join(".", $bundle_elements), $bundles_on_screen)) { continue; }
+	 		
+	 		if (is_array($bundles_on_screen) && !in_array(join(".", $bundle_elements), $bundles_on_screen)) {
+	 			if (sizeof($bundle_elements) > 1) { array_shift($bundle_elements); }
+	 			if (is_array($bundles_on_screen) && !in_array(join(".", $bundle_elements), $bundles_on_screen)) { continue; }
+	 		}
 	 		$vn_rule_id = $qr_res->get('rule_id');
 	 		$t_rule = (isset($va_rule_instances[$vn_rule_id])) ? $va_rule_instances[$vn_rule_id] : ($va_rule_instances[$vn_rule_id] = new ca_metadata_dictionary_rules($vn_rule_id));
 	 	
@@ -7749,10 +7747,8 @@ side. For many self-relations the direction determines the nature and display te
 		if ($this->inTransaction()) { $t_violation->setTransaction($this->getTransaction()); }
 		
 		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $o_db, 'bundles' => caGetOption('bundles', $pa_options, null)));
-		
 		$vn_violation_count = 0;
 		$va_violations = array();
-			
 		foreach($va_rules as $va_rule) {
 			$va_expression_tags = caGetTemplateTags($va_rule['expression']);
 		
