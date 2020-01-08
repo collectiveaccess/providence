@@ -180,6 +180,8 @@ class ca_ip_bans extends BaseModel {
 	 */
 	static public function ban($request, $ttl=null, $reason=null) {
 		if (!($ip = RequestHTTP::ip())) { return false; }
+		if (self::isWhitelisted()) { return false; } 
+		
 		if (self::isBanned($request)) { return true; }
 		$ban = new ca_ip_bans();
 		$ban->setMode(ACCESS_WRITE);
@@ -212,6 +214,25 @@ class ca_ip_bans extends BaseModel {
 			return $db->query("TRUNCATE TABLE ca_ip_bans");
 		}
 		return $db->query("DELETE FROM ca_ip_bans WHERE expired_on <= ?", [time()]);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function isWhitelisted($options=null) {
+		if (!is_array($whitelist = self::$config->get('ip_whitelist')) || !sizeof($whitelist)) { return false; }
+		
+		$request_ip = RequestHTTP::ip();
+		$request_ip_long = ip2long($request_ip);
+		
+		foreach($whitelist as $ip) {
+			$ip_s = ip2long(str_replace("*", "0", $ip));
+			$ip_e = ip2long(str_replace("*", "255", $ip));
+			if (($request_ip_long >= $ip_s) && ($request_ip_long <= $ip_e)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	# ------------------------------------------------------
 }

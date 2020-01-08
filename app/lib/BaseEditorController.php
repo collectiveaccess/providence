@@ -2474,7 +2474,7 @@ class BaseEditorController extends ActionController {
 			if($vb_download_for_record){
 				$t_download_log->log(array(
 						"user_id" => $this->request->getUserID(), 
-						"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
+						"ip_addr" => RequestHTTP::ip(), 
 						"table_num" => Datamodel::getTableNum($this->ops_table_name), 
 						"row_id" => $vn_child_id, 
 						"representation_id" => $pn_representation_id ? $pn_representation_id : null, 
@@ -2572,7 +2572,7 @@ class BaseEditorController extends ActionController {
 		$t_download_log = new Downloadlog();
 		$t_download_log->log(array(
 				"user_id" => $this->request->getUserID(), 
-				"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
+				"ip_addr" => RequestHTTP::ip(), 
 				"table_num" => Datamodel::getTableNum($this->ops_table_name), 
 				"row_id" => $vn_subject_id, 
 				"representation_id" => null, 

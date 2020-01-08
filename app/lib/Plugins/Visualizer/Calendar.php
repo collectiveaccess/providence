@@ -270,4 +270,3 @@ class WLPlugVisualizerCalendar Extends BaseVisualizerPlugIn Implements IWLPlugVi
 	}
 	# ------------------------------------------------
 }
-?>
