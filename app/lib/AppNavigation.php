@@ -615,7 +615,18 @@
 						if ($pa_navinfo[$vs_nav]['submenu']['type'] == 'dynamic') {
 							$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]['submenu']);
 							if (sizeof($va_submenu_nav)) {
-								$vs_buf .= "<li>".((is_array($va_defaults) && $va_defaults['module'] && $va_defaults['module'] == "find") ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params) : caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#')));
+								$table = null;
+								
+							    $is_link = (is_array($va_defaults) && $va_defaults['module'] && $va_defaults['module'] == "find");
+								if(is_array($pa_navinfo[$vs_nav]['requires'])) {
+									$table = array_shift(array_filter(array_values(array_map(function($v) { return preg_match("!^action:can_search_([a-z_]+)$!", $v, $m) ? $m[1] : null; }, array_keys($pa_navinfo[$vs_nav]['requires']))), function($v) { return $v;}));
+									if ($this->opo_config->get("{$table}_find_dont_allow_non_type_restricted")) { 
+										$is_link = false; 
+									}
+								}
+							    $va_additional_params['type_id'] = -1;  // force type restriction to be disabled
+							    
+								$vs_buf .= "<li>".($is_link ? caNavLink($this->opo_request, 'ccc'.$vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params) : caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#')));
 								$vs_buf .= $this->_genSubMenu($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 								$vs_buf .= "</li>\n";
 							}
