@@ -348,9 +348,9 @@ div.clear {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
+#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton, #leftNav #inspectorSetHomeLocationButton  {
 	float: left;
-	margin-right: 10px;
+	margin-right: 5px;
 	width: 28px;
 	text-align: center;
 }
