@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -209,13 +209,6 @@
 						}
 					}
 					$vs_view_name = 'preferences_quickadd_html.php';
- 					break;
- 				case 'EditMediaPrefs':
- 					$vs_group = 'media';
- 					
- 					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
-						$this->request->user->setPreference($vs_pref, $this->request->getParameter('pref_'.$vs_pref, pString));
-					}
  					break;
  				case 'EditUnitsPrefs':
  					$vs_group = 'units';
