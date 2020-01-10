@@ -337,7 +337,7 @@
 						}
 						
 						$sql = "
-							SELECT {$table_pk}, {$sort_field}
+							SELECT {$table_pk}, `{$sort_field}`
 							FROM {$table}
 							WHERE
 								{$table_pk} IN (?)
@@ -436,7 +436,7 @@
 							$keys = [];	// sortable values by sort id
 							while($qr_keys->nextHit()) {	// Loop on sortables
 								$sort_id = $qr_keys->get($sort_table_full_pk);
-								$sort_values = $qr_keys->get("{$sort_table}.{$sort_field}", ['sortable' => true, 'returnAsArray' => true]);
+								$sort_values = $qr_keys->get("{$sort_table}.`{$sort_field}`", ['sortable' => true, 'returnAsArray' => true]);
 								
 								if(!is_array($keys[$sort_id])) { $keys[$sort_id] = []; }
 								foreach($sort_values as $i => $sort_value) {
@@ -471,7 +471,7 @@
 					
 					$vs_join_sql = join("\n", $joins);
 					$sql = "
-						SELECT {$table}.{$table_pk}, {$sort_table}.{$sort_field}
+						SELECT {$table}.{$table_pk}, {$sort_table}.`{$sort_field}`
 						FROM {$table}
 						{$vs_join_sql}
 						WHERE
