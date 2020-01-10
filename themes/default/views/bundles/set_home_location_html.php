@@ -28,6 +28,10 @@
  
 	AssetLoadManager::register("panel");
 	$t_item = $this->getVar('t_item');
+	
+	$va_lookup_urls 			= caJSONLookupServiceUrl($this->request, 'ca_storage_locations', []);
+	$vs_edit_url = caEditorUrl($this->request, $t_item->tableName());
+		$vn_init_id = 0; 
 ?>
 <script type="text/javascript">
 	var caSetHomeLocationPanel;
@@ -50,14 +54,77 @@
 			});
 		}
 	});
+	
+	var oSetHomeLocationHierarchyBrowser = null;
+	
+	function _initSetHomeLocationHierarchyBrowser() {
+		if (!oSetHomeLocationHierarchyBrowser) {
+			oSetHomeLocationHierarchyBrowser = caUI.initHierBrowser('SetHomeLocationHierarchyBrowser', {
+				levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
+				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
+			
+				dontAllowEditForFirstLevel: true,
+			
+				readOnly: false,
+			
+				editUrl: null,
+				editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
+			
+				allowDragAndDropSorting: false,
+
+				initItemID: <?php print (int)$t_item->get('home_location_id'); ?>,
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+				displayCurrentSelectionOnLoad: false,
+				autoShrink: false,
+				
+				currentSelectionIDID: 'new_home_location_id',
+				currentSelectionDisplayID: 'SetHomeLocationHierarchyBrowserSelectionMessage',
+				currentSelectionDisplayFormat: '<?php print addslashes(_t('Home location will be set to <em>%1</em> on save.')); ?>',
+				
+				onSelection: function(id, parent_id, name, formattedDisplay) {
+					if (id > 1) {
+						jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html(formattedDisplay);
+					} else {
+						jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html('');
+					}
+				},
+			});
+			
+			// Set up hierarchy browse search
+			jQuery('#SetHomeLocationHierarchyBrowserSearch').autocomplete(
+				{
+					source: '<?php print $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
+					select: function( event, ui ) {
+						if (ui.item.id) {
+							jQuery("#SetHomeLocationHierarchyBrowser").slideDown(350);
+							oSetHomeLocationHierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+						}
+						event.preventDefault();
+						jQuery('#SetHomeLocationHierarchyBrowser').val('');
+					}
+				}
+			).click(function() { this.select() });
+		}
+	}
 </script>
 <div id="caSetHomeLocationPanel" class="caSetHomeLocationPanel"> 
-	<div class='dialogHeader'><?php print _t('Set home location for %1', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+	<div class='dialogHeader'><?php print _t('Set home location'); ?></div>
 	<div id="caSetHomeLocationPanelContentArea">
 		<?php print caFormTag($this->request, 'ChangeType', 'caChangeTypeForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]); ?>
-			<p>Set home location here</p>
+			<div>
+				<div class="hierarchyBrowserFind" style="float: right;">
+					<?php print _t('Find'); ?>: <input type="text" id="SetHomeLocationHierarchyBrowserSearch" name="search" value="" size="25"/>
+				</div>
+				<div class="hierarchyBrowserMessageContainer">
+					<div id='SetHomeLocationHierarchyBrowserSelectionMessage' class='hierarchyBrowserNewLocationMessage'><!-- Message specifying move destination is dynamically inserted here by ca.hierbrowser --></div>	
+				</div>
+				<div class="clear"><!-- empty --></div>
+				<div id="SetHomeLocationHierarchyBrowser" class="hierarchyBrowserSmall">
+					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+				</div><!-- end hierbrowser -->		
+			</div>
 			
-	
 			<div id="caSetHomeLocationPanelControlButtons">
 				<table>
 					<tr>
@@ -68,6 +135,7 @@
 			</div>
 			
 			<?php print caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())); ?>
+			<input type='hidden' name='new_home_location_id' id='new_home_location_id' value=''/>
 		</form>
 	</div>
 </div>

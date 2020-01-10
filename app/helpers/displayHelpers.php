@@ -1192,16 +1192,6 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						FooterManager::add($vo_change_type_view->render("change_type_html.php"));
 						TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
 					}
-					
-					if ($po_view->request->user->canDoAction("can_set_home_location")) {	
-						$vs_buf .= "<div id='inspectorSetHomeLocation'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='caSetHomeLocationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
-						
-						$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-						$vo_change_type_view->setVar('t_item', $t_item);
-						
-						FooterManager::add($vo_change_type_view->render("set_home_location_html.php"));
-						TooltipManager::add("#inspectorSetHomeLocation", _t('Set home location'));
-					}
 
 					if ($t_item->getPrimaryKey() && $po_view->request->config->get($vs_table_name.'_show_add_child_control_in_inspector')) {
 						$vb_show_add_child_control = true;
@@ -1247,6 +1237,18 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "</div>";
 
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
+			}
+			
+			
+					
+			if (($vs_table_name == 'ca_objects') && $po_view->request->user->canDoAction("can_set_home_location")) {	
+				$vs_buf .= "<div id='inspectorSetHomeLocation'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='caSetHomeLocationPanel.showPanel(); _initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
+				
+				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+				$vo_change_type_view->setVar('t_item', $t_item);
+				
+				FooterManager::add($vo_change_type_view->render("set_home_location_html.php"));
+				TooltipManager::add("#inspectorSetHomeLocation", _t('Set home location'));
 			}
 
 			//
