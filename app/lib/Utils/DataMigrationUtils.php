@@ -173,6 +173,9 @@
 
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			
+			$log_reference 					= caGetOption('logReference', $pa_options, null);
+			$log_reference_str = 			($log_reference ? _t('[%1] ', $log_reference) : '');
+			
 			// Create cache key
 			$vs_cache_key = md5($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
 			
@@ -195,7 +198,7 @@
 					$o_event->beginItem($ps_event_source, 'ca_list_items', 'U');
 					$o_event->endItem(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key], __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 				}
-				if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno", $ps_item_idno, $pm_list_code_or_id)); }
+				if ($o_log) { $o_log->logDebug(_t("%3Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno", $ps_item_idno, $pm_list_code_or_id, $log_reference_str)); }
 
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key];
 			}
@@ -204,7 +207,7 @@
 				if($pb_output_errors) {
 					print "[Error] "._t("Could not find list with list code %1", $pm_list_code_or_id)."\n";
 				}
-				if ($o_log) { $o_log->logError(_t("Could not find list with list code %1", $pm_list_code_or_id)); }
+				if ($o_log) { $o_log->logError(_t("%2Could not find list with list code %1", $pm_list_code_or_id, $log_reference_str)); }
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = null;
 			}
 			if (!$vn_parent_id && ($vn_parent_id !== false)) { $vn_parent_id = caGetListRootID($pm_list_code_or_id); }
@@ -230,12 +233,12 @@
 							$va_criteria = array($vs_label_spec => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
 							if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
 							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
+								if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label, $log_reference_str)); }
 								break(2);
 							} else {
 								$va_criteria[$vs_label_spec] = array('name_plural' => $vs_plural_label);
 								if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-									if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label)); }
+									if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label, $log_reference_str)); }
 									break(2);
 								}
 							}
@@ -246,7 +249,7 @@
 						$va_criteria = array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id);
 						if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
 						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno)); }
+							if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno, $log_reference_str)); }
 							break(2);
 						}
 						break;
@@ -310,16 +313,16 @@
 			}
 
 			if (!$t_list->load($vn_list_id)) {
-				if ($o_log) { $o_log->logError(_t("Could not find list with list id %1", $vn_list_id)); }
+				if ($o_log) { $o_log->logError(_t("%2Could not find list with list id %1", $vn_list_id, $log_reference_str)); }
 				return null;
 			}
 			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) {
 				if ($o_log) { 
 					$o_config = Configuration::load();
 					if((bool)$o_config->get('log_import_dont_create_events_as_errors')) {
-						$o_log->logError(_t("Not adding \"%1\" to list %2 because dontCreate option is set", $ps_item_idno, $pm_list_code_or_id)); 
+						$o_log->logError(_t("%3Not adding \"%1\" to list %2 because dontCreate option is set", $ps_item_idno, $pm_list_code_or_id, $log_reference_str)); 
 					} else {
-						$o_log->logNotice(_t("Not adding \"%1\" to list %2 because dontCreate option is set", $ps_item_idno, $pm_list_code_or_id)); 
+						$o_log->logNotice(_t("%3Not adding \"%1\" to list %2 because dontCreate option is set", $ps_item_idno, $pm_list_code_or_id, $log_reference_str)); 
 					}
 				}
 				return false;
@@ -341,7 +344,7 @@
 					if($pb_output_errors) {
 						print "[Error] "._t("Could not set preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))."\n";
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))); }
+					if ($o_log) { $o_log->logError(_t("%3Could not set preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()), $log_reference_str)); }
 
 					$vb_label_errors = true;
 				}
@@ -365,14 +368,14 @@
 					}
 				}
 
-				if ($o_log) { $o_log->logInfo(_t("Created new list item %1 in list %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", $pm_list_code_or_id)); }
+				if ($o_log) { $o_log->logInfo(_t("%3Created new list item %1 in list %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", $pm_list_code_or_id, $log_reference_str)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return $t_item;
 				}
 				return $vn_item_id;
 			} else {
-				if ($o_log) { $o_log->logError(_t("Could not find add item to list: %1", join("; ", $t_list->getErrors()))); }
+				if ($o_log) { $o_log->logError(_t("%2Could not find add item to list: %1", join("; ", $t_list->getErrors()), $log_reference_str)); }
 			}
 			return null;
 		}
