@@ -268,7 +268,7 @@
 		 * @return array - the result list as set
 		 */
 		public function setResultList($pa_result_list) {
-			$this->setSearchHistory(sizeof($pa_result_list));
+			$this->setSearchHistory(is_array($pa_result_list) ? sizeof($pa_result_list) : 0);
 			return $this->setContextValue('result_list', $pa_result_list);
 		}
 		# ------------------------------------------------------------------
