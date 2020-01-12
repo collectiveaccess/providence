@@ -40,6 +40,7 @@
 ?>
 <script type="text/javascript">
 	var caSetHomeLocationPanel;
+	var _currentHomeLocation = ''; /* Global containing name of current home location; may be picked up by history_tracking_chronology bundle (and others?) */
 	jQuery(document).ready(function() {
 		if (caUI.initPanel) {
 			caSetHomeLocationPanel = caUI.initPanel({ 
@@ -112,6 +113,7 @@
 				}
 			).click(function() { this.select() });
 			
+			_currentHomeLocation = '<?php print addslashes($home_location_idno); ?>';
 			jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html('<?php print addslashes($home_location_idno ? str_replace('%', $home_location_idno, $home_location_message) : _t('Home location is not set')); ?>');
 		}
 	}
@@ -125,6 +127,8 @@
 				if(data && data['ok'] && (parseInt(data['ok']) == 1)) {
 					var home_location_message = '<?php print addslashes($home_location_message); ?>';
 					caSetHomeLocationPanel.hidePanel();
+					
+					_currentHomeLocation = data.label;
 					jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html(home_location_message.replace('%', data.label));
 				} else {
 					alert("Failed to set location: " + (data['errors'] ? data['errors'].join('; ') : 'Unknown error'));

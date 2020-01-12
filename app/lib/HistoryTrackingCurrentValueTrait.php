@@ -773,11 +773,22 @@
 		/**
 		 *
 		 */
-		public function getCurrentValueForDisplay($policy=null, $options=null) {
+		public function getCurrentValue($policy=null, $options=null) {
 		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
 		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
                 $current_value = array_shift(array_shift($history));
-                return isset($current_value['display']) ? $current_value['display'] : null;
+                return is_array($current_value) ? $current_value : null;
+            }
+            return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getCurrentValueForDisplay($policy=null, $options=null) {
+			$current_value = $this->getCurrentValue($policy, $options);
+		    if (is_array($current_value)) {
+		   		return isset($current_value['display']) ? $current_value['display'] : null;
             }
             return null;
 		}

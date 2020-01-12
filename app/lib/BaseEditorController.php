@@ -2648,24 +2648,21 @@ class BaseEditorController extends ActionController {
 			throw new ApplicationException(_t('Invalid id'));
 		}
 		if (!$this->_checkAccess($t_subject)) { 
-			throw new ApplicationException(_t('Access denied'));
+			throw new ApplicationException(_t('Access denied to object'));
 		}
 		$location_id = $this->request->getParameter('location_id', pInteger);
 		if (!($t_location = ca_storage_locations::find($location_id, ['returnAs' => 'firstModelInstance']))) { 
 			throw new ApplicationException(_t('Invalid id'));
 		}
-		if (!$this->_checkAccess($t_location)) { 
-			throw new ApplicationException(_t('Access denied'));
-		}
 		$t_subject->set('home_location_id', $location_id);
 		$t_subject->update();
+		
 		if ($t_subject->numErrors() > 0) {
 			$resp = ['ok' => 0, 'errors' => $t_subject->getErrors()];
 		} else {
 			$resp = ['ok' => 1, 'label' => $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings'))];
 		}
 		
-	
 		$this->view->setVar('response', $resp);
 		$this->render('set_home_location_json.php');
 	}

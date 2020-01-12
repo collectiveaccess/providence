@@ -4695,7 +4695,13 @@ if (!$vb_batch) {
 					    
 					    if (!caGetOption('hide_update_location_controls', $va_bundle_settings, false)) {
 							// set storage location
-							if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations_idnew_0", pInteger)) {
+							if ($this->hasField('home_location_id') && $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations_return_homenew_0", pInteger) == 1) {
+								$vn_location_id = $this->get('home_location_id');
+							} else {
+								$vn_location_id = $vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations_idnew_0", pInteger);
+							}
+							
+							if ($vn_location_id) {
 								$t_loc = Datamodel::getInstance('ca_storage_locations', true);
 								
 								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
