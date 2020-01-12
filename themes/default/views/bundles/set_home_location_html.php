@@ -28,10 +28,15 @@
  
 	AssetLoadManager::register("panel");
 	$t_item = $this->getVar('t_item');
+	$t_location = ca_storage_locations::find($t_item->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
+	
+	$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')) : null;
+	
+	$home_location_message = _t('Home location is %');
+	
 	
 	$va_lookup_urls 			= caJSONLookupServiceUrl($this->request, 'ca_storage_locations', []);
 	$vs_edit_url = caEditorUrl($this->request, $t_item->tableName());
-		$vn_init_id = 0; 
 ?>
 <script type="text/javascript">
 	var caSetHomeLocationPanel;
@@ -105,13 +110,33 @@
 					}
 				}
 			).click(function() { this.select() });
+			
+			jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html('<?php print addslashes($home_location_idno ? str_replace('%', $home_location_idno, $home_location_message) : _t('Home location is not set')); ?>');
 		}
+	}
+	
+	function setHomeLocation() {
+		var new_home_location_id = jQuery("#new_home_location_id").val();
+		jQuery.post(
+			'<?php print caNavUrl($this->request, '*', '*', 'SetHomeLocation'); ?>',
+			{ 'location_id': new_home_location_id, 'object_id': <?php print $t_item->getPrimaryKey(); ?> },
+			function(data, textStatus, jqXHR) {
+				if(data && data['ok'] && (parseInt(data['ok']) == 1)) {
+					var home_location_message = '<?php print addslashes($home_location_message); ?>';
+					caSetHomeLocationPanel.hidePanel();
+					jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html(home_location_message.replace('%', data.label));
+				} else {
+					alert("Failed to set location: " + (data['errors'] ? data['errors'].join('; ') : 'Unknown error'));
+				}
+			},
+			'json'
+		);
 	}
 </script>
 <div id="caSetHomeLocationPanel" class="caSetHomeLocationPanel"> 
 	<div class='dialogHeader'><?php print _t('Set home location'); ?></div>
 	<div id="caSetHomeLocationPanelContentArea">
-		<?php print caFormTag($this->request, 'ChangeType', 'caChangeTypeForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]); ?>
+		<?php print caFormTag($this->request, '#', 'caSetHomeLocationForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]); ?>
 			<div>
 				<div class="hierarchyBrowserFind" style="float: right;">
 					<?php print _t('Find'); ?>: <input type="text" id="SetHomeLocationHierarchyBrowserSearch" name="search" value="" size="25"/>
@@ -128,8 +153,9 @@
 			<div id="caSetHomeLocationPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caChangeTypeForm'); ?></td>
-						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caSetHomeLocationPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
+						<!--<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caSetHomeLocationForm'); ?></td>-->
+						<td align="right"><?php print caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caSetHomeLocationForm', ['onclick' => 'setHomeLocation(); return false;']); ?></td>
+						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSetHomeLocationFormCancelButton', array('onclick' => 'caSetHomeLocationPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
 					</tr>
 				</table>
 			</div>
