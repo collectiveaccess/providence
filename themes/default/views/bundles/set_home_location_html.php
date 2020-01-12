@@ -28,10 +28,9 @@
  
 	AssetLoadManager::register("panel");
 	$t_item = $this->getVar('t_item');
+	
 	$t_location = ca_storage_locations::find($t_item->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
-	
 	$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')) : null;
-	
 	$home_location_message = _t('Home location is %');
 	
 	
@@ -130,6 +129,14 @@
 					
 					_currentHomeLocation = data.label;
 					jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html(home_location_message.replace('%', data.label));
+					
+					// Reload chronology bundle, which may rely upon current home location
+					if(caBundleUpdateManager) { 
+						caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
+						caBundleUpdateManager.reloadBundle('ca_objects_history'); 
+						caBundleUpdateManager.reloadBundle('ca_objects_location'); 
+					}
+					jQuery("input[name='form_timestamp']").val(data.timestamp);
 				} else {
 					alert("Failed to set location: " + (data['errors'] ? data['errors'].join('; ') : 'Unknown error'));
 				}

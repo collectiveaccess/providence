@@ -40,10 +40,10 @@
 	$current_value 				= $t_subject->getCurrentValue();
 	
 	$show_return_home_controls = false;
-	if($t_subject->hasField('home_location_id') && ($home_location_id = $t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
+	if($t_subject->hasField('home_location_id') && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
 		$show_return_home_controls = true;
 	}
-	
+
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
 	$vs_change_location_url		= $this->getVar('location_change_url');
 	

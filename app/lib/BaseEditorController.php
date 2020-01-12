@@ -2660,7 +2660,7 @@ class BaseEditorController extends ActionController {
 		if ($t_subject->numErrors() > 0) {
 			$resp = ['ok' => 0, 'errors' => $t_subject->getErrors()];
 		} else {
-			$resp = ['ok' => 1, 'label' => $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings'))];
+			$resp = ['ok' => 1, 'label' => $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')), 'timestamp' => time()];
 		}
 		
 		$this->view->setVar('response', $resp);
