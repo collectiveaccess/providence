@@ -348,11 +348,17 @@ div.clear {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton, #leftNav #inspectorSetHomeLocationButton  {
+
+#leftNav .inspectorActionButton   {
 	float: left;
 	margin-right: 5px;
 	width: 28px;
 	text-align: center;
+}
+
+#leftNav .infoIcon {
+	padding-left: unset !important;
+	line-height: unset !important;
 }
 
 #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {

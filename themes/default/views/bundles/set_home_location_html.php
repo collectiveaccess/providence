@@ -63,6 +63,7 @@
 	var oSetHomeLocationHierarchyBrowser = null;
 	
 	function _initSetHomeLocationHierarchyBrowser() {
+		caSetHomeLocationPanel.showPanel();
 		if (!oSetHomeLocationHierarchyBrowser) {
 			oSetHomeLocationHierarchyBrowser = caUI.initHierBrowser('SetHomeLocationHierarchyBrowser', {
 				levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
@@ -153,7 +154,6 @@
 			<div id="caSetHomeLocationPanelControlButtons">
 				<table>
 					<tr>
-						<!--<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caSetHomeLocationForm'); ?></td>-->
 						<td align="right"><?php print caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caSetHomeLocationForm', ['onclick' => 'setHomeLocation(); return false;']); ?></td>
 						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSetHomeLocationFormCancelButton', array('onclick' => 'caSetHomeLocationPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
 					</tr>
