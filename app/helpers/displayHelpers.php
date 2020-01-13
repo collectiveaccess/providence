@@ -1010,7 +1010,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								$va_parent = $va_ancestors[$vn_parent_index];
 								$vs_disp_fld = $t_item->getLabelDisplayField();
 
-								if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
+								if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($po_view->request, $va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
 									$vs_label .= $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
 								} else {
 									$vs_label .= ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
