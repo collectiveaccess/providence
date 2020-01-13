@@ -1252,12 +1252,20 @@ div.hint {
 	font-size:11px;
 	line-height:1em;
 }
-.bundleSubLabel .editorBundlePrintControl a.form-button{
+.bundleSubLabel .editorBundlePrintControl a.form-button, .bundleSubLabel .editorBundleReturnToHomeControl a.form-button{
 	height:auto;
 	vertical-align:top;
 	padding:0px;
 	margin:-6px 0px 0px 0px;
 }
+
+.bundleSubLabel .editorBundleReturnToHomeControl{
+	float:left;
+	text-align:left;
+	font-size:11px;
+	line-height:1em;
+}
+
 .bundleLabel .iconButton{
 	float:right;
 	text-align:right;

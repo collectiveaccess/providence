@@ -38,19 +38,40 @@
 	$qr_result			= $this->getVar('qr_result');
 	
 	
+if (!$this->request->isAjax()) {
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_subject->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_subject->tableNum().'_rel', $this->getVar('initialValues')));
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_subject->tableNum().'_rel', $va_settings);
-	
+}	
 	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="<?php print $vs_id_prefix.$t_subject->tableNum().'_rel'; ?>">
+<div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
+<?php
+	if ($qr_result && $qr_result->numHits() > 0) {
+		if($qr_result->tableName() == 'ca_objects') {
+?>
+	<div class="bundleSubLabel">
+<?php
+			$initial_values = [];
+			while($qr_result->nextHit()) {
+				$initial_values[] = ['object_id' => $qr_result->get('ca_objects.object_id')];
+			}
+			$qr_result->seek(0);
+			print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_subject_rel, $t_subject_rel, null, $initial_values);
+?>
+	</div>
+	<br style='clear: both;'/>
+<?php
+		}
+	}
+?>
 		<div class="caItemList">
 <?php
 	if ($qr_result && $qr_result->numHits() > 0) {
+		
 
 	//
 	// Template to generate display for existing items

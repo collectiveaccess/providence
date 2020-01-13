@@ -2668,6 +2668,58 @@ class BaseEditorController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
+	 * 
+	 */
+	public function ReturnToHomeLocations($options=null) {
+		if(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
+			$resp = ['ok' => 0, 'message' => _t('No policies configured'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
+		} else {
+			$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
+		
+			$updated = $errors = [];
+			$msg = '';
+			if(is_array($policies) && sizeof($policies)) {
+		
+				$object_ids = array_map(function($v) { return (int)$v; }, explode(';',$this->request->getParameter('object_ids', pString)));
+		
+				$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
+				
+				while($qr_objects->nextHit()) {
+					$object_id = $qr_objects->getPrimaryKey();
+					$t_object = $qr_objects->getInstance();
+		
+					if (!($location_id = $t_object->get('home_location_id'))) { continue; }
+					if (!$t_object->isSaveable($this->request)) { continue; }
+	
+					foreach($policies as $p) {
+						$pe = $p['elements']['ca_storage_locations'];
+						$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
+						if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
+					
+						$t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType']);
+		
+						if($t_object->numErrors() > 0) {
+							$errors[] = $object_id;
+						} else {
+							$updated[] = $object_id;
+						}
+					}
+				}	
+				$msg = _t('%1 returned to home locations', sizeof($updated));
+				if (sizeof($errors)) {
+					$msg .= '; '._t('%1 erros', sizeof($errors));
+				}
+				$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
+			} else {
+				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
+			}
+			
+		}
+		$this->view->setVar('response', $resp);
+		$this->render('../objects/return_to_home_locations.php');
+	}
+	# -------------------------------------------------------
+	/**
 	 * Handle sort requests from form editor.
 	 * Gets passed a table name, a list of ids and a key to sort on. Will return a JSON list of the same IDs, just sorted.
 	 */

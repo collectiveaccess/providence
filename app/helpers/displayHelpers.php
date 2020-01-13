@@ -3372,6 +3372,42 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		return _t('Sort using %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", array_flip($va_sort_fields), ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 'id' => "{$ps_id_prefix}_RelationBundleSortControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning']), caHTMLSelect("{$ps_id_prefix}_RelationBundleSortDirectionControl", [_t('↑') => 'ASC', _t('↓') => 'DESC'], ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val())", 'id' => "{$ps_id_prefix}_RelationBundleSortDirectionControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning']));
 	}
 	# ---------------------------------------
+	/** 
+	 * Used by ca_objects bundle
+	 */
+	function caReturnToHomeLocationControlForRelatedObjectBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values) {
+		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
+		if(!is_array($policies) || !sizeof($policies)) { return ''; }
+		
+		$ids = array_map(function($v) { return $v['object_id']; }, $pa_initial_values);
+		
+		$vs_buf = "<div class='editorBundleReturnToHomeControl'>".
+			caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return all to home locations"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+			"</div>";
+			
+		$vs_buf .= "
+			<script type='text/javascript'>
+				function caReturnToHomeLocation{$ps_id_prefix}() {
+					jQuery.post('".caNavUrl($po_request, '*', '*', 'ReturnToHomeLocations')."', { 'object_ids': '".join(';', $ids)."'}, function(data) {
+							var e = jQuery('#{$ps_id_prefix}_return_to_home_locations').parent();
+							if(data && (data.ok == 1)) {
+								jQuery(e).html(data.message);
+							} else if(data) {
+								jQuery(e).html('Error: ' + data.message);
+							}
+							
+							setTimeout(function() { jQuery(e).fadeOut(250);}, 5000);
+							if(caBundleUpdateManager) { 
+								caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
+								caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
+							}
+					}, 'json');
+				}
+			</script>
+		";
+		return $vs_buf;
+	}
+	# ---------------------------------------
 	/**
 	 * 
 	 */
