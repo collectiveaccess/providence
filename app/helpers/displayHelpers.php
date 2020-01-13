@@ -1088,7 +1088,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 					$va_imgs[] = "{url:'".$va_rep['urls']['preview170']."', width: ".$va_rep['info']['preview170']['WIDTH'].", height: ".
 					$va_rep['info']['preview170']['HEIGHT'].", link: '#', onclick:  'caMediaPanel.showPanel(\'".
-					caNavUrl('*', '*', 'GetMediaOverlay', array($t_item->primaryKey() => $vn_item_id, 'representation_id' => $va_rep['representation_id']))."\')'}";
+					caNavUrl($po_view->request, '*', '*', 'GetMediaOverlay', array($t_item->primaryKey() => $vn_item_id, 'representation_id' => $va_rep['representation_id']))."\')'}";
 
 					$vn_r++;
 				}
@@ -1552,7 +1552,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				if ($vn_representation_id = $t_item->get('representation_id')) {
 					$vs_buf .= "<div><strong>"._t("Applied to representation")."</strong>: <br/>\n";
 					$t_rep = new ca_object_representations($vn_representation_id);
-					$vs_buf .= caNavLink('&larr; '.$t_rep->getLabelForDisplay(), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit/'.$po_view->getVar('representation_editor_screen'), array('representation_id' => $vn_representation_id)).'<br/>';
+					$vs_buf .= caNavLink($po_view->request, '&larr; '.$t_rep->getLabelForDisplay(), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit/'.$po_view->getVar('representation_editor_screen'), array('representation_id' => $vn_representation_id)).'<br/>';
 
 					$vs_buf .= "</div>\n";
 				}
@@ -1747,7 +1747,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			//
 			if ($vs_table_name === 'ca_editor_ui_screens') {
 				$t_ui = new ca_editor_uis($vn_ui_id = $t_item->get('ui_id'));
-				$vs_buf .= "<div><strong>"._t("Part of")."</strong>: ".caNavLink($t_ui->getLabelForDisplay(), '',  'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit', array('ui_id' => $vn_ui_id))."\n";
+				$vs_buf .= "<div><strong>"._t("Part of")."</strong>: ".caNavLink($po_view->request, $t_ui->getLabelForDisplay(), '',  'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit', array('ui_id' => $vn_ui_id))."\n";
 
 				$vs_buf .= "</div>\n";
 			}
@@ -2010,7 +2010,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$t_ui 					= $po_view->getVar('t_ui');
 
 
-		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.caNavLink('Back to Sets', '', 'manage', 'Set', 'ListSets')."</span></h3>\n";
+		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.caNavLink($po_view->request, 'Back to Sets', '', 'manage', 'Set', 'ListSets')."</span></h3>\n";
 
 		$vs_color = $vs_type_name = null;
 
