@@ -150,16 +150,23 @@
  				$va_displays[$va_display['display_id']] = $va_display['name'];
  				
  				$va_show_only_in = [];
- 				foreach(is_array($va_display['settings']['show_only_in']) ? $va_display['settings']['show_only_in'] : [] as $k => $v) {
+ 				
+ 				$show_only_settings = [];
+ 				if(is_array($va_display['settings']['show_only_in'])) {
+ 					 $show_only_settings = $va_display['settings']['show_only_in'];
+ 				} elseif($va_display['settings']['show_only_in']) {
+ 					$show_only_settings = [$va_display['settings']['show_only_in']];
+ 				}
+ 				foreach($show_only_settings as $k => $v) {
  				    $v = str_replace('search_browse_', '', $v);
- 				    if (!in_array($v, ['list', 'full', 'thumbnail'])) { continue; }
+ 				    //if (!in_array($v, ['list', 'full', 'thumbnail'])) { continue; }
  				    $va_show_only_in[] = $v;
  				}
  				$va_display_show_only_for_views[$va_display['display_id']] = $va_show_only_in;
  			}
  			if(!sizeof($va_displays)) { $va_displays = ['0' => _t('Default')]; } // force default display if none are configured
  			if(!isset($va_displays[$vn_display_id])) { $vn_display_id = array_shift(array_keys($va_displays)); }
- 			
+ 		
  			$this->view->setVar('display_lists', $va_displays);	
  			$this->view->setVar('display_show_only_for_views', $va_display_show_only_for_views);	
 			
