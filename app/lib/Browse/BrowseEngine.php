@@ -3121,7 +3121,6 @@
 					$vs_no_text = (isset($va_facet_info['label_no']) && $va_facet_info['label_no']) ? $va_facet_info['label_no'] : _t('No');
 
 
-
 					$va_facet_values = array(
 						 'yes' => array(
 							'id' => 1,
@@ -3149,6 +3148,11 @@
 						foreach($va_facet_values as $vs_state_name => $va_state_info) {
 							$va_wheres = array();
 							$va_joins = array();
+							
+
+							if ($vs_browse_type_limit_sql) {
+								$va_wheres[] = $vs_browse_type_limit_sql;
+							}
 
 							if (!(bool)$va_state_info['id']) {	// no option
 								$va_wheres[] = $this->ops_browse_table_name.'.'.$vs_browse_table_pk." NOT IN (select row_id from ca_attributes where table_num = ".$t_item->tableNum()." AND element_id = ".$t_element->getPrimaryKey().")";
@@ -3205,6 +3209,7 @@
 							if (is_array($va_wheres) && sizeof($va_wheres) > 0) {
 								$vs_where_sql = ' WHERE '.join(' AND ', $va_wheres);
 							}
+							
 
 							if ($vb_check_availability_only) {
 								$vs_sql = "
@@ -3288,6 +3293,11 @@
 						$va_counts = array();
 						foreach($va_facet_values as $vs_state_name => $va_state_info) {
 							$va_wheres = array();
+
+							if ($vs_browse_type_limit_sql) {
+								$va_wheres[] = $vs_browse_type_limit_sql;
+							}
+							
 							$va_joins = $va_joins_init;
 							
 													// yes option
@@ -6162,7 +6172,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						}
 					}
 					
-					if ($t_item_rel->hasField('access')) {
+					if ($t_item_rel && $t_item_rel->hasField('access')) {
 					    $va_selects[] = "{$vs_rel_table_name}.access";
 					}
 
