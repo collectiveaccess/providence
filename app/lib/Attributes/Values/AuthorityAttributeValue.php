@@ -182,7 +182,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		
 		
 		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null))) {
-			$o_log->logError(_t('Value %1 was not set for %2 because it does not refer to an existing %3', $ps_value, caGetOption('logIdno', $pa_options, '???'), $t_item->getProperty('name_singular')));
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not refer to an existing %3', $ps_value, caGetOption('logReference', $pa_options, '???'), $t_item->getProperty('name_singular')));
 		}
 
 		if (!$vb_require_value && !$vn_id) {
