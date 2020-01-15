@@ -139,7 +139,12 @@
      *
      */
     private function _stream($pa_options=null) {
-    
+         function flush_buffers(){
+            ob_end_flush();
+            ob_flush();
+            flush();
+            ob_start();
+        }   
     	$vb_dont_write = $pa_options['dontWrite'];
     	
     	$vb_need_zip64 = false;
@@ -243,8 +248,7 @@
 					if ($vs_content !== FALSE) {
 						$vn_content_length = strlen($vs_content);
 						$vn_bytes_written = fwrite($r_out, $vs_content, $vn_content_length);
-						ob_flush();
-						flush();
+						flush_buffers();
 						
 						$vn_compressed_filesize += $vn_bytes_written;
 						$vn_segsize += $vn_bytes_written;
@@ -368,7 +372,7 @@
 		"\x00\x00");
 		$vn_current_offset += strlen($vs_end_of_ctrl_dir);
 		
-		flush();
+		flush_buffers();
 		fclose($r_out);
     } 
 	# ----------------------------------------------------------------------
