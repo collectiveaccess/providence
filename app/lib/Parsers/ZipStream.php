@@ -94,7 +94,6 @@
      */
     private function unix2DosTime($unixtime = 0) {
         $timearray = ($unixtime == 0) ? getdate() : getdate($unixtime);
-
         if ($timearray['year'] < 1980) {
         	$timearray['year']    = 1980;
         	$timearray['mon']     = 1;
@@ -103,7 +102,6 @@
         	$timearray['minutes'] = 0;
         	$timearray['seconds'] = 0;
         } // end if
-
         return (($timearray['year'] - 1980) << 25) | ($timearray['mon'] << 21) | ($timearray['mday'] << 16) |
                 ($timearray['hours'] << 11) | ($timearray['minutes'] << 5) | ($timearray['seconds'] >> 1);
     }
@@ -139,12 +137,7 @@
      *
      */
     private function _stream($pa_options=null) {
-         function flush_buffers(){
-            ob_end_flush();
-            ob_flush();
-            flush();
-            ob_start();
-        }   
+    
     	$vb_dont_write = $pa_options['dontWrite'];
     	
     	$vb_need_zip64 = false;
@@ -195,7 +188,6 @@
 				} else {
 					$vn_hexdtime = pack("H*", $vs_hex);    
 				}
-
 				
 				//
 				// Local file header segment
@@ -205,7 +197,6 @@
 				$vs_header   .= "\x08\x00";            // gen purpose bit flag
 				$vs_header   .= "\x08\x00";            // compression method
 				$vs_header   .= $vn_hexdtime;          // last mod time and date
-
 				if (!($vs_crc = $va_file['crc'])) {
 					$va_crc = unpack('N', pack('H*', hash_file('crc32b', $vs_filepath)));
 					$vs_crc = $va_crc[1];
@@ -248,7 +239,8 @@
 					if ($vs_content !== FALSE) {
 						$vn_content_length = strlen($vs_content);
 						$vn_bytes_written = fwrite($r_out, $vs_content, $vn_content_length);
-						flush_buffers();
+						ob_flush();
+						flush();
 						
 						$vn_compressed_filesize += $vn_bytes_written;
 						$vn_segsize += $vn_bytes_written;
@@ -303,12 +295,10 @@
 				$vs_central_directory_entry .= pack('v', 0 );             				 // disk number start
 				$vs_central_directory_entry .= pack('v', 0 );             				 // internal file attributes
 				$vs_central_directory_entry .= pack('V', 32 );            				 // external file attributes - 'archive' bit set
-
 				$vs_central_directory_entry .= $vb_need_zip64 ? "\xFF\xFF\xFF\xFF" : pack('V', $vn_old_offset); 				 // relative offset of local header
 				
 				$vs_central_directory_entry .= $vs_name;
 				$vs_central_directory_entry .= $vs_extended_info;
-
 				// optional extra field, file comment goes here
 				// save to central directory
 				$va_ctrl_dir[] = $vs_central_directory_entry;
@@ -372,7 +362,7 @@
 		"\x00\x00");
 		$vn_current_offset += strlen($vs_end_of_ctrl_dir);
 		
-		flush_buffers();
+		flush();
 		fclose($r_out);
     } 
 	# ----------------------------------------------------------------------
