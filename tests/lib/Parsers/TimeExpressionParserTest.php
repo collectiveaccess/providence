@@ -722,7 +722,6 @@ class TimeExpressionParserTest extends TestCase {
  	}
 
 	public function testHistoricDayDateWithUmlautForFrenchLocale() {
-		return; // have to revisit this test but it always fails at the moment
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('fr_FR');
 		$vb_res = $o_tep->parse('24 Décembre 1870');
