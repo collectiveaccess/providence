@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -173,7 +173,7 @@ class DbTest extends TestCase {
 		$this->assertContains('foo', $va_tables);
 		$this->assertContains('bar', $va_tables);
 		
-		$this->assertEquals(227, sizeof($va_tables)); // 225 CA tables plus 2 we created!
+		$this->assertEquals(228, sizeof($va_tables)); // 226 CA tables plus 2 we created!
 	}
 
 	public function testQuote() {
