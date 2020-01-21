@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,11 +55,6 @@ class ExternalCacheTest extends TestCase {
 		$vm_ret = ExternalCache::contains('bar');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
 
-	}
-
-	public function testDeleteNonExistingItem(){
-		$vm_ret = ExternalCache::delete('foo');
-		//$this->assertFalse($vm_ret, 'Removing a non-existing item is not possible');
 	}
 
 	public function testAccessNonExistingItemWithExistingCache() {
@@ -199,16 +194,18 @@ class ExternalCacheTest extends TestCase {
 	}
 
 	/**
-	 * @expectedException ExternalCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidNameSpace() {
+		$this->expectException('ExternalCacheInvalidParameterException');
 		ExternalCache::save('foo', 'data1', 'this is invalid');
 	}
 
 	/**
-	 * @expectedException ExternalCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidKey() {
+		$this->expectException('ExternalCacheInvalidParameterException');
 		ExternalCache::save('', 'data1', 'this is invalid');
 	}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -230,16 +230,18 @@ class DedupTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @expectedException Exception
+	 * 
 	 */
 	public function testInvalidMergeListString() {
+		$this->expectException('Exception');
 		ca_entities::mergeRecords(['foo']);
 	}
 	# -------------------------------------------------------
 	/**
-	 * @expectedException Exception
+	 * 
 	 */
 	public function testInvalidMergeListInvalidID() {
+		$this->expectException('Exception');
 		ca_entities::mergeRecords([time()]);
 	}
 	# -------------------------------------------------------

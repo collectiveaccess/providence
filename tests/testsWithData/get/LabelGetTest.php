@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,7 +101,7 @@ class LabelGetTest extends BaseTestWithData {
 
 		// extract de_DE locale from array
 		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 
 		$va_vals = array_shift(array_shift(caExtractValuesByLocale(array('preferred' => array('de_DE')),$vm_ret)));
 		$this->assertEquals('Testbild', $va_vals['name']);
@@ -112,7 +112,7 @@ class LabelGetTest extends BaseTestWithData {
 
 		// extract de_DE locale from array
 		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 
 		$va_vals = array_shift(array_shift(caExtractValuesByLocale(array('preferred' => array('de_DE')),$vm_ret)));
 		$this->assertEquals('Alternativer Titel für Testbild', $va_vals['name']);
@@ -123,7 +123,7 @@ class LabelGetTest extends BaseTestWithData {
 		$this->assertEquals(1, $vm_ret);
 		
 		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels._count', ['returnAsArray' => true]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals(1, $vm_ret[0]);
 		
@@ -134,7 +134,7 @@ class LabelGetTest extends BaseTestWithData {
 		$this->assertEquals(2, $vm_ret);
 		
 		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels._count', ['returnAsArray' => true]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals(2, $vm_ret[0]);
 		

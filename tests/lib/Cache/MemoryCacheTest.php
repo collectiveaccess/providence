@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -174,16 +174,18 @@ class MemoryCacheTest extends TestCase {
 	}
 
 	/**
-	 * @expectedException MemoryCacheInvalidParameterException
+	 *
 	 */
 	public function testInvalidNameSpace() {
+		$this->expectException('MemoryCacheInvalidParameterException');
 		MemoryCache::save('foo', 'data1', null);
 	}
 
 	/**
-	 * @expectedException MemoryCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidKey() {
+		$this->expectException('MemoryCacheInvalidParameterException');
 		MemoryCache::save('', 'data1', 'barNamespace');
 	}
 

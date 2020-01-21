@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,7 @@ class TGNInformationServiceAttributeValueTest extends TestCase {
 		$va_return = $o_service->lookup(array(), 'Coney Island');
 
 		$va_labels = array();
-		$this->assertInternalType('array', $va_return['results']);
+		$this->assertIsArray($va_return['results']);
 		foreach($va_return['results'] as $va_record) {
 			$va_labels[] = $va_record['label'];
 		}
@@ -82,27 +82,53 @@ class TGNInformationServiceAttributeValueTest extends TestCase {
 
 	public function testGetExtendedInfo() {
 		$o_service = new WLPlugInformationServiceTGN();
-		$o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/tgn/7015849');
+		$ret = $o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/tgn/7015849');
+		
+		$this->assertIsArray($ret);
+		$this->assertArrayHasKey('display', $ret);
+		$this->assertStringContainsString("getty.edu", $ret['display']);
 	}
 
 	public function testGetExtendedInfoWithInvalidUri() {
 		$o_service = new WLPlugInformationServiceTGN();
-		$o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/tgn/7015841231239');
+		$ret = $o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/tgn/7015841231239');
+		
+		$this->assertIsArray($ret);
+		$this->assertArrayHasKey('display', $ret);
+		$this->assertStringContainsString("getty.edu", $ret['display']);
 	}
 
 	public function testGetExtendedInfoWithGibberish() {
 		$o_service = new WLPlugInformationServiceTGN();
-		$o_service->getExtendedInformation(array(), 'gibberish');
+		$ret = $o_service->getExtendedInformation(array(), 'gibberish');
+		
+		$this->assertIsArray($ret);
+		$this->assertArrayHasKey('display', $ret);
+		$this->assertStringContainsString("gibberish", $ret['display']);
 	}
 
 	public function testGetExtraInfo() {
 		$o_service = new WLPlugInformationServiceTGN();
-		$o_service->getExtraInfo(array(), 'http://vocab.getty.edu/tgn/7015849');
+		$ret = $o_service->getExtraInfo(array(), 'http://vocab.getty.edu/tgn/7015849');
+		$this->assertIsArray($ret);
+		$this->assertArrayHasKey('lat', $ret);
+		$this->assertArrayHasKey('long', $ret);
+		
+		$lat = (float)$ret['lat'];
+		$long = (float)$ret['long'];
+		$this->assertIsFloat($lat);
+		$this->assertIsFloat($long);
+		$this->assertNotEquals($lat, 0);
+		$this->assertNotEquals($long, 0);
 	}
 
 	public function testGetSearchIndexing() {
 		$o_service = new WLPlugInformationServiceTGN();
-		$o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/tgn/7015849');
+		$ret = $o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/tgn/7015849');
+		
+		$this->assertIsArray($ret);
+		$this->assertArrayHasKey('prefLabel', $ret);
+		$this->assertStringContainsString("Coney Island", $ret['prefLabel']);
 	}
 
 }

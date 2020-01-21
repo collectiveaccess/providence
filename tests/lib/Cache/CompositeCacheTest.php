@@ -164,16 +164,18 @@ class CompositeCacheTest extends TestCase {
 	}
 
 	/**
-	 * @expectedException ExternalCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidNameSpace() {
+		$this->expectException('ExternalCacheInvalidParameterException');
 		CompositeCache::save('foo', 'data1', 'this is invalid');
 	}
 
 	/**
-	 * @expectedException MemoryCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidKey() {
+		$this->expectException('MemoryCacheInvalidParameterException');
 		CompositeCache::save('', 'data1', 'this is invalid');
 	}
 

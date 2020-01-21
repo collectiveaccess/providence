@@ -113,13 +113,14 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 
 	}
 
-	public function testMultipartIDNOGeneration() {
-
-	}
-
-	public function testMultipartIDNOVerification() {
-
-	}
+	// TODO: Test multipart idno
+	// public function testMultipartIDNOGeneration() {
+// 
+// 	}
+// 
+// 	public function testMultipartIDNOVerification() {
+// 
+// 	}
 
 	// TODO: Test hierarchy functions...
 
