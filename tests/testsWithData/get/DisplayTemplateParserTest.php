@@ -939,10 +939,10 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertEquals('Name: Alt Strom; Name: Hoch Vogel', $vm_ret);
 		
 		
-		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities.nonpreferred_labels' restrictToTypes='alt,uf'>Name: ^ca_entities.nonpreferred_labels.displayname</unit>", "ca_entities", array($this->opn_entity_id1), array('returnAsArray' => false));
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities.nonpreferred_labels' sort='ca_entities.nonpreferred_labels.surname' sortDirection='ASC' restrictToTypes='alt,uf'>Name: ^ca_entities.nonpreferred_labels.displayname</unit>", "ca_entities", array($this->opn_entity_id1), array('returnAsArray' => false));
 	
 		$this->assertIsString($vm_ret);
-		$this->assertEquals('Name: Alt Strom; Name: Hoch Vogel; Name: Max Power', $vm_ret);
+		$this->assertEquals('Name: Max Power; Name: Alt Strom; Name: Hoch Vogel', $vm_ret);
 	}
 	# -------------------------------------------------------
 }
