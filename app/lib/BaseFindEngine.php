@@ -536,7 +536,7 @@
 				if (!$o_conf->get('dont_use_natural_sort')) { $sort_mode |= SORT_NATURAL; } else { $sort_mode |= SORT_STRING; }
 				
 				ksort($sort_buffer, $sort_mode);
-				if (makeSearchResult($sort_directions[0]) == 'desc') { $sort_buffer = array_reverse($sort_buffer); }
+				if (strtolower($sort_directions[0]) == 'desc') { $sort_buffer = array_reverse($sort_buffer); }
 
 				if($return_index) {
 					$return = [];
