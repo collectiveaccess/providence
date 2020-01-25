@@ -1866,7 +1866,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if (!$vb_is_vertical_hier_browser) {
-					$vs_buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>"._t('NONE')."</span></div>";
+					$vs_buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>-</span></div>";
 				}
 				$vs_buf .= caHTMLHiddenInput(
 					$ps_name,

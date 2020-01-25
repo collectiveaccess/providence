@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -529,6 +529,8 @@
 			$ps_boolean 				= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_label_boolean 			= caGetOption('labelBoolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_sort 					= caGetOption('sort', $pa_options, null);
+			$ps_sort_direction 			= caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+				
 			$pa_check_access 			= caGetOption('checkAccess', $pa_options, null);
 			
 			$vb_purify_with_fallback 	= caGetOption('purifyWithFallback', $pa_options, false);
@@ -949,18 +951,17 @@
 			
 			$vs_orderby = '';
 			if ($vs_sort_proc) {
-				$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
 				$va_tmp = explode(".", $vs_sort_proc);
 				if (sizeof($va_tmp) == 2) {
 					switch($va_tmp[0]) {
 						case $vs_table:
 							if ($t_instance->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort_proc} {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY {$vs_sort_proc} {$ps_sort_direction}";
 							}
 							break;
 						case $vs_label_table:
 							if ($t_label->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort_proc} {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY {$vs_sort_proc} {$ps_sort_direction}";
 							}
 							break;
 					}
@@ -969,6 +970,7 @@
 			}
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+	
 			$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
@@ -1030,7 +1032,7 @@
 						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 					}
 					if ($ps_return_as == 'searchresult') {
-						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids, ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
 					} else {
 						return array_unique(array_values($va_ids));
 					}

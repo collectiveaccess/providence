@@ -102,10 +102,11 @@ class SimpleServiceTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @expectedException Exception
+	 *
 	 */
 	public function testDetailDispatchWithInvalidType() {
 		global $g_request;
+		$this->expectException('Exception');
 		$g_request->setParameter('id', $this->opt_moving_image->getPrimaryKey(), 'GET');
 
 		SimpleService::dispatch('testDetail', $g_request);

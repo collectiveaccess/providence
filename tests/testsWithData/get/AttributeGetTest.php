@@ -200,15 +200,15 @@ class AttributeGetTest extends BaseTestWithData {
 
 		// 'flat' informationservice attribues
 		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
-		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
+		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
 		// subfield notation for "extra info"
-		$this->assertContains('Burr shot his political rival Alexander Hamilton in an 1804 duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
+		$this->assertStringContainsString('Burr shot his political rival Alexander Hamilton in an 1804 duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
 		$this->assertEquals('40.5667', $this->opt_object->get('ca_objects.tgn.lat'));
 
 		// informationservice attributes in container
 		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
-		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
-		$this->assertContains('Burr shot his political rival Alexander Hamilton in an 1804 duel', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
+		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
+		$this->assertStringContainsString('Burr shot his political rival Alexander Hamilton in an 1804 duel', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
 	}
 	# -------------------------------------------------------
 	public function testGetCounts() {
@@ -216,7 +216,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals(2, $vm_ret);
 		
 		$vm_ret = $this->opt_object->get('ca_objects.internal_notes._count', ['returnAsArray' => true]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals(2, $vm_ret[0]);
 		

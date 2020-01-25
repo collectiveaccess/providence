@@ -449,13 +449,8 @@ var caUI = caUI || {};
 						if (!item.name) { item.name = '??? ' + item['item_id']; }
 						if (item['item_id']) {
 							if (that.excludeItemIDs && (Array.isArray(that.excludeItemIDs)) && (that.excludeItemIDs.length > 0) && (that.excludeItemIDs.indexOf(item['item_id']) >= 0)) {
-								
-							console.log(that.excludeItemIDs, item);
 								continue;
 							}
-							// if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
-// 								that.selectedItemIDs[0] = item['item_id'];
-// 							}
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
 							}

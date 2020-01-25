@@ -6171,7 +6171,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						    $va_selects[] = "{$vs_rel_item_table_name}.type_id";
 						}
 					}
-					
+
 					if ($t_item_rel && $t_item_rel->hasField('access')) {
 					    $va_selects[] = "{$vs_rel_table_name}.access";
 					}
@@ -6373,7 +6373,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
 								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 	}                  
-	                    $vs_sql .= " GROUP BY ".join(', ', $va_select_flds);
+	                    $vs_sql .= " GROUP BY ".join(', ', array_map(function($v) { return str_replace(' rel_type_id', '', $v); }, $va_select_flds));
+					    
 					    //print "<hr>$vs_sql<hr>\n"; print_R($va_sql_params);
 						$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
 
