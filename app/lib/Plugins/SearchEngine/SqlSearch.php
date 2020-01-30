@@ -2492,7 +2492,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$va_phrases = array_unique($va_phrases);
 		} else {
 			// handle single word
-			if (!sizeof($va_word_ids[0])) { return array(); }
+			if (!is_array($va_word_ids[0]) || !sizeof($va_word_ids[0])) { return array(); }
 			asort($va_word_ids[0], SORT_NUMERIC);
 			$va_word_ids[0] = array_slice($va_word_ids[0], 0, 3, true);
 			$qr_phrases = $this->opo_db->query("
