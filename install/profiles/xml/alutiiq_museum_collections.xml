@@ -1670,8 +1670,8 @@
         <item idno="site" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Archeological Sites</name_singular>
-              <name_plural>Archeological Sites</name_plural>
+              <name_singular>Archaeological Sites</name_singular>
+              <name_plural>Archaeological Sites</name_plural>
             </label>
           </labels>
         </item>
@@ -16920,18 +16920,8 @@
         <restriction type="library"/>
        </typeRestrictions>
       <bundlePlacements>
-        <placement code="ca_author">
-          <bundle>ca_entities</bundle>
-          <settings>
-            <setting name="restrict_to_relationship_types">author</setting>
-          </settings>
-        </placement>
-        <placement code="ca_publisher">
-          <bundle>ca_entities</bundle>
-          <settings>
-          <setting name="restrict_to_relationship_types">publisher</setting>
-            </settings>
-        </placement>
+        
+        
         <placement code="ca_attribute_date_published">
           <bundle>ca_attribute_date_published</bundle>
         </placement>
@@ -17225,6 +17215,12 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_object_lots">
+              <bundle>ca_object_lots</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related object lots</setting>
+              </settings>
+            </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
             </placement>
@@ -17989,6 +17985,9 @@
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>
+           <placement code="ca_object_lots">
+             <bundle>ca_object_lots</bundle>
+           </placement>
             <placement code="ca_collections">
               <bundle>ca_collections</bundle>
               <settings>
@@ -18137,7 +18136,10 @@
             </placement>
              <placement code="ca_places">
               <bundle>ca_places</bundle>
-            </placement>            
+            </placement> 
+            <placement code="ca_object_lots">
+              <bundle>ca_object_lots</bundle>
+            </placement> 
           </bundlePlacements>
         </screen>
         
@@ -19076,6 +19078,9 @@
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
+          <placement code="ca_object_lots">
+            <bundle>ca_object_lots</bundle>
+          </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -21492,6 +21497,22 @@
             </label>
           </labels>
         </type>
+        <type code="surveyor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>surveyor</typename>
+              <typename_reverse>surveyor</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="researcher" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>researcher</typename>
+              <typename_reverse>researcher</typename_reverse>
+            </label>
+          </labels>
+        </type>
       </types> 
     </relationshipTable>
     <relationshipTable name="ca_object_lots_x_entities">
@@ -21986,184 +22007,7 @@
     </group>
   </groups>
   <displays>
-    <display code="mdl_export" type="ca_objects" system="1" typeRestrictions="still_image"
-      includeSubtypes="0">
-      <labels>
-        <label locale="en_US">
-          <name>Minnesota Digital Library Export</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="show_empty_values"><![CDATA[1]]></setting>
-      </settings>
-      <userAccess>
-        <permission user="administrator" access="edit"/>
-      </userAccess>
-      <bundlePlacements>
-        <placement code="ca_objects_title">
-          <bundle>ca_objects.title</bundle>
-        </placement>
-        <placement code="ca_entities">
-          <bundle>ca_entities</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Creator</setting>
-            <setting name="restrict_to_relationship_types"><![CDATA[creator]]></setting>
-            <setting name="restrict_to_relationship_types"><![CDATA[author]]></setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_objects_description">
-          <bundle>ca_objects.description</bundle>
-        </placement>
-        <placement code="ca_entities">
-          <bundle>ca_entities</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Contributors</setting>
-            <setting name="restrict_to_relationship_types"><![CDATA[contributor]]></setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_entities">
-          <bundle>ca_entities</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Publisher</setting>
-            <setting name="restrict_to_relationship_types"><![CDATA[publisher]]></setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_objects_date_created">
-          <bundle>ca_objects.date_created</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Date created</setting>
-            <setting name="maximum_length"><![CDATA[2048]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_objects_dimensions">
-          <bundle>ca_objects.dimensions</bundle>
-          <settings>
-            <setting name="format"><![CDATA[^ca_objects.dimensions.dimensions_height<ifdef code="ca_objects.dimensions.dimensions_height"> H x</ifdef>^ca_objects.dimensions.dimensions_width<ifdef code="ca_objects.dimensions.dimensions_width"> W</ifdef> 
-]]></setting>
-            <setting name="maximum_length"><![CDATA[2048]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_objects_type_id">
-          <bundle>ca_objects.type_id</bundle>
-        </placement>
-        <placement code="ca_objects_primary_format">
-          <bundle>ca_objects.primary_format</bundle>
-        </placement>
-        <placement code="ca_list_items">
-          <bundle>ca_list_items</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Keywords</setting>
-            <setting name="restrictToLists"><![CDATA[59]]></setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_places">
-          <bundle>ca_places</bundle>
-          <settings>
-            <setting name="label" locale="en_US">City or Township</setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_places"><unit relativeTo="ca_places.hierarchy" filterTypes="city" delimiter="; ">^ca_places.preferred_labels</unit></unit>]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_places">
-          <bundle>ca_places</bundle>
-          <settings>
-            <setting name="label" locale="en_US">County</setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_places"><unit relativeTo="ca_places.hierarchy" filterTypes="county" delimiter="; ">^ca_places.preferred_labels</unit></unit>]]></setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_places">
-          <bundle>ca_places</bundle>
-          <settings>
-            <setting name="label" locale="en_US">State/Province</setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_places"><unit relativeTo="ca_places.hierarchy" filterTypes="state" delimiter="; ">^ca_places.preferred_labels</unit></unit>]]></setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_places">
-          <bundle>ca_places</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Country</setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_places"><unit relativeTo="ca_places.hierarchy" filterTypes="country" delimiter="; ">^ca_places.preferred_labels</unit></unit>]]></setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_places">
-          <bundle>ca_places</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Geographic Feature</setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_places"><unit relativeTo="ca_places.hierarchy" filterTypes="location" delimiter="; ">^ca_places.preferred_labels</unit></unit>]]></setting>
-            <setting name="show_hierarchy"><![CDATA[0]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_objects_geonames">
-          <bundle>ca_objects.geonames</bundle>
-        </placement>
-        <placement code="ca_objects_language">
-          <bundle>ca_objects.language</bundle>
-        </placement>
-        <placement code="ca_collections">
-          <bundle>ca_collections</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Archival Collection</setting>
-            <setting name="restrict_to_types"><![CDATA[collection]]></setting>
-            <setting name="remove_first_items"><![CDATA[0]]></setting>
-            <setting name="hierarchy_order"><![CDATA[ASC]]></setting>
-            <setting name="hierarchy_limit"><![CDATA[0]]></setting>
-            <setting name="hierarchical_delimiter"><![CDATA[ ➔ ]]></setting>
-          </settings>
-        </placement>
-        <placement code="ca_objects_rights">
-          <bundle>ca_objects.rights</bundle>
-        </placement>
-        <placement code="ca_objects_idno">
-          <bundle>ca_objects.idno</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Local identifier</setting>
-          </settings>
-        </placement>
-      </bundlePlacements>
-    </display>
+    
     <display code="accession_summary_basic" type="ca_object_lots" system="1">
       <labels>
         <label locale="en_US">
@@ -22784,7 +22628,7 @@
     <display code="exhibition_summary" type="ca_occurrences" system="1">
       <labels>
         <label locale="en_US">
-          <name>Exhibition summary</name>
+          <name>Occurrences summary</name>
         </label>
       </labels>
       <settings>
@@ -22797,13 +22641,13 @@
         <placement code="ca_occurrences_idno">
           <bundle>ca_occurrences.idno</bundle>
           <settings>
-            <setting name="label" locale="en_US">Exhibition number</setting>
+            <setting name="label" locale="en_US">Occurrence number</setting>
           </settings>
         </placement>
         <placement code="ca_occurrences_preferred_labels">
           <bundle>ca_occurrences.preferred_labels</bundle>
           <settings>
-            <setting name="label" locale="en_US">Exhibition name</setting>
+            <setting name="label" locale="en_US">Occurrence name</setting>
             <setting name="format"><![CDATA[]]></setting>
             <setting name="delimiter"><![CDATA[]]></setting>
             <setting name="maximum_length"><![CDATA[100]]></setting>

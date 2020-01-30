@@ -1694,7 +1694,7 @@
 							'type' => 'ca_storage_locations',
 							'id' => $vn_location_id,
 							'relation_id' => $relation_id,
-							'display' => "[$relation_id] ".$qr_locations->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+							'display' => $qr_locations->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 							'typename_singular' => $vs_name_singular, 
