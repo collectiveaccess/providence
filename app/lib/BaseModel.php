@@ -9847,6 +9847,8 @@ $pa_options["display_form_field_tips"] = true;
 					$va_row[$vs_right_field_name] = $pn_to_id;
 				}
 				
+				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
+				
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
@@ -9885,6 +9887,8 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->setMode(ACCESS_WRITE);
 				unset($va_row[$vs_rel_pk]);
 				$va_row[$vs_item_pk] = $pn_to_id;
+				
+				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				 
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
