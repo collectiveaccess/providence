@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-31 00:34-0500\n"
-"PO-Revision-Date: 2020-01-31 00:35-0500\n"
+"POT-Creation-Date: 2020-01-31 10:12-0500\n"
+"PO-Revision-Date: 2020-01-31 10:13-0500\n"
 "Last-Translator: Seth <Seth@collectiveacess.org>\n"
 "Language-Team: French (France) (http://www.transifex.com/collectiveaccess/"
 "collectiveaccess-providence/language/fr_FR/)\n"
@@ -191,10 +191,8 @@ msgstr "GD n'est pas installé ; la génération de codes-barres est impossible.
 
 #: app/controllers/administrate/setup/DataDictionaryController.php:38
 #: app/controllers/administrate/setup/data_dictionary_entries/DataDictionaryEntryEditorController.php:40
-#, fuzzy
-#| msgid "1 display is available"
 msgid "Data dictionary is not available"
-msgstr "1 affichage est disponible"
+msgstr ""
 
 #: app/controllers/administrate/setup/ElementsController.php:160
 msgid "Added metadata element"
@@ -351,10 +349,8 @@ msgstr "%1 feuilles de calcul passées"
 
 #: app/controllers/batch/MetadataImportController.php:202
 #: app/controllers/batch/MetadataImportController.php:250
-#, fuzzy
-#| msgid "%1 is invalid"
 msgid "URL is invalid"
-msgstr "%1 est invalide"
+msgstr ""
 
 #: app/controllers/batch/MetadataImportController.php:232
 #: app/controllers/manage/MetadataExportController.php:322
@@ -362,28 +358,20 @@ msgid "Deleted importer"
 msgstr "Import supprimé"
 
 #: app/controllers/batch/MetadataImportController.php:267
-#, fuzzy
-#| msgid "Could not delete tag"
 msgid "Could not read Excel data"
-msgstr "Impossible de supprimer le tag"
+msgstr ""
 
 #: app/controllers/batch/MetadataImportController.php:270
-#, fuzzy
-#| msgid "Importer worksheet"
 msgid "Added import worksheet %1"
-msgstr "Feuille de données de l'import"
+msgstr ""
 
 #: app/controllers/batch/MetadataImportController.php:270
-#, fuzzy
-#| msgid "Importer worksheet"
 msgid "Updated import worksheet %1"
-msgstr "Feuille de données de l'import"
+msgstr ""
 
 #: app/controllers/batch/MetadataImportController.php:272
-#, fuzzy
-#| msgid "Could not import source %1"
 msgid "Could not add import worksheet: %1"
-msgstr "Impossible d'importer la source %1"
+msgstr ""
 
 #: app/controllers/batch/MetadataImportController.php:292
 msgid "Invalid importer"
@@ -729,10 +717,8 @@ msgstr "et %1 de plus"
 #: app/controllers/manage/CommentsController.php:88
 #: themes/default/views/logs/global_change_log_html.php:59
 #: themes/default/views/logs/global_change_log_html.php:70
-#, fuzzy
-#| msgid "Invalid time"
 msgid "any time"
-msgstr "Heure non valide"
+msgstr ""
 
 #: app/controllers/lookup/AttributeValueController.php:53
 msgid "Invalid element code"
@@ -867,16 +853,12 @@ msgstr "Vous ne pouvez pas supprimer ce groupe"
 
 #: app/controllers/manage/MetadataAlertsController.php:37
 #: app/controllers/manage/metadata_alert_rules/MetadataAlertRuleEditorController.php:40
-#, fuzzy
-#| msgid "No sets are available"
 msgid "Alerts are not available"
-msgstr "Aucun ensemble disponible"
+msgstr ""
 
 #: app/controllers/manage/NotificationsController.php:41
-#, fuzzy
-#| msgid "Could not instantiate driver"
 msgid "Could not mark notification as read"
-msgstr "Impossible d'instancier le driver"
+msgstr ""
 
 #: app/controllers/manage/PawtucketController.php:140
 msgid "Saved values"
@@ -930,29 +912,21 @@ msgstr ""
 
 #: app/controllers/manage/SetController.php:280
 #: app/controllers/manage/SetController.php:289
-#, fuzzy
-#| msgid "Deleted %1"
 msgid "Deleted %1 set"
-msgstr "%1 supprimé"
+msgstr ""
 
 #: app/controllers/manage/SetController.php:280
 #: app/controllers/manage/SetController.php:289
-#, fuzzy
-#| msgid "Deleted %1"
 msgid "Deleted %1 sets"
-msgstr "%1 supprimé"
+msgstr ""
 
 #: app/controllers/manage/SetController.php:282
-#, fuzzy
-#| msgid "Could not duplicate %1: %2"
 msgid "Could not delete set %1: %2"
-msgstr "Impossible de dupliquer %1 : %2"
+msgstr ""
 
 #: app/controllers/manage/SetController.php:291
-#, fuzzy
-#| msgid "You do not have access to set %1"
 msgid "You do not have access to the selected sets"
-msgstr "Vous n'avez pas accès à l'ensemble %1"
+msgstr ""
 
 #: app/controllers/manage/SetController.php:364
 msgid "Invalid operation"
@@ -987,10 +961,8 @@ msgid "All sets"
 msgstr ""
 
 #: app/controllers/manage/SetController.php:554
-#, fuzzy
-#| msgid "Search by set"
 msgid "Sets by user"
-msgstr "Recherche par set"
+msgstr ""
 
 #: app/controllers/manage/TagsController.php:77
 msgid "There are no unmoderated tags"
@@ -1090,10 +1062,8 @@ msgid "You cannot edit that display"
 msgstr "Vous ne pouvez pas modifier cet affichage"
 
 #: app/controllers/manage/metadata_alert_rules/MetadataAlertRuleEditorController.php:62
-#, fuzzy
-#| msgid "You cannot edit that form"
 msgid "You cannot edit that rule"
-msgstr "Vous ne pouvez pas modifier cet ensemble"
+msgstr ""
 
 #: app/controllers/manage/metadata_alert_rules/MetadataAlertRuleEditorController.php:119
 msgid "No trigger"
@@ -1151,40 +1121,28 @@ msgid "No items are available for export"
 msgstr ""
 
 #: app/controllers/statistics/DashboardController.php:69
-#, fuzzy
-#| msgid "Invalid date"
 msgid "Invalid data filter"
-msgstr "Date non valide"
+msgstr ""
 
 #: app/controllers/statistics/DashboardController.php:98
-#, fuzzy
-#| msgid "view thread"
 msgid "view all"
-msgstr "voir le fil"
+msgstr ""
 
 #: app/controllers/statistics/DashboardController.php:102
-#, fuzzy
-#| msgid "For type <em>%1</em>"
 msgid "Statistics for site <em>%1</em>"
-msgstr "Pour le type <em>%1</em>"
+msgstr ""
 
 #: app/controllers/statistics/DashboardController.php:104
-#, fuzzy
-#| msgid "No matches found for <em>%1</em>"
 msgid "Statistics for group <em>%1</em>"
-msgstr "Aucune correspondance pour <em>%1</em>"
+msgstr ""
 
 #: app/controllers/statistics/DashboardController.php:110
-#, fuzzy
-#| msgid "No settings available"
 msgid "No statistics available"
-msgstr "Aucun paramètre disponible"
+msgstr ""
 
 #: app/controllers/statistics/DashboardController.php:113
-#, fuzzy
-#| msgid "Settings for %1"
 msgid "Statistics for %1"
-msgstr "Paramètres pour %1"
+msgstr ""
 
 #: app/controllers/statistics/DashboardController.php:116
 msgid "Statistics for all %1 sites"
@@ -1489,10 +1447,8 @@ msgid "Cancel"
 msgstr "Annuler"
 
 #: app/helpers/displayHelpers.php:299
-#, fuzzy
-#| msgid "Really delete \"%1\"?"
 msgid "Really delete %1?"
-msgstr "Confirmer la suppression de \"%1\" ?"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:332 app/helpers/displayHelpers.php:334
 msgid "Type is used by %1 %2"
@@ -1559,10 +1515,8 @@ msgid "Clear"
 msgstr "Effacer"
 
 #: app/helpers/displayHelpers.php:457
-#, fuzzy
-#| msgid "Checked relationships will be duplicated."
 msgid "Child records will be deleted"
-msgstr "Les relations cochées seront dupliquées."
+msgstr ""
 
 #: app/helpers/displayHelpers.php:543
 msgid "References to this %1"
@@ -1631,9 +1585,9 @@ msgstr "%1 affiché"
 
 #: app/helpers/displayHelpers.php:954 app/helpers/utilityHelpers.php:2660
 #: app/helpers/utilityHelpers.php:2681 app/lib/BaseEditorController.php:254
-#: app/lib/BaseModel.php:10084 app/lib/BaseModel.php:10086
-#: app/lib/BaseModel.php:11822 app/lib/BaseModel.php:11858
-#: app/lib/BaseModel.php:11892 app/models/ca_data_import_events.php:285
+#: app/lib/BaseModel.php:10086 app/lib/BaseModel.php:10088
+#: app/lib/BaseModel.php:11824 app/lib/BaseModel.php:11860
+#: app/lib/BaseModel.php:11894 app/models/ca_data_import_events.php:285
 #: app/models/ca_item_comments.php:350
 #: app/models/ca_movements_x_storage_locations.php:221
 #: app/models/ca_movements_x_storage_locations.php:240
@@ -1809,12 +1763,10 @@ msgid "Created on %1"
 msgstr "Créé le %1"
 
 #: app/helpers/displayHelpers.php:1305
-#, fuzzy
-#| msgid "<strong>Last changed</strong><br/>%1 by %2"
 msgid ""
 "<strong>Last changed</strong><br/><span "
 "id='caInspectorLastChangeDateInterval'>%1</span> ago by %2"
-msgstr "<strong>Dernière modification</strong><br/>%1 par %2"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:1305
 msgid "<strong>Last changed</strong><br/>%1"
@@ -1833,34 +1785,24 @@ msgid "(on this tab)"
 msgstr ""
 
 #: app/helpers/displayHelpers.php:1338
-#, fuzzy
-#| msgid "For type <em>%1</em>"
 msgid "(on tab <em>%1</em>)"
-msgstr "Pour le type <em>%1</em>"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:1347
-#, fuzzy
-#| msgid "%1 problems require attention"
 msgid "%1 problems on this tab require attention (of %2 total)"
-msgstr "%1 problèmes nécessitent votre attention"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:1347
-#, fuzzy
-#| msgid "%1 problem requires attention"
 msgid "%1 problem on this tab requires attention (of %2 total)"
-msgstr "%1 problème nécessite votre attention"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:1349
-#, fuzzy
-#| msgid "%1 problems require attention"
 msgid "%1 problems on this tab require attention"
-msgstr "%1 problèmes nécessitent votre attention"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:1349
-#, fuzzy
-#| msgid "%1 problem requires attention"
 msgid "%1 problem on this tab requires attention"
-msgstr "%1 problème nécessite votre attention"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:1352
 msgid "%1 problems require attention"
@@ -1998,10 +1940,8 @@ msgid "Is %1"
 msgstr "Est %1"
 
 #: app/helpers/displayHelpers.php:1649 app/helpers/displayHelpers.php:1652
-#, fuzzy
-#| msgid "Content type"
 msgid "Rule content type"
-msgstr "Type de contenu"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:1671
 msgid "Add a %1 to this list"
@@ -2103,10 +2043,8 @@ msgid "Number of rules"
 msgstr "Nombre de règles"
 
 #: app/helpers/displayHelpers.php:1859
-#, fuzzy
-#| msgid "Import data"
 msgid "Export data"
-msgstr "Importer des données"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:1883
 msgid "Export to external repository"
@@ -2130,10 +2068,8 @@ msgstr ""
 "Supprimer <strong><em>tous</em></strong> les enregistrements de cet ensemble"
 
 #: app/helpers/displayHelpers.php:2076
-#, fuzzy
-#| msgid "No type code set"
 msgid "Set type for records in set"
-msgstr "Aucun code défini pour le type"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:2090
 msgid "Close options"
@@ -2156,10 +2092,8 @@ msgid "Back to record"
 msgstr "Retour à l'enregistrement"
 
 #: app/helpers/displayHelpers.php:3363
-#, fuzzy
-#| msgid "Default"
 msgid "default"
-msgstr "Défaut"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:3365
 msgid "↑"
@@ -2170,10 +2104,8 @@ msgid "↓"
 msgstr ""
 
 #: app/helpers/displayHelpers.php:3365
-#, fuzzy
-#| msgid "Sort using"
 msgid "Sort using %1 %2"
-msgstr "Trier par"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:3751
 msgid "No media"
@@ -2221,10 +2153,8 @@ msgid "Cannot view media"
 msgstr ""
 
 #: app/helpers/displayHelpers.php:4009
-#, fuzzy
-#| msgid "Invalid id: %1"
 msgid "Invalid viewer: %1/%2"
-msgstr "ID invalide : %1"
+msgstr ""
 
 #: app/helpers/displayHelpers.php:4037 app/lib/BatchProcessor.php:343
 msgid "Invalid subject"
@@ -2253,7 +2183,7 @@ msgid "Invalid viewer %1/%2"
 msgstr ""
 
 #: app/helpers/displayHelpers.php:4307 app/lib/BaseEditorController.php:2028
-#: app/lib/BaseModel.php:12362
+#: app/lib/BaseModel.php:12364
 msgid "Invalid id"
 msgstr ""
 
@@ -3713,10 +3643,8 @@ msgid "Alerts"
 msgstr "Alertes"
 
 #: app/helpers/importHelpers.php:1248
-#, fuzzy
-#| msgid "Infomational messages"
 msgid "Informational messages"
-msgstr "Messages d'information"
+msgstr ""
 
 #: app/helpers/importHelpers.php:1249
 msgid "Debugging messages"
@@ -4097,10 +4025,8 @@ msgid "Set %1 to %2"
 msgstr "Définir %1 à %2"
 
 #: app/lib/ApplicationChangeLog.php:1405
-#, fuzzy
-#| msgid "Related %1"
 msgid "Related to %1 (%2)"
-msgstr "%1 lié"
+msgstr ""
 
 #: app/lib/Attributes/Values/AuthorityAttributeValue.php:185
 msgid "Value %1 was not set for %2 because it does not refer to an existing %3"
@@ -4791,10 +4717,8 @@ msgid "Default"
 msgstr "Défaut"
 
 #: app/lib/Attributes/Values/ColorAttributeValue.php:74
-#, fuzzy
-#| msgid "Default sort order"
 msgid "Default color"
-msgstr "Tri par défaut"
+msgstr ""
 
 #: app/lib/Attributes/Values/ColorAttributeValue.php:97
 msgid "Show hex color value below color chip?"
@@ -4817,10 +4741,8 @@ msgid ""
 msgstr ""
 
 #: app/lib/Attributes/Values/ColorAttributeValue.php:148
-#, fuzzy
-#| msgid "%1 is invalid"
 msgid "Color is invalid"
-msgstr "%1 est invalide"
+msgstr ""
 
 #: app/lib/Attributes/Values/ContainerAttributeValue.php:51
 msgid ""
@@ -5263,22 +5185,14 @@ msgid "More &rsaquo;"
 msgstr "Plus @rsaquo;"
 
 #: app/lib/Attributes/Values/GeocodeAttributeValue.php:72
-#, fuzzy
-#| msgid "Sort direction"
 msgid "Points are directional"
-msgstr "Ordre de tri"
+msgstr ""
 
 #: app/lib/Attributes/Values/GeocodeAttributeValue.php:73
-#, fuzzy
-#| msgid ""
-#| "Check this option if this attribute value can be used for sorting of "
-#| "search results. (The default is not to be.)"
 msgid ""
 "Check this option to enable setting of directions for point locations. (The "
 "default is not to be.)"
 msgstr ""
-"Cocher cette option si la valeur de cet attribut peut être utilisée pour le "
-"tri des résultats de recherche. (Ce n'est pas la valeur par défaut.)"
 
 #: app/lib/Attributes/Values/GeocodeAttributeValue.php:136
 msgid "Tile server URL"
@@ -5351,10 +5265,8 @@ msgstr ""
 "à la locale. (Non par défaut)"
 
 #: app/lib/Attributes/Values/InformationServiceAttributeValue.php:144
-#, fuzzy
-#| msgid "Sort using"
 msgid "Sort using list"
-msgstr "Trier par"
+msgstr ""
 
 #: app/lib/Attributes/Values/InformationServiceAttributeValue.php:145
 msgid ""
@@ -5675,17 +5587,13 @@ msgstr ""
 "liste soit obligatoire."
 
 #: app/lib/Attributes/Values/ListAttributeValue.php:82
-#, fuzzy
-#| msgid "Allow PDF output for individual values?"
 msgid "Allow implicit null values?"
-msgstr "Autorise les exports PDF pour les valeurs individuelles ?"
+msgstr ""
 
 #: app/lib/Attributes/Values/ListAttributeValue.php:83
-#, fuzzy
-#| msgid "Check this option if you want to require that an entity be selected."
 msgid ""
 "Check this option if you want to accept an empty selection as a null value."
-msgstr "Cocher cette option si vous voulez imposer la sélection d'une entité."
+msgstr ""
 
 #: app/lib/Attributes/Values/ListAttributeValue.php:90
 msgid "No value text"
@@ -5802,10 +5710,8 @@ msgid "Value %3 for %1 [%2] is invalid"
 msgstr "La valeur %3 pour %1 [%2] est invalide"
 
 #: app/lib/Attributes/Values/ListAttributeValue.php:656
-#, fuzzy
-#| msgid "Skip row if value is not"
 msgid "Hide bundles if value is not set"
-msgstr "Passer la ligne si la valeur n'est pas"
+msgstr ""
 
 #: app/lib/Attributes/Values/ListAttributeValue.php:657
 msgid ""
@@ -5978,22 +5884,12 @@ msgstr ""
 "la hauteur d'affichage du texte est égale à 1."
 
 #: app/lib/Attributes/Values/TextAttributeValue.php:122
-#, fuzzy
-#| msgid ""
-#| "If suggestion of existing values is enabled this option determines how "
-#| "returned values are sorted. Choose <i>value</i> to sort alphabetically. "
-#| "Choose <i>most recently added </i> to sort with most recently entered "
-#| "values first."
 msgid ""
 "If suggestion of existing values is enabled this option determines how "
 "returned values are sorted. Choose <em>value</em> to sort alphabetically. "
 "Choose <em>most recently added </em> to sort with most recently entered "
 "values first."
 msgstr ""
-"Si la suggestion de valeurs existantes est activée, cette option détermine "
-"comment seront triées les différentes propositions. Choisissez <i>valeur</i> "
-"pour trier alphabétiquement. Choisissez <i>derniers ajouts</i> pour trier "
-"les derniers ajouts en début de liste."
 
 #: app/lib/Attributes/Values/TextAttributeValue.php:133
 #: app/lib/Attributes/Values/UrlAttributeValue.php:133
@@ -6010,20 +5906,11 @@ msgid ""
 msgstr ""
 
 #: app/lib/Attributes/Values/TextAttributeValue.php:175
-#, fuzzy
-#| msgid ""
-#| "Layout for value when used in a display (can include HTML). Element code "
-#| "tags prefixed with the ^ character can be used to represent the value in "
-#| "the template. For example: <i>^my_element_code</i>."
 msgid ""
 "Layout for value when used in a display (can include HTML). Element code "
 "tags prefixed with the ^ character can be used to represent the value in the "
 "template. For example: <em>^my_element_code</em>."
 msgstr ""
-"Mise en forme de la valeur lorsqu'elle est utilisée dans un affichage (peut "
-"inclure du HTML). Le code de l'élément préfixé par le caractère ^ peut être "
-"utilisé pour représenter la valeur dans cette mise en forme. Par exemple : "
-"<i>^code_element</i>"
 
 #: app/lib/Attributes/Values/TextAttributeValue.php:191
 msgid "Is dependent value?"
@@ -6190,48 +6077,36 @@ msgstr ""
 "de données externe parce que la classe de l'utilisateur n'est pas définie."
 
 #: app/lib/Auth/Adapters/Okta.php:89 app/lib/Auth/Adapters/Shibboleth.php:72
-#, fuzzy
-#| msgid "User could not be authenticated with LDAP server."
 msgid "User could not be authenticated."
-msgstr "Impossible d'authentifier l'utilisateur sur le serveur LDAP"
+msgstr ""
 
 #: app/lib/Auth/Adapters/Okta.php:98
-#, fuzzy
-#| msgid "Timecode is invalid"
 msgid "Token is invalid."
-msgstr "Le timecode est invalide"
+msgstr ""
 
 #: app/lib/Auth/Adapters/Okta.php:134
-#, fuzzy
-#| msgid "User_id is not valid"
 msgid "User is not active."
-msgstr "User_id n'est pas valide"
+msgstr ""
 
 #: app/lib/Auth/Adapters/Okta.php:150
-#, fuzzy
-#| msgid "Tag relation id is invalid"
 msgid "User information is invalid."
-msgstr "L'ID de la relation au tag est invalide"
+msgstr ""
 
 #: app/lib/Auth/Adapters/Okta.php:232
 msgid "Could not exchange Okta code for an access token"
 msgstr ""
 
 #: app/lib/Auth/Adapters/Okta.php:235
-#, fuzzy
-#| msgid "Media replication for %1 failed"
 msgid "Verification of Okta JWT failed"
-msgstr "La réplication média de %1 a échoué"
+msgstr ""
 
 #: app/lib/Auth/Adapters/Okta.php:241
 msgid "An Okta error during login has occurred"
 msgstr ""
 
 #: app/lib/Auth/Adapters/Okta.php:357
-#, fuzzy
-#| msgid "Could not connect to GeoNames"
 msgid "Could not connect to Okta."
-msgstr "Impossible de se connecter à GeoNames"
+msgstr ""
 
 #: app/lib/Auth/Adapters/OpenLDAP.php:53 app/lib/Auth/Adapters/OpenLDAP.php:83
 #: app/lib/Auth/Adapters/OpenLDAP.php:116
@@ -6367,22 +6242,16 @@ msgid "Transferred %1 relationships to <em>%2</em> (%3)"
 msgstr "Relations %1 transférées vers <em>%2</em> (%3)"
 
 #: app/lib/BaseEditorController.php:573
-#, fuzzy
-#| msgid "Transferred %1 relationship to <em>%2</em> (%3)"
 msgid "Transferred %1 children to <em>%2</em> (%3)"
-msgstr "Relation %1 transférée vers <em>%2</em> (%3)"
+msgstr ""
 
 #: app/lib/BaseEditorController.php:593
-#, fuzzy
-#| msgid "Deleted %1"
 msgid "Deleted %1 child"
-msgstr "%1 supprimé"
+msgstr ""
 
 #: app/lib/BaseEditorController.php:593
-#, fuzzy
-#| msgid "Deleted %1"
 msgid "Deleted %1 children"
-msgstr "%1 supprimé"
+msgstr ""
 
 #: app/lib/BaseEditorController.php:602
 msgid "Could not move references to other items in metadata before delete: %1"
@@ -6399,10 +6268,8 @@ msgid "Could not find view for PDF"
 msgstr "Impossible de trouver la vue pour le PDF"
 
 #: app/lib/BaseEditorController.php:900
-#, fuzzy
-#| msgid "Unknown format %1"
 msgid "Unsupported format: %1"
-msgstr "Format %1 inconnu"
+msgstr ""
 
 #: app/lib/BaseEditorController.php:943
 msgid "No access to element"
@@ -6484,10 +6351,8 @@ msgid "Comma delimited (CSV)"
 msgstr "Délimité par des virgules (CSV)"
 
 #: app/lib/BaseFindController.php:275
-#, fuzzy
-#| msgid "Spreadsheet with media icons (XLSX)"
 msgid "Spreadsheet (XLSX)"
-msgstr "Tableur avec icônes média (XLSX)"
+msgstr ""
 
 #: app/lib/BaseFindController.php:275
 msgid "Word processing (DOCX)"
@@ -6557,10 +6422,8 @@ msgid "No matches found for \"%1\""
 msgstr ""
 
 #: app/lib/BaseLookupController.php:220
-#, fuzzy
-#| msgid "You do not have access to set %1"
 msgid "You do not have access to search %1"
-msgstr "Vous n'avez pas accès à l'ensemble %1"
+msgstr ""
 
 #: app/lib/BaseLookupController.php:521 app/lib/BaseLookupController.php:549
 msgid "Could not load %1"
@@ -6957,7 +6820,7 @@ msgid "Value must be unique. Please try another."
 msgstr "La valeur doit être unique. Veuillez réessayer avec une autre valeur."
 
 #: app/lib/BaseModel.php:8960 app/lib/BaseModel.php:9105
-#: app/lib/BaseModel.php:9254 app/lib/BaseModel.php:9720
+#: app/lib/BaseModel.php:9254 app/lib/BaseModel.php:9722
 msgid "Related table specification \"%1\" is not valid"
 msgstr "La spécification de table liée \"%1\" est invalide"
 
@@ -6973,58 +6836,56 @@ msgstr "La relation existe déjà"
 msgid "Could not find a path to the specified related table"
 msgstr "Impossible de trouver un chemin vers la table liée spécifiée"
 
-#: app/lib/BaseModel.php:10044
+#: app/lib/BaseModel.php:10046
 msgid "No locale was set for tag"
 msgstr "La langue n'est pas définie pour ce tag"
 
-#: app/lib/BaseModel.php:10122 app/lib/BaseModel.php:10172
-#: app/lib/BaseModel.php:10217
+#: app/lib/BaseModel.php:10124 app/lib/BaseModel.php:10174
+#: app/lib/BaseModel.php:10219
 msgid "Tag relation id is invalid"
 msgstr "L'ID de la relation au tag est invalide"
 
-#: app/lib/BaseModel.php:10129 app/lib/BaseModel.php:10179
-#: app/lib/BaseModel.php:10224
+#: app/lib/BaseModel.php:10131 app/lib/BaseModel.php:10181
+#: app/lib/BaseModel.php:10226
 msgid "Tag is not part of the current row"
 msgstr "Le tag ne fait pas partie de l'enregistrement courant"
 
-#: app/lib/BaseModel.php:10135 app/lib/BaseModel.php:10185
-#: app/lib/BaseModel.php:10230
+#: app/lib/BaseModel.php:10137 app/lib/BaseModel.php:10187
+#: app/lib/BaseModel.php:10232
 msgid "Tag was not created by specified user"
 msgstr "Le tag n'a pas été crée par l'utilisateur spécifié"
 
-#: app/lib/BaseModel.php:10296 app/lib/BaseModel.php:10680
+#: app/lib/BaseModel.php:10298 app/lib/BaseModel.php:10682
 #: app/models/ca_object_representations.php:2277
 #: themes/default/views/manage/Results/ca_item_comments_list_html.php:97
 msgid "Needs moderation"
 msgstr "A modérer"
 
-#: app/lib/BaseModel.php:10407 app/lib/BaseModel.php:10473
+#: app/lib/BaseModel.php:10409 app/lib/BaseModel.php:10475
 #: app/lib/SiteComments.php:119 app/lib/SiteComments.php:158
 msgid "Comment id is invalid"
 msgstr "L'id du commentaire est invalide"
 
-#: app/lib/BaseModel.php:10414 app/lib/BaseModel.php:10482
+#: app/lib/BaseModel.php:10416 app/lib/BaseModel.php:10484
 msgid "Comment is not part of the current row"
 msgstr "Le commentaire ne fait pas partie de l'enregistrement courant"
 
-#: app/lib/BaseModel.php:10488 app/lib/SiteComments.php:164
+#: app/lib/BaseModel.php:10490 app/lib/SiteComments.php:164
 msgid "Comment was not created by specified user"
 msgstr "Le commentaire n'a pas été crée par l'utilisateur"
 
-#: app/lib/BaseModel.php:10674 app/models/ca_item_comments.php:565
-#, fuzzy
-#| msgid "Component add %1"
+#: app/lib/BaseModel.php:10676 app/models/ca_item_comments.php:565
 msgid "Comment made in set %1"
-msgstr "Composant %1 ajouté"
+msgstr ""
 
-#: app/lib/BaseModel.php:11514 app/lib/BaseModel.php:11523
-#: app/lib/BaseModel.php:11570 app/lib/BaseModel.php:11605
+#: app/lib/BaseModel.php:11516 app/lib/BaseModel.php:11525
+#: app/lib/BaseModel.php:11572 app/lib/BaseModel.php:11607
 #: app/lib/LabelableBaseModelWithAttributes.php:714
 #: app/lib/LabelableBaseModelWithAttributes.php:765
 msgid "Invalid numeric operator: %1"
 msgstr ""
 
-#: app/lib/BaseModel.php:11613 app/lib/LabelableBaseModelWithAttributes.php:721
+#: app/lib/BaseModel.php:11615 app/lib/LabelableBaseModelWithAttributes.php:721
 #: app/lib/LabelableBaseModelWithAttributes.php:767
 msgid "Invalid string operator: %1"
 msgstr ""
@@ -7458,10 +7319,8 @@ msgid "Date unknown"
 msgstr "Date inconnue"
 
 #: app/lib/Browse/BrowseEngine.php:827 app/lib/Browse/BrowseEngine.php:6630
-#, fuzzy
-#| msgid "%1 reservations"
 msgid "%1 repeats"
-msgstr "%1 réservations"
+msgstr ""
 
 #: app/lib/Browse/BrowseEngine.php:2431
 msgid "Invalid search type"
@@ -7650,10 +7509,8 @@ msgstr ""
 
 #: app/lib/BundlableLabelableBaseModelWithAttributes.php:3810
 #: app/lib/BundlableLabelableBaseModelWithAttributes.php:3905
-#, fuzzy
-#| msgid "Importing <em>%1</em> using <em>%2</em>"
 msgid "Value <em>%1</em> is not in <em>%2</em>"
-msgstr "Import de <em>%1</em> à l'aide de <em>%2</em>"
+msgstr ""
 
 #: app/lib/BundlableLabelableBaseModelWithAttributes.php:3891
 msgid ""
@@ -7664,10 +7521,8 @@ msgstr ""
 "locale."
 
 #: app/lib/BundlableLabelableBaseModelWithAttributes.php:5211
-#, fuzzy
-#| msgid "Invalid expression"
 msgid "Invalid rule expression: %1"
-msgstr "Expression non valide"
+msgstr ""
 
 #: app/lib/BundlableLabelableBaseModelWithAttributes.php:5327
 msgid "There must be at least %1 relationship for %2"
@@ -7997,15 +7852,10 @@ msgid ""
 msgstr ""
 
 #: app/lib/ConfigurationCheck.php:417
-#, fuzzy
-#| msgid ""
-#| "The PHP phar module is required for CollectiveAccess to run. Please "
-#| "install it."
 msgid ""
 "The PHP ZipArchive module is required for CollectiveAccess to run. Please "
 "install it."
 msgstr ""
-"Le module PHP phar est nécessaire à CollectiveAccess. Veuillez l'installer."
 
 #: app/lib/ConfigurationCheck.php:421
 msgid ""
@@ -8217,10 +8067,8 @@ msgid "Exporting changes for group %1"
 msgstr ""
 
 #: app/lib/ConfigurationExporter.php:1457
-#, fuzzy
-#| msgid "Password change for user %1 failed: %2"
 msgid "Exporting changes for user login %1"
-msgstr "Echec de changement de mot de passe pour l'utilisateur %1 : %1"
+msgstr ""
 
 #: app/lib/ConfigurationExporter.php:1501
 msgid "Exporting deleted search form %1"
@@ -8525,22 +8373,16 @@ msgstr ""
 "XML. Utiliser uniquement si vous savez ce que vous faites !"
 
 #: app/lib/ExternalExportManager.php:81
-#, fuzzy
-#| msgid "%1 elements are defined"
 msgid "No external export targets are defined."
-msgstr "%1 éléments sont définis"
+msgstr ""
 
 #: app/lib/ExternalExportManager.php:85
-#, fuzzy
-#| msgid "Invalid field %2 for table %1"
 msgid "Invalid external export target %1"
-msgstr "Champ invalide %2 pour la table %1"
+msgstr ""
 
 #: app/lib/ExternalExportManager.php:102
-#, fuzzy
-#| msgid "Invalid mapping %1"
 msgid "Invalid plugin %1"
-msgstr "Correspondance %1 invalide"
+msgstr ""
 
 #: app/lib/File.php:102 app/lib/Media.php:202 app/lib/Media.php:265
 msgid "File type is not supported"
@@ -8557,22 +8399,16 @@ msgid "Index rebuild complete!"
 msgstr "Reconstruction de l'index terminée !"
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:442
-#, fuzzy
-#| msgid "Related table specification \"%1\" is not valid"
 msgid "Invalid table specification for policy %1"
-msgstr "La spécification de table liée \"%1\" est invalide"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:450
-#, fuzzy
-#| msgid "Invalid order"
 msgid "Invalid row id"
-msgstr "Commande invalide"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:456
-#, fuzzy
-#| msgid "Invalid subject"
 msgid "Invalid subject row id"
-msgstr "Sujet invalide"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:824
 #: app/lib/HistoryTrackingCurrentValueTrait.php:1881
@@ -8645,29 +8481,16 @@ msgid ""
 msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2348
-#, fuzzy
-#| msgid "Lot (%1) display template"
 msgid "Lot (%1) display template when related to child objects"
-msgstr "Modèle d'affichage de lot (%1)"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2349
-#, fuzzy
-#| msgid ""
-#| "Layout for lot when displayed in history list (can include HTML). The "
-#| "template is evaluated relative to the lot. Element code tags prefixed "
-#| "with the ^ character can be used to represent the value in the template. "
-#| "For example: <i>^ca_object_lots.idno_stub</i>."
 msgid ""
 "Layout for lot related to child objects, when displayed in history list (can "
 "include HTML). The template is evaluated relative to the lot. Element code "
 "tags prefixed with the ^ character can be used to represent the value in the "
 "template. For example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
-"Modèle pour le lot de l'objet lorsqu'affiché dans l'historique (peut "
-"contenir du HTML). Le modèle est évalué en fonction de la relation avec le "
-"lot. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés "
-"pour représenter la valeur dans le modèle. Par exemple : <i>^ca_object_lots."
-"idno_stub</i>."
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2366
 msgid "Show occurrences"
@@ -8694,10 +8517,8 @@ msgstr "Date %1"
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2743
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2826
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2827
-#, fuzzy
-#| msgid "Interstitial attributes"
 msgid "Interstitial elements to set"
-msgstr "Attributs intersticiels"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2415
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2499
@@ -8746,10 +8567,8 @@ msgstr ""
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2683
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2767
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2851
-#, fuzzy
-#| msgid "Display template to format query result labels with."
 msgid "Display template for %1 when related to child objects"
-msgstr "Modèle d'affichage pour formater les libellés des résultats de requête"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2432
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2516
@@ -8757,23 +8576,12 @@ msgstr "Modèle d'affichage pour formater les libellés des résultats de requê
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2684
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2768
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2852
-#, fuzzy
-#| msgid ""
-#| "Layout for lot when displayed in history list (can include HTML). The "
-#| "template is evaluated relative to the lot. Element code tags prefixed "
-#| "with the ^ character can be used to represent the value in the template. "
-#| "For example: <i>^ca_object_lots.idno_stub</i>."
 msgid ""
 "Layout for %1 related to child objects, when displayed in history list (can "
 "include HTML). The template is evaluated relative to the lot. Element code "
 "tags prefixed with the ^ character can be used to represent the value in the "
 "template. For example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
-"Modèle pour le lot de l'objet lorsqu'affiché dans l'historique (peut "
-"contenir du HTML). Le modèle est évalué en fonction de la relation avec le "
-"lot. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés "
-"pour représenter la valeur dans le modèle. Par exemple : <i>^ca_object_lots."
-"idno_stub</i>."
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2451
 msgid "Show collections"
@@ -8788,28 +8596,16 @@ msgid ""
 msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2535
-#, fuzzy
-#| msgid "Search entities"
 msgid "Show entities"
-msgstr "Rechercher des entités"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2584
-#, fuzzy
-#| msgid ""
-#| "Layout for %1 when displayed in history list (can include HTML). The "
-#| "template is evaluated relative to the %1. Element code tags prefixed with "
-#| "the ^ character can be used to represent the value in the template. For "
-#| "example: <i>^ca_movements.idno</i>."
 msgid ""
 "Layout for %1 when displayed in history list (can include HTML). The "
 "template is evaluated relative to the %1. Element code tags prefixed with "
 "the ^ character can be used to represent the value in the template. For "
 "example: <i>^ca_entities.idno</i>."
 msgstr ""
-"Modèle pour %1 lorsqu'affiché dans l'historique (peut contenir du HTML). Le "
-"modèle est évalué en fonction de la relation avec %1. Les codes d'éléments "
-"préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur "
-"dans le modèle. Par exemple : <i>^ca_movements.idno</i>."
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2619
 msgid "Show movements"
@@ -8844,28 +8640,16 @@ msgstr ""
 "dans le modèle. Par exemple : <i>^ca_loans.idno</i>."
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2787
-#, fuzzy
-#| msgid "Search objects"
 msgid "Show objects"
-msgstr "Recherche d'objets"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2836
-#, fuzzy
-#| msgid ""
-#| "Layout for %1 when displayed in history list (can include HTML). The "
-#| "template is evaluated relative to the %1. Element code tags prefixed with "
-#| "the ^ character can be used to represent the value in the template. For "
-#| "example: <i>^ca_movements.idno</i>."
 msgid ""
 "Layout for %1 when displayed in history list (can include HTML). The "
 "template is evaluated relative to the %1. Element code tags prefixed with "
 "the ^ character can be used to represent the value in the template. For "
 "example: <i>^ca_objects.idno</i>."
 msgstr ""
-"Modèle pour %1 lorsqu'affiché dans l'historique (peut contenir du HTML). Le "
-"modèle est évalué en fonction de la relation avec %1. Les codes d'éléments "
-"préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur "
-"dans le modèle. Par exemple : <i>^ca_movements.idno</i>."
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2873
 msgid "Show storage locations"
@@ -8907,37 +8691,20 @@ msgstr ""
 "Par exemple : <i>^ca_object_lots.idno_stub</i>."
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2911
-#, fuzzy
-#| msgid "Indicates if the storage location is deleted or not."
 msgid "Include history from storage locations related to child objects"
-msgstr "Indique si l'élément de liste est supprimé ou non."
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2912
-#, fuzzy
-#| msgid ""
-#| "If checked total number of storage locations in the database will be "
-#| "displayed."
 msgid ""
 "If checked history from storage locations that are related to sub-objects "
 "(children) is included."
 msgstr ""
-"Si coché, le nombre total des emplacements de la base de données sera "
-"affiché."
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2919
-#, fuzzy
-#| msgid "places ⇔ storage locations relationships"
 msgid "Display template for storage locations when related to child objects"
-msgstr "relations lieux ⇔ emplacements"
+msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2920
-#, fuzzy
-#| msgid ""
-#| "Layout for storage location when displayed in history list (can include "
-#| "HTML). The template is evaluated relative to the object-storage location "
-#| "relationship. Element code tags prefixed with the ^ character can be used "
-#| "to represent the value in the template. For example: <i>^ca_object_lots."
-#| "idno_stub</i>."
 msgid ""
 "Layout for storage location related to child objects, when displayed in "
 "history list (can include HTML). The template is evaluated relative to the "
@@ -8945,11 +8712,6 @@ msgid ""
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_object_lots.idno_stub</i>."
 msgstr ""
-"Modèle pour l'emplacement de stockage lorsqu'affiché dans l'historique (peut "
-"contenir du HTML). Le modèle est évalué en fonction de la relation entre "
-"l'objet et l'emplacement de stockage. Les codes d'éléments préfixés par le "
-"caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. "
-"Par exemple : <i>^ca_object_lots.idno_stub</i>."
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2928
 msgid "Show deaccession information"
@@ -8995,20 +8757,10 @@ msgid ""
 msgstr ""
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2961
-#, fuzzy
-#| msgid "Display template to format detailed information blocks with."
 msgid "Display template for deaccessions related to child objects"
 msgstr ""
-"Modèle d'affichage pour formater les informations détaillées des résultats "
-"de requête"
 
 #: app/lib/HistoryTrackingCurrentValueTrait.php:2962
-#, fuzzy
-#| msgid ""
-#| "Layout for deaccession information when displayed in history list (can "
-#| "include HTML). The template is evaluated relative to the object. Element "
-#| "code tags prefixed with the ^ character can be used to represent the "
-#| "value in the template. For example: <i>^ca_objects.deaccession_notes</i>."
 msgid ""
 "Layout for deaccession information related to child objects when displayed "
 "in history list (can include HTML). The template is evaluated relative to "
@@ -9016,11 +8768,6 @@ msgid ""
 "represent the value in the template. For example: <i>^ca_objects."
 "deaccession_notes</i>."
 msgstr ""
-"Modèle pour les informations de sortie de l'inventaire lorsqu'affichées dans "
-"l'historique (peut contenir du HTML). Le modèle est évalué en fonction de la "
-"relation avec l'objet. Les codes d'éléments préfixés par le caractère ^ "
-"peuvent être utilisés pour représenter la valeur dans le modèle. Par "
-"exemple : <i>^ca_objects.deaccession_notes</i>."
 
 #: app/lib/IDNumbering/MultipartIDNumber.php:455
 #: app/lib/IDNumbering/SMFMultipartIDNumber.php:252
@@ -9256,10 +9003,8 @@ msgid "Encoded Archival Description Schema (EAD) XML"
 msgstr ""
 
 #: app/lib/Import/DataReaders/EADReader.php:96
-#, fuzzy
-#| msgid "Reads Text Encoding Initiative (TEI) XML files"
 msgid "Reads Encoded Archival Description Schema (EAD) XML files"
-msgstr "Lit des fichiers XML TEI (Text Encoding Initiative)"
+msgstr ""
 
 #: app/lib/Import/DataReaders/ExcelDataReader.php:53
 msgid "Excel XLSX data reader"
@@ -9524,10 +9269,8 @@ msgid "Reads data from WorldCat via web services"
 msgstr "Lit les données de WorldCat depuis des web services"
 
 #: app/lib/Import/DataReaders/iDigBioDataReader.php:64
-#, fuzzy
-#| msgid "EXIF data reader"
 msgid "iDigBio data reader"
-msgstr "Lecture de données EXIF"
+msgstr ""
 
 #: app/lib/Import/DataReaders/iDigBioDataReader.php:65
 msgid "iDigBio"
@@ -9640,10 +9383,8 @@ msgid "Invalid field %2 for table %1"
 msgstr "Champ invalide %2 pour la table %1"
 
 #: app/lib/MetadataAlerts/TriggerTypes/Base.php:118
-#, fuzzy
-#| msgid "Modification date/time"
 msgid "Notification template"
-msgstr "Date/heure de modification"
+msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Base.php:120
 msgid ""
@@ -9652,22 +9393,16 @@ msgid ""
 msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Base.php:126
-#, fuzzy
-#| msgid "Email"
 msgid "by email"
-msgstr "Email"
+msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Base.php:126
-#, fuzzy
-#| msgid "Edit dashboard"
 msgid "to dashboard"
-msgstr "Modifier le tableau de bord"
+msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Base.php:128
-#, fuzzy
-#| msgid "Delete annotation"
 msgid "Deliver notifications"
-msgstr "Supprimer l'annotation"
+msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Base.php:129
 msgid "Choose methods to deliver notifications here."
@@ -9678,16 +9413,12 @@ msgid "Metadata alert rule '%1' triggered for record %2"
 msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Base.php:224
-#, fuzzy
-#| msgid "Modification date/time"
 msgid "Modification"
-msgstr "Date/heure de modification"
+msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Date.php:51
-#, fuzzy
-#| msgid "Not used"
 msgid "Notify user"
-msgstr "Non utilisé"
+msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Date.php:53
 msgid ""
@@ -9697,10 +9428,8 @@ msgid ""
 msgstr ""
 
 #: app/lib/MetadataAlerts/TriggerTypes/Modification.php:130
-#, fuzzy
-#| msgid "Identifier sort"
 msgid "Identifer (idno)"
-msgstr "tri par identifiant"
+msgstr ""
 
 #: app/lib/ObjectRelationshipBaseModel.php:45
 msgid "Media representation chooser"
@@ -9838,17 +9567,13 @@ msgstr "Impossible de rapatrier les données de %1"
 
 #: app/lib/Plugins/ExternalExport/BagIt.php:51
 #: app/lib/Plugins/ExternalExport/sFTP.php:50
-#, fuzzy
-#| msgid "Allow user to data in various formats"
 msgid "Export data in BagIt format"
-msgstr "Autorise l'utilisateur à exporter des données dans des formats divers"
+msgstr ""
 
 #: app/lib/Plugins/ExternalExport/BagIt.php:79
 #: app/lib/Plugins/ExternalExport/sFTP.php:78
-#, fuzzy
-#| msgid "Batch export"
 msgid "BagIt export"
-msgstr "Export de métadonnées en lot"
+msgstr ""
 
 #: app/lib/Plugins/GeographicMap/BaseGeographicMapPlugin.php:138
 #: app/lib/Plugins/InformationService/BaseInformationServicePlugin.php:132
@@ -9891,10 +9616,8 @@ msgid "Use map"
 msgstr "Utiliser la carte"
 
 #: app/lib/Plugins/GeographicMap/Leaflet.php:50
-#, fuzzy
-#| msgid "Generates maps using the OpenLayers API"
 msgid "Generates maps using the Leaflet JS Library"
-msgstr "Génère des cartes à l'aide de l'API OpenLayers"
+msgstr ""
 
 #: app/lib/Plugins/GeographicMap/Leaflet.php:361
 msgid "Go"
@@ -10117,43 +9840,28 @@ msgid "API Key"
 msgstr "Clé API"
 
 #: app/lib/Plugins/InformationService/EOL.php:49
-#, fuzzy
-#| msgid ""
-#| "uBio key code. See http://www.ubio.org/index.php?pagename=xml_services "
-#| "for details. Default is the ubio_keycode setting in app.conf"
 msgid ""
 "EOLkey code. See http://www.ubio.org/index.php?pagename=xml_services for "
 "details. Default is the ubio_keycode setting in app.conf"
 msgstr ""
-"Clé uBio. Voir http://www.ubio.org/index.php?pagename=xml_services pour plus "
-"d'informations. La valeur par défaut est celle du paramètre ubio_keycode "
-"dans app.conf"
 
 #: app/lib/Plugins/InformationService/EOL.php:67
-#, fuzzy
-#| msgid "Provides access to Wikipedia service"
 msgid "Provides access to Encyclopedia of Life (EOL) service"
-msgstr "Fournit un accès au service Wikipédia"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/EOL.php:134
-#, fuzzy
-#| msgid "Invalid ID"
 msgid "Invalid EOL URL"
-msgstr "ID invalide"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/EOL.php:144
 #: app/lib/Plugins/InformationService/Pella.php:137
 #: app/lib/Plugins/InformationService/Seleucid.php:137
-#, fuzzy
-#| msgid "Links"
 msgid "Link"
-msgstr "Liens"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/EOL.php:146
-#, fuzzy
-#| msgid "Identifier"
 msgid "EOL Identifier"
-msgstr "Identifiant"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/EOL.php:151
 msgid "%1 [%3] (source: %2)"
@@ -10164,32 +9872,24 @@ msgid "Taxonomy"
 msgstr ""
 
 #: app/lib/Plugins/InformationService/Iconclass.php:60
-#, fuzzy
-#| msgid "Provides access to uBio service"
 msgid "Provides access to Iconclass service"
-msgstr "Fournit un accès au service uBio"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/Nomisma.php:44
-#, fuzzy
-#| msgid "Points"
 msgid "Mints"
-msgstr "Points"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/Nomisma.php:45
-#, fuzzy
-#| msgid "Relationship"
 msgid "Regions"
-msgstr "Relation"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/Nomisma.php:46
 msgid "Materials"
 msgstr ""
 
 #: app/lib/Plugins/InformationService/Nomisma.php:47
-#, fuzzy
-#| msgid "Destination(s)"
 msgid "Demoninations"
-msgstr "Destination(s)"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/Nomisma.php:48
 msgid "Hoards"
@@ -10200,20 +9900,16 @@ msgid "Person"
 msgstr ""
 
 #: app/lib/Plugins/InformationService/Nomisma.php:52
-#, fuzzy
-#| msgid "User logins"
 msgid "Use ontologies"
-msgstr "Utilisateurs"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/Nomisma.php:53
 msgid "Leave all unselected to use all available ontologies."
 msgstr ""
 
 #: app/lib/Plugins/InformationService/Nomisma.php:71
-#, fuzzy
-#| msgid "Provides access to uBio service"
 msgid "Provides access to the Nomisma.org data service"
-msgstr "Fournit un accès au service uBio"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/Pella.php:60
 msgid ""
@@ -10266,10 +9962,8 @@ msgid "SPARQL endpoint, default Wikidata."
 msgstr ""
 
 #: app/lib/Plugins/InformationService/SparqlEndpoint.php:76
-#, fuzzy
-#| msgid "Duplicate list items"
 msgid "Result list keys"
-msgstr "Duplique les éléments de liste"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/SparqlEndpoint.php:78
 msgid "Where is the results list? Keys hierarchy, separated by >"
@@ -10281,10 +9975,8 @@ msgstr ""
 
 #: app/lib/Plugins/InformationService/SparqlEndpoint.php:87
 #: app/lib/Plugins/InformationService/SparqlEndpoint.php:96
-#, fuzzy
-#| msgid "Open hierarchy browser by default"
 msgid "Keys hierarchy, separated by >"
-msgstr "Ouvrir la navigation hiérarchique par défaut"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/SparqlEndpoint.php:94
 msgid ""
@@ -10293,10 +9985,8 @@ msgid ""
 msgstr ""
 
 #: app/lib/Plugins/InformationService/SparqlEndpoint.php:209
-#, fuzzy
-#| msgid "Provides access to Wikipedia service"
 msgid "Provides access to Wikidata service and other SPARQL endpoints."
-msgstr "Fournit un accès au service Wikipédia"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/TGN.php:53
 msgid "Provides access to Getty Linked Open Data TGN service"
@@ -10307,10 +9997,8 @@ msgid "Provides access to Getty Linked Open Data ULAN service"
 msgstr "Fournit un accès au service Getty Linked Open Data ULAN"
 
 #: app/lib/Plugins/InformationService/VIAF.php:68
-#, fuzzy
-#| msgid "Provides access to uBio service"
 msgid "Provides access to VIAF service"
-msgstr "Fournit un accès au service uBio"
+msgstr ""
 
 #: app/lib/Plugins/InformationService/Wikipedia.php:48
 msgid "Wikipedia language"
@@ -10749,10 +10437,8 @@ msgid "Translation from Camera RAW to TIFF failed"
 msgstr "Conversion RAW vers TIFF échouée"
 
 #: app/lib/Plugins/Media/Gmagick.php:1300
-#, fuzzy
-#| msgid "Could not read image file"
 msgid "Could not read image file: "
-msgstr "Impossible de lire le fichier image"
+msgstr ""
 
 #: app/lib/Plugins/Media/GraphicsMagick.php:227
 msgid ""
@@ -11686,10 +11372,8 @@ msgid "No attribute_guid found for attribute value log entry"
 msgstr ""
 
 #: app/lib/Sync/LogEntry/AttributeValue.php:90
-#, fuzzy
-#| msgid "Could not find list with list id %1"
 msgid "Could not find list item with guid %1"
-msgstr "Impossible de trouver la liste correspondante au code %1"
+msgstr ""
 
 #: app/lib/Sync/LogEntry/AttributeValue.php:94
 msgid "Invalid list item code %1 for attribute value log entry."
@@ -11780,10 +11464,8 @@ msgid "Begin processing source log entry at %1"
 msgstr ""
 
 #: app/lib/Sync/Replicator.php:334
-#, fuzzy
-#| msgid "Skipped %1 from %2 because it already exists %3"
 msgid "Skipped %1 because we've seen it already "
-msgstr "%1 ignoré de %2 parce qu'il existe déjà %3"
+msgstr ""
 
 #: app/lib/Sync/Replicator.php:339
 msgid "Getting log for missing guid %1"
@@ -11806,11 +11488,8 @@ msgid "Skipped entry because it lacks a log_id %1"
 msgstr ""
 
 #: app/lib/Sync/Replicator.php:454
-#, fuzzy
-#| msgid "Skipped file %1 because it was on the skipped files list"
 msgid "Skipped missing %1 because it's in the future"
 msgstr ""
-"%1 fichier ignoré parce qu'il figure dans la liste des fichiers à ignorer"
 
 #: app/lib/Sync/Replicator.php:488
 msgid ""
@@ -11839,22 +11518,16 @@ msgid "Skipped %1 (during push of missing?) because it's in the future"
 msgstr ""
 
 #: app/lib/Sync/Replicator.php:599
-#, fuzzy
-#| msgid "Didn't load because Gmagick is not available"
 msgid "Skipped %1 because dependency %2 is not available"
-msgstr "N'a pu être chargé parce que Gmagick n'est pas disponible"
+msgstr ""
 
 #: app/lib/Sync/Replicator.php:611
-#, fuzzy
-#| msgid "Skipped %1 from %2 because it already exists %3"
 msgid "Skipped log_id %1 [%2] because it still has dependencies: %3"
-msgstr "%1 ignoré de %2 parce qu'il existe déjà %3"
+msgstr ""
 
 #: app/lib/Sync/Replicator.php:617
-#, fuzzy
-#| msgid "Skipped %1 from %2 because it already exists %3"
 msgid "Skipped %1 because it has already been pushed"
-msgstr "%1 ignoré de %2 parce qu'il existe déjà %3"
+msgstr ""
 
 #: app/lib/Sync/Replicator.php:681
 msgid "Adding %3 unpushed attribute log entries starting with %1 for %2 [%4]."
@@ -11887,10 +11560,8 @@ msgid "Chunk sync for source %1 and target %2 successful."
 msgstr ""
 
 #: app/lib/Sync/Replicator.php:762
-#, fuzzy
-#| msgid "Editing %1 : %2"
 msgid "debug %1 // %2"
-msgstr "Modification de %1 : %2"
+msgstr ""
 
 #: app/lib/Sync/Replicator.php:763
 msgid "Pushed %1 log entries. Incrementing log index to %2 (%3)"
@@ -12058,29 +11729,10 @@ msgid "Create a profile <list> element from an Excel spreadsheet. "
 msgstr ""
 
 #: app/lib/Utils/CLITools.php:321
-#, fuzzy
-#| msgid "Excel file to convert to profile list."
 msgid "Excel file to convert to profile <relationshipTable> element."
-msgstr "Fichier excel à convertir vers la liste des profils."
+msgstr ""
 
 #: app/lib/Utils/CLITools.php:338
-#, fuzzy
-#| msgid ""
-#| "Create a profile <list> element from an Excel spreadsheet. Your list "
-#| "should have one list item per row, with hierarchical level indicated by "
-#| "indentation. For example, if you want to have a list with A, B, C, D, E "
-#| "and F, with B and C sub-items of A and F a sub-item of E your Excel "
-#| "document should look like this:\n"
-#| "\n"
-#| "\tA\n"
-#| "\t\tB\n"
-#| "\t\tC\n"
-#| "\tD\n"
-#| "\tE\n"
-#| "\t\tF\n"
-#| "\n"
-#| "\tIf your Excel document has column headers you can skip them by "
-#| "specifying the number of rows to skip using the \"skip\" option."
 msgid ""
 "Create a profile <relationshipTable> element from an Excel spreadsheet. Your "
 "relationship type list should have one type per row, with hierarchical level "
@@ -12100,22 +11752,6 @@ msgid ""
 "\tIf your Excel document has column headers you can skip them by specifying "
 "the number of rows to skip using the \"skip\" option."
 msgstr ""
-"Créer une <list> (liste) pour un profil depuis un tableur Excel. Votre liste "
-"doit avoir un enregistrement par ligne, avec un niveau hiérarchique indiqué "
-"par indentation. Par exemple, si vous voulez avoir une liste avec A, B, C, "
-"D, E et F, avec B et C sous A et F sous E, votre document excel devrait "
-"ressembler à ceci :\n"
-"\n"
-"\tA\n"
-"\t\tB\n"
-"\t\tC\n"
-"\tD\n"
-"\tE\n"
-"\t\tF\n"
-"\n"
-"\tSi votre document Excel a des entêtes de colonne, vous pouvez les ignorer "
-"en spécifiant le nombre de lignes à ignorer à l'aide de l'option \"skip"
-"\" (ignorer)"
 
 #: app/lib/Utils/CLITools.php:345
 msgid ""
@@ -12164,10 +11800,8 @@ msgid ""
 msgstr ""
 
 #: app/lib/Utils/CLITools.php:465 app/lib/Utils/CLITools.php:597
-#, fuzzy
-#| msgid "%1 must not be empty"
 msgid "'%1' must not be a directory"
-msgstr "%1 ne doit pas être vide"
+msgstr ""
 
 #: app/lib/Utils/CLITools.php:494
 msgid "%1 is not a valid input format. Defaulting to PastPerfect."
@@ -12182,20 +11816,16 @@ msgid "No output format was specified. Defaulting to CSV."
 msgstr ""
 
 #: app/lib/Utils/CLITools.php:517 app/lib/Utils/CLITools.php:614
-#, fuzzy
-#| msgid "Could not open %1"
 msgid "Could not open output file %1"
-msgstr "Impossible d'ouvrir %1"
+msgstr ""
 
 #: app/lib/Utils/CLITools.php:551 app/lib/Utils/CLITools.php:637
 msgid "XML file to convert."
 msgstr ""
 
 #: app/lib/Utils/CLITools.php:552
-#, fuzzy
-#| msgid "File to write output to."
 msgid "File to write delimited output to."
-msgstr "Fichier cible pour les données."
+msgstr ""
 
 #: app/lib/Utils/CLITools.php:553
 msgid ""
@@ -12214,10 +11844,8 @@ msgid "Format of output (CSV or tab-delimited). Default is CSV."
 msgstr ""
 
 #: app/lib/Utils/CLITools.php:563 app/lib/Utils/CLITools.php:646
-#, fuzzy
-#| msgid "Duplication tools"
 msgid "Data conversion tools"
-msgstr "Outils de duplication"
+msgstr ""
 
 #: app/lib/Utils/CLITools.php:570
 msgid ""
@@ -12236,20 +11864,16 @@ msgid ""
 msgstr ""
 
 #: app/lib/Utils/CLITools.php:610
-#, fuzzy
-#| msgid "Could not write file %1"
 msgid "Could not open input file %1"
-msgstr "Impossible d'écrire le fichier %1"
+msgstr ""
 
 #: app/lib/Utils/CLITools.php:620
 msgid "Found invalid character at line %1: %2"
 msgstr ""
 
 #: app/lib/Utils/CLITools.php:638
-#, fuzzy
-#| msgid "File to write output to."
 msgid "File to write filtered output to."
-msgstr "Fichier cible pour les données."
+msgstr ""
 
 #: app/lib/Utils/CLITools.php:653
 msgid "Remove invalid characters from an XML file."
@@ -12336,10 +11960,8 @@ msgid "Setting up hierarchies"
 msgstr "Traitement des hiérarchies"
 
 #: app/lib/Utils/CLIUtils/Configuration.php:132
-#, fuzzy
-#| msgid "Processing metadata elements"
 msgid "Processing metadata alerts"
-msgstr "Traitements des éléments de métadonnée"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Configuration.php:135
 msgid "Performing post install tasks"
@@ -12994,12 +12616,10 @@ msgid ""
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:295
-#, fuzzy
-#| msgid "Type used for newly created object representations"
 msgid ""
 "Type to use for all newly created representations. Possible values are %1. "
 "Default is %2."
-msgstr "Type pour les nouvelles représentations créées"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:296
 msgid "Identifier to use for all newly created representation records."
@@ -13066,10 +12686,8 @@ msgid "System GUID is %1"
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:334
-#, fuzzy
-#| msgid "No set defined"
 msgid "No system GUID is defined"
-msgstr "Aucun ensemble défini"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:354
 msgid "Print system GUID value used for replication."
@@ -13346,17 +12964,12 @@ msgid "Path to ULAN import configuration file."
 msgstr "Chemin vers le fichier de configuration ULAN"
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:810
-#, fuzzy
-#| msgid "Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess."
 msgid "Load Getty Union List of Artist Names (ULAN) into CollectiveAccess."
 msgstr ""
-"Charge le Getty Art & Architecture Thesaurus (AAT) dans CollectiveAccess."
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:817
-#, fuzzy
-#| msgid "Loads the AAT from a Getty-provided XML file."
 msgid "Loads the ULAN from a Getty-provided XML file."
-msgstr "Charge le AAT depuis un fichier XML fourni par le Getty"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:848
 msgid "Replicate data from one CollectiveAccess system to another."
@@ -13464,34 +13077,24 @@ msgid ""
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1121
-#, fuzzy
-#| msgid "Invalid table %1"
 msgid "Ignoring invalid target %1"
-msgstr "Table invalide : %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1127
-#, fuzzy
-#| msgid "You must specify a file"
 msgid "You must specify a table"
-msgstr "Vous devez spécifier un fichier"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1136
-#, fuzzy
-#| msgid "You must specify a file"
 msgid "You must specify an id"
-msgstr "Vous devez spécifier un fichier"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1146
-#, fuzzy
-#| msgid "Found no records to export"
 msgid "Table of record to export."
-msgstr "Aucun enregistrement à exporter n'a été trouvé "
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1147
-#, fuzzy
-#| msgid "Found no records to export"
 msgid "ID of row to export."
-msgstr "Aucun enregistrement à exporter n'a été trouvé "
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1148
 msgid "Target to export to. If omitted all valid targets will be exported to."
@@ -13502,57 +13105,41 @@ msgid "Run external export for a record."
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1170
-#, fuzzy
-#| msgid "Help to come."
 msgid "To come."
-msgstr "Texte d'aide à venir."
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1182
-#, fuzzy
-#| msgid "Type must be specified"
 msgid "A file must be specified"
-msgstr "Le type doit être spécifié"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1187
-#, fuzzy
-#| msgid "Cannot write to %1"
 msgid "Cannot write to file %1"
-msgstr "Impossible d'écrire dans %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1193
-#, fuzzy
-#| msgid "Type must be specified"
 msgid "An export mapping must be specified"
-msgstr "Le type doit être spécifié"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1201
-#, fuzzy
-#| msgid "Could not import '%1': %2"
 msgid "Could not export %1: %2"
-msgstr "Impossible d'importer '%1' : %2"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1204
-#, fuzzy
-#| msgid "Imported %1"
 msgid "Exported %1"
-msgstr "%1 importés"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1209
 msgid "Required. Exporter mapping to write to file."
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1210
-#, fuzzy
-#| msgid "Required. File to save export to."
 msgid "Required. File to save exporter to."
-msgstr "Requis. Fichier de destination pour l'export."
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/ImportExport.php:1225
 #: app/lib/Utils/CLIUtils/ImportExport.php:1232
-#, fuzzy
-#| msgid "Load export mapping from Excel XLSX format file."
 msgid "Write exporter mapping to Excel-format file."
-msgstr "Chargement de correspondance depuis un fichier Excel XLSX"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:58
 #: app/lib/Utils/CLIUtils/Maintenance.php:2167
@@ -13753,43 +13340,24 @@ msgstr ""
 "que vous voulez économiser de l'espace disque."
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:305
-#, fuzzy
-#| msgid ""
-#| "Are you sure you want to update your CollectiveAccess database from "
-#| "revision %1 to %2?\n"
-#| "NOTE: you should backup your database before applying updates!\n"
-#| "\n"
-#| "Type 'y' to proceed or 'N' to cancel, then hit return "
 msgid ""
 "Are you sure you want to PERMANENTLY remove all deleted records? This cannot "
 "be undone.\n"
 "\n"
 "Type 'y' to proceed or 'N' to cancel, then hit return "
 msgstr ""
-"Etes vous sûr de vouloir mettre à jour votre base de données "
-"CollectiveAccess de la version %1 à la version %2 ?\n"
-"NOTE : vous devriez réaliser une sauvegarde de la base avant de réaliser des "
-"mises à jours !\n"
-"\n"
-"Saisir 'y' pour valider ou 'N' pour annuler, puis appuyer sur entrée"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:329
-#, fuzzy
-#| msgid "Removing deleted representations from database"
 msgid "Removing deleted %1 from database"
-msgstr "Retrait des représentations supprimées de la base de données"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:347
-#, fuzzy
-#| msgid "Imported %1 as %2"
 msgid "Removed %1 %2"
-msgstr "%1 importé en tant que %2"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:357
-#, fuzzy
-#| msgid "Nothing was selected"
 msgid "Nothing to delete!"
-msgstr "Rien n'a été sélectionné"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:366
 msgid ""
@@ -13804,19 +13372,11 @@ msgid ""
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:388
-#, fuzzy
-#| msgid ""
-#| "Detects and, optionally, completely removes object representations marked "
-#| "as deleted in the database. Files referenced by these records are also "
-#| "removed."
 msgid ""
 "Completely and permanently removes records marked as deleted in the "
 "database. Files referenced by these records are also removed. Note that this "
 "cannot be undone."
 msgstr ""
-"Détecte et supprime (optionnel) les médias présents dans le répertoire média "
-"qui sont marqués comme supprimés dans la base de données. Les fichiers "
-"référencés par ces enregistrements sont aussi supprimés."
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:401
 msgid ""
@@ -13961,19 +13521,6 @@ msgstr ""
 "que %1 (uid %2)"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:587
-#, fuzzy
-#| msgid ""
-#| "CollectiveAccess must have both read and write access to the temporary "
-#| "storage directory (app/tmp), media directory (media) and HTMLPurifier "
-#| "definition cache (app/lib/core/Parsers/htmlpurifier/standalone/"
-#| "HTMLPurifier/DefinitionCache). A run-time error will be displayed if any "
-#| "of these locations is not accessible to the application. To change these "
-#| "permissions to allow CollectiveAccess to run normally run this command "
-#| "while logged in with administrative/root privileges. You are currently "
-#| "logged in as %1 (uid %2). You can specify which user will be given "
-#| "ownership of the directories using the --user option. If you do not "
-#| "specify a user, the web server user for your server will be automatically "
-#| "determined and used."
 msgid ""
 "CollectiveAccess must have both read and write access to the temporary "
 "storage directory (app/tmp), media directory (media) and HTMLPurifier "
@@ -13986,17 +13533,6 @@ msgid ""
 "using the --user option. If you do not specify a user, the web server user "
 "for your server will be automatically determined and used."
 msgstr ""
-"CollectiveAccess doit avoir les droits à la fois pour lire et pour écrire "
-"dans son répertoire temp (app/tmp), le répertoire média (media) et le cache "
-"HTMLPurifier (app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/"
-"DefinitionCache). Une erreur sera affichée si un de ces emplacements n'est "
-"pas accessible pour l'application. Pour changer ces permissions pour "
-"permettre à CollectiveAccess de fonctionner normalement, lancez cette "
-"commande en étant connecté avec des privilèges d'administrateur/root. Vous "
-"êtes actuellement connecté en tant que %1 (uid %2). Vous pouvez spécifier à "
-"quel utilisateur doit être donnée la propriété des répertoires à l'aide de "
-"l'option --user option. Si vous ne définissez pas d'utilisateur, "
-"l'utilisateur du serveur web sera automatiquement choisi."
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:598
 #: app/lib/Utils/CLIUtils/Maintenance.php:627
@@ -14060,16 +13596,12 @@ msgstr ""
 "métadonnées"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:832
-#, fuzzy
-#| msgid "Ending date is invalid"
 msgid "Email address is invalid"
-msgstr "La date de fin non valide"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:836
-#, fuzzy
-#| msgid "You must specify a file"
 msgid "You must specify an output file or email address"
-msgstr "Vous devez spécifier un fichier"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:862
 #: app/models/ca_bundle_display_labels.php:63
@@ -14136,10 +13668,8 @@ msgid "Checking object representations"
 msgstr "Vérification des représentations"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:932
-#, fuzzy
-#| msgid "Media representations"
 msgid "%1 media representations"
-msgstr "Représentations média"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:935
 msgid "Checking representation media %1"
@@ -14155,10 +13685,8 @@ msgid "Object representation"
 msgstr "Représentation"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:969
-#, fuzzy
-#| msgid "%1 errors for %2 representations"
 msgid "%1 error for %2 representations"
-msgstr "%1 erreurs pour %2 représentations"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:971
 msgid "%1 errors for %2 representations"
@@ -14188,17 +13716,13 @@ msgid "MD5 mismatch"
 msgstr "Différence dans les signatures MD5"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1052
-#, fuzzy
-#| msgid "Added metadata element"
 msgid "%1 media in %2 metadata elements"
-msgstr "Métadonnée ajoutée"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1057
 #: app/lib/Utils/CLIUtils/Maintenance.php:1142
-#, fuzzy
-#| msgid "%1 errors for %2 attributes"
 msgid "%1 error for %2 attributes"
-msgstr "%1 erreurs pour %2 attributs"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1059
 #: app/lib/Utils/CLIUtils/Maintenance.php:1144
@@ -14224,10 +13748,8 @@ msgid "File attribute"
 msgstr "Attribut fichier"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1137
-#, fuzzy
-#| msgid "Processing metadata elements"
 msgid "%1 files in %2 metadata elements"
-msgstr "Traitements des éléments de métadonnée"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1175
 msgid "%1_fixity_report_%2.%3"
@@ -14238,10 +13760,8 @@ msgid "[%1] Media fixity report for %2"
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1192
-#, fuzzy
-#| msgid "Could not reorder stop %1: %2"
 msgid "Could not send email to %1: %2"
-msgstr "Impossible de ré-ordonner le point de parcours %1 : %2"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1205
 msgid ""
@@ -14260,10 +13780,8 @@ msgid "Output format. (text|tab|csv)"
 msgstr "Format de sortie. (text|tab|csv)"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1208
-#, fuzzy
-#| msgid "E-mail address of commentor."
 msgid "Email address to send report to."
-msgstr "Adresse email du commentateur."
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1210
 msgid "Representation id to start checking at"
@@ -14286,23 +13804,12 @@ msgid "Comma separated list of object ids to check"
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1215
-#, fuzzy
-#| msgid ""
-#| "Comma separated list of kind of media to reprocess. Valid kinds are "
-#| "ca_object_representations (object representations), and ca_attributes "
-#| "(metadata elements). You may also specify \"all\" to reprocess both kinds "
-#| "of media. Default is \"all\""
 msgid ""
 "Comma separated list of kind of media to check. Valid kinds are "
 "ca_object_representations (object representations), and ca_attributes "
 "(metadata elements). You may also specify \"all\" to check both kinds of "
 "media. Default is \"all\""
 msgstr ""
-"Liste de type de média à retraiter, séparés par des virgules. Les types de "
-"valeurs valides sont \"ca_object_representations\" (représentations objets) "
-"et \"ca_attributes\" (éléments de métadonnées). Vous pouvez également "
-"spécifier \"all\" pour retraiter tous les types de média. La valeur par "
-"défaut est \"all\"."
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:1231
 msgid "Verify media fixity using database file signatures"
@@ -14657,29 +14164,21 @@ msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2008
 #: app/lib/Utils/CLIUtils/Maintenance.php:2390
-#, fuzzy
-#| msgid "Processing %1"
 msgid "Processing %1.%2"
-msgstr "%1 en cours de traitement"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2024
 #: app/lib/Utils/CLIUtils/Maintenance.php:2408
-#, fuzzy
-#| msgid "Processing track %1"
 msgid "Processing row %1 for %2.%3"
-msgstr "Traitement de la piste %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2037
-#, fuzzy
-#| msgid "Could not delete locale: %1"
 msgid "Could not update dependent value: %1"
-msgstr "Impossible de supprimer la locale : %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2045
-#, fuzzy
-#| msgid "Reload sort values"
 msgid "Regenerated %1 values"
-msgstr "Rechargement des valeurs de tri"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2063
 msgid ""
@@ -14707,22 +14206,16 @@ msgstr ""
 "Impossible d'ajouter le libellé pour le noeud racine de la relation %1 : %2"
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2120
-#, fuzzy
-#| msgid "Adding XML for %1"
 msgid "Added root for %1"
-msgstr "Ajout XML pour %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2125
-#, fuzzy
-#| msgid "Deleted %1 from remote server"
 msgid "Recreated %1 root record"
-msgstr "%1 supprimé du serveur distant"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2125
-#, fuzzy
-#| msgid "Related %1 does not exist"
 msgid "Recreated %1 root records"
-msgstr "L'objet lié n'existe pas"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2143
 msgid "Check for and repair missing relationship type root records."
@@ -14745,26 +14238,14 @@ msgstr "Démarrage..."
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2174
 #: app/lib/Utils/CLIUtils/Maintenance.php:2230
-#, fuzzy
-#| msgid "Processed %1/%2"
 msgid "Processed %1 %2"
-msgstr "Traitement de %1/%2"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2199
-#, fuzzy
-#| msgid "Reloads current location values for all object records."
 msgid "Reloads current values for all history tracking policies."
 msgstr ""
-"Recharge les valeurs de localisation courante pour tous les enregistrements "
-"objets."
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2206
-#, fuzzy
-#| msgid ""
-#| "CollectiveAccess supports browse on current locations of collection "
-#| "objects using values cached in the object records. From time to time "
-#| "these values may become out of date. Use this command to regenerate the "
-#| "cached values based upon the current state of the database."
 msgid ""
 "CollectiveAccess supports tracking of location and use histories through "
 "history tracking policies. Current values for each record for each policy "
@@ -14772,11 +14253,6 @@ msgid ""
 "become out of date. Use this command to regenerate the cached values based "
 "upon the current state of the database."
 msgstr ""
-"CollectiveAccess supporte le parcours de la base sur différents emplacements "
-"des collections d'objets à l'aide de valeurs cachées dans les "
-"enregistrements des objets. De temps en temps, ces valeurs peuvent ne plus "
-"être à jour. Utiliser cette commande pour générer des valeurs cachées basées "
-"sur l'état courant de la base."
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2255
 msgid ""
@@ -14802,20 +14278,16 @@ msgid ""
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2426
-#, fuzzy
-#| msgid "Could not delete locale: %1"
 msgid "Could not set default value: %1"
-msgstr "Impossible de supprimer la locale : %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2434
 msgid "Set default values on %1 records"
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2452
-#, fuzzy
-#| msgid "Default values for mapped values."
 msgid "Set default values on all fields where not value is set."
-msgstr "Valeurs par défaut pour les valeurs correspondantes"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Maintenance.php:2459
 msgid ""
@@ -14843,22 +14315,16 @@ msgid "Error processing attribute media: %1"
 msgstr "Erreur lors du traitement du média : %1"
 
 #: app/lib/Utils/CLIUtils/Media.php:196
-#, fuzzy
-#| msgid "Re-processing %1"
 msgid "Re-processing icons"
-msgstr "Traitement de %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Media.php:205
-#, fuzzy
-#| msgid "Re-processing %1"
 msgid "Re-processing %1 from %2"
-msgstr "Traitement de %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Media.php:212
-#, fuzzy
-#| msgid "Error processing attribute media: %1"
 msgid "Error processing icon media: %1"
-msgstr "Erreur lors du traitement du média : %1"
+msgstr ""
 
 #: app/lib/Utils/CLIUtils/Media.php:229
 msgid ""
@@ -14898,12 +14364,6 @@ msgid "Comma separated list of object ids to reload"
 msgstr ""
 
 #: app/lib/Utils/CLIUtils/Media.php:237
-#, fuzzy
-#| msgid ""
-#| "Comma separated list of kind of media to reprocess. Valid kinds are "
-#| "ca_object_representations (object representations), and ca_attributes "
-#| "(metadata elements). You may also specify \"all\" to reprocess both kinds "
-#| "of media. Default is \"all\""
 msgid ""
 "Comma separated list of kind of media to reprocess. Valid kinds are "
 "ca_object_representations (object representations), ca_attributes (metadata "
@@ -14911,11 +14371,6 @@ msgid ""
 "editors, editor screens, tours and tour stops). You may also specify \"all\" "
 "to reprocess all kinds of media. Default is \"all\""
 msgstr ""
-"Liste de type de média à retraiter, séparés par des virgules. Les types de "
-"valeurs valides sont \"ca_object_representations\" (représentations objets) "
-"et \"ca_attributes\" (éléments de métadonnées). Vous pouvez également "
-"spécifier \"all\" pour retraiter tous les types de média. La valeur par "
-"défaut est \"all\"."
 
 #: app/lib/Utils/CLIUtils/Media.php:245 app/lib/Utils/CLIUtils/Media.php:437
 #: app/lib/Utils/CLIUtils/Media.php:518 app/models/ca_bundle_displays.php:1582
@@ -15176,62 +14631,36 @@ msgid "[%1] "
 msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:201
-#, fuzzy
-#| msgid ""
-#| "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
-#| "getListItemID() using idno"
 msgid ""
 "%3Found existing list item %1 (member of list %2) in DataMigrationUtils::"
 "getListItemID() using idno"
 msgstr ""
-"Élément de liste existant %1 (dans la liste %2) trouvé par "
-"DataMigrationUtils::getListItemID() à l'aide de l'identifiant"
 
 #: app/lib/Utils/DataMigrationUtils.php:208
 msgid "Could not find list with list code %1"
 msgstr "Impossible de trouver la liste correspondante au code %1"
 
 #: app/lib/Utils/DataMigrationUtils.php:210
-#, fuzzy
-#| msgid "Could not find list with list code %1"
 msgid "%2Could not find list with list code %1"
-msgstr "Impossible de trouver la liste correspondante au code %1"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:236
-#, fuzzy
-#| msgid ""
-#| "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
-#| "getListItemID() using singular label %3"
 msgid ""
 "%4Found existing list item %1 (member of list %2) in DataMigrationUtils::"
 "getListItemID() using singular label %3"
 msgstr ""
-"Élément de liste existant %1 (dans la liste %2) trouvé par "
-"DataMigrationUtils::getListItemID() à l'aide du titre (singulier) %3"
 
 #: app/lib/Utils/DataMigrationUtils.php:241
-#, fuzzy
-#| msgid ""
-#| "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
-#| "getListItemID() using plural label %3"
 msgid ""
 "%4Found existing list item %1 (member of list %2) in DataMigrationUtils::"
 "getListItemID() using plural label %3"
 msgstr ""
-"Élément de liste existant %1 (dans la liste %2) trouvé par "
-"DataMigrationUtils::getListItemID() à l'aide du titre (pluriel) %3"
 
 #: app/lib/Utils/DataMigrationUtils.php:252
-#, fuzzy
-#| msgid ""
-#| "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
-#| "getListItemID() using idno with %3"
 msgid ""
 "%4Found existing list item %1 (member of list %2) in DataMigrationUtils::"
 "getListItemID() using idno with %3"
 msgstr ""
-"Élément de liste existant %1 (dans la liste %2) trouvé par "
-"DataMigrationUtils::getListItemID() à l'aide de l'identifiant %3"
 
 #: app/lib/Utils/DataMigrationUtils.php:302
 #: app/lib/Utils/DataMigrationUtils.php:365
@@ -15241,10 +14670,8 @@ msgid "Errors setting field values: %1"
 msgstr "Erreurs lors de la définition des valeurs du champs : %1"
 
 #: app/lib/Utils/DataMigrationUtils.php:316
-#, fuzzy
-#| msgid "Could not find list with list id %1"
 msgid "%2Could not find list with list id %1"
-msgstr "Impossible de trouver la liste correspondante au code %1"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:323
 #: app/lib/Utils/DataMigrationUtils.php:325
@@ -15256,22 +14683,16 @@ msgid "Could not set preferred label for list item %1: %2"
 msgstr "Impossible de définir un label préféré pour l'élément de liste %1 : %2"
 
 #: app/lib/Utils/DataMigrationUtils.php:347
-#, fuzzy
-#| msgid "Could not set preferred label for list item %1: %2"
 msgid "%3Could not set preferred label for list item %1: %2"
-msgstr "Impossible de définir un label préféré pour l'élément de liste %1 : %2"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:371
-#, fuzzy
-#| msgid "Created new list item %1 in list %2"
 msgid "%3Created new list item %1 in list %2"
-msgstr "Nouvel item de liste %1 créé dans la liste %2"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:378
-#, fuzzy
-#| msgid "Could not find add item to list: %1"
 msgid "%2Could not find add item to list: %1"
-msgstr "Impossible d'ajouter l'élément à la liste : %1"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:794
 #: app/lib/Utils/DataMigrationUtils.php:796
@@ -15294,78 +14715,52 @@ msgid "%4Not adding \"%1\" (%2) as %3 because dontCreate option is set"
 msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:1182
-#, fuzzy
-#| msgid "Trying media %1 in place of %2/%3"
 msgid "%4Trying media %1 in place of %2/%3"
-msgstr "Essai avec le média %1 au lieu de %2/%3"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:1184
-#, fuzzy
-#| msgid "Found media %1 for %2/%3"
 msgid "%4Found media %1 for %2/%3"
-msgstr "%1 média trouvé pour %2/%3"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:1194
-#, fuzzy
-#| msgid "Could not add reel record %1: %2"
 msgid "%3Could not create %1 record: %2"
-msgstr "Impossible d'ajouter l'enregistrement de la bobine %1: %2"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:1198
 msgid "Could not insert %1 %2: %3"
 msgstr "Impossible d'insérer %1 %2 : %3"
 
 #: app/lib/Utils/DataMigrationUtils.php:1201
-#, fuzzy
-#| msgid "Could not insert %1 %2: %3"
 msgid "%4Could not insert %1 %2: %3"
-msgstr "Impossible d'insérer %1 %2 : %3"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:1210
 msgid "Could not set preferred label for %1 %2: %3"
 msgstr "Impossible de définir le label préféré pour %1 %2 : %3"
 
 #: app/lib/Utils/DataMigrationUtils.php:1212
-#, fuzzy
-#| msgid "Could not set preferred label for %1 %2: %3"
 msgid "%4Could not set preferred label for %1 %2: %3"
-msgstr "Impossible de définir le label préféré pour %1 %2 : %3"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:1230
-#, fuzzy
-#| msgid "Created new %1 %2"
 msgid "%3Created new %1 %2"
-msgstr "Nouveau %1 %2 créé"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:1237
-#, fuzzy
-#| msgid "Found existing %1 %2 in DataMigrationUtils::_getID()"
 msgid "%3Found existing %1 %2 in DataMigrationUtils::_getID()"
-msgstr "Trouvé %1 %2 par DataMigrationUtils::_getID()"
+msgstr ""
 
 #: app/lib/Utils/DataMigrationUtils.php:1258
-#, fuzzy
-#| msgid ""
-#| "Could not load existing %1 with id %2 (%3) in DataMigrationUtils::"
-#| "_getID() [THIS SHOULD NOT HAPPEN]"
 msgid ""
 "%4Could not load existing %1 with id %2 (%3) in DataMigrationUtils::_getID() "
 "[THIS SHOULD NOT HAPPEN]"
 msgstr ""
-"Impossible de charger %1 existant avec le code %2 (%3) dans "
-"DataMigrationUtils::_getID() [CECI NE DEVRAIT JAMAIS SE PRODUIRE]"
 
 #: app/lib/Utils/DataMigrationUtils.php:1263
-#, fuzzy
-#| msgid ""
-#| "Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::"
-#| "_getID(): %4"
 msgid ""
 "%5Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::"
 "_getID(): %4"
 msgstr ""
-"Impossible de définir l'attribut pour %1 avec le code %2 (%3) dans "
-"DataMigrationUtils::_getID(): %4"
 
 #: app/lib/View.php:303
 msgid "View %1 was not found"
@@ -16278,13 +15673,10 @@ msgid "Append multipage PDF to output?"
 msgstr ""
 
 #: app/models/ca_bundle_displays.php:1179
-#, fuzzy
-#| msgid "Check this option if you want to disable location map display."
 msgid ""
 "Check this option if you want PDF media in display appended to the end of "
 "PDF display output."
 msgstr ""
-"Cocher cette option si vous voulez désactiver l'affichage sur une carte."
 
 #: app/models/ca_bundle_displays.php:1198
 msgid ""
@@ -16361,10 +15753,8 @@ msgid "History tracking current contents"
 msgstr ""
 
 #: app/models/ca_bundle_displays.php:1483
-#, fuzzy
-#| msgid "Display list contents"
 msgid "History tracking contents"
-msgstr "Afficher le contenu de la liste"
+msgstr ""
 
 #: app/models/ca_bundle_displays.php:1517
 #: app/models/ca_bundle_displays.php:1518 app/models/ca_collections.php:199
@@ -16374,10 +15764,8 @@ msgstr "Afficher le contenu de la liste"
 #: app/models/ca_occurrences.php:186 app/models/ca_places.php:205
 #: app/models/ca_representation_transcriptions.php:107
 #: app/models/ca_storage_locations.php:196
-#, fuzzy
-#| msgid "1 set created by users"
 msgid "Submitted by user"
-msgstr "1 ensemble créé par les utilisateurs"
+msgstr ""
 
 #: app/models/ca_bundle_displays.php:1519
 msgid "Name and email address user that submitted item"
@@ -16388,10 +15776,8 @@ msgid "Submitted by group"
 msgstr ""
 
 #: app/models/ca_bundle_displays.php:1552 app/models/ca_objects.php:618
-#, fuzzy
-#| msgid "user group"
 msgid "Submission group"
-msgstr "groupe d'utilisateurs"
+msgstr ""
 
 #: app/models/ca_bundle_displays.php:1553
 msgid "Group item was submitted under"
@@ -16921,10 +16307,8 @@ msgstr ""
 #: app/models/ca_object_representations.php:249 app/models/ca_objects.php:373
 #: app/models/ca_occurrences.php:194 app/models/ca_places.php:213
 #: app/models/ca_storage_locations.php:204
-#, fuzzy
-#| msgid "Number of groups"
 msgid "Submitted for group"
-msgstr "Nombre de groupes"
+msgstr ""
 
 #: app/models/ca_collections.php:207 app/models/ca_entities.php:204
 #: app/models/ca_loans.php:186 app/models/ca_movements.php:158
@@ -16941,10 +16325,8 @@ msgstr ""
 #: app/models/ca_object_representations.php:258 app/models/ca_objects.php:382
 #: app/models/ca_occurrences.php:203 app/models/ca_places.php:222
 #: app/models/ca_storage_locations.php:213
-#, fuzzy
-#| msgid "Accession status"
 msgid "Submission status"
-msgstr "Statut d'acquisition"
+msgstr ""
 
 #: app/models/ca_collections.php:216 app/models/ca_entities.php:213
 #: app/models/ca_loans.php:195 app/models/ca_movements.php:167
@@ -16952,10 +16334,8 @@ msgstr "Statut d'acquisition"
 #: app/models/ca_object_representations.php:258 app/models/ca_objects.php:382
 #: app/models/ca_occurrences.php:203 app/models/ca_places.php:222
 #: app/models/ca_storage_locations.php:213
-#, fuzzy
-#| msgid "Indicates the current state of the object record."
 msgid "Indicates submission status of the object."
-msgstr "Indique l'état courant de l'enregistrement de l'objet."
+msgstr ""
 
 #: app/models/ca_collections.php:224 app/models/ca_entities.php:221
 #: app/models/ca_loans.php:203 app/models/ca_movements.php:175
@@ -17273,10 +16653,8 @@ msgstr ""
 #: app/models/ca_loans.php:388 app/models/ca_movements.php:361
 #: app/models/ca_object_lots.php:393 app/models/ca_objects.php:603
 #: app/models/ca_occurrences.php:403 app/models/ca_storage_locations.php:393
-#, fuzzy
-#| msgid "Currently sorting by "
 msgid "Current history tracking date"
-msgstr "Tri actuel par"
+msgstr ""
 
 #: app/models/ca_collections.php:428 app/models/ca_entities.php:410
 #: app/models/ca_loans.php:389 app/models/ca_movements.php:362
@@ -17306,10 +16684,8 @@ msgstr "Historique"
 #: app/models/ca_loans.php:390 app/models/ca_movements.php:363
 #: app/models/ca_object_lots.php:395 app/models/ca_occurrences.php:405
 #: app/models/ca_storage_locations.php:395
-#, fuzzy
-#| msgid "Set content"
 msgid "Current contents"
-msgstr "Contenu de l'ensemble"
+msgstr ""
 
 #: app/models/ca_collections_x_collections.php:41
 msgid "collection ⇔ collection relationship"
@@ -17761,10 +17137,8 @@ msgid ""
 msgstr "La correspondance est ignorée si l'expression est vraie."
 
 #: app/models/ca_data_exporter_items.php:351
-#, fuzzy
-#| msgid "Regular expression to validate input with"
 msgid "Regular expression filter"
-msgstr "Expression régulière pour valider la saisie"
+msgstr ""
 
 #: app/models/ca_data_exporter_items.php:352
 msgid ""
@@ -17849,10 +17223,8 @@ msgstr ""
 "indiqué. Valide uniquement lorsque le contexte est défini."
 
 #: app/models/ca_data_exporter_items.php:442
-#, fuzzy
-#| msgid "Item types"
 msgid "Filter types"
-msgstr "Types d'item"
+msgstr ""
 
 #: app/models/ca_data_exporter_items.php:443
 msgid ""
@@ -18274,10 +17646,8 @@ msgstr ""
 "[exporter_item_id:%1 table_num:%2 record_id:%3]"
 
 #: app/models/ca_data_exporters.php:1643
-#, fuzzy
-#| msgid "Exporter with code %1 does not exist"
 msgid "Record with ID %1 does not exist in table %2"
-msgstr "L'export avec le code %1 n'existe pas"
+msgstr ""
 
 #: app/models/ca_data_exporters.php:1686
 msgid ""
@@ -18432,16 +17802,12 @@ msgstr ""
 "correspondance"
 
 #: app/models/ca_data_exporters.php:2282
-#, fuzzy
-#| msgid "Mapping %1 does not exist"
 msgid "Exporter mapping %1 does not exist"
-msgstr "La correspondance %1 n'existe pas"
+msgstr ""
 
 #: app/models/ca_data_exporters.php:2317
-#, fuzzy
-#| msgid "Exporters"
 msgid "Exporter %1"
-msgstr "Exports"
+msgstr ""
 
 #: app/models/ca_data_import_event_log.php:38
 msgid "data import event log entry"
@@ -18740,10 +18106,8 @@ msgstr ""
 "valeurs de la colonne remplacement."
 
 #: app/models/ca_data_importer_items.php:235
-#, fuzzy
-#| msgid "Display empty values?"
 msgid "Filter empty values"
-msgstr "Afficher les valeurs vides ?"
+msgstr ""
 
 #: app/models/ca_data_importer_items.php:236
 msgid "Remove empty values from values before attempting to import."
@@ -18922,10 +18286,8 @@ msgid ""
 msgstr ""
 
 #: app/models/ca_data_importer_items.php:419
-#, fuzzy
-#| msgid "Hierarchical delimiter"
 msgid "Hierarchical delimiter for input data"
-msgstr "Séparateur de hiérarchie"
+msgstr ""
 
 #: app/models/ca_data_importer_items.php:420
 msgid ""
@@ -19362,14 +18724,8 @@ msgid "Map to table"
 msgstr "Correspondance pour la table"
 
 #: app/models/ca_data_importers.php:304
-#, fuzzy
-#| msgid ""
-#| "Sets the CollectiveAccess table for the imported data.  Pending "
-#| "implementation."
 msgid "Sets the CollectiveAccess table for the imported data."
 msgstr ""
-"Définit la table de CollectiveAccess pour les données importées. "
-"Implémentation en cours."
 
 #: app/models/ca_data_importers.php:313
 msgid "none"
@@ -19512,10 +18868,8 @@ msgid ""
 msgstr ""
 
 #: app/models/ca_data_importers.php:413
-#, fuzzy
-#| msgid "Source"
 msgid "Source URL"
-msgstr "Source"
+msgstr ""
 
 #: app/models/ca_data_importers.php:414
 msgid ""
@@ -19558,26 +18912,16 @@ msgstr ""
 "destination n'était pas définie."
 
 #: app/models/ca_data_importers.php:858
-#, fuzzy
-#| msgid "Warning: invalid refinery options for group %1/source %2 = %3"
 msgid ""
 "Warning: invalid json in \"options\" column at line %4  for group %1/source "
 "%2. Json was: %3"
 msgstr ""
-"Warning: options invalides pour le traitement d'affinage, groupe %1/source "
-"%2 = %3"
 
 #: app/models/ca_data_importers.php:859
-#, fuzzy
-#| msgid ""
-#| "[loadImporterFromFile:%1] Invalid options for group %2/source %3. Options "
-#| "were: %4."
 msgid ""
 "[loadImporterFromFile:%1] Invalid json in \"options\" column at line %5  for "
 "group %2/source %3. Json was: %4."
 msgstr ""
-"[loadImporterFromFile:%1] Options invalides pour le groupe %2/source %3. Les "
-"options étaient : %4."
 
 #: app/models/ca_data_importers.php:868
 msgid "Warning: refinery %1 does not exist"
@@ -19589,25 +18933,15 @@ msgstr ""
 "[loadImporterFromFile : %1] Options invalides pour le groupe %2/source %3"
 
 #: app/models/ca_data_importers.php:874
-#, fuzzy
-#| msgid "Warning: invalid refinery options for group %1/source %2 = %3"
 msgid ""
 "invalid json for refinery options at line %4 for group %1/source %2 = %3"
 msgstr ""
-"Warning: options invalides pour le traitement d'affinage, groupe %1/source "
-"%2 = %3"
 
 #: app/models/ca_data_importers.php:875
-#, fuzzy
-#| msgid ""
-#| "[loadImporterFromFile:%1] Invalid refinery options for group %2/source %3 "
-#| "= %4"
 msgid ""
 "[loadImporterFromFile:%1] invalid json for refinery options at line %5 for "
 "group %2/source %3 = %4"
 msgstr ""
-"[loadImporterFromFile:%1] Options invalide de traitement pour le groupe %2/"
-"source %3 = %4"
 
 #: app/models/ca_data_importers.php:974
 msgid "Warning: invalid options for environment %1."
@@ -19812,15 +19146,10 @@ msgstr ""
 "suivant la règle %2"
 
 #: app/models/ca_data_importers.php:1781 app/models/ca_data_importers.php:1819
-#, fuzzy
-#| msgid ""
-#| "[%1] Could not delete existing record matched on identifier by policy %2"
 msgid ""
 "[%1] Could not match existing record on identifer by policy %2 using base "
 "criteria %3"
 msgstr ""
-"[%1] Impossible de supprimer l'enregistrement existant trouvé par son "
-"identifiant suivant la règle %2"
 
 #: app/models/ca_data_importers.php:1793
 msgid "[%1] Merged with existing record matched on label by policy %2"
@@ -19829,14 +19158,10 @@ msgstr ""
 "la règle %2"
 
 #: app/models/ca_data_importers.php:1796 app/models/ca_data_importers.php:1842
-#, fuzzy
-#| msgid "[%1] Could not delete existing record matched on label by policy %2"
 msgid ""
 "[%1] Could not match existing record on label values %3 by policy %2 using "
 "base criteria %4"
 msgstr ""
-"[%1] Impossible de supprimer l'enregistrement existant trouvé par son label "
-"suivant la règle %2"
 
 #: app/models/ca_data_importers.php:1811
 msgid ""
@@ -20118,16 +19443,12 @@ msgid "[%1] Could not add related movement with relationship %2:"
 msgstr "[%1] Impossible d'ajouter le mouvement lié avec la relation %2 :"
 
 #: app/models/ca_data_importers.php:2982
-#, fuzzy
-#| msgid "Error while closing task record: %1"
 msgid "Error while processing related content: %1"
-msgstr "Erreur lors de la fermeture de la tâche : %1"
+msgstr ""
 
 #: app/models/ca_data_importers.php:3007
-#, fuzzy
-#| msgid "Error processing attribute media: %1"
 msgid "Error while processing related-to-related content: %1"
-msgstr "Erreur lors du traitement du média : %1"
+msgstr ""
 
 #: app/models/ca_data_importers.php:3029
 msgid "Finished inserting content tree for %1 at %2 seconds into database"
@@ -20172,17 +19493,13 @@ msgstr ""
 "Revenir à l'état précédent un import réussi dans le mode \"Répétition\""
 
 #: app/models/ca_data_importers.php:3119
-#, fuzzy
-#| msgid "[%1] Could not add related collection with relationship %2:"
 msgid ""
 "Could not create object-collection hierarchy child record relationship: %1"
-msgstr "[%1] Impossible d'ajouter la collection liée avec la relation %2:"
+msgstr ""
 
 #: app/models/ca_data_importers.php:3126
-#, fuzzy
-#| msgid "Could not insert new record for %1: "
 msgid "Could not create hierarchy child record for %1"
-msgstr "Impossible d'insérer le nouvel enregistrement pour %1 :"
+msgstr ""
 
 #: app/models/ca_data_importers.php:3264
 msgid ""
@@ -20440,10 +19757,8 @@ msgstr ""
 "d'URL pour la documentation."
 
 #: app/models/ca_editor_ui_screens.php:693
-#, fuzzy
-#| msgid "Use as single value"
 msgid "Use list to suggest values"
-msgstr "Utiliser en tant que valeur unique"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:694
 msgid ""
@@ -20452,22 +19767,16 @@ msgid ""
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:703
-#, fuzzy
-#| msgid "Lookup URL"
 msgid "Lookup"
-msgstr "URL d'autocomplétion"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:704
-#, fuzzy
-#| msgid "Drop-down list"
 msgid "Drop-down"
-msgstr "Liste déroulante"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:709
-#, fuzzy
-#| msgid "Sort suggested values by?"
 msgid "Suggest value via"
-msgstr "Trier les valeurs suggérées par ?"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:710
 msgid ""
@@ -20610,22 +19919,14 @@ msgstr ""
 "<i>^code_element</i>"
 
 #: app/models/ca_editor_ui_screens.php:891
-#, fuzzy
-#| msgid "Restrict to search expression"
 msgid "Restrict to access point"
-msgstr "Restreindre à l'expression de recherche"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:892
-#, fuzzy
-#| msgid ""
-#| "Restricts display to items matching the given search expression. Leave "
-#| "empty for no restriction."
 msgid ""
 "Restricts display to items matching the given search expression in the "
 "specified access point. Leave empty to search in all fields."
 msgstr ""
-"Limite l'affichage aux enregistrements qui correspondent à l'expression de "
-"recherche indiquée. Laisser vide pour retirer toute restriction."
 
 #: app/models/ca_editor_ui_screens.php:900
 msgid "Do not include sub-types in type restriction"
@@ -20778,44 +20079,32 @@ msgid "Limits sort options on this bundle."
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1087
-#, fuzzy
-#| msgid "Representation label"
 msgid "Do not show representation preferred label?"
-msgstr "Label préféré"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1088
-#, fuzzy
-#| msgid "Representation label"
 msgid "Do not show representation preferred label."
-msgstr "Label préféré"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1096
-#, fuzzy
-#| msgid "Representation identifier"
 msgid "Do not show representation identifier?"
-msgstr "Identifiant de la représentation"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1097
-#, fuzzy
-#| msgid "Representation identifier"
 msgid "Do not show representation identifier."
-msgstr "Identifiant de la représentation"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1105
-#, fuzzy
-#| msgid "Do not show delete button"
 msgid "Do not show status?"
-msgstr "Ne pas afficher le bouton supprimer"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1106
 msgid "Do not show status drop-down."
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1114
-#, fuzzy
-#| msgid "no access"
 msgid "Do not show access?"
-msgstr "aucun accès"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1115
 msgid "Do not show access drop-down."
@@ -21111,32 +20400,24 @@ msgid "Chronological list"
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1418
-#, fuzzy
-#| msgid "Object use history"
 msgid "Current value + history"
-msgstr "Historique d'utilisation de l'objet"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1424
-#, fuzzy
-#| msgid "Display format"
 msgid "Display format for chronology."
-msgstr "Format d'affichage"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1430
-#, fuzzy
-#| msgid "Order Date"
 msgid "Order by dates"
-msgstr "Date de commande"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1431
 msgid "Ignore dates and use entry order"
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1436
-#, fuzzy
-#| msgid "Date due"
 msgid "Date mode"
-msgstr "Date de retour"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1437
 msgid "Order chronology items by date or by entry order."
@@ -21157,205 +20438,120 @@ msgid "Set ascending or descending order for list."
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1463
-#, fuzzy
-#| msgid "Color for current location"
 msgid "Color for current values"
-msgstr "Couleur pour l'emplacement courant"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1464
-#, fuzzy
-#| msgid ""
-#| "Color to use as highlight for the current location in the location "
-#| "history."
 msgid "Color to use as highlight for the current value in the history."
 msgstr ""
-"Couleur à utiliser pour mettre en évidence l'emplacement courant dans "
-"l'historique de localisation"
 
 #: app/models/ca_editor_ui_screens.php:1472
-#, fuzzy
-#| msgid "Color for future locations"
 msgid "Color for future values"
-msgstr "Couleur pour les futurs emplacements"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1473
-#, fuzzy
-#| msgid ""
-#| "Color to use as highlight for future locations in the location history."
 msgid "Color to use as highlight for future values in the history."
 msgstr ""
-"Couleur à utiliser pour mettre en évidence les futurs emplacements dans "
-"l'historique de localisation"
 
 #: app/models/ca_editor_ui_screens.php:1481
-#, fuzzy
-#| msgid "Color for past locations"
 msgid "Color for past values"
-msgstr "Couleur pour les emplacements passés"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1482
-#, fuzzy
-#| msgid ""
-#| "Color to use as highlight for the previous locations in the location "
-#| "history."
 msgid "Color to use as highlight for the previous values in the history."
 msgstr ""
-"Couleur à utiliser pour mettre en évidence les emplacements passés dans "
-"l'historique de localisation"
 
 #: app/models/ca_editor_ui_screens.php:1508
-#, fuzzy
-#| msgid "Hide \"Add to loan\" controls"
 msgid "Hide \"Include child history\" controls"
-msgstr "Masquer les contrôles \"Ajouter à un prêt\""
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1509
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide the \"Include child history\" controls "
 "in this bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1517
 msgid "Hide \"Add to loan\" controls"
 msgstr "Masquer les contrôles \"Ajouter à un prêt\""
 
 #: app/models/ca_editor_ui_screens.php:1518
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide the \"Add to loan\" controls in this "
 "bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1526
-#, fuzzy
-#| msgid "Hide \"Add to loan\" controls"
 msgid "Hide \"Add to movement\" controls"
-msgstr "Masquer les contrôles \"Ajouter à un prêt\""
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1527
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide the \"Add to movement\" controls in "
 "this bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1535
 msgid "Hide \"Update Location\" controls"
 msgstr "Masquer l'outil \"Localiser\""
 
 #: app/models/ca_editor_ui_screens.php:1536
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Update Location\" controls "
-#| "in this bundle placement."
 msgid ""
 "Check this option if you want to hide the \"Update Location\" controls in "
 "this bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Mettre à jour la localisation\" "
-"soit masqué dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1544
 msgid "Hide \"Add to\" occurrence controls"
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1545
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide the \"Add to\" occurrence controls in "
 "this bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1556
 msgid "Show \"Add to\" occurrence controls for"
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1565
-#, fuzzy
-#| msgid "Hide \"Add to loan\" controls"
 msgid "Hide \"Add to collection\" controls"
-msgstr "Masquer les contrôles \"Ajouter à un prêt\""
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1566
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide the \"Add to collection\" controls in "
 "this bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1576
-#, fuzzy
-#| msgid "Hide \"Add to loan\" controls"
 msgid "Show \"Add to\" collection controls for"
-msgstr "Masquer les contrôles \"Ajouter à un prêt\""
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1585
-#, fuzzy
-#| msgid "Hide \"Add to loan\" controls"
 msgid "Hide \"Add to entity\" controls"
-msgstr "Masquer les contrôles \"Ajouter à un prêt\""
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1586
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide the \"Add to entity\" controls in this "
 "bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1596
-#, fuzzy
-#| msgid "Hide \"Add to loan\" controls"
 msgid "Show \"Add to\" entity controls for"
-msgstr "Masquer les contrôles \"Ajouter à un prêt\""
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1605
-#, fuzzy
-#| msgid "Hide \"Add to loan\" controls"
 msgid "Hide \"Add to object\" controls"
-msgstr "Masquer les contrôles \"Ajouter à un prêt\""
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1606
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide the \"Add to object\" controls in this "
 "bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1614
 msgid "Use hierarchy browser for storage locations?"
@@ -21369,38 +20565,24 @@ msgid ""
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1623
-#, fuzzy
-#| msgid "Allow PDF output for individual values?"
 msgid "Hide \"edit\" control for individual history values?"
-msgstr "Autorise les exports PDF pour les valeurs individuelles ?"
+msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1624
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide \"edit\" controls for each history "
 "value in this bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1632
 msgid "Hide \"delete\" control for individual history values?"
 msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:1633
-#, fuzzy
-#| msgid ""
-#| "Check this option if you want to to hide the \"Add to loan\" controls in "
-#| "this bundle placement."
 msgid ""
 "Check this option if you want to hide \"delete\" controls for each history "
 "value in this bundle placement."
 msgstr ""
-"Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué "
-"dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1654
 msgid "Format of contents list"
@@ -21576,16 +20758,12 @@ msgid "user interface screens"
 msgstr "écrans d'interface utilisateur"
 
 #: app/models/ca_editor_uis.php:107 app/models/ca_metadata_alert_rules.php:50
-#, fuzzy
-#| msgid "metadata element names"
 msgid "metadata alert rules"
-msgstr "noms d'élément de métadonnée"
+msgstr ""
 
 #: app/models/ca_editor_uis.php:108
-#, fuzzy
-#| msgid "Metadata dictionary entries"
 msgid "data dictionary entries"
-msgstr "Entrées dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: app/models/ca_editor_uis.php:116 app/models/ca_storage_locations.php:165
 msgid "Color to identify the editor UI with"
@@ -21921,10 +21099,8 @@ msgstr ""
 "pour identifier cet enregistrement"
 
 #: app/models/ca_history_tracking_current_values.php:56
-#, fuzzy
-#| msgid "Postal code"
 msgid "Policy code"
-msgstr "Code postal"
+msgstr ""
 
 #: app/models/ca_history_tracking_current_values.php:56
 msgid "Policy that this current value applies to"
@@ -21968,31 +21144,22 @@ msgid "Reason for ban"
 msgstr ""
 
 #: app/models/ca_ip_bans.php:68
-#, fuzzy
-#| msgid "Note creation date"
 msgid "Ban creation date"
-msgstr "Date de création de la note"
+msgstr ""
 
 #: app/models/ca_ip_bans.php:68
-#, fuzzy
-#| msgid "The date and time the note was created."
 msgid "The date and time the ban was created."
-msgstr "Date et heure de création de la note"
+msgstr ""
 
 #: app/models/ca_ip_bans.php:75
-#, fuzzy
-#| msgid "Expiration date"
 msgid "Ban expiration date"
-msgstr "Date de fin de validité"
+msgstr ""
 
 #: app/models/ca_ip_bans.php:75
-#, fuzzy
-#| msgid ""
-#| "The date and time the tag was examined for validity and applicability."
 msgid ""
 "The date and time the ban expires on. An empty value indicates an indefinite "
 "ban."
-msgstr "La date et l'heure auxquelles le tag a été modéré."
+msgstr ""
 
 #: app/models/ca_ips.php:60
 msgid "IP1"
@@ -22126,10 +21293,8 @@ msgid ""
 msgstr "La date et l'heure auxquelles le commentaire a été modéré."
 
 #: app/models/ca_item_comments.php:622
-#, fuzzy
-#| msgid "Your tags have been deleted"
 msgid "Item has been deleted"
-msgstr "Vos tags ont été supprimés"
+msgstr ""
 
 #: app/models/ca_item_tags.php:49
 msgid ""
@@ -22176,17 +21341,10 @@ msgid "The date and time the tag was examined for validity and applicability."
 msgstr "La date et l'heure auxquelles le tag a été modéré."
 
 #: app/models/ca_items_x_tags.php:126
-#, fuzzy
-#| msgid ""
-#| "The relative priority of the set when displayed in a list with other "
-#| "sets. Lower numbers indicate higher priority."
 msgid ""
 "The relative priority of the tag when displayed in a list with other tags. "
 "Lower numbers indicate higher priority."
 msgstr ""
-"La priorité relative de l'affichage de l'ensemble lorsqu'affiché dans une "
-"liste avec d'autres ensembles. Les plus petits nombres indiquent une "
-"priorité plus haute."
 
 #: app/models/ca_list_item_labels.php:40
 msgid "list item name"
@@ -22799,56 +21957,36 @@ msgid "Name of search form"
 msgstr "Nom du formulaire de recherche"
 
 #: app/models/ca_metadata_alert_rule_type_restrictions.php:46
-#, fuzzy
-#| msgid "metadata type restriction"
 msgid "metadata alert rule type restriction"
-msgstr "restriction par type de métadonnée"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rule_type_restrictions.php:47
-#, fuzzy
-#| msgid "metadata type restrictions"
 msgid "metadata alert rule type restrictions"
-msgstr "restrictions par type de métadonnée"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules.php:49
-#, fuzzy
-#| msgid "metadata element name"
 msgid "metadata alert rule"
-msgstr "nom d'élément de métadonnée"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules.php:57
-#, fuzzy
-#| msgid ""
-#| "Unique numeric identifier used by CollectiveAccess internally to identify "
-#| "this user"
 msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this rule"
 msgstr ""
-"Identifiant numérique unique utilisé par CollectiveAccess de manière interne "
-"pour identifier cet utilisateur"
 
 #: app/models/ca_metadata_alert_rules.php:65 app/models/ca_search_forms.php:65
 msgid "The user who created the form."
 msgstr "L'utilisateur qui a créé le formulaire."
 
 #: app/models/ca_metadata_alert_rules.php:74
-#, fuzzy
-#| msgid "Import target"
 msgid "Alert target"
-msgstr "Cible de l'import"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules.php:74
-#, fuzzy
-#| msgid ""
-#| "Determines what kind of items (objects, entities, places, etc.) are "
-#| "stored by the set."
 msgid ""
 "Determines what kind of item (objects, entities, places, etc.) is covered by "
 "the alert ."
 msgstr ""
-"Détermine le type d'items (objets, personnes, lieux, etc.) qui sont stockés "
-"dans l'ensemble."
 
 #: app/models/ca_metadata_alert_rules.php:83 app/models/ca_set_items.php:72
 #: app/models/ca_sets.php:98 app/models/ca_user_sorts.php:66
@@ -22877,97 +22015,66 @@ msgid "Code"
 msgstr "Code"
 
 #: app/models/ca_metadata_alert_rules.php:96
-#, fuzzy
-#| msgid "Short code (up to 20 characters) for role (must be unique)"
 msgid "Short code for rule (must be unique)"
 msgstr ""
-"Code court pour le rôle utilisateur (jusque 8 caractères, doit être unique)"
 
 #: app/models/ca_metadata_alert_rules.php:104
 #: app/models/ca_metadata_alert_triggers.php:77
-#, fuzzy
-#| msgid "exporter settings"
 msgid "Trigger settings"
-msgstr "paramètre de l'export"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules.php:255
-#, fuzzy
-#| msgid "Recent changes"
 msgid "Recipient users"
-msgstr "Dernières modifications"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules.php:256
-#, fuzzy
-#| msgid "Create user groups"
 msgid "Recipient user groups"
-msgstr "Créer des groupes d'utilisateurs"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules.php:259
 msgid "Trigger"
 msgstr ""
 
 #: app/models/ca_metadata_alert_rules_x_user_groups.php:40
-#, fuzzy
-#| msgid "editor UIs ⇔ group association"
 msgid "metadata alert rules ⇔ group association"
-msgstr "association interface d'éditeur ⇔ groupe"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules_x_user_groups.php:41
-#, fuzzy
-#| msgid "editor UIs ⇔ group associations"
 msgid "metadata alert rules ⇔ group associations"
-msgstr "associations interface d'éditeur ⇔ groupe"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules_x_user_groups.php:71
 #: app/models/ca_metadata_alert_rules_x_users.php:71
-#, fuzzy
-#| msgid "Delete annotation"
 msgid "receives notifications"
-msgstr "Supprimer l'annotation"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules_x_user_groups.php:72
 #: app/models/ca_metadata_alert_rules_x_users.php:72
-#, fuzzy
-#| msgid "Media representations"
 msgid "can edit and receives notifications"
-msgstr "Représentations média"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules_x_users.php:40
-#, fuzzy
-#| msgid "editor UIs ⇔ user association"
 msgid "metadata alert rules ⇔ user association"
-msgstr "association interface d'éditeur ⇔ utilisateur"
+msgstr ""
 
 #: app/models/ca_metadata_alert_rules_x_users.php:41
-#, fuzzy
-#| msgid "editor UIs ⇔ user associations"
 msgid "metadata alert rules ⇔ user associations"
-msgstr "associations interface d'éditeur ⇔ utilisateur"
+msgstr ""
 
 #: app/models/ca_metadata_alert_triggers.php:40
 #: app/models/ca_metadata_alert_triggers.php:41
-#, fuzzy
-#| msgid "metadata element names"
 msgid "metadata alert triggers"
-msgstr "noms d'élément de métadonnée"
+msgstr ""
 
 #: app/models/ca_metadata_alert_triggers.php:48
-#, fuzzy
-#| msgid ""
-#| "Unique numeric identifier used by CollectiveAccess internally to identify "
-#| "this tag"
 msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this trigger"
 msgstr ""
-"Identifiant numérique unique utilisé par CollectiveAccess de manière interne "
-"pour identifier ce tag"
 
 #: app/models/ca_metadata_alert_triggers.php:70
-#, fuzzy
-#| msgid "Element list"
 msgid "Element filters"
-msgstr "Liste d'élément"
+msgstr ""
 
 #: app/models/ca_metadata_alert_triggers.php:70
 msgid "Serialized filter data"
@@ -22980,27 +22087,18 @@ msgid ""
 msgstr ""
 
 #: app/models/ca_metadata_dictionary_entries.php:51
-#, fuzzy
-#| msgid "Bundle is mandatory"
 msgid "Is mandatory?"
-msgstr "Le bloc est obligatoire"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entries.php:52
-#, fuzzy
-#| msgid ""
-#| "Bundle is mandatory and a valid value must be set before it can be saved."
 msgid ""
 "If checked data entry bundle is mandatory and a valid value must be set "
 "before it can be saved."
 msgstr ""
-"Le bloc est obligatoire et une valeur valide doit être définie avant de "
-"pouvoir enregistrer."
 
 #: app/models/ca_metadata_dictionary_entries.php:59
-#, fuzzy
-#| msgid "Description"
 msgid "Definition"
-msgstr "Description"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entries.php:61
 msgid "Extended text describing standards for entry in this data entry bundle."
@@ -23023,59 +22121,41 @@ msgstr ""
 "suivants. Laisser vide pour ne pas appliquer de restriction."
 
 #: app/models/ca_metadata_dictionary_entries.php:88
-#, fuzzy
-#| msgid "Metadata dictionary entry"
 msgid "Data dictionary entry"
-msgstr "Entrée dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entries.php:89
-#, fuzzy
-#| msgid "Metadata dictionary entries"
 msgid "Data dictionary entries"
-msgstr "Entrées dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entries.php:103
 #: themes/default/views/administrate/setup/data_dictionary_list_html.php:64
-#, fuzzy
-#| msgid "Entity type"
 msgid "Entry type"
-msgstr "Type de personne"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entries.php:103
-#, fuzzy
-#| msgid "Type of item to query for."
 msgid "Type of item this entry displays for."
-msgstr "Type d'élément à chercher."
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entries.php:277
-#, fuzzy
-#| msgid "Metadata dictionary entries"
 msgid "Data dictionary entry settings"
-msgstr "Entrées dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entry_labels.php:40
-#, fuzzy
-#| msgid "Metadata dictionary entry"
 msgid "data dictionary entry name"
-msgstr "Entrée dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entry_labels.php:41
-#, fuzzy
-#| msgid "Metadata dictionary entries"
 msgid "data dictionary entry names"
-msgstr "Entrées dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entry_labels.php:70
-#, fuzzy
-#| msgid "Metadata dictionary entry"
 msgid "Name of dictionary entry"
-msgstr "Entrée dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_entry_labels.php:86
-#, fuzzy
-#| msgid "Description of editor"
 msgid "Description of entry"
-msgstr "Description de l'éditeur"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_rule_violations.php:38
 msgid "Metadata dictionary rule violation"
@@ -23100,10 +22180,8 @@ msgstr ""
 "problèmes éventuels."
 
 #: app/models/ca_metadata_dictionary_rules.php:59
-#, fuzzy
-#| msgid "Show lots"
 msgid "Show as prompt"
-msgstr "Afficher les lots"
+msgstr ""
 
 #: app/models/ca_metadata_dictionary_rules.php:60
 msgid "Display violations of this rule as on-screen prompts."
@@ -23523,16 +22601,12 @@ msgid "Indicates whether this notification was marked as read or not."
 msgstr ""
 
 #: app/models/ca_notification_subjects.php:82
-#, fuzzy
-#| msgid "Date end"
 msgid "Date read"
-msgstr "Date de fin"
+msgstr ""
 
 #: app/models/ca_notification_subjects.php:82
-#, fuzzy
-#| msgid "The date and time the note was created."
 msgid "The date and time the notification was read."
-msgstr "Date et heure de création de la note"
+msgstr ""
 
 #: app/models/ca_notification_subjects.php:89
 msgid "Deliver by email?"
@@ -23543,10 +22617,8 @@ msgid "Set this if the notification should be delivered by email."
 msgstr ""
 
 #: app/models/ca_notification_subjects.php:97
-#, fuzzy
-#| msgid "Date and time item was last modified"
 msgid "Date and time notification was sent by email"
-msgstr "Date et heure de dernière modification de l'enregistrement"
+msgstr ""
 
 #: app/models/ca_notification_subjects.php:104
 msgid "Deliver to notification inbox?"
@@ -23617,10 +22689,8 @@ msgid "MD5 hash"
 msgstr "hash MD5"
 
 #: app/models/ca_notifications.php:95
-#, fuzzy
-#| msgid "MD5-generated \"fingerprint\" for this media."
 msgid "MD5-generated identifier for this notification."
-msgstr "\"Empreinte digitale\" MD5 pour ce média."
+msgstr ""
 
 #: app/models/ca_object_checkouts.php:50
 msgid "object checkout"
@@ -23725,10 +22795,8 @@ msgstr ""
 
 #: app/models/ca_object_checkouts.php:391
 #: app/models/ca_object_checkouts.php:536
-#, fuzzy
-#| msgid "Form configuration file '%1' does not exist"
 msgid "Configuration for type %1 does not exist"
-msgstr "Le fichier de configuration des formulaires '%1' n'existe pas"
+msgstr ""
 
 #: app/models/ca_object_checkouts.php:461
 #: app/models/ca_object_checkouts.php:522
@@ -24031,16 +23099,12 @@ msgid "The MIME type of the media at the time of upload."
 msgstr "Le type MIME du média lors de l'upload."
 
 #: app/models/ca_object_representations.php:166
-#, fuzzy
-#| msgid "Transaction"
 msgid "Transcribe?"
-msgstr "Transaction"
+msgstr ""
 
 #: app/models/ca_object_representations.php:166
-#, fuzzy
-#| msgid "Indicates if representation is accessible to the public or not. "
 msgid "Indicates that the representation is a candidate for transcription."
-msgstr "Indique si la représentation est visible par le public ou non."
+msgstr ""
 
 #: app/models/ca_object_representations.php:179
 msgid "Indicates if representation is accessible to the public or not. "
@@ -24076,10 +23140,8 @@ msgstr ""
 
 #: app/models/ca_object_representations.php:442
 #: themes/default/views/bundles/ca_object_representations.php:184
-#, fuzzy
-#| msgid "Transaction"
 msgid "Transcriptions"
-msgstr "Transaction"
+msgstr ""
 
 #: app/models/ca_object_representations.php:444
 msgid "Media and preview images"
@@ -24106,52 +23168,36 @@ msgid "Caption file is not part of this representation"
 msgstr "Le fichier de légende ne fait pas partie de cette représentation"
 
 #: app/models/ca_object_representations.php:2123
-#, fuzzy
-#| msgid "Tag relation id is invalid"
 msgid "Transcription id is invalid"
-msgstr "L'ID de la relation au tag est invalide"
+msgstr ""
 
 #: app/models/ca_object_representations.php:2129
-#, fuzzy
-#| msgid "Caption file is not part of this representation"
 msgid "Transcription is not part of representation"
-msgstr "Le fichier de légende ne fait pas partie de cette représentation"
+msgstr ""
 
 #: app/models/ca_object_representations.php:2135
-#, fuzzy
-#| msgid "Tag was not created by specified user"
 msgid "Transcription was not created by specified user"
-msgstr "Le tag n'a pas été crée par l'utilisateur spécifié"
+msgstr ""
 
 #: app/models/ca_object_representations.php:2264
-#, fuzzy
-#| msgid "user note"
 msgid "user at %1"
-msgstr "note utilisateur"
+msgstr ""
 
 #: app/models/ca_object_representations.php:2266
-#, fuzzy
-#| msgid "Created %1 "
 msgid "Created %1 by %2"
-msgstr "%1 créés"
+msgstr ""
 
 #: app/models/ca_object_representations.php:2268
-#, fuzzy
-#| msgid "Completed on"
 msgid "Completed on %1 (%2)"
-msgstr "Fin à"
+msgstr ""
 
 #: app/models/ca_object_representations.php:2268
-#, fuzzy
-#| msgid "Completed on"
 msgid "Completed on %1"
-msgstr "Fin à"
+msgstr ""
 
 #: app/models/ca_object_representations.php:2271
-#, fuzzy
-#| msgid "Created on %1"
 msgid "validated on %1"
-msgstr "Créé le %1"
+msgstr ""
 
 #: app/models/ca_object_representations_x_collections.php:32
 msgid "object representation ⇔ collection relationship"
@@ -24492,10 +23538,8 @@ msgid "Components"
 msgstr "Composants"
 
 #: app/models/ca_objects.php:599
-#, fuzzy
-#| msgid "Current location"
 msgid "Current location date"
-msgstr "Emplacement courant"
+msgstr ""
 
 #: app/models/ca_objects.php:600
 msgid "Object use history"
@@ -24526,10 +23570,8 @@ msgid "Circulation Status"
 msgstr ""
 
 #: app/models/ca_objects.php:617
-#, fuzzy
-#| msgid "submitted"
 msgid "Submitted by"
-msgstr "envoyé"
+msgstr ""
 
 #: app/models/ca_objects.php:1118
 msgid "Out; %1 reservation"
@@ -25134,54 +24176,38 @@ msgid "representation annotation ⇔ vocabulary term relationships"
 msgstr "relations annotation de la représentation ⇔ terme du vocabulaire"
 
 #: app/models/ca_representation_transcriptions.php:41
-#, fuzzy
-#| msgid "object representation caption"
 msgid "Object representation transcription"
-msgstr "légende de la représentation d'objet"
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:42
-#, fuzzy
-#| msgid "object representation captions"
 msgid "Object representation transcriptions"
-msgstr "légendes de représentations d'objet"
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:62
-#, fuzzy
-#| msgid "Transaction"
 msgid "Transcription"
-msgstr "Transaction"
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:62
-#, fuzzy
-#| msgid "Text of comment."
 msgid "Text of transcription."
-msgstr "Texte du commentaire."
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:70
-#, fuzzy
-#| msgid "Indicates the current state of the representation."
 msgid ""
 "Indicates that the transcription is the preferred transcription for this "
 "representation."
-msgstr "Indique l'état courant de la représentation."
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:77
-#, fuzzy
-#| msgid "Comment creation date"
 msgid "Transcription creation date"
-msgstr "Date de création du commentaire"
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:77
-#, fuzzy
-#| msgid "The date and time the note was created."
 msgid "The date and time the transcription was started."
-msgstr "Date et heure de création de la note"
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:84
-#, fuzzy
-#| msgid "Description of importer"
 msgid "Transcription completion date"
-msgstr "Description de l'import"
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:84
 msgid ""
@@ -25194,19 +24220,14 @@ msgid "Transcription validation date"
 msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:91
-#, fuzzy
-#| msgid ""
-#| "The date and time the tag was examined for validity and applicability."
 msgid ""
 "The date and time the transcription was validated on. An empty value "
 "indicates an unvalidated transcription."
-msgstr "La date et l'heure auxquelles le tag a été modéré."
+msgstr ""
 
 #: app/models/ca_representation_transcriptions.php:107
-#, fuzzy
-#| msgid "Customer initiating transaction"
 msgid "User submitting this transcription."
-msgstr "Client à l'initiative de la transaction"
+msgstr ""
 
 #: app/models/ca_search_form_placements.php:54
 msgid "search form placement"
@@ -25315,16 +24336,12 @@ msgid "Width, in characters, of search form elements."
 msgstr "Largeur, en caractères, des éléments du formulaire de recherche."
 
 #: app/models/ca_search_forms.php:887
-#, fuzzy
-#| msgid "Creating reel for %1"
 msgid "Current value for %1"
-msgstr "Création de la bobine pour %1"
+msgstr ""
 
 #: app/models/ca_search_forms.php:1000
-#, fuzzy
-#| msgid "You are about to run <em>%1</em> in <em>%2</em>."
 msgid "Current value for <em>%1</em> from <em>%2</em>"
-msgstr "Vous êtes sur le point de lancer <em>%1</em> dans <em>%2</em>."
+msgstr ""
 
 #: app/models/ca_search_forms.php:1039
 msgid "Access point"
@@ -25363,10 +24380,8 @@ msgid "search indexing queue entries"
 msgstr ""
 
 #: app/models/ca_search_indexing_queue.php:126
-#, fuzzy
-#| msgid "Started on"
 msgid "Stared on"
-msgstr "Début à"
+msgstr ""
 
 #: app/models/ca_set_item_labels.php:40
 msgid "set item caption"
@@ -26460,10 +25475,8 @@ msgid "Invalid email address"
 msgstr "Adresse email invalide"
 
 #: app/models/ca_users.php:380 app/models/ca_users.php:543
-#, fuzzy
-#| msgid "Password"
 msgid "Password must %1"
-msgstr "Mot de passe"
+msgstr ""
 
 #: app/models/ca_users.php:401
 msgid "Current authentication adapter does not support creating new users."
@@ -26482,46 +25495,32 @@ msgid "conform to at least %1 of the following: %2"
 msgstr ""
 
 #: app/models/ca_users.php:497
-#, fuzzy
-#| msgid "%1 must be at least 1 character long"
 msgid "be at least %1 character long"
-msgstr "%1 doit avoir au moins 1 caractère"
+msgstr ""
 
 #: app/models/ca_users.php:497
-#, fuzzy
-#| msgid "%1 must be at least %2 characters long"
 msgid "be at least %1 characters long"
-msgstr "%1 doit avoir au moins %2 caractères"
+msgstr ""
 
 #: app/models/ca_users.php:500
-#, fuzzy
-#| msgid "%1 must not be longer than %2 character"
 msgid "be not longer than %1 character"
-msgstr "%1 ne doit pas faire plus de %2 caractère"
+msgstr ""
 
 #: app/models/ca_users.php:500
-#, fuzzy
-#| msgid "%1 must not be longer than %2 characters"
 msgid "be not longer than %1 characters"
-msgstr "%1 ne doit pas faire plus de %2 caractères"
+msgstr ""
 
 #: app/models/ca_users.php:503
-#, fuzzy
-#| msgid "%1 must be at least %2 characters"
 msgid "have at least %1 upper-case character"
-msgstr "%1 doit être d'au moins %2 caractères"
+msgstr ""
 
 #: app/models/ca_users.php:506
-#, fuzzy
-#| msgid "%1 must be at least %2 characters"
 msgid "have at least %1 lower-case character"
-msgstr "%1 doit être d'au moins %2 caractères"
+msgstr ""
 
 #: app/models/ca_users.php:506
-#, fuzzy
-#| msgid "%1 must be at least %2 characters"
 msgid "have at least %1 lower-case characters"
-msgstr "%1 doit être d'au moins %2 caractères"
+msgstr ""
 
 #: app/models/ca_users.php:509
 msgid "have at least %1 digit"
@@ -26704,78 +25703,56 @@ msgstr "L'utilisateur qui surveille l'enregistrement en cours."
 
 #: app/plugins/ArtefactsCanada/ArtefactsCanadaPlugin.php:48
 #: app/plugins/ArtefactsCanada/themes/default/views/export_settings_html.php:34
-#, fuzzy
-#| msgid "Exported data to %1"
 msgid "Export data to Artefacts Canada"
-msgstr "Données exportées vers %1"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/ArtefactsCanadaPlugin.php:83
 msgid "Artefacts Canada"
 msgstr ""
 
 #: app/plugins/ArtefactsCanada/ArtefactsCanadaPlugin.php:110
-#, fuzzy
-#| msgid "Can use WorldCat import functions"
 msgid "Can use Artefacts Canada export functions"
-msgstr "Peut utiliser les fonctions d'import WorldCat"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/ArtefactsCanadaPlugin.php:111
-#, fuzzy
-#| msgid "User can import WorldCat data."
 msgid "User can export data to Artefacts Canada."
-msgstr "L'utilisateur peut importer des données de WorldCat"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:56
-#, fuzzy
-#| msgid "OAI provider is not enabled."
 msgid "Artefacts Canada export is not enabled"
-msgstr "Le fournisseur OAI n'est pas activé."
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:59
-#, fuzzy
-#| msgid "BaseModel '%1' does not exist"
 msgid "Artefacts Canada export display '%1' does not exist"
-msgstr "BaseModel '%1' n'existe pas"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:99
-#, fuzzy
-#| msgid "%1 item"
 msgid "(%1 item)"
-msgstr "%1 élément"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:99
-#, fuzzy
-#| msgid "%1 items"
 msgid "(%1 items)"
-msgstr "%1 éléments"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:115
-#, fuzzy
-#| msgid "Item does not exist"
 msgid "Set does not exist"
-msgstr "L'élément n'existe pas"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:141
-#, fuzzy
-#| msgid "Invalid set"
 msgid "Invalid set %1"
-msgstr "Ensemble invalide"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:144
 msgid "Only object sets may be exported"
 msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:148
-#, fuzzy
-#| msgid "%1 must not be empty"
 msgid "Set must not be empty"
-msgstr "%1 ne doit pas être vide"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:153
-#, fuzzy
-#| msgid "1 display is available"
 msgid "Configured display '%1' is not available"
-msgstr "1 affichage est disponible"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:187
 msgid "Processing"
@@ -26786,26 +25763,20 @@ msgid "Download Artefacts Canada data as ZIP file (%1)"
 msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:244
-#, fuzzy
-#| msgid "Completed on"
 msgid "Completed export: %1"
-msgstr "Fin à"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/controllers/ExportController.php:259
-#, fuzzy
-#| msgid "Didn't load because Gmagick is not available"
 msgid "Download file is no longer available"
-msgstr "N'a pu être chargé parce que Gmagick n'est pas disponible"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/themes/default/views/export_run_html.php:32
 msgid "Exporting data to Artefacts Canada"
 msgstr ""
 
 #: app/plugins/ArtefactsCanada/themes/default/views/export_run_html.php:51
-#, fuzzy
-#| msgid "Run another import"
 msgid "Run another export"
-msgstr "Lancer un autre import"
+msgstr ""
 
 #: app/plugins/ArtefactsCanada/themes/default/views/export_run_html.php:71
 #: app/plugins/ResourceSpace/themes/default/views/import_run_html.php:75
@@ -26830,10 +25801,8 @@ msgid ""
 msgstr ""
 
 #: app/plugins/ArtefactsCanada/themes/default/views/export_settings_html.php:45
-#, fuzzy
-#| msgid "Export this %1"
 msgid "Export set %1"
-msgstr "Exporter ce %1"
+msgstr ""
 
 #: app/plugins/ResourceSpace/ResourceSpacePlugin.php:48
 msgid "Imports records from ResourceSpace"
@@ -27034,10 +26003,8 @@ msgid "Duplicate from..."
 msgstr "Dupliquer depuis..."
 
 #: app/plugins/helpMenu/controllers/ShowController.php:41
-#, fuzzy
-#| msgid "Cannot load object %1"
 msgid "Cannot load page"
-msgstr "Impossible de charger l'objet %1"
+msgstr ""
 
 #: app/plugins/helpMenu/controllers/ShowController.php:44
 msgid "Is not help menu page"
@@ -27060,10 +26027,8 @@ msgid "Export Configuration for records through iDigBio RSS feed"
 msgstr ""
 
 #: app/plugins/iDigBioExport/iDigBioExportPlugin.php:157
-#, fuzzy
-#| msgid "Configure import/export mappings"
 msgid "Can configure export to iDigBio"
-msgstr "Configurer les correspondances pour l''import/export"
+msgstr ""
 
 #: app/plugins/iDigBioExport/iDigBioExportPlugin.php:158
 msgid ""
@@ -27160,20 +26125,12 @@ msgid "Failed to get reserved available list"
 msgstr "Impossible d'obtenir la liste des objets réservés et disponible"
 
 #: app/plugins/notifications/notificationsPlugin.php:38
-#, fuzzy
-#| msgid ""
-#| "Handles periodic cleanup and email alert tasks for client services "
-#| "features."
 msgid "Handles periodic email alert tasks for systen notification features."
 msgstr ""
-"Gère un nettoyage régulier et des tâches d'alerte par email pour les "
-"fonctionnalités d'e-commerce."
 
 #: app/plugins/notifications/notificationsPlugin.php:86
-#, fuzzy
-#| msgid "Could not create root for relationship %1: %2"
 msgid "Could not set notification subject %1 as read: %2"
-msgstr "Impossible de créer le noeud racine pour la relation %1 : %2"
+msgstr ""
 
 #: app/plugins/prepopulate/lib/applyPrepopulateRulesTool.php:145
 msgid "xxx."
@@ -27190,16 +26147,12 @@ msgid ""
 msgstr ""
 
 #: app/plugins/prepopulate/prepopulatePlugin.php:82
-#, fuzzy
-#| msgid "Help to come."
 msgid "Help to come"
-msgstr "Texte d'aide à venir."
+msgstr ""
 
 #: app/plugins/prepopulate/prepopulatePlugin.php:83
-#, fuzzy
-#| msgid "Help to come."
 msgid "Short help to come"
-msgstr "Texte d'aide à venir."
+msgstr ""
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:77
 msgid ""
@@ -27625,28 +26578,18 @@ msgstr ""
 "des valeurs de la liste collection_types de CollectiveAccess."
 
 #: app/refineries/EADCollectionHierarchyBuilder/EADCollectionHierarchyBuilderRefinery.php:43
-#, fuzzy
-#| msgid "Collection hierarchy builder"
 msgid "EAD Collection hierarchy builder"
-msgstr "Mode de construction de la hiérarchie de la collection"
+msgstr ""
 
 #: app/refineries/EADCollectionHierarchyBuilder/EADCollectionHierarchyBuilderRefinery.php:44
-#, fuzzy
-#| msgid "Builds a collection hierarchy."
 msgid "Builds a collection hierarchy from an EAD &lt;dsc&gt; block."
-msgstr "Construit une hiérarchie pour les collections."
+msgstr ""
 
 #: app/refineries/EADCollectionHierarchyBuilder/EADCollectionHierarchyBuilderRefinery.php:75
-#, fuzzy
-#| msgid ""
-#| "collectionHierarchyBuilder refinery may only be used in imports to "
-#| "ca_collections"
 msgid ""
 "EADCollectionHierarchyBuilder refinery may only be used in imports to "
 "ca_collections"
 msgstr ""
-"Le traitement collectionHierarchyBuilder ne peut être utilisé que pour les "
-"imports dans ca_collections"
 
 #: app/refineries/EADCollectionHierarchyBuilder/EADCollectionHierarchyBuilderRefinery.php:82
 msgid ""
@@ -27655,10 +26598,8 @@ msgid ""
 msgstr ""
 
 #: app/refineries/EADCollectionHierarchyBuilder/EADCollectionHierarchyBuilderRefinery.php:293
-#, fuzzy
-#| msgid "Archive mapping?"
 msgid "Level mappings"
-msgstr "Conserver les correspondances ?"
+msgstr ""
 
 #: app/refineries/EADCollectionHierarchyBuilder/EADCollectionHierarchyBuilderRefinery.php:294
 msgid "Mappings for each level in the hierarchy"
@@ -27718,52 +26659,30 @@ msgid "Collection parents to create"
 msgstr "Collections parentes à créer"
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:47
-#, fuzzy
-#| msgid "Collection hierarchy builder"
 msgid "Indexed collection hierarchy builder"
-msgstr "Mode de construction de la hiérarchie de la collection"
+msgstr ""
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:48
-#, fuzzy
-#| msgid ""
-#| "Imports spreadsheets with hierarchies expressed indented values spread "
-#| "across several columns as hierarchical lists."
 msgid ""
 "Imports spreadsheets with hierarchies expressed indented values spread "
 "across several columns as hierarchical collections."
 msgstr ""
-"Importe des feuilles de calcul avec des hiérarchies sous la forme de valeurs "
-"indentées à travers différents colonnes comme liste hiérarchique."
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:85
-#, fuzzy
-#| msgid ""
-#| "collectionHierarchyBuilder refinery may only be used in imports to "
-#| "ca_collections"
 msgid ""
 "collectionIndentedHierarchyBuilder refinery may only be used in imports to "
 "ca_collections"
 msgstr ""
-"Le traitement collectionHierarchyBuilder ne peut être utilisé que pour les "
-"imports dans ca_collections"
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:97
-#, fuzzy
-#| msgid ""
-#| "listItemIndentedHierarchyBuilder requires levels option be set to a list "
-#| "of data source placeholders"
 msgid ""
 "collectionIndentedHierarchyBuilder requires levels option be set to a list "
 "of data source placeholders"
 msgstr ""
-"Le traitement listItemIndentedHierarchyBuilder nécessite que l'option de "
-"niveau soit défini sur une liste d'emplacement dans la source de données"
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:164
-#, fuzzy
-#| msgid "Could not create root for relationship %1: %2"
 msgid "Could not create relationship between collection and %1: %2"
-msgstr "Impossible de créer le noeud racine pour la relation %1 : %2"
+msgstr ""
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:212
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:199
@@ -27786,16 +26705,12 @@ msgid "List of types for hierarchy levels"
 msgstr "Liste de types pour les niveaux hiérarchiques"
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:230
-#, fuzzy
-#| msgid "Levels"
 msgid "Level idnos"
-msgstr "Niveaux"
+msgstr ""
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:231
-#, fuzzy
-#| msgid "List of sources for hierarchy levels"
 msgid "List of sources for hierarchy level idnos"
-msgstr "Liste de sources pour les niveaux hiérarchiques"
+msgstr ""
 
 #: app/refineries/collectionIndentedHierarchyBuilder/collectionIndentedHierarchyBuilderRefinery.php:240
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:227
@@ -27974,10 +26889,8 @@ msgstr ""
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:134
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:157
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:156
-#, fuzzy
-#| msgid "relationship type"
 msgid "Extract relationship type"
-msgstr "type de relation"
+msgstr ""
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:138
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:147
@@ -28198,10 +27111,8 @@ msgstr ""
 "à partir de la plage de dates indiquée"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:105
-#, fuzzy
-#| msgid "Representation"
 msgid "present"
-msgstr "Représentation"
+msgstr ""
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:153
 msgid ""
@@ -28288,20 +27199,12 @@ msgstr ""
 "plages de dates sur deux colonnes)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:278
-#, fuzzy
-#| msgid "Skip start date if expression"
 msgid "Skip start date if empty"
-msgstr "Ignore la date de début si l'expression est vraie"
+msgstr ""
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:279
-#, fuzzy
-#| msgid ""
-#| "Omits start date from range if specified expression is true. (For Two-"
-#| "column range)."
 msgid "Omits start date from range if empty. (For Two-column range)."
 msgstr ""
-"Ignore la date de début si l'expression spécifiée est vérifiée. (Pour les "
-"plages de dates sur deux colonnes)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:287
 msgid "Skip start date replacement value"
@@ -28344,20 +27247,12 @@ msgstr ""
 "plages de dates sur deux colonnes)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:323
-#, fuzzy
-#| msgid "Skip end date if expression"
 msgid "Skip end date if empty"
-msgstr "Ignore la date de fin si l'expression est vraie"
+msgstr ""
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:324
-#, fuzzy
-#| msgid ""
-#| "Omits end date from range if specified expression is true. (For Two-"
-#| "column range)."
 msgid "Omits end date from range if it is empty. (For Two-column range)."
 msgstr ""
-"Ignore la date de fin si l'expression spécifiée est vérifiée. (Pour les "
-"plages de dates sur deux colonnes)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:332
 msgid "Skip end date replacement value"
@@ -28822,23 +27717,14 @@ msgstr ""
 "Définit la valeur du délimiteur pour séparer les valeurs hiérarchiques."
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:149
-#, fuzzy
-#| msgid "Hierarchical storage location types"
 msgid "Hierarchical list item types"
-msgstr "Type d'emplacement de stockage hiérarchique"
+msgstr ""
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:150
-#, fuzzy
-#| msgid ""
-#| "A semicolon-delimited list of storage location types to apply to "
-#| "hierarchical storage locations extracted using the hierarchical delimiter."
 msgid ""
 "A semicolon-delimited list of list item types to apply to hierarchical list "
 "items extracted using the hierarchical delimiter."
 msgstr ""
-"Une liste séparée par des points-virgule (\";\") de types d'emplacements de "
-"stockage à appliquer aux emplacements extraits à l'aide du séparateur pour "
-"la hiérarchie."
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:176
 msgid "List item type"
@@ -29301,16 +28187,12 @@ msgid "Media prefix"
 msgstr "Préfixe pour les médias"
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:180
-#, fuzzy
-#| msgid "Match on"
 msgid "Match mode"
-msgstr "Correspondance sur"
+msgstr ""
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:189
-#, fuzzy
-#| msgid "Search type"
 msgid "Match type"
-msgstr "Type de recherche"
+msgstr ""
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:35
 msgid "Object splitter"
@@ -30217,16 +29099,12 @@ msgid "Message text to display."
 msgstr "Message texte à afficher."
 
 #: app/widgets/notifications/notificationsWidget.php:40
-#, fuzzy
-#| msgid "Modification date/time"
 msgid "Notification inbox"
-msgstr "Date/heure de modification"
+msgstr ""
 
 #: app/widgets/notifications/notificationsWidget.php:41
-#, fuzzy
-#| msgid "Display currency conversion?"
 msgid "Displays current notifications"
-msgstr "Afficher les conversions de devises ?"
+msgstr ""
 
 #: app/widgets/notifications/notificationsWidget.php:81
 msgid "Notifications widget"
@@ -30249,10 +29127,8 @@ msgid "You have no new notifications"
 msgstr ""
 
 #: app/widgets/notifications/views/main_html.php:55
-#, fuzzy
-#| msgid "Could not open %1"
 msgid "Email sent on %1"
-msgstr "Impossible d'ouvrir %1"
+msgstr ""
 
 #: app/widgets/randomObject/randomObjectWidget.php:39
 msgid "Random Object"
@@ -31410,28 +30286,20 @@ msgid "Added bundle placement %1 with code %2 for form with code %3"
 msgstr ""
 
 #: install/inc/Installer.php:2310
-#, fuzzy
-#| msgid "Processing metadata elements"
 msgid "Processing metadata alert with code %1"
-msgstr "Traitements des éléments de métadonnée"
+msgstr ""
 
 #: install/inc/Installer.php:2314
-#, fuzzy
-#| msgid "Exporter with code %1 does not exist"
 msgid "Metadata alert with code %1 is new"
-msgstr "L'export avec le code %1 n'existe pas"
+msgstr ""
 
 #: install/inc/Installer.php:2316
-#, fuzzy
-#| msgid "Exporter with code %1 does not exist"
 msgid "Metadata alert with code %1 already exists"
-msgstr "L'export avec le code %1 n'existe pas"
+msgstr ""
 
 #: install/inc/Installer.php:2321
-#, fuzzy
-#| msgid "Deleted metadata element"
 msgid "Deleting metadata alert with code %1"
-msgstr "Métadonnée supprimée"
+msgstr ""
 
 #: install/inc/Installer.php:2341
 msgid "Successfully updated/inserted metadata alert with code %1"
@@ -31457,11 +30325,9 @@ msgid "Successfully nuked all triggers for metadata alert with code %1"
 msgstr ""
 
 #: install/inc/Installer.php:2468
-#, fuzzy
-#| msgid "[%1] Skipped group %2 because target %3 is invalid"
 msgid ""
 "Skipped trigger %1 for metadata alert %2 because element code %3 is invalid"
-msgstr "[%1] Groupe %2 ignoré parce que la cible %3 est invalide"
+msgstr ""
 
 #: install/inc/Installer.php:2506
 msgid ""
@@ -31470,10 +30336,8 @@ msgid ""
 msgstr ""
 
 #: install/inc/Installer.php:2517
-#, fuzzy
-#| msgid "Added metadata element"
 msgid "Added trigger %1 for metadata alert %3"
-msgstr "Métadonnée ajoutée"
+msgstr ""
 
 #: install/inc/page1.php:40
 msgid "Version %1 installer (XML)"
@@ -31879,10 +30743,8 @@ msgid "No roles have been configured"
 msgstr "Aucun rôle n'a été configuré"
 
 #: themes/default/views/administrate/access/user_edit_html.php:54
-#, fuzzy
-#| msgid "Confirm password"
 msgid "Change password"
-msgstr "Confirmer le mot de passe"
+msgstr ""
 
 #: themes/default/views/administrate/access/user_edit_html.php:55
 msgid "Confirm password"
@@ -32570,16 +31432,12 @@ msgid "Last change log ID"
 msgstr ""
 
 #: themes/default/views/administrate/setup/config_check_html.php:76
-#, fuzzy
-#| msgid "Version"
 msgid "PHP version"
-msgstr "Version"
+msgstr ""
 
 #: themes/default/views/administrate/setup/config_check_html.php:80
-#, fuzzy
-#| msgid "Operating mode"
 msgid "Operating system"
-msgstr "Mode de traitement"
+msgstr ""
 
 #: themes/default/views/administrate/setup/config_check_html.php:87
 msgid "Search Engine"
@@ -32650,23 +31508,17 @@ msgstr "Plugins de l'application"
 
 #: themes/default/views/administrate/setup/data_dictionary_entries/ajax_rule_trigger_filter_form_html.php:38
 #: themes/default/views/manage/metadata_alert_rules/ajax_rule_trigger_filter_form_html.php:38
-#, fuzzy
-#| msgid "metadata elements"
 msgid "Limit to elements with"
-msgstr "éléments de métadonnée"
+msgstr ""
 
 #: themes/default/views/administrate/setup/data_dictionary_entries/ajax_rule_trigger_settings_form_html.php:46
 #: themes/default/views/manage/metadata_alert_rules/ajax_rule_trigger_settings_form_html.php:46
-#, fuzzy
-#| msgid "Data type of metadata element."
 msgid "Attach to metadata element"
-msgstr "Type de données de l'élément de métadonnée."
+msgstr ""
 
 #: themes/default/views/administrate/setup/data_dictionary_entries/delete_html.php:37
-#, fuzzy
-#| msgid "Metadata dictionary entries"
 msgid "Back to data dictionary entry list"
-msgstr "Entrées dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: themes/default/views/administrate/setup/data_dictionary_entries/widget_data_dictionary_entry_info_html.php:29
 #: themes/default/views/administrate/setup/interface_editor/widget_interface_info_html.php:29
@@ -32686,22 +31538,16 @@ msgid "Back to list"
 msgstr "Retour à la liste"
 
 #: themes/default/views/administrate/setup/data_dictionary_list_html.php:34
-#, fuzzy
-#| msgid "Metadata dictionary entry"
 msgid "New data dictionary entry for "
-msgstr "Entrée dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: themes/default/views/administrate/setup/data_dictionary_list_html.php:67
-#, fuzzy
-#| msgid "Bundle name"
 msgid "Bundle"
-msgstr "Nom du bloc"
+msgstr ""
 
 #: themes/default/views/administrate/setup/data_dictionary_list_html.php:104
-#, fuzzy
-#| msgid "No sets have been created"
 msgid "No entries have been created"
-msgstr "Aucun ensemble n'a été créé"
+msgstr ""
 
 #: themes/default/views/administrate/setup/elements_edit_html.php:50
 msgid "Labels"
@@ -32809,22 +31655,16 @@ msgid "System?"
 msgstr "Système ?"
 
 #: themes/default/views/administrate/setup/widget_data_dictionary_info_html.php:31
-#, fuzzy
-#| msgid "Metadata dictionary rule"
 msgid "Data dictionary"
-msgstr "Règle dans le dictionnaire de métadonnées"
+msgstr ""
 
 #: themes/default/views/administrate/setup/widget_data_dictionary_info_html.php:34
-#, fuzzy
-#| msgid "1 element is defined"
 msgid "1 rule is defined"
-msgstr "1 élément est défini"
+msgstr ""
 
 #: themes/default/views/administrate/setup/widget_data_dictionary_info_html.php:36
-#, fuzzy
-#| msgid "%1 elements are defined"
 msgid "%1 rules are defined"
-msgstr "%1 éléments sont définis"
+msgstr ""
 
 #: themes/default/views/administrate/setup/widget_element_info_html.php:34
 msgid "Metadata elements"
@@ -33256,12 +32096,8 @@ msgstr ""
 "mettre à jour"
 
 #: themes/default/views/batch/metadataimport/importer_list_html.php:60
-#, fuzzy
-#| msgid "Drag importer worksheets here to add or update"
 msgid "Load importer worksheet from GoogleDrive: %1"
 msgstr ""
-"Glissez les feuilles de calculs de l'import ici pour les ajouter ou les "
-"mettre à jour"
 
 #: themes/default/views/batch/metadataimport/importer_list_html.php:85
 msgid "Mapping"
@@ -33281,16 +32117,12 @@ msgid "Google Drive"
 msgstr ""
 
 #: themes/default/views/batch/metadataimport/importer_list_html.php:117
-#, fuzzy
-#| msgid "File path"
 msgid "File upload"
-msgstr "Chemin"
+msgstr ""
 
 #: themes/default/views/batch/metadataimport/importer_list_html.php:124
-#, fuzzy
-#| msgid "Upload"
 msgid "Reload"
-msgstr "Charger"
+msgstr ""
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:44
 msgid "Importer"
@@ -33598,20 +32430,16 @@ msgid "Label is already in use"
 msgstr ""
 
 #: themes/default/views/bundles/ca_item_tags.php:168
-#, fuzzy
-#| msgid "Add lot"
 msgid "Add tag"
-msgstr "Ajouter un lot"
+msgstr ""
 
 #: themes/default/views/bundles/ca_list_items.php:129
 msgid "No collection terms selected"
 msgstr "Aucun terme de collection sélectionné"
 
 #: themes/default/views/bundles/ca_metadata_dictionary_rules.php:89
-#, fuzzy
-#| msgid "Add label"
 msgid "Add rule"
-msgstr "Ajouter un libellé"
+msgstr ""
 
 #: themes/default/views/bundles/ca_object_checkouts.php:41
 #: themes/default/views/bundles/ca_objects_deaccession.php:37
@@ -33809,10 +32637,8 @@ msgid "Update Media"
 msgstr "Mettre à jour le média"
 
 #: themes/default/views/bundles/ca_object_representations.php:592
-#, fuzzy
-#| msgid "Load next %"
 msgid "Load next %num of %total"
-msgstr "Charger le suivant"
+msgstr ""
 
 #: themes/default/views/bundles/ca_object_representations_access_status.php:66
 msgid ""
@@ -33917,10 +32743,8 @@ msgid "Add annotation"
 msgstr "Ajouter une annotation"
 
 #: themes/default/views/bundles/ca_representation_transcriptions.php:96
-#, fuzzy
-#| msgid "commerce transactions"
 msgid "No transcriptions"
-msgstr "transactions commerciales"
+msgstr ""
 
 #: themes/default/views/bundles/ca_search_form_attributes.php:52
 msgid "Locale "
@@ -34135,16 +32959,12 @@ msgstr ""
 "d'autres éléments de hiérarchie en cliquant sur les flèches."
 
 #: themes/default/views/bundles/history_tracking_chronology.php:75
-#, fuzzy
-#| msgid "Order history"
 msgid "Hide child history"
-msgstr "Historique de la commande"
+msgstr ""
 
 #: themes/default/views/bundles/history_tracking_chronology.php:75
-#, fuzzy
-#| msgid "Include date picker"
 msgid "Include child history"
-msgstr "Inclure le calendrier"
+msgstr ""
 
 #: themes/default/views/bundles/history_tracking_chronology.php:81
 #: themes/default/views/bundles/history_tracking_chronology.php:409
@@ -34153,30 +32973,22 @@ msgstr "Ajouter à un prêt"
 
 #: themes/default/views/bundles/history_tracking_chronology.php:87
 #: themes/default/views/bundles/history_tracking_chronology.php:435
-#, fuzzy
-#| msgid "Edit movements"
 msgid "Add to movement"
-msgstr "Modifier les mouvements"
+msgstr ""
 
 #: themes/default/views/bundles/history_tracking_chronology.php:133
 #: themes/default/views/bundles/history_tracking_chronology.php:461
-#, fuzzy
-#| msgid "Add object"
 msgid "Add to object"
-msgstr "Ajouter un objet"
+msgstr ""
 
 #: themes/default/views/bundles/history_tracking_chronology.php:177
-#, fuzzy
-#| msgid "Current"
 msgid "Current %1"
-msgstr "Actuel"
+msgstr ""
 
 #: themes/default/views/bundles/history_tracking_chronology.php:204
 #: themes/default/views/bundles/history_tracking_chronology.php:241
-#, fuzzy
-#| msgid "Not set"
 msgid "No %1 set"
-msgstr "Non défini"
+msgstr ""
 
 #: themes/default/views/bundles/history_tracking_current_contents.php:90
 msgid "Empty"
@@ -34191,22 +33003,16 @@ msgid "No settings"
 msgstr "Aucun paramètre"
 
 #: themes/default/views/bundles/summary_download_options_html.php:69
-#, fuzzy
-#| msgid "Download only"
 msgid "Download options"
-msgstr "Téléchargement seulement"
+msgstr ""
 
 #: themes/default/views/bundles/summary_download_options_html.php:76
-#, fuzzy
-#| msgid "Display"
 msgid "Display<br/> %1"
-msgstr "Affichage"
+msgstr ""
 
 #: themes/default/views/bundles/summary_download_options_html.php:81
-#, fuzzy
-#| msgid "Sort using"
 msgid "Format using<br/> %1"
-msgstr "Trier par"
+msgstr ""
 
 #: themes/default/views/dashboard/ajax_settings_html.php:48
 msgid "No settings available"
@@ -34221,10 +33027,8 @@ msgid "Clear dashboard"
 msgstr "Vider le tableau de bord"
 
 #: themes/default/views/dashboard/dashboard_html.php:70
-#, fuzzy
-#| msgid "Clear dashboard"
 msgid "Default dashboard"
-msgstr "Vider le tableau de bord"
+msgstr ""
 
 #: themes/default/views/dashboard/dashboard_html.php:73
 msgid "Edit dashboard"
@@ -34330,10 +33134,8 @@ msgid "Save and return"
 msgstr "Enregistrer et quitter l'écran"
 
 #: themes/default/views/editor/collections/summary_html.php:58
-#, fuzzy
-#| msgid "%1 components"
 msgid "%1 contents"
-msgstr "%1 composants"
+msgstr ""
 
 #: themes/default/views/editor/interstitial/interstitial_html.php:50
 msgid "Edit %1 relationship"
@@ -34398,10 +33200,8 @@ msgid "Delete &rsaquo;"
 msgstr "Supprimer &rsaquo;"
 
 #: themes/default/views/editor/objects/screen_html.php:48
-#, fuzzy
-#| msgid "Show tools"
 msgid "Show editor alerts"
-msgstr "Outils de duplication"
+msgstr ""
 
 #: themes/default/views/editor/objects/viewer_help_html.php:3
 msgid "How to use the image viewer"
@@ -34587,10 +33387,8 @@ msgid "Result will go here ..."
 msgstr ""
 
 #: themes/default/views/find/Browse/ajax_browse_facet_html.php:49
-#, fuzzy
-#| msgid "No settings available"
 msgid "No options available"
-msgstr "Aucun paramètre disponible"
+msgstr ""
 
 #: themes/default/views/find/Browse/ajax_browse_facet_html.php:91
 msgid ""
@@ -34890,10 +33688,8 @@ msgid "Record"
 msgstr ""
 
 #: themes/default/views/logs/download_html.php:47
-#, fuzzy
-#| msgid "Borrowed by %1 on %2"
 msgid "Group by %1 from %2"
-msgstr "Emprunté par %1 le %2"
+msgstr ""
 
 #: themes/default/views/logs/download_html.php:62
 msgid "Record Type"
@@ -34909,17 +33705,13 @@ msgstr ""
 
 #: themes/default/views/logs/download_html.php:99
 #: themes/default/views/logs/download_html.php:173
-#, fuzzy
-#| msgid "No events found"
 msgid "No downloads found"
-msgstr "Pas d'événement trouvé"
+msgstr ""
 
 #: themes/default/views/logs/download_html.php:99
 #: themes/default/views/logs/download_html.php:173
-#, fuzzy
-#| msgid "Enter a date to display events from above"
 msgid "Enter a date to display downloads from above"
-msgstr "Saisir une date pour afficher les événements précédents"
+msgstr ""
 
 #: themes/default/views/logs/download_html.php:128
 msgid "Userclass"
@@ -34932,10 +33724,8 @@ msgstr "IP"
 
 #: themes/default/views/logs/events_html.php:44
 #: themes/default/views/logs/search_html.php:44
-#, fuzzy
-#| msgid "From"
 msgid "From %1"
-msgstr "De :"
+msgstr ""
 
 #: themes/default/views/logs/events_html.php:91
 msgid "No events found"
@@ -34947,10 +33737,8 @@ msgstr "Saisir une date pour afficher les événements précédents"
 
 #: themes/default/views/logs/global_change_log_html.php:57
 #: themes/default/views/logs/global_change_log_html.php:68
-#, fuzzy
-#| msgid "Saved changes"
 msgid "all changes"
-msgstr "Modifications enregistrées"
+msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:57
 #: themes/default/views/logs/global_change_log_html.php:68
@@ -34959,57 +33747,43 @@ msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:57
 #: themes/default/views/logs/global_change_log_html.php:68
-#, fuzzy
-#| msgid "Edits"
 msgid "edits"
-msgstr "Modifications"
+msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:57
 #: themes/default/views/logs/global_change_log_html.php:68
-#, fuzzy
-#| msgid "deleted"
 msgid "deletes"
-msgstr "supprimé"
+msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:58
 #: themes/default/views/logs/global_change_log_html.php:69
-#, fuzzy
-#| msgid "Matching"
 msgid "anything"
-msgstr "Correspondance"
+msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:60
 #: themes/default/views/manage/Search/ca_item_comments_search_controls_html.php:45
-#, fuzzy
-#| msgid "user"
 msgid "any user"
-msgstr "utilisateur"
+msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:56
 msgid "Show %1 to %2 from %3 by %4"
 msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:67
-#, fuzzy
-#| msgid "%4 #%3 on %1 from %2"
 msgid "Show %1 to %2 from %3"
-msgstr "%4 #%3 le %1 par %2"
+msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:98
-#, fuzzy
-#| msgid "Changes"
 msgid "Change"
-msgstr "Modifications"
+msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:166
 msgid "No log entries found"
 msgstr ""
 
 #: themes/default/views/logs/global_change_log_html.php:166
-#, fuzzy
-#| msgid "Threshold (in hours) to display change log entries for"
 msgid "Choose display criteria to display matching log entries"
-msgstr "Seuil (en heures) pour afficher le journal des dernières modifications"
+msgstr ""
 
 #: themes/default/views/logs/search_html.php:61
 #: themes/default/views/system/monitor_html.php:47
@@ -35125,22 +33899,16 @@ msgid "Jump to page:"
 msgstr "Aller à la page :"
 
 #: themes/default/views/manage/Search/ca_item_comments_search_controls_html.php:47
-#, fuzzy
-#| msgid "day"
 msgid "any"
-msgstr "jour"
+msgstr ""
 
 #: themes/default/views/manage/Search/ca_item_comments_search_controls_html.php:47
-#, fuzzy
-#| msgid "Approved"
 msgid "approved"
-msgstr "Approuvé"
+msgstr ""
 
 #: themes/default/views/manage/Search/ca_item_comments_search_controls_html.php:47
-#, fuzzy
-#| msgid "Needs moderation"
 msgid "needs moderation"
-msgstr "A modérer"
+msgstr ""
 
 #: themes/default/views/manage/Search/ca_item_comments_search_controls_html.php:43
 msgid "Show from %1 by %2 with text %3 and status %4"
@@ -35172,10 +33940,8 @@ msgid "Invalid parameters"
 msgstr "Paramètres invalides"
 
 #: themes/default/views/manage/export/download_feedback_html.php:35
-#, fuzzy
-#| msgid "Upload to <i>%1</i> successful"
 msgid "Upload to <i>%1</i> has already completed"
-msgstr "L'envoi vers <i>%1</i> est accompli"
+msgstr ""
 
 #: themes/default/views/manage/export/download_feedback_html.php:38
 msgid "Upload to <i>%1</i> successful"
@@ -35249,10 +34015,8 @@ msgid "Team"
 msgstr "Equipe"
 
 #: themes/default/views/manage/group_list_html.php:54
-#, fuzzy
-#| msgid "Join mode"
 msgid "Join code"
-msgstr "Mode de sortie"
+msgstr ""
 
 #: themes/default/views/manage/group_list_html.php:63
 msgid "Members"
@@ -35267,28 +34031,20 @@ msgid "New metadata alert rule for "
 msgstr ""
 
 #: themes/default/views/manage/metadata_alert_list_html.php:61
-#, fuzzy
-#| msgid "set name"
 msgid "Alert name"
-msgstr "nom de l'ensemble"
+msgstr ""
 
 #: themes/default/views/manage/metadata_alert_list_html.php:64
-#, fuzzy
-#| msgid "Release type"
 msgid "Rule type"
-msgstr "Type de distribution"
+msgstr ""
 
 #: themes/default/views/manage/metadata_alert_list_html.php:105
-#, fuzzy
-#| msgid "No sets have been created"
 msgid "No metadata alert rules have been created"
-msgstr "Aucun ensemble n'a été créé"
+msgstr ""
 
 #: themes/default/views/manage/metadata_alert_rules/delete_html.php:37
-#, fuzzy
-#| msgid "Back to search form list"
 msgid "Back to metadata alert rule list"
-msgstr "Retour à la liste des formulaires de recherche"
+msgstr ""
 
 #: themes/default/views/manage/saved_searches_list_html.php:43
 #: themes/default/views/manage/watched_items_list_html.php:43
@@ -35337,10 +34093,8 @@ msgstr "Retour à la liste des formulaires de recherche"
 
 #: themes/default/views/manage/set_delete_html.php:34
 #: themes/default/views/manage/set_list_by_user_html.php:134
-#, fuzzy
-#| msgid "sets"
 msgid "%1 sets"
-msgstr "ensembles"
+msgstr ""
 
 #: themes/default/views/manage/set_items/widget_set_item_info_html.php:29
 msgid "Back to set"
@@ -35362,10 +34116,8 @@ msgid "# Items"
 msgstr "# éléments"
 
 #: themes/default/views/manage/set_list_by_user_html.php:134
-#, fuzzy
-#| msgid "%1 search"
 msgid "%1 set"
-msgstr "recherche %1 "
+msgstr ""
 
 #: themes/default/views/manage/set_list_by_user_html.php:189
 #: themes/default/views/manage/set_list_html.php:194
@@ -35520,22 +34272,16 @@ msgid "%1 teams are available"
 msgstr "%1 équipes sont disponibles"
 
 #: themes/default/views/manage/widget_metadata_alerts_info_html.php:31
-#, fuzzy
-#| msgid "Your data exporters"
 msgid "Your metadata alert rules"
-msgstr "Vos exports de données"
+msgstr ""
 
 #: themes/default/views/manage/widget_metadata_alerts_info_html.php:34
-#, fuzzy
-#| msgid "1 form is available for editing"
 msgid "1 rule is available for editing"
-msgstr "1 formulaire est accessible en modification"
+msgstr ""
 
 #: themes/default/views/manage/widget_metadata_alerts_info_html.php:36
-#, fuzzy
-#| msgid "%1 forms are available for editing"
 msgid "%1 rules are available for editing"
-msgstr "%1 formulaires sont accessibles en modification"
+msgstr ""
 
 #: themes/default/views/manage/widget_saved_searches_info_html.php:31
 msgid "Your saved searches"
@@ -35700,98 +34446,68 @@ msgid "Collapse all metadata elements"
 msgstr "Réduire tous les éléments de métadonnée"
 
 #: themes/default/views/statistics/dashboard/dashboard_html.php:39
-#, fuzzy
-#| msgid "Settings for Group #%1/%2"
 msgid "View statistics for group: %1 or %2"
-msgstr "Paramètres pour le groupe #%1/%2"
+msgstr ""
 
 #: themes/default/views/statistics/dashboard/dashboard_html.php:39
-#, fuzzy
-#| msgid "Settings for Group #%1/%2"
 msgid "View statistics for group: %1"
-msgstr "Paramètres pour le groupe #%1/%2"
+msgstr ""
 
 #: themes/default/views/statistics/dashboard/dashboard_html.php:48
 msgid "View statistics for site: %1"
 msgstr ""
 
 #: themes/default/views/statistics/dashboard/dashboard_html.php:58
-#, fuzzy
-#| msgid "Updated %1"
 msgid "Last updated %1"
-msgstr "%1 mis à jour"
+msgstr ""
 
 #: themes/default/views/statistics/panels/counts_by_access_html.php:33
-#, fuzzy
-#| msgid "Read-only access"
 msgid "Records totals by access"
-msgstr "Accès en lecture seule"
+msgstr ""
 
 #: themes/default/views/statistics/panels/counts_by_type_html.php:33
-#, fuzzy
-#| msgid "Record type"
 msgid "Records totals by type"
-msgstr "Type d'enregistrement"
+msgstr ""
 
 #: themes/default/views/statistics/panels/counts_created_by_interval_html.php:33
-#, fuzzy
-#| msgid "Records to edit"
 msgid "Records created"
-msgstr "Enregistrements à modifier"
+msgstr ""
 
 #: themes/default/views/statistics/panels/counts_modified_by_interval_html.php:33
-#, fuzzy
-#| msgid "Records to edit"
 msgid "Records modified"
-msgstr "Enregistrements à modifier"
+msgstr ""
 
 #: themes/default/views/statistics/panels/logins_html.php:32
-#, fuzzy
-#| msgid "Login"
 msgid "Logins"
-msgstr "se connecter"
+msgstr ""
 
 #: themes/default/views/statistics/panels/logins_html.php:35
-#, fuzzy
-#| msgid "Profile created on %1 by %2"
 msgid "Most recent login at %1 by %2"
-msgstr "Profil créé le %1 par %2"
+msgstr ""
 
 #: themes/default/views/statistics/panels/logins_html.php:42
-#, fuzzy
-#| msgid "User account"
 msgid "User accounts:"
-msgstr "Compte utilisateur"
+msgstr ""
 
 #: themes/default/views/statistics/panels/logins_html.php:55
-#, fuzzy
-#| msgid "User logins"
 msgid "User logins:"
-msgstr "Utilisateurs"
+msgstr ""
 
 #: themes/default/views/statistics/panels/media_html.php:35
-#, fuzzy
-#| msgid "File name: %1"
 msgid "Size of media: %1"
-msgstr "nom du type"
+msgstr ""
 
 #: themes/default/views/statistics/panels/media_html.php:36
-#, fuzzy
-#| msgid "Number of items"
 msgid "Number of files: %1"
-msgstr "Nombre d'items"
+msgstr ""
 
 #: themes/default/views/statistics/panels/media_html.php:40
-#, fuzzy
-#| msgid "File is not a valid format"
 msgid "File counts by format:"
-msgstr "Le fichier n'est pas dans un format valide"
+msgstr ""
 
 #: themes/default/views/statistics/panels/total_counts_html.php:32
-#, fuzzy
-#| msgid "Total Cost"
 msgid "Total records"
-msgstr "Total"
+msgstr ""
 
 #: themes/default/views/system/auth_error_html.php:61
 #: themes/default/views/system/logged_out_html.php:61
@@ -36059,6 +34775,9 @@ msgstr ""
 
 #~ msgid "Type of annotation: rectangle, point, polygon, circle"
 #~ msgstr "Type d'annotation : rectange, point, polygone, cercle"
+
+#~ msgid "Points"
+#~ msgstr "Points"
 
 #~ msgid "List of points defining polygon"
 #~ msgstr "Liste des points définissant le polygone"
@@ -36349,11 +35068,17 @@ msgstr ""
 #~ msgid "Edit list item"
 #~ msgstr "Modifier un élément de liste"
 
+#~ msgid "Exporters"
+#~ msgstr "Exports"
+
 #~ msgid "Exporter list"
 #~ msgstr "Une liste de %1 liés"
 
 #~ msgid "Access control"
 #~ msgstr "Contrôle d'accès"
+
+#~ msgid "User logins"
+#~ msgstr "Utilisateurs"
 
 #~ msgid "User groups"
 #~ msgstr "Groupes d'utilisateurs"
@@ -36474,6 +35199,9 @@ msgstr ""
 #~ msgstr ""
 #~ "Autorise l'utilisateur à modifier la configuration des types de relation"
 
+#~ msgid "Configure import/export mappings"
+#~ msgstr "Configurer les correspondances pour l''import/export"
+
 #~ msgid "Allow user to change import/export format mapping configuration"
 #~ msgstr ""
 #~ "Autoriser l'utilisateur à modifier la configuration des correspondances "
@@ -36584,6 +35312,13 @@ msgstr ""
 #~ msgid "Batch import data"
 #~ msgstr "import de données"
 
+#~ msgid "Allow user to data in various formats"
+#~ msgstr ""
+#~ "Autorise l'utilisateur à exporter des données dans des formats divers"
+
+#~ msgid "Batch export"
+#~ msgstr "Export de métadonnées en lot"
+
 #~ msgid "Actions allowing batch export of records."
 #~ msgstr "Actions autorisant l'export de données"
 
@@ -36679,6 +35414,9 @@ msgstr ""
 #~ msgstr ""
 #~ "Actions autorisant la gestion du contenu catalogué pour un usage "
 #~ "personnel."
+
+#~ msgid "Create user groups"
+#~ msgstr "Créer des groupes d'utilisateurs"
 
 #~ msgid "Allow user to create their own user groups for data sharing"
 #~ msgstr ""
@@ -36776,6 +35514,9 @@ msgstr ""
 
 #~ msgid "Allow user to delete objects"
 #~ msgstr "Autoriser l'utilisateur à supprimer des objets"
+
+#~ msgid "Search objects"
+#~ msgstr "Recherche d'objets"
 
 #~ msgid "Allow user to search objects"
 #~ msgstr "Autoriser l'utilisateur à chercher des objets"
@@ -37104,6 +35845,9 @@ msgstr ""
 
 #~ msgid "Allow user to delete entities"
 #~ msgstr "Autoriser l'utilisateur à effacer des entités"
+
+#~ msgid "Search entities"
+#~ msgstr "Rechercher des entités"
 
 #~ msgid "Allow user to search entities"
 #~ msgstr "Autoriser l'utilisateur à chercher des entités"
@@ -37600,6 +36344,9 @@ msgstr ""
 #~ msgid "Allow user to create new movements"
 #~ msgstr "Autoriser l'utilisateur à créer de nouveaux mouvements"
 
+#~ msgid "Edit movements"
+#~ msgstr "Modifier les mouvements"
+
 #~ msgid "Allow user to edit existing movements"
 #~ msgstr "Autoriser l'utilisateur à modifier les mouvements existants"
 
@@ -37825,6 +36572,9 @@ msgstr ""
 #~ msgid "Allow user to duplicate lists"
 #~ msgstr "Autoriser l'utilisateur à dupliquer des listes"
 
+#~ msgid "Duplicate list items"
+#~ msgstr "Duplique les éléments de liste"
+
 #~ msgid "Allow user to duplicate list items"
 #~ msgstr "Autoriser l'utilisateur à dupliquer des éléments de liste"
 
@@ -38024,6 +36774,9 @@ msgstr ""
 #~ msgstr ""
 #~ "Indique si l'utilisateur est autorisé à enregistrer des emprunts type "
 #~ "bibliothèque pour son propre compte."
+
+#~ msgid "Duplication tools"
+#~ msgstr "Outils de duplication"
 
 #~ msgid "User interface locale"
 #~ msgstr "Locale de l'interface utilisateur"
@@ -38408,6 +37161,9 @@ msgstr ""
 #~ msgid "Duplicate relationships?"
 #~ msgstr "Dupliquer les relations ?"
 
+#~ msgid "Checked relationships will be duplicated."
+#~ msgstr "Les relations cochées seront dupliquées."
+
 #~ msgid "Duplicate media?"
 #~ msgstr "Dupliquer les médias ?"
 
@@ -38472,6 +37228,9 @@ msgstr ""
 #~ msgid "Your country."
 #~ msgstr "Votre pays."
 
+#~ msgid "Postal code"
+#~ msgstr "Code postal"
+
 #~ msgid "Your postal code."
 #~ msgstr "Votre code postal."
 
@@ -38505,8 +37264,17 @@ msgstr ""
 #~ msgid "<strong>Created</strong><br/>%1 by %2"
 #~ msgstr "<strong>Créé</strong><br/>%1 par %2"
 
+#~ msgid "<strong>Last changed</strong><br/>%1 by %2"
+#~ msgstr "<strong>Dernière modification</strong><br/>%1 par %2"
+
+#~ msgid "Export this %1"
+#~ msgstr "Exporter ce %1"
+
 #~ msgid "Sort by %1 %2"
 #~ msgstr "Trier par %1 %2"
+
+#~ msgid "Infomational messages"
+#~ msgstr "Messages d'information"
 
 #~ msgid "Registration confirmation email was sent to %1"
 #~ msgstr "Confirmation d'enregistrement envoyé par mail à %1"
@@ -38514,6 +37282,9 @@ msgstr ""
 #~ msgid "Could not send registration confirmation email to %1: %2"
 #~ msgstr ""
 #~ "Impossible d'envoyer la confirmation d'enregistrement par mail à %1 : %2"
+
+#~ msgid "Spreadsheet with media icons (XLSX)"
+#~ msgstr "Tableur avec icônes média (XLSX)"
 
 #~ msgid "Element %1 is not numeric"
 #~ msgstr "Elément %1 n'est pas numérique"
@@ -38523,6 +37294,44 @@ msgstr ""
 
 #~ msgid "Replication plugin %1 does not exist"
 #~ msgstr "Le plugin de réplication %1 n'existe pas"
+
+#~ msgid ""
+#~ "Comma separated list of kind of media to reprocess. Valid kinds are "
+#~ "ca_object_representations (object representations), and ca_attributes "
+#~ "(metadata elements). You may also specify \"all\" to reprocess both kinds "
+#~ "of media. Default is \"all\""
+#~ msgstr ""
+#~ "Liste de type de média à retraiter, séparés par des virgules. Les types "
+#~ "de valeurs valides sont \"ca_object_representations\" (représentations "
+#~ "objets) et \"ca_attributes\" (éléments de métadonnées). Vous pouvez "
+#~ "également spécifier \"all\" pour retraiter tous les types de média. La "
+#~ "valeur par défaut est \"all\"."
+
+#~ msgid ""
+#~ "CollectiveAccess must have both read and write access to the temporary "
+#~ "storage directory (app/tmp), media directory (media) and HTMLPurifier "
+#~ "definition cache (app/lib/core/Parsers/htmlpurifier/standalone/"
+#~ "HTMLPurifier/DefinitionCache). A run-time error will be displayed if any "
+#~ "of these locations is not accessible to the application. To change these "
+#~ "permissions to allow CollectiveAccess to run normally run this command "
+#~ "while logged in with administrative/root privileges. You are currently "
+#~ "logged in as %1 (uid %2). You can specify which user will be given "
+#~ "ownership of the directories using the --user option. If you do not "
+#~ "specify a user, the web server user for your server will be automatically "
+#~ "determined and used."
+#~ msgstr ""
+#~ "CollectiveAccess doit avoir les droits à la fois pour lire et pour écrire "
+#~ "dans son répertoire temp (app/tmp), le répertoire média (media) et le "
+#~ "cache HTMLPurifier (app/lib/core/Parsers/htmlpurifier/standalone/"
+#~ "HTMLPurifier/DefinitionCache). Une erreur sera affichée si un de ces "
+#~ "emplacements n'est pas accessible pour l'application. Pour changer ces "
+#~ "permissions pour permettre à CollectiveAccess de fonctionner normalement, "
+#~ "lancez cette commande en étant connecté avec des privilèges "
+#~ "d'administrateur/root. Vous êtes actuellement connecté en tant que %1 "
+#~ "(uid %2). Vous pouvez spécifier à quel utilisateur doit être donnée la "
+#~ "propriété des répertoires à l'aide de l'option --user option. Si vous ne "
+#~ "définissez pas d'utilisateur, l'utilisateur du serveur web sera "
+#~ "automatiquement choisi."
 
 #~ msgid "Error while adding definition for %1: %2"
 #~ msgstr "Erreur lors de l'ajout de la définition pour %1 : %2"
@@ -38546,8 +37355,91 @@ msgstr ""
 #~ "Charge les dictionnaires d'entrées depuis un fichier Excel à l'aide du "
 #~ "format décrit sur http://docs.collectiveaccess.org/metadata_dictionary"
 
+#~ msgid "Cannot load object %1"
+#~ msgstr "Impossible de charger l'objet %1"
+
 #~ msgid "Processed %1 objects"
 #~ msgstr "%1 objets traités"
+
+#~ msgid "Reloads current location values for all object records."
+#~ msgstr ""
+#~ "Recharge les valeurs de localisation courante pour tous les "
+#~ "enregistrements objets."
+
+#~ msgid ""
+#~ "CollectiveAccess supports browse on current locations of collection "
+#~ "objects using values cached in the object records. From time to time "
+#~ "these values may become out of date. Use this command to regenerate the "
+#~ "cached values based upon the current state of the database."
+#~ msgstr ""
+#~ "CollectiveAccess supporte le parcours de la base sur différents "
+#~ "emplacements des collections d'objets à l'aide de valeurs cachées dans "
+#~ "les enregistrements des objets. De temps en temps, ces valeurs peuvent ne "
+#~ "plus être à jour. Utiliser cette commande pour générer des valeurs "
+#~ "cachées basées sur l'état courant de la base."
+
+#~ msgid ""
+#~ "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
+#~ "getListItemID() using idno"
+#~ msgstr ""
+#~ "Élément de liste existant %1 (dans la liste %2) trouvé par "
+#~ "DataMigrationUtils::getListItemID() à l'aide de l'identifiant"
+
+#~ msgid ""
+#~ "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
+#~ "getListItemID() using singular label %3"
+#~ msgstr ""
+#~ "Élément de liste existant %1 (dans la liste %2) trouvé par "
+#~ "DataMigrationUtils::getListItemID() à l'aide du titre (singulier) %3"
+
+#~ msgid ""
+#~ "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
+#~ "getListItemID() using plural label %3"
+#~ msgstr ""
+#~ "Élément de liste existant %1 (dans la liste %2) trouvé par "
+#~ "DataMigrationUtils::getListItemID() à l'aide du titre (pluriel) %3"
+
+#~ msgid ""
+#~ "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
+#~ "getListItemID() using idno with %3"
+#~ msgstr ""
+#~ "Élément de liste existant %1 (dans la liste %2) trouvé par "
+#~ "DataMigrationUtils::getListItemID() à l'aide de l'identifiant %3"
+
+#~ msgid "Could not find list with list id %1"
+#~ msgstr "Impossible de trouver la liste correspondante au code %1"
+
+#~ msgid "Created new list item %1 in list %2"
+#~ msgstr "Nouvel item de liste %1 créé dans la liste %2"
+
+#~ msgid "Could not find add item to list: %1"
+#~ msgstr "Impossible d'ajouter l'élément à la liste : %1"
+
+#~ msgid "Trying media %1 in place of %2/%3"
+#~ msgstr "Essai avec le média %1 au lieu de %2/%3"
+
+#~ msgid "Found media %1 for %2/%3"
+#~ msgstr "%1 média trouvé pour %2/%3"
+
+#~ msgid "Created new %1 %2"
+#~ msgstr "Nouveau %1 %2 créé"
+
+#~ msgid "Found existing %1 %2 in DataMigrationUtils::_getID()"
+#~ msgstr "Trouvé %1 %2 par DataMigrationUtils::_getID()"
+
+#~ msgid ""
+#~ "Could not load existing %1 with id %2 (%3) in DataMigrationUtils::"
+#~ "_getID() [THIS SHOULD NOT HAPPEN]"
+#~ msgstr ""
+#~ "Impossible de charger %1 existant avec le code %2 (%3) dans "
+#~ "DataMigrationUtils::_getID() [CECI NE DEVRAIT JAMAIS SE PRODUIRE]"
+
+#~ msgid ""
+#~ "Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::"
+#~ "_getID(): %4"
+#~ msgstr ""
+#~ "Impossible de définir l'attribut pour %1 avec le code %2 (%3) dans "
+#~ "DataMigrationUtils::_getID(): %4"
 
 #~ msgid "Mode:%1 is not supported by this object"
 #~ msgstr "Mode : %1 n'est pas supporté pour cet objet"
@@ -38580,6 +37472,9 @@ msgstr ""
 #~ "Impossible d'enregistrer le statut de réplication : %1 n'a pas de données "
 #~ "de description de média"
 
+#~ msgid "Media replication for %1 failed"
+#~ msgstr "La réplication média de %1 a échoué"
+
 #~ msgid "Media replication for %1 failed: %2"
 #~ msgstr "La réplication média de %1 a échoué : %2"
 
@@ -38604,6 +37499,17 @@ msgstr ""
 #~ msgid "Status unknown"
 #~ msgstr "Statut inconnu"
 
+#~ msgid ""
+#~ "uBio key code. See http://www.ubio.org/index.php?pagename=xml_services "
+#~ "for details. Default is the ubio_keycode setting in app.conf"
+#~ msgstr ""
+#~ "Clé uBio. Voir http://www.ubio.org/index.php?pagename=xml_services pour "
+#~ "plus d'informations. La valeur par défaut est celle du paramètre "
+#~ "ubio_keycode dans app.conf"
+
+#~ msgid "Provides access to uBio service"
+#~ msgstr "Fournit un accès au service uBio"
+
 #~ msgid "Accepts and processes XML-format documents"
 #~ msgstr "Accepte et traite les fichiers au format XML"
 
@@ -38622,6 +37528,9 @@ msgstr ""
 #~ msgid "Validation against XML schema failed with errors:<br/>"
 #~ msgstr ""
 #~ "La validation par rapport au schéma XML a échoué avec les erreurs :<br/>"
+
+#~ msgid "Could not open %1"
+#~ msgstr "Impossible d'ouvrir %1"
 
 #~ msgid "Couldn't write file to %1"
 #~ msgstr "Impossible d'écrire le fichier sur '%1'"
@@ -38677,6 +37586,13 @@ msgstr ""
 #~ msgid "Media replicated to %1 for processing"
 #~ msgstr "Média répliqué vers %1 pour traitement"
 
+#~ msgid ""
+#~ "Sets the CollectiveAccess table for the imported data.  Pending "
+#~ "implementation."
+#~ msgstr ""
+#~ "Définit la table de CollectiveAccess pour les données importées. "
+#~ "Implémentation en cours."
+
 #~ msgid "bubbles (draggable)"
 #~ msgstr "bulles (glissables)"
 
@@ -38723,6 +37639,49 @@ msgstr ""
 #~ "représenter la valeur dans le modèle. Par exemple : <i>^ca_movements."
 #~ "idno</i>."
 
+#~ msgid "Color for current location"
+#~ msgstr "Couleur pour l'emplacement courant"
+
+#~ msgid ""
+#~ "Color to use as highlight for the current location in the location "
+#~ "history."
+#~ msgstr ""
+#~ "Couleur à utiliser pour mettre en évidence l'emplacement courant dans "
+#~ "l'historique de localisation"
+
+#~ msgid "Color for future locations"
+#~ msgstr "Couleur pour les futurs emplacements"
+
+#~ msgid ""
+#~ "Color to use as highlight for future locations in the location history."
+#~ msgstr ""
+#~ "Couleur à utiliser pour mettre en évidence les futurs emplacements dans "
+#~ "l'historique de localisation"
+
+#~ msgid "Color for past locations"
+#~ msgstr "Couleur pour les emplacements passés"
+
+#~ msgid ""
+#~ "Color to use as highlight for the previous locations in the location "
+#~ "history."
+#~ msgstr ""
+#~ "Couleur à utiliser pour mettre en évidence les emplacements passés dans "
+#~ "l'historique de localisation"
+
+#~ msgid ""
+#~ "Check this option if you want to to hide the \"Add to loan\" controls in "
+#~ "this bundle placement."
+#~ msgstr ""
+#~ "Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit "
+#~ "masqué dans ce bloc."
+
+#~ msgid ""
+#~ "Check this option if you want to to hide the \"Update Location\" controls "
+#~ "in this bundle placement."
+#~ msgstr ""
+#~ "Cocher cette option si vous voulez masquer \"Mettre à jour la localisation"
+#~ "\" soit masqué dans ce bloc."
+
 #~ msgid "Label to place on entry"
 #~ msgstr "Libellé à affecter à l'entrée"
 
@@ -38731,6 +37690,21 @@ msgstr ""
 
 #~ msgid "Definition text to display for this bundle."
 #~ msgstr "Texte de définition à afficher pour ce bloc"
+
+#~ msgid "Bundle is mandatory"
+#~ msgstr "Le bloc est obligatoire"
+
+#~ msgid ""
+#~ "Bundle is mandatory and a valid value must be set before it can be saved."
+#~ msgstr ""
+#~ "Le bloc est obligatoire et une valeur valide doit être définie avant de "
+#~ "pouvoir enregistrer."
+
+#~ msgid "Metadata dictionary entry"
+#~ msgstr "Entrée dans le dictionnaire de métadonnées"
+
+#~ msgid "Metadata dictionary entries"
+#~ msgstr "Entrées dans le dictionnaire de métadonnées"
 
 #~ msgid "Object location"
 #~ msgstr "Localisation de l'objet"
@@ -38812,6 +37786,9 @@ msgstr ""
 
 #~ msgid "Rebuild ACL index"
 #~ msgstr "Reconstruire l'index ACL"
+
+#~ msgid "Load next %"
+#~ msgstr "Charger le suivant"
 
 #~ msgid "No location set"
 #~ msgstr "Localisation indéfinie"
@@ -39006,6 +37983,9 @@ msgstr ""
 #~ msgid "Invalid set item"
 #~ msgstr "Elément d'ensemble invalide"
 
+#~ msgid "Invalid order"
+#~ msgstr "Commande invalide"
+
 #~ msgid "%1/%2 page selected"
 #~ msgstr "%1/%2 pages sélectionnées"
 
@@ -39027,11 +38007,17 @@ msgstr ""
 #~ msgid "View entire message and associated media"
 #~ msgstr "Afficher le message entier et les médias associés"
 
+#~ msgid "From"
+#~ msgstr "De :"
+
 #~ msgid "%1 order"
 #~ msgstr "Commande %1"
 
 #~ msgid "%1 orders"
 #~ msgstr "%1 commandes"
+
+#~ msgid "view thread"
+#~ msgstr "voir le fil"
 
 #~ msgid "hide thread"
 #~ msgstr "masquer le fil"
@@ -39047,6 +38033,9 @@ msgstr ""
 
 #~ msgid "%5 #%4 on %1 from %2 (%3)"
 #~ msgstr "%5 #%4 le %1 de %2 (%3)"
+
+#~ msgid "%4 #%3 on %1 from %2"
+#~ msgstr "%4 #%3 le %1 par %2"
 
 #~ msgid "On loan to %1"
 #~ msgstr "En prêt à %1"
@@ -39094,6 +38083,9 @@ msgstr ""
 #~ msgid "Nothing to save"
 #~ msgstr "Rien à sauvegarder"
 
+#~ msgid "Invalid id: %1"
+#~ msgstr "ID invalide : %1"
+
 #~ msgid "You are not allowed to edit this."
 #~ msgstr "Vous n'êtes pas autorisé à modifier ceci."
 
@@ -39120,6 +38112,9 @@ msgstr ""
 
 #~ msgid "Invalid bundle: %1"
 #~ msgstr "Bloc invalide : %1"
+
+#~ msgid "Order history"
+#~ msgstr "Historique de la commande"
 
 #~ msgid "Loan history"
 #~ msgstr "Historique du prêt"
@@ -39203,6 +38198,9 @@ msgstr ""
 #~ "accessible en écriture par le serveur web. Veuillez changer les "
 #~ "permissions pour %1 et autoriser l'utilisateur qui exécute le serveur web "
 #~ "à écrire dans ce répertoire."
+
+#~ msgid "Help to come."
+#~ msgstr "Texte d'aide à venir."
 
 #~ msgid "Configuration - Experimental"
 #~ msgstr "Configuration - expérimental"
@@ -39295,6 +38293,9 @@ msgstr ""
 
 #~ msgid "Could not connect to LDAP server."
 #~ msgstr "Impossible de se connecter au serveur LDAP."
+
+#~ msgid "User could not be authenticated with LDAP server."
+#~ msgstr "Impossible d'authentifier l'utilisateur sur le serveur LDAP"
 
 #~ msgid "User is not member of at least one of the required groups."
 #~ msgstr "L'utilisateur n'est pas membre d'au moins un des groupes requis"
@@ -39517,6 +38518,9 @@ msgstr ""
 #~ msgstr ""
 #~ "Le fichier de configuration '%1' des styles de formulaire n'existe pas"
 
+#~ msgid "Form configuration file '%1' does not exist"
+#~ msgstr "Le fichier de configuration des formulaires '%1' n'existe pas"
+
 #~ msgid "Form '%1' does not exist"
 #~ msgstr "Le formulaire '%1' n'existe pas"
 
@@ -39561,6 +38565,9 @@ msgstr ""
 
 #~ msgid "communications"
 #~ msgstr "communications"
+
+#~ msgid "Transaction"
+#~ msgstr "Transaction"
 
 #~ msgid "Indicates the transaction to which the communication belongs."
 #~ msgstr "Indique la transaction à laquelle la communication appartient."
@@ -39688,6 +38695,9 @@ msgstr ""
 
 #~ msgid "Scan of image"
 #~ msgstr "Scan de l'image"
+
+#~ msgid "Download only"
+#~ msgstr "Téléchargement seulement"
 
 #~ msgid "Fee"
 #~ msgstr "Taxe"
@@ -40045,6 +39055,9 @@ msgstr ""
 #~ msgid "open"
 #~ msgstr "ouvert"
 
+#~ msgid "submitted"
+#~ msgstr "envoyé"
+
 #~ msgid "awaiting payment"
 #~ msgstr "Paiement en attente"
 
@@ -40120,6 +39133,9 @@ msgstr ""
 #~ msgid "commerce transaction"
 #~ msgstr "transaction commerciale"
 
+#~ msgid "commerce transactions"
+#~ msgstr "transactions commerciales"
+
 #~ msgid "Conversation tag"
 #~ msgstr "1 tag unique"
 
@@ -40129,8 +39145,30 @@ msgstr ""
 #~ msgid "Customer"
 #~ msgstr "Client"
 
+#~ msgid "Customer initiating transaction"
+#~ msgstr "Client à l'initiative de la transaction"
+
 #~ msgid "Warning: invalid options for group %1/source %2."
 #~ msgstr "Attention : options invalides pour le groupe %1/source %2."
+
+#~ msgid ""
+#~ "[loadImporterFromFile:%1] Invalid options for group %2/source %3. Options "
+#~ "were: %4."
+#~ msgstr ""
+#~ "[loadImporterFromFile:%1] Options invalides pour le groupe %2/source %3. "
+#~ "Les options étaient : %4."
+
+#~ msgid "Warning: invalid refinery options for group %1/source %2 = %3"
+#~ msgstr ""
+#~ "Warning: options invalides pour le traitement d'affinage, groupe %1/"
+#~ "source %2 = %3"
+
+#~ msgid ""
+#~ "[loadImporterFromFile:%1] Invalid refinery options for group %2/source %3 "
+#~ "= %4"
+#~ msgstr ""
+#~ "[loadImporterFromFile:%1] Options invalide de traitement pour le groupe "
+#~ "%2/source %3 = %4"
 
 #~ msgid ""
 #~ "[%1] Skipped import because of forced primary key '%1' does not exist"
@@ -40247,6 +39285,13 @@ msgstr ""
 #~ msgid "Actions for Alhalqa plugin"
 #~ msgstr "Actions pour le plugin Alhalqa"
 
+#~ msgid ""
+#~ "Handles periodic cleanup and email alert tasks for client services "
+#~ "features."
+#~ msgstr ""
+#~ "Gère un nettoyage régulier et des tâches d'alerte par email pour les "
+#~ "fonctionnalités d'e-commerce."
+
 #~ msgid "Could not authenticate to remote system %1"
 #~ msgstr "Authentification impossible sur le système distant %1"
 
@@ -40314,6 +39359,12 @@ msgstr ""
 #~ msgid "File %1 is not a valid SIP"
 #~ msgstr "Le fichier %1 n'est pas un SIP valide"
 
+#~ msgid "Creating reel for %1"
+#~ msgstr "Création de la bobine pour %1"
+
+#~ msgid "Could not add reel record %1: %2"
+#~ msgstr "Impossible d'ajouter l'enregistrement de la bobine %1: %2"
+
 #~ msgid "Could not add label to reel record %1: %2"
 #~ msgstr ""
 #~ "Impossible d'ajouter le titre à l'enregistrement de la bobine %1 : %2"
@@ -40339,6 +39390,9 @@ msgstr ""
 #~ msgid "Could not add artifact media %1 to reel %2: %3"
 #~ msgstr "Impossible d'ajouter l'artefact %1 à la bobine %2 : %3"
 
+#~ msgid "Adding XML for %1"
+#~ msgstr "Ajout XML pour %1"
+
 #~ msgid "Processing XML %1"
 #~ msgstr "Traitement XML %1"
 
@@ -40347,6 +39401,9 @@ msgstr ""
 
 #~ msgid "Creating tracks for %1"
 #~ msgstr "Création des pistes pour %1"
+
+#~ msgid "Processing track %1"
+#~ msgstr "Traitement de la piste %1"
 
 #~ msgid "Creating %2 track for %1"
 #~ msgstr "Création de la piste %2 pour %1"
@@ -40471,6 +39528,9 @@ msgstr ""
 #~ msgid "Page %1"
 #~ msgstr "Page %1"
 
+#~ msgid "Show tools"
+#~ msgstr "Outils de duplication"
+
 #~ msgid "Hide tools"
 #~ msgstr "Outils de duplication"
 
@@ -40548,6 +39608,9 @@ msgstr ""
 #~ msgid "Read only"
 #~ msgstr "Lecture seule"
 
+#~ msgid "User account"
+#~ msgstr "Compte utilisateur"
+
 #~ msgid ""
 #~ "Click on a message at left to view the entire message and its associated "
 #~ "media."
@@ -40596,6 +39659,9 @@ msgstr ""
 
 #~ msgid "%1 loans"
 #~ msgstr "%1 prêts"
+
+#~ msgid "Created"
+#~ msgstr "Créé"
 
 #~ msgid "Loans with %1"
 #~ msgstr "Prêts avec %1"
@@ -40740,6 +39806,9 @@ msgstr ""
 #~ msgid "Items Due"
 #~ msgstr "Objets à retourner"
 
+#~ msgid "Total Cost"
+#~ msgstr "Total"
+
 #~ msgid "Items returned"
 #~ msgstr "Objets retournés"
 
@@ -40817,6 +39886,9 @@ msgstr ""
 
 #~ msgid "CCV"
 #~ msgstr "Code de vérification visuelle"
+
+#~ msgid "Expiration date"
+#~ msgstr "Date de fin de validité"
 
 #~ msgid ""
 #~ "Please wait while client loan is processed (this may take up to 60 "
@@ -41034,6 +40106,9 @@ msgstr ""
 #~ msgid "Ordered By"
 #~ msgstr "Commandé par"
 
+#~ msgid "Order Date"
+#~ msgstr "Date de commande"
+
 #~ msgid ""
 #~ "There has been <a href='%2'>%1 communication</a> regarding this order"
 #~ msgstr ""
@@ -41143,6 +40218,9 @@ msgstr ""
 
 #~ msgid "%1 sets available to you"
 #~ msgstr "%1 ensembles visibles par vous"
+
+#~ msgid "1 set created by users"
+#~ msgstr "1 ensemble créé par les utilisateurs"
 
 #~ msgid "%1 sets created by users"
 #~ msgstr "%1 ensembles créés par les utilisateurs"
