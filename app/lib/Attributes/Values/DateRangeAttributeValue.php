@@ -223,10 +223,12 @@
  		static private $s_date_cache = array();
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
+ 			global $g_ui_locale;
+
  			parent::__construct($pa_value_array);
  			if(!DateRangeAttributeValue::$o_tep) { 
  				DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); 
- 				DateRangeAttributeValue::$o_tep->setLanguage(__CA_DEFAULT_LOCALE__);
+ 				DateRangeAttributeValue::$o_tep->setLanguage($g_ui_locale);
  			}
  		}
  		# ------------------------------------------------------------------
@@ -306,6 +308,8 @@
  			);
  			
 			if ($ps_value) {
+				$vs_locale = caGetOption('locale', $pa_options, __CA_DEFAULT_LOCALE__);
+				DateRangeAttributeValue::$o_tep->setLanguage($vs_locale);
 				if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) { 
 					// invalid date
 					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');

@@ -455,8 +455,9 @@
 
 			$vb_direct = (bool)$po_opts->getOption('direct');
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
-			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback'); 
+			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback');
 
+			$vb_dryrun = (bool)$po_opts->getOption('dryrun');
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
 			$vn_log_level = CLIUtils::getLogLevel($po_opts);
@@ -467,7 +468,7 @@
 				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 			}
 
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
@@ -1108,7 +1109,6 @@
 			return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from the American Association of State and Local History (AASLH).');
 		}
 		# -------------------------------------------------------
-		
 		/**
 		 * @param Zend_Console_Getopt|null $po_opts
 		 * @return bool
@@ -1168,6 +1168,68 @@
 		 */
 		public static function run_external_exportHelp() {
 			return _t('To come.');
+        }
+        # -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function write_exporter_to_file($po_opts=null) {
+            require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+            
+            $file = $po_opts->getOption('file');
+            if (!$file) {
+				CLIUtils::addError(_t('A file must be specified'));
+				return;
+			}
+			
+			if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
+				CLIUtils::addError(_t('Cannot write to file %1', $file));
+				return;
+			}
+			
+			$mapping = $po_opts->getOption('mapping');
+			if (!$mapping) {
+				CLIUtils::addError(_t('An export mapping must be specified'));
+				return;
+			}
+			
+			
+			try {
+			    ca_data_exporters::writeExporterToFile($mapping, $file);
+			} catch (Exception $e) {
+			    CLIUtils::addError(_t('Could not export %1: %2', $mapping, $e->getMessage()));
+			    return;
+			}
+			CLIUtils::addMessage(_t('Exported %1', $mapping));
+		}
+		# -------------------------------------------------------
+		public static function write_exporter_to_fileParamList() {
+			return [
+				"mapping|m=s" => _t('Required. Exporter mapping to write to file.'),
+				"file|f=s" => _t('Required. File to save exporter to.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_exporter_to_fileUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_exporter_to_fileShortHelp() {
+			return _t('Write exporter mapping to Excel-format file.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_exporter_to_fileHelp() {
+			return _t('Write exporter mapping to Excel-format file.');
         }
 		# -------------------------------------------------------
     }

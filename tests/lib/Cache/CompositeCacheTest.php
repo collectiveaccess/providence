@@ -29,13 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Cache/CompositeCache.php');
 
-class CompositeCacheTest extends PHPUnit_Framework_TestCase {
+class CompositeCacheTest extends TestCase {
 
-	public function setUp() {
+	protected function setUp() : void {
 		CompositeCache::flush(); // might have side-effects on other tests?
 	}
 
@@ -164,16 +164,18 @@ class CompositeCacheTest extends PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @expectedException ExternalCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidNameSpace() {
+		$this->expectException('ExternalCacheInvalidParameterException');
 		CompositeCache::save('foo', 'data1', 'this is invalid');
 	}
 
 	/**
-	 * @expectedException MemoryCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidKey() {
+		$this->expectException('MemoryCacheInvalidParameterException');
 		CompositeCache::save('', 'data1', 'this is invalid');
 	}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,18 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Attributes/Values/GeocodeAttributeValue.php");
 
-class GeocodeAttributeValueTest extends PHPUnit_Framework_TestCase {
+class GeocodeAttributeValueTest extends TestCase {
 
 	public function testWithCoordinates(){
 		$o_val = new GeocodeAttributeValue();
 
 		$va_return = $o_val->parseValue('[52.52000660000002,13.404954]',array());
-		$this->assertEquals('52.52000660000002', $va_return['value_decimal1'], 'The correct latitude is returned from a lat/long pair', 0.001);
-		$this->assertEquals('13.404954', $va_return['value_decimal2'], 'The correct latitude is returned from a lat/long pair', 0.001);
+		$this->assertEqualsWithDelta('52.52000660000002', $va_return['value_decimal1'], 0.001, 'The correct latitude is returned from a lat/long pair');
+		$this->assertEqualsWithDelta('13.404954', $va_return['value_decimal2'], 0.001, 'The correct latitude is returned from a lat/long pair');
 		// they do get rounded a bit in this format
 		$this->assertEquals('52.5200066,13.404954', $va_return['value_longtext2'], 'The correct latitude,longitude text value is returned from a lat/long pair');
 	}

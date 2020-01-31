@@ -665,7 +665,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 
-		if($va_restrict_to_types = caGetOption('restrict_to_types', $pa_options, false)) {
+		if($va_restrict_to_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $pa_options, false)) {
+			if(!is_array($va_restrict_to_types)) { $va_restrict_to_types = [$va_restrict_to_types]; }
 			$va_restrict_to_type_ids = array();
 			foreach($va_restrict_to_types as $vm_type) {
 				if(is_numeric($vm_type)){
@@ -1260,7 +1261,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_item_ids = $qr_res->getAllFieldValues('item_id');
 			
 			// Set the ranks of the newly created links
-			$this->getDb()->query("UPDATE ca_set_items SET rank = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
+			$this->getDb()->query("UPDATE ca_set_items SET `rank` = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
 				$vn_set_id, $vn_table_num, $vn_type_id, $va_row_ids
 			));
 
@@ -1443,7 +1444,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
 		
 		$o_db = new Db();
-		$qr_res = $o_db->query("SELECT row_id, item_id, rank FROM ca_set_items WHERE set_id = ? AND deleted = 0 ORDER BY rank", [$pn_set_id]);
+		$qr_res = $o_db->query("SELECT row_id, item_id, `rank` FROM ca_set_items WHERE set_id = ? AND deleted = 0 ORDER BY `rank`", [$pn_set_id]);
 	
 		$va_ranks = [];
 		
@@ -1557,10 +1558,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
 			if($vb_treat_row_ids_as_rids) {
 				$va_tmp = explode("_", $vn_row_id);
-				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
 				$va_updated_item_ids[$va_tmp[1]] = 1;
 			} else {
-				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
 			}
 		}
 		
@@ -1731,7 +1732,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		// get row labels
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.rank,
+				casi.set_id, casi.item_id, casi.row_id, casi.`rank`,
 				rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
 			FROM ca_set_items casi
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
@@ -1739,7 +1740,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			WHERE
 				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} AND casi.deleted = 0
 			ORDER BY 
-				casi.rank ASC
+				casi.`rank` ASC
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
 		
@@ -1775,7 +1776,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.rank, casi.vars,
+				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.vars,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
 				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
 				{$vs_rep_select}
@@ -1787,12 +1788,17 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			WHERE
 				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql}  AND casi.deleted = 0
 			ORDER BY 
-				casi.rank ASC
+				casi.`rank` ASC
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
 
 		if($ps_template = caGetOption('template', $pa_options, null)) {
 			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$qr_res->seek(0);
+		}
+		if ($vs_rep_join_sql) {
+			$alt_text_template = Configuration::load()->get($t_rel_table->tableName()."_alt_text_template");
+			$va_alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^".$t_rel_table->tableName().".preferred_labels", $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
 			$qr_res->seek(0);
 		}
 		$va_items = array();
@@ -1822,8 +1828,11 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				$vb_has_access_to_media = in_array($va_row['rep_access'], $pa_options['checkAccess']);
 			}
 			if ($vs_rep_join_sql && $vb_has_access_to_media) {
+				if(is_array($va_alt_tags) && sizeof($va_alt_tags)) {
+					$vs_alt_text = array_shift($va_alt_tags);
+				}
 				if (isset($pa_options['thumbnailVersion'])) {
-					$va_row['representation_tag'] = $qr_res->getMediaTag('media', $pa_options['thumbnailVersion']);
+					$va_row['representation_tag'] = $qr_res->getMediaTag('media', $pa_options['thumbnailVersion'], array("alt" => $vs_alt_text));
 					$va_row['representation_url'] = $qr_res->getMediaUrl('media', $pa_options['thumbnailVersion']);
 					$va_row['representation_path'] = $qr_res->getMediaPath('media', $pa_options['thumbnailVersion']);
 					$va_row['representation_width'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'WIDTH');
@@ -1832,7 +1841,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				
 				if (isset($pa_options['thumbnailVersions']) && is_array($pa_options['thumbnailVersions'])) {
 					foreach($pa_options['thumbnailVersions'] as $vs_version) {
-						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version);
+						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text));
 						$va_row['representation_url_'.$vs_version] = $qr_res->getMediaUrl('media', $vs_version);
 						$va_row['representation_path_'.$vs_version] = $qr_res->getMediaPath('media', $vs_version);
 						$va_row['representation_width_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'WIDTH');
@@ -2289,7 +2298,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				(casi.set_id = ?) AND (caxor.is_primary = 1) AND (o.deleted = 0) AND (casi.deleted = 0)
 				{$vs_access_sql}
 			ORDER BY 
-				casi.rank ASC
+				casi.`rank` ASC
 		", (int)$vn_set_id);
 		
 		$va_reps = array();

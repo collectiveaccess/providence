@@ -90,10 +90,13 @@ class MetadataExportController extends ActionController {
 			}
 		}
 
+        if(!is_array($va_response['copied'])) { $va_response['copied'] = []; }
 		$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
 		if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
 			$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 worksheet', $vn_skip_count) : _t('Skipped %1 worksheet', $vn_skip_count);
 		}
+		
+		$va_response['errors'] = $va_errors;
 
 		$this->getView()->setVar('response', $va_response);
 		$this->render('export/file_upload_response_json.php');

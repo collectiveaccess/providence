@@ -1044,7 +1044,7 @@ class ca_users extends BaseModel {
 			} else {
 				$o_db = $this->getDb();
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`, wur.vars
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
@@ -1344,7 +1344,7 @@ class ca_users extends BaseModel {
 			} else {
 				$o_db = $this->getDb();
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`, wur.vars
 					FROM ca_user_roles wur
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id
@@ -1439,7 +1439,7 @@ class ca_users extends BaseModel {
 				LEFT JOIN ca_users AS wu ON wug.user_id = wu.user_id
 				INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wug.group_id
 				WHERE wuxg.user_id = ?
-				ORDER BY wug.rank
+				ORDER BY wug.`rank`
 			", array((int)$pn_user_id));
 			$va_groups = array();
 			while($qr_res->nextRow()) {
@@ -3058,8 +3058,27 @@ class ca_users extends BaseModel {
         if ($vs_username) {
             try {
                 if(AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-                    $this->load($vs_username);
-                    return true;
+                    if ($this->load($vs_username)) {
+                        if (
+                            defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && 
+                            $this->canDoAction('can_not_login') &&
+                            ($this->getPrimaryKey() != $this->_CONFIG->get('administrator_user_id')) &&
+                            !$this->canDoAction('is_administrator')
+                        ) {
+                            $this->opo_log->log(array(
+                                'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                                'MESSAGE' => _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username)
+                            ));
+                            return false;
+                        }
+                        return true;
+                    } else {
+                        $this->opo_log->log(array(
+                            'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                            'MESSAGE' => _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username)
+                        ));
+                        return false;
+                    }
                 }
             }  catch (Exception $e) {
                 $this->opo_log->log(array(

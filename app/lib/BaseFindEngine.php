@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -536,7 +536,7 @@
 				if (!$o_conf->get('dont_use_natural_sort')) { $sort_mode |= SORT_NATURAL; } else { $sort_mode |= SORT_STRING; }
 				
 				ksort($sort_buffer, $sort_mode);
-				if ($sort_directions[0] == 'desc') { $sort_buffer = array_reverse($sort_buffer); }
+				if (strtolower($sort_directions[0]) == 'desc') { $sort_buffer = array_reverse($sort_buffer); }
 
 				if($return_index) {
 					$return = [];
@@ -673,7 +673,7 @@
                         $vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
 				        
 				        $vs_sql = "
-							SELECT attr.row_id, LPAD(li.rank,9, '0') {$vs_sort_field}
+							SELECT attr.row_id, LPAD(li.`rank`,9, '0') {$vs_sort_field}
 							FROM ca_attributes attr
 							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
 							LEFT JOIN ca_list_items AS li ON attr_vals.value_longtext2 = li.idno

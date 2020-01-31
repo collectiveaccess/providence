@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -515,7 +515,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_bundle_display_placements
 			WHERE
 				display_id = ?
-			ORDER BY rank
+			ORDER BY `rank`
 		", (int)$vn_display_id);
 		
 		$va_available_bundles = ($pb_settings_only) ? [] : $this->getAvailableBundles(null, $pa_options);
@@ -531,7 +531,13 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
 				$va_bundle_name = explode(".", $vs_bundle_name);
-				
+				if (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) > 2)) {
+					array_pop($va_bundle_name);
+					$vs_bundle_name = join('.', $va_bundle_name);
+				} elseif (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) === 1)) {
+					$va_bundle_name[] = 'related';
+					$vs_bundle_name = join('.', $va_bundle_name);
+				}
 				$vb_user_can_edit = $t_subject->isSaveable(caGetOption('request', $pa_options, null), $vs_bundle_name);
 				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
@@ -2607,12 +2613,12 @@ if (!$pb_omit_editing_info) {
 		$va_params = ['display_id' => $vn_display_id];
 		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
 
-		if (is_array($va_uis = ca_bundle_display_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
+		if (is_array($va_displays = ca_bundle_display_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
 			foreach($va_displays as $t_display) {
 				$t_display->setMode(ACCESS_WRITE);
 				$t_display->delete(true);
 				if ($t_display->numErrors()) {
-					$this->errors = $t_t_displayui->errors();
+					$this->errors = $t_display->errors();
 					return false;
 				}
 			}
@@ -2676,7 +2682,7 @@ if (!$pb_omit_editing_info) {
 		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
 			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])
 		]);
-		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
+		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('forceEnabled' => true, 'value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
 	
 		return $o_view->render('ca_bundle_display_type_restrictions.php');
 	}

@@ -720,7 +720,7 @@ class SearchResult extends BaseObject {
 						$va_fields[] = $va_rel['many_table'].'.type_id rel_type_id';
 					}
 					if ($t_link->hasField('rank')) { 
-						$va_order_bys[] = $t_link->tableName().'.rank';
+						$va_order_bys[] = $t_link->tableName().'.`rank`';
 					}
 				} else {
 					if (($va_rels = Datamodel::getOneToManyRelations($vs_right_table)) && is_array($va_rels[$vs_left_table])) {
@@ -1537,8 +1537,13 @@ class SearchResult extends BaseObject {
 					if ($vb_return_as_array) {
 						if($va_path_components['subfield_name']) {
 							$vm_val = [self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$va_path_components['subfield_name']]];
-						} else {
+						} elseif($vb_return_with_structure) {
 							$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id];
+						} else {
+						    $vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id]['timestamp'];
+						    $this->opo_tep->init();
+                            $this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
+                            $vm_val = $this->opo_tep->getText($pa_options);
 						}
 						goto filter;
 					} else {
@@ -1688,9 +1693,9 @@ class SearchResult extends BaseObject {
 			if (is_array($va_keys) && sizeof($va_keys)) {
 				if ($vb_return_with_structure) {
 				    $vs_sort_desc = caGetOption('sortDirection', $pa_options, 'ASC');
-				    
 				    $vb_is_three_level_array = false;
 				    foreach($vm_val as $vn_top_level_id => $va_data) {
+				        if (!is_array($va_data)) { continue; }
 				        foreach($va_data as $k => $v) {
 				            if (is_array($v)) { $vb_is_three_level_array = true; }
 				            break(2);

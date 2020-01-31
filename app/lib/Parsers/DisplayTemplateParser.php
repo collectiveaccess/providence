@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2019 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -195,7 +195,7 @@ class DisplayTemplateParser {
 		// ad hoc template processing for labels.
 		// they only support a very limited set and no nested units or stuff like that
 		if($t_instance instanceof BaseLabel) {
-			return self::_processLabelTemplate($t_instance, $ps_template, $pa_row_ids, $pa_options);
+			return self::_processLabelTemplate($t_instance, $ps_template, $pa_row_ids, array_merge($pa_options, ['returnAsArray' => true]));
 		}
 
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids, ['sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
@@ -784,8 +784,8 @@ class DisplayTemplateParser {
 								    }
 									$va_relationship_type_ids = array();
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
-										$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
-										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
+										$qr_rels = caMakeSearchResult($t = $t_rel_instance->isRelationship() ? $t_rel_instance->tableName() : $t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
+										$va_relationship_type_ids = $qr_rels->getAllFieldValues("{$t}.type_id");
 									} elseif($t_rel_instance->isRelationship()) {
 										// return type on relationship
 										$va_relationship_type_ids = $pr_res->get($t_rel_instance->tableName().".type_id", ['returnAsArray' => true]);
@@ -1525,18 +1525,29 @@ class DisplayTemplateParser {
 	 * @param BaseLabel $t_instance
 	 * @param string $ps_template
 	 * @param array $pa_row_ids
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		returnAsArray = if true an array of processed template values is returned, otherwise the template values are returned as a string joined together with a delimiter. Default is false.
+	 *		delimiter = value to string together template values with when returnAsArray is false. Default is ';' (semicolon)
+	 *		sort = optional list of tag values to sort repeating values within a label template on. The tag must reference a label field. You can specify more than one tag by separating the tags with semicolons.
+	 *		sortDirection = the direction of the sort of repeating values within a label template. May be either ASC (ascending) or DESC (descending). [Default is ASC]
 	 * @return array
 	 */
 	public static function _processLabelTemplate($t_instance, $ps_template, array $pa_row_ids, array $pa_options) {
 		$pb_return_as_array = (bool) caGetOption('returnAsArray', $pa_options, false);
-
 		if(!($t_instance instanceof BaseLabel)) { return $pb_return_as_array ? array() : ''; }
+		
+		if (($sort = caGetOption('sort', $pa_options, null)) && !is_array($sort)) {
+			$sort = explode(";", $sort);
+		}
+		$sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
+		if(!in_array($sort_direction, array('ASC', 'DESC'))) { $sort_direction = 'ASC'; }
+
 
 		$va_tags = caGetTemplateTags($ps_template);
 		if(!is_array($va_tags) || (sizeof($va_tags) < 1)) { return []; }
 
 		$va_return = [];
+		$sort_map = [];
 		foreach($pa_row_ids as $vn_row_id) {
 			if(!$t_instance->load($vn_row_id)) { continue; }
 
@@ -1553,10 +1564,42 @@ class DisplayTemplateParser {
 
 				$va_tag_values[$vs_tag] = $t_instance->get($vs_field, ['convertCodesToDisplayText' => true]);
 			}
-			$va_return[] = caProcessTemplate($ps_template, $va_tag_values);
+			
+			if(is_array($sort) && (sizeof($sort) > 0)) {
+				$sort_keys = [];
+				foreach($sort as $s) {
+					$sf = array_pop(explode('.', $s));
+					if (is_array($sort_key_list = $t_instance->get($sf, ['convertCodesToDisplayText' => true, 'returnAsArray' => true]))) {
+						$sort_key_list = array_map(function($x) { 
+							return is_numeric($x) ? str_pad(substr($x, 0, 50), 50,  '0', STR_PAD_LEFT) : str_pad(substr($x, 0, 50), 50,  ' ', STR_PAD_RIGHT); 
+						}, $sort_key_list);
+						sort($sort_key_list);
+						$sort_keys[] = join('', $sort_key_list);
+					}
+				}
+				$sort_map[$vn_row_id] = join('', $sort_keys);
+			}
+			$va_return[$vn_row_id] = caProcessTemplate($ps_template, $va_tag_values);
+		}
+		
+		if(sizeof($sort_map)) {
+			ksort($sort_map);
+			$sorted_return = [];
+			foreach($sort_map as $row_id => $sort_key) {
+				$sorted_return[] = $va_return[$row_id];
+				unset($va_return[$row_id]);
+			}
+			foreach($va_return as $row_id => $v) {
+				$sorted_return[] = $v;
+			}
+			$va_return = $sorted_return;
+		}
+		
+		if($sort_direction === 'DESC' ) {
+			$va_return = array_reverse($va_return);
 		}
 
-		return $va_return;
+		return $pb_return_as_array ? $va_return : join(caGetOption('delimiter', $pa_options, ';'), $va_return);
 	}
 	# -------------------------------------------------------------------
 	# Simple template parser

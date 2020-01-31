@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 
-class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
+class TimeExpressionParserTest extends TestCase {
 
-	public function setUp() {
+	protected function setUp() : void {
 		// most of the comparisons below rely on Eastern time zone
 		date_default_timezone_set('America/New_York');
 	}
@@ -316,7 +318,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$vb_res = $o_tep->parse('c1959');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "1959.0101000000100");
+		$this->assertEquals($va_parse['start'], "1959.010100000010");
 		$this->assertEquals($va_parse['end'], "1959.123123595910");
 		$this->assertEquals($va_parse[0], "1959.010100000010");
 		$this->assertEquals($va_parse[1], "1959.123123595910");	
@@ -324,7 +326,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$vb_res = $o_tep->parse('c.1959');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "1959.0101000000100");
+		$this->assertEquals($va_parse['start'], "1959.010100000010");
 		$this->assertEquals($va_parse['end'], "1959.123123595910");
 		$this->assertEquals($va_parse[0], "1959.010100000010");
 		$this->assertEquals($va_parse[1], "1959.123123595910");	
@@ -423,10 +425,10 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
 		
-		$this->assertEquals($va_parse['start'], "2015.0715142917");
-		$this->assertEquals($va_parse['end'], "2015.0715142917");
-		$this->assertEquals($va_parse[0], "2015.0715142917");
-		$this->assertEquals($va_parse[1], "2015.0715142917");
+		$this->assertEquals($va_parse['start'], "2015.071514291700");
+		$this->assertEquals($va_parse['end'], "2015.071514291700");
+		$this->assertEquals($va_parse[0], "2015.071514291700");
+		$this->assertEquals($va_parse[1], "2015.071514291700");
 		
 		$va_parse = $o_tep->getUnixTimestamps();
 		
@@ -511,19 +513,19 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "1925.0101000000");
-		$this->assertEquals($va_parse['end'], "1950.1231235959");
-		$this->assertEquals($va_parse[0], "1925.0101000000");
-		$this->assertEquals($va_parse[1], "1950.1231235959");
+		$this->assertEquals($va_parse['start'], "1925.010100000000");
+		$this->assertEquals($va_parse['end'], "1950.123123595900");
+		$this->assertEquals($va_parse[0], "1925.010100000000");
+		$this->assertEquals($va_parse[1], "1950.123123595900");
 
 		$vb_res = $o_tep->parse('1 Q4');		// 4th quarter of 1st century
 		$this->assertEquals($vb_res, true);
 
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "75.0101000000");
-		$this->assertEquals($va_parse['end'], "100.1231235959");
-		$this->assertEquals($va_parse[0], "75.0101000000");
-		$this->assertEquals($va_parse[1], "100.1231235959");
+		$this->assertEquals($va_parse['start'], "75.010100000000");
+		$this->assertEquals($va_parse['end'], "100.123123595900");
+		$this->assertEquals($va_parse[0], "75.010100000000");
+		$this->assertEquals($va_parse[1], "100.123123595900");
 
 	}
 
@@ -534,10 +536,10 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "0.1024000000");
-		$this->assertEquals($va_parse['end'], "0.1024235959");
-		$this->assertEquals($va_parse[0], "0.1024000000");
-		$this->assertEquals($va_parse[1], "0.1024235959");
+		$this->assertEquals($va_parse['start'], "0.102400000000");
+		$this->assertEquals($va_parse['end'], "0.102423595900");
+		$this->assertEquals($va_parse[0], "0.102400000000");
+		$this->assertEquals($va_parse[1], "0.102423595900");
 		$this->assertEquals($o_tep->getText(), "10/24/????");
 	}
 
@@ -596,10 +598,10 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "2010.1221000000");
-		$this->assertEquals($va_parse['end'], "2011.0320235959");
-		$this->assertEquals($va_parse[0], "2010.1221000000");
-		$this->assertEquals($va_parse[1], "2011.0320235959");
+		$this->assertEquals($va_parse['start'], "2010.122100000000");
+		$this->assertEquals($va_parse['end'], "2011.032023595900");
+		$this->assertEquals($va_parse[0], "2010.122100000000");
+		$this->assertEquals($va_parse[1], "2011.032023595900");
 	}
 
 	public function testParseSimpleDelimitedDateForEnglishLocale() {
@@ -720,7 +722,6 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
  	}
 
 	public function testHistoricDayDateWithUmlautForFrenchLocale() {
-		return; // have to revisit this test but it always fails at the moment
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('fr_FR');
 		$vb_res = $o_tep->parse('24 Décembre 1870');
@@ -748,27 +749,27 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$vb_res = $o_tep->parse('January 17 999');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
-		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+		$this->assertEquals($va_parse['start'], "999.011700000000");
+		$this->assertEquals($va_parse['end'], "999.011723595900");
 
 		$vb_res = $o_tep->parse('17 January 999');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
-		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+		$this->assertEquals($va_parse['start'], "999.011700000000");
+		$this->assertEquals($va_parse['end'], "999.011723595900");
 
 		$vb_res = $o_tep->parse('1/17/999');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
-		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+		$this->assertEquals($va_parse['start'], "999.011700000000");
+		$this->assertEquals($va_parse['end'], "999.011723595900");
 
 		$o_tep->setLanguage('de_DE');
 		$vb_res = $o_tep->parse('17.1.999');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
-		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+		$this->assertEquals($va_parse['start'], "999.011700000000");
+		$this->assertEquals($va_parse['end'], "999.011723595900");
 	}
 
 	public function testHistoricYearRanges() {

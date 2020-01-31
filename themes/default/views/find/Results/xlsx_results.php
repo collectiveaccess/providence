@@ -129,6 +129,11 @@
 
 		foreach($va_display_list as $va_info) {
 		    $vn_placement_id = $va_info['placement_id'];
+		    
+		    if (is_array($va_info['settings']) && isset($va_info['settings']['format']) && ($tags = array_filter(caGetTemplateTags($va_info['settings']['format']), function($v) { return preg_match("!^ca_object_representations.media.!", $v); }))) {
+		    	// Transform bundle with template including media into a media bundle as that's the only way to show media within an XLSX
+				$va_info['bundle_name'] = $tags[0];
+			}
 			if (
 				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
 				&&

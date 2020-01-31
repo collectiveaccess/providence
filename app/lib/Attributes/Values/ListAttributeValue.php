@@ -402,7 +402,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null)) && (strlen($ps_value) > 0)) {
-			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logIdno', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logReference', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
 		}
 		
 		if (!$vb_require_value && !$vn_id) {

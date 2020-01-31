@@ -1916,6 +1916,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getItemCommentHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						break;
 					# -------------------------------
+					// This bundle is only available items for ca_object_representations
+					case 'ca_representation_transcriptions':
+						$vs_element = $this->getTranscriptionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						break;
+					# -------------------------------
 					default:
 						$vs_element = "'{$ps_bundle_name}' is not a valid bundle name";
 						break;
@@ -2201,16 +2206,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!isset($pa_options['width'])) { $pa_options['width'] = 30; }
 				if (!isset($pa_options['height'])) { $pa_options['height'] = 30; }
 				if (!isset($pa_options['values'])) { $pa_options['values'] = array(); }
+				if (!isset($pa_options['id'])) { $pa_options['id'] = str_replace('.', '_', $ps_field); }
 				if (!isset($pa_options['values']['_fulltext'])) { $pa_options['values'][$ps_field] = ''; }
 				return caHTMLTextInput("_fulltext".($vb_as_array_element ? "[]" : ""), array(
 								'value' => $pa_options['values']['_fulltext'],
-								'size' => $pa_options['width'], 'class' => $pa_options['class']
+								'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => $pa_options['id']
 							), $pa_options);
 				break;
 			case '_fieldlist':
 				if (!isset($pa_options['width'])) { $pa_options['width'] = 30; }
 				if (!isset($pa_options['height'])) { $pa_options['height'] = 30; }
 				if (!isset($pa_options['values'])) { $pa_options['values'] = array(); }
+				if (!isset($pa_options['id'])) { $pa_options['id'] = str_replace('.', '_', $ps_field); }
 				
 				
 				$va_filter = $va_alt_names = $va_relationship_restricted_searches = null;
@@ -2298,11 +2305,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				case 2:		// table_name.field_name
 				case 3:		// table_name.field_name.sub_element	
 					if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { return null; }
+					if (!isset($pa_options['id'])) { $pa_options['id'] = str_replace('.', '_', $ps_field); }
 										
 					if (($va_tmp[0] != $this->tableName()) || ($va_tmp[1] == 'related')) {
 						switch(sizeof($va_tmp)) {
 							case 1:
-								return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+								return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => $pa_options['id']));
 							case 2:
 							case 3:
 								if ($ps_render = caGetOption('render', $pa_options, null)) {
@@ -2380,7 +2388,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									}
 									
 									if (!isset($pa_options['sort'])) { uksort($va_opts, "strnatcasecmp"); }
-									return caHTMLSelect($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+									return caHTMLSelect($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => $pa_options['id']));
 								} else {
 									return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 								}
@@ -2444,6 +2452,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					if (!is_array($pa_options)) { $pa_options = array(); }
 					if (!isset($pa_options['width'])) { $pa_options['width'] = 30; }
 					
+					if (caGetOptions('autocomplete', $pa_options, false)) {
+				        if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { return null; }
+				        if (!is_null($index = caGetOption('index', $pa_options, null))) {
+				            $value_index = caGetOption('valueIndex', $pa_options, $index);
+				            $values = $this->get($ps_field, ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$vs_rel_type]]);
+				            $related_ids = $this->get($t_instance->primaryKey(true), ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$vs_rel_type]]);
+				            $value = $values[$value_index];
+				            $related_id = $related_ids[$value_index];
+				        }
+					    return $vs_buf.caGetAdvancedSearchFormAutocompleteJS($po_request, $ps_field, $t_instance, array('index' => $index, 'value' => $value, 'id_value' => $related_id, 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field), 'asArrayElement' => $vb_as_array_element, 'restrictToRelationshipTypes' => [$vs_rel_type]));
+					}
 					return $vs_buf.caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $value, 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 				}
 				break;
@@ -2460,12 +2479,22 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# --------------------
 					default:
-						if ($va_tmp[0] != $this->tableName()) {
+						if (($va_tmp[0] != $this->tableName()) || ($va_tmp[1] == 'related')) {
 							switch(sizeof($va_tmp)) {
 								case 1:
 									return $vs_buf.caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $value, 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 								case 2:
 								case 3:
+								    if (caGetOption('autocomplete', $pa_options, false)) {
+                                        if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { return null; }
+                                        if (!is_null($index = caGetOption('index', $pa_options, null))) {
+                                            $values = $this->get($ps_field, ['returnAsArray' => true]);
+                                            $related_ids = $this->get($ps_field.".".$t_instance->primaryKey(), ['returnAsArray' => true]);
+                                            $value = $values[$index];
+                                            $related_id = $related_ids[$index];
+                                        }
+                                        return $vs_buf.caGetAdvancedSearchFormAutocompleteJS($po_request, $ps_field, $t_instance, array('index' => $index, 'value' => $value, 'id_value' => $related_id, 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field), 'asArrayElement' => $vb_as_array_element));
+                                    }
 									return $vs_buf.$t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 									break;
 							}
@@ -4031,43 +4060,44 @@ if (!$vb_batch) {
 							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
 								
-								if (strlen($po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['representation_id'], pInteger)) > 0) {
-									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['representation_id']])) {
+								if (strlen($po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['relation_id'], pInteger)) > 0) {
+									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['relation_id']])) {
 										$va_tmp = explode('/', $vs_path);
 										$vs_original_name = array_pop($va_tmp);
 									} else {
-										$vs_path = $_FILES[$vs_prefix_stub.'media_'.$va_rep['representation_id']]['tmp_name'];
-										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_rep['representation_id']]['name'];
+										$vs_path = $_FILES[$vs_prefix_stub.'media_'.$va_rep['relation_id']]['tmp_name'];
+										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_rep['relation_id']]['name'];
 									}
 									
-									$vn_is_primary = ($po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pString) != '') ? $po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pInteger) : null;
-									$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_'.$va_rep['representation_id'], pInteger);
-									$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_'.$va_rep['representation_id'], pString);
-									$vn_access = $po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['representation_id'], pInteger);
-									$vn_status = $po_request->getParameter($vs_prefix_stub.'status_'.$va_rep['representation_id'], pInteger);
-									$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_'.$va_rep['representation_id'], pString));
-									//$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id'.$va_rep['representation_id'], pInteger);
+									$vn_is_primary = ($po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['relation_id'], pString) != '') ? $po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['relation_id'], pInteger) : null;
+									$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_'.$va_rep['relation_id'], pInteger);
+									$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_'.$va_rep['relation_id'], pString);
+									$vn_access = $po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['relation_id'], pInteger);
+									$vn_status = $po_request->getParameter($vs_prefix_stub.'status_'.$va_rep['relation_id'], pInteger);
+									$vn_is_transcribable = $po_request->getParameter($vs_prefix_stub.'is_transcribable_'.$va_rep['relation_id'], pInteger);
+									$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_'.$va_rep['relation_id'], pString));
+									//$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id'.$va_rep['relation_id'], pInteger);
 									
 									// Get user-specified center point (images only)
-									$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_'.$va_rep['representation_id'], pString);
-									$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_'.$va_rep['representation_id'], pString);
+									$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_'.$va_rep['relation_id'], pString);
+									$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_'.$va_rep['relation_id'], pString);
 									
 									$vn_rank = null;
-									if (($vn_rank_index = array_search($va_rep['representation_id'], $va_rep_sort_order)) !== false) {
+									if (($vn_rank_index = array_search($va_rep['relation_id'], $va_rep_sort_order)) !== false) {
 										$vn_rank = $va_rep_ids_sorted[$vn_rank_index];
 									}
 									
-									$this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('idno' => $vs_idno), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
+									$this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('idno' => $vs_idno, 'is_transcribable' => $vn_is_transcribable), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
 									if ($this->numErrors()) {
-										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['representation_id']);
+										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
 												case 795:
 													// field conflicts
-													$po_request->addActionError($o_e, $vs_f, $va_rep['representation_id']);
+													$po_request->addActionError($o_e, $vs_f, $va_rep['relation_id']);
 													break;
 												default:
-													$po_request->addActionError($o_e, $vs_f, $va_rep['representation_id']);
+													$po_request->addActionError($o_e, $vs_f, $va_rep['relation_id']);
 													break;
 											}
 										}
@@ -4082,18 +4112,18 @@ if (!$vb_batch) {
 										if ($t_rep->load($va_rep['representation_id'])) {
 											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true, array('queueIndexing' => true));
 											if ($t_rep->numErrors()) {
-												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_rep['representation_id']);
+												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_rep['relation_id']);
 											}
 										}
 									}
 								} else {
 									// is it a delete key?
 									$this->clearErrors();
-									if (($po_request->getParameter($vs_prefix_stub.$va_rep['representation_id'].'_delete', pInteger)) > 0) {
+									if (($po_request->getParameter($vs_prefix_stub.$va_rep['relation_id'].'_delete', pInteger)) > 0) {
 										// delete!
 										$this->removeRepresentation($va_rep['representation_id']);
 										if ($this->numErrors()) {
-											$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['representation_id']);
+											$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
 										}
 									}
 								}
@@ -4110,7 +4140,9 @@ if (!$vb_batch) {
 									$pn_status = $po_request->getParameter("{$vs_prefix_stub}access_status_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}status_new_0", pInteger) : null;
 									$pn_type_id = $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0", pInteger) : null;
 									$ps_rep_label = $po_request->getParameter("{$vs_prefix_stub}rep_label_new_0_enabled", pInteger) ? trim($po_request->getParameter("{$vs_prefix_stub}rep_label_new_0", pString)) : null;
-									$this->editRepresentation($va_rep['representation_id'], null, $g_ui_locale_id, $pn_status, $pn_access, null, [], ['label' => $ps_rep_label, 'type_id' => $pn_type_id]);
+									$pn_is_transcribable = $po_request->getParameter("{$vs_prefix_stub}is_transcribable_new_0_enabled", pInteger);
+									
+									$this->editRepresentation($va_rep['representation_id'], null, $g_ui_locale_id, $pn_status, $pn_access, null, ['is_transcribable' => $pn_is_transcribable], ['label' => $ps_rep_label, 'type_id' => $pn_type_id]);
 							    }
 							}
 							if ($vs_batch_mode == '_delete_') { $this->removeAllRepresentations(); break; }
@@ -4179,6 +4211,7 @@ if (!$vb_batch) {
                                     $vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_new_'.$va_matches[1], pInteger);
                                     $vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_new_'.$va_matches[1], pString);
                                     $vn_status = $po_request->getParameter($vs_prefix_stub.'status_new_'.$va_matches[1], pInteger);
+                                    $vn_is_transcribable = $po_request->getParameter($vs_prefix_stub.'is_transcribable_new_'.$va_matches[1], pInteger);
                                     $vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
                                     $vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_new_'.$va_matches[1], pInteger);
                                 
@@ -4186,7 +4219,7 @@ if (!$vb_batch) {
                                     $vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
                                     $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
                         
-                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label, 'idno' => $vs_idno), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label, 'idno' => $vs_idno, 'is_transcribable' => $vn_is_transcribable), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
                                     if ($this->numErrors()) {
                                         $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
                                     } else {
@@ -5117,6 +5150,29 @@ if (!$vb_batch) {
 						
 						break;
 					# -------------------------------
+					// This bundle is only available items for ca_object_representations
+					case 'ca_representation_transcriptions':
+						if ($vb_batch) { 
+							$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
+							
+							if($vs_batch_mode == '_disabled_') { break; }
+							
+							if (in_array($vs_batch_mode, ['_replace_', '_delete_'])) {
+								$this->removeAllTranscriptions();
+							}
+						}
+						
+						if (!$vb_batch || ($vb_batch && in_array($vs_batch_mode, ['_add_', '_replace_']))) {
+							foreach($_REQUEST as $vs_key => $vs_val) {
+								if (is_array($vs_val)) { continue; }
+								if (!($vs_val = trim($vs_val))) { continue; }
+								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
+									$this->removeTranscription($va_matches[1], null, ['force' => true]);
+								}
+							}
+						}
+						break;
+					# -------------------------------
 				}
 			}
 		}
@@ -5755,9 +5811,9 @@ if (!$vb_batch) {
 				$vs_order_by = '';
 				$vs_sort_fld = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
-					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
+					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.`rank`";
 					$vs_sort_fld = 'rank';
-					$va_selects[] = "{$vs_item_rel_table_name}.rank";
+					$va_selects[] = "{$vs_item_rel_table_name}.`rank`";
 				} else {
 					if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 						$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
@@ -5926,8 +5982,8 @@ if (!$vb_batch) {
 
 				$vs_order_by = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
-					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
-					$va_selects[] = $t_item_rel->tableName().'.rank';
+					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.`rank`";
+					$va_selects[] = $t_item_rel->tableName().'.`rank`';
 				} else {
 					if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 						$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
@@ -5950,8 +6006,8 @@ if (!$vb_batch) {
 				if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 				
 				if ($vb_uses_relationship_types)  {
-					$va_rel_types = $t_rel->getRelationshipInfo($vs_item_rel_table_name);
-					$vs_left_table = $t_item_rel->getLeftTableName();
+					$va_rel_types = $t_rel->getRelationshipInfo($this->tableName());
+					$vs_left_table = $this->getLeftTableName();
 					$vs_direction = ($vs_left_table == $vs_subject_table_name) ? 'ltor' : 'rtol';
 				}
 				
@@ -5963,12 +6019,7 @@ if (!$vb_batch) {
 					if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 						if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 					}
-					
-					// if ($ps_return_as !== 'data') {
-// 						$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
-// 						continue;
-// 					}
-
+			
 					$va_row = $qr_res->getRow();
 					$vs_v = $va_row['row_id'].'/'.$va_row[$vs_key];
 
@@ -6131,8 +6182,8 @@ if (!$vb_batch) {
 
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
-				$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
-				$va_selects[] = $t_item_rel->tableName().'.rank';
+				$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.`rank`";
+				$va_selects[] = $t_item_rel->tableName().'.`rank`';
 			} else {
 				if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 					$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";

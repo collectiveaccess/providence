@@ -29,10 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
-
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
-class ca_data_exportersTest extends PHPUnit_Framework_TestCase {
+
+class ca_data_exportersTest extends TestCase {
 	/**
 	 * @link http://clangers.collectiveaccess.org/jira/browse/PROV-1026
 	 */

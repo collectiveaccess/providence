@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
+
 require_once(__CA_APP_DIR__."/helpers/importHelpers.php");
 
-class ImportHelpersTest extends PHPUnit_Framework_TestCase {
+class ImportHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testAATMatch() {
 		// some real-world examples

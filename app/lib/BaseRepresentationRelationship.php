@@ -152,7 +152,7 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 						INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
 						WHERE
 							oxor.{$vs_target_key} = ? AND oxor.is_primary = 0 AND o_r.deleted = 0 AND oxor.relation_id <> ?
-						ORDER BY oxor.rank, oxor.relation_id
+						ORDER BY oxor.`rank`, oxor.relation_id
 					", (int)$vn_target_id, (int)$this->getPrimaryKey());
 					if ($qr_res->nextRow()) {
 						$o_db->query("
@@ -228,7 +228,7 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 					WHERE
 						oxor.{$vs_target_key} = ? AND oxor.is_primary = 0 AND o_r.deleted = 0 AND oxor.relation_id <> ?
 					ORDER BY
-						oxor.rank, oxor.relation_id
+						oxor.`rank`, oxor.relation_id
 				", (int)$vn_target_id, (int)$this->getPrimaryKey());
 				if($qr_res->nextRow()) {
 					// nope - force this one to be primary

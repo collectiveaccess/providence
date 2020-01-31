@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
+
 require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
 
-class SearchHelpersTest extends PHPUnit_Framework_TestCase {
+class SearchHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testESDateRewrite() {
 		// day-less

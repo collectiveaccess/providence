@@ -410,6 +410,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Filter to relationship types'),
 			'description' => _t('Restricts the mapping to pull only records related with the designated relationship types from the source. This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
 		);
+		$va_settings['hierarchicalDelimiter'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Hierarchical delimiter for input data'),
+			'description' => _t('This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
+		);
 		$va_settings['prefix'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

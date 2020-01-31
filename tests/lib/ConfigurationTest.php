@@ -29,11 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 define("__CA_DISABLE_CONFIG_CACHING__", true);
 
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 
-class ConfigurationTest extends PHPUnit_Framework_TestCase {
+class ConfigurationTest extends TestCase {
 	public function testScalars() {
 		$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/data/test.conf', false, true);
 
