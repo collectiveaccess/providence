@@ -30,8 +30,8 @@
 	$t_item = $this->getVar('t_item');
 	
 	$t_location = ca_storage_locations::find($t_item->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
-	$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')) : null;
-	$home_location_message = _t('Home location is %');
+	$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get(['inspector_home_location_display_template', 'ca_storage_locations_hierarchy_browser_display_settings'])) : null;
+	$home_location_message = _t('Home location is <em>%</em>');
 	
 	
 	$va_lookup_urls 			= caJSONLookupServiceUrl($this->request, 'ca_storage_locations', []);
@@ -135,6 +135,7 @@
 						caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
 						caBundleUpdateManager.reloadBundle('ca_objects_history'); 
 						caBundleUpdateManager.reloadBundle('ca_objects_location'); 
+						caBundleUpdateManager.reloadInspector(); 
 					}
 					jQuery("input[name='form_timestamp']").val(data.timestamp);
 				} else {

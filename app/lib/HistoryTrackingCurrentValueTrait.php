@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2019 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -250,7 +250,7 @@
 
 				foreach(array(
 							'policy', 'displayMode', 'dateMode', 'row_id', 'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
-							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 'hide_update_location_controls',
+							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 'hide_update_location_controls', 'hide_return_to_home_location_controls',
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
 							'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_object_controls', 'hide_add_to_entity_controls', 'add_to_entity_types', 
 							'ca_storage_locations_elements', 'sortDirection', 'setInterstitialElementsOnAdd',
@@ -794,6 +794,19 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 *
+		 */
+		public function isInHomeLocation($policy=null, $options=null) {
+			if(!$this->hasField('home_location_id')) { return null; }	// home location not supported
+			if(!($home_location_id = $this->get('home_location_id'))) { return null; } // no home location set
+			$current_value = $this->getCurrentValue($policy, $options);
+			if (is_array($current_value) && ($current_value['type'] === 'ca_storage_locations') && ($current_value['id'] == $home_location_id)) {
+				return true;
+			}
+			return false;
+		}
+		# ------------------------------------------------------
+		/**
 		 * Return array with list of significant events in life cycle of item
 		 *
 		 * @param array $pa_bundle_settings The settings for a ca_objects_history editing BUNDLES
@@ -897,7 +910,7 @@
 						if ((string)$qr_lots->get('ca_object_lots.deleted') !== '0') { continue; }	// filter out deleted
 						
 						$vn_type_id = $qr_lots->get('ca_object_lots.type_id');
-						$vs_display_template = $pb_display_label_only ? "" : caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+						$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_object_lots_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 					
 						$vs_color = $va_lot_type_info[$vn_type_id]['color'];
 						if (!$vs_color || ($vs_color == '000000')) {
@@ -1006,7 +1019,7 @@
 						$vn_type_id = $qr_loans->get('ca_loans.type_id');
 						$vn_rel_type_id = $qr_loans->get("{$linking_table}.type_id");
 						
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_loans_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 				
 						$va_dates = [];
 						
@@ -1113,7 +1126,7 @@
 						$vn_type_id = $qr_movements->get('ca_movements.type_id');
 						$vn_rel_type_id = $qr_movements->get("{$linking_table}.type_id");
 						
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);			
+						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_movements_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);			
 					
 						$va_dates = [];
 						if($pb_date_mode) {
@@ -1225,7 +1238,7 @@
 						$vs_type_idno = $va_occurrence_type_info[$vn_type_id]['idno'];
 						$vn_rel_type_id = $qr_occurrences->get("{$linking_table}.type_id");
 						
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_occurrences_{$vs_type_idno}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_displayTemplate", "ca_occurrences_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_childDisplayTemplate", "ca_occurrences_{$vs_type_idno}_childTemplate"], $pa_bundle_settings, $vs_display_template);
 		   			
 						$va_dates = [];
@@ -1340,7 +1353,7 @@
 						$vs_type_idno = $va_entity_type_info[$vn_type_id]['idno'];
 						$vn_rel_type_id = $qr_entities->get("{$linking_table}.type_id");
 				
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_entities_{$vs_type_idno}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_entities_{$vs_type_idno}_displayTemplate", "ca_entities_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(["ca_entities_{$vs_type_idno}_childDisplayTemplate", "ca_entities_{$vs_type_idno}_childTemplate"], $pa_bundle_settings, $vs_display_template);
 		   			
 						$va_dates = [];
@@ -1449,7 +1462,7 @@
 						$vn_type_id = $qr_collections->get('ca_collections.type_id');
 						$vn_rel_type_id = $qr_collections->get("{$linking_table}.type_id");
 				
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_collections_{$va_collection_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_collections_{$va_collection_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_collections_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_collections_childDisplayTemplate', 'ca_collections_childTemplate'], $pa_bundle_settings, $vs_display_template);
 		   			
 						$va_dates = [];
@@ -1558,7 +1571,7 @@
 						$vn_type_id = $qr_objects->get('ca_objects.type_id');
 						$vn_rel_type_id = $qr_objects->get("{$linking_table}.type_id");
 				
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_objects_{$va_object_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_objects_{$va_object_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_objects_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_objects_childDisplayTemplate', 'ca_objects_childTemplate'], $pa_bundle_settings, $vs_display_template);
 		   			
 						$va_dates = [];
@@ -1668,7 +1681,7 @@
 						$relation_id = $qr_locations->get("{$linking_table}.relation_id");
 						$vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id");
 				
-				        $vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+				        $vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate", "ca_storage_locations_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 					
 						$va_date = array(
 							'sortable' => $qr_locations->get("{$linking_table}.effective_date", array('getDirectDate' => true)),
@@ -2067,6 +2080,7 @@
 			$o_view->setVar('id_prefix', $ps_form_name);
 			$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 		
+			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
 			$o_view->setVar('settings', $pa_bundle_settings);
 		
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
@@ -2148,6 +2162,9 @@
 			$rel_table = get_called_class();
 			$type_idno = caGetOption('type', $options, null);
 			$placement_code = caGetOption('placement_code', $options, null);
+			
+			$no_template = caGetOption('noTemplate', $options, false);
+		
 			if((is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"])|| is_array($interstitial_elements = $settings["setInterstitialElementsOnAdd"])) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
 				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
@@ -2180,7 +2197,7 @@
 								$field_class = '';
 								break;
 						}
-						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".'{n}', 'id' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".'{n}', 'value' => _t('today'), 'classname' => $field_class])."</td>";
+						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'id' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'value' => _t('today'), 'classname' => $field_class])."</td>";
 					} else {
 						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($request, null, $element_code, $placement_code, $settings, ['elementsOnly' => true])."</td>";
 					}	
@@ -2201,25 +2218,28 @@
 		 * @param BaseRelationshipModel $t_item_rel Model instance for the relationship
 		 * @param int $rel_id Row_id for related record
 		 * @param array $settings Array of settings for history tracking chronlogy bundle
+		 * @param array $options 
 		 *
 		 * @return bool
 		 */
-		public static function setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $placement_code, $form_prefix, $t_item_rel, $rel_id, $settings) {
+		public static function setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $placement_code, $form_prefix, $t_item_rel, $rel_id, $settings, $options=null) {
 			if($t_item_rel) {
 				$rel_table = get_called_class();
 				
+				$no_template = caGetOption('noTemplate', $options, false);
+				
 				$type = $rel_table::typeCodeForRowID($rel_id);
 				$type_id = $rel_table::typeIDForRowID($rel_id);
-				if (is_array($interstitial_elements = caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $settings, array()))) {
+				if (is_array($interstitial_elements = $no_template ? $settings : caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $settings, array()))) {
 					foreach($interstitial_elements as $element_code) {
 						if ($t_item_rel->hasField($element_code)) {
-							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter(["{$placement_code}{$form_prefix}_{$type}_{$element_code}new_0", "{$placement_code}{$form_prefix}__{$element_code}new_0"], pString));
+							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$element_code}new_0", "{$placement_code}{$form_prefix}__{$element_code}new_0"], pString));
 						} elseif ($element_id = ca_metadata_elements::getElementID($element_code)) {
 							$sub_element_ids = ca_metadata_elements::getElementsForSet($element_id, ['idsOnly' => true]);
 							$vals = [];
 							
 							foreach($sub_element_ids as $sub_element_id) {
-								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter(["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0"], pString);
+								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0"], pString);
 							}
 							$t_item_rel->addAttribute($vals, $element_code);
 						}

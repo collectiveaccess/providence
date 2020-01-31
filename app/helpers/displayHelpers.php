@@ -956,9 +956,15 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					$vs_buf .= "<br/><div class='inspectorDeaccessioned'>"._t('Deaccessioned %1', $t_item->get('deaccession_date'))."</div>\n";
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
 				} else {
-					if ($po_view->request->user->canDoAction('can_see_current_location_in_inspector_ca_objects')) {
+					if ($po_view->request->user->canDoAction('can_see_current_location_in_inspector_'.$vs_table_name)) {
+						$is_home = $t_item->isInHomeLocation();
 						if (method_exists($t_item, "getHistory") && ($inspector_current_value_label = $t_item->getInspectorHistoryTrackingDisplayPolicy('label'))) {
-							if ($inspector_current_value = $t_item->getCurrentValueForDisplay()) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$inspector_current_value}</div>"; }
+							if ($inspector_current_value = $t_item->getCurrentValueForDisplay()) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$inspector_current_value}".(($is_home) ? ' '._t('[HOME]') : '')."</div>"; }
+						}
+																	
+						if ((!$is_home || !$inspector_current_value) && $t_item->hasField('home_location_id') && ($home_location_id = $t_item->get('home_location_id')) && ($t_home_loc = ca_storage_locations::find($home_location_id, ['returnAs' => 'firstModelInstance']))) {
+							if (!($template = $po_view->request->config->get('inspector_home_location_display_template'))) { $template = 'ca_storage_locations.hierarchy.preferred_labels.name'; }
+							$vs_buf .= "<div class='inspectorCurrentLocation'><strong>"._t('Home location').":</strong><br/>".$t_home_loc->getWithTemplate($template)."</div>"; 
 						}
 					}
 				}
@@ -3375,20 +3381,39 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	/** 
 	 * Used by ca_objects bundle
 	 */
-	function caReturnToHomeLocationControlForRelatedObjectBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values) {
+	function caReturnToHomeLocationControlForRelatedObjectBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
 		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		if(!is_array($policies) || !sizeof($policies)) { return ''; }
+		if (!$ps_policy) { $ps_policy = ca_objects::getDefaultHistoryTrackingCurrentValuePolicy(); }
+		
+		$settings = ca_objects::policy2bundleconfig(['policy' => $ps_policy]);
+		$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
 		
 		$ids = array_map(function($v) { return $v['object_id']; }, $pa_initial_values);
 		
 		$vs_buf = "<div class='editorBundleReturnToHomeControl'>".
-			caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return all to home locations"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+			caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return to home locations"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 			"</div>";
 			
+		$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls' class='editorBundleReturnToHomeControls'>".
+			ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($po_request, $ps_id_prefix, $pt_related->tableName(), $settings, ['placement_code' => $ps_id_prefix, 'noTemplate' => true]).
+			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+			"</div>\n"; 
 		$vs_buf .= "
 			<script type='text/javascript'>
+				function caReturnToHomeLocationToggleForm{$ps_id_prefix}() {
+					jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_controls').slideToggle(250);
+				}
 				function caReturnToHomeLocation{$ps_id_prefix}() {
-					jQuery.post('".caNavUrl($po_request, '*', '*', 'ReturnToHomeLocations')."', { 'object_ids': '".join(';', $ids)."'}, function(data) {
+					var interstitials = ".json_encode($interstitials).";
+					var data = { 'ids': '".join(';', $ids)."', 'policy': '{$ps_policy}'};
+					for(var i in interstitials) {
+						console.log('#{$ps_id_prefix}_ca_storage_locations__' + interstitials[i]);
+						data[interstitials[i]] = jQuery('#{$ps_id_prefix}_ca_storage_locations__' + interstitials[i]).val();
+					}
+					
+					jQuery.post('".caNavUrl($po_request, '*', '*', 'ReturnToHomeLocations')."', data, function(data) {
+							jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_controls').slideUp(250);
 							var e = jQuery('#{$ps_id_prefix}_return_to_home_locations').parent();
 							if(data && (data.ok == 1)) {
 								jQuery(e).html(data.message);

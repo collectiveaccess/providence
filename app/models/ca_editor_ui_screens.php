@@ -1535,6 +1535,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Hide "Update Location" controls'),
 										'description' => _t('Check this option if you want to hide the "Update Location" controls in this bundle placement.')
 									),
+									'hide_return_to_home_location_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Return to Home Location" controls'),
+										'description' => _t('Check this option if you want to hide the "Return to Home Location" controls in this bundle placement.')
+									),
 									'hide_add_to_occurrence_controls' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,

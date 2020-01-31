@@ -40,7 +40,7 @@
 	$current_value 				= $t_subject->getCurrentValue();
 	
 	$show_return_home_controls = false;
-	if($t_subject->hasField('home_location_id') && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
+	if($t_subject->hasField('home_location_id') && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
 		$show_return_home_controls = true;
 	}
 
@@ -106,11 +106,12 @@
 ?>
 				<div style='float: left;'  class='button caChangeLocationButton <?php print $vs_id_prefix; ?>caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Update location'); ?></a></div>
 <?php
-				if ($show_return_home_controls) {
+			}
+			
+			if(!$read_only && $show_return_home_controls && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
 ?>
-					<div style='float: left;' class='button caReturnToHomeLocationButton <?php print $vs_id_prefix; ?>caReturnToHomeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ReturnToHomeLocation"><?php print caNavIcon(__CA_NAV_ICON_HOME__, '15px'); ?> <?php print _t('Return to home location'); ?></a></div>
+				<div style='float: left;' class='button caReturnToHomeLocationButton <?php print $vs_id_prefix; ?>caReturnToHomeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ReturnToHomeLocation"><?php print caNavIcon(__CA_NAV_ICON_HOME__, '15px'); ?> <?php print _t('Return to home location'); ?></a></div>
 <?php
-				}
 			}
 			
 			if(!$read_only && !caGetOption('hide_add_to_occurrence_controls', $settings, false)) {
@@ -309,23 +310,23 @@ switch($display_mode) {
 	//
 	// Template to generate controls for creating new storage location
 	//
-    if ($show_location_controls) {
-    	if($show_return_home_controls) {
+	if($show_return_home_controls) {
 ?>
-	<textarea class='<?php print $vs_id_prefix; ?>caHistoryTrackingReturnToHomeLocationTemplate' style='display: none;'>
-		<div class="clear"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home_{n}" class="labelInfo caRelatedLocation <?php print $vs_id_prefix; ?>caRelatedLocation">
-			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteReturnToHomeLocationButton <?php print $vs_id_prefix; ?>caDeleteReturnToHomeLocationButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+		<textarea class='<?php print $vs_id_prefix; ?>caHistoryTrackingReturnToHomeLocationTemplate' style='display: none;'>
+			<div class="clear"><!-- empty --></div>
+			<div id="<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home_{n}" class="labelInfo caRelatedLocation <?php print $vs_id_prefix; ?>caRelatedLocation">
+				<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteReturnToHomeLocationButton <?php print $vs_id_prefix; ?>caDeleteReturnToHomeLocationButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			
-			<h2 id="<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home_heading"></h2>
+				<h2 id="<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home_heading"></h2>
 			
-			<?php print ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['placement_code' => $vs_id_prefix]); ?>	
+				<?php print ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['placement_code' => $vs_id_prefix]); ?>	
 
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home{n}" id="<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home{n}" value="0"/>
-		</div>
-	</textarea>
+				<input type="hidden" name="<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home{n}" id="<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home{n}" value="0"/>
+			</div>
+		</textarea>
 <?php
-		}
+	}
+    if ($show_location_controls || $show_return_home_controls) {
 ?>	
 	<textarea class='<?php print $vs_id_prefix; ?>caHistoryTrackingSetLocationTemplate' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
@@ -671,7 +672,7 @@ if($show_entity_controls) {
 				});
 			}
 <?php	
-	if($show_location_controls) {
+	if($show_location_controls || $show_return_home_controls) {
 ?>	
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_storage_locations = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
 				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_storage_locations_',

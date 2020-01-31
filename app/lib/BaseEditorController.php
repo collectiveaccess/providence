@@ -2676,11 +2676,11 @@ class BaseEditorController extends ActionController {
 		} else {
 			$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		
-			$updated = $errors = [];
+			$updated = $already_home = $errors = [];
 			$msg = '';
 			if(is_array($policies) && sizeof($policies)) {
 		
-				$object_ids = array_map(function($v) { return (int)$v; }, explode(';',$this->request->getParameter('object_ids', pString)));
+				$object_ids = array_map(function($v) { return (int)$v; }, explode(';',$this->request->getParameter('ids', pString)));
 		
 				$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
 				
@@ -2691,12 +2691,33 @@ class BaseEditorController extends ActionController {
 					if (!($location_id = $t_object->get('home_location_id'))) { continue; }
 					if (!$t_object->isSaveable($this->request)) { continue; }
 	
-					foreach($policies as $p) {
+					foreach($policies as $n => $p) {
+						if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
+						
 						$pe = $p['elements']['ca_storage_locations'];
 						$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
 						if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
-					
-						$t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType']);
+						
+						// Interstitials?
+						$effective_date = null;
+						$interstitial_values = [];
+						if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
+							foreach($interstitial_elements as $e) {
+								switch($e) {
+									case 'effective_date':
+										$effective_date = 'today';
+										break;
+								}
+							}
+						}
+						
+						if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
+							$already_home[] = $object_id;
+							continue;
+						}
+						
+						$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
+						ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
 		
 						if($t_object->numErrors() > 0) {
 							$errors[] = $object_id;
@@ -2705,9 +2726,16 @@ class BaseEditorController extends ActionController {
 						}
 					}
 				}	
-				$msg = _t('%1 returned to home locations', sizeof($updated));
+				$n = sizeof($updated);
+				$h = sizeof($already_home);
+				
+				if($h > 0) {
+					$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $h);
+				} else {
+					$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'));
+				}
 				if (sizeof($errors)) {
-					$msg .= '; '._t('%1 erros', sizeof($errors));
+					$msg .= '; '._t('%1 errors', sizeof($errors));
 				}
 				$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
 			} else {

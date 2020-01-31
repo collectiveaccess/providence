@@ -1259,6 +1259,15 @@ div.hint {
 	margin:-6px 0px 0px 0px;
 }
 
+.editorBundleReturnToHomeControls {
+	display: none;
+	clear: both;
+	border: 1px dotted #cccccc;
+	background: #fff;
+	padding: 5px 5px 5px 10px;
+	width: 692px;
+}
+
 .bundleSubLabel .editorBundleReturnToHomeControl{
 	float:left;
 	text-align:left;

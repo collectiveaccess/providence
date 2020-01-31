@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,7 +60,7 @@ if (!$this->request->isAjax()) {
 				$initial_values[] = ['object_id' => $qr_result->get('ca_objects.object_id')];
 			}
 			$qr_result->seek(0);
-			print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_subject_rel, $t_subject_rel, null, $initial_values);
+			print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_subject_rel, $t_subject_rel, null, $initial_values, $this->getVar('policy'));
 ?>
 	</div>
 	<br style='clear: both;'/>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -994,6 +994,7 @@ class SearchResult extends BaseObject {
 	 *			length = Return all values truncated to a maximum length. [Default is null]
 	 *			truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
 	 *			ellipsis = Add ellipsis ("...") to truncated values. Values will be set to the truncated length including the ellipsis. Eg. a value truncated to 12 characters will include 9 characters of text and 3 characters of ellipsis. [Default is false]
+	 *			convertLineBreaks = Convert newlines to <br/> tags. [Default is false]
 	 *
 	 *		[Formatting options for hierarchies]
 	 *			maxLevelsFromTop = Restrict the number of levels returned to the top-most beginning with the root. [Default is null]
@@ -1022,6 +1023,8 @@ class SearchResult extends BaseObject {
 			$pa_options['template'] = null;
 			$pa_options['returnAsSearchResult'] = false;
 		}
+		
+		$vb_convert_line_breaks = isset($pa_options['convertLineBreaks']) ? (bool)$pa_options['convertLineBreaks'] : false;
 		
 		$config = Configuration::load();
 		
@@ -1784,6 +1787,14 @@ class SearchResult extends BaseObject {
 				} else {
 					return array_values($va_filtered_vals);
 				}
+			}
+		}
+		
+		if ($vb_convert_line_breaks) {
+			if(is_array($vm_val)) {
+				return array_map(function($v) { return !is_array($vm_val) ? nl2br($v) : $v; }, $vm_val);
+			} else {
+				return nl2br($vm_val);
 			}
 		}
 		
