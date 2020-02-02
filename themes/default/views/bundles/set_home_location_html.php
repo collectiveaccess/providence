@@ -86,7 +86,7 @@
 				
 				currentSelectionIDID: 'new_home_location_id',
 				currentSelectionDisplayID: 'SetHomeLocationHierarchyBrowserSelectionMessage',
-				currentSelectionDisplayFormat: '<?php print addslashes(_t('Home location will be set to <em>%1</em> on save.')); ?>',
+				currentSelectionDisplayFormat: '<?php print addslashes(_t('Home location will be set to <em><ifdef code="parent">^parent ➜ </ifdef>^current</em> on save.')); ?>',
 				
 				onSelection: function(id, parent_id, name, formattedDisplay) {
 					if (id > 1) {
