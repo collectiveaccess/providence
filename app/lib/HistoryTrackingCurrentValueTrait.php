@@ -2254,6 +2254,13 @@
 		 *
 		 */
 		public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+			return $this->renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options);
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		public function renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
 			switch($ps_bundle_name) {
 				case 'ca_objects_location':
 				case 'ca_objects_location_date':
@@ -2293,6 +2300,9 @@
 					}
 					return null;
 				    break;
+			case 'home_location_value':
+					return "MEOW";
+					break;
 		    case 'submitted_by_user':
 		        $vals = array_shift(array_shift($pa_values));
 		        if($user_id = $vals['submission_user_id']) {

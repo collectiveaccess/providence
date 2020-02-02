@@ -624,6 +624,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$this->BUNDLES['submitted_by_user'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submitted by'), 'displayOnly' => true);
 		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
+		
+		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location'), 'displayOnly' => true);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1164,5 +1166,27 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 
 		return $o_view->render('ca_object_circulation_status_html.php');
 	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+		switch($ps_bundle_name) {
+			case 'home_location_value':
+				$q = caMakeSearchResult('ca_objects', [$pn_row_id]);
+				if ($q && $q->nextHit()) {
+					if(($home_location_id = $q->get('ca_objects.home_location_id')) && ($t_loc = ca_storage_locations::find(['location_id' => $home_location_id], ['returnAs' => 'firstModelInstance']))) {
+						if (!($t = Configuration::load()->get('home_location_display_template'))) {
+							$t = 'ca_storage_locations.hierarchy.preferred_labels';
+						}
+						return $t_loc->getWithTemplate($t);
+					}
+				}
+				break;
+			default:
+				return self::renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options);
+				break;
+		}
+	}	
 	# ------------------------------------------------------
 }
