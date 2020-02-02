@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1815,6 +1815,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierarchyBrowser -->	</div>";
 				
+				if (!($current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, null))) {
+					$current_selection_display_format = '<ifdef code="hierarchy">^hierarchy%delimiter=_➜_ ➜ </ifdef>^current';
+				}
+				
 				$vs_buf .= "
 	<script type='text/javascript'>
 		jQuery(document).ready(function() { 
@@ -1839,6 +1843,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				autoShrink: '".(caGetOption('auto_shrink', $pa_options, false) ? 'true' : 'false')."',
 				autoShrinkAnimateID: '{$ps_name}_hierarchyBrowser{n}',
 				autoShrinkMaxHeightPx: {$vn_autoshrink_height},
+				
+				currentSelectionDisplayFormat: '".addslashes($current_selection_display_format)."',
 				
 				currentSelectionDisplayID: '{$ps_name}_browseCurrentSelectionText{n}',
 				onSelection: function(item_id, parent_id, name, display) {

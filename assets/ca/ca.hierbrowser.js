@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,7 +72,7 @@ var caUI = caUI || {};
 			classNameContainerReadOnly: 'hierarchyBrowserContainerReadOnly',
 
 			currentSelectionDisplayID: '',
-			currentSelectionDisplayFormat: '%1',
+			currentSelectionDisplayFormat: '<ifdef code="hierarchy">^hierarchy%delimiter=_➜_ ➜ </ifdef>^current',
 			currentSelectionIDID: '',
 			allowSelection: true,
 
@@ -426,6 +426,7 @@ var caUI = caUI || {};
 			if (!id_list.length) { that.isLoadingLevel = false; return; }
 
 			var start = 0;
+			var onLoadSelection = null;
 			jQuery.getJSON(that.levelDataUrl, { id: id_list.join(';'), bundle: that.bundle, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : '', start: start * that.maxItemsPerHierarchyLevelPage, max: (that.uiStyle == 'vertical') ? 0 : that.maxItemsPerHierarchyLevelPage }, function(dataForLevels) {
 				var longestLevel = 0;
 				jQuery.each(dataForLevels, function(key, data) {
@@ -578,12 +579,6 @@ var caUI = caUI || {};
 									return false;
 								});
 
-								// if (that.readOnly) {
-// 									jQuery('#' + newLevelListID + " li:first a").click(function() {
-// 										return false;
-// 									});
-// 								}
-
 								if ((that.allowExtractionFromHierarchy) && (that.extractFromHierarchyButtonIcon)) {
 									jQuery('#' + newLevelListID + ' #hierBrowser_' + that.name + '_extract').unbind('click.extract').bind('click.extract', function() {
 										that.extractItemFromHierarchy(item['item_id'], item);
@@ -596,8 +591,12 @@ var caUI = caUI || {};
 							}
 							// Pass item_id to caller if required
 							if (is_init && that.selectOnLoad && that.onSelection && item['item_id'] == selected_item_id) {
-								var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
-								that.onSelection(item['item_id'], item.parent_id, item.name, formattedDisplayString, item.type_id);
+								// var formattedDisplayString = that._getCurrentSelectionStr(item, level);
+// 								that.onSelection(item['item_id'], item.parent_id, item.name, formattedDisplayString, item.type_id);
+								onLoadSelection = {
+									'level': level,
+									'item': item
+								};
 							}
 						} else {
 							if (item.parent_id && (that.selectedItemIDs.length == 0)) { that.selectedItemIDs[0] = item.parent_id; }
@@ -725,9 +724,15 @@ var caUI = caUI || {};
 				}
 
 				that.isLoadingLevel = false;
+				
+				// update current selection info after initial load if required
+				if(onLoadSelection) {
+					that.selectItem(onLoadSelection.level, onLoadSelection.item.item_id, onLoadSelection.item.parent_id, onLoadSelection.item.has_children, onLoadSelection.item);
+				}
+				
 
 				// try to load any outstanding level pages
-				that.loadHierarchyLevelData();
+				//that.loadHierarchyLevelData();
 			});
 		}
 		// --------------------------------------------------------------------------------
@@ -741,7 +746,7 @@ var caUI = caUI || {};
 				while(l >= 0) {
 					if (that.displayCurrentSelectionOnLoad && (jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).length > 0)) {
 						if (that.currentSelectionDisplayID) {
-							jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayFormat.replace('%1', jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).html()));
+							jQuery('#' + that.currentSelectionDisplayID).html(that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
 						}
 						break;
 					}
@@ -780,7 +785,7 @@ var caUI = caUI || {};
 			if (!that.allowSelection) return false;
 
 			// set current selection display
-			var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
+			var formattedDisplayString = that._getCurrentSelectionStr(item, level);
 
 			if (that.currentSelectionDisplayID) {
 				jQuery('#' + that.currentSelectionDisplayID).html(formattedDisplayString);
@@ -881,6 +886,44 @@ var caUI = caUI || {};
 		//
 		that.numLevels = function() {
 			return that.levelDivs.length;
+		}
+		// --------------------------------------------------------------------------------
+		// 
+		//
+		that._getCurrentSelectionStr = function(item, level) {
+			if(caDisplayTemplateParser.processTemplate) {
+				var str = that.currentSelectionDisplayFormat;
+				var tags = caDisplayTemplateParser.getTagList(str);
+				
+				var hierarchy = '';
+				for(var i in tags) {
+					var tag = tags[i];
+					var opts = caDisplayTemplateParser.parseTagOpts(tag);
+					if (opts.tag === 'hierarchy') {
+						var h = [];
+						var delimiter = opts['delimiter'];
+						if (!delimiter) { delimiter = '; '; }
+						
+						var l = level - 1;
+						var parent_id = item.parent_id;
+						
+						while((l >= 0) && (parent_id > 0)) {
+							var pitem = jQuery('#hierBrowser_' + that.name + '_level_' + (l) + '_item_' + parent_id).data('item');
+							if (!pitem) { break; }
+							h.push(pitem.name);
+							l--;
+							parent_id = pitem.parent_id;
+						}
+						hierarchy = h.reverse().join(delimiter);
+						
+					}
+				}
+					
+				var parent = jQuery('#hierBrowser_' + that.name + '_level_' + (level-1) + '_item_' + item.parent_id).data('item');
+			
+				return caDisplayTemplateParser.processTemplate(str, { 'current': jQuery(item.name).text(), 'parent': jQuery(parent ? parent.name : '').text(), 'hierarchy': jQuery(hierarchy).text() });
+			}
+			return item.name;
 		}
 		// --------------------------------------------------------------------------------
 		// END method definitions
