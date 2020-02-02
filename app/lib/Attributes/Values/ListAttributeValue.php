@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -202,7 +202,16 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'default' => '',
 		'label' => _t('Restrict to types'),
 		'description' => _t('Restricts display to items of the specified type(s). Leave all unchecked for no restriction.')
-	)
+	),
+	'currentSelectionDisplayFormat' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => '',
+		'width' => 90, 'height' => 4,
+		'label' => _t('Current selection template'),
+		'validForRootOnly' => 1,
+		'description' => _t('Template formatting current selection text. You may use the following tags: ^current (the currently selected list item), ^parent (the parent of the currently selected list item), ^hierarchy (the full hierarchal path to the list item).')
+	),
 );
 
 
@@ -454,6 +463,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		$vs_render = $for_search ? "" : caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
 		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
+		
+		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
 
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
 		if (!$vb_require_value) { $vn_max_columns++; }
@@ -471,7 +482,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			),
 			array_merge(
 				$pa_options,
-				array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink)
+				['render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 'currentSelectionDisplayFormat' => $current_selection_display_format]
 			)
 		);
 
