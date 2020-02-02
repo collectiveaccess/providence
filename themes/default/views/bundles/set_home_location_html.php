@@ -81,6 +81,7 @@
 
 				initItemID: <?php print (int)$t_item->get('home_location_id'); ?>,
 				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+				incrementalLoadIndicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1).' '._t('Loading'); ?>",
 				displayCurrentSelectionOnLoad: false,
 				autoShrink: false,
 				

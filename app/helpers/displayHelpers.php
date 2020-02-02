@@ -963,7 +963,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						}
 																	
 						if ((!$is_home || !$inspector_current_value) && $t_item->hasField('home_location_id') && ($home_location_id = $t_item->get('home_location_id')) && ($t_home_loc = ca_storage_locations::find($home_location_id, ['returnAs' => 'firstModelInstance']))) {
-							if (!($template = $po_view->request->config->get('inspector_home_location_display_template'))) { $template = 'ca_storage_locations.hierarchy.preferred_labels.name'; }
+							if (!($template = $po_view->request->config->get('inspector_home_location_display_template'))) { $template = '^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_'; }
 							$vs_buf .= "<div class='inspectorCurrentLocation'><strong>"._t('Home location').":</strong><br/>".$t_home_loc->getWithTemplate($template)."</div>"; 
 						}
 					}
