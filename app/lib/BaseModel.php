@@ -9579,6 +9579,8 @@ $pa_options["display_form_field_tips"] = true;
 					$va_row[$vs_right_field_name] = $pn_to_id;
 				}
 				
+				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
+				
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
@@ -9619,7 +9621,7 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
 				unset($va_row[$vs_rel_pk]);
-				$va_row['source_info'] = '';
+				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				$va_row[$vs_item_pk] = $pn_to_id;
 				 
 				$t_item_rel->set($va_row);
