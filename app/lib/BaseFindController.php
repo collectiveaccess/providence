@@ -98,7 +98,7 @@
                 if ($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id)) {
                     $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null));
 			    } else {
-			        $this->opa_sorts = [];
+			        $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request));
 			    }
 			} else {
 			    $this->opa_sorts = [];
@@ -141,7 +141,8 @@
 
 			// Set display options
 			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
-			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
+			
+			if(($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) && ($t_instance::typeCodeForID($vn_type_id))) { // occurrence searches are inherently type-restricted
 				$va_display_options['restrictToTypes'] = array($vn_type_id);
 			}
 
