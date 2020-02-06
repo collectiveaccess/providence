@@ -2300,9 +2300,6 @@
 					}
 					return null;
 				    break;
-			case 'home_location_value':
-					return "MEOW";
-					break;
 		    case 'submitted_by_user':
 		        $vals = array_shift(array_shift($pa_values));
 		        if($user_id = $vals['submission_user_id']) {
