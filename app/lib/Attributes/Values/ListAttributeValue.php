@@ -402,7 +402,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null)) && (strlen($ps_value) > 0)) {
-			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logIdno', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logReference', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
 		}
 		
 		if (!$vb_require_value && !$vn_id) {
@@ -678,15 +678,16 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
 			$t_list = new ca_lists();
 			$va_list_items = $t_list->getItemsForList($pa_element_info['list_id']);
-			if(is_array($va_list_items) && sizeof($va_list_items)) {
+			if(is_array($va_list_items) && (sizeof($va_list_items) > 0)) {
 				foreach($va_list_items as $va_items_by_locale) {
 					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => false, 'multiple' => true];
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => true, 'multiple' => true];
 					}
 				}
+				$va_element_settings['hideIfSelected___null__'] = ['deferred' => true, 'multiple' => true];
 			}
 		}
-
+		
 		return $va_element_settings;
 	}
 	# ------------------------------------------------------------------

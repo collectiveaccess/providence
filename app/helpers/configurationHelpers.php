@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,7 +58,7 @@ require_once(__CA_LIB_DIR__.'/Configuration.php');
 			}
 		}
 		
-		ksort($va_profiles);
+		ksort($va_profiles, SORT_STRING | SORT_FLAG_CASE);
 		return $va_profiles;
 	}
 	# ----------------------------------------------------------------

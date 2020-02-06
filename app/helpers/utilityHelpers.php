@@ -293,7 +293,7 @@ function caFileIsIncludable($ps_file) {
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
-		if ($handle = opendir($dir)) {
+		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != "..") {
 					if (is_dir("{$dir}/{$item}")) { caRemoveDirectory("{$dir}/{$item}", true);  }
@@ -594,7 +594,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 */
 	function caEscapeSearchForURL($ps_search) {
-		return str_replace('/', '&#47;', $ps_search); // encode slashes as html entities to avoid Apache considering it a directory separator
+		return rawurlencode(str_replace('/', '&#47;', $ps_search)); // encode slashes as html entities to avoid Apache considering it a directory separator
 	}
 	# ----------------------------------------
 	function caSanitizeStringForJsonEncode($ps_text) {
@@ -775,7 +775,10 @@ function caFileIsIncludable($ps_file) {
 	function caModRewriteIsAvailable() {
 		global $g_mod_write_is_available;
 		if (is_bool($g_mod_write_is_available)) { return $g_mod_write_is_available; }
-		if (function_exists('apache_get_modules')) {
+		if (strpos($_SERVER['SERVER_SOFTWARE'], 'nginx') !== false) {
+		    $g_mod_write_is_available = true;
+		    return true; // assume you have rules set up in you nginx config to handle index.php rewrite
+		} elseif (function_exists('apache_get_modules')) {
 			return $g_mod_write_is_available = (bool)in_array('mod_rewrite', apache_get_modules());
 		} else {
 			return $g_mod_write_is_available = (bool)((getenv('HTTP_MOD_REWRITE') == 'On') ? true : false);
@@ -3861,7 +3864,7 @@ function caFileIsIncludable($ps_file) {
 							if (is_array($vm_list_val[1]) && $o_purifier) {
 								$va_vals_proc = [];
 								foreach($vm_list_val[1] as $vm_sublist_val) {
-									$va_vals_proc[] = !is_null($vm_sublist_val) ? $o_purifier->purify($vm_sublist_val) : $vm_sublist_val;
+									$va_vals_proc[] = !is_null($vm_sublist_val) ? str_replace("&amp;", "&", $o_purifier->purify($vm_sublist_val)) : $vm_sublist_val;
 								}
 
 								if (!is_numeric($vs_key2)) {
@@ -3871,9 +3874,9 @@ function caFileIsIncludable($ps_file) {
 								}
 							} else {
 								if (!is_numeric($vs_key2)) {
-									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+									$va_values_proc[$vs_key][$vs_key2][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? str_replace("&amp;", "&", $o_purifier->purify($vm_list_val[1])) : $vm_list_val[1]];
 								} else {
-									$va_values_proc[$vs_key][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? $o_purifier->purify($vm_list_val[1]) : $vm_list_val[1]];
+									$va_values_proc[$vs_key][] = [$vm_list_val[0], $o_purifier && !is_null($vm_list_val[1]) ? str_replace("&amp;", "&", $o_purifier->purify($vm_list_val[1])) : $vm_list_val[1]];
 								}
 							}
 						} else {
@@ -3882,7 +3885,7 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 			} else {
-				$va_values_proc[$vs_key][] = [is_null($vm_val) ? 'IS' : '=', $o_purifier && !is_null($vm_val) ? $o_purifier->purify($vm_val) : $vm_val];
+				$va_values_proc[$vs_key][] = [is_null($vm_val) ? 'IS' : '=', $o_purifier && !is_null($vm_val) ? str_replace("&amp;", "&", $o_purifier->purify($vm_val)) : $vm_val];
 			}
 		}
 		return $va_values_proc;
@@ -4182,5 +4185,29 @@ function caFileIsIncludable($ps_file) {
 		$pw = substr(md5(uniqid(microtime())), rand(0, (31 - $length)), $length);
 		if (caGetOption('uppercase', $options, false)) { $pw = strtoupper($pw); }
 		return $pw;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caFetchFileFromUrl($url, $dest=null) {
+		$tmp_file = $dest ? $dest : tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
+		$r_incoming_fp = @fopen($url, 'r');
+		if(!$r_incoming_fp) {
+			throw new ApplicationException(_t("Cannot open remote URL [%1] to fetch media", $url));
+		}
+
+		$r_outgoing_fp = @fopen($tmp_file, 'w');
+		if(!$r_outgoing_fp) {
+			throw new ApplicationException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
+		}
+
+		while(($content = fgets($r_incoming_fp, 4096)) !== false) {
+			fwrite($r_outgoing_fp, $content);
+		}
+		fclose($r_incoming_fp);
+		fclose($r_outgoing_fp);
+		
+		return $tmp_file;
 	}
 	# ----------------------------------------

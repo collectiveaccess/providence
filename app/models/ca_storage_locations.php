@@ -451,6 +451,10 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	 */
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
 		$vb_parent_changed = (parent::saveBundlesForScreenWillChangeParent($pm_screen, $po_request, $pa_options) == __CA_PARENT_CHANGED__); 
+		
+		if (!$this->getPrimaryKey() && ($this->get('ca_storage_locations.parent_id') <= 0)) {   // For new records zero or negative parent_id means root
+		    $po_request->setParameter('parent_id', $this->getHierarchyRootID());
+		}
 		if (($vn_rc = parent::saveBundlesForScreen($pm_screen, $po_request, $pa_options)) && $vb_parent_changed) {
 			unset($pa_options['ui_instance']);
 	

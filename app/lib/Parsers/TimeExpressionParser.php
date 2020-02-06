@@ -239,7 +239,6 @@ class TimeExpressionParser {
 		if ($ps_expression == __TEP_NOW__) {
 			$ps_expression = array_shift($this->opo_language_settings->getList("nowDate"));		
 		}
-		$ps_expression = caRemoveAccents($ps_expression);
 		
 		if (!$pa_options) { $pa_options = array(); }
 		$this->init();
@@ -3359,8 +3358,7 @@ class TimeExpressionParser {
 		if (TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]) { return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]; }
 		
 		$va_values = $this->opo_language_settings->getList($ps_key);
-		$va_list_lc = is_array($va_values) ? array_map('strtolower', $va_values) : array();
-		
+		$va_list_lc = is_array($va_values) ? array_map('mb_strtolower', $va_values) : [];
 		return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key] = $va_list_lc;
 	}
 	# -------------------------------------------------------------------
@@ -3908,9 +3906,9 @@ class TimeExpressionParser {
 		}
 		
 		// Mid decade
-		if (((($start_pieces['year'] - floor(self::$early_mid_late_range_intervals['decade']/2) + floor(self::$early_mid_late_range_lengths['decade']/2)) % 10) == 0) && ($end_pieces['year'] == ($start_pieces['year'] + self::$early_mid_late_range_lengths['decade']))) {
-			return ['qualifier' => TEP_TOKEN_MID, 'range_type' => 'decade', 'value' => $mid_qualifiers[0].' '.$o_tep->makeDecadeString($dates, $options)];
-		}
+		if (!$options['isSpan'] && ((($start_pieces['year'] - floor(self::$early_mid_late_range_intervals['decade']/2) + floor(self::$early_mid_late_range_lengths['decade']/2)) % 10) == 0) && ($end_pieces['year'] == ($start_pieces['year'] + self::$early_mid_late_range_lengths['decade']))) {
+ 			return ['qualifier' => TEP_TOKEN_MID, 'range_type' => 'decade', 'value' => $mid_qualifiers[0].' '.$o_tep->makeDecadeString($dates, $options)];
+ 		}
 		
 		
 		// Does it span centuries?
@@ -3918,6 +3916,8 @@ class TimeExpressionParser {
 		$mod_end = $end_pieces;
 		$second_century_info = null;
 		if ((($end_pieces['year'] - ($end_pieces['year'] % 100)) - ($start_pieces['year'] - ($start_pieces['year'] % 100))) >= 100) {
+			$options['isSpan'] = true;
+			
 			// first century
 			if (($start_pieces['year'] % 100) == 0) { // early
 				$mod_end['year'] =  $start_pieces['year'] + self::$early_mid_late_range_lengths['century'];
@@ -3953,6 +3953,8 @@ class TimeExpressionParser {
 		$mod_end = $end_pieces;
 		$second_decade_info = null;
 		if ((($end_pieces['year'] - ($end_pieces['year'] % 10)) - ($start_pieces['year'] - ($start_pieces['year'] % 10))) >= 10) {
+			$options['isSpan'] = true;
+			
 			// first decade
 			if (($start_pieces['year'] % 10) == 0) { // early
 				$mod_end['year'] =  $start_pieces['year'] + self::$early_mid_late_range_lengths['decade'];

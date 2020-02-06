@@ -525,11 +525,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
-			SELECT placement_id, bundle_name, placement_code, settings, rank
+			SELECT placement_id, bundle_name, placement_code, settings, `rank`
 			FROM ca_editor_ui_bundle_placements
 			WHERE
 				screen_id = ?
-			ORDER BY rank
+			ORDER BY `rank`
 		", [(int)$vn_screen_id]);
 		
 		$va_available_bundles = ($pb_settings_only) ? array() : $this->getAvailableBundles();
@@ -598,7 +598,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, array());
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-		$va_defined_bundles = $t_instance->getBundleList(array('includeBundleInfo' => true));		// these are the bundles defined for this type of editor
+		$va_defined_bundles = method_exists($t_instance, "getBundleList") ? $t_instance->getBundleList(array('includeBundleInfo' => true)) : [];		// these are the bundles defined for this type of editor
 		
 		$va_available_bundles = array();
 		
@@ -843,24 +843,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Relationship display template'),
 								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
 							)
-						);
+						);	
 						
-						// if (($t_instance->tableName() == 'ca_storage_locations') && ($t_rel->tableName() == 'ca_objects')) {
-// 							$va_additional_settings['locationTrackingMode'] = array(
-// 										'formatType' => FT_TEXT,
-// 										'displayType' => DT_SELECT,
-// 										'options' => array(
-// 											_t('none') => '',
-// 											_t('movements') => 'ca_movements',
-// 											_t('object-location relationships') => 'ca_storage_locations'
-// 										),
-// 										'default' => '',
-// 										'width' => "275px", 'height' => 1,
-// 										'label' => _t('Only show items currently in this location using'),
-// 										'description' => ''
-// 									);
-// 						}
-						
+						if ($vs_rel_table == 'ca_object_representations') {
+						    unset($va_additional_settings['restrict_to_search']);
+						}
 						break;
 					} else {
 						if (!($t_rel = Datamodel::getInstanceByTableName($vs_bundle, true))) { continue(2); }
@@ -1079,6 +1066,67 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							)
 						);
 					}
+											
+                    if ($vs_bundle == 'ca_object_representations') {
+                        unset($va_additional_settings['restrict_to_search']);
+                        unset($va_additional_settings['restrict_to_access_point']);
+                        unset($va_additional_settings['disableQuickadd']);
+                        unset($va_additional_settings['prepopulateQuickaddFields']);
+                        unset($va_additional_settings['showCurrentOnly']);
+                        unset($va_additional_settings['showCurrentUsingDate']);
+                        unset($va_additional_settings['colorFirstItem']);
+                        unset($va_additional_settings['colorLastItem']);
+                        unset($va_additional_settings['colorItem']);
+                        
+						$va_additional_settings['dontShowPreferredLabel'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not show representation preferred label?'),
+							'description' => _t('Do not show representation preferred label.')
+						);
+						$va_additional_settings['dontShowIdno'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not show representation identifier?'),
+							'description' => _t('Do not show representation identifier.')
+						);
+                        $va_additional_settings['dontShowStatus'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not show status?'),
+							'description' => _t('Do not show status drop-down.')
+						);
+						$va_additional_settings['dontShowAccess'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not show access?'),
+							'description' => _t('Do not show access drop-down.')
+						);
+						
+						if($this->getAppConfig()->get('allow_transcription')) {
+							$va_additional_settings['dontShowTranscribe'] = array(
+								'formatType' => FT_NUMBER,
+								'displayType' => DT_CHECKBOXES,
+								'takesLocale' => false,
+								'default' => 0,
+								'multiple' => false,
+								'label' => _t('Do not show transcription control?'),
+								'description' => _t('Do not show transcription drop-down.')
+							);
+						}
+                    }
 
 					if($vs_bundle == 'ca_sets') {
 						unset($va_additional_settings['restrict_to_relationship_types']);
@@ -1654,6 +1702,58 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							case 'ca_metadata_alert_rule_type_restrictions':
 								$va_additional_settings = [];
 								break;
+							case 'ca_item_comments':
+							    $va_additional_settings = [
+                                    'sortDirection' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_SELECT,
+                                        'width' => "200px", 'height' => "1",
+                                        'takesLocale' => false,
+                                        'default' => 'ASC',
+                                        'options' => array(
+                                            _t('Ascending') => 'ASC',
+                                            _t('Descending') => 'DESC'
+                                        ),
+                                        'label' => _t('Sort direction'),
+                                        'description' => _t('Direction of sort.')
+                                    ),
+                                    'dontShowDeleteButton' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_CHECKBOXES,
+                                        'width' => "10", 'height' => "1",
+                                        'takesLocale' => false,
+                                        'default' => '0',
+                                        'label' => _t('Do not show delete button'),
+                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                    )
+                                ];
+							    break;
+							case 'ca_representation_transcriptions':
+							    $va_additional_settings = [
+                                    'sortDirection' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_SELECT,
+                                        'width' => "200px", 'height' => "1",
+                                        'takesLocale' => false,
+                                        'default' => 'ASC',
+                                        'options' => array(
+                                            _t('Ascending') => 'ASC',
+                                            _t('Descending') => 'DESC'
+                                        ),
+                                        'label' => _t('Sort direction'),
+                                        'description' => _t('Direction of sort.')
+                                    ),
+                                    'dontShowDeleteButton' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_CHECKBOXES,
+                                        'width' => "10", 'height' => "1",
+                                        'takesLocale' => false,
+                                        'default' => '0',
+                                        'label' => _t('Do not show delete button'),
+                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                    )
+                                ];
+							    break;
 						}
 						$va_additional_settings['documentation_url'] = array(
 							'formatType' => FT_TEXT,
@@ -1936,13 +2036,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		if (!($pn_table_num = $this->getTableNum())) { return null; }
 		
 		if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return null; }
+		$table = $t_instance->tableName();
 		
 		if(!is_array($va_placements = $this->getPlacements($pa_options))) { $va_placements = array(); }
 		
 		$va_placements_in_screen = array();
 		foreach($va_placements as $vn_placement_id => $va_placement) {
-			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $va_placement['bundle_name']);
-			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
+			$vs_bundle_proc = preg_replace("!^(ca_attribute_|{$table}\.)!", '', $va_placement['bundle_name']);
+			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($table.'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
 				if ($vs_user_set_label = array_shift($va_tmp)) {
@@ -1958,7 +2059,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			$va_placements_in_screen[$vn_placement_id] = $va_placement;
 			
-			$vs_description = $t_instance->getDisplayDescription($t_instance->tableName().'.'.$vs_bundle_proc);
+			$vs_description = $t_instance->getDisplayDescription($table.'.'.$vs_bundle_proc);
 			TooltipManager::add(
 				"#uiEditor_{$vn_placement_id}",
 				"<h2>{$vs_label}</h2>".

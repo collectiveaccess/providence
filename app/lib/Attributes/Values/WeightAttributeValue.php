@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -146,6 +146,7 @@
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			global $g_ui_locale;
  			global $g_ui_units_pref;
+    		global $g_request;
  			
  			if ($pa_value_array['value_decimal1'] === '') {
  				$this->ops_text_value = '';
@@ -188,10 +189,11 @@
  		 * @return mixed Values as string or decimal
  		 */
 		public function getDisplayValue($pa_options=null) {
+ 			global $g_ui_units_pref;
 			if (caGetOption('returnAsDecimalMetric', $pa_options, false)) {
 				return $this->opn_decimal_value;
 			}
-			switch(caGetOption('units', $pa_options, null)) {
+			switch(caGetOption('units', $pa_options, $g_ui_units_pref)) {
  				case 'metric':
  					$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
  					return $vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 2);

@@ -624,7 +624,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'field':
-					if (!($t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
+					if (!($t_item = Datamodel::getInstanceByTableName($va_facet_info['relative_to'] ? $va_facet_info['relative_to'] : $this->ops_browse_table_name, true))) { break; }
 					if($vb_is_bit = ($t_item->getFieldInfo($va_facet_info['field'], 'FIELD_TYPE') == FT_BIT)) {
 						return ((bool)$pn_row_id) ? caGetOption('label_yes', $va_facet_info, _t('Yes')) : caGetOption('label_no', $va_facet_info, _t('No'));
 					}
@@ -1510,6 +1510,33 @@
 														$va_item_ids[] = (int)$vs_v;
 														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
 														$va_attr_values[] = array_map(function($v) { return (int)$v; }, array_unique($va_item_ids));
+														break;
+													case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+                                                    case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+                                                    case __CA_ATTRIBUTE_VALUE_PLACES__:
+                                                    case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+                                                    case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+                                                    case __CA_ATTRIBUTE_VALUE_LOANS__:
+                                                    case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+                                                    case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+                                                    case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
+                                                        if ($vs_f == 'value_integer1') {
+															$va_attr_sql[] = "(ca_attribute_values.value_integer1 = ?)";
+															$va_attr_values[] = $va_value['value_integer1'];
+														}
+                                                        break;
+													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+														if($vs_f == '_dont_save') {
+															$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
+															$va_attr_values[] = $vn_row_id;
+															break(2);
+														}
+														break;
+													case __CA_ATTRIBUTE_VALUE_LCSH__:
+														if ($vs_f == 'value_longtext2') {
+															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
+															$va_attr_values[] = $va_value['value_longtext2'];
+														}
 														break;
 													default:
 														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
@@ -3072,7 +3099,6 @@
 					$vs_no_text = (isset($va_facet_info['label_no']) && $va_facet_info['label_no']) ? $va_facet_info['label_no'] : _t('No');
 
 
-
 					$va_facet_values = array(
 						 'yes' => array(
 							'id' => 1,
@@ -3100,6 +3126,11 @@
 						foreach($va_facet_values as $vs_state_name => $va_state_info) {
 							$va_wheres = array();
 							$va_joins = array();
+							
+
+							if ($vs_browse_type_limit_sql) {
+								$va_wheres[] = $vs_browse_type_limit_sql;
+							}
 
 							if (!(bool)$va_state_info['id']) {	// no option
 								$va_wheres[] = $this->ops_browse_table_name.'.'.$vs_browse_table_pk." NOT IN (select row_id from ca_attributes where table_num = ".$t_item->tableNum()." AND element_id = ".$t_element->getPrimaryKey().")";
@@ -3156,6 +3187,7 @@
 							if (is_array($va_wheres) && sizeof($va_wheres) > 0) {
 								$vs_where_sql = ' WHERE '.join(' AND ', $va_wheres);
 							}
+							
 
 							if ($vb_check_availability_only) {
 								$vs_sql = "
@@ -3239,6 +3271,11 @@
 						$va_counts = array();
 						foreach($va_facet_values as $vs_state_name => $va_state_info) {
 							$va_wheres = array();
+
+							if ($vs_browse_type_limit_sql) {
+								$va_wheres[] = $vs_browse_type_limit_sql;
+							}
+							
 							$va_joins = $va_joins_init;
 							
 													// yes option
@@ -3711,7 +3748,7 @@
 							$va_suppress_values = caGetOption('exclude_values', $va_facet_info, null);
 						}
 
-						
+						$access = null;
 						switch($vn_element_type) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['restrict_to_types'], array('instance' => new ca_list_items(), 'dontExpandHierarchically' => true)))) { $va_restrict_to_types = array(); }
@@ -3862,6 +3899,15 @@
 							case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
 								if ($t_rel_item = AuthorityAttributeValue::elementTypeToInstance($vn_element_type)) {
 									$va_ids = $qr_res->getAllFieldValues('value_integer1');
+									
+									if(is_array($access = $t_rel_item->getFieldValuesForIDs($va_ids, ['access']))) {
+									    $va_ids = [];
+									    foreach($access as $id => $acc) {
+									        if ($acc != 1) { $va_ids[] = $id; }
+									    }
+									}
+									
+									
 									$va_auth_items = $t_rel_item->getPreferredDisplayLabelsForIDs($va_ids);
 									$qr_res->seek(0);
 								}
@@ -3878,7 +3924,7 @@
 							if (!($vs_val = trim($o_attr->getDisplayValue()))) { continue; }
 							if (is_array($va_suppress_values) && (in_array($vs_val, $va_suppress_values))) { continue; }
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
-
+                            if(is_array($access) && isset($access[$qr_res->get('value_integer1')]) && ($access[$qr_res->get('value_integer1')] != 1)) { continue; } 
 							switch($vn_element_type) {
 								case __CA_ATTRIBUTE_VALUE_LIST__:
 									$vn_child_count = 0;
@@ -4260,7 +4306,7 @@
 										$va_orderbys[] = 'lil.name_plural';
 										break;
 									case __CA_LISTS_SORT_BY_RANK__:	// by rank
-										$va_orderbys[] = 'li.rank';
+										$va_orderbys[] = 'li.`rank`';
 										break;
 									case __CA_LISTS_SORT_BY_VALUE__:	// by value
 										$va_orderbys[] = 'li.item_value';
@@ -4273,13 +4319,13 @@
 
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 							$vs_sql = "
-								SELECT COUNT(*) _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort, li.parent_id
+								SELECT COUNT(*) _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.`rank`, li.idno_sort, li.parent_id
 								FROM ca_list_items li
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 								{$vs_join_sql}
 								WHERE
 									ca_lists.list_code = ?  AND lil.is_preferred = 1 {$vs_where_sql}
-								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort 
+								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.`rank`, li.idno_sort 
 								{$vs_order_by}
 								";
 							//print $vs_sql." [$vs_list_name]";
@@ -6066,7 +6112,11 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						    $va_selects[] = "{$vs_rel_item_table_name}.type_id";
 						}
 					}
-					
+		
+					if ($t_item_rel && $t_item_rel->hasField('access')) {
+					    $va_selects[] = "{$vs_rel_table_name}.access";
+					}
+
 					if($va_facet_info['type'] == 'relationship_types') {
 					    $va_selects[] = "ca_relationship_types.type_id rel_type_id";
 					    $va_selects[] = "ca_relationship_types.type_code";
@@ -6259,7 +6309,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
 								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 	}                  
-	                    $vs_sql .= " GROUP BY ".join(', ', $va_select_flds);
+	                    $vs_sql .= " GROUP BY ".join(', ', array_map(function($v) { return str_replace(' rel_type_id', '', $v); }, $va_select_flds));
+					    
 					    //print "<hr>$vs_sql<hr>\n"; print_R($va_sql_params);
 						$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
 

@@ -553,7 +553,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$vs_order_by = 'clil.name_plural';
 					break;
 				case __CA_LISTS_SORT_BY_RANK__:	// by rank
-					$vs_order_by = 'cli.rank';
+					$vs_order_by = 'cli.`rank`';
 					break;
 				case __CA_LISTS_SORT_BY_VALUE__:	// by value
 					$vs_order_by = 'cli.item_value';
@@ -783,7 +783,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_order_by = 'clil.name_plural';
 				break;
 			case __CA_LISTS_SORT_BY_RANK__:	// by rank
-				$vs_order_by = 'cli.rank';
+				$vs_order_by = 'cli.`rank`';
 				break;
 			case __CA_LISTS_SORT_BY_VALUE__:	// by value
 				$vs_order_by = 'cli.item_value';
@@ -1458,6 +1458,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *  useDefaultWhenNull = if a list has a null value the default value is typically ignored and null used as the initial value; set this option to use the default in all cases [Default=false]
 	 *	checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
 	 *	exclude = array of item idnos to omit from the returned list. [Default is null]
+	 *
+	 *  forceEnabled = enable all list items regardless of the value of the item's is_enabled value [Default is false]
 	 *	 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1615,7 +1617,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_exclude_items) && (sizeof($pa_exclude_items) > 0) && in_array($va_item['idno'], $pa_exclude_items)) { continue; }
 			
 			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
-			if (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
+			if (!caGetOption('forceEnabled', $pa_options, false) && (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids)))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value
@@ -1864,7 +1866,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if (!$vb_is_vertical_hier_browser) {
-					$vs_buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>?</span></div>";
+					$vs_buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>-</span></div>";
 				}
 				$vs_buf .= caHTMLHiddenInput(
 					$ps_name,

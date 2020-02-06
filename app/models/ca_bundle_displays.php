@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -515,7 +515,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_bundle_display_placements
 			WHERE
 				display_id = ?
-			ORDER BY rank
+			ORDER BY `rank`
 		", (int)$vn_display_id);
 		
 		$va_available_bundles = ($pb_settings_only) ? [] : $this->getAvailableBundles(null, $pa_options);
@@ -531,7 +531,13 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
 				$va_bundle_name = explode(".", $vs_bundle_name);
-				
+				if (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) > 2)) {
+					array_pop($va_bundle_name);
+					$vs_bundle_name = join('.', $va_bundle_name);
+				} elseif (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) === 1)) {
+					$va_bundle_name[] = 'related';
+					$vs_bundle_name = join('.', $va_bundle_name);
+				}
 				$vb_user_can_edit = $t_subject->isSaveable(caGetOption('request', $pa_options, null), $vs_bundle_name);
 				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
@@ -1488,6 +1494,75 @@ if (!$pb_omit_editing_info) {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_history_tracking_current_contents",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+		
+		
+		    $va_additional_settings = array(
+				'display_template' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.submitted_by_user';
+			$vs_label = _t('Submitted by user');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_submitted_by_user'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Submitted by user')."</div>";
+			$vs_description = _t('Name and email address user that submitted item');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_submitted_by_user",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+			
+			$va_additional_settings = array(
+				'display_template' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.submission_group';
+			$vs_label = _t('Submitted by group');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_submission_group'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Submission group')."</div>";
+			$vs_description = _t('Group item was submitted under');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_submission_group",
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
@@ -2538,12 +2613,12 @@ if (!$pb_omit_editing_info) {
 		$va_params = ['display_id' => $vn_display_id];
 		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
 
-		if (is_array($va_uis = ca_bundle_display_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
+		if (is_array($va_displays = ca_bundle_display_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
 			foreach($va_displays as $t_display) {
 				$t_display->setMode(ACCESS_WRITE);
 				$t_display->delete(true);
 				if ($t_display->numErrors()) {
-					$this->errors = $t_t_displayui->errors();
+					$this->errors = $t_display->errors();
 					return false;
 				}
 			}
@@ -2607,7 +2682,7 @@ if (!$pb_omit_editing_info) {
 		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
 			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])
 		]);
-		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
+		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('forceEnabled' => true, 'value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
 	
 		return $o_view->render('ca_bundle_display_type_restrictions.php');
 	}

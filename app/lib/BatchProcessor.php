@@ -125,7 +125,7 @@
 					//
 					// Does user have access to row?
 					//
-					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
+					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 						continue;		// skip
 					}
 
@@ -262,7 +262,7 @@
 					}
 
 					// Does user have access to row?
-					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
+					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 						continue; // skip
 					}
 
@@ -390,7 +390,7 @@
 					}
 
 					// Does user have access to row?
-					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
+					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 						continue; // skip
 					}
 
@@ -689,10 +689,29 @@
  			$vn_num_items = sizeof($va_files_to_process);
 
  			// Get list of regex packages that user can use to extract object idno's from filenames
- 			$va_regex_list = caBatchGetMediaFilenameToIdnoRegexList(array('log' => $o_log));
+ 			$va_media_filename_regex_list = caBatchGetMediaFilenameToIdnoRegexList(['log' => $o_log]);
 
 			// Get list of replacements that user can use to transform file names to match object idnos
-			$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(array('log' => $o_log));
+			$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(['log' => $o_log]);
+			
+ 			// Get list of regex packages that user can use to transform object idnos
+ 			$va_idno_regex_list = caBatchGetIdnoRegexList(['log' => $o_log]);
+ 			$idno_alts_list = [];
+ 			if (is_array($va_idno_regex_list) && sizeof($va_idno_regex_list) > 0) {
+ 			    $qr = $vs_import_target::find('*', ['returnAs' => 'searchResult']);
+ 			    $idno_fld = "{$vs_import_target}.".$t_instance->getProperty('ID_NUMBERING_ID_FIELD');
+ 			    while($qr->nextHit()) {
+ 			        $idno = $qr->get($idno_fld);
+ 			        foreach($va_idno_regex_list as $n => $p) {
+ 			            if(!isset($p['regexes']) || !is_array($p['regexes'])) { continue; }
+ 			            
+ 			            foreach($p['regexes'] as $pattern => $replacement) {
+ 			                $idno_alts_list[strtolower(preg_replace("!{$pattern}!", $replacement, $idno))] = $idno;
+ 			            }
+ 			        }
+ 			    }
+ 			}
+ 			$idno_alts_list = array_filter($idno_alts_list, function($v) { return strlen($v); });
 
  			// Get list of files (or file name patterns) to skip
  			$va_skip_list = preg_split("![\r\n]+!", $vs_skip_file_list);
@@ -745,7 +764,7 @@
 				$vs_modified_filename = $f;
 				$va_extracted_idnos_from_filename = array();
 				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH')) || (is_array($va_create_relationship_for) && sizeof($va_create_relationship_for))) {
-					foreach($va_regex_list as $vs_regex_name => $va_regex_info) {
+					foreach($va_media_filename_regex_list as $vs_regex_name => $va_regex_info) {
 
 						$o_log->logDebug(_t("Processing mediaFilenameToObjectIdnoRegexes entry %1",$vs_regex_name));
 
@@ -820,20 +839,19 @@
 
 										$vs_bool = 'OR';
 										$va_values = array();
+										
+										$vs_match_value = $va_matches[1];
+									    if (isset($idno_alts_list[strtolower($vs_match_value)])) { $vs_match_value = $idno_alts_list[strtolower($vs_match_value)];  }
 										foreach($va_fields_to_match_on as $vs_fld) {
 											switch($vs_match_type) {
 												case 'STARTS':
-													$vs_match_value = $va_matches[1]."%";
+													$vs_match_value = "{$match_value}%";
 													break;
 												case 'ENDS':
-													$vs_match_value = "%".$va_matches[1];
+													$vs_match_value = "%{$match_value}";
 													break;
 												case 'CONTAINS':
-													$vs_match_value = "%".$va_matches[1]."%";
-													break;
-												case 'EXACT':
-												default:
-													$vs_match_value = $va_matches[1];
+													$vs_match_value = "%{$match_value}%";
 													break;
 											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {

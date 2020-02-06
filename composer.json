@@ -1,6 +1,6 @@
 {
   "require-dev": {
-    "phpunit/phpunit": "5.7",
+    "phpunit/phpunit": "8.5",
     "maximebf/debugbar": ">=1.0.0",
     "elasticsearch/elasticsearch": "~5.0",
     "monolog/monolog": "~1.0",
@@ -27,9 +27,6 @@
     "league/flysystem-ziparchive": ">=1.0.0",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "league/climate": ">=1.0.0",
-    "okta/sdk": ">=1.0.0",
-    "okta/jwt-verifier": "^0.2.1",
-    "spomky-labs/jose": "^7.1",
     "opis/json-schema": "^1.0",
     "onelogin/php-saml": ">=2.0"
   }

@@ -604,7 +604,7 @@
 		if (sizeof($va_options) == 0) { return ''; }
 		
 		$t_display = new ca_bundle_displays();
-		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
+		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
 		    foreach($va_displays as $vn_display_id => $va_display_info) {
 		        if (is_array($va_display_info['settings']['show_only_in']) && sizeof($va_display_info['settings']['show_only_in']) && !in_array('set_item_bundle', $va_display_info['settings']['show_only_in'])) { continue; }
 		        $va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id'];

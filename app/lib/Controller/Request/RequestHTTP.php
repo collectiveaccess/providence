@@ -240,7 +240,7 @@ class RequestHTTP extends Request {
 	}
 	# -------------------------------------------------------
 	function isAjax() {
-		return ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=="XMLHttpRequest") || (isset($_REQUEST['_isFlex']) && $_REQUEST['_isFlex']));
+		return ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=="XMLHttpRequest"));
 	}
 	# -------------------------------------------------------
 	function isDownload($pb_set_download=null) {
@@ -525,16 +525,22 @@ class RequestHTTP extends Request {
 		return RequestHTTP::$html_purifier;
 	}
 	# -------------------------------------------------------
-	public function getParameter($ps_name, $pn_type, $ps_http_method=null, $pa_options=array()) {
-		if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
-			$vm_val = $this->opa_params[$ps_http_method][$ps_name];
-		} else {
-			foreach(array('GET', 'POST', 'PATH', 'COOKIE', 'REQUEST') as $vs_http_method) {
-				$vm_val = (isset($this->opa_params[$vs_http_method]) && isset($this->opa_params[$vs_http_method][$ps_name])) ? $this->opa_params[$vs_http_method][$ps_name] : null;
-				if (isset($vm_val)) {
-					break;
+	public function getParameter($pa_name, $pn_type, $ps_http_method=null, $pa_options=array()) {
+		if(!is_array($pa_name)) { $pa_name = [$pa_name]; }
+		
+		foreach($pa_name as $ps_name) {
+			if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
+				$vm_val = $this->opa_params[$ps_http_method][$ps_name];
+			} else {
+				foreach(array('GET', 'POST', 'PATH', 'COOKIE', 'REQUEST') as $vs_http_method) {
+					$vm_val = (isset($this->opa_params[$vs_http_method]) && isset($this->opa_params[$vs_http_method][$ps_name])) ? $this->opa_params[$vs_http_method][$ps_name] : null;
+					if (isset($vm_val)) {
+						break;
+					}
 				}
 			}
+			
+			if (is_array($vm_val) || (strlen($vm_val) > 0)) { break; } 
 		}
 		if (!isset($vm_val)) { return ""; }
 		
@@ -970,6 +976,7 @@ class RequestHTTP extends Request {
 	 */
 	static public function ip() {
 		if (isset($_SERVER['HTTP_X_REAL_IP']) && $_SERVER['HTTP_X_REAL_IP']) { return $_SERVER['HTTP_X_REAL_IP']; }
+		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) { return $_SERVER['HTTP_X_FORWARDED_FOR']; }
 		return $_SERVER['REMOTE_ADDR'];
 	}
 	# ----------------------------------------

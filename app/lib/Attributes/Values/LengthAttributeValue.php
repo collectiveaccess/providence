@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -174,12 +174,13 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
      */
     public function _getValueAsText($pa_value_array, $pa_options=null) {
         global $g_ui_locale;
+        global $g_ui_units_pref;
     
         try {
             $vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
 
             $o_config = Configuration::load();
-            $vs_units = caGetOption('unit', $pa_options, null);
+            $vs_units = caGetOption('units', $pa_options, $g_ui_units_pref);
             
             $vs_value = '';
             $vn_precision = caGetOption('precision', $pa_options, null);

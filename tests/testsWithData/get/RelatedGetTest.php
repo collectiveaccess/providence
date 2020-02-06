@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -43,7 +44,7 @@ class RelatedGetTest extends BaseTestWithData {
 	 */
 	private $opt_object = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -268,7 +269,7 @@ class RelatedGetTest extends BaseTestWithData {
 		$this->assertEquals(3, $vm_ret);
 		
 		$vm_ret = $this->opt_object->get('ca_entities._count', ['returnAsArray' => true]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals(3, $vm_ret[0]);
 		

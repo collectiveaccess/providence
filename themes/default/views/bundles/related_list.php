@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -120,7 +120,7 @@
 		// when ready, pull in the result list via the RelatedList search controller and the JS helper caAsyncSearchResultForm() above
 ?>
 		jQuery(document).ready(function() {
-			jQuery.get('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', $va_additional_search_controller_params); ?>', caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
+			jQuery.post('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', []); ?>', <?php print json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
 		});
 <?php
 	}
@@ -252,7 +252,7 @@
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
 			showEmptyFormsOnLoad: 1,
-			autocompleteUrl: '<?php print $vs_navurl = caNavUrl($this->request, 'lookup', ucfirst($t_item->getProperty('NAME_SINGULAR')), 'Get', $va_lookup_params); ?>',
+			autocompleteUrl: '<?php print $vs_navurl = caNavUrl($this->request, 'lookup', ucfirst(str_replace(" ", "", ucwords($t_item->getProperty('NAME_SINGULAR'), ' '))), 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,

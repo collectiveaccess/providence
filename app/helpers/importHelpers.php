@@ -78,7 +78,7 @@
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
 
 			if (!$vs_name && !$vs_idno) { continue; }
-			if (!$vs_name) { continue; }//$vs_name = $vs_idno; }
+			if (!$vs_name && isset($va_parent['name'])) { continue; }
 			
 			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
 		
@@ -802,9 +802,14 @@
 						}
 				
 						//
-						// Storage location specific options
+						// Storage location/list item specific options
 						//
-						if (($ps_refinery_name == 'storageLocationSplitter') && ($va_hier_delimiter = $pa_item['settings']['storageLocationSplitter_hierarchicalDelimiter'])) {
+						if (
+							(($ps_refinery_name == 'storageLocationSplitter') && ($va_hier_delimiter = $pa_item['settings']['storageLocationSplitter_hierarchicalDelimiter']))
+							||
+							(($ps_refinery_name == 'listItemSplitter') && ($va_hier_delimiter = $pa_item['settings']['listItemSplitter_hierarchicalDelimiter']))
+						) {
+							$key_prefix = str_replace('Splitter', '', $ps_refinery_name);
 							if (!is_array($va_hier_delimiter)) { $va_hier_delimiter = array($va_hier_delimiter); }
 							
 							if (sizeof($va_hier_delimiter)) {
@@ -814,33 +819,43 @@
 								}
 							}
 							
-							$va_location_hier = preg_split("!(".join("|", $va_hier_delimiter).")!", $vs_item);
+							$va_item_hier = array_map(function($v) { return trim($v); }, preg_split("!(".join("|", $va_hier_delimiter).")!", $vs_item));
 							
-							if (sizeof($va_location_hier) > 1) {
+							if (sizeof($va_item_hier) > 1) {
 					
-								$vn_location_id = null;
+								$vn_hier_item_id = null;
 				
-								if (!is_array($va_types = $pa_item['settings']['storageLocationSplitter_hierarchicalStorageLocationTypes'])) {
+								if (!is_array($va_types = $pa_item['settings']["{$ps_refinery_name}_hierarchical".ucfirst($key_prefix)."Types"])) {
 									$va_types = array();
 								}
 						
-								$vs_item = array_pop($va_location_hier);
+								$vs_item = array_pop($va_item_hier);
 								if (!($va_val['_type'] = array_pop($va_types))) {
-									$va_val['_type'] = $pa_item['settings']['storageLocationSplitter_storageLocationTypeDefault'];
+									$va_val['_type'] = $pa_item['settings']["{$ps_refinery_name}_{$key_prefix}TypeDefault"];
 								}
 					
-								foreach($va_location_hier as $vn_ix => $vs_parent) {
+								foreach($va_item_hier as $vn_ix => $vs_parent) {
 									if (sizeof($va_types) > 0)  { 
 										$vs_type = array_shift($va_types); 
 									} else { 
-										if (!($vs_type = $pa_item['settings']['storageLocationSplitter_storageLocationType'])) {
-											$vs_type = $pa_item['settings']['storageLocationSplitter_storageLocationTypeDefault'];
+										if (!($vs_type = $pa_item['settings']["{$ps_refinery_name}_{$key_prefix}Type"])) {
+											$vs_type = $pa_item['settings']["{$ps_refinery_name}_{$key_prefix}TypeDefault"];
 										}
 									}
 									if (!$vs_type) { break; }
-									$vn_location_id = DataMigrationUtils::getStorageLocationID($vs_parent, $vn_location_id, $vs_type, $g_ui_locale_id, array('idno' => $vs_parent, 'parent_id' => $vn_location_id), $pa_options);
+									
+									switch($ps_refinery_name) {
+										case 'storageLocationSplitter':
+											$vn_hier_item_id = DataMigrationUtils::getStorageLocationID($vs_parent, $vn_hier_item_id, $vs_type, $g_ui_locale_id, ['idno' => $vs_parent], array_merge($pa_options, ['ignoreType' => true, 'ignoreParent' => is_null($vn_hier_item_id)]));
+											break;
+										case 'listItemSplitter':
+										    $vals = ['idno' => $vs_parent];
+										    if(!is_null($vn_hier_item_id)) { $vals['parent_id'] = $vn_hier_item_id; }
+											$vn_hier_item_id = DataMigrationUtils::getListItemID($pa_items['settings']['listItemSplitter_list'], $vs_parent, $vs_type, $g_ui_locale_id, $vals, array_merge($pa_options, ['ignoreType' => true, 'ignoreParent' => is_null($vn_hier_item_id)]));
+											break;
+									}
 								}
-								$va_val['parent_id'] = $va_val['_parent_id'] = $vn_location_id;
+								$va_val['parent_id'] = $va_val['_parent_id'] = $vn_hier_item_id;
 							}
 						} else {
 							// Set parents
@@ -1444,3 +1459,20 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 		return false;
 	}
+	# ---------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caValidateGoogleSheetsUrl($url) {
+		if (!is_array($parsed_url = parse_url(urldecode($url)))) { return null; }
+ 			
+		$tmp = explode('/', $parsed_url['path']);
+		array_pop($tmp); $tmp[] = 'export';
+		$path = join("/", $tmp);
+		$transformed_url = $parsed_url['scheme']."://".$parsed_url['host'].$path."?format=xlsx";
+		if (!isUrl($transformed_url) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file)/d/!', $transformed_url)) {
+			return null;
+		}
+		return $transformed_url;
+	}
+	# ---------------------------------------------------------------------

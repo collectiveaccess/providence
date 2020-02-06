@@ -85,10 +85,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
+		global $g_ui_locale;
+		
 		parent::__construct($po_db);
 		
 		$this->opo_tep = new TimeExpressionParser();
-		
+		$this->opo_tep->setLanguage($g_ui_locale);
 		
 		$this->opo_stemmer = new SnoballStemmer();
 		$this->opb_do_stemming = (int)trim($this->opo_search_config->get('search_sql_search_do_stemming')) ? true : false;
@@ -861,7 +863,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$o_first_term = array_shift($o_lucene_query_element->getQueryTerms());
 							list($vs_first_term_table, $_, $_) = explode('.', $o_first_term->field);
 
-	if ($this->getOption('strictPhraseSearching') && !in_array($vs_first_term_table, array('modified', 'created'))) {
+	if ($this->getOption('strictPhraseSearching') && !in_array($vs_first_term_table, array(_t('modified'), _t('created')))) {
 						 	$va_words = array();
 						 	foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
 								if (!$vs_access_point && ($vs_field = $o_term->field)) { $vs_access_point = $vs_field; }
@@ -1026,13 +1028,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$vb_ft_bit_optimization = false;
 					if ($vs_access_point) {
 						list($vs_table, $vs_field, $vs_sub_field) = explode('.', $vs_access_point);
-						if (in_array($vs_table, array('created', 'modified'))) {
+						if (in_array($vs_table, array(_t('created'), _t('modified')))) {
 							$vn_direct_sql_target_table_num = $pn_subject_tablenum;
-							$o_tep = new TimeExpressionParser();
 							$vs_date = join(' ', $va_raw_terms);
 							
-							if (!$o_tep->parse($vs_date)) { break; }
-							$va_range = $o_tep->getUnixTimestamps();
+							if (!$this->opo_tep->parse($vs_date)) { break; }
+							$va_range = $this->opo_tep->getUnixTimestamps();
 							$vn_user_id = null;
 							if ($vs_field = trim($vs_field)) {
 								if (!is_int($vs_field)) {
@@ -1051,7 +1052,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vs_user_sql = ($vn_user_id)  ? " AND (ccl.user_id = ".(int)$vn_user_id.")" : "";
 							
 							switch($vs_table) {
-								case 'created':
+								case _t('created'):
 									$vs_direct_sql_query = "
 											SELECT ccl.logged_row_id row_id, 1, null
 											FROM ca_change_log ccl
@@ -1064,7 +1065,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												{$vs_user_sql}
 										";
 									break;
-								case 'modified':
+								case _t('modified'):
 									$vs_direct_sql_query = "
 											SELECT ccl.logged_row_id row_id, 1, null
 											FROM ca_change_log ccl
@@ -1513,6 +1514,105 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									}
 
 									$pa_direct_sql_query_params = array();
+								} elseif(in_array($vn_intrinsic_type, [FT_DATETIME, FT_TIMESTAMP])) {
+									$vb_all_numbers = true;
+									foreach($va_raw_terms as $vs_term) {
+										if (!is_numeric($vs_term)) {
+											$vb_all_numbers = false;
+											break;
+										}
+									}
+								
+									$vs_raw_term = join(' ', $va_raw_terms);
+									
+									switch($vs_raw_term{0}) {
+										case '#':
+											$vs_raw_term = substr($vs_raw_term, 1);
+											if ($vs_raw_term == '0') {
+											    $vs_direct_sql_query = "
+													SELECT ".$t_table->primaryKey()." row_id, 1, null
+													FROM ".$t_table->tableName()."
+													^JOIN
+													WHERE
+														(
+															({$vs_intrinsic_field_name} IS NULL)
+														)
+												
+												";
+											} elseif ($this->opo_tep->parse($vs_raw_term)) {
+												$va_dates = $this->opo_tep->getUnixTimestamps();
+												$vs_direct_sql_query = "
+													SELECT ".$t_table->primaryKey()." row_id, 1, null
+													FROM ".$t_table->tableName()."
+													^JOIN
+													WHERE
+														(
+															({$vs_intrinsic_field_name} BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+														)
+												
+												";
+											}
+											break;
+										case '<':
+											$vs_raw_term = substr($vs_raw_term, 1);
+											if ($vs_raw_term{0} == '=') {
+												$vs_raw_term = substr($vs_raw_term, 1);
+												$vs_eq = '=';
+											}
+											if ($this->opo_tep->parse($vs_raw_term)) {
+												$va_dates = $this->opo_tep->getUnixTimestamps();
+												
+												$vs_direct_sql_query = "
+													SELECT ".$t_table->primaryKey()." row_id, 1, null
+													FROM ".$t_table->tableName()."
+													^JOIN
+													WHERE
+														(
+															({$vs_intrinsic_field_name} <{$vs_eq} ".(($vs_eq === '=') ? floatval($va_dates['end']) : floatval($va_dates['start'])).")
+														)
+												
+												";
+											}
+											break;
+										case '>':
+											$vs_raw_term = substr($vs_raw_term, 1);
+											if ($vs_raw_term{0} == '=') {
+												$vs_raw_term = substr($vs_raw_term, 1);
+												$vs_eq = '=';
+											}
+											if ($this->opo_tep->parse($vs_raw_term)) {
+												$va_dates = $this->opo_tep->getUnixTimestamps();
+												
+												$vs_direct_sql_query = "
+													SELECT ".$t_table->primaryKey()." row_id, 1, null
+													FROM ".$t_table->tableName()."
+													^JOIN
+													WHERE
+														(
+															({$vs_intrinsic_field_name} >{$vs_eq} ".(($vs_eq === '=') ? floatval($va_dates['start']) : floatval($va_dates['end'])).")
+														)
+												
+												";
+											}
+											break;
+										default:
+											if ($this->opo_tep->parse($vs_raw_term)) {
+												$va_dates = $this->opo_tep->getUnixTimestamps();
+												$vs_direct_sql_query = "
+													SELECT ".$t_table->primaryKey()." row_id, 1, null
+													FROM ".$t_table->tableName()."
+													^JOIN
+													WHERE
+														(
+															({$vs_intrinsic_field_name} BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+														)
+												
+												";
+											}
+											break;
+									}
+
+									$pa_direct_sql_query_params = array();
 								}
 							}
 						}
@@ -1672,6 +1772,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if ($vs_direct_sql_query) {
 									if ($vn_direct_sql_target_table_num != $pn_subject_tablenum) {
 										array_push($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ".Datamodel::primaryKey($pn_subject_tablenum, true));
+									} elseif($vn_intrinsic_type) {
+										array_unshift($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ".Datamodel::primaryKey($pn_subject_tablenum, true));
 									} else {
 										array_unshift($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id");
 									}
@@ -1697,7 +1799,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if (($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) {
 									$vs_sql .= " HAVING count(distinct sw.stem) >= {$vn_num_terms}";
 								}
-								
 								$t = new Timer();
 								
 								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
@@ -2390,7 +2491,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$va_phrases = array_unique($va_phrases);
 		} else {
 			// handle single word
-			if (!sizeof($va_word_ids[0])) { return array(); }
+			if (!is_array($va_word_ids[0]) || !sizeof($va_word_ids[0])) { return array(); }
 			asort($va_word_ids[0], SORT_NUMERIC);
 			$va_word_ids[0] = array_slice($va_word_ids[0], 0, 3, true);
 			$qr_phrases = $this->opo_db->query("

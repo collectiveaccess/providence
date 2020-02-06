@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 require_once(__CA_LIB_DIR__.'/Service/SimpleService.php');
@@ -49,7 +50,7 @@ class SimpleServiceTest extends BaseTestWithData {
 	private $opt_moving_image = null;
 
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -101,10 +102,11 @@ class SimpleServiceTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @expectedException Exception
+	 *
 	 */
 	public function testDetailDispatchWithInvalidType() {
 		global $g_request;
+		$this->expectException('Exception');
 		$g_request->setParameter('id', $this->opt_moving_image->getPrimaryKey(), 'GET');
 
 		SimpleService::dispatch('testDetail', $g_request);

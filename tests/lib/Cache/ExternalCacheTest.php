@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Cache/ExternalCache.php');
 
-class ExternalCacheTest extends PHPUnit_Framework_TestCase {
+class ExternalCacheTest extends TestCase {
 
-	public function setUp() {
+	protected function setUp() : void {
 		ExternalCache::flush('default'); // might have side-effects on other tests?
 		ExternalCache::flush('barNamespace');
 		ExternalCache::setInvalidationMode(Stash\Invalidation::NONE);
@@ -55,11 +55,6 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		$vm_ret = ExternalCache::contains('bar');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
 
-	}
-
-	public function testDeleteNonExistingItem(){
-		$vm_ret = ExternalCache::delete('foo');
-		//$this->assertFalse($vm_ret, 'Removing a non-existing item is not possible');
 	}
 
 	public function testAccessNonExistingItemWithExistingCache() {
@@ -199,16 +194,18 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @expectedException ExternalCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidNameSpace() {
+		$this->expectException('ExternalCacheInvalidParameterException');
 		ExternalCache::save('foo', 'data1', 'this is invalid');
 	}
 
 	/**
-	 * @expectedException ExternalCacheInvalidParameterException
+	 * 
 	 */
 	public function testInvalidKey() {
+		$this->expectException('ExternalCacheInvalidParameterException');
 		ExternalCache::save('', 'data1', 'this is invalid');
 	}
 

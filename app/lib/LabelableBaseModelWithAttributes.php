@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -502,6 +502,7 @@
 		 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
 		 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
+ 	 	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false]
  	 	 *		includeDeleted = If set deleted rows are returned in result set. [Default is false]
  	 	 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
@@ -528,6 +529,8 @@
 			$ps_boolean 				= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_label_boolean 			= caGetOption('labelBoolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_sort 					= caGetOption('sort', $pa_options, null);
+			$ps_sort_direction 			= caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+				
 			$pa_check_access 			= caGetOption('checkAccess', $pa_options, null);
 			
 			$vb_purify_with_fallback 	= caGetOption('purifyWithFallback', $pa_options, false);
@@ -541,7 +544,8 @@
 			$vs_type_restriction_sql = '';
 			$va_type_restriction_params = [];
 			if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
-				if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+				$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
+				if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
 					$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 					$va_type_restriction_params[] = $va_restrict_to_types;
 				}
@@ -843,7 +847,7 @@
 									case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 										if(is_array($va_date = caDateToHistoricTimestamps($vm_value))) {
 											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?)))";
-											array_push($va_attr_params, $va_date['start'], $va_date['end'], $va_date['start'], $va_date['end']);
+											$va_attr_params[] = [$va_date['start'], $va_date['end'], $va_date['start'], $va_date['end']];
 										} else {
 											continue(2);
 										}
@@ -851,7 +855,7 @@
 									case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 										if (is_array($va_parsed_value = caParseCurrencyValue($vm_value))) {
 											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_longtext1 = ?) OR (ca_attribute_values.value_decimal1 {$vs_op} ?)))";
-											array_push($va_attr_params, $va_parsed_value['currency'], $va_parsed_value['value']);
+											$va_attr_params[] = [$va_parsed_value['currency'], $va_parsed_value['value']];
 										} else {
 											continue(2);
 										}
@@ -898,7 +902,7 @@
 			
 			if (($vn_attr_count == 1) || (($vn_attr_count > 0) && strtolower($ps_boolean) !== 'and')) {
 			    $va_label_sql = array_merge($va_label_sql, $va_attr_sql);
-			    $va_sql_params = array_merge($va_sql_params, $va_attr_params);
+			    $va_sql_params = array_merge($va_sql_params, caFlattenArray($va_attr_params));
 			} 
 			
 			if (!sizeof($va_label_sql) && ($vn_attr_count == 0)) { return null; }
@@ -928,7 +932,8 @@
 			if (($vn_attr_count > 1) && (strtolower($ps_boolean) == 'and')) {
 			    $va_ids = null;
 			    foreach($va_attr_sql as $i => $vs_attr_sql) {
-			        $qr_p = $o_db->query("SELECT t.{$vs_table_pk} FROM {$vs_table} t INNER JOIN ca_attributes ON ca_attributes.table_num = {$vn_table_num} AND ca_attributes.row_id = t.{$vs_table_pk} INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id WHERE {$vs_attr_sql}", [$va_attr_params[$i]]);
+			        $qr_p = $o_db->query("SELECT t.{$vs_table_pk} FROM {$vs_table} t INNER JOIN ca_attributes ON ca_attributes.table_num = {$vn_table_num} AND ca_attributes.row_id = t.{$vs_table_pk} INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id WHERE {$vs_attr_sql}", $va_attr_params[$i]);
+			        
 			        if (is_null($va_ids)) { 
 			            $va_ids = array_unique($qr_p->getAllFieldValues($vs_table_pk));
 			        } else {
@@ -946,18 +951,17 @@
 			
 			$vs_orderby = '';
 			if ($vs_sort_proc) {
-				$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
 				$va_tmp = explode(".", $vs_sort_proc);
 				if (sizeof($va_tmp) == 2) {
 					switch($va_tmp[0]) {
 						case $vs_table:
 							if ($t_instance->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort_proc} {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY {$vs_sort_proc} {$ps_sort_direction}";
 							}
 							break;
 						case $vs_label_table:
 							if ($t_label->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort_proc} {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY {$vs_sort_proc} {$ps_sort_direction}";
 							}
 							break;
 					}
@@ -1028,12 +1032,48 @@
 						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 					}
 					if ($ps_return_as == 'searchresult') {
-						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids, ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
 					} else {
 						return array_unique(array_values($va_ids));
 					}
 					break;
 			}
+		}
+		# ------------------------------------------------------------------
+ 		/**
+ 		 * Find row(s) with fields having values matching specific values. Returns a SearchResult.
+ 		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+ 		 * options offered by that method.
+ 		 *
+ 		 * @see LabelableBaseModelWithAttributes::find()
+ 		 */
+		public static function findAsSearchResult($pa_values, $pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = []; }
+			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'searchResult']));
+		}
+		# ------------------------------------------------------------------
+ 		/**
+ 		 * Find row(s) with fields having values matching specific values. Returns a model instance for the first record found.
+ 		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+ 		 * options offered by that method.
+ 		 *
+ 		 * @see LabelableBaseModelWithAttributes::find()
+ 		 */
+		public static function findAsInstance($pa_values, $pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = []; }
+			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
+		}
+		# ------------------------------------------------------------------
+ 		/**
+ 		 * Find row(s) with fields having values matching specific values. Returns a the primary key (id) of the first record found.
+ 		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+ 		 * options offered by that method.
+ 		 *
+ 		 * @see LabelableBaseModelWithAttributes::find()
+ 		 */
+		public static function findAsID($pa_values, $pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = []; }
+			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstid']));
 		}
  		# ------------------------------------------------------------------
  		/**

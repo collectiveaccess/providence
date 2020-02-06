@@ -62,6 +62,13 @@
 				}
 			}
 			
+			$item_value_col = (string)$po_opts->getOption('itemValueColumn');
+			$item_desc_col = (string)$po_opts->getOption('itemDescriptionColumn');
+			$np_label_col = (string)$po_opts->getOption('nonPreferredLabelsColumn');
+			
+			$locale = (string)$po_opts->getOption('locale');
+			if (!preg_match("!^[A-Za-z]{2,3}_[A-Za-z]{2,3}$!", $locale)) { $locale = 'en_US'; }
+			
 			$vn_skip = (int)$po_opts->getOption('skip');
 			
 			$o_handle = PHPExcel_IOFactory::load($vs_filepath);
@@ -82,8 +89,12 @@
 				$o_cells->setIterateOnlyExistingCells(false); 
 
 				$vn_col = 0;
-				foreach ($o_cells as $o_cell) {
-					if($vs_val = trim((string)$o_cell->getValue())) {
+				foreach ($o_cells as $c => $o_cell) {
+					if($label = trim((string)$o_cell->getValue())) {
+						$item_value = (strlen($item_value_col)) ? $o_sheet->getCellByColumnAndRow($item_value_col-1, $vn_c)->getValue() : null;
+						$item_description = (strlen($item_desc_col)) ? $o_sheet->getCellByColumnAndRow($item_desc_col-1, $vn_c)->getValue() : null;
+						$np_labels = (strlen($np_label_col)) ? $o_sheet->getCellByColumnAndRow($np_label_col-1, $vn_c)->getValue() : null;
+							
 						if ($vn_col > $vn_last_level) {
 							$va_stack[] = &$va_stack[sizeof($va_stack)-1][sizeof($va_stack[sizeof($va_stack)-1]) - 1]['subitems'];
 						} elseif ($vn_col < $vn_last_level) {
@@ -91,7 +102,7 @@
 								array_pop($va_stack);
 							}
 						}
-						$va_stack[sizeof($va_stack)-1][] = array('value' => $vs_val, 'subitems' => array(), 'level' => $vn_col);
+						$va_stack[sizeof($va_stack)-1][] = array('label' => $label, 'subitems' => array(), 'level' => $vn_col, 'item_value' => $item_value, 'item_description' => $item_description, 'nonPreferredLabels' => $np_labels);
 						$vn_last_level = $vn_col;
 						
 						$vn_col++;
@@ -101,8 +112,6 @@
 					$vn_col++;
 				}
 			}
-			
-			$locale = 'en_US';
 		
 			$vs_output = "<list code=\"LIST_CODE_HERE\" hierarchical=\"0\" system=\"0\" vocabulary=\"0\">\n";
 			$vs_output .= "\t<labels>
@@ -111,7 +120,7 @@
 		</label>
 	</labels>\n";
 			$vs_output .= "<items>\n";
-			$vs_output .= CLITools::_makeList($va_list, 1);
+			$vs_output .= CLITools::_makeList($va_list, 1, null, $locale);
 			$vs_output .= "</items>\n";
 			$vs_output .= "</list>\n";
 			
@@ -124,23 +133,37 @@
 			return true;
 		}
 		# -------------------------------------------------------
-		private static function _makeList($pa_list, $pn_indent=0, $pa_stack=null) {
+		private static function _makeList($pa_list, $pn_indent=0, $pa_stack=null, $locale=null) {
 			if(!is_array($pa_stack)) { $pa_stack = array(); }
-			$locale = 'en_US';
+			if ($locale) { $locale = 'en_US'; }
+			
 			$vn_ident = $pn_indent ? str_repeat("\t", $pn_indent) : '';
 			$vs_buf = '';
 			foreach($pa_list as $vn_i => $va_item) {
-				$vs_label = caEscapeForXML($va_item['value']);
+				$vs_label = caEscapeForXML($va_item['label']);
+				$vs_item_value = caEscapeForXML($va_item['item_value']);
+				$vs_item_desc = caEscapeForXML($va_item['item_description']);
 				$vs_label_proc = preg_replace("![^A-Za-z0-9]+!", "_", $vs_label);
+				
+				$np_label_list = array_map(function($v) { return caEscapeForXML(trim($v)); }, preg_split("![;]+!", $va_item['nonPreferredLabels']));
+				
+				$non_preferred_labels = '';
+				foreach($np_label_list as $np) {
+					if (!$np) { continue; }
+					$non_preferred_labels .= "<label locale=\"{$locale}\" preferred=\"0\"><name_singular>{$np}</name_singular><name_plural>{$np}</name_plural></label>";
+				}
+				
 				if ($vs_label_prefix = join('_', $pa_stack)) { $vs_label_prefix .= '_'; }
-				$vs_buf .= "{$vn_ident}<item idno=\"{$vs_label_prefix}{$vs_label_proc}\" enabled=\"1\" default=\"0\">
+				$vs_buf .= "{$vn_ident}<item idno=\"{$vs_label_prefix}{$vs_label_proc}\" enabled=\"1\" default=\"0\" value=\"{$vs_item_value}\">
 {$vn_ident}\t<labels>
 {$vn_ident}\t\t<label locale=\"{$locale}\" preferred=\"1\">
 {$vn_ident}\t\t\t<name_singular>{$vs_label}</name_singular>
 {$vn_ident}\t\t\t<name_plural>{$vs_label}</name_plural>
+{$vn_ident}\t\t\t<description>{$vs_item_desc}</description>
 {$vn_ident}\t\t</label>
+{$vn_ident}{$non_preferred_labels}
 {$vn_ident}\t</labels>".
-	((is_array($va_item['subitems']) && sizeof($va_item['subitems'])) ? "{$vn_ident}\t<items>\n{$vn_indent}".CLITools::_makeList($va_item['subitems'], $pn_indent + 2, array_merge($pa_stack, array(substr($vs_label_proc, 0, 10))))."{$vn_ident}\t</items>" : '')."
+	((is_array($va_item['subitems']) && sizeof($va_item['subitems'])) ? "{$vn_ident}\t<items>\n{$vn_indent}".CLITools::_makeList($va_item['subitems'], $pn_indent + 2, array_merge($pa_stack, array(substr($vs_label_proc, 0, 10))), $locale)."{$vn_ident}\t</items>" : '')."
 {$vn_ident}</item>\n";
 				
 			}
@@ -155,7 +178,11 @@
 			return array(
 				"file|f-s" => _t('Excel file to convert to profile list.'),
 				"out|o-s" => _t('File to write output to.'),
-				"skip|s-s" => _t('Number of rows to skip before reading data.')
+				"skip|s-s" => _t('Number of rows to skip before reading data.'),
+				"locale|l-s" => _t('ISO locale code to use. Default is en_US.'),
+				"itemValueColumn|x=s" => _t('Column number to use for item values. Omit to not set item values.'),
+				"itemDescriptionColumn|y=s" => _t('Column number to use for item descriptions. Omit to not set item descriptions.'),
+				"nonPreferredLabelsColumn|z=s" => _t('Column number to use for item nonpreferred labels. Omit to not set nonpreferred labels.'),
 			);
 		}
 		# -------------------------------------------------------
@@ -425,8 +452,6 @@
 		 *
 		 */
 		public static function convert_xml_to_delimited($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Import/DataReaders/ExifDataReader.php");
-			
 			$file_path = (string)$po_opts->getOption('file');
 			if (!$file_path) { 
 				CLITools::addError(_t("You must specify a file", $file_path));
@@ -454,9 +479,15 @@
 				$input_format = strtolower((string)$po_opts->getOption('format'));
 			
 				switch($input_format) {
+					case 'fmpxml':
+					case 'fmpxmlresult':
+						require_once(__CA_LIB_DIR__."/Import/DataReaders/FMPXMLResultReader.php");
+						$reader = new FMPXMLResultReader();
+						break;
 					case 'pastperfect':
 					case 'pp':
-						$xpath = "//export";
+						require_once(__CA_LIB_DIR__."/Import/DataReaders/PastPerfectXMLReader.php");
+						$reader = new PastPerfectXMLReader();
 						break;
 					default:
 						if ($input_format) {
@@ -475,9 +506,7 @@
 				$output_format = 'csv'; 
 			}
 			
-			$xml = simplexml_load_file($file_path);
-			
-			$q = $xml->xpath($xpath);
+			$reader->read($file_path);
 			
 			$headers = [];
 			$c = 0;
@@ -488,21 +517,23 @@
 				CLITools::addError(_t("Could not open output file %1", $output_path));
 				return;
 			}
-			foreach($q as $e) {
-				$line = [];
-				foreach($e->children() as $t) {
-					if ($c == 0) {
-						$headers[] = $t->getName();
-					}
-					$line[] = (string)$t;
+			
+			while($reader->nextRow()) {
+				$row = $reader->getRow();
+				if ($c == 0) {
+					$headers = array_keys($row);
 				}
+				$line = array_values($row);
+				
 				if ($c == 0) {
 					fwrite($fp, join($delimiter, array_map(function($v) {
-						return '"'.str_replace('"', '""', $v).'"';
+						if (is_array($v)) { $v = join("|", $v); }
+						return '"'.str_replace('"', '""', trim($v)).'"';
 					}, $headers))."\n");
 				}
 				fwrite($fp, join($delimiter, array_map(function($v) {
-					return '"'.str_replace('"', '""', $v).'"';
+					if (is_array($v)) { $v = join("|", $v); }
+					return '"'.str_replace('"', '""', trim($v)).'"';
 				}, $line))."\n");
 				
 				$c++;
@@ -519,7 +550,7 @@
 			return array(
 				"file|f-s" => _t('XML file to convert.'),
 				"out|o-s" => _t('File to write delimited output to.'),
-				"format|i=s" => _t('XML format of input file. Only valid option is "PastPerfect" (PastPerfect XML export files).'),
+				"format|i=s" => _t('XML format of input file. Valid options are "PastPerfect" (PastPerfect XML export files), "FMPXML" (FileMaker Pro XML Result format).'),
 				"xpath|x=s" => _t('XPath expression to select XML tags for conversion. If set, input format option is igored.'),
 				"outputFormat|t=s" => _t('Format of output (CSV or tab-delimited). Default is CSV.'),
 			);
@@ -553,8 +584,6 @@
 		 *
 		 */
 		public static function filter_invalid_xml_characters($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Import/DataReaders/ExifDataReader.php");
-			
 			$file_path = (string)$po_opts->getOption('file');
 			if (!$file_path) { 
 				CLITools::addError(_t("You must specify a file", $file_path));

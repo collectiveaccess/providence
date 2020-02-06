@@ -285,7 +285,6 @@
 	function caMediaInfoInstalled($ps_mediainfo_path=null) {
 		//if (CompositeCache::contains("mediahelper_mediainfo_installed")) { return CompositeCache::fetch("mediahelper_mediainfo_installed"); }
 		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-
 		if (!caIsValidFilePath($ps_mediainfo_path)) { 
 			CompositeCache::save("mediahelper_mediainfo_installed", false);
 			return false; 
@@ -294,10 +293,8 @@
 			CompositeCache::save("mediahelper_mediainfo_installed", true);
 			return true; 
 		} // don't try exec test on Windows
-		
 		exec($ps_mediainfo_path." --Help > /dev/null",$va_output,$vn_return);
-		
-		$vb_ret = ($vn_return == 255);
+		$vb_ret = ($vn_return == 255) || ($vn_return == 0);
 		
 		CompositeCache::save("mediahelper_mediainfo_installed", $vb_ret);
 		

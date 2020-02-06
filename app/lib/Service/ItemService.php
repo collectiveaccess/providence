@@ -576,6 +576,36 @@ class ItemService extends BaseJSONService {
 		} else {
 		    $va_return["preferred_labels"] = [];
 		}
+		
+		// preferred labels hierarchy
+		$va_labels = $t_instance->get($this->ops_table.".hierarchy.preferred_labels",array("returnWithStructure" => true, "assumeDisplayField" => true, "returnAllLocales" => true));
+		$va_labels = end($va_labels);
+
+		$vs_display_field_name = $t_instance->getLabelDisplayField();
+
+		if(is_array($va_labels)) {
+			foreach($va_labels as $vn_locale_id => $va_labels_by_locale) {
+				foreach($va_labels_by_locale as $va_tmp) {
+					$va_label = array();
+					$va_label['locale'] = $va_locales[$vn_locale_id]["code"];
+
+					// add only UI fields to return
+					foreach(array_merge($t_instance->getLabelUIFields(), array('type_id')) as $vs_label_fld) {
+						$va_label[$vs_label_fld] = $va_tmp[$vs_label_fld];
+					}
+					$va_label[$vs_label_fld] = $va_tmp[$vs_label_fld];
+					$va_label['label'] = $va_tmp[$vs_display_field_name];
+
+					$va_return["preferred_labels_hierarchy"][$va_label['locale']] = $va_label;
+				}
+			}
+
+			if (isset($va_flatten['locales'])) {
+				$va_return["preferred_labels_hierarchy"] = array_pop(caExtractValuesByUserLocale(array($va_return["preferred_labels_hierarchy"])));
+			}
+		} else {
+		    $va_return["preferred_labels_hierarchy"] = [];
+		}
 
 		// nonpreferred labels
 		$va_labels = $t_instance->get($this->ops_table.".nonpreferred_labels",array("returnWithStructure" => true, "returnAllLocales" => true));
@@ -704,6 +734,14 @@ class ItemService extends BaseJSONService {
 							if (in_array($vs_fld, array('preferred_labels', 'intrinsic'))) {
 								$va_item_add[$vs_fld] = $vs_val;
 							}
+						}
+						
+						if ($vs_fld == 'preferred_labels') {
+						    $q = caMakeSearchResult($vs_rel_table, [$va_rel_item[Datamodel::primaryKey($vs_rel_table)]]);
+						    if ($q->nextHit()) {
+						        $va_item_add['preferred_labels_hierarchy'] = $q->get("{$vs_rel_table}.hierarchy.preferred_labels", ['returnAsArray' => true]);
+						    }
+						    
 						}
 					}
 					if ($vs_rel_table=="ca_object_representations") {

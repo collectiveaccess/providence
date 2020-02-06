@@ -29,6 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Db.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
@@ -38,7 +40,7 @@ require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
 require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 
-class AccessControlTest extends PHPUnit_Framework_TestCase {
+class AccessControlTest extends TestCase {
 	# -------------------------------------------------------
 	private $ops_username;
 	private $ops_password;
@@ -51,7 +53,7 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 	 */
 	var $opt_role;
 	# -------------------------------------------------------
-	protected function setUp(){
+	protected function setUp() : void {
 		Datamodel::getTableNum("ca_objects");
 
 		// set up test role
@@ -98,7 +100,7 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('ca_user_roles', $this->opt_role);
 	}
 	# -------------------------------------------------------
-	public function tearDown() {
+	protected function tearDown() : void {
 		//the cascading delete code in BaseModel causes problems in unit
 		//tests so we delete user and role by hand
 

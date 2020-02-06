@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,18 +29,20 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/Wikipedia.php");
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
-class WikipediaInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
+class WikipediaInformationServiceAttributeValueTest extends TestCase {
 
 	public function testLookup() {
 		$o_service = new WLPlugInformationServiceWikipedia();
 		$va_return = $o_service->lookup(array(), 'Aaron Burr');
 
-		$this->assertInternalType('array', $va_return);
+		$this->assertIsArray($va_return);
 		$this->assertArrayHasKey('results', $va_return);
-		$this->assertInternalType('array', $va_return['results']);
+		$this->assertIsArray($va_return['results']);
 		$this->assertEquals('https://en.wikipedia.org/wiki/Aaron_Burr', $va_return['results'][0]['url']);
 	}
 
@@ -54,9 +56,9 @@ class WikipediaInformationServiceAttributeValueTest extends PHPUnit_Framework_Te
 		$o_service = new WLPlugInformationServiceWikipedia();
 		$va_return = $o_service->lookup(array('lang' => 'de'), 'John von Neumann');
 
-		$this->assertInternalType('array', $va_return);
+		$this->assertIsArray($va_return);
 		$this->assertArrayHasKey('results', $va_return);
-		$this->assertInternalType('array', $va_return['results']);
+		$this->assertIsArray($va_return['results']);
 		$this->assertEquals('https://de.wikipedia.org/wiki/John_von_Neumann', $va_return['results'][0]['url']);
 	}
 
@@ -64,7 +66,7 @@ class WikipediaInformationServiceAttributeValueTest extends PHPUnit_Framework_Te
 		$o_service = new WLPlugInformationServiceWikipedia();
 		$vm_ret = $o_service->getExtraInfo(array(), 'http://en.wikipedia.org/wiki/Aaron_Burr');
 
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertArrayHasKey('fullurl', $vm_ret);
 		$this->assertArrayHasKey('image_thumbnail', $vm_ret);
 	}

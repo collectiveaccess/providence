@@ -150,16 +150,23 @@
  				$va_displays[$va_display['display_id']] = $va_display['name'];
  				
  				$va_show_only_in = [];
- 				foreach(is_array($va_display['settings']['show_only_in']) ? $va_display['settings']['show_only_in'] : [] as $k => $v) {
+ 				
+ 				$show_only_settings = [];
+ 				if(is_array($va_display['settings']['show_only_in'])) {
+ 					 $show_only_settings = $va_display['settings']['show_only_in'];
+ 				} elseif($va_display['settings']['show_only_in']) {
+ 					$show_only_settings = [$va_display['settings']['show_only_in']];
+ 				}
+ 				foreach($show_only_settings as $k => $v) {
  				    $v = str_replace('search_browse_', '', $v);
- 				    if (!in_array($v, ['list', 'full', 'thumbnail'])) { continue; }
+ 				    //if (!in_array($v, ['list', 'full', 'thumbnail'])) { continue; }
  				    $va_show_only_in[] = $v;
  				}
  				$va_display_show_only_for_views[$va_display['display_id']] = $va_show_only_in;
  			}
  			if(!sizeof($va_displays)) { $va_displays = ['0' => _t('Default')]; } // force default display if none are configured
  			if(!isset($va_displays[$vn_display_id])) { $vn_display_id = array_shift(array_keys($va_displays)); }
- 			
+ 		
  			$this->view->setVar('display_lists', $va_displays);	
  			$this->view->setVar('display_show_only_for_views', $va_display_show_only_for_views);	
 			
@@ -226,8 +233,26 @@
 					}
 					
 					if (isset($va_attribute_list[$va_tmp[1]]) && $va_sortable_elements[$va_attribute_list[$va_tmp[1]]]) {
-						$va_display_list[$vn_i]['is_sortable'] = true;
-						$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+                        $va_display_list[$vn_i]['is_sortable'] = true;
+                        $va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+					    if(ca_metadata_elements::getElementDatatype($va_tmp[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+					        // If container includes a field type this is typically "preferred" for sorting use that in place of the container aggregate
+					        $elements = ca_metadata_elements::getElementsForSet($va_tmp[1]);
+					        foreach($elements as $e) {
+					            switch($e['datatype']) {
+					                case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+					                case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+					                case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+					                case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+					                case __CA_ATTRIBUTE_VALUE_INTEGER__:
+					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+					                case __CA_ATTRIBUTE_VALUE_LENGTH__:
+					                    $va_display_list[$vn_i]['bundle_sort'] = "{$va_display_item['bundle_name']}.{$e['element_code']}";
+					                    break(2);
+					            }
+					        }
+					    }
 						continue;
 					}
 				}

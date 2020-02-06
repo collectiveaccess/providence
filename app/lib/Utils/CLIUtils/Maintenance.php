@@ -2069,8 +2069,6 @@
 		public static function regenerate_dependent_field_valuesHelp() {
 			return _t('Text fields that are dependent upon other fields are only refreshed on save and import. For dependent display templates using dimensions (length, width) formatting, changes in the dimensions.conf configuration files are not automatically applied to existing values. This utility will batch update all dependent values using the current system configuration.');
 		}
-		
-		
 		# -------------------------------------------------------
 		/**
 		 * @param Zend_Console_Getopt|null $po_opts
@@ -2369,4 +2367,96 @@
 		public static function reload_object_current_location_datesHelp() {
 			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
 		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function set_default_field_values($po_opts=null) {
+			// Find containers with dependent fields
+			$va_elements = ca_metadata_elements::getElementSetsWithSetting("default_text");
+			
+			
+			$c = 0;
+			foreach($va_elements as $va_element) {
+			    print_R($va_element);
+			    if (!strlen($default_value = trim($va_element['settings']['default_text']))) { continue; }
+			    
+			    $t_element = ca_metadata_elements::getInstance($va_element['element_code']);
+			    $t_root = ca_metadata_elements::getInstance($va_element['hier_element_id']);
+			    $vs_root_code = $t_root->get('element_code');
+			    $vn_root_id = $t_root->get('element_id');
+			    
+			    CLIUtils::addMessage(_t('Processing %1.%2', $vs_root_code, $va_element['element_code']));
+			    
+			    // get type restrictions
+			    $va_type_res_list = $t_element->getTypeRestrictions();
+			    foreach($va_type_res_list as $va_type_res) {
+			        if (!($t_instance = Datamodel::getInstanceByTableNum($va_type_res['table_num']))) { continue; }
+			        $vs_table_name = $t_instance->tableName();
+			        if ($va_type_res['type_id'] > 0) {
+			            $qr_res = call_user_func("{$vs_table_name}::find", ["type_id" => (int)$va_type_res['type_id']], ['returnAs' => 'searchResult']);
+			        } else {
+			            $qr_res = call_user_func("{$vs_table_name}::find", ["*"], ['returnAs' => 'searchResult']);
+			        }
+			        
+			        while($qr_res->nextHit()) {
+			            $va_value_list = $qr_res->get("{$vs_table_name}.{$vs_root_code}", ["returnWithStructure" => true]);
+			            foreach($va_value_list as $vn_row_id => $va_values_by_attribute_id) {
+			                foreach($va_values_by_attribute_id as $vn_attr_id => $va_values) {
+			                    if ($va_values[$va_element['element_code']]) { continue; }
+			                    CLIUtils::addMessage(_t('Processing row %1 for %2.%3', $vn_row_id, $vs_root_code, $va_element['element_code']));
+			                    
+			                    if (!$t_instance->load($vn_row_id)) { continue; }
+			                    $t_instance->setMode(ACCESS_WRITE);
+			                    
+			                    if(!isset($va_values[$va_element['element_code']]) && ($va_element['element_code'] === $vs_root_code)) {
+			                        $t_instance->addAttribute([
+			                            $va_element['element_code'] => $default_value
+			                        ], $va_element['element_code']);
+			                    } else {
+			                        $va_values[$va_element['element_code']] = $default_value;
+                                    $t_instance->editAttribute(
+                                        $vn_attr_id, $vn_root_id, $va_values
+                                    );
+                                }
+			                    $t_instance->update();
+			                    $c++;
+			                    if ($t_instance->numErrors() > 0) {
+			                        CLIUtils::addError(_t("Could not set default value: %1", join("; ", $t_instance->getErrors())));
+			                    }
+			                }
+			            }
+			        }
+			    }
+			}
+			
+			CLIUtils::addMessage(_t("Set default values on %1 records", $c));
+		}
+		# -------------------------------------------------------
+		public static function set_default_field_valuesParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function set_default_field_valuesUtilityClass() {
+            return _t('Maintenance');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function set_default_field_valuesShortHelp() {
+			return _t('Set default values on all fields where not value is set.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function set_default_field_valuesHelp() {
+			return _t('Sets configured default value on any field where no value has yet been set.');
+		}
+		# -------------------------------------------------------
     }

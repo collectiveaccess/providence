@@ -36,6 +36,7 @@
  
  require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
+ require_once(__CA_MODELS_DIR__."/ca_representation_transcriptions.php");
  
 	class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 		# ------------------------------------------------------
@@ -111,7 +112,9 @@
 			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
 		
 			$qr_reps = $o_db->query($vs_sql = "
-				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank, caoor.relation_id
+				SELECT 	caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, caor.is_transcribable,
+						l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, 
+						caor.md5, caor.mimetype, caor.original_filename, caoor.`rank`, caoor.relation_id
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 				LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
@@ -121,7 +124,7 @@
 					{$vs_access_sql}
 					{$va_type_restriction_filters['sql']}
 				ORDER BY
-					caoor.rank, caoor.is_primary DESC
+					caoor.`rank`, caoor.is_primary DESC
 				{$vs_limit_sql}
 			", $va_type_restriction_filters['params']);
 			
@@ -173,6 +176,7 @@
 				}
 			
 				$va_tmp['num_multifiles'] = $t_rep->numFiles($vn_rep_id);
+				$va_tmp['num_transcriptions'] = $t_rep->numTranscriptions($vn_rep_id);
 
 				$va_captions = $t_rep->getCaptionFileList($vn_rep_id);
 				if(is_array($va_captions) && (sizeof($va_captions)>0)){
@@ -331,7 +335,7 @@
 					{$vs_access_sql}
 					{$va_type_restriction_filters['sql']}
 				ORDER BY
-					caoor.rank, caoor.is_primary DESC
+					caoor.`rank`, caoor.is_primary DESC
 			", $va_type_restriction_filters['params']);
 		
 			$va_rep_ids = array();
@@ -554,6 +558,8 @@
 								array_merge($va_value, array(
 									'locale_id' => $pn_locale_id
 								)), $vs_element);
+						} elseif($t_rep->hasField($vs_element)) {
+							$t_rep->set($vs_element, $va_value);
 						} else {
 							// scalar value (simple single value attribute)
 							if ($va_value) {
@@ -707,7 +713,7 @@
 				if ($ps_media_path) {
 					$t_rep->set('media', $ps_media_path, $pa_options);
 				}
-			
+				
 				if (is_array($pa_values)) {
 					if (isset($pa_values['idno'])) {
 						$t_rep->set('idno', $pa_values['idno']);
@@ -719,6 +725,8 @@
 								array_merge($va_value, array(
 									'locale_id' => $pn_locale_id
 								)), $vs_element);
+						} elseif($t_rep->hasField($vs_element)) {
+							$t_rep->set($vs_element, $va_value);
 						} else {
 							// scalar value (simple single value attribute)
 							if ($va_value) {
@@ -1212,7 +1220,9 @@
                         $vn_primary_id = $va_rep['representation_id'];
                     }
                 
-                    $va_initial_values[$va_rep['representation_id']] = array(
+                    $va_initial_values[$va_rep['relation_id']] = array(
+                        'representation_id' => $va_rep['representation_id'], 
+                        'relation_id' => $va_rep['relation_id'], 
                         'idno' => $va_rep['idno'], 
                         '_display' => ($vs_bundle_template && isset($va_display_template_values[$vn_i])) ? $va_display_template_values[$vn_i] : '',
                         'status' => $va_rep['status'], 
@@ -1222,6 +1232,9 @@
                         'rep_type_id' => $va_rep['type_id'],
                         'rep_type' => $t_item->getTypeName($va_rep['type_id']), 
                         'rep_label' => $va_rep['label'],
+                        'is_transcribable' => (int)$va_rep['is_transcribable'],
+                        'is_transcribable_display' => ($va_rep['is_transcribable'] == 1) ? _t('Yes') : _t('No'), 
+                        'num_transcriptions' => $va_rep['num_transcriptions'],
                         'is_primary' => (int)$va_rep['is_primary'],
                         'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
                         'locale_id' => $va_rep['locale_id'], 
@@ -1244,6 +1257,178 @@
                 }
             }
             return $va_initial_values;
+		}
+		# ------------------------------------------------------	
+		/**
+		 * Return search result with all transcribeable records
+		 * 
+		 * @param array $options Options include:
+		 *		checkAccess = 
+		 *		restrictToTypes = 
+		 *		restrictToRelationshipTypes = 
+		 *		returnAs = what to return; possible values are:
+		 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+		 *			ids						= an array of ids (aka. primary keys)
+		 *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel 
+		 *			firstId					= the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
+		 *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
+		 *			count					= the number of matches
+		 *		
+		 *		returnRepresentations = Set to return representations. Otherwise a list of primary records is returned. [Default is false]
+		 *		
+		 * @return mixed
+		 */
+		public static function getTranscribable(array $options=null) {
+			$db = new Db();
+			$table = get_called_class();
+			$t_instance = DataModel::getInstance($table, true);
+			
+			$return_as = caGetOption('returnAs', $options, null);
+			$return_representations = caGetOption('returnRepresentations', $options, false);
+			
+			$path = Datamodel::getPath($table, 'ca_object_representations');
+			if (!is_array($path) || (sizeof($path) !== 3)) { return null; }
+			$path = array_keys($path);
+			$linking_table = $path[1];
+			
+			$pk = Datamodel::primaryKey($table);
+			
+			$sql_wheres = $sql_where_params = [];
+			
+			if($access = caGetOption('checkAccess', $options, null)) {
+				if (!is_array($access)) { $access = [$access]; }
+				if(sizeof($types)) {
+					$sql_wheres[] = "(".($return_representations ? 'o_r' : 't').".access IN (?))";
+					$sql_where_params[] = $access;
+				}
+			}
+			if($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
+				if (!is_array($restrict_to_types)) { $restrict_to_types = [$restrict_to_types]; }
+				$types = caMakeTypeIDList($return_representations ? 'ca_object_representations' : $table, $restrict_to_types);
+				if(is_array($types) && sizeof($types)) {
+					$sql_wheres[] = "(".($return_representations ? 'o_r' : 't').".type_id IN (?))";
+					$sql_where_params[] = $types;
+				}
+			}
+			if($restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $options, null)) {
+				if (!is_array($restrict_to_relationship_types)) { $restrict_to_relationship_types = [$restrict_to_relationship_types]; }
+				$rel_types = caMakeRelationshipTypeIDList($linking_table, $restrict_to_relationship_types);
+				if(is_array($rel_types) && sizeof($rel_types)) {
+					$sql_wheres[] = "({$linking_table}.type_id IN (?))";
+					$sql_where_params[] = $rel_types;
+				}
+			}
+			
+			if ($sql_wheres_str = join(" AND ", $sql_wheres)) {
+				$sql_wheres_str = " AND {$sql_wheres_str}";
+			}
+			$qr = $db->query("
+				SELECT o_r.representation_id, t.{$pk}
+				FROM ca_object_representations o_r
+				INNER JOIN {$linking_table} AS l ON o_r.representation_id = l.representation_id
+				INNER JOIN {$table} AS t ON l.{$pk} = t.{$pk}
+				WHERE o_r.is_transcribable = 1 AND o_r.deleted = 0 AND t.deleted = 0
+					{$sql_wheres_str}
+			", $sql_where_params); 
+			
+			if(is_array($ids = $qr->getAllFieldValues($return_representations ? 'representation_id' : $pk)) && sizeof($ids)) {
+				$ids = array_unique($ids);
+				switch($return_as) {
+					case 'ids':
+					default:
+						return $ids;
+					case 'firstId':
+						return array_shift($ids);
+					case 'firstModelInstance':
+						$id = array_shift($ids);
+						$t_instance = DataModel::getInstance($return_representations ? 'ca_object_representations' : $table, false);
+						return $t_instance->load($id) ? $t_instance : null;
+					case 'modelInstances':
+						$instances = [];
+						
+						foreach($ids as $id) {
+							$t_instance = DataModel::getInstance($return_representations ? 'ca_object_representations' : $table, false);
+							if ($t_instance->load($id)) {
+								$instances[] = $t_instance;
+							}
+						}
+						return $instances;
+					case 'count':
+						return sizeof($ids);
+					case 'searchResult':
+						return caMakeSearchResult($return_representations ? 'ca_object_representations' : $table, $ids);
+				}
+			}
+			return null;
+		}	
+		# ------------------------------------------------------
+		/**
+		 * Returns the current transcription status for representable items with the specified ids.
+		 * An array is returned with status information for each id. Keys are ids. Values are arrays with the
+		 * following keys:
+		 *		status = One of the following constants: __CA_TRANSCRIPTION_STATUS_NOT_STARTED__, __CA_TRANSCRIPTION_STATUS_IN_PROGRESS__, __CA_TRANSCRIPTION_STATUS_COMPLETED__
+		 *		has_transcription = True if at least one transcription exists
+		 *		is_completed = Set to the Unix timestamp of the data/time of completion, or null if not complete
+		 * 
+		 * @param array $ids
+		 * @param array $options No options are currently supported.
+		 *
+		 * @return array
+		 */
+		public static function getTranscriptionStatusForIDs(array $ids, array $options=null) {
+			$db = new Db();
+			
+			$table = get_called_class();
+			
+			$path = Datamodel::getPath($table, 'ca_object_representations');
+			if (!is_array($path) || (sizeof($path) !== 3)) { return null; }
+			$path = array_keys($path);
+			
+			$pk = Datamodel::primaryKey($table);
+			$qr = $db->query("
+				SELECT o_r.representation_id, t.{$pk}, o_r.is_transcribable, tr.transcription_id, tr.transcription, tr.completed_on
+				FROM {$table} t
+				INNER JOIN {$path[1]} AS l ON t.{$pk} = l.{$pk} 
+				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = l.representation_id
+				LEFT JOIN ca_representation_transcriptions AS tr ON o_r.representation_id = tr.representation_id
+				WHERE
+					t.{$pk} IN (?)
+			", [$ids]);
+			
+			$reps = $items = [];
+			while($qr->nextRow()) {
+				$rep_id = $qr->get('representation_id');
+				
+				if(isset($reps[$rep_id]) && ($reps[$rep_id]['status'] == __CA_TRANSCRIPTION_STATUS_COMPLETED__)) {
+					continue;
+				}
+				
+				$reps[$rep_id] = [
+					'has_transcription' => ($qr->get('transcription_id') > 0),
+					'is_completed' => $qr->get('completed_on')
+				];
+				if ($reps[$rep_id]['is_completed']) {
+					$reps[$rep_id]['status'] = __CA_TRANSCRIPTION_STATUS_COMPLETED__;
+				} else if ($reps[$rep_id]['has_transcription']) {
+					$reps[$rep_id]['status'] = __CA_TRANSCRIPTION_STATUS_IN_PROGRESS__;
+				} else {
+					$reps[$rep_id]['status'] = __CA_TRANSCRIPTION_STATUS_NOT_STARTED__;
+				}
+				if (!isset($items[$item_id = $qr->get($pk)])) { $items[$item_id] = []; }
+				
+				if ($reps[$rep_id]['has_transcription']) {
+					$items[$item_id]['has_transcription'] = true;
+					$items[$item_id]['is_completed'] = $reps[$rep_id]['is_completed'];
+				}
+				if ($items[$item_id]['is_completed']) {
+					$items[$item_id]['status'] = __CA_TRANSCRIPTION_STATUS_COMPLETED__;
+				} else if ($items[$item_id]['has_transcription']) {
+					$items[$item_id]['status'] = __CA_TRANSCRIPTION_STATUS_IN_PROGRESS__;
+				} else {
+					$items[$item_id]['status'] = __CA_TRANSCRIPTION_STATUS_NOT_STARTED__;
+				}
+			}
+			return ['representations' => $reps, 'items' => $items];
 		}
 		# ------------------------------------------------------
 	}

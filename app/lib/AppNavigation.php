@@ -615,7 +615,18 @@
 						if ($pa_navinfo[$vs_nav]['submenu']['type'] == 'dynamic') {
 							$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]['submenu']);
 							if (sizeof($va_submenu_nav)) {
-								$vs_buf .= "<li>".caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#'));
+								$table = null;
+								
+							    $is_link = (is_array($va_defaults) && $va_defaults['module'] && $va_defaults['module'] == "find");
+								if(is_array($pa_navinfo[$vs_nav]['requires'])) {
+									$table = array_shift(array_filter(array_values(array_map(function($v) { return preg_match("!^action:can_search_([a-z_]+)$!", $v, $m) ? $m[1] : null; }, array_keys($pa_navinfo[$vs_nav]['requires']))), function($v) { return $v;}));
+									if ($this->opo_config->get("{$table}_find_dont_allow_non_type_restricted")) { 
+										$is_link = false; 
+									}
+								}
+							    $va_additional_params['type_id'] = -1;  // force type restriction to be disabled
+							    
+								$vs_buf .= "<li>".($is_link ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params) : caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#')));
 								$vs_buf .= $this->_genSubMenu($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 								$vs_buf .= "</li>\n";
 							}
@@ -649,7 +660,8 @@
 				$vs_buf .= "<li class=\"sf-menu\">";
 				if (isset($va_submenu_item) && isset($va_submenu_item['default']) && is_array($va_submenu_item['default'])) { $pa_defaults = (isset($va_submenu_item['default']) ? $va_submenu_item['default'] : null); }
 				if (!isset($va_submenu_item['parameters']) || !is_array($va_submenu_item['parameters'])) { $va_submenu_item['parameters'] = array(); }
-				if (isset($va_submenu_item) && isset($va_submenu_item['is_enabled']) && intval($va_submenu_item['is_enabled'])) {
+				// only check is_enabled setting for new menu - link to default find for types even if they have subtypes
+				if (isset($va_submenu_item) && ((isset($va_submenu_item['is_enabled']) && intval($va_submenu_item['is_enabled'])) || (is_array($pa_defaults) && $pa_defaults['module'] && $pa_defaults['module'] == "find"))) {
 					$vs_buf .= caNavLink($this->opo_request, $va_submenu_item['displayName'], (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $this->_parseAdditionalParameters($va_submenu_item['parameters'])));
 				} else {
 					$vs_buf .= "<a href='#'>".$va_submenu_item['displayName']."</a>";
@@ -669,7 +681,7 @@
 			$vs_buf = '';
 			foreach($pa_menu_nav as $va_submenu_item) {
 				$vs_buf .= "<li>";
-				$vb_disabled = (isset($va_submenu_item['is_enabled']) && $va_submenu_item['is_enabled']) ? false : true;
+				$vb_disabled = ((isset($va_submenu_item['is_enabled']) && $va_submenu_item['is_enabled']) || (is_array($pa_defaults) && $pa_defaults['module'] && $pa_defaults['module'] == "find")) ? false : true;
 				
 				if ($vb_disabled) {
 					$vs_buf .= caHTMLLink(caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path) ? 'sf-menu-disabled-selected' : '')));

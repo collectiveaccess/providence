@@ -1208,7 +1208,7 @@ class BaseModel extends BaseObject {
 			}
 			$va_fld_list = array_keys($va_fld_list);
 		}
-		$vs_fld_list = (sizeof($va_fld_list)) ? join(", ", $va_fld_list) : "*";
+		$vs_fld_list = (sizeof($va_fld_list)) ? join(", ", array_map(function($v) { return (substr($v, 0, 1) !== '`') ? "`{$v}`" : $v; }, $va_fld_list)) : "*";
 		
 		$o_db = $this->getDb();
 		
@@ -1556,7 +1556,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
+							$vm_value = str_replace("&amp;", "&", BaseModel::getPurifier()->purify((string)$vm_value));
 						}
 						
 						if ($this->getFieldInfo($vs_field, "DISPLAY_TYPE") == DT_LIST_MULTIPLE) {
@@ -2451,10 +2451,10 @@ class BaseModel extends BaseObject {
 								//$qr_fmax->nextRow();
 								//$vs_field_value = $qr_fmax->get("m")+1;
 								//$this->set($vs_field, $vs_field_value);
-								$va_need_to_set_rank_for[] = $vs_field;
+								$va_need_to_set_rank_for[] = "{$vs_field}";
 							}
 						//}
-						$vs_fields .= "$vs_field,";
+						$vs_fields .= "`{$vs_field}`,";
 						$v = $vs_field_value;
 						if (!trim($v)) { $v = 0; }
 						if (!is_numeric($v)) {
@@ -2545,7 +2545,7 @@ class BaseModel extends BaseObject {
 					if (sizeof($va_need_to_set_rank_for)) {
 						$va_sql_sets = array();
 						foreach($va_need_to_set_rank_for as $vs_rank_fld) {
-							$va_sql_sets[] = "{$vs_rank_fld} = {$vn_new_id}";
+							$va_sql_sets[] = "`{$vs_rank_fld}` = {$vn_new_id}";
 						}
 						$o_db->query("
 							UPDATE ".$this->TABLE." SET ".join(", ", $va_sql_sets)." WHERE {$vs_pk} = {$vn_new_id}
@@ -2928,7 +2928,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 							return false;
 						}
-						$vs_sql .= "{$vs_field} = {$vm_val},";
+						$vs_sql .= "`{$vs_field}` = {$vm_val},";
 						$vn_fields_that_have_been_set++; $fields_changed++;
 						break;
 					# -----------------------------
@@ -6908,7 +6908,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							{$vs_deleted_sql}
 							{$vs_additional_wheres}
 						ORDER BY
-							{$vs_table_name}.{$vs_rank_fld}
+							{$vs_table_name}.`{$vs_rank_fld}`
 					";
 					//print $vs_sql;
 					$qr_hier = $o_db->query($vs_sql);
@@ -7252,7 +7252,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			// Fall back to default sorts if no explicit sort
 			if (!$vs_order_by) {
 				if ($vs_rank_fld = $this->getProperty('RANK')) { 
-					$vs_order_by = $this->tableName().'.'.$vs_rank_fld;
+					$vs_order_by = $this->tableName().'.`'.$vs_rank_fld."`";
 				} else {
 					$vs_order_by = $this->tableName().".".$this->primaryKey();
 				}
@@ -7577,7 +7577,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		$vs_pk = $this->primaryKey();
-		$pn_id = caGetOption($vs_pk, $pa_options, null);
+		$pn_id = caGetOption($vs_pk, $pa_options, $this->getPrimaryKey());
 		$va_hier = $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => false, 'sort' => null)));
 		
 		$va_levels = $va_ids = $va_parent_ids = [];
@@ -9579,6 +9579,8 @@ $pa_options["display_form_field_tips"] = true;
 					$va_row[$vs_right_field_name] = $pn_to_id;
 				}
 				
+				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
+				
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
@@ -9619,7 +9621,7 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
 				unset($va_row[$vs_rel_pk]);
-				$va_row['source_info'] = '';
+				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				$va_row[$vs_item_pk] = $pn_to_id;
 				 
 				$t_item_rel->set($va_row);
@@ -10290,7 +10292,7 @@ $pa_options["display_form_field_tips"] = true;
 			INNER JOIN ca_items_x_tags AS cixt ON cit.tag_id = cixt.tag_id
 			WHERE
 				(cixt.table_num = ?) AND (cixt.row_id = ?) {$vs_user_sql} {$vs_moderation_sql}
-			ORDER BY cixt.rank
+			ORDER BY cixt.`rank`
 		", $this->tableNum(), $vn_row_id);
 		
 		return array_map(function($v) { $v['moderation_message'] = $v['access'] ? '' : _t('Needs moderation'); return $v; }, $qr_comments->getAllRows());
@@ -10459,29 +10461,37 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @param $pn_comment_id [integer] a valid comment_id to be removed; must be related to the currently loaded row (mandatory)
 	 * @param $pn_user_id [integer] a valid ca_users.user_id value; if specified then only comments by the specified user will be deleted (optional - default is null)
+	 * @param $options Options include:
+	 *         force = Remove comment even if it's not parent of the current or created by the current user. [Default is false]
+	 *
+	 * @return bool
 	 */
-	public function removeComment($pn_comment_id, $pn_user_id=null) {
-		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
+	public function removeComment($pn_comment_id, $pn_user_id=null, $options=null) {
+	    $force = caGetOption('force', $options, false);
+		if (!($vn_row_id = $this->getPrimaryKey()) && !$force) { return null; }
 		
 		$t_comment = new ca_item_comments($pn_comment_id);
 		if (!$t_comment->getPrimaryKey()) {
 			$this->postError(2800, _t('Comment id is invalid'), 'BaseModel->removeComment()', 'ca_item_comments');
 			return false;
 		}
-		if (
-			($t_comment->get('table_num') != $this->tableNum()) ||
-			($t_comment->get('row_id') != $vn_row_id)
-		) {
-			$this->postError(2810, _t('Comment is not part of the current row'), 'BaseModel->removeComment()', 'ca_item_comments');
-			return false;
-		}
 		
-		if ($pn_user_id) {
-			if ($t_comment->get('user_id') != $pn_user_id) {
-				$this->postError(2820, _t('Comment was not created by specified user'), 'BaseModel->removeComment()', 'ca_item_comments');
-				return false;
-			}
-		}
+		if (!$force) {
+            if (
+                ($t_comment->get('table_num') != $this->tableNum()) ||
+                ($t_comment->get('row_id') != $vn_row_id)
+            ) {
+                $this->postError(2810, _t('Comment is not part of the current row'), 'BaseModel->removeComment()', 'ca_item_comments');
+                return false;
+            }
+        
+            if ($pn_user_id) {
+                if ($t_comment->get('user_id') != $pn_user_id) {
+                    $this->postError(2820, _t('Comment was not created by specified user'), 'BaseModel->removeComment()', 'ca_item_comments');
+                    return false;
+                }
+            }
+        }
 		
 		$t_comment->delete();
 		
@@ -10520,7 +10530,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		If you want both moderated and unmoderated comments to be returned then omit the parameter or pass a null value
 	 *
 	 * @param int $pn_user_id A valid ca_users.user_id value. If specified, only comments by the specified user will be returned. (optional - default is null)
-	 * @param bool $pn_moderation_status  To return only unmoderated comments set to FALSE; to return only moderated comments set to TRUE; to return all comments set to null or omit
+	 * @param bool $pb_moderation_status  To return only unmoderated comments set to FALSE; to return only moderated comments set to TRUE; to return all comments set to null or omit
 	 * @param array $pa_options Options include:
      * 	    transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
      *		returnAs = what to return; possible values are:
@@ -10533,41 +10543,68 @@ $pa_options["display_form_field_tips"] = true;
      *			count					= the number of matches
      *
      *			The default is array
+     *      request = the current request (optional)
      *
      * @return array
      */
 	public function getComments($pn_user_id=null, $pb_moderation_status=null, $pa_options=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 
+        $o_request = caGetOption('request', $pa_options, null);
         $o_trans = caGetOption('transaction', $pa_options, null);
         $vs_return_as = caGetOption('returnAs', $pa_options, 'array');
 
 		$o_db = $o_trans ? $o_trans->getDb() : $this->getDb();
 		
-		$vs_user_sql = ($pn_user_id) ? ' AND (user_id = '.intval($pn_user_id).')' : '';
+		$vs_user_sql = ($pn_user_id) ? ' AND (c.user_id = '.intval($pn_user_id).')' : '';
 		
 		$vs_moderation_sql = '';
 		if (!is_null($pb_moderation_status)) {
-			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
+			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (c.moderated_on IS NOT NULL)' : ' AND (c.moderated_on IS NULL)';
 		}
 		
 		$qr_comments = $o_db->query("
-			SELECT *
-			FROM ca_item_comments
+			SELECT 
+			    c.comment_id, c.row_id set_item_id, c.user_id, c.locale_id, c.comment, c.media1, c.media2, c.media3, c.media4, 
+			    c.rating, c.email, c.name, c.created_on, c.access, c.ip_addr, c.moderated_on, c.moderated_by_user_id, c.location,
+			    u.fname, u.lname, u.email user_email
+			FROM ca_item_comments c
+			LEFT JOIN ca_users AS u ON c.user_id = u.user_id
 			WHERE
-				(table_num = ?) AND (row_id = ?) {$vs_user_sql} {$vs_moderation_sql}
+				(c.table_num = ?) AND (c.row_id = ?) 
+				
+				{$vs_user_sql} {$vs_moderation_sql}
 		", array($this->tableNum(), $vn_row_id));
-
+		
+		$pk = $this->primaryKey();
+		$qr_set_comments = $o_db->query("
+			SELECT 
+			    c.comment_id, c.row_id set_item_id, c.user_id, c.locale_id, c.comment, c.media1, c.media2, c.media3, c.media4, 
+			    c.rating, c.email, c.name, c.created_on, c.access, c.ip_addr, c.moderated_on, c.moderated_by_user_id, c.location,
+			    csi.row_id, csi.table_num, csi.set_id, csi.`rank`,
+			    cs.set_code, csl.name set_name,
+			    u.fname, u.lname, u.email user_email
+			FROM ca_item_comments c
+			INNER JOIN ca_set_items AS csi ON csi.item_id = c.row_id AND csi.table_num = ?
+			INNER JOIN ca_sets AS cs ON cs.set_id = csi.set_id
+			INNER JOIN ca_set_labels AS csl ON csl.set_id = cs.set_id 
+			LEFT JOIN ca_users AS u ON c.user_id = u.user_id
+			WHERE
+				(c.table_num = 105) AND (csi.row_id = ?)
+				
+				{$vs_user_sql} {$vs_moderation_sql}
+		", array($this->tableNum(), $vn_row_id));
+		
         switch($vs_return_as) {
             case 'count':
-                return $qr_comments->numRows();
+                return $qr_comments->numRows() + $qr_set_comments->numRows();
                 break;
             case 'ids':
             case 'firstId':
             case 'searchResult':
             case 'modelInstances':
             case 'firstModelInstance':
-                $va_ids = $qr_comments->getAllFieldValues('comment_id');
+                $va_ids = ($qr_comments->getAllFieldValues('comment_id') + $qr_set_comments->getAllFieldValues('comment_id'));
                 if ($vs_return_as === 'ids') { return $va_ids; }
                 if ($vs_return_as === 'firstId') { return array_shift($va_ids); }
                 if (($vs_return_as === 'modelInstances') || ($vs_return_as === 'firstModelInstance')) {
@@ -10585,7 +10622,8 @@ $pa_options["display_form_field_tips"] = true;
             default:
                 $va_comments = array();
                 while ($qr_comments->nextRow()) {
-                    $va_comments[$qr_comments->get("comment_id")] = $qr_comments->getRow();
+                    $comment_id = $qr_comments->get("comment_id");
+                    $va_comments[$comment_id] = $qr_comments->getRow();
                     foreach (array("media1", "media2", "media3", "media4") as $vs_media_field) {
                         $va_media_versions = array();
                         $va_media_versions = $qr_comments->getMediaVersions($vs_media_field);
@@ -10598,12 +10636,55 @@ $pa_options["display_form_field_tips"] = true;
                                 $va_image_info["URL"] = $qr_comments->getMediaUrl($vs_media_field, $vs_version);
                                 $va_media[$vs_version] = $va_image_info;
                             }
-                            $va_comments[$qr_comments->get("comment_id")][$vs_media_field] = $va_media;
+                            $va_comments[][$vs_media_field] = $va_media;
                         }
                     }
+                    
+                    $va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
+					if ($va_comments[$comment_id]['user_id']) {
+						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
+						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
+					}
+                }
+                 while ($qr_set_comments->nextRow()) {
+                    $comment_id = $qr_set_comments->get("comment_id");
+                    $va_comments[$comment_id] = $qr_set_comments->getRow();
+                    foreach (array("media1", "media2", "media3", "media4") as $vs_media_field) {
+                        $va_media_versions = array();
+                        $va_media_versions = $qr_set_comments->getMediaVersions($vs_media_field);
+                        $va_media = array();
+                        if (is_array($va_media_versions) && (sizeof($va_media_versions) > 0)) {
+                            foreach ($va_media_versions as $vs_version) {
+                                $va_image_info = array();
+                                $va_image_info = $qr_set_comments->getMediaInfo($vs_media_field, $vs_version);
+                                $va_image_info["TAG"] = $qr_set_comments->getMediaTag($vs_media_field, $vs_version);
+                                $va_image_info["URL"] = $qr_set_comments->getMediaUrl($vs_media_field, $vs_version);
+                                $va_media[$vs_version] = $va_image_info;
+                            }
+                            $va_comments[$comment_id][$vs_media_field] = $va_media;
+                        }
+                    }
+                    
+					$va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
+					
+					if ($va_comments[$comment_id]['user_id']) {
+						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
+						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
+					}
+					
+					if ($o_request) {
+						$va_comments[$comment_id]['set_message'] = _t("Comment made in set %1", caEditorLink($o_request, $qr_set_comments->get('set_name'), '', 'ca_sets', $va_comments[$comment_id]['set_id']));
+					}
                 }
                 break;
         }
+        
+        $va_comments = array_map(function($v) { $v['moderation_message'] = $v['access'] ? '' : _t('Needs moderation'); return $v; }, $va_comments);
+        ksort($va_comments);
+        
+		if (caGetOption('sortDirection', $pa_options, 'ASC', ['validValues' => ['ASC', 'DESC'], 'forceToUppercase' => true]) === 'DESC') {
+		    $va_comments = array_reverse($va_comments);
+		}
 		return $va_comments;
 	}
 	# --------------------------------------------------------------------------------------------
@@ -10641,19 +10722,27 @@ $pa_options["display_form_field_tips"] = true;
 	
 		$vs_moderation_sql = '';
 		if (!is_null($pb_moderation_status)) {
-			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
+			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (c.moderated_on IS NOT NULL)' : ' AND (c.moderated_on IS NULL)';
 		}
 		
 		$o_db = $this->getDb();
 		$qr_comments = $o_db->query("
 			SELECT count(*) c
-			FROM ca_item_comments
+			FROM ca_item_comments c
 			WHERE
-				(comment != '') AND (table_num = ?) AND (row_id = ?) {$vs_moderation_sql}
+				(c.comment != '') AND (c.table_num = ?) AND (c.row_id = ?) {$vs_moderation_sql}
+		", $this->tableNum(), $vn_row_id);
+		
+	    $qr_set_comments = $o_db->query("
+			SELECT count(*) c
+			FROM ca_item_comments c
+			INNER JOIN ca_set_items AS csi ON c.row_id = csi.item_id 
+			WHERE
+				(c.comment != '') AND (c.table_num = 105) AND (csi.table_num = ?) AND (csi.row_id = ?) {$vs_moderation_sql}
 		", $this->tableNum(), $vn_row_id);
 		
 		if ($qr_comments->nextRow()) {
-			return round($qr_comments->get('c'));
+			return round($qr_comments->get('c')) + round($qr_set_comments->get('c'));
 		} else {
 			return null;
 		}
@@ -10667,23 +10756,35 @@ $pa_options["display_form_field_tips"] = true;
 
 		$vs_moderation_sql = '';
 		if (!is_null($pb_moderation_status)) {
-			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
+			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (c.moderated_on IS NOT NULL)' : ' AND (c.moderated_on IS NULL)';
 		}
 		
 		if (!($vn_table_num = Datamodel::getTableNum(get_called_class()))) { return null; }
 		
 		$o_db = ($o_trans = caGetOption('transaction', $pa_options, null)) ? $o_trans->getDb() : new Db();
 		$qr_comments = $o_db->query("
-			SELECT row_id, count(*) c
-			FROM ca_item_comments
+			SELECT c.row_id, count(*) c
+			FROM ca_item_comments c
 			WHERE
-				(comment != '') AND (table_num = ?) AND (row_id IN (?)) {$vs_moderation_sql}
-			GROUP BY row_id
+				(c.comment != '') AND (c.table_num = ?) AND (c.row_id IN (?)) {$vs_moderation_sql}
+			GROUP BY c.row_id
 		", array($vn_table_num, $pa_ids));
 		
-		$va_counts = array();
+		$qr_set_comments = $o_db->query("
+			SELECT csi.row_id, count(*) c
+			FROM ca_item_comments c
+			INNER JOIN ca_set_items AS csi ON c.row_id = csi.item_id 
+			WHERE
+				(c.comment != '') AND (c.table_num = 105) AND (csi.table_num = ?) AND (csi.row_id IN (?)) {$vs_moderation_sql}
+			GROUP BY csi.row_id
+		", array($vn_table_num, $pa_ids));
+		
+		$va_counts = [];
 		while ($qr_comments->nextRow()) {
 			$va_counts[(int)$qr_comments->get('row_id')] = (int)$qr_comments->get('c');
+		}
+		while ($qr_set_comments->nextRow()) {
+			$va_counts[(int)$qr_set_comments->get('row_id')] = (int)$qr_set_comments->get('c');
 		}
 		return $va_counts;
 	}
@@ -11356,6 +11457,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
  	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
+ 	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false] 
  	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11394,12 +11496,12 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_type_restriction_sql = '';
 		$va_type_restriction_params = [];
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
-			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
 				$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}
 		}
-			
 		
 		//
 		// Convert type id
@@ -12131,8 +12233,8 @@ $pa_options["display_form_field_tips"] = true;
 
 		$vs_order_by = '';
 		if ($t_item_rel && $t_item_rel->hasField('rank')) {
-			$va_selects[] = $t_item_rel->tableName().'.rank';
-			$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
+			$va_selects[] = $t_item_rel->tableName().'.`rank`';
+			$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.`rank`';
 		} else {
 			if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 				$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
@@ -12247,11 +12349,11 @@ $pa_options["display_form_field_tips"] = true;
 		// If "after_id" is null then change ranks such that the "id" row is at the beginning
 		if (!$pn_after_id) {
 			$qr_res = $o_db->query("
-				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} ".($vs_parent_sql ? "WHERE {$vs_parent_sql}" : "")." ORDER BY {$vs_rank_fld} LIMIT 1
+				SELECT {$vs_item_pk}, `{$vs_rank_fld}` FROM {$vs_item_table} ".($vs_parent_sql ? "WHERE {$vs_parent_sql}" : "")." ORDER BY `{$vs_rank_fld}` LIMIT 1
 			", $va_params);
 		} else {
 			$qr_res = $o_db->query("
-				SELECT {$vs_item_pk}, {$vs_rank_fld} FROM {$vs_item_table} WHERE {$vs_item_pk} = ? ".($vs_parent_sql ? "AND {$vs_parent_sql}" : "")." ORDER BY {$vs_rank_fld} LIMIT 1
+				SELECT {$vs_item_pk}, `{$vs_rank_fld}` FROM {$vs_item_table} WHERE {$vs_item_pk} = ? ".($vs_parent_sql ? "AND {$vs_parent_sql}" : "")." ORDER BY `{$vs_rank_fld}` LIMIT 1
 			", $va_params);
 		}
 	
@@ -12271,12 +12373,12 @@ $pa_options["display_form_field_tips"] = true;
 		$va_params[] = $vn_after_rank;
 		
 		$qr_res = $o_db->query("
-			UPDATE {$vs_item_table} SET {$vs_rank_fld} = {$vs_rank_fld} + 1 WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." {$vs_rank_fld} > ?
+			UPDATE {$vs_item_table} SET `{$vs_rank_fld}` = `{$vs_rank_fld}` + 1 WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." `{$vs_rank_fld}` > ?
 		", $va_params);
 		
 		// Log changes to ranks
 		$qr_res = $o_db->query("
-			SELECT * FROM {$vs_item_table} WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." {$vs_rank_fld} > ?
+			SELECT * FROM {$vs_item_table} WHERE ".($vs_parent_sql ? "{$vs_parent_sql} AND" : "")." `{$vs_rank_fld}` > ?
 		", $va_params);
 		while($qr_res->nextRow()) {
 			$this->logChange("U", null, ['row_id' => $qr_res->get($vs_item_pk), 'snapshot' => $qr_res->getRow()]);
