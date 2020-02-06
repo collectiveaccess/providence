@@ -2764,7 +2764,7 @@ if (!$for_current_value_reindex) {
 				// process joins
 				$vn_num_queries_required = 1;
 				foreach($va_joins as $vn_i => $va_join_list) {
-					if(sizeof($va_join_list) > $vn_num_queries_required) {
+					if(is_array($va_join_list) && (sizeof($va_join_list) > $vn_num_queries_required)) {
 						$vn_num_queries_required = sizeof($va_join_list);
 					}
 				}
