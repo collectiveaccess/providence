@@ -120,7 +120,7 @@
 		// when ready, pull in the result list via the RelatedList search controller and the JS helper caAsyncSearchResultForm() above
 ?>
 		jQuery(document).ready(function() {
-			jQuery.get('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', $va_additional_search_controller_params); ?>', caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
+			jQuery.post('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', []); ?>', <?php print json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
 		});
 <?php
 	}
