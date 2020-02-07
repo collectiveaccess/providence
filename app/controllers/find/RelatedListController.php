@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -148,9 +148,11 @@ class RelatedListController extends BaseSearchController {
 
 		$vs_url_string = '';
 		foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
+			if($vs_key == 'ids') { continue; }
 			$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
 		}
 
+		$this->getView()->setVar('relatedListParams', $va_additional_search_controller_params);
 		$this->getView()->setVar('relatedListURLParamString', $vs_url_string);
 
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
