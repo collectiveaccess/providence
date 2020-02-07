@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2019 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,6 +63,7 @@
 
 	$vs_url_string = '';
 	foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
+		if ($vs_key == 'ids') { continue; }
 		$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
 	}
 
@@ -99,7 +100,7 @@
 
 		jQuery('#tableContent<?php print $vs_id_prefix; ?> .list-header-unsorted a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-desc a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-asc a').click(function(event) {
 			event.preventDefault();
-			jQuery.get(event.target + '<?php print $vs_url_string; ?>', caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
+			jQuery.post(event.target, <?php print json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
 		});
 
 		tableContent.find('form').each(function() {
