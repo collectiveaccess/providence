@@ -30,12 +30,12 @@
  
  	class InterstitialController extends BaseInterstitialController {
  		# -------------------------------------------------------
- 		protected $ops_table_name = null;		// name of "subject" table (what we're editing)
+// 		protected $ops_table_name = null;		// name of "subject" table (what we're editing)
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			$this->ops_table_name = $po_request->getParameter('t', pString);
+// 			$this->ops_table_name = $po_request->getParameter('t', pString);
  		}
  		# -------------------------------------------------------
  	}

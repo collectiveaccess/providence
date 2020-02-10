@@ -48,14 +48,17 @@
  		protected $opo_datamodel;
  		protected $opo_app_plugin_manager;
  		protected $opo_result_context;
+      		protected $ops_table_name = null;		// name of "subject" table (what we're editing)
+
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
-			
+			$this->ops_table_name = $po_request->getParameter('t', pString);
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
+                        $this->opo_result_context = $this->opo_result_context;
  		}
  		# -------------------------------------------------------
  		/**
