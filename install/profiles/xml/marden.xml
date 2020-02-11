@@ -5440,6 +5440,27 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="inscription_text" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Inscription</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">3</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="valuation" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -10505,10 +10526,10 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="exhibition_dates_display" datatype="Text">
+    <metadataElement code="exhibition_year" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Exhibition Dates (Display)</name>
+          <name>Exhibition Year</name>
         </label>
       </labels>
       <settings>
@@ -10521,7 +10542,7 @@
           <type>exhibition</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -10995,7 +11016,7 @@
     <metadataElement code="lit_city" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>City</name>
+          <name>Publication city</name>
         </label>
       </labels>
       <settings>
@@ -11035,6 +11056,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    
     
     <metadataElement code="copy_atstudio" datatype="List" list="yn">
       <labels>
@@ -12007,6 +12029,28 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="bib_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Notes for bibliography</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">6</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects_x_occurrences">
+          <table>ca_objects_x_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="exhibition_title" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -12198,6 +12242,27 @@
         <restriction code="r1">
           <table>ca_objects_x_entities</table>
           <type>contains</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="illustrated" datatype="List" list="yn">
+      <labels>
+        <label locale="en_US">
+          <name>Illustrated?</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects_x_occurrences</table>
+          <type>references</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -12873,55 +12938,22 @@
           <typeRestrictions>
             <restriction code="artwork" type="artwork"/>
           </typeRestrictions>
-          <bundlePlacements>
-            <placement code="ca_attribute_recto_inscriptions">
-              <bundle>ca_attribute_recto_inscriptions</bundle>
-               <settings>
-                <setting name="expand_collapse_value">expand</setting>
-                <setting name="expand_collapse_no_value">collapse</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_verso_inscriptions">
-              <bundle>ca_attribute_verso_inscriptions</bundle>
-               <settings>
-                <setting name="expand_collapse_value">expand</setting>
-                <setting name="expand_collapse_no_value">collapse</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_other_inscription">
-              <bundle>ca_attribute_other_inscription</bundle>
-               <settings>
-                <setting name="expand_collapse_value">expand</setting>
-                <setting name="expand_collapse_no_value">collapse</setting>
-              </settings>
-            </placement>
+           <bundlePlacements>
+         <placement code="ca_attribute_inscription_text">
+           <bundle>ca_attribute_inscription_text</bundle>
+         </placement>
             <placement code="ca_attribute_markings_notations">
               <bundle>ca_attribute_markings_notations</bundle>
             </placement>
             <placement code="ca_attribute_label">
               <bundle>ca_attribute_label</bundle>
-               <settings>
-                <setting name="expand_collapse_value">expand</setting>
-                <setting name="expand_collapse_no_value">collapse</setting>
-              </settings>
             </placement>
-            <placement code="ca_attribute_stamps">
-              <bundle>ca_attribute_stamps</bundle>
-               <settings>
-                <setting name="expand_collapse_value">expand</setting>
-                <setting name="expand_collapse_no_value">collapse</setting>
-              </settings>
-            </placement>
-           <placement code="ca_attribute_keywords">
-             <bundle>ca_attribute_keywords</bundle>
-           </placement>
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
-               <settings>
-                <setting name="expand_collapse_value">expand</setting>
-                <setting name="expand_collapse_no_value">collapse</setting>
-              </settings>
             </placement>
+              <placement code="ca_attribute_keywords">
+             <bundle>ca_attribute_keywords</bundle>
+           </placement>
            <placement code="ca_objects">
           <bundle>ca_objects</bundle>
           <settings>
@@ -12936,7 +12968,6 @@
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects"><em><l>^ca_objects.preferred_labels</l></em><ifdef code="common_date">, </ifdef>^ca_objects.common_date]]></setting>
           </settings>
         </placement> 
-            
           </bundlePlacements>
         </screen>
         <screen idno="media" default="0">
@@ -13404,7 +13435,9 @@
                 <setting name="label" locale="en_US">Exhibition Title</setting>
               </settings>
             </placement>
-            
+            <placement code="ca_attribute_exhibition_year">
+              <bundle>ca_attribute_exhibition_year</bundle>
+            </placement>
             <placement code="ca_venues">
               <bundle>ca_entities</bundle>
               <settings>
@@ -13501,6 +13534,7 @@
               <bundle>preferred_labels</bundle>
                <settings>
                 <setting name="label" locale="en_US">Book/Magazine/Newspaper Name</setting>
+                 <setting name="fieldHeight">2</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_essay">
@@ -15039,7 +15073,7 @@
     </userInterface>
     
     <userInterface code="obj_x_occurrences_Exh" type="ca_objects_x_occurrences"
-      typeRestrictions="includes,featured" includeSubtypes="0">
+      typeRestrictions="includes" includeSubtypes="0">
       <labels>
         <label locale="en_US">
           <name>Interstitial Objects x Occurrences</name>
@@ -15081,38 +15115,17 @@
             <placement code="ca_attribute_citation">
               <bundle>ca_attribute_citation</bundle>
             </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="places_x_occurrences" type="ca_places_x_occurrences"
-      typeRestrictions="home,studio,travel" includeSubtypes="0">
-      <labels>
-        <label locale="en_US">
-          <name>Interstitial Places x Occurrences</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Basic</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="effective_date1">
-              <bundle>effective_date</bundle>
-              <settings>
-            <setting name="label" locale="en_US">Date(s)</setting>
-          </settings>
+            <placement code="ca_attribute_illustrated">
+              <bundle>ca_attribute_illustrated</bundle>
             </placement>
-            <placement code="ca_attribute_interstitial_notes">
-              <bundle>ca_attribute_interstitial_notes</bundle>
+            <placement code="ca_attribute_bib_notes">
+              <bundle>ca_attribute_bib_notes</bundle>
             </placement>
           </bundlePlacements>
         </screen>
       </screens>
     </userInterface>
+    
     <userInterface code="obj_x_consignments" type="ca_loans_x_objects" typeRestrictions="related"
       includeSubtypes="0">
       <labels>
@@ -16573,28 +16586,42 @@
             <setting name="format"><![CDATA[<if rule="^ca_objects.dimensions.dimensions_publish =~ /no/">^ca_objects.dimensions.display_dimensions</if>]]></setting>
           </settings>
         </placement>
+        <placement code="ca_attribute_inscription_text">
+          <bundle>ca_objects.attribute_inscription_text</bundle>
+        </placement>
+        <placement code="ca_attribute_art_numbers">
+          <bundle>ca_objects.attribute_art_numbers</bundle>
+        </placement>
         <placement code="ca_prov">
           <bundle>ca_entities</bundle>
           <settings>
+            <setting name="delimiter"><![CDATA[<br>]]></setting>
             <setting name="label" locale="en_US">Provenance</setting>
             <setting name="restrict_to_relationship_types">provenance</setting>
-            <setting name="delimiter"><![CDATA[<br/>]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects_x_entities" restrictToRelationshipTypes="provenance"> ^ca_objects_x_entities.interstitial_notes</unit>]]></setting>
           </settings>
         </placement>
-      <placement code="ca_lit">
-        <bundle>ca_occurrences</bundle>
-        <settings>
-          <setting name="label" locale="en_US">Related Literature</setting>
-          <setting name="restrict_to_types">literature</setting>
-          <setting name="delimiter"><![CDATA[<br/>]]></setting>
-        </settings>
-      </placement>
+        <placement code="ca_lit">
+          <bundle>ca_occurrences</bundle>
+          <settings>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects_x_occurrences" restrictToRelationshipTypes="references"> ^ca_occurrences.lit_citation ^ca_objects_x_occurrences.citation</unit>]]></setting>
+            <setting name="label" locale="en_US">Related Literature</setting>
+            <setting name="restrict_to_types">literature</setting>
+            <setting name="delimiter"><![CDATA[<br><br>]]></setting>
+          </settings>
+        </placement>
         <placement code="ca_exh">
           <bundle>ca_occurrences</bundle>
           <settings>
             <setting name="label" locale="en_US">Exhibitions</setting>
             <setting name="restrict_to_types">exhibition</setting>
-            <setting name="delimiter"><![CDATA[<br/>]]></setting>
+            <setting name="delimiter"><![CDATA[<br><br>]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_occurrences">
+<i>^ca_occurrences.preferred_labels</i>, 
+
+<unit relativeTo="ca_entities"delimiter=";">
+^ca_entities.preferred_labels,
+^ca_entities.address.city<unit relativeTo="ca_entities_x_occurrences" restrictToRelationshipTypes="venue"> ^ca_entities_x_occurrences.common_date%forceCommaAfterDay=1</unit></unit></unit><ifdef code="ca_objects_x_occurrences.interstitial_notes"> [^ca_objects_x_occurrences.interstitial_notes]<br></ifdef>.]]></setting>
           </settings>
         </placement>
       </bundlePlacements>
