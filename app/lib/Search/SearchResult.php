@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1526,6 +1526,14 @@ class SearchResult extends BaseObject {
 			goto filter;
 		} else {
 			if (!$va_path_components['hierarchical_modifier']) {
+//
+// [PRIMARY TABLE] guid
+//
+				if ($va_path_components['field_name'] == '_guid') {
+					$vm_val = ca_guids::getForRow(Datamodel::getTableNum($va_path_components['table_name']), $vn_row_id);
+					goto filter;
+				}
+
 //
 // [PRIMARY TABLE] Created on
 //
