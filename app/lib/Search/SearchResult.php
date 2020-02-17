@@ -1530,6 +1530,14 @@ class SearchResult extends BaseObject {
 		} else {
 			if (!$va_path_components['hierarchical_modifier']) {
 //
+// [PRIMARY TABLE] guid
+//
+				if ($va_path_components['field_name'] == '_guid') {
+					$vm_val = ca_guids::getForRow(Datamodel::getTableNum($va_path_components['table_name']), $vn_row_id);
+					goto filter;
+				}
+
+//
 // [PRIMARY TABLE] Created on
 //
 				if ($va_path_components['field_name'] == 'created') {
