@@ -1177,7 +1177,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				if ($q && $q->nextHit()) {
 					if(($home_location_id = $q->get('ca_objects.home_location_id')) && ($t_loc = ca_storage_locations::find(['location_id' => $home_location_id], ['returnAs' => 'firstModelInstance']))) {
 						if (!($t = Configuration::load()->get('home_location_display_template'))) {
-							$t = 'ca_storage_locations.hierarchy.preferred_labels';
+							$t = caGetOption('display_template', $pa_options, '^ca_storage_locations.hierarchy.preferred_labels');
 						}
 						return $t_loc->getWithTemplate($t);
 					}
