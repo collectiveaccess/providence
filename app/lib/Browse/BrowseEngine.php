@@ -4199,13 +4199,13 @@
 									if (!($vn_max_browse_depth = caGetOption('maximumBrowseDepth', $va_facet_info, null))) {
 										$vn_max_browse_depth = caGetOption('maximumBrowseDepth', $va_config, null);
 									}
-									if (!$vn_max_browse_depth) { $vn_max_browse_depth = null; } else { $vn_max_browse_depth++; }	// add one to account for invisible root
+									if (!$vn_max_browse_depth) { $vn_max_browse_depth = null; }
 								
 									$vs_hier_pk = Datamodel::primaryKey($current_table_name, false);
 							
 									$va_hier_ids = [];
 									while($qr_res->nextHit()) {
-										if (is_array($va_ids = $qr_res->get("{$current_table_name}.hierarchy.{$vs_hier_pk}", ['returnAsArray' => true, 'maxLevelsFromBottom' => $vn_max_browse_depth]))) {
+										if (is_array($va_ids = $qr_res->get("{$current_table_name}.hierarchy.{$vs_hier_pk}", ['returnAsArray' => true, 'maxLevelsFromTop' => $vn_max_browse_depth]))) {
 											foreach($va_ids as $vn_id) {
 												$va_hier_ids[$vn_id] = true;
 											}
