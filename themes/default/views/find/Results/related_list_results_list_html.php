@@ -173,7 +173,7 @@
 						ids.push(jQuery(this).attr('id').replace('<?php print $vs_interstitial_prefix; ?>', ''));
 					});
 
-					jQuery.get(
+					jQuery.post(
 						'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'SaveUserSort'); ?>',
 						{ ids: ids, related_rel_table: "<?php print $vs_related_rel_table; ?>" }
 					);

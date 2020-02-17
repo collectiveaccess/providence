@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
+	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$vo_result 					= $this->getVar('result');
 	$vs_controller_name 		= $this->getVar('controller');
 	$vn_num_hits				= $this->getVar('num_hits');
@@ -65,14 +66,24 @@
 	if(($this->getVar('num_pages') > 1) && !$this->getVar('dontShowPages')){
 		$vs_searchNav .= "<div class='nav'>";
 		if ($this->getVar('page') > 1) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_previous_link_params)."\", function() { if(typeof caHackSearchResultForm == \"function\") { caHackSearchResultForm(false); }}); return false;' class='button'>&lsaquo; Previous</a>";
+			$vs_searchNav .= "<a href='#' onclick='caRelatedPageNav{$vs_id_prefix}(); return false;' class='button'>&lsaquo; Previous</a>";
 		}
 		$vs_searchNav .= '&nbsp;&nbsp;&nbsp;Page '.$this->getVar('page').'/'.$this->getVar('num_pages').'&nbsp;&nbsp;&nbsp;';
 		if ($this->getVar('page') < $this->getVar('num_pages')) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\", function() { if(typeof caHackSearchResultForm == \"function\") { caHackSearchResultForm(false); }}); return false;' class='button'>Next &rsaquo;</a>";
+			$vs_searchNav .= "<a href='#' onclick='caRelatedPageNav{$vs_id_prefix}(true); return false;' class='button'>Next &rsaquo;</a>";
 		}
 		$vs_searchNav .= "</div>";
 	}
 	$vs_searchNav .= "</div>";
 	print $vs_searchNav;
 ?>
+
+<script type="text/javascript">
+	function caRelatedPageNav<?php print $vs_id_prefix; ?>(next) {
+		if (next) {
+			jQuery("#resultBox").load("<?php print caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction()); ?>", <?php print json_encode($va_next_link_params); ?>, function() { if(typeof caHackSearchResultForm == "function") { caHackSearchResultForm(false); }}); 
+		} else {
+			jQuery("#resultBox").load("<?php print caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction()); ?>", <?php print json_encode($va_previous_link_params); ?>, function() { if(typeof caHackSearchResultForm == "function") { caHackSearchResultForm(false); }}); 
+		}
+	}
+</script>
