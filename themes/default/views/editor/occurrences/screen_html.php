@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,7 +42,7 @@
 			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'OccurrenceEditorForm').' '.
 			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save and return"), 'OccurrenceEditorForm', array('isSaveAndReturn' => true)) : '').' '.
 			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'editor/occurrences', 'OccurrenceEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
-			'', 
+			($this->getVar('show_show_notifications') ? caFormJSButton($this->request, __CA_NAV_ICON_ALERT__, _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''), 
 			((intval($vn_occurrence_id) > 0) && $vb_can_delete) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'editor/occurrences', 'OccurrenceEditor', 'Delete/'.$this->request->getActionExtra(), array('occurrence_id' => $vn_occurrence_id)) : ''
 		);
 	}
