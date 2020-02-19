@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -409,7 +409,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->metadata;
 	}
 	# ----------------------------------------------------------
-	public function read($filepath, $mimetype="") {
+	public function read($filepath, $mimetype="", $options=null) {
 		if (!(($this->handle) && ($filepath === $this->filepath))) {
 			
 			if(strpos($filepath, ':') && (caGetOSFamily() != OS_WIN32)) {
@@ -442,7 +442,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				
 				$this->metadata = array();
 				
-				$handle = $this->_imageMagickRead($filepath);
+				$handle = $this->_imageMagickRead($filepath, $options);
 				if ($handle) {
 					$this->handle = $handle;
 					$this->filepath = $filepath;
@@ -1101,7 +1101,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return null;
 	}
 	# ------------------------------------------------
-	private function _imageMagickRead($ps_filepath) {
+	private function _imageMagickRead($ps_filepath, $options=null) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 		
 			exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%[colorspace];%[depth];%[xresolution];%[yresolution]\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
@@ -1131,6 +1131,11 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 							$this->properties["orientation_rotate"] = -90;
 							break;
 					}
+				}
+				
+				// rewrite file name to use originally uploaded name
+				if(array_key_exists("FILE", $this->metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+					$this->metadata['EXIF']['FILE']['FileName'] = $f;
 				}
 			}		
 			

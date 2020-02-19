@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -399,7 +399,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		return $this->metadata;
 	}
 	# ----------------------------------------------------------
-	public function read($filepath, $mimetype="") {
+	public function read($filepath, $mimetype="", $options=null) {
 		if (!(($this->handle) && ($filepath === $this->filepath))) {
 			
 			if(strpos($filepath, ':') && (caGetOSFamily() != OS_WIN32)) {
@@ -1016,7 +1016,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		return null;
 	}
 	# ------------------------------------------------
-	private function _graphicsMagickGetMetadata($ps_filepath) {
+	private function _graphicsMagickGetMetadata($ps_filepath, $options=null) {
 		$va_metadata = array();
 			
 		/* EXIF metadata */
@@ -1043,6 +1043,11 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 				}
 			}
 			$va_output = array();
+		}
+		
+		// rewrite file name to use originally uploaded name
+		if(array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+			$va_metadata['EXIF']['FILE']['FileName'] = $f;
 		}
 
 		$o_xmp = new XMPParser();

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2018 Whirl-i-Gig
+ * Copyright 2006-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -325,7 +325,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->metadata;
 	}
 	# ----------------------------------------------------------
-	public function read($filepath, $mimetype="") {
+	public function read($filepath, $mimetype="", $options=null) {
 		if ($mimetype == 'image/tilepic') {
 			#
 			# Read in Tilepic format image
@@ -362,6 +362,10 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						$this->metadata["EXIF"] = $va_exif = caSanitizeArray(@exif_read_data($filepath, 'EXIF', true, false));
 						
+						// rewrite file name to use originally uploaded name
+						if(array_key_exists("FILE", $this->metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+							$this->metadata["EXIF"]['FILE']['FileName'] = $f;
+						}
 						
 						//
 						// Rotate incoming image as needed
