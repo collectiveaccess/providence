@@ -51,7 +51,7 @@ if (!$this->request->isAjax()) {
 }
 ?>
 	<div id="caToolListContainer">
-		<table id="caToolList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table id="caToolList" class="listtable">
 			<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -87,7 +87,7 @@ if (!$this->request->isAjax()) {
 ?>
 				</td>
 				<td>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Run"), '', 'manage', 'Tools', 'Settings', array('tool' => $o_tool->getToolIdentifier()), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Run"), '', 'manage', 'Tools', 'Settings', array('tool' => $o_tool->getToolIdentifier()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php

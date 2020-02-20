@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_items_x_tags'] = array(
@@ -117,6 +117,13 @@ BaseModel::$s_ca_models_definitions['ca_items_x_tags'] = array(
 				'IS_NULL' => true, 
 				'DEFAULT' => null,
 				'LABEL' => _t('Moderation date'), 'DESCRIPTION' => _t('The date and time the tag was examined for validity and applicability.')
+		),
+		'rank' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the tag when displayed in a list with other tags. Lower numbers indicate higher priority.')
 		)
  	)
 );
@@ -175,7 +182,7 @@ class ca_items_x_tags extends BaseModel {
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = '';
+	protected $RANK = 'rank';
 	
 	
 	# ------------------------------------------------------
@@ -202,6 +209,16 @@ class ca_items_x_tags extends BaseModel {
 		
 		)
 	);
+	
+	
+	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	//
+	// We use a single search class for all relationship tables
+	//
+	protected $SEARCH_CLASSNAME = 'InterstitialSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'InterstitialSearchResult';
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -250,4 +267,3 @@ class ca_items_x_tags extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

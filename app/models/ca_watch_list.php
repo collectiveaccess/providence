@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_watch_list'] = array(
@@ -205,13 +205,12 @@ class ca_watch_list extends BaseModel {
 	 *
 	 */
 	public function getWatchedItems($pn_user_id, $pn_table_num = null, $pa_options=null){
-		require_once(__CA_LIB_DIR__.'/core/ApplicationChangeLog.php');
+		require_once(__CA_LIB_DIR__.'/ApplicationChangeLog.php');
 		
 		if(!$pn_user_id) { return null; }
 		
 		$t_changelog = new ApplicationChangeLog();
 		$o_db = $this->getDb();
-		$o_dm = $this->getAppDatamodel();
 		
 		$vn_request_user_id = ($po_request = caGetOption('request', $pa_options, null)) ? $po_request->getUserID() : null;
 		
@@ -229,7 +228,7 @@ class ca_watch_list extends BaseModel {
 			ORDER BY watch_id DESC", $pn_user_id);
 		if($q_watched_items->numRows() > 0){
 			while($q_watched_items->nextRow()){
-				$t_item_table = $o_dm->getInstanceByTableNum($q_watched_items->get("table_num"), true);
+				$t_item_table = Datamodel::getInstanceByTableNum($q_watched_items->get("table_num"), true);
 				if ($t_item_table->hasField('deleted') && ($t_item_table->get('deleted') == 1)) { continue; }
 				
 				$t_item_table->load($q_watched_items->get("row_id"));
@@ -237,7 +236,7 @@ class ca_watch_list extends BaseModel {
 					"watch_id" => $q_watched_items->get("watch_id"), 
 					"row_id" => $q_watched_items->get("row_id"), 
 					"table_num" => $q_watched_items->get("table_num"), 
-					"table_name" => $t_item_table->TableName(), 
+					"table_name" => $t_item_table->tableName(),
 					"displayName" => $t_item_table->getLabelForDisplay(), 
 					"idno" => $t_item_table->get("idno"), 
 					"item_type" => $t_item_table->getProperty('NAME_SINGULAR'), 
@@ -250,5 +249,20 @@ class ca_watch_list extends BaseModel {
 		return $va_items;
 	}
 	# ------------------------------------------------------
+	public function getWatchedTablesAsHTMLSelect($pn_user_id, $ps_name) {
+		$va_items = $this->getWatchedItems($pn_user_id);
+		$va_select = [];
+		foreach($va_items as $va_item) {
+			$t_instance = Datamodel::getInstance($va_item['table_num'], true);
+
+			$va_select[$t_instance->getProperty('NAME_PLURAL')] = $t_instance->tableName();
+		}
+
+		return caHTMLSelect($ps_name,
+			$va_select,
+			array('id' => $ps_name, 'class' => 'searchSetsSelect'),
+			array('value' => null, 'width' => '140px')
+		);
+	}
+	# ------------------------------------------------------
 }
-?>

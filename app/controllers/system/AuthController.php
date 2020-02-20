@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,27 +25,44 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/WidgetManager.php');
-	require_once(__CA_LIB_DIR__.'/core/Auth/AuthenticationManager.php');
+ 	require_once(__CA_LIB_DIR__.'/WidgetManager.php');
+	require_once(__CA_LIB_DIR__.'/Auth/AuthenticationManager.php');
  
  	class AuthController extends ActionController {
  		# -------------------------------------------------------
 		
  		# -------------------------------------------------------
+ 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 		    if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && !in_array($this->request->getAction(), ['logout', 'callback'])) {
+ 		        $po_response->setRedirect($po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$po_request->config->get("auth_login_welcome_path"));
+ 		        $po_response->sendResponse();
+ 		        exit;
+ 		    }
+ 		}
+ 		# -------------------------------------------------------
+ 		
  		public function Login() {
  			global $g_ui_locale;
 			if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 				if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 			}
 			// Redirect to the default action
-			$vs_redirect = $this->request->getParameter('redirect', pString);
+			$vs_redirect = $this->request->getParameter('redirect', pString, null, ['forcePurify' => true]);
+	
 			$this->getView()->setVar('redirect', $vs_redirect);
  			$this->render('login_html.php');
  		}
  		# -------------------------------------------------------
  		public function DoLogin() {
+ 		    if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+ 		    	$this->view->setVar('notifications', $this->notification->getNotifications());
+ 		    	$this->render('login_html.php');
+ 		    	return;
+ 		    }
  			global $g_ui_locale;
-			$vs_redirect_url = $this->request->getParameter('redirect', pString) ?: caNavUrl($this->request, null, null, null);
+ 			
+			$vs_redirect_url = $this->request->getParameter('redirect', pString, null, ['forcePurify' => true]) ?: caNavUrl($this->request, null, null, null);
 			if (!$this->request->doAuthentication(array('dont_redirect_to_login' => true, 'redirect' => $vs_redirect_url, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
  				
@@ -99,16 +116,16 @@
 		# -------------------------------------------------------
 		public function RequestPassword() {
 			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
+		    if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$vs_username = $this->getRequest()->getParameter('username',pString);
+				$t_user = new ca_users();
 
-			$vs_username = $this->getRequest()->getParameter('username',pString);
-			$t_user = new ca_users();
-
-			if($t_user->load($vs_username)) {
-				$t_user->requestPasswordReset();
-			} else {
-				sleep(2);
+				if($t_user->load($vs_username)) {
+					$t_user->requestPasswordReset();
+				} else {
+					sleep(2);
+				}
 			}
-
 			// render the same static view no matter if something was actually done.
 			// otherwise you could figure out which user names exist and which don't
 			$this->render('password_reset_instructions_html.php');
@@ -137,6 +154,10 @@
 		# -------------------------------------------------------
 		public function DoReset() {
 			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
+		    if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+		    	$this->Login();
+		    	return;
+		    }
 
 			$vs_token = $this->getRequest()->getParameter('token',pString);
 			$vs_username = $this->getRequest()->getParameter('username',pString);
@@ -171,6 +192,24 @@
 				}
 			}
 
+		}
+		# -------------------------------------------------------
+		# Authentication callback handler
+		# 	Passes control to authentication manager callback handler
+		#	Authentication adapters for schemes like Okta can use this to 
+		#	implement required control flow elements
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function callback() {
+			try {
+				AuthenticationManager::callback();
+			} catch (Exception $e) {
+				$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+				$this->view->setVar('notifications', $this->notification->getNotifications());
+				$this->render('auth_error_html.php');
+			}
 		}
 		# -------------------------------------------------------
  	}

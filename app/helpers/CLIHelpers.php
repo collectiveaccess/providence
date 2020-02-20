@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,53 +39,6 @@
 function caCLIUseNcurses() {
 	if (function_exists("ncurses_init")) { return true; }
 
-	return false;
-}
-# --------------------------------------------------------
-/**
- * Try to locate and load setup.php bootstrap file. If load fails return false and
- * let the caller handle telling the user.
- *
- * @return bool True if setup.php is located and loaded, false if setup.php could not be found.
- */
-function caLoadBootstrapFile() {
-	// Look for environment variable
-	$vs_path = getenv("COLLECTIVEACCESS_HOME");
-	if (file_exists("{$vs_path}/setup.php")) {
-		require_once("{$vs_path}/setup.php");
-		return true;
-	}
-
-	// Look in current directory and then in parent directories
-	$vs_cwd = getcwd();
-	$va_cwd = explode("/", $vs_cwd);
-	while(sizeof($va_cwd) > 0) {
-		$vs_setup_path_fallback = "/".join("/", $va_cwd)."/setup.php";
-		if (file_exists($vs_setup_path_fallback)) {
-			// Rewrite $_SERVER with paths that setup.php can use
-			//print_R($_SERVER);
-			// try to load pre-save paths
-			if(($vs_hints = @file_get_contents(join("/", $va_cwd)."/app/tmp/server_config_hints.txt")) && is_array($va_hints = unserialize($vs_hints))) {
-				$_SERVER['DOCUMENT_ROOT'] = $va_hints['DOCUMENT_ROOT'];
-				$_SERVER['SCRIPT_FILENAME'] = $va_hints['SCRIPT_FILENAME'];
-				if (!isset($_SERVER['HTTP_HOST'])) { $_SERVER['HTTP_HOST'] = $va_hints['HTTP_HOST']; }
-			} else {
-				// Guess paths based upon location of setup.php (*should* work)
-				if (!isset($_SERVER['DOCUMENT_ROOT']) || !$_SERVER['DOCUMENT_ROOT']) { $_SERVER['DOCUMENT_ROOT'] = join("/", $va_cwd); }
-				if (!isset($_SERVER['SCRIPT_FILENAME']) || !$_SERVER['SCRIPT_FILENAME']) { $_SERVER['SCRIPT_FILENAME'] = join("/", $va_cwd)."/index.php"; }
-				if (!isset($_SERVER['HTTP_HOST']) || !$_SERVER['HTTP_HOST']) { $_SERVER['HTTP_HOST'] = 'localhost'; }
-
-				print "[\033[1;33mWARNING\033[0m] Configuration is not available. Loading any CollectiveAccess screen (except for the installer) in a web browser will cache configuration details and resolve this issue.\n\n";
-				die;
-			}
-
-			require_once($vs_setup_path_fallback);
-			return true;
-		}
-		array_pop($va_cwd);
-	}
-
-	// Give up and die
 	return false;
 }
 # ---------------------------------------------------------------------
@@ -124,11 +77,11 @@ function caCLILogCritError($ps_message) {
  * @return Zend_Console_Getopt
  */
 function caSetupCLIScript($pa_additional_parameters) {
-	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
-	require_once(__CA_LIB_DIR__."/core/Zend/Log.php");
-	require_once(__CA_LIB_DIR__."/core/Zend/Log/Writer/Stream.php");
-	require_once(__CA_LIB_DIR__."/core/Zend/Log/Writer/Syslog.php");
-	require_once(__CA_LIB_DIR__."/core/Zend/Log/Formatter/Simple.php");
+	require_once(__CA_LIB_DIR__."/Zend/Console/Getopt.php");
+	require_once(__CA_LIB_DIR__."/Zend/Log.php");
+	require_once(__CA_LIB_DIR__."/Zend/Log/Writer/Stream.php");
+	require_once(__CA_LIB_DIR__."/Zend/Log/Writer/Syslog.php");
+	require_once(__CA_LIB_DIR__."/Zend/Log/Formatter/Simple.php");
 
 	$va_available_cli_opts = array_merge(array(
 		"log|l-s" => "Path to log file. If omitted, we log into the system log. Note that we don't log DEBUG messages into the system log, even when the log level is set to DEBUG.",

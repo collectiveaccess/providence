@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,7 +50,7 @@
 		 */
 		public function hookDuplicateItem($pa_params) {
 			if (($pa_params['id'] > 0) && ($o_req = $this->getRequest())) {
-				if (!is_array($va_activity_list = $o_req->session->getVar($pa_params['table_name'].'_duplicate_id_list'))) {
+				if (!is_array($va_activity_list = Session::getVar($pa_params['table_name'].'_duplicate_id_list'))) {
 					$va_activity_list = array();
 				}
 				
@@ -70,7 +70,7 @@
 					'idno' => $pa_params['instance']->get('idno'),
 				);
 				
-				$o_req->session->setVar($pa_params['table_name'].'_duplicate_id_list', $va_activity_list);
+				Session::setVar($pa_params['table_name'].'_duplicate_id_list', $va_activity_list);
 			}
 			return $pa_params;
 		}
@@ -80,11 +80,11 @@
 		 */
 		public function hookDeleteItem($pa_params) {
 			if ($o_req = $this->getRequest()) {
-				if (!is_array($va_activity_list = $o_req->session->getVar($pa_params['table_name'].'_duplicate_id_list'))) {
+				if (!is_array($va_activity_list = Session::getVar($pa_params['table_name'].'_duplicate_id_list'))) {
 					$va_activity_list = array();
 				}
 				unset($va_activity_list[$pa_params['id']]);
-				$o_req->session->setVar($pa_params['table_name'].'_duplicate_id_list', $va_activity_list);
+				Session::setVar($pa_params['table_name'].'_duplicate_id_list', $va_activity_list);
 				
 				AppNavigation::clearMenuBarCache($o_req);
 			}
@@ -96,20 +96,19 @@
 		 */
 		public function hookRenderMenuBar($pa_menu_bar) {
 			if ($o_req = $this->getRequest()) {
-				$o_dm = Datamodel::load();
 				$va_activity_lists = array();
 				foreach(array(
 					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 
 					'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_list_items', 'ca_sets', 'ca_tours', 'ca_tour_stops'
 				) as $vs_table_name) {
 					$va_activity_menu_list = array();
-					if (!is_array($va_activity_list = $o_req->session->getVar($vs_table_name.'_duplicate_id_list'))) {
+					if (!is_array($va_activity_list = Session::getVar($vs_table_name.'_duplicate_id_list'))) {
 						$va_activity_list = array();
 					}
 				
 					if (sizeof($va_activity_list) == 0) { continue; }
 					
-					$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+					$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 					$va_labels = $t_instance->getPreferredDisplayLabelsForIDs(array_keys($va_activity_list));
 					
 					if ($vs_table_name === 'ca_occurrences') {
@@ -218,12 +217,4 @@
 			return $pa_menu_bar;
 		}
 		# -------------------------------------------------------
-		/**
-		 * Get plugin user actions
-		 */
-		static public function getRoleActionList() {
-			return array();
-		}
-		# -------------------------------------------------------
 	}
-?>

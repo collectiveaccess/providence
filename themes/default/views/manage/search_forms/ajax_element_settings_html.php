@@ -37,7 +37,7 @@
 <div id="caSearchFormSettingsMessage" class="searchFormElementSettingsMessage notification-info-box rounded" style="display: none;"><!-- empty --></div>
 <h3><?php print _t('Settings for Group #%1/%2', ($vn_group_code + 1), $va_element_info['name']); ?><h3>
 <?php
-	print caFormTag($this->request, 'setSettingsForElement', 'searchFormElementSettingsForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+	print caFormTag($this->request, 'setSettingsForElement', 'searchFormElementSettingsForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 ?>
 <?php
 	foreach($va_settings as $vs_setting => $va_setting_info) {
@@ -48,7 +48,7 @@
 	print caHTMLHiddenInput('group', array('value' => $vn_group_code));
 	print caHTMLHiddenInput('element', array('value' => $vs_element_code));
 	
-	print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save settings"), 'searchFormElementSettingsForm', array(), array('onclick' => 'jQuery.getJSON("'.caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "setSettingsForElement").'", jQuery("#searchFormElementSettingsForm").serialize(), function(data, status) { jQuery("#caSearchFormSettingsMessage").show().html("<ul class=\"notification-info-box\"><li class=\"notification-info-box\">" + data.message + "</li></ul>"); });'));
+	print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save settings"), 'searchFormElementSettingsForm', array(), array('onclick' => 'jQuery.getJSON("'.caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "setSettingsForElement").'", jQuery("#searchFormElementSettingsForm").serialize(), function(data, status) { jQuery("#caSearchFormSettingsMessage").show().html("<ul class=\"notification-info-box\"><li class=\"notification-info-box\">" + data.message + "</li></ul>"); });'));
 ?>
 
 </form>

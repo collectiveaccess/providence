@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,8 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_lots_x_collections'] = array(
@@ -95,6 +96,9 @@ BaseModel::$s_ca_models_definitions['ca_object_lots_x_collections'] = array(
 );
 
 class ca_object_lots_x_collections extends BaseRelationshipModel {
+
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -206,4 +210,3 @@ class ca_object_lots_x_collections extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

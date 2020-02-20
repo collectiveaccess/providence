@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
  	$t_place 			= $this->getVar('t_subject');
 	$vn_place_id 		= $this->getVar('subject_id');
 	$vn_above_id 		= $this->getVar('above_id');
+	$vn_after_id 		= $this->getVar('after_id');
 	$vs_context_id 		= $this->getVar('_context_id');	// used to restrict idno uniqueness checking to within the current list
 
 	$vb_can_edit	 	= $t_place->isSaveable($this->request);
@@ -40,11 +41,11 @@
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_place_id ? array('place_id' => $vn_place_id) : array('type_id' => $t_place->getTypeID()));
 		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'PlaceEditorForm').' '.
-			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'PlaceEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/places', 'PlaceEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
-			'', 
-			((intval($vn_place_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/places', 'PlaceEditor', 'Delete/'.$this->request->getActionExtra(), array('place_id' => $vn_place_id)) : ''
+			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'PlaceEditorForm').' '.
+			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save and return"), 'PlaceEditorForm', array('isSaveAndReturn' => true)) : '').' '.
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'editor/places', 'PlaceEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
+			($this->getVar('show_show_notifications') ? caFormJSButton($this->request, __CA_NAV_ICON_ALERT__, _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''), 
+			((intval($vn_place_id) > 0) && $vb_can_delete) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'editor/places', 'PlaceEditor', 'Delete/'.$this->request->getActionExtra(), array('place_id' => $vn_place_id)) : ''
 		);
 	}	
 ?>
@@ -69,6 +70,7 @@
 			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
 			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
 			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>

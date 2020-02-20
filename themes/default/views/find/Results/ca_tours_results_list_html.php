@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,13 +34,14 @@
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
 	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+	$vn_start				= (int)$this->getVar('start');
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
-		<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table class="listtable">
 			<thead>
 			<tr>
-			<th style="width:10px; text-align:center;" class='list-header-nosort'>
+			<th class='list-header-nosort addItemToSetControl'>
 				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
 			</th>
 			<th class='list-header-nosort'>
@@ -51,7 +52,7 @@
 			$vn_id_count = 0;
 			foreach($va_display_list as $va_display_item) {
 				$vs_item_display_str =
-					((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
+					((mb_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
 			
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {
@@ -89,11 +90,12 @@
 				($i == 2) ? $i = 0 : "";
 ?>
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-					<td style="width:10px">
+					<td class="addItemToSetControl">
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_tour_id; ?>' class="addItemToSetControl" />
+						<div><?php print $vn_start + $vn_item_count + 1; ?></div>
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_tours', $vn_tour_id, array())."</td>";
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_tours', $vn_tour_id, array())."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_info) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</td>";
 					}
@@ -119,6 +121,13 @@
 					</tr>
 				</tfoot>
 <?php
+			}
+			if ($vs_bottom_line_totals = $this->getVar('bottom_line_totals')) {
+?>				
+					<tr>
+						<td colspan="<?php print sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?php print $vs_bottom_line_totals; ?></td>
+					</tr>
+<?php		
 			}
 ?>
 		</table>

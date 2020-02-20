@@ -47,8 +47,11 @@
 			case 'no_results':
 				print $this->render('Results/no_results_html.php');
 				break;
-			case 'editable':
-				print $this->render('Results/ca_collections_results_editable_html.php');
+			case 'thumbnail':
+				print $this->render('Results/ca_collections_results_thumbnail_html.php');
+				break;
+			case 'full':
+				print $this->render('Results/ca_collections_results_full_html.php');
 				break;
 			default:
 				print $this->render('Results/ca_collections_results_list_html.php');

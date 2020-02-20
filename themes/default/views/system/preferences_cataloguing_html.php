@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,8 +34,8 @@
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'PreferencesForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Reset"), '', 'system', 'Preferences', $this->request->getAction(), array()), 
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'PreferencesForm').' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), '', 'system', 'Preferences', $this->request->getAction(), array()), 
 		'', 
 		''
 	);
@@ -48,16 +48,17 @@
 	$va_prefs = $t_user->getValidPreferences($vs_group);
 	
 	print $t_user->preferenceHtmlFormElement('cataloguing_locale', null, array());
+	print $t_user->preferenceHtmlFormElement('cataloguing_delete_reference_handling_default', null, array());
 	
-	$o_dm = Datamodel::load();
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	
 	foreach(array(
 		'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',
-		'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays'
+		'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays',
+		'ca_object_representations', 'ca_representation_annotations'
 	) as $vs_table) {
 		if (!caTableIsActive($vs_table)) { continue; }
-		$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 		print "<h2>"._t('User interfaces for %1', $t_instance->getProperty('NAME_PLURAL'))."</h2>";
 		
 		print "<table width='100%'><tr valign='top'><td width='250'>";

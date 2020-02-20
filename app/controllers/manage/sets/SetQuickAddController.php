@@ -27,7 +27,7 @@
  */
 
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-require_once(__CA_LIB_DIR__.'/ca/BaseQuickAddController.php');
+require_once(__CA_LIB_DIR__.'/BaseQuickAddController.php');
 
 class SetQuickAddController extends BaseQuickAddController {
 	# -------------------------------------------------------
@@ -43,7 +43,7 @@ class SetQuickAddController extends BaseQuickAddController {
 		$va_response = $this->getView()->getVar('response');
 
 		if(is_array($va_response) && isset($va_response['id']) && ($va_response['id'] > 0)) {
-			$t_set = Datamodel::load()->getInstance('ca_sets', true);
+			$t_set = Datamodel::getInstance('ca_sets', true);
 			$t_set->getDb()->query('UPDATE ca_sets SET user_id=? WHERE set_id=?', $this->getRequest()->getUserID(), $va_response['id']);
 		}
 		return $vn_rc;

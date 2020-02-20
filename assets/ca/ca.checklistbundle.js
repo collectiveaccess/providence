@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.checklistbundle.js
+ * js/ca.checklistbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,14 +87,14 @@ var caUI = caUI || {};
 						
 			// set up add/delete triggers on check/uncheck of boxes
 			jQuery(container + ' input[type=checkbox]').click(function(e) {
-				var boundsViolation = !that.checkMaxMin();
+				var boundsViolation = !that.checkMaxMin(e);
 				
 				if (boundsViolation) {
 					jQuery(this).prop('checked', !jQuery(this).prop('checked'));
 				} else {
 					that.showUnsavedChangesWarning(true);
 					if (jQuery(this).prop('checked')) {
-						jQuery(jQuery(this).attr('id') + "_delete").remove();
+						that.unDeleteValue(jQuery(this).attr('id'));
 					} else {
 						that.deleteValue(jQuery(this).attr('id'));
 					}
@@ -126,18 +126,19 @@ var caUI = caUI || {};
 		
 		that.deleteValue = function(id) {
 			// Don't bother marking new values as deleted since the absence of a checkbox will prevent them from being submitted
+			
 			if (id.indexOf('_new_') == -1) {
 				var re = new RegExp("([A-Za-z0-9_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)", "g");
 				var res;
 				
 				if (res = re.exec(id)) {		// is three number checklist elements (attribute_id/attribute_value_id/repeating index #)
 					// We *do* have to mark existing values as deleted however, otherwise the attributes will not be removed server-side
-					jQuery(this.container).append("<input type='hidden' name='" + res[1] + '_' + res[2] + '_' + res[4] + "_delete' value='1'/>");
+					jQuery(this.container).append("<input type='hidden' id='" + res[1] + '_' + res[2] + '_' + res[4] + "_delete' name='" + res[1] + '_' + res[2] + '_' + res[4] + "_delete' value='1'/>");
 				} else {
 					re = new RegExp("([A-Za-z0-9_\-]+)_([0-9]+)", "g");
 				
 					if (res = re.exec(id)) {	// is one-part # (value)
-						jQuery(this.container).append("<input type='hidden' name='" + res[1] + '_' + res[2] + "_delete' value='1'/>");
+						jQuery(this.container).append("<input type='hidden' id='" + res[1] + '_' + res[2] + "_delete' name='" + res[1] + '_' + res[2] + "_delete' value='1'/>");
 					}
 				}
 			}
@@ -145,9 +146,27 @@ var caUI = caUI || {};
 			return this;
 		};
 		
-		that.checkMaxMin = function() {
+		that.unDeleteValue = function(id) {
+			var re = new RegExp("([A-Za-z0-9_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)", "g");
+			if (res = re.exec(id)) {	// is one-part # (value)
+				jQuery(this.container + ' input#' + res[1] + '_' + res[2] + '_' + res[4] + '_delete').remove();
+			}
+			
+			re = new RegExp("([A-Za-z0-9_\-]+)_([0-9]+)", "g");	
+			if (res = re.exec(id)) {		// is three number checklist elements (attribute_id/attribute_value_id/repeating index #)
+				jQuery(this.container + ' input#' + res[1] + '_' + res[2] + '_delete').remove();
+			}
+		};
+		
+		that.checkMaxMin = function(e) {
+			var numTotal = jQuery(that.container + ' input').length;
 			var numChecked = jQuery(that.container + ' input:checked').length;
 			if ((numChecked < that.minRepeats) || (numChecked > that.maxRepeats)) {
+				if ((that.maxRepeats == 1) && e) {
+					jQuery(that.container + ' input:checked').not(e.target).click();
+					if (!jQuery(e.target).prop('checked')) { jQuery(e.target).click(); }
+					return true;
+				}
 				return false;
 			}
 			return true;

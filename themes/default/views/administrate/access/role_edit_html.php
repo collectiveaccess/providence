@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,10 +39,10 @@
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'RolesForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Roles', 'ListRoles', array('role_id' => 0)), 
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'RolesForm').' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Roles', 'ListRoles', array('role_id' => 0)), 
 		'', 
-		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/access', 'Roles', 'Delete', array('role_id' => $vn_role_id))
+		($vn_role_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Roles', 'Delete', array('role_id' => $vn_role_id)) : ''
 	);
 ?>
 <?php
@@ -121,14 +121,13 @@
 		</div>
 		<div id="role_bundles">
 <?php
-	$o_dm = Datamodel::load();
 	foreach($va_bundle_list as $vs_table => $va_bundles_by_table) {
 		if (!caTableIsActive($vs_table) && ($vs_table != 'ca_object_representations')) { continue; }
 		print "<table width='100%'>\n";
 		print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";				
 		print "<tr align='center' valign='middle'><th width='180' align='left'>"._t('Element')."</th><th width='180'><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th><th width='180'><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th><th><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Read/edit access')."</a></th></tr>\n";
 		
-		$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 		$vs_pk = $t_instance->primaryKey();
 		foreach($va_bundles_by_table as $vs_bundle_name => $va_info) {
 			print "<tr align='center' valign='middle'>";
@@ -160,7 +159,7 @@
 			print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";	
 			print "<tr align='center' valign='middle'><th width='180' align='left'>"._t('Type')."</th><th width='180'>"._t('No access')."</th><th width='180'>"._t('Read-only access')."</th><th>"._t('Read/edit access')."</th></tr>\n";
 			
-			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 			$vs_pk = $t_instance->primaryKey();
 			
 			foreach($va_types_by_table as $vn_id => $va_type) {
@@ -196,7 +195,7 @@
 			print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";	
 			print "<tr align='center' valign='middle'><th>"._t('Default')."</th><th width='180' align='left'>"._t('Source')."</th><th width='180'>"._t('No access')."</th><th width='180'>"._t('Read-only access')."</th><th>"._t('Read/edit access')."</th></tr>\n";
 			
-			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 			$vs_pk = $t_instance->primaryKey();
 			
 			foreach($va_sources_by_table as $vn_id => $va_source) {

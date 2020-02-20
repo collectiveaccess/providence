@@ -33,8 +33,8 @@
  /**
    *
    */
-    require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LengthAttributeValue.php');
-    require_once(__CA_LIB_DIR__.'/core/Parsers/gPoint.php');
+    require_once(__CA_LIB_DIR__.'/Attributes/Values/LengthAttributeValue.php');
+    require_once(__CA_LIB_DIR__.'/Parsers/gPoint.php');
     
     /**
      * List of countries used for drop-down list
@@ -398,7 +398,7 @@
 		$ps_value = trim($ps_value);
 		$vs_value = preg_replace('/[^0-9A-Za-z\.\-]+/', ' ', $ps_value);
 		
-		if ($vs_value === $ps_value) { return $ps_value; }
+		//if ($vs_value === $ps_value) { return $ps_value; }
 		list($vn_deg, $vn_min, $vn_sec, $vs_dir) = explode(' ',$vs_value);
 		$vn_pos = ($vn_deg < 0) ? -1:1;
 		if (in_array(strtoupper($vs_dir), array('S', 'W'))) { $vn_pos = -1; }

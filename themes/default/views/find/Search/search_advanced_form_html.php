@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,11 +26,6 @@
  * ----------------------------------------------------------------------
  */
  	
- 	$vs_type_id_form_element = '';
-	if ($vn_type_id = intval($this->getVar('type_id'))) {
-		$vs_type_id_form_element = '<input type="hidden" name="type_id" value="'.$vn_type_id.'"/>';
-	}
-	
 	$t_form = $this->getVar('t_form');
 	$vn_form_id = $t_form->getPrimaryKey();
 	
@@ -68,22 +63,22 @@
 				$va_flds[] = "'".$va_element['name']."'";
 			}
 ?>
-	<?php print caFormTag($this->request, 'Index', 'AdvancedSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
+	<?php print caFormTag($this->request, 'Index', 'AdvancedSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 		<div class="control-box rounded">
 			<div class="simple-search-box">
-				<?php print $this->render('Search/search_forms/search_form_table_html.php').$vs_type_id_form_element; ?>
+				<?php print $this->render('Search/search_forms/search_form_table_html.php'); ?>
 			</div>
 			
 			<br style="clear: both;"/>
 			
 			<div style="float:right; ">
-				<?php print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Reset"), 'AdvancedSearchForm', array('onclick' => 'caAdvancedSearchFormReset()'), array()); ?>			
-				<?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'AdvancedSearchForm'); ?>
+				<?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), 'AdvancedSearchForm', array('onclick' => 'caAdvancedSearchFormReset()'), array()); ?>			
+				<?php print caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'AdvancedSearchForm'); ?>
 			</div>
 			<div class="saveAs" style="float: right; margin-right:20px;">
 				<?php print _t("Save search as"); ?>:
 				<?php print caHTMLTextInput('_label', array('size' => 10, 'id' => 'caAdvancedSearchSaveLabelInput')); ?>
-				<a href="#" onclick="caSaveSearch('AdvancedSearchForm', jQuery('#caAdvancedSearchSaveLabelInput').val(), [<?php print join(',', $va_flds); ?>]); return false;" class="button"><?php print _t('Go').' &rsaquo;' ?></a>
+				<a href="#" onclick="caSaveSearch('AdvancedSearchForm', jQuery('#caAdvancedSearchSaveLabelInput').val(), [<?php print join(',', $va_flds); ?>]); return false;" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 			</div>
 		</div>
 	</form>

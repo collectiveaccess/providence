@@ -49,8 +49,8 @@ if(is_array($va_sort_bundle_names) && (sizeof($va_sort_bundle_names)>0)) {
 <div id="caTypeChangePanelControlButtons">
 	<table>
 		<tr>
-			<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Save'), 'caUserSortForm'); ?></td>
-			<td align="left"><?php print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
+			<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caUserSortForm'); ?></td>
+			<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
 		</tr>
 	</table>
 </div>
@@ -63,16 +63,16 @@ if(is_array($va_sort_bundle_names) && (sizeof($va_sort_bundle_names)>0)) {
 	<table>
 		<tr>
 			<td><?php print _t("Sort field %1", 1); ?></td>
-			<td><?php print caHTMLSelect('sort_item_1', array_flip($va_sort_element_list), null, array('value' => $vs_select_1_val)); ?></td>
+			<td><?php print caHTMLSelect('sort_item_1', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_1_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
 		</tr>
 
 		<tr>
 			<td><?php print _t("Sort field %1", 2); ?></td>
-			<td><?php print caHTMLSelect('sort_item_2', array_flip($va_sort_element_list), null, array('value' => $vs_select_2_val)); ?></td>
+			<td><?php print caHTMLSelect('sort_item_2', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_2_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
 		</tr>
 		<tr>
 			<td><?php print _t("Sort field %1", 3); ?></td>
-			<td><?php print caHTMLSelect('sort_item_3', array_flip($va_sort_element_list), null, array('value' => $vs_select_3_val)); ?></td>
+			<td><?php print caHTMLSelect('sort_item_3', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_3_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
 		</tr>
 	</table>
 	<?php print caHTMLHiddenInput('sort_id', array('value' => $vn_sort_id)); ?>

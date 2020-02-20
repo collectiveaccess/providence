@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,20 +31,20 @@
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	$(document).ready(function(){
-		$('#caRoleList').caFormatListTable();
+		$('#caItemList').caFormatListTable();
 	});
 /* ]]> */
 </script>
 <div class="sectionBox">
 	<?php 
-		print caFormTag($this->request, 'ListRoles', 'caRoleListForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+		print caFormTag($this->request, 'ListRoles', 'caRoleListForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caRoleList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New role"), 'administrate/access', 'Roles', 'Edit', array('role_id' => 0))
+			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New role"), 'administrate/access', 'Roles', 'Edit', array('role_id' => 0))
 		); 
 ?>	
-		<table id="caRoleList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table id="caItemList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 			<thead>
 				<tr>
 					<th class="list-header-unsorted">
@@ -56,7 +56,7 @@
 					<th class="list-header-unsorted">
 						<?php print _t('Description'); ?>
 					</th>
-					<th class="{sorter: false} list-header-nosort">&nbsp;</th>
+					<th class="{sorter: false} list-header-nosort listtableEditDelete">&nbsp;</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -74,9 +74,9 @@
 					<td>
 						<?php print $va_role['description']; ?>
 					</td>
-					<td class="saveDelete">
-						<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'Roles', 'Edit', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-						<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'Roles', 'Delete', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<td class="listtableEditDelete">
+						<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'Roles', 'Edit', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'Roles', 'Delete', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					</td>
 				</tr>
 <?php

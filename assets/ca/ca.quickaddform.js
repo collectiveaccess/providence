@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.quickaddform.js
+ * js/ca.quickaddform.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,6 +39,7 @@ var caUI = caUI || {};
 			formID: null,
 			formErrorsPanelID: null,
 			formTypeSelectID: null,
+			progressClassName: 'quickAddProgress',
 			
 			fileUploadUrl: null,
 			saveUrl: null,
@@ -49,6 +50,8 @@ var caUI = caUI || {};
 			sendingDataText: "Processing form",
 			busyIndicator: '',
 			
+			onSave: null,
+			
 			_files: {}
 		}, options);
 		
@@ -57,18 +60,19 @@ var caUI = caUI || {};
 			that._files[jQuery(e.target).prop('name')] = e.target.files; 
 		});
 		
+		var formData;
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
 		that.save = function(e) {
-			jQuery("#" + that.formID).find(".quickAddProgress").html(that.sendingDataText);
+			jQuery("#" + that.formID).find("." + that.progressClassName).html(that.sendingDataText);
 		
 			// Force CKEditor text into form elements where we can grab it
 			jQuery.each(CKEDITOR.instances, function(k, instance) {
 				instance.updateElement();
 			});
 			
-			var formData = jQuery("#" + that.formID).serializeObject();
+			formData = jQuery("#" + that.formID).serializeObject();
 			
 			// Added "forced relationship" settings if available
 			var relatedID = jQuery("#" + that.formID).parent().data('relatedID');
@@ -77,7 +81,7 @@ var caUI = caUI || {};
 			jQuery.extend(formData, {relatedID: relatedID, relatedTable: relatedTable, relationshipType: relationshipType });
 			
 			if(Object.keys(that._files).length > 0) {
-				jQuery("#" + that.formID).find(".quickAddProgress").html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", "0%"));
+				jQuery("#" + that.formID).find("." + that.progressClassName).html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", "0%"));
 				
 				// Copy files in form into a FormData instance
 				var fileData = new FormData();
@@ -97,7 +101,7 @@ var caUI = caUI || {};
 						jqXHR.upload.addEventListener("progress", function(e){
 							if (e.lengthComputable) {  
 								var percentComplete = Math.round((e.loaded / e.total) * 100);
-								jQuery("#" + that.formID).find(".quickAddProgress").html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", percentComplete + "%"));
+								jQuery("#" + that.formID).find("." + that.progressClassName).html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", percentComplete + "%"));
 							}
 						}, false); 
 						return jqXHR;
@@ -114,13 +118,12 @@ var caUI = caUI || {};
 						} else {
 							// handle errors here
 							that.setErrors(["Service error " + data.error]);
-							jQuery("#" + that.formID).find(".quickAddProgress").empty();
+							jQuery("#" + that.formID).find("." + that.progressClassName).empty();
 						}
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
-						// handle errors here
 						that.setErrors(["Network error " + textStatus]);
-						jQuery("#" + that.formID).find(".quickAddProgress").empty();
+						jQuery("#" + that.formID).find("." + that.progressClassName).empty();
 					}
 				});
 			} else {
@@ -130,34 +133,39 @@ var caUI = caUI || {};
 		};
 		
 		that.post = function(e, formData) {
-			jQuery("#" + that.formID).find(".quickAddProgress").html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingDataText);
-			jQuery.post(that.saveUrl, formData, function(resp, textStatus) {
-				if (resp.status == 0) {
-					var inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
-					var itemIDID = jQuery("#" + that.formID).parent().data('autocompleteItemIDID');
-					var typeIDID = jQuery("#" + that.formID).parent().data('autocompleteTypeIDID');
-					var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
-				
-					jQuery('#' + inputID).val(resp.display);
-					jQuery('#' + itemIDID).val(resp.id);
-					jQuery('#' + typeIDID).val(resp.type_id);
-					
-					if(relationbundle) { relationbundle.select(null, resp); }
-					jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
-					jQuery("#" + that.formID).parent().data('panel').hidePanel();
-					
-					if(formData['relatedID'] && caBundleUpdateManager) { 
-						caBundleUpdateManager.reloadBundle('ca_objects_location'); 
-						caBundleUpdateManager.reloadBundle('ca_objects_history'); 
-						caBundleUpdateManager.reloadInspector(); 
-					}
-				} else {
-					// error
-					that.setErrors(resp.errors);
-				}
-				jQuery("#" + that.formID).find(".quickAddProgress").empty();
-			}, "json");
+			jQuery("#" + that.formID).find("." + that.progressClassName).html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingDataText);
+			jQuery.post(that.saveUrl, formData, that.onSave, "json");
 		};
+		
+		// Default handler to call on save for quickadd
+		that.defaultOnSaveHandler = function(resp, textStatus) {
+			if (resp.status == 0) {
+				var rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
+				var inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
+				var itemIDID = jQuery("#" + that.formID).parent().data('autocompleteItemIDID');
+				var typeIDID = jQuery("#" + that.formID).parent().data('autocompleteTypeIDID');
+				var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+			
+				jQuery('#' + inputID).val(resp.display);
+				jQuery('#' + itemIDID).val(resp.id);
+				jQuery('#' + typeIDID).val(resp.type_id);
+				
+				if(relationbundle) { relationbundle.select(rawID, resp); }
+				jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
+				jQuery("#" + that.formID).parent().data('panel').hidePanel();
+				
+				if(formData['relatedID'] && caBundleUpdateManager) { 
+					caBundleUpdateManager.reloadBundle('ca_objects_location'); 
+					caBundleUpdateManager.reloadBundle('ca_objects_history'); 
+					caBundleUpdateManager.reloadInspector(); 
+				}
+			} else {
+				// error
+				that.setErrors(resp.errors);
+			}
+			jQuery("#" + that.formID).find("." + that.progressClassName).empty();
+		};
+		if (!that.onSave) { that.onSave = that.defaultOnSaveHandler; }	// set default for quickadd
 		
 		that.setErrors = function(errors) {
 			var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';

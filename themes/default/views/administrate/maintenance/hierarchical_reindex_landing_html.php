@@ -33,8 +33,8 @@
 <p>Note that depending upon the size of your database rebuilding can take from a few seconds to several minutes. During the rebuilding process the system will remain usable but hierarchical functions may return inconsistent results.</p>
 	");
 	
-	print caFormTag($this->request, 'reindex', 'caHierarchicalReindexForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t("Rebuild hierarchical indices"), 'caHierarchicalReindexForm', array())."</div>";
+	print caFormTag($this->request, 'reindex', 'caHierarchicalReindexForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Rebuild hierarchical indices"), 'caHierarchicalReindexForm', array())."</div>";
 	print "</form>";
 	print "</div>\n";
 ?>

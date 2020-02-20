@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.googlemaps.js
+ * js/ca.googlemaps.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

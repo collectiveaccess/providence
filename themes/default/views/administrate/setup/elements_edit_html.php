@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,10 +36,10 @@
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ElementsForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Elements', 'Index', array('element_id' => 0)),
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ElementsForm').' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Elements', 'Index', array('element_id' => 0)),
 		'',
-		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $vn_element_id))
+		caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $vn_element_id))
 	);
 
 
@@ -55,13 +55,39 @@
 <?php
 	$va_lookup_url_info = caJSONLookupServiceUrl($this->request, $t_element->tableName());
 	$va_options =	array(							
-							'error_icon' 					=> $this->request->getThemeUrlPath()."/graphics/icons/warning_small.gif",
-							'progress_indicator'		=> $this->request->getThemeUrlPath()."/graphics/icons/indicator.gif",
-							'lookup_url' 					=> $va_lookup_url_info['intrinsic'],
-							'no_tooltips' => false
+							'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
+							'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
+							'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
+							'no_tooltips' 				=> false
 						);
 	foreach($t_element->getFormFields() as $vs_f => $va_user_info) {
-		print $t_element->htmlFormElement($vs_f, null, array_merge($va_options, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f))));
+		$vb_element_editable = true;
+		$vs_warning = null;
+		
+		switch($vs_f) {
+			case 'element_code':
+				if ($t_element->getPrimaryKey()) {
+					if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_codes_when_in_use')) {
+						$vb_element_editable = false;
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
+					} else {
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may break parts of the system configuration').'</span>';	
+					}
+				}
+				break;
+			case 'datatype':
+				if ($t_element->getPrimaryKey()) {
+					if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_data_types_when_in_use') && ca_metadata_elements::elementIsInUse($vn_element_id)) {
+						$vb_element_editable = false;
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Element type cannot be changed because element is in use').'</span>';	
+					} else {
+						$vs_warning =  '<span class="formLabelWarning"><i class="caIcon fa fa-exclamation-triangle fa-1x"></i> '._t('Changing this value may delete existing data in this element').'</span>';	
+					}
+				}
+				break;
+		}
+		
+		print $t_element->htmlFormElement($vs_f, "<div class='formLabel'>^EXTRA^LABEL<br/>^ELEMENT<br/>{$vs_warning}</div>", array_merge($va_options, array('readonly' => !$vb_element_editable, 'field_errors' => $this->request->getActionErrors('field_'.$vs_f))));
 	}
 
 	if($vn_parent_id){ print caHTMLHiddenInput('parent_id', array('value' => $vn_parent_id)); }
@@ -107,7 +133,7 @@
 							}
 						?></td>
 						<td>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($o_request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						</td>
 					</tr>
 				</table>
@@ -117,7 +143,7 @@
 			<div class="caItemList">
 			
 			</div>
-			<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($o_request, __CA_NAV_BUTTON_ADD_BUNDLE__); ?> <?php print _t("Add type restriction"); ?> &rsaquo;</a></div>
+			<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add type restriction"); ?> &rsaquo;</a></div>
 		</div>
 	</div>
 <?php
@@ -170,8 +196,8 @@ if(is_array($va_sub_elements)):
 		<div class="labelInfo">
 			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','MoveElementUp',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print "⬆"; ?></a>
 			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','MoveElementDown',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print "⬇"; ?></a>
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__); ?></a>
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Delete',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?></a>
+			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Delete',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			<span class="labelDisplay">
 				<?php print $va_sub_element['name'].' ('.$va_sub_element['element_code'].') ['.ca_metadata_elements::getAttributeNameForTypeCode($va_sub_element['datatype']).']'; ?>
 			</span>
@@ -182,12 +208,16 @@ if(is_array($va_sub_elements)):
 		</div>
 		<div class="button labelInfo caAddLabelButton">
 			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => 0)); ?>">
-				<?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t("Add sub-element"); ?> &rsaquo;
+				<?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add sub-element"); ?> &rsaquo;
 			</a>
 		</div>
 	</div>
 <?php
 endif;
+?>
+	<div class="editorBottomPadding"><!-- empty --></div>
+<?php	
+			print $vs_control_box;
 ?>
 </div>
 

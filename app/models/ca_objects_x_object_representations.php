@@ -33,9 +33,9 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/ca/BaseRepresentationRelationship.php');
+require_once(__CA_LIB_DIR__.'/BaseRepresentationRelationship.php');
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
-require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
+require_once(__CA_LIB_DIR__."/Db/Transaction.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_object_representations'] = array(
@@ -192,4 +192,3 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	}
 	# ------------------------------------------------------
 }
-?>

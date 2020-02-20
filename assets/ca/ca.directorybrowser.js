@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.directorybrowser.js
+ * js/ca.directorybrowser.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -69,8 +69,10 @@ var caUI = caUI || {};
 			uploadProgressBarID: null,
 			uploadProgressStatusID: null,
 			uploadProgressMessage: "%1",
-			
+	
+			indicator: '',		
 			indicatorUrl: '',
+	
 			openDirectoryIcon: '',
 			disabledDirectoryIcon: '',
 			
@@ -339,21 +341,16 @@ var caUI = caUI || {};
 							var moreButton = '';
 							var item_id_for_css = item['item_id'].replace(/[^A-Za-z0-9_\-]+/g, '_');
 							if ((that.openDirectoryIcon) && (item.type == 'DIR')) {
-								if (childCount > 0) {
-									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open' >" + that.openDirectoryIcon + "</a></div>";
-								} else {
-									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open'  style='opacity: 0.3;'>" + (that.disabledDirectoryIcon ? that.disabledDirectoryIcon : that.openDirectoryIcon) + "</a></div>";
-								}
+								moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open' >" + that.openDirectoryIcon + "</a></div>";
 							}
-							
 							
 							if ((item.type == 'FILE') && (!that.allowFileSelection)) {
 								jQuery('#' + newLevelListID).append(
-									"<li class='" + that.className + "'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "' style='opacity: 0.5;'>" + icon +  item.name + "</a></li>"
+									"<li class='" + that.className + "'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "' style='opacity: 0.5;'>" + icon + "&nbsp;&nbsp;" + item.name + "</a></li>"
 								);
 							} else {
 								jQuery('#' + newLevelListID).append(
-									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "'>" + icon +  item.name + countText + "</a></li>"
+									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "'>" + icon + "&nbsp;&nbsp;" + item.name + countText + "</a></li>"
 								);
 							}
 							
@@ -523,20 +520,40 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.showIndicator = function(newLevelDivID) {
-			if (!that.indicatorUrl) { return; }
-			if (jQuery('#' + newLevelDivID + ' img._indicator').length > 0) {
-				jQuery('#' + newLevelDivID + ' img._indicator').show();
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			if (jQuery('#' + newLevelDivID + ' div._indicator').length > 0) {
+				jQuery('#' + newLevelDivID + ' div._indicator').show();
 				return;
 			}
-			var level = jQuery('#' + newLevelDivID).data('level');
 			
-			var indicator = document.createElement('img');
-			indicator.src = that.indicatorUrl;
+			var level = jQuery('#' + newLevelDivID).data('level');
+				
+			if (that.indicatorUrl) {
+				var img = document.createElement('img');
+				img.src = that.indicatorUrl;
+				img.className = '_indicatorImg';
+				
+				that.indicator = that.indicatorUrl;
+			} 
+			
+			var indicator = document.createElement('div');
+			jQuery(indicator).append(that.indicator);
 			indicator.className = '_indicator';
 			indicator.style.position = 'absolute';
 			indicator.style.left = '50%';
 			indicator.style.top = '50%';
 			jQuery('#' + newLevelDivID).append(indicator);
+			
+			return;
+		}
+		// --------------------------------------------------------------------------------
+		// Remove spinning progress indicator from specified level <div> 
+		//
+		// @param string newLevelDivID The ID of the <div> containing the level
+		//
+		that.hideIndicator = function(newLevelDivID) {
+			jQuery('#' + newLevelDivID + ' div._indicator').hide();		// hide loading indicator
 		}
 		// --------------------------------------------------------------------------------
 		// Convert file size in bytes to display format 
@@ -577,14 +594,6 @@ var caUI = caUI || {};
 			var i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", j = (j = i.length) > 3 ? j % 3 : 0;
  
 			return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-		}
-		// --------------------------------------------------------------------------------
-		// Remove spinning progress indicator from specified level <div> 
-		//
-		// @param string newLevelDivID The ID of the <div> containing the level
-		//
-		that.hideIndicator = function(newLevelDivID) {
-			jQuery('#' + newLevelDivID + ' img._indicator').hide();		// hide loading indicator
 		}
 		// --------------------------------------------------------------------------------
 		// Returns database id (the primary key in the database, *NOT* the DOM ID) of currently selected item

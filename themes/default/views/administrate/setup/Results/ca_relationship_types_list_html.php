@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,17 +34,16 @@
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	
-		$o_dm = Datamodel::load();
 ?>
 <div id="scrollingResults">
 
 <form id="caFindResultsForm">
-	<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table class="listtable">
 		<thead>
-		<tr>
-		<th>
-			<?php print _t('Relationship'); ?>
-		</th>
+			<tr>
+				<th>
+					<?php print _t('Relationship'); ?>
+				</th>
 <?php
 		// output headers
 		$vn_id_count = 0;
@@ -78,23 +77,23 @@
 			$vn_id_count++;
 		}
 ?>
-		<th class='list-header-nosort'>
-			<?php print _t("Edit"); ?>
-		</th>
-		</tr></thead><tbody>
+				<th class='list-header-nosort listtableEditDelete'> </th>	
+			</tr>
+		</thead>
+		<tbody>
 <?php
 		$i = 0;
 		$vn_item_count = 0;
 		
 		while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-			$vn_type_id = $vo_result->get('type_id');
+			$vn_type_id = (int)$vo_result->get('type_id');
 			
 			($i == 2) ? $i = 0 : "";
 ?>
 			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-				<td style="width:10px">
+				<td>
 <?php
-						if ($t_rel = $o_dm->getInstanceByTableNum($vo_result->get('table_num'), true)) {
+						if ($t_rel = Datamodel::getInstanceByTableNum($vo_result->get('table_num'), true)) {
 							print ' (<i>'.$t_rel->getProperty('NAME_SINGULAR').'</i>)';
 						}
 ?>
@@ -103,8 +102,8 @@
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
-				print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'editIcon', 'ca_relationship_types', $vn_type_id, array())."</td>";
-				print " <a href='#' onclick='caOpenBrowserWith(".$vn_type_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, array('title' => _t('View in hierarchy')))."</a>";
+				print "<td class='listtableEditDelete'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'editIcon', 'ca_relationship_types', $vn_type_id, array());
+				print " <a href='#' onclick='caOpenBrowserWith({$vn_type_id}); return false;' class='hierarchyIcon'>".caNavIcon(__CA_NAV_ICON_HIER__, 2, array('title' => _t('View in hierarchy'), 'style' => 'margin-top:5px;'), array('rotate' => 270))."</a>";
 				print "</td>";		
 ?>	
 			</tr>
@@ -113,12 +112,12 @@
 			$vn_item_count++;
 		}
 ?>
-	</tbody></table>
+		</tbody>
+	</table>
 </form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
 <?php
-	TooltipManager::add('.editIcon', _t("Edit"));
-
+	TooltipManager::add('.hierarchyIcon', _t("View in hierarchy"));
 }
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>

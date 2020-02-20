@@ -1,6 +1,3 @@
-<?php
-	
-?>
 <h1><?php print _t('Check in'); ?></h1>
 
 <div class=""caLibraryUIContainer">
@@ -19,7 +16,7 @@
 			</ol>
 		</div>
 		<div class="caLibrarySubmitListContainer" id="transactionSubmitContainer">
-			<?php print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Check in'), 'transactionSubmit', array(), array()); ?>
+			<?php print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Check in'), 'transactionSubmit', array(), array()); ?>
 		</div>
 	
 		<div class="caLibraryTransactionResultsContainer" id="transactionResultsContainer">
@@ -32,6 +29,9 @@
 			</ol>
 		</div>
 	</form>
+	
+	<div class="editorBottomPadding"><!-- empty --></div>
+	<div class="editorBottomPadding"><!-- empty --></div>
 </div>
 
 <script type="text/javascript">
@@ -42,8 +42,8 @@
 			getInfoURL : '<?php print caNavUrl($this->request, '*', '*', 'GetObjectInfo', array()); ?>',
 			saveTransactionURL: '<?php print caNavUrl($this->request, '*', '*', 'SaveTransaction', array()); ?>',
 			loadWidgetURL: '<?php print caNavUrl($this->request, '*', '*', 'Info', array()); ?>',
-			
-			removeButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/x.png" border="0" title="Remove"/>'
+
+			removeButtonIcon: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_DELETE__, 1)); ?>'
 		});
 	});
 </script>

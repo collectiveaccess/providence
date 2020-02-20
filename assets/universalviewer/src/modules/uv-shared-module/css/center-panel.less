@@ -1,0 +1,89 @@
+#app {
+    .centerPanel{
+
+        .title {
+            height: 38px;
+            font-size: @headings-size-xlarge;
+            color: @text-color;
+            padding: 0 20px 0 20px;
+
+            span {
+                line-height: 30px;
+            }
+        }
+
+        .content{
+
+            .acknowledgements {
+                background: @gray-dark; // ie8
+                background: fadeout(@gray-dark, 30%);
+                position: absolute;
+                width: 190px;
+                padding: @padding-medium;
+                margin: @margin-medium-horizontal 0 @margin-small-vertical @margin-large-horizontal;
+                font-size: @font-size-small;
+
+                .header{
+
+                    overflow: hidden;
+
+                    .title{
+                        font-size: @font-size-small;
+                        font-weight: bold;
+                        height: 20px;
+                        width: 150px;
+                        line-height: 18px;
+                        float: left;
+                        padding: 0;
+                        text-transform: uppercase;
+                    }
+
+                    .close{
+                        width: 16px;
+                        height: 16px;
+                        margin: 2px;
+                        float: right;
+                        background-image: url('@{img-path}close_acknowledgements.png');
+                        cursor: pointer;
+                    }
+                }
+
+                .main{
+
+                    margin-top: @margin-small-vertical;
+
+                    img {
+                        margin-top: @margin-small-vertical;
+                        margin-bottom: @margin-small-vertical;
+                        max-width: 100px;
+                    }
+
+                    a:not(.toggle) {
+                        color: @link-color;
+                        &:link{
+                            color: @link-color;
+                        }
+                        &:hover{
+                            color: @link-color;
+                        }
+                        &:visited{
+                            color: @link-color;
+                        }
+                        &:active{
+                            color: @link-color;
+                        }
+                    }
+
+                    .attribution{
+                        overflow: hidden;
+                    }
+                    //
+                    //                    .license {
+                    //                        margin-top: @margin-small-vertical;
+                    //                        overflow: hidden;
+                    //                    }
+                }
+            }
+        }
+    }
+}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,7 @@
 	 *		values				= an array of values for the element, when the <select> allows multiple selections
 	 *		disabledOptions		= an associative array indicating whether options are disabled or not; keys are option *values*, values are boolean (true=disabled; false=enabled)
 	 *		contentArrayUsesKeysForValues = normally the keys of the $pa_content array are used as display options and the values as option values. Setting 'contentArrayUsesKeysForValues' to true will reverse the interpretation, using keys as option values.
+	 *		useOptionsForValues = set values to be the same as option text. [Default is false]
 	 *		width				= width of select in characters or pixels. If specifying pixels use "px" as the units (eg. 100px)
 	 *		colors				=
 	 * @return string HTML code representing the drop-down list
@@ -76,6 +77,7 @@
 		$vs_element = "<select name='{$ps_name}' {$vs_attr_string}>\n";
 		
 		$vs_selected_val = isset($pa_options['value']) ? $pa_options['value'] : null;
+		if (is_array($pa_options['values']) && $vs_selected_val) { $vs_selected_val = null; }
 		$va_selected_vals = isset($pa_options['values']) ? $pa_options['values'] : array();
 		
 		$va_disabled_options =  isset($pa_options['disabledOptions']) ? $pa_options['disabledOptions'] : array();
@@ -87,11 +89,14 @@
 			$va_colors = $pa_options['colors'];
 		}
 		
+		$vb_use_options_for_values = caGetOption('useOptionsForValues', $pa_options, false);
+		
 		$vb_uses_color = false;
 		if (isset($pa_options['contentArrayUsesKeysForValues']) && $pa_options['contentArrayUsesKeysForValues']) {
 			foreach($pa_content as $vs_val => $vs_opt) {
+				if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
 				if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-				if (!($SELECTED = (($vs_selected_val == $vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
+				if (!($SELECTED = (((string)$vs_selected_val === (string)$vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
 					$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
 				}
 				$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
@@ -101,7 +106,8 @@
 			if ($vb_content_is_list) {
 				foreach($pa_content as $vs_val) {
 					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-					if (!($SELECTED = ($vs_selected_val == $vs_val) ? ' selected="1"' : '')) {
+					
+					if (!($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
 					}
 					$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
@@ -109,9 +115,11 @@
 				}
 			} else {
 				foreach($pa_content as $vs_opt => $vs_val) {
+					if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
 					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-					if (!($SELECTED = ($vs_selected_val == $vs_val) ? ' selected="1"' : '')) {
-						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
+				
+					if (!($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
+						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
 					}
 					$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
 					$vs_element .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'{$SELECTED}{$DISABLED}{$COLOR}>".$vs_opt."</option>\n";
@@ -126,9 +134,26 @@
 		return $vs_element;
 	}
 	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Render an HTML text form element (<input type="text"> or <textarea> depending upon height).
+	 *
+	 * @param string $ps_name The name of the rendered form element
+	 * @param array $pa_attributes An array of attributes to include in the rendered HTML form element. If you need to set class, id, alt or other attributes, set them here.
+	 * @param array Options include:
+	 *		width = Width of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
+	 *		height = Height of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
+	 * 		usewysiwygeditor = Use rich text editor (CKEditor) for text element. Only available when the height of the text element is multi-line. [Default is false]
+	 *      cktoolbar = app.conf directive name to pull CKEditor toolbar spec from. [Default is wysiwyg_editor_toolbar]
+	 *      contentUrl = URL to use to load content when CKEditor is use with CA-specific plugins. [Default is null]
+	 * @return string
+	 */
 	function caHTMLTextInput($ps_name, $pa_attributes=null, $pa_options=null) {
 		$vb_is_textarea = false;
 		$va_styles = array();
+		
+		$vb_use_wysiwyg_editor = caGetOption('usewysiwygeditor', $pa_options, false);
+		$vn_width = $vn_height = null;
+		
 		if (is_array($va_dim = caParseFormElementDimension(
 			(isset($pa_options['width']) ? $pa_options['width'] : 
 				(isset($pa_attributes['size']) ? $pa_attributes['size'] : 
@@ -137,22 +162,25 @@
 			)
 		))) {
 			if ($va_dim['type'] == 'pixels') {
-				$va_styles[] = "width: ".$va_dim['dimension']."px;";
+				$va_styles[] = "width: ".($vn_width = $va_dim['dimension'])."px;";
 				unset($pa_attributes['width']);
 				unset($pa_attributes['size']);
 				unset($pa_attributes['cols']);
 			} else {
 				// width is in characters
-				$pa_attributes['size'] =$va_dim['dimension'];
+				$pa_attributes['size'] = $va_dim['dimension'];
+				$vn_width = $va_dim['dimension'] * 6;
 			}
 		}	
+		if (!$vn_width) $vn_width = 300; 
+		
 		if (is_array($va_dim = caParseFormElementDimension(
 			(isset($pa_options['height']) ? $pa_options['height'] : 
 				(isset($pa_attributes['height']) ? $pa_attributes['height'] : null)
 			)
 		))) {
 			if ($va_dim['type'] == 'pixels') {
-				$va_styles[] = "height: ".$va_dim['dimension']."px;";
+				$va_styles[] = "height: ".($vn_height = $va_dim['dimension'])."px;";
 				unset($pa_attributes['height']);
 				unset($pa_attributes['rows']);
 				$vb_is_textarea = true;
@@ -161,6 +189,7 @@
 				if (($pa_attributes['rows'] = $va_dim['dimension']) > 1) {
 					$vb_is_textarea = true;
 				}
+				$vn_height = $va_dim['dimension'] * 12;
 			}
 		} else {
 			if (($pa_attributes['rows'] = (isset($pa_attributes['height']) && $pa_attributes['height']) ? $pa_attributes['height'] : 1) > 1) {
@@ -168,7 +197,14 @@
 			}
 		}
 		
+		if (!$vn_height) $vn_height = 300; 
+		
 		$pa_attributes['style'] = join(" ", $va_styles);
+		
+		// WYSIWYG editor requires an DOM ID so generate one if none is explicitly set
+		if ($vb_use_wysiwyg_editor && !isset($pa_attributes['id'])) {
+			$pa_attributes['id'] = "{$ps_name}_element";
+		}
 		
 		if ($vb_is_textarea) {
 			$vs_value = $pa_attributes['value'];
@@ -181,6 +217,34 @@
 			$pa_attributes['size']  = !$pa_attributes['size'] ?  $pa_attributes['width'] : $pa_attributes['size'];
 			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
 			$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='text'/>\n";
+		}
+		
+		if ($vb_use_wysiwyg_editor) {
+			AssetLoadManager::register("ckeditor");
+
+			$o_config = Configuration::load();
+			if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $pa_options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
+			
+			$vs_content_url = caGetOption('contentUrl', $pa_options, '');
+			$va_lookup_urls = caGetOption('lookupUrls', $pa_options, null);
+			
+			$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
+			var ckEditor = CKEDITOR.replace( '".$pa_attributes['id']."',
+			{
+				toolbar : ".json_encode(array_values($va_toolbar_config)).",
+				width: '{$vn_width}px',
+				height: '{$vn_height}px',
+				toolbarLocation: 'top',
+				enterMode: CKEDITOR.ENTER_BR,
+				contentUrl: '{$vs_content_url}',
+				lookupUrls: ".json_encode($va_lookup_urls)."
+			});
+	
+			ckEditor.on('instanceReady', function(){ 
+				 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+			});
+ 	});									
+</script>";
 		}
 		return $vs_element;
 	}
@@ -317,6 +381,11 @@
 			'width', 'height',
 			'vspace', 'hspace', 'alt', 'title', 'usemap', 'align', 'border', 'class', 'style') as $vs_attr) {
 				if (isset($pa_options[$vs_attr])) { $va_attributes[$vs_attr] = $pa_options[$vs_attr]; }
+		}
+		
+		// Allow data-* attributes
+		foreach($pa_options as $vs_k => $vs_v) {
+			if (substr($vs_k, 0, 5) == 'data-') { $va_attributes[$vs_k] = $vs_v; }
 		}
 		
 		$vn_scale_css_width_to = caGetOption('scaleCSSWidthTo', $pa_options, null);
@@ -481,4 +550,3 @@ $vs_tag = "
 		return $vs_formatted_element;
 	}
 	# ------------------------------------------------------------------------------------------------
-?>

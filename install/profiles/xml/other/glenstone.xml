@@ -4889,7 +4889,7 @@
             </label>
           </labels>
           <items>
-            <item idno="access_copy" enabled="1" default="0">
+            <item idno="access_copy1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Access copy</name_singular>
@@ -4905,7 +4905,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="archival_footage" enabled="1" default="0">
+            <item idno="archival_footage1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Archival footage</name_singular>
@@ -4913,7 +4913,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="graphics" enabled="1" default="0">
+            <item idno="graphics1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Graphics</name_singular>
@@ -4921,7 +4921,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="master" enabled="1" default="0">
+            <item idno="master1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Master</name_singular>
@@ -4945,7 +4945,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="stock_footage" enabled="1" default="0">
+            <item idno="stock_footage1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Stock footage</name_singular>
@@ -4953,7 +4953,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="titles" enabled="1" default="0">
+            <item idno="titles1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Titles</name_singular>
@@ -8128,7 +8128,7 @@
             </label>
           </labels>
         </item>
-        <item idno="null" enabled="1" default="1">
+        <item idno="null1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular> </name_singular>
@@ -10521,7 +10521,7 @@
                         </label>
                       </labels>
                     </item>
-                    <item idno="other" enabled="1" default="0">
+                    <item idno="other2" enabled="1" default="0">
                       <labels>
                         <label locale="en_US" preferred="1">
                           <name_singular>Other</name_singular>
@@ -10625,7 +10625,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="other" enabled="1" default="0">
+                <item idno="other3" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Other</name_singular>
@@ -10852,7 +10852,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="luxar_glass" enabled="1" default="0">
+            <item idno="luxar_glass1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Luxar Non-Reflective Glass</name_singular>
@@ -23756,7 +23756,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="photographer" datatype="List" list="photographer">
+    <metadataElement code="photographer1" datatype="List" list="photographer">
       <labels>
         <label locale="en_US">
           <name>Creator</name>
@@ -26812,7 +26812,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="shipment_type" datatype="List" list="shipment_types">
+    <metadataElement code="shipment_type1" datatype="List" list="shipment_types">
       <labels>
         <label locale="en_US">
           <name>Shipment Type</name>
@@ -28658,7 +28658,7 @@ Via: <unit relativeTo="ca_movements">
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="subjects" default="0">
+        <screen idno="subjects1" default="0">
           <labels>
             <label locale="en_US">
               <name>Subjects</name>
@@ -29944,7 +29944,7 @@ Via: <unit relativeTo="ca_movements">
             <placement code="ca_attribute_lib_acquisition_date">
               <bundle>ca_attribute_lib_acquisition_date</bundle>
             </placement>
-            <placement code="ca_objects">
+            <placement code="ca_exchange">
               <bundle>ca_objects</bundle>
               <settings>
                 <setting name="label" locale="en_US">Exchanged For</setting>

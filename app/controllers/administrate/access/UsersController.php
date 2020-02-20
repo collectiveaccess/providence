@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,7 +27,7 @@
  */
 
  	require_once(__CA_MODELS_DIR__.'/ca_users.php');
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
  	class UsersController extends ActionController {
  		# -------------------------------------------------------
@@ -74,8 +74,10 @@
  			$t_user->setMode(ACCESS_WRITE);
  			foreach($t_user->getFormFields() as $vs_f => $va_field_info) {
 				// dont get/set password if backend doesn't support it
-				if($vs_f == 'password' && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
-					continue;
+				if($vs_f == 'password') {
+					if(!strlen($_REQUEST[$vs_f]) || !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
+						continue;
+					}
 				}
  				$t_user->set($vs_f, $_REQUEST[$vs_f]);
  				if ($t_user->numErrors()) {
@@ -184,7 +186,7 @@
 						# -- generate mail text from template - get both the text and the html versions
 						$vs_mail_message_text = $o_view->render("mailTemplates/account_activation.tpl");
 						$vs_mail_message_html = $o_view->render("mailTemplates/account_activation_html.tpl");
-						caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html);						
+						caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html, null, null, null, ['source' => 'Account activation']);						
 					}
 
 					$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
@@ -214,9 +216,10 @@
  		# -------------------------------------------------------
  		public function ListUsers() {
  			AssetLoadManager::register('tableList');
- 			if (($vn_userclass = $this->request->getParameter('userclass', pInteger)) == '') {
+ 			if (!strlen($vn_userclass = $this->request->getParameter('userclass', pString))) {
  				$vn_userclass = $this->request->user->getVar('ca_users_default_userclass');
  			} else {
+ 			    $vn_userclass = (int)$vn_userclass;
  				$this->request->user->setVar('ca_users_default_userclass', $vn_userclass);
  			}
  			if ((!$vn_userclass) || ($vn_userclass < 0) || ($vn_userclass > 255)) { $vn_userclass = 0; }
@@ -276,14 +279,18 @@
  			
  			$o_db = new Db();
  			$t_user = new ca_users();
- 			$va_fields = array("lname", "fname", "email", "user_name", "userclass", "active", "last_login");
+ 			$va_fields = array("lname", "fname", "email", "user_name", "userclass", "active", "last_login", "roles", "groups");
  			$va_profile_prefs = $t_user->getValidPreferences('profile');
  			$va_profile_prefs_labels = array();
  			foreach($va_profile_prefs as $vs_pref) {
 				$va_pref_info = $t_user->getPreferenceInfo($vs_pref);
 				$va_profile_prefs_labels[$vs_pref] = $va_pref_info["label"];
 			}
- 			$qr_users = $o_db->query("SELECT * FROM ca_users ORDER BY user_id DESC");
+ 			$qr_users = $o_db->query("
+ 				SELECT * 
+ 				FROM ca_users u
+ 				ORDER BY u.user_id DESC
+ 			");
  			if($qr_users->numRows()){
  				$va_rows = array();
  				# --- headings
@@ -291,13 +298,22 @@
  				# --- headings for field values
  				foreach($va_fields as $vs_field){
  					switch($vs_field){
+ 						# --------------------
+ 						case "roles":
+ 							$va_row[] = _t("Roles");
+ 							break;
+ 						# --------------------
+ 						case "groups":
+ 							$va_row[] = _t("Groups");
+ 							break;
+ 						# --------------------
  						case "last_login":
  							$va_row[] = _t("Last login");
- 						break;
+ 							break;
  						# --------------------
  						default:
- 							$va_row[] = $t_user->getDisplayLabel("ca_users.".$vs_field);
- 						break;
+ 							$va_row[] = $t_user->getDisplayLabel("ca_users.{$vs_field}");
+ 							break;
  						# --------------------
  					}
  				}
@@ -316,15 +332,24 @@
 						switch($vs_field){
 							case "userclass":
 								$va_row[] = $t_user->getChoiceListValue($vs_field, $qr_users->get("ca_users.".$vs_field));
-							break;
+								break;
 							# -----------------------
 							case "active":
-								$va_row[] = ($qr_users->get("ca_users.".$vs_field) == 1) ? _t("active") : _t("not active");
-							break;
+								$va_row[] = ($qr_users->get("ca_users.{$vs_field}") == 1) ? _t("active") : _t("not active");
+								break;
+							# -----------------------
+							case "roles":
+								$qr_roles = $o_db->query("SELECT r.name, r.code FROM ca_user_roles r INNER JOIN ca_users_x_roles AS cuxr ON cuxr.role_id = r.role_id WHERE cuxr.user_id = ?", [$qr_users->get('user_id')]);
+								$va_row[] = join("; ", $qr_roles->getAllFieldValues("name"));
+								break;
+							# -----------------------
+							case "groups":
+								$qr_groups = $o_db->query("SELECT g.name, g.code FROM ca_user_groups g INNER JOIN ca_users_x_groups AS cuxg ON cuxg.group_id = g.group_id WHERE cuxg.user_id = ?", [$qr_users->get('user_id')]);
+								$va_row[] = join("; ", $qr_groups->getAllFieldValues("name"));
+								break;
 							# -----------------------
 							case "last_login":
-								//if (!is_array($va_vars = $qr_users->getVars('vars'))) { $va_vars = array(); }
-                                                                if (!is_array($va_vars = $qr_users->getVars('volatile_vars'))) { $va_vars = array(); }
+                            	if (!is_array($va_vars = $qr_users->getVars('volatile_vars'))) { $va_vars = array(); }
                                                                 
 								if ($va_vars['last_login'] > 0) {
 									$o_tep->setUnixTimestamps($va_vars['last_login'], $va_vars['last_login']);
@@ -333,7 +358,7 @@
 									$va_row[] = "-";
 								}
 								
-							break;
+								break;
 							# -----------------------
 							default:
 								if($vs_download_format == "csv"){
@@ -341,7 +366,7 @@
 								}else{
 									$va_row[] = $qr_users->get("ca_users.".$vs_field);
 								}
-							break;
+								break;
 							# -----------------------	
 						}
 					}
@@ -401,7 +426,7 @@
 								# -- generate mail text from template - get both the text and the html versions
 								$vs_mail_message_text = $o_view->render("mailTemplates/account_activation.tpl");
 								$vs_mail_message_html = $o_view->render("mailTemplates/account_activation_html.tpl");
-								caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html);						
+								caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html, null, null, null, ['source' => 'Account activation']);						
 							}
 							
 						}
@@ -446,4 +471,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

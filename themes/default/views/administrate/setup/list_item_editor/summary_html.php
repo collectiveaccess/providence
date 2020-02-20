@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,31 +28,12 @@
  	$t_item 				= $this->getVar('t_subject');
 	$vn_item_id 			= $this->getVar('subject_id');
 	
-	$va_bundle_displays 	= $this->getVar('bundle_displays');
 	$t_display 				= $this->getVar('t_display');
 	$va_placements 			= $this->getVar("placements");
 ?>
 	<div id="summary" style="clear: both;">
 <?php
-	if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID())))) {
-?>
-		<div id="printButton">
-			<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->PrimaryKey() => $t_item->getPrimaryKey()))?>">
-				<?php print caNavIcon($this->request, __CA_NAV_BUTTON_PDF__); ?>
-			</a>
-		</div>
-<?php
-		print caFormTag($this->request, 'Summary', 'caSummaryDisplaySelectorForm');
-?>
-			<div class='searchFormSelector' style='float: right;'>
-<?php
-				print _t('Display').': '.$vs_display_select_html; 
-?>
-			</div>
-			<input type="hidden" name="<?php print $t_item->PrimaryKey(); ?>" value="<?php print $vn_item_id; ?>"/>
-		</form>
-<?php
-	}
+    print caEditorPrintSummaryControls($this);
 ?>
 	<div id="title">
 		<?php print $t_item->getLabelForDisplay(); ?>

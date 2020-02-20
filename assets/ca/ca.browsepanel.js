@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.browsepanel.js
+ * js/ca.browsepanel.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,8 @@ var caUI = caUI || {};
 				if (that.useExpose) { 
 					jQuery("#" + that.panelID).expose({api: true, color: that.exposeBackgroundColor, opacity: that.exposeBackgroundOpacity, zIndex: 99999}).load(); 
 				}
+			} else {
+				jQuery("#" + that.panelID).show();
 			}
 			if (!modifyID) { modifyID = ''; }
 			
@@ -91,6 +93,8 @@ var caUI = caUI || {};
 				if (that.useExpose) {
 					jQuery.mask.close();
 				}
+			} else {
+				jQuery("#" + that.panelID).hide();
 			}
 			jQuery("#" + panelContentID).empty();
 		}

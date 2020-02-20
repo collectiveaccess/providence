@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseAdvancedSearchController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/LoanSearch.php");
- 	require_once(__CA_LIB_DIR__."/ca/Browse/LoanBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/BaseAdvancedSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/LoanSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Browse/LoanBrowse.php");
 	require_once(__CA_MODELS_DIR__."/ca_loans.php");
 	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	
@@ -59,8 +59,7 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
-				'list' => _t('list'),
-				'editable' => _t('editable')
+				'list' => _t('list')
 			 );
 		
 			$this->opo_browse = new LoanBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
@@ -79,15 +78,6 @@
  			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
- 		/**
- 		 * Returns string representing the name of the item the search will return
- 		 *
- 		 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
- 		 */
- 		public function searchName($ps_mode='singular') {
- 			return ($ps_mode == 'singular') ? _t("loan") : _t("loans");
- 		}
- 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		/**
@@ -98,4 +88,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

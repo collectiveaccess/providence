@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.tableview.js
+ * js/ca.tableview.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,18 +39,28 @@ var caUI = caUI || {};
 			columnSorting: true,
 			
 			dataLoadUrl: null,
+			numRowsForFirstLoad: 20,
+			numRowsPerLoad: 200,
+			
 			dataSaveUrl: null,
-			editLinkFormat: null,
+			dataEditUrl: null,
 			
 			rowHeaders: null,
 			colHeaders: null,
 			columns: null,
 			colWidths: null,
 			
+			gridClassName: 'caResultsEditorContent',
+			loadingClassName: 'caResultsEditorLoading',
 			currentRowClassName: 'caResultsEditorCurrentRow',
 			currentColClassName: 'caResultsEditorCurrentCol',
-			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',
-			statusDisplayClassName: 'caResultsEditorStatusDisplay',
+			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',			// "readonly" is for any cell that cannot be edited inline (ie. readonly in Handsontable)
+			nonEditableCellClassName: 'caResultsEditorNonEditableCell',		// "nonEditable" is for a cell that cannot be edited inline or with an overlay
+			overlayEditorIconClassName: 'caResultsEditorOverlayIcon',
+			statusDisplayClassName: 'caResultsEditorStatus',
+			errorCellClassName: 'caResultsEditorErrorCell',
+			
+			dataEditorID: null,
 			
 			saveMessage: "Saving...",
 			errorMessagePrefix: "[Error]",
@@ -58,98 +68,67 @@ var caUI = caUI || {};
 			
 			lastLookupIDMap: null,
 			
+			restoreOriginalValueOnError: false,
+			
 			saveQueue: [],
-			saveQueueIsRunning: false
+			saveQueueIsRunning: false,
+			dataEditorPanel: null
 		}, options);
-		
 	
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
 
 		that.htmlRenderer = function(instance, td, row, col, prop, value, cellProperties) {
-			if (cellProperties.readOnly) {
-				td.className = that.readOnlyCellClassName;
+			var colSpec = that.getColumnForField(prop);
+			var jTd = jQuery(td);
+			
+			if (!value) { value = ''; }
+			jTd.empty().off('click'); // clear cell
+			
+			if (cellProperties.readOnly) { jTd.addClass(that.readOnlyCellClassName); }
+			if (colSpec['allowEditing'] === false) { jTd.addClass(that.nonEditableCellClassName);}
+			if (cellProperties.error) {
+				jTd.addClass(that.errorCellClassName);	
+			} else {
+				jTd.removeClass(that.errorCellClassName);
 			}
-			jQuery(td).empty().append(value);
+			
+			// Add "click to edit" icon and overlay handler
+			if ((colSpec['allowEditing'] === true) && (cellProperties.editMode == 'overlay')) {
+				value += ' <div class="' + that.overlayEditorIconClassName + '"><i class="fa fa-pencil-square-o"></i></div>';
+				
+				if (that.dataEditorPanel) {
+					var p = prop, r = row, c = col, element = td;
+					jQuery(element).on('click', function(e) {
+						if (that.getColumnForField(p)) {
+							var ht = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
+							ht.selectCell(r,c);
+							var physicalIndex = ht.sortIndex[r] ? ht.sortIndex[r][0] : r;		// need to do translation in case user has sorted on a column
+							var rowData = that.initialData[physicalIndex];
+							var placementID = colSpec.placement_id;
+							
+							that.dataEditorPanel.showPanel(that.dataEditUrl + "/bundle/" + p + "/id/" + rowData['id'] + '/row/' + r + '/col/' + c + '/pl/' + placementID);
+						}
+					});
+				}
+			}
+			jTd.append(value);
+			
 			return td;
 		};
-		
-		that.caResultsEditorOpenFullScreen = function() {
-			var ht = jQuery(that.container).data('handsontable');
-			jQuery(that.container).toggleClass('caResultsEditorContentFullScreen');
-		
-			caResultsEditorPanel.showPanel();
-			
-			jQuery('#scrollingResults').toggleClass('caResultsEditorContainerFullScreen').prependTo('#caResultsEditorPanelContentArea'); 
-		
-			jQuery('.caResultsEditorToggleFullScreenButton').hide();
-			jQuery("#caResultsEditorControls").show();
-		
-			ht.updateSettings({width: jQuery("#caResultsEditorPanelContentArea").width() - 15, height: jQuery("#caResultsEditorPanelContentArea").height() - 32});
-			jQuery(that.container).width(jQuery("#caResultsEditorPanelContentArea").width() - 15).height(jQuery("#caResultsEditorPanelContentArea").height() - 32).resize();
-		
-			ht.render();
-		}
-	
-		that.caResultsEditorCloseFullScreen = function(dontDoHide) {
-			if (!dontDoHide) { caResultsEditorPanel.hidePanel(); }
-			var ht = jQuery(that.container).data('handsontable');
-	
-			jQuery('#scrollingResults').toggleClass('caResultsEditorContainerFullScreen').prependTo('#caResultsEditorWrapper'); 
-			jQuery(that.container).toggleClass('caResultsEditorContentFullScreen');
-	
-			jQuery('.caResultsEditorToggleFullScreenButton').show();
-			jQuery("#caResultsEditorControls").hide();
-	
-			ht.updateSettings({width: 740, height: 500 });
-			jQuery(that.container).width(740).height(500).resize();
-			ht.render();
-		}
 		// --------------------------------------------------------------------------------
 		
 		that.colWidths = [];
+		
 		jQuery.each(that.columns, function(i, v) {
 			that.colWidths.push(200);
 			switch(that.columns[i]['type']) {
 				case 'DT_SELECT':
 					delete(that.columns[i]['type']);
-					that.columns[i]['type'] = 'autocomplete';
-					that.columns[i]['editor'] = 'dropdown';
-					break;
-				case 'DT_LOOKUP':
-					var d = that.columns[i]['data'];
-					var lookupUrl = that.columns[i]['lookupURL'];
-					var list = that.columns[i]['list'];
-					that.columns[i] = {
-						'data' : d,
-						'type': 'autocomplete',
-						'strict': false,
-						'source' : function (query, process) {
-							if (!query) { return; }
-							$.ajax({
-								url: lookupUrl,
-								data: {
-									term: query,
-									list: list,
-									simple: 0,
-									
-									
-								},
-								success: function (response) {
-									console.log("r", response);
-									var labels = [];
-									that.lastLookupIDMap = {};
-									for(var k in response) {
-										labels.push(response[k]['label']);
-										that.lastLookupIDMap[response[k]['label']] = k;
-									}
-									if (labels.length > 0) {
-										process(labels);
-									}
-								}
-							})
-					}};
+					that.columns[i]['type'] = 'dropdown';
+					that.columns[i]['allowInvalid'] = false;
+					
 					break;
 				default:
 					delete(that.columns[i]['type']);
@@ -158,7 +137,15 @@ var caUI = caUI || {};
 			}
 		});
 		// --------------------------------------------------------------------------------
-		
+
+		that.getColumnForField = function(f, returnIndex) {
+			for(var i in that.columns) {
+				if (that.columns[i]['data'] === f) { return returnIndex ? i : that.columns[i]; }
+			} 
+			return null;
+		};
+		// --------------------------------------------------------------------------------
+
 		that.save = function(change) {
 			that.saveQueue.push(change);
 			that._runSaveQueue();
@@ -179,87 +166,175 @@ var caUI = caUI || {};
 				return false;
 			}
 			
-			var ht = jQuery(that.container).data('handsontable');
+			var ht = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
 			
 			// make map from item_id to row, and vice-versa
-			var rowToItemID = {}, itemIDToRow = {}, rowData = {};
+			var itemIDToRow = {}, rowData = {};
 			jQuery.each(q, function(k, v) {
-				rowToItemID[v['change'][0][0]] = v['id'];
-				itemIDToRow[v['id']] = v['change'][0][0];
-				rowData[v['change'][0][0]] = v;
+				// transform list values to ids?
+				var c;
+				if (c = that.getColumnForField(v['change'][1])) {
+					if (c.sourceMap && (v['change'][3] in c.sourceMap)) {
+						v['change'][3] = c.sourceMap[v['change'][3]];
+					}
+				}
+			
+				itemIDToRow[v['id']] = v['change'][0];
+				rowData[v['change'][0]] = v;
 			});
 			
 			that.saveQueue = [];
-			jQuery.getJSON(that.dataSaveUrl, { changes: q },
+			jQuery.post(that.dataSaveUrl, { changes: q },
 				function(data) {
-					if (data.errors && (data.errors instanceof Object)) {
+					console.log("data", data);
+					if (parseInt(data.status) !== 0) {
 						var errorMessages = [];
-						jQuery.each(data.errors, function(k, v) {
-							errorMessages.push(that.errorMessagePrefix + ": " + v.message);
-							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], rowData[itemIDToRow[k]]['change'][0][2], 'external');
+						jQuery.each(data.errors, function(error, bundle) {
+							//jQuery.each(errorList, function(id, error) {
+								var id = data['id'];
+								
+        						var row = parseInt(itemIDToRow[id]);
+        						var col = that.getColumnForField(rowData[row]['change'][1], true);
+								
+								errorMessages.push(that.errorMessagePrefix + ": " + error);
+								
+								if (that.restoreOriginalValueOnError) {
+									// Restore original value
+									ht.setDataAtRowProp(itemIDToRow[id], rowData[itemIDToRow[id]]['change'][1], rowData[itemIDToRow[id]]['change'][2], 'external');
+								}
+								
+								ht.setCellMeta(row, col, 'comment', error);	// display error on cell
+								ht.setCellMeta(row, col, 'error', true);
+							//});
 						});
-						jQuery("." + that.statusDisplayClassName).html(errorMessages.join('; '));
-					} else {
-						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage);
 						
-						jQuery.each(data.messages, function(k, v) {
-							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], v['value'], 'external');
-						});
-						setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
+        				ht.render();
+        				
+						jQuery("." + that.statusDisplayClassName).html(errorMessages.join('; ')).show();
+					} else {
+						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage).show();
+						
+						if (data && data.request && data.request.changes) {
+							jQuery.each(data.request.changes, function(i, c) {
+								var row = parseInt(itemIDToRow[c['id']]);
+								var col = that.getColumnForField(c['change'][1], true);
+							
+								ht.setCellMeta(row, col, 'comment', null);  // clear comment
+								ht.setCellMeta(row, col, 'error', false);
+							});
+						}
+        				ht.render();
 					}
+					
+					setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
 					
 					that.saveQueueIsRunning = false;
 					that._runSaveQueue(); // anything else to save?
-				}
+				},
+				'json'
 			);
 			
 			return true;
 		};
 		// --------------------------------------------------------------------------------
 		
-		var ht = jQuery(that.container).handsontable({
-			data: that.initialData,
-			rowHeaders: that.rowHeaders,
-			colHeaders: that.colHeaders,
-			
-			minRows: that.rowCount,
-			maxRows: that.rowCount,
-			contextMenu: that.contextMenu,
-			columnSorting: that.columnSorting,
-			
-			currentRowClassName: that.currentRowClassName,
-			currentColClassName: that.currentColClassName,
-			
-			stretchH: "all",
-			columns: that.columns,
-			colWidths: that.colWidths,
-			
-			dataLoadUrl: that.dataLoadUrl,
-			editLinkFormat: that.editLinkFormat,
-			statusDisplayClassName: that.statusDisplayClassName,
-			
-			onChange: function (change, source) {
-				if ((source === 'loadData') || (source === 'updateAfterRequest') || (source === 'external')) {
-				  return; //don't save this change
-				}
-				jQuery("." + that.statusDisplayClassName).html(that.saveMessage).fadeIn(500);
+		// Calculate full window dimensions
+		var $window = jQuery(window);
+		var availableWidth = $window.width() + $window.scrollLeft();
+		var availableHeight = $window.height() + $window.scrollTop() - 30;	// leave 30 pixels of space for status bar
+		
+		// Set up HOT and load first batch of data
+		jQuery.getJSON(that.dataLoadUrl, {s:0, c:that.numRowsForFirstLoad}, function(data) {
+			that.initialData = data;
+			var ht = jQuery(that.container + " ." + that.gridClassName).handsontable({
+				data: that.initialData,
+				columns: that.columns,
 				
-				var item_id = this.getDataAtRowProp(parseInt(change[0]), 'item_id');
+				rowHeaders: that.rowHeaders,
+				colHeaders: that.colHeaders,
 				
-				var pieces = (change[0] instanceof Array) ? change[0][1].split("-") : change[1].split("-");
-				var table = pieces.shift();
-				var bundle = pieces.join('-');
+				autoRowSize: true,
+				comments: true,
+	
+				contextMenu: that.contextMenu,
+				columnSorting: that.columnSorting,
+				width: (that.width > 0) ? that.width : availableWidth,
+				height: (that.height > 0) ? that.height : availableHeight,
+		
+				currentRowClassName: that.currentRowClassName,
+				currentColClassName: that.currentColClassName,
+		
+				stretchH: "all",
+				colWidths: that.colWidths,
 				
-				if (that.lastLookupIDMap) {
-					if (that.lastLookupIDMap[change[0][3]]) {
-						change[0][3] = that.lastLookupIDMap[change[0][3]];
+				cells: function (row, col, prop) {
+					var cellProperties = {};
+					cellProperties['editMode'] = that.initialData[row][prop + "_edit_mode"];
+					if (that.columns[col] && !that.columns[col]['readOnly']) { cellProperties['readOnly'] = !(cellProperties['editMode'] == 'inline'); }
+					
+					return cellProperties;
+				},
+				afterChange: function (change, source) {
+					if (source === 'edit') { // only save edits
+						for(var i in change) {
+							var r = change[i][0];
+							var ht = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
+							
+							var physicalIndex =  ht.sortIndex[r] ? ht.sortIndex[r][0] : r;		// need to do translation in case user has sorted on a column
+				
+							var row_id = that.initialData[physicalIndex]['id'];
+							that.save({'change': change[i], 'id': row_id});
+						}
 					}
 				}
-				that.lastLookupIDMap = null;
-				
-				that.save({ 'table' : table, 'bundle': bundle, 'id': item_id, 'value' : change[0][3], 'change' : change, 'source': source });
+			});
+			
+			if (that.dataEditorID) {
+				that.dataEditorPanel = caUI.initPanel({ 
+					panelID: that.dataEditorID,									/* DOM ID of the <div> enclosing the panel */
+					panelContentID: that.dataEditorID + "Content",				/* DOM ID of the content area <div> in the panel */
+					exposeBackgroundColor: "#000000",				
+					exposeBackgroundOpacity: 0.7,					
+					panelTransitionSpeed: 100,						
+					closeButtonSelector: "#" +  that.dataEditorID + " .caResultsComplexDataEditorPanelClose",
+					center: true,
+					closeOnEsc: false
+				});
 			}
-		});
+			
+			// Ensure comments on cells are visible and non-editable
+			jQuery('.htCommentsContainer, .htComments').css('zIndex', '99000');
+			jQuery(".htCommentTextArea").attr("disabled","disabled");
+			
+			// Load additional data in chunks
+			var rowsLoaded = that.numRowsForFirstLoad;
+			
+			if (that.loadingClassName) { jQuery("." + that.loadingClassName).hide(100); }
+			var _loadData = function(s, c) {
+				var percentLoaded = parseInt((s/that.rowCount) * 100);
+				if (percentLoaded > 100) percentLoaded = 100;
+				
+				if (that.statusDisplayClassName) { jQuery(that.container + " ." + that.statusDisplayClassName).html("Loading " + percentLoaded + "%").show(); }	
+				jQuery.getJSON(that.dataLoadUrl, {s:s, c:c}, function(data) {
+					rowsLoaded += data.length;
+					
+					if (that.statusDisplayClassName) { jQuery(that.container + " ." + that.statusDisplayClassName).html("Loading complete").show(); }	
+					jQuery.merge(that.initialData, data);
+					
+					var hot = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
+					if (hot) hot.render();
+					if (that.rowCount > rowsLoaded) {
+						_loadData(rowsLoaded, that.numRowsPerLoad);
+					} else {
+						setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
+					}
+				});
+			};
+		
+			if (that.rowCount > rowsLoaded) {
+				_loadData(rowsLoaded, that.numRowsPerLoad);
+			} 
+		});		
 		
 		return that;
 		

@@ -28,8 +28,8 @@
  
  	require_once(__CA_MODELS_DIR__."/ca_lists.php");
  	require_once(__CA_MODELS_DIR__."/ca_list_items.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ListSearch.php");
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ListSearch.php");
  	
  
  	class ListEditorController extends BaseEditorController {
@@ -48,7 +48,7 @@
  			$vn_list_id = $this->request->getParameter('list_id', pInteger);
  			$t_list_item = new ca_list_items();
  			if ($t_list_item->load(array('list_id' => $vn_list_id, 'parent_id' => null))) {		// root ca_list_item record for this ca_list record
- 				$this->request->session->setVar('ca_list_items_browse_last_id', $t_list_item->getPrimaryKey());
+ 				Session::setVar('ca_list_items_browse_last_id', $t_list_item->getPrimaryKey());
  			}
  		}
  		# -------------------------------------------------------
@@ -56,8 +56,8 @@
  			parent::Delete($pa_options);
  			
  			# unset default item because it's from the now-deleted list
- 			$this->request->session->setVar('ca_list_items_browse_last_id', null);
- 			$this->request->session->setVar('ca_lists_browse_last_id', null);
+ 			Session::setVar('ca_list_items_browse_last_id', null);
+ 			Session::setVar('ca_lists_browse_last_id', null);
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler

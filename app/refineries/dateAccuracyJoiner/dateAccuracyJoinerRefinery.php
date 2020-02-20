@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__ . '/ca/Import/BaseRefinery.php');
+require_once(__CA_LIB_DIR__ . '/Import/BaseRefinery.php');
 
 class dateAccuracyJoinerRefinery extends BaseRefinery {
 	# -------------------------------------------------------

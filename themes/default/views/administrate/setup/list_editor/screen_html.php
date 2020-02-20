@@ -33,10 +33,10 @@
 	
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ListEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/setup/list_editor', 'ListEditor', 'Edit/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)), 
+			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ListEditorForm').' '.
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup/list_editor', 'ListEditor', 'Edit/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)), 
 			'', 
-			((intval($vn_list_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/setup/list_editor', 'ListEditor', 'Delete/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)) : ''
+			((intval($vn_list_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup/list_editor', 'ListEditor', 'Delete/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)) : ''
 		);
 	}
 ?>

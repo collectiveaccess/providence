@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-
- 	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/WorldCat.php');
+ 	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/WorldCat.php');
  	require_once(__CA_MODELS_DIR__.'/ca_data_importers.php');
  	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
  	
@@ -123,11 +122,22 @@
  			
  			$vn_status = ca_data_importers::importDataFromSource(join(",", $pa_worldcat_ids), $pn_importer_id, array('progressBar' => $o_progress, 'format' => 'WorldCat', 'logLevel' => $pn_log_level));
  		
+ 			$va_job_info = $o_progress->getDataForJobID($ps_job_id);
+ 			
+ 			$va_links = [];
+ 			if(!is_array($va_job_info['data']['created'])) { $va_job_info['data']['created'] = []; }
+ 			if(!is_array($va_job_info['data']['updated'])) { $va_job_info['data']['updated'] = []; }
+			
+			if (!($vs_template = $this->opo_config->get('worldcat_new_record_link_template'))) { $vs_template = "View <l>^ca_objects.preferred_labels.name (^ca_objects.idno)</l>"; }
+			$va_links = caProcessTemplateForIDs($vs_template, $va_job_info['data']['table'], array_merge($va_job_info['data']['created'], $va_job_info['data']['updated']), ['delimiter' => '<br/>']);
+			
  			$this->view->setVar('info', array(
  				'status' => $vn_status,
  				'job_id' => $ps_job_id,
  				'importer_id' => $pn_importer_id,
- 				'worldcat_ids' => $pa_worldcat_ids
+ 				'worldcat_ids' => $pa_worldcat_ids,
+ 				'message' => $vs_message,
+ 				'links' => $va_links
  			));
  			
  			$this->render('import_run_json.php');
@@ -178,4 +188,3 @@
  		}
  		# -------------------------------------------------------		
  	}
- ?>

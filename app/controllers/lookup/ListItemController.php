@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
  	
  	class ListItemController extends BaseLookupController {
  		# -------------------------------------------------------
@@ -56,7 +56,7 @@
 							$va_tmp[] = "'".preg_replace("![\"']+!", "", $vs_list)."'";
 						}
 					}
-					$pa_options['filters'][] = array("ca_lists.list_code", "IN", "(".join(",", $va_tmp).")");
+					$pa_options['filters'][] = array("ca_list_items.list_id", "IN", join(",", $va_tmp));
 				}
 			}
 			return parent::Get($pa_additional_query_params, $pa_options);
@@ -80,7 +80,8 @@
 				$va_lists = explode(";", $ps_lists);
 			}
 			
-			if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
+			$vn_max_items_per_page = null;
+			if ($vn_max_items_per_page > 1000) {
 				$vn_max_items_per_page = 100;
 			}
 			
@@ -128,24 +129,22 @@
 						
 						$vn_c = 0;
 						foreach($va_list_items as $vn_item_id => $va_item) {
-							if ($vn_c >= $vn_start) {
-								unset($va_item['description']);
-								unset($va_item['icon']);
-							
-								if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
-								if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
-							
-								$va_item['name'] = $va_display_values[$vn_c];
-								if (!$va_item['name']) { $va_item['name'] = '??? '.$vn_item_id; }
-								$va_item['table'] = 'ca_list_items';
-							
-								// Child count is only valid if has_children is not null
-								$va_item['children'] = 0;
-								$va_list_items[$vn_item_id] = $va_item;
-							}
+							unset($va_item['description']);
+							unset($va_item['icon']);
+						
+							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
+							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
+						
+							$va_item['name'] = $va_display_values[$vn_c];
+							if (!$va_item['name']) { $va_item['name'] = '??? '.$vn_item_id; }
+							$va_item['table'] = 'ca_list_items';
+						
+							// Child count is only valid if has_children is not null
+							$va_item['children'] = 0;
+							$va_list_items[$vn_item_id] = $va_item;
 							$vn_c++;
 							
-							if ($vn_c > ($vn_start + $vn_max_items_per_page)) { break; }
+							if (!is_null($vn_max_items_per_page) && ($vn_c > ($vn_max_items_per_page))) { break; }
 						}
 						
 						if (sizeof($va_list_items)) {
@@ -166,14 +165,14 @@
 			
 				$va_list_items_sortable = [];
 				foreach($va_list_items as $vn_item_id => $va_item) {
-					$va_list_items_sortable[caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_item['name_plural'])))).'_'.$vn_item_id] = $va_item;
+					$va_list_items_sortable[caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_item['name'])))).'_'.$vn_item_id] = $va_item;
 				}
+				ksort($va_list_items_sortable);
 				$va_list_items = $va_list_items_sortable;
-				
  				$va_list_items['_sortOrder'] = array_keys($va_list_items);
 
 				$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
-				$va_list_items['_itemCount'] = sizeof($va_list_items); //$t_list ? $t_list->numItemsInList() : ($qr_res ? $qr_res->numRows() : 0);
+				$va_list_items['_itemCount'] = ca_list_items::find(['list_id' => $vn_list_id, 'parent_id' => $vn_id], ['returnAs' => 'count']); //sizeof($va_list_items); //$t_list ? $t_list->numItemsInList() : ($qr_res ? $qr_res->numRows() : 0);
 			
 				$va_level_data[$pn_id] = $va_list_items;
 			}
@@ -185,7 +184,7 @@
  				//
  				// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
  				// is part of a browser initialization
- 				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
+ 				Session::setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
  			}
  			
  			$this->view->setVar('dontShowSymbols', (bool)$this->request->getParameter('noSymbols', pString));

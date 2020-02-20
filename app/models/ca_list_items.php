@@ -34,9 +34,9 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_LIB_DIR__.'/ca/RepresentableBaseModel.php');
-require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/RepresentableBaseModel.php');
+require_once(__CA_LIB_DIR__.'/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 
@@ -591,10 +591,10 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	}
  	# ------------------------------------------------------
 	public function insert($pa_options=null) {
-		$vb_web_set_transaction = false;
+		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
-			$vb_web_set_transaction = true;
+			$vb_we_set_transaction = true;
 		}
 		
 		$o_trans = $this->getTransaction();
@@ -620,9 +620,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 				if(!$vn_locale_id) {
 					$this->postError(750, _t('Locale %1 does not exist', $va_locales[0]), 'ca_list_items->insert()');
-					if ($vb_web_set_transaction) {
-						$this->getTransaction()->rollback();
-					}
+					if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); }
 					return false;
 				}
 				
@@ -640,9 +638,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				if ($t_place->numErrors()) {
 					$this->delete();
 					$this->errors = array_merge($this->errors, $t_place->errors);
-					if ($vb_web_set_transaction) {
-						$this->getTransaction()->rollback();
-					}
+					if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); }
 					return false;
 				}
 				
@@ -656,20 +652,26 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		
 		if ($this->numErrors()) {
-			if ($vb_web_set_transaction) { $o_trans->rollback(); }
+			if ($vb_we_set_transaction) {$o_trans->rollback(); }
 		} else {
-			if ($vb_web_set_transaction) { $o_trans->commit(); }
+			if ($vb_we_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
+			ExternalCache::flush('listItems');
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
+		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
+			$vb_we_set_transaction = true;
 			$this->setTransaction(new Transaction($this->getDb()));
 		}
+		
+		$o_trans = $this->getTransaction();
+		
 		if ($this->get('is_default') == 1) {
-			$this->getDb()->query("
+			$o_trans->getDb()->query("
 				UPDATE ca_list_items 
 				SET is_default = 0 
 				WHERE list_id = ? AND item_id <> ?
@@ -678,10 +680,11 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$vn_rc = parent::update($pa_options);
 		
 		if ($this->numErrors()) {
-			$this->getTransaction()->rollback();
+			if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); } 
 		} else {
-			$this->getTransaction()->commit();
+			if ($vb_we_set_transaction) { $this->getTransaction()->commit(); }
 			$this->_setSettingsForList();
+			ExternalCache::flush('listItems');
 		}
 		return $vn_rc;
 	}
@@ -700,6 +703,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		
 		$vn_id = $this->getPrimaryKey();
 		if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			ExternalCache::flush('listItems');
 			// Delete any associated attribute values that use this list item
 			if (!($qr_res = $this->getDb()->query("
 				DELETE FROM ca_attribute_values 
@@ -864,7 +868,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  	 */
  	public function isSaveable($po_request, $ps_bundle_name=null) {
  		// Is row loaded?
- 		if (!($vn_list_id = $this->get('list_id'))) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
+ 		if (!($vn_list_id = $this->get('list_id')) && $po_request) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
  			$vn_list_id = $this->_getListIDFromRequest($po_request);
  		}
 

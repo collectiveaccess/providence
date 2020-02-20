@@ -34,8 +34,8 @@
    *
    */
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
 
 
@@ -313,7 +313,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	 * @param mixed $pm_fields
 	 * @param mixed $pm_value
 	 * @param array $pa_options Most options are handled by subclasses. Options defined here include:
-	 *		assumeIdnoStubForLotID = set to force lookup of lot_id values as ca_object_lots.idno_stub values first not matter what, before consideration as a numeric lot_id. The default is false, in which case integer values are considered lot_ids and non-numeric values possible idno_stubs.
+	 *		assumeIdnoForRepresentationID = set to force lookup of representation_id values as ca_representations.idno values first not matter what, before consideration as a numeric representation_id. The default is false, in which case integer values are considered representation_ids and non-numeric values possible idnos.
+	 *		tryObjectIdnoForRepresentationID = try to set representation_id using the primary representation of the object with idno as specified for representaton_id
 	 *		
 	 * @return int 
 	 */
@@ -322,11 +323,22 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 			$pm_fields = array($pm_fields => $pm_value);
 		}
 		$pb_assume_idno_for_representation_id = caGetOption('assumeIdnoForRepresentationID', $pa_options, false);
+		$pb_try_object_idno = caGetOption('tryObjectIdnoForRepresentationID', $pa_options, false);
 		foreach($pm_fields as $vs_fld => $vs_val) {
 			if (($vs_fld == 'representation_id') && ($pb_assume_idno_for_representation_id || preg_match("![^\d]+!", $vs_val))) {
 				$t_rep = new ca_object_representations();
 				if ($t_rep->load(array('idno' => $vs_val, 'deleted' => 0))) {
 					$vn_representation_id = (int)$t_rep->getPrimaryKey();
+					$pm_fields[$vs_fld] = $vn_representation_id;
+					if ($vn_rc = parent::set($pm_fields, null, $pa_options)) {
+						$this->set('type_code', $vs_type = $this->getAnnotationType());
+					}
+					return $vn_rc;
+				}
+			}
+			
+			if (($vs_fld == 'representation_id') && ($pb_try_object_idno) && ($t_object = ca_objects::find(['idno' => "{$vs_val}"], ['allowWildcards' => true, 'returnAs' => 'firstModelInstance']))) {
+				if ($vn_representation_id = (int)$t_object->getPrimaryRepresentationID()) {
 					$pm_fields[$vs_fld] = $vn_representation_id;
 					if ($vn_rc = parent::set($pm_fields, null, $pa_options)) {
 						$this->set('type_code', $vs_type = $this->getAnnotationType());
@@ -541,10 +553,10 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  	# ------------------------------------------------------
  	public function loadProperties($ps_type, $pa_parameters=null) {
  		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
- 		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
+ 		if (!file_exists(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
  			return false;
  		}
- 		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
+ 		include_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
  		
  		$this->opo_annotations_properties = new $vs_classname;
  		$this->opo_annotations_properties->setPropertyValues(is_array($pa_parameters) ? $pa_parameters : $this->get('props'));
@@ -655,15 +667,36 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	public function useInEditor() {
 		return $this->opo_annotations_properties->useInEditor();
 	}
+	# ------------------------------------------------------
+	public function getTypeList($pa_options=null) {
+		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+		$va_type_list = array();
+		foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+			if(!isset($va_type_info['typeID'])) { continue; }
+			$va_type_list[$va_type_info['typeID']] =
+				array_merge(array('idno' => $vs_type_code), $va_type_info);
+		}
+		return $va_type_list;
+	}
+	# ------------------------------------------------------
+	public function getTypeID($pn_id=null) {
+		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+		$va_available_types = $o_annotation_type_conf->get('types');
+		if(isset($va_available_types[$this->get('type_code')]['typeID'])) {
+			return $va_available_types[$this->get('type_code')]['typeID'];
+		}
+
+		return null;
+	}
  	# ------------------------------------------------------
  	# STATIC
  	# ------------------------------------------------------
  	static public function getPropertiesCoderInstance($ps_type) {
  		$vs_classname = $ps_type.'RepresentationAnnotationCoder';
- 		if (!file_exists(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
+ 		if (!file_exists(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php')) {
  			return false;
  		}
- 		include_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
+ 		include_once(__CA_LIB_DIR__.'/RepresentationAnnotationPropertyCoders/'.$vs_classname.'.php');
  		
  		return new $vs_classname;
  	}

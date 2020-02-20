@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,12 +63,10 @@
 							{typeRestrictionsForDisplay}
 						</span>
 					</td>
-					<td>
-						<div style="float:right;">
-							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('screen_id' => '{screen_id}'))); ?></span>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?></a>
-						</div>
-					</td>
+					<td class="listtableEditDelete"><div style="float:right;">
+							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, "18px"), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('screen_id' => '{screen_id}'))); ?></span>
+							<a href="#" class="caDeleteScreenButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "18px"); ?></a>
+					</div></td>
 				</tr>
 			</table>
 		</div>
@@ -81,7 +79,7 @@
 		<div class="caItemList">
 		
 		</div>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t("Add screen"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add screen"); ?> &rsaquo;</a></div>
 	</div>
 </div>
 
@@ -103,7 +101,7 @@
 		itemListClassName: 'caItemList',
 		itemClassName: 'labelInfo',
 		addButtonClassName: 'caAddItemButton',
-		deleteButtonClassName: 'caDeleteItemButton',
+		deleteButtonClassName: 'caDeleteScreenButton',
 		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_name_'],
 		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_screen_info_', '<?php print $vs_id_prefix; ?>_screen_name_', '<?php print $vs_id_prefix; ?>_edit_'],
 		showEmptyFormsOnLoad: 1,

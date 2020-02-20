@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -43,7 +44,7 @@ class LabelGetTest extends BaseTestWithData {
 	 */
 	private $opt_object = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -71,6 +72,10 @@ class LabelGetTest extends BaseTestWithData {
 					"name" => "Alternative title for test image",
 				),
 				array(
+					"locale" => "en_US",
+					"name" => "Even more alternative title for test image",
+				),
+				array(
 					"locale" => "de_DE",
 					"name" => "Alternativer Titel für Testbild",
 				),
@@ -96,21 +101,45 @@ class LabelGetTest extends BaseTestWithData {
 
 		// extract de_DE locale from array
 		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 
 		$va_vals = array_shift(array_shift(caExtractValuesByLocale(array('preferred' => array('de_DE')),$vm_ret)));
 		$this->assertEquals('Testbild', $va_vals['name']);
 
 		// it should get the en_US title here because at this point this is our "UI locale"
 		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels');
-		$this->assertEquals('Alternative title for test image', $vm_ret);
+		$this->assertEquals('Alternative title for test image;Even more alternative title for test image', $vm_ret);
 
 		// extract de_DE locale from array
 		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 
 		$va_vals = array_shift(array_shift(caExtractValuesByLocale(array('preferred' => array('de_DE')),$vm_ret)));
 		$this->assertEquals('Alternativer Titel für Testbild', $va_vals['name']);
+	}
+	# -------------------------------------------------------
+	public function testGetCounts() {
+		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels._count');
+		$this->assertEquals(1, $vm_ret);
+		
+		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels._count', ['returnAsArray' => true]);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals(1, $vm_ret[0]);
+		
+		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels', ['returnAsCount' => true]);
+		$this->assertEquals(1, $vm_ret);
+		
+		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels._count');
+		$this->assertEquals(2, $vm_ret);
+		
+		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels._count', ['returnAsArray' => true]);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals(2, $vm_ret[0]);
+		
+		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels', ['returnAsCount' => true]);
+		$this->assertEquals(2, $vm_ret);
 	}
 	# -------------------------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,12 +25,12 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+ 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  
  	//
  	// This lookup controller doesn't extend BaseLookupController
- 	// since direct lookups on attributes are handled specially ��� not via the search engine
+ 	// since direct lookups on attributes are handled specially – not via the search engine
  	class AttributeValueController extends ActionController {
  		# -------------------------------------------------------
  		# AJAX handlers
@@ -41,9 +41,8 @@
 			
 			$va_tmp = explode('.', $ps_bundle);
 			
-			$o_dm = Datamodel::load();
 			
-			if (!($t_table = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
+			if (!($t_table = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
 				// bad table name
 				print _t("Invalid table name");
 				return null;
@@ -97,8 +96,29 @@
 			", (int)$t_element->getPrimaryKey(), (string)$ps_query.'%');
 			
 			$this->view->setVar('attribute_value_list', $qr_res->getAllFieldValues('value_longtext1'));
-			return $this->render('ajax_attribute_value_list_html.php');
+			return $this->render('ajax_attribute_value_list_json.php');
 		}
+		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function ValueExists() {
+ 			$ps_bundle = $this->request->getParameter('bundle', pString);
+ 			$ps_value = $this->request->getParameter('n', pString);
+			
+			$va_tmp = explode('.', $ps_bundle);
+			
+			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $va_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
+				print _t("You do not have access to this bundle");
+				return null;
+			}
+			if (BaseModelWithAttributes::valueExistsForElement($va_tmp[1], $ps_value, [])) {
+				$this->view->setVar('exists', 1);	
+			} else {
+				$this->view->setVar('exists', 0);
+			}
+			return $this->render('ajax_attribute_value_exists_json.php');
+ 		}
 		# -------------------------------------------------------
  		/**
  		 * Given a item_id (request parameter 'id') returns a list of direct children for use in the hierarchy browser

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
 	require_once(__CA_MODELS_DIR__."/ca_item_comments.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ItemCommentSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ItemCommentSearch.php");
  	
  	class CommentsController extends BaseSearchController {
  		# -------------------------------------------------------
@@ -39,7 +39,7 @@
  		/** 
  		 * Number of items per search results page
  		 */
- 		 protected $opa_items_per_page = array(10, 20, 30, 40, 50);
+ 		 protected $opa_items_per_page = [10, 20, 30, 40, 50];
  		 
  		/**
  		 * List of search-result views supported for this find
@@ -66,13 +66,57 @@
  		 */ 
  		public function Index($pa_options=null) {
  			$pa_options['search'] = new ItemCommentSearch();
- 			return parent::Index($pa_options);
+ 			
+ 			$this->view->setVar('table_list', $table_list = caGetPrimaryTablesForHTMLSelect());
+            $filter_table = $this->request->getParameter('filter_table', pInteger);
+            if (!$filter_table && !isset($_REQUEST['filter_table'])) { $filter_table = Session::getVar('comments_filter_table'); }
+            Session::setVar('global_change_log_filter_table', $filter_table);
+            $this->view->setVar('filter_table', $filter_table);
+        
+            $filter_daterange = $this->request->getParameter('filter_daterange', pString);
+            if (!$filter_daterange && !isset($_REQUEST['filter_daterange'])) { $filter_daterange = Session::getVar('comments_filter_daterange'); }
+            Session::setVar('comments_filter_daterange', $filter_daterange);
+            $this->view->setVar('filter_daterange', $filter_daterange);
+        
+            $this->view->setVar('user_list', $user_list = ca_item_comments::getCommentUsersForSelect());
+        
+ 			// rewrite search
+ 			$search_list = [];
+ 			$search = $this->request->getParameter('search', pString); 
+ 			
+ 			$daterange = $this->request->getParameter('filter_daterange', pString);
+ 			if ($daterange && ($daterange !== _t('any time'))) {
+ 			    $search_list[] = 'ca_item_comments.created_on:"'.$daterange.'"';
+ 			}  
+ 			$user_id = $this->request->getParameter('filter_user', pInteger);
+ 			if ($user_id > 0) {
+ 			    $search_list[] = 'ca_item_comments.user_id:'.$user_id;
+ 			}
+ 			$moderation = $this->request->getParameter('filter_moderation', pInteger);
+ 			if (strlen($moderation) && ($moderation >= 0)) {
+ 			    $search_list[] = 'ca_item_comments.moderated_on:'.(($moderation == 1) ? '>0' : '#0');
+ 			}  
+ 		
+ 			if(!$search && (sizeof($search_list) == 0)) {
+ 			    $this->request->setParameter('search', '*');
+ 			} elseif($search) {
+ 			    $this->request->setParameter('search', join(" AND ", array_merge($search_list, [$search])));
+ 			} else {
+ 			    $this->request->setParameter('search', join(" AND ", $search_list));
+ 			}
+ 			
+ 			$this->view->setVar('filter_user_id', $user_id);
+ 			$this->view->setVar('filter_daterange', $daterange);
+ 			$this->view->setVar('filter_search', $search);
+ 			$this->view->setVar('filter_moderation', $moderation);
+ 			
+ 			parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		public function ListUnmoderated() {
  			$t_comments = new ca_item_comments();
  			$this->view->setVar('t_comments', $t_comments);
- 			$this->view->setVar('comments_list', $t_comments->getUnmoderatedComments());
+ 			$this->view->setVar('comments_list', $t_comments->getUnmoderatedComments(['returnAs' => 'searchResult']));
  			if(sizeof($t_comments->getUnmoderatedComments()) == 0){
  				$this->notification->addNotification(_t("There are no unmoderated comments"), __NOTIFICATION_TYPE_INFO__);
  			}
@@ -190,8 +234,6 @@
  		 * 
  		 */
  		public function Info() {
- 			$o_dm = Datamodel::load();
- 			
  			$t_comments = new ca_item_comments();
  			$this->view->setVar('unmoderated_comment_count', ($t_comments->getUnmoderatedCommentCount()));
  			$this->view->setVar('moderated_comment_count', ($t_comments->getModeratedCommentCount()));
@@ -251,4 +293,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

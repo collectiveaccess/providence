@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
  	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
  
 	class entityJoinerRefinery extends BaseRefinery {
@@ -85,7 +85,7 @@
 			
 				$va_name = array();
 				foreach($t_entity->getLabelUIFields() as $vs_fld) {
-					$va_name[$vs_fld] = BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_'.$vs_fld], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
+					$va_name[$vs_fld] = BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_'.$vs_fld], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true));
 				};
 		
 				if(isset($va_name[$vs_terminal])) {
@@ -103,11 +103,11 @@
 				if (
 					($vs_rel_type_opt = $pa_item['settings']['entityJoiner_relationshipType'])
 				) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true));
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && ($vs_rel_type_opt = $pa_item['settings']['entityJoiner_relationshipTypeDefault'])) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true));
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
@@ -118,11 +118,11 @@
 				if (
 					($vs_type_opt = $pa_item['settings']['entityJoiner_entityType'])
 				) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true));
 				}
 				
 				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['entityJoiner_entityTypeDefault'])) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true));
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
@@ -139,41 +139,54 @@
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 
-				caProcessRefineryRelatedMultiple($this, $pa_item, $pa_source_data, $vn_c, $o_log, caGetOption('reader', $pa_options, null), $va_val, $va_vals);
+				caProcessRefineryRelatedMultiple($this, $pa_item, $pa_source_data, $vn_c, $o_log, caGetOption('reader', $pa_options, null), $va_val, $va_vals, $pa_options);
+				
+				if(isset($pa_item['settings']['entityJoiner_nonpreferred_labels']) && !isset($pa_item['settings']['entityJoiner_nonPreferredLabels'])) {
+					$pa_item['settings']['entityJoiner_nonPreferredLabels'] = $pa_item['settings']['entityJoiner_nonpreferred_labels'];
+				}
 				
 				// nonpreferred labels
-				if (is_array($pa_item['settings']['entityJoiner_nonpreferred_labels'])) {
-					$va_non_preferred_labels = array();
-					foreach($pa_item['settings']['entityJoiner_nonpreferred_labels'] as $vn_index => $va_elements) {
+				$va_non_preferred_labels = array();
+				if (is_array($pa_item['settings']['entityJoiner_nonPreferredLabels'])) {
+					foreach($pa_item['settings']['entityJoiner_nonPreferredLabels'] as $vn_index => $va_elements) {
 						if(is_array($va_elements)) {
 							$vb_non_pref_label_was_set = false;
 							foreach($va_elements as $vs_k => $vs_v) {
 								if (!trim($vs_v)) { continue; }
 								if ($vs_k == 'split') {
 									if (!is_array($va_non_preferred_labels[$vn_index] )) { $va_non_preferred_labels[$vn_index]  = array(); }
-									if ($vs_name = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '))) {
+									if ($vs_name = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) {
 										$va_non_preferred_labels[$vn_index] = array_merge($va_non_preferred_labels[$vn_index], DataMigrationUtils::splitEntityName($vs_name));
 										$vb_non_pref_label_was_set = true;
 									}
 								} else {
-									if ($va_non_preferred_labels[$vn_index][$vs_k] = trim(BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) {
+									if ($va_non_preferred_labels[$vn_index][$vs_k] = trim(BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) {
 										$vb_non_pref_label_was_set = true;
 									}
 								}
+							}
+						} elseif(strlen(trim($va_elements))) {
+							if ($va_non_preferred_labels[$vn_index]['displayname'] = trim(BaseRefinery::parsePlaceholder($va_elements, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) {
+								$vb_non_pref_label_was_set = true;
 							}
 						}
 						if (!$vb_non_pref_label_was_set) { unset($va_non_preferred_labels[$vn_index]); }
 					}
 					
-					if (sizeof($va_non_preferred_labels)) {
-						$va_val['nonpreferred_labels'] = $va_non_preferred_labels;
+				} elseif(strlen(trim($pa_item['settings']['entityJoiner_nonPreferredLabels']))) {
+					if ($va_non_preferred_labels[0] = DataMigrationUtils::splitEntityName(trim(BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_nonPreferredLabels'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))))) {
+						$vb_non_pref_label_was_set = true;
 					}
+				}
+			
+				if (sizeof($va_non_preferred_labels)) {
+					$va_val['nonpreferred_labels'] = $va_non_preferred_labels;
 				}
 				
 				$va_vals[] = $va_val;
 				$vn_c++;
 			}
-			
+		
 			return $va_vals;
 		}
 		# -------------------------------------------------------	
@@ -306,7 +319,7 @@
 				'label' => _t('Skip if value'),
 				'description' => _t('Skip if imported value is in the specified list of values.')
 			),
-			'entityJoiner_nonpreferred_labels' => array(
+			'entityJoiner_nonPreferredLabels' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,

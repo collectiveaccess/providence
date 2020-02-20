@@ -25,9 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+ 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  	require_once(__CA_MODELS_DIR__."/ca_watch_list.php");
+	require_once(__CA_MODELS_DIR__.'/ca_sets.php');
  	
  	class WatchedItemsController extends ActionController {
  		# -------------------------------------------------------
@@ -41,7 +42,7 @@
  			$t_watch_list = new ca_watch_list();
 			$va_watched_items = $t_watch_list->getWatchedItems($this->request->user->get("user_id"));
 			$this->view->setVar("watched_items", $va_watched_items);
- 			if(sizeof($va_watched_items) == 0){
+ 			if(sizeof($va_watched_items) == 0) {
  				$this->notification->addNotification(_t("There are no watched items"), __NOTIFICATION_TYPE_INFO__);
  			}
  			$this->render('watched_items_list_html.php');
@@ -85,8 +86,50 @@
  		 * 
  		 */
  		public function Info() {
+			$this->getView()->setVar('t_watch_list', new ca_watch_list());
  			return $this->render('widget_watched_items_info_html.php', true);
  		}
  		# -------------------------------------------------------
+		public function CreateSet() {
+			global $g_ui_locale_id;
+
+			$ps_table = $this->getRequest()->getParameter('set_table', pString);
+			if(!($t_instance = Datamodel::getInstance($ps_table, true))) {
+				$this->opo_notification_manager->addNotification(_t("Invalid table"), __NOTIFICATION_TYPE_ERROR__);
+				$this->ListItems();
+				return;
+			}
+
+			$ps_set_name = $this->getRequest()->getParameter('set_name', pString);
+			$t_watch_list = new ca_watch_list();
+			$va_items = $t_watch_list->getWatchedItems($this->getRequest()->getUserID(), $t_instance->tableNum());
+
+			$va_row_ids = [];
+			foreach($va_items as $va_item) {
+				$va_row_ids[] = $va_item['row_id'];
+			}
+
+			$t_set = new ca_sets();
+			$t_set->setMode(ACCESS_WRITE);
+			$t_set->set('type_id', $this->getRequest()->getAppConfig()->get('ca_sets_default_type'));
+			$t_set->set('user_id', $this->getRequest()->getUserID());
+			$t_set->set('table_num', $t_instance->tableNum());
+			$t_set->set('set_code', $vs_set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $ps_set_name), 0, 100));
+
+			$t_set->insert();
+
+			if ($t_set->numErrors()) {
+				$this->opo_notification_manager->addNotification(join(': ', $t_set->getErrors()), __NOTIFICATION_TYPE_ERROR__);
+				$this->ListItems();
+				return;
+			}
+
+			$t_set->addLabel(array('name' => $ps_set_name), $g_ui_locale_id, null, true);
+
+			$vn_added_items_count = $t_set->addItems($va_row_ids);
+
+			$this->opo_notification_manager->addNotification(_t("Added set '%1' with %2 items", $ps_set_name, $vn_added_items_count), __NOTIFICATION_TYPE_INFO__);
+			$this->ListItems();
+		}
+		# -------------------------------------------------------
  	}
- ?>

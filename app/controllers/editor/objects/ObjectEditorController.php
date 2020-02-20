@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,10 @@
 require_once(__CA_MODELS_DIR__."/ca_objects.php"); 
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
-require_once(__CA_LIB_DIR__."/core/Media.php");
-require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
-require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
-require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
+require_once(__CA_LIB_DIR__."/Media.php");
+require_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
+require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+require_once(__CA_LIB_DIR__."/MediaContentLocationIndexer.php");
 
 
 class ObjectEditorController extends BaseEditorController {
@@ -52,7 +52,10 @@ class ObjectEditorController extends BaseEditorController {
 			
 			if ($t_lot->getPrimaryKey()) {
 				$va_values['lot_id'] = $vn_lot_id;
-				$va_values['idno'] = $t_lot->get('idno_stub');
+				
+				if (!$this->request->getAppConfig()->get('ca_objects_dont_inherit_idno_from_lot')) {
+					$va_values['idno'] = $t_lot->get('idno_stub');
+				}
 			}
 		}
 		

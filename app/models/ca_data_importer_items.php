@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,10 +34,10 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
-require_once(__CA_LIB_DIR__."/ca/Import/RefineryManager.php");
+require_once(__CA_LIB_DIR__."/Import/RefineryManager.php");
 
 define("__CA_DATA_IMPORTER_DESTINATION_INTRINSIC__", 0);
 define("__CA_DATA_IMPORTER_DESTINATION_ATTRIBUTE__", 1);
@@ -222,6 +222,19 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Replacement values'),
 			'description' => _t('Return-separated list of CollectiveAccess list item idnos that correspond to the mapped values from the original data source.  For example sound recording (entered in the Original values column) maps to audio_digital, which is entered here in the Replacement values column.')
 		);
+		$va_settings['filterEmptyValues'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Filter empty values'),
+			'description' => _t('Remove empty values from values before attempting to import.')
+		);
 		$va_settings['skipIfEmpty'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -342,6 +355,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip row if expression'),
 			'description' => _t('Skip the row if value for the expression is true.')
 		);
+		$va_settings['skipIfDataPresent'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if data already present'),
+			'description' => _t('Skip row if data is already present in CollectiveAccess.')
+		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -365,18 +387,37 @@ class ca_data_importer_items extends BaseModel {
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
+			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Restrict to types'),
 			'description' => _t('Restricts the the mapping to only records of the designated type.  For example the Duration field is only applicable to objects of the type moving_image and not photograph.')
 		);
-		$va_settings['restrictToRelationshipTypes'] = array(
+		$va_settings['filterToTypes'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
 			'default' => '',
-			'label' => _t('Restrict to relationship types'),
-			'description' => _t('Restricts the mapping to pull only records related with the designated relatonship types from the source. This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
+			'label' => _t('Filter to types'),
+			'description' => _t('Restricts the mapping to pull only records related with the designated types from the source. This option is only supported by sources that have a notion of related data and types, most notably (and for now only) the CollectiveAccessDataReader.')
+		);
+		$va_settings['filterToRelationshipTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Filter to relationship types'),
+			'description' => _t('Restricts the mapping to pull only records related with the designated relationship types from the source. This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
+		);
+		$va_settings['hierarchicalDelimiter'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Hierarchical delimiter for input data'),
+			'description' => _t('This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
 		);
 		$va_settings['prefix'] = array(
 			'formatType' => FT_TEXT,
@@ -454,6 +495,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Convert newlines to HTML'),
 			'description' => _t('Convert newline characters in text to HTML &lt;BR/&gt; tags.')
 		);
+		$va_settings['collapseSpaces'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Collapse multiple spaces'),
+			'description' => _t('Convert multiple spaces to a single space.')
+		);
 		$va_settings['useAsSingleValue'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -522,11 +572,10 @@ class ca_data_importer_items extends BaseModel {
 	}
 	# ------------------------------------------------------
 	public function getDestinationType() {
-		$vo_dm = Datamodel::load();
 		$vs_destination = $this->get("destination");
 		
 		$t_importer = new ca_data_importers($this->get("importer_id"));
-		$t_instance = $vo_dm->getInstanceByTableNum($t_importer->get("table_num"));
+		$t_instance = Datamodel::getInstanceByTableNum($t_importer->get("table_num"));
 		
 		$va_split = explode(".",$vs_destination);
 		

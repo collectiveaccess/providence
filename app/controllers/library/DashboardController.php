@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,9 +27,9 @@
  */
 
  	require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
-	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectCheckoutSearch.php');
+	require_once(__CA_LIB_DIR__.'/Search/ObjectCheckoutSearch.php');
  	require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
-	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
+	require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
  	class DashboardController extends ActionController {
  		# -------------------------------------------------------
@@ -77,7 +77,7 @@
 				foreach($va_stats[$vs_stat_key] as $va_user) {
 					$va_user_list[] = "<a href='#' class='caLibraryUserLink' data-user_id='".$va_user['user_id']."'>".trim($va_user['fname'].' '.$va_user['lname'])."</a>"; //.($va_user['email'] ? ' ('.$va_user['email'].')' : '');
 					$vn_c++;
-					if ($vn_c >= 10) {
+					if ($vn_c >= 100) {
 						$va_user_list[] = _t(' and %1 more', sizeof($va_stats[$vs_stat_key]) - $vn_c);
 						break;
 					}
@@ -122,10 +122,16 @@
 				$qr_objects = caMakeSearchResult('ca_objects', $va_object_ids);
 				while($qr_objects->nextHit()) {
 					foreach($va_group_bys as $vn_i => $vs_group_by) {
-						if (is_array($va_vals = $qr_objects->get($vs_group_by, array('returnAsArray' => true, 'convertCodesToDisplayText' => true)))) {
-							if (!sizeof($va_vals)) { $va_count['?']++; break; }
-							foreach($va_vals as $vn_attr_id => $va_val) {
-								$va_counts[$va_val[$va_group_by_elements[$vn_i]]]++;
+						if (is_array($va_attrs = $qr_objects->get($vs_group_by, array( 'returnWithStructure' => true, 'convertCodesToDisplayText' => true)))) {
+							if (!sizeof($va_attrs)) { $va_count['?']++; break; }
+							foreach($va_attrs as $vn_attr_id => $va_vals) {
+							    if(is_array($va_vals)) {
+                                    foreach($va_vals as $vn_val_id => $va_val) {
+                                        $va_counts[$va_val[$va_group_by_elements[$vn_i]]]++;
+                                    }
+                                } else {
+                                    $va_counts[$va_vals]++;
+                                }
 							}
 							
 							break;
@@ -156,7 +162,7 @@
  				$vs_item_display_template = "<unit relativeTo=\"ca_objects\"><l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)</unit>";
  			
 				// Get checkouts 
-				$this->view->setVar('checkouts', ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
+				$this->view->setVar('checkouts', ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange, ['omitOverdue' => true]));
 			
 				// Get checkins 
 				$this->view->setVar('checkins', ca_object_checkouts::getCheckinsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));

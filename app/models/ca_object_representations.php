@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,8 +33,8 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotation_labels.php");
@@ -42,6 +42,7 @@ require_once(__CA_MODELS_DIR__."/ca_user_representation_annotations.php");
 require_once(__CA_MODELS_DIR__."/ca_user_representation_annotation_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_captions.php");
+require_once(__CA_MODELS_DIR__."/ca_representation_transcriptions.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 
@@ -157,6 +158,13 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'LABEL' => _t('Original MIME type'), 'DESCRIPTION' => _t('The MIME type of the media at the time of upload.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'is_transcribable' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Transcribe?'), 'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
+		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -223,6 +231,39 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+		),
+		'submission_user_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this object')
+		),
+		'submission_group_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted for group'), 'DESCRIPTION' => _t('Group this object was submitted under')
+		),
+		'submission_status_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'submission_statuses',
+			'LABEL' => _t('Submission status'), 'DESCRIPTION' => _t('Indicates submission status of the object.')
+		),
+		'submission_via_form' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Submission via form'), 'DESCRIPTION' => _t('Indicates what contribute form was used to create the submission.')
 		)
  	)
 );
@@ -395,6 +436,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lot'));
 		
+		$this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
+		$this->BUNDLES['ca_item_comments'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Comments'));
+		
+		$this->BUNDLES['ca_representation_transcriptions'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Transcriptions'));
+		
 		$this->BUNDLES['ca_object_representations_media_display'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media and preview images'));
 		$this->BUNDLES['ca_object_representation_captions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Captions/subtitles'));
 		
@@ -421,15 +467,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
-			$vn_rc = parent::update();
-
-			// Trigger automatic replication
-			$va_auto_targets = $this->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $this->get('access')));
-			if(is_array($va_auto_targets)) {
-				foreach($va_auto_targets as $vs_target => $va_target_info) {
-					$this->replicateMedia('media', $vs_target);
-				}
-			}
+			$vn_rc = parent::update($pa_options);
 
 		}
 		
@@ -454,6 +492,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$vn_rc = parent::update($pa_options);
 		}
 		
+		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
+		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFTileCounts');
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -480,7 +520,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					WHERE
 						oxor.representation_id = ? AND oxor.is_primary = 1 AND o_r.deleted = 0
 					ORDER BY
-						oxor.rank, oxor.relation_id
+						oxor.`rank`, oxor.relation_id
 				", (int)$vn_representation_id);
 				while($qr_res->nextRow()) {
 					// nope - force this one to be primary
@@ -503,6 +543,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			}
 		}
 
+		CompositeCache::delete('representation:'.$vn_representation_id, 'IIIFMediaInfo');
+		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFTileCounts');
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
@@ -532,6 +574,17 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		return true;
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Check if representation media is a binary stream accepted by the BinaryFile plugin. No format-specific
+	 * metadata is available for binary files limiting display choices. Use this method to determine if such metadata can be expected to 
+	 * be available.
+	 *
+	 * @return bool
+	 */
+	public function mediaIsBinary() {
+		return ($this->getMediaInfo('media', 'INPUT', 'MIMETYPE') == 'application/octet-stream') ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
@@ -698,6 +751,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$va_rep_props = $this->getMediaInfo('media', 'original');
  		$vn_timecode_offset = isset($va_rep_props['PROPERTIES']['timecode_offset']) ? (float)$va_rep_props['PROPERTIES']['timecode_offset'] : 0;
  		
+ 		$va_annotation_ids = [];
  		while($qr_annotations->nextRow()) {
  			$va_tmp = $qr_annotations->getRow();
  			$va_annotation_ids[] = $va_tmp['annotation_id'];
@@ -840,7 +894,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
-		if (!$ps_title) { $ps_title = "[BLANK]"; }
+		if (!$ps_title) { $ps_title = '['.caGetBlankLabelText().']'; }
 		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
 		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
@@ -1062,7 +1116,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$va_inital_values = array();
 		if (sizeof($va_items = $this->getAnnotations())) {
-			$t_rel = $this->getAppDatamodel()->getInstanceByTableName("{$vs_annotation_table}", true);
+			$t_rel = Datamodel::getInstanceByTableName("{$vs_annotation_table}", true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
 				if (!($vs_label = $va_item['label'])) { $vs_label = ''; }
@@ -1857,7 +1911,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	}
 	# ------------------------------------------------------
 	/** 
-	 * Check it a file already exists in the database as a representation
+	 * Check if a file already exists in the database as a representation
 	 *
 	 * @param string $ps_filepath The full path to the file
 	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist
@@ -1871,6 +1925,441 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		return false;
+	}	
+	# ------------------------------------------------------
+	/**
+	 * Returns number of representations attached to the current item of the specified class. 
+	 * Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param string $ps_class The class of representation to return a count for. Valid classes are "image", "audio", "video" and "document"
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return int Number of representations
+	 */
+	public function numberOfRepresentationsOfClass($ps_class, $pa_options=null) {
+		$reps = $this->representationsOfClass($ps_class, $pa_options);
+		return is_array($reps) ? sizeof($reps) : 0;
 	}
+	# ------------------------------------------------------
+	/**
+	 * Returns number of representations attached to the current item with the specified mimetype. 
+	 * Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param string $ps_mimetype The mimetype to return a count for. 
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return int Number of representations
+	 */
+	public function numberOfRepresentationsWithMimeType($ps_mimetype, $pa_options=null) {
+		return sizeof($this->representationsWithMimeType($ps_mimetype, $pa_options));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns information for representations of the specified class attached to the current item. 
+	 * Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param string $ps_class The class of representation to return information for. Valid classes are "image", "audio", "video" and "document"
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return array An array of representation_ids, or null if there is no match
+	 */
+	public function representationsOfClass($ps_class, $pa_options=null) {
+		if (!($vs_mimetypes_regex = caGetMimetypesForClass($ps_class, array('returnAsRegex' => true)))) { return array(); }
+	
+		$vs_mimetype = $this->getMediaInfo('media', 'MIMETYPE');
+		if (preg_match("!{$vs_mimetypes_regex}!", $vs_mimetype)) {	
+			return [$this->getPrimaryKey()];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns information for representations attached to the current item with the specified mimetype. 
+	 * Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param array $pa_mimetypes List of mimetypes to return representations for. 
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return array An array of representation_ids, or null if there is no match
+	 */
+	public function representationsWithMimeType($pa_mimetypes, $pa_options=null) {
+		if (!$pa_mimetypes) { return array(); }
+		if (!is_array($pa_mimetypes) && $pa_mimetypes) { $pa_mimetypes = array($pa_mimetypes); }
+		
+		$vs_mimetype = $this->getMediaInfo('media', 'MIMETYPE');
+		if (in_array($vs_mimetype, $pa_mimetypes)) {	
+			return [$this->getPrimaryKey()];
+		}
+
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns information for representation attached to the current item with the specified MD5 hash. 
+	 # Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param string $ps_md5 The MD5 hash to return representation info for. 
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return array An array of representation_ids, or null if there is no match
+	 */
+	public function representationWithMD5($ps_md5, $pa_options=null) {
+		$va_rep_list = array();
+		
+		if ($this->get('md5') == $ps_md5) {
+			return [$this->getPrimaryKey];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns number of representations (always 1). Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param array $pa_options No options are currently supported
+	 *
+	 * @return integer The number of representations
+	 */
+	public function getRepresentationCount($pa_options=null) {
+		return 1;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set transcription on currently loaded representation. If an existing transcription
+	 * record (ca_representation_transcriptions) exists for the representation by the current
+	 * user (as identified by the user_id option) or client IP address it will be updated,
+	 * otherwise a new transcription record will be created.
+	 *
+	 * @param string $transcription
+	 * @param bool $complete Indicates the transcription should be marked as complete. Once marked, it can only be unmarked by setting the uncomplete option. 
+	 * @param array $options Options include:
+	 *		user_id = Marks transcription with specified user_id. The user_id will also be used to determine if a transcription for the current user already exists. If null, only client IP address will be used to find existing transcriptions. [Default is null]
+	 *		uncomplete = Force the completed on flag for the transcription to be unset. [Default is false]
+	 *
+	 * @return ca_representation_transcriptions instance of transcript, null if no representation is loaded or false if there was an error.
+	 */
+	public function setTranscription($transcription, $complete=false, $options=null) {
+		if (!($rep_id = $this->getPrimaryKey())) { return null; }
+		
+		// Try to find transcript by IP address
+		$ip = RequestHTTP::ip();
+		
+		// Try to find transcript by user
+		$user_id = caGetOption('user_id', $options, null);
+		
+		if (!($transcript = $this->getTranscription($options))) {
+			$transcript = new ca_representation_transcriptions();
+		}
+		
+		$transcript->set('representation_id', $rep_id);
+		$transcript->set('transcription', $transcription);
+		
+		if (caGetOption('uncomplete', $options, false)) {
+			$transcript->set('completed_on', null);
+		} elseif ($complete) {
+			$transcript->set('completed_on', _t('now'));	
+		}
+		if ($user_id) {
+			$transcript->set('user_id', $user_id);
+		}
+		$transcript->set('ip_addr', $ip);
+		$transcript->isLoaded() ? $transcript->update() : $transcript->insert();
+		
+		if($transcript->numErrors()) {
+			$this->errors = $transcript->errors;
+			return false;
+		}
+		return $transcript;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return transcript for current user. Existing transcriptions for the representation are
+	 * located by user_id (if provided) or IP address (if no user_id match is available)
+	 *
+	 * @param array $options Options include:
+	 *		user_id = Finds transcription with specified user_id. The user_id will also be used to determine if a transcription for the current user already exists. If null, only client IP address will be used to find existing transcriptions. [Default is null]
+	 *
+	 * @return ca_representation_transcriptions instance of transcript, null if no representation is loaded or a transcript could not be located.
+	 */
+	public function getTranscription($options=null) {
+		if (!($rep_id = $this->getPrimaryKey())) { return null; }
+		
+		// Try to find transcript by IP address
+		$ip = RequestHTTP::ip();
+		
+		// Try to find transcript by user
+		$user_id = caGetOption('user_id', $options, null);
+		
+		if (
+			!($user_id && ($transcript = ca_representation_transcriptions::find(['representation_id' => $rep_id, 'user_id' => $user_id], ['returnAs' => 'firstModelInstance'])))
+			&&
+			!($transcript = ca_representation_transcriptions::find(['representation_id' => $rep_id, 'ip_addr' => $ip], ['returnAs' => 'firstModelInstance']))
+		) {
+			$transcript = null;
+		}
+		return $transcript;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Permanently deletes the transcription specified by $transcription_id. Will only delete transcriptions attached to the
+	 * currently loaded row. If you attempt to delete a transcription_id not attached to the current row removeTranscription()
+	 * will return false and post an error. If you attempt to call removeTranscription() with no row loaded null will be returned.
+	 * If the user_id option is specified only transcriptions created by the specified user will be deleted; if the transcription being
+	 * deleted is not created by the user then false is returned and an error posted.
+	 *
+	 * @param $transcription_id [integer] a valid transcription to be removed; must be related to the currently loaded row (mandatory)
+	 * @param $options Options include:
+	 *        	force = Remove transcription even if it's not part of the current representation or created by the specified user. [Default is false]
+	 *			user_id = a valid ca_users.user_id value; if specified then only transcriptions by the specified user will be deleted (optional - default is null)
+	 *
+	 * @return bool
+	 */
+	public function removeTranscription($transcription_id, $options=null) {
+	    $force = caGetOption('force', $options, false);
+		if (!($rep_id = $this->getPrimaryKey()) && !$force) { return null; }
+		
+		$user_id = caGetOption('user_id', $options, null);
+		$transcription = new ca_representation_transcriptions($transcription_id);
+		if (!$transcription->getPrimaryKey()) {
+			$this->postError(2800, _t('Transcription id is invalid'), 'ca_object_representations->removeTranscription()', 'ca_representation_transcriptions');
+			return false;
+		}
+		
+		if (!$force) {
+            if ($transcription->get('representation_id') != $rep_id) {
+                $this->postError(2810, _t('Transcription is not part of representation'), 'ca_object_representations->removeTranscription()', 'ca_representation_transcriptions');
+                return false;
+            }
+        
+            if ($user_id) {
+                if ($transcription->get('user_id') != $user_id) {
+                    $this->postError(2820, _t('Transcription was not created by specified user'), 'ca_object_representations->removeTranscription()', 'ca_representation_transcriptions');
+                    return false;
+                }
+            }
+        }
+		
+		$transcription->delete();
+		
+		if ($transcription->numErrors()) {
+			$this->errors = $transcription->errors;
+			return false;
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Removes all comments associated with the currently loaded row. Will return null if no row is currently loaded.
+	 * If the optional $ps_user_id parameter is passed then only comments created by the specified user will be removed.
+	 *
+	 * @param $pn_user_id [integer] A valid ca_users.user_id value. If specified, only comments by the specified user will be removed. (optional - default is null)
+	 */
+	public function removeAllTranscriptions($options=null) {
+		if (!($rep_id = $this->getPrimaryKey())) { return null; }
+		
+		$transcriptions = $this->getTranscriptions(null, $options);
+		
+		foreach($transcriptions as $transcription) {
+			if (!$this->removeTranscription($transcription['transcription_id'], $options)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Returns all transcriptions associated with the currently loaded row. Will return null if not row is currently loaded.
+	 * If the optional $moderation_status parameter is passed then only transcriptions matching the criteria will be returned:
+	 *		Passing $moderation_status = TRUE will cause only validted transcriptions to be returned
+	 *		Passing $moderation_status = FALSE will cause only unvalidated transcriptions to be returned
+	 *		If you want both validated and unvalidated transcriptions to be returned then omit the parameter or pass a null value
+	 *
+	 * @param bool $moderation_status 
+	 * @param array $options Options include:
+     * 	    transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+     *		returnAs = what to return; possible values are:
+     *          array                   = an array of comments
+     *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined)
+     *			ids						= an array of ids (aka. primary keys)
+     *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel
+     *			firstId					= the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
+     *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
+     *			count					= the number of matches
+     *
+     *			The default is array
+     *      request = the current request (optional)
+     *		user_id  = A valid ca_users.user_id value. If specified, only transcriptions by the specified user will be returned. (optional - default is null)
+     *
+     * @return array
+     */
+	public function getTranscriptions($moderation_status=null, $options=null) {
+		if (!($rep_id = $this->getPrimaryKey())) { return null; }
+
+        $o_request = caGetOption('request', $options, null);
+        $o_trans = caGetOption('transaction', $options, null);
+        $return_as = caGetOption('returnAs', $options, 'array');
+
+		$o_db = $o_trans ? $o_trans->getDb() : $this->getDb();
+		
+		$user_id = caGetOption('user_id', $options, null);
+		
+		$user_sql = ($user_id) ? ' AND (c.user_id = '.intval($user_id).')' : '';
+		
+		$moderation_sql = '';
+		if (!is_null($moderation_status)) {
+			$moderation_sql = ($moderation_status) ? ' AND (t.validated_on IS NOT NULL)' : ' AND (t.validated_on IS NULL)';
+		}
+		
+		$qr = $o_db->query("
+			SELECT 
+			    t.transcription_id, t.transcription, t.created_on, t.completed_on, t.validated_on, t.user_id, t.ip_addr,
+			    u.fname, u.lname, u.email user_email
+			FROM ca_representation_transcriptions t
+			LEFT JOIN ca_users AS u ON t.user_id = u.user_id
+			WHERE
+				(t.representation_id = ?) 
+				
+				{$user_sql} {$moderation_sql}
+		", [$rep_id]);
+		
+		
+        switch($return_as) {
+            case 'count':
+                return $qr->numRows();
+                break;
+            case 'ids':
+            case 'firstId':
+            case 'searchResult':
+            case 'modelInstances':
+            case 'firstModelInstance':
+                $ids = $qr->getAllFieldValues('transcription_id');
+                if ($return_as === 'ids') { return $ids; }
+                if ($return_as === 'firstId') { return array_shift($ids); }
+                if (($return_as === 'modelInstances') || ($return_as === 'firstModelInstance')) {
+                    $acc = array();
+                    foreach($ids as $id) {
+                        $t_instance = new ca_representation_transcriptions($id);
+                        if ($return_as === 'firstModelInstance') { return $t_instance; }
+                        $acc[] = $t_instance;
+                    }
+                    return $acc;
+                }
+                return caMakeSearchResult('ca_representation_transcriptions', $ids);
+                break;
+            case 'array':
+            default:
+                $transcriptions = [];
+                while ($qr->nextRow()) {
+                    $transcription_id = $qr->get("transcription_id");
+                    $transcriptions[$transcription_id] = $qr->getRow();
+                    $transcriptions[$transcription_id]['created_on_display'] = caGetLocalizedDate($transcriptions[$transcription_id]['created_on']);
+                    $transcriptions[$transcription_id]['completed_on_display'] = caGetLocalizedDate($transcriptions[$transcription_id]['completed_on']);
+                    $transcriptions[$transcription_id]['transcription_duration'] = ($transcriptions[$transcription_id]['completed_on'] > 0) && (($transcriptions[$transcription_id]['completed_on'] - $transcriptions[$transcription_id]['created_on'] > 0)) ? caFormatInterval($transcriptions[$transcription_id]['completed_on'] - $transcriptions[$transcription_id]['created_on']) : '';
+                    $transcriptions[$transcription_id]['validated_on_display'] = caGetLocalizedDate($transcriptions[$transcription_id]['validated_on']);
+					
+					if ($transcriptions[$transcription_id]['user_id']) {
+						$transcriptions[$transcription_id]['name'] = trim($transcriptions[$transcription_id]['fname'].' '.$transcriptions[$transcription_id]['lname']);
+						$transcriptions[$transcription_id]['email'] =  $transcriptions[$transcription_id]['user_email'];
+						$transcriptions[$transcription_id]['transcriber'] = $transcriptions[$transcription_id]['fname']." ".transcriptions[$transcription_id]['lname']." (".$transcriptions[$transcription_id]['email'].")";
+					} else {
+						$transcriptions[$transcription_id]['transcriber'] = _t('user at %1', $transcriptions[$transcription_id]['ip_addr']);
+					}
+					$transcriptions[$transcription_id]['status_message'] = _t('Created %1 by %2', $transcriptions[$transcription_id]['created_on_display'], $transcriptions[$transcription_id]['transcriber']);
+					if ($transcriptions[$transcription_id]['completed_on'] > 0) {
+						$transcriptions[$transcription_id]['status_message'] .= ($transcriptions[$transcription_id]['transcription_duration']) ? "<br/>"._t('Completed on %1 (%2)',  $transcriptions[$transcription_id]['completed_on_display'], $transcriptions[$transcription_id]['transcription_duration']) : "<br>\n"._t('Completed on %1',  $transcriptions[$transcription_id]['completed_on_display']);
+					}
+					if ($transcriptions[$transcription_id]['validated_on'] > 0) {
+						$transcriptions[$transcription_id]['status_message'] .= "; "._t('validated on %1', $transcriptions[$transcription_id]['validated_on_display']);
+					}
+                }
+                break;
+        }
+        
+        $transcriptions = array_map(function($v) { $v['moderation_message'] = $v['validated_on'] ? '' : _t('Needs moderation'); return $v; }, $transcriptions);
+        ksort($transcriptions);
+        
+		if (caGetOption('sortDirection', $options, 'ASC', ['validValues' => ['ASC', 'DESC'], 'forceToUppercase' => true]) === 'DESC') {
+		    $transcriptions = array_reverse($transcriptions);
+		}
+		return $transcriptions;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Check if the currently loaded representation has a completed transcription by any user.
+	 * If the currentUser option is set then only transcriptions by the current user (as specified by the 
+	 * user_id option and/or the client IP address) are considered.
+	 *
+	 * @param array $options Options include:
+	 *		currentUser = Only consider transcriptions by the current user by user_id (if specified) and/or client IP address. [Default is false]
+	 *		user_id = Finds transcription with specified user_id. The user_id will also be used to determine if a transcription for the current user already exists. If null, only client IP address will be used to find existing transcriptions. [Default is null]
+	 * 
+	 * @return bool
+	 */
+	public function transcriptionIsComplete(array $options=null) {
+		if (!($rep_id = $this->getPrimaryKey())) { return null; }
+		$current_user_only = caGetOption('currentUser', $options, false);
+		
+		if($current_user_only) {
+			if ($transcript = $this->getTranscription($options)) {
+				return $transcript->isCompleted();
+			}
+		} else {
+			$ip = RequestHTTP::ip();
+			return ca_representation_transcriptions::find(['representation_id' => $rep_id, 'completed_on' => ['>', 0]], ['returnAs' => 'firstModelInstance']) ? true : false;
+		}
+		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of user transcriptions in the currently loaded record
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getTranscriptionHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_subject', $this);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
+		$o_view->setVar('request', $po_request);
+		$o_view->setVar('batch', caGetOption('batch', $pa_options, false));
+		
+		$initial_values = [];
+		foreach($this->getTranscriptions() as $v) {
+			$initial_values[$v['transcription_id']] = $v;
+		}
+		
+		$o_view->setVar('initialValues', $initial_values);
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		
+		return $o_view->render('ca_representation_transcriptions.php');
+	}
+	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function numTranscriptions($representation_id=null) { 		
+ 		if(!($vn_representation_id = $representation_id)) { 
+ 			if (!($vn_representation_id = $this->getPrimaryKey())) {
+ 				return null; 
+ 			}
+ 		}
+ 		
+ 		$o_db= $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT count(*) c
+ 			FROM ca_representation_transcriptions
+ 			WHERE
+ 				representation_id = ?
+ 		", (int)$vn_representation_id);
+ 		
+ 		if($qr_res->nextRow()) {
+ 			return intval($qr_res->get('c'));
+ 		}
+ 		return 0;
+ 	}
 	# ------------------------------------------------------
 }

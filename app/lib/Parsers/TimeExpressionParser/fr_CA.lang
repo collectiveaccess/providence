@@ -1,0 +1,134 @@
+# *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
+
+# List month names; used whenever name of month needs to be displayed
+monthList = [janvier, février, mars, avril, mai, juin, juillet, août, septembre, octobre, novembre, décembre]
+
+# *** the following list of months is for display and *SHOULD* be capitalized where appropriate
+monthListDisplay = [Janvier, Février, Mars, Avril, Mai, Juin, Juillet, Août, Septembre, Octobre, Novembre, Décembre]
+
+# Hash table mapping acceptable month names to the display names defined in 'monthList'
+# http://fr.wikipedia.org/wiki/Mois
+# code à trois caratères et abreviations courantes
+monthTable = {
+	jan = janvier, janv. = janvier,
+	fév = février, févr. = février,
+	mar = mars, mars = mars,
+	avr = avril, avr. = avril,
+	mai = mai,
+	jun = juin, juin = juin
+	jul = juillet, juill. = juillet,
+	aoû = août, 
+	sep = septembre, sept. = septembre,
+	oct = octobre, oct. = octobre,
+	nov = novembre, nov. = novembre,
+	dec = decembre, dec. = decembre
+}
+
+# List of day names, starting with Sunday
+dayListDisplay = [Dimanche, Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi]
+
+#rangePreConjunctions = [from, between]
+rangePreConjunctions = [depuis, après]
+
+#rangeConjunctions = [to, -, and, .., through]
+# ???
+rangeConjunctions = [to, -, et, .., through]
+
+dateTimeConjunctions = [à,@]
+
+dateDelimiters = [/,-,.]
+timeDelimiters = [:,.]
+
+timeAMMeridian = am
+timePMMeridian = pm
+
+meridianTable = {
+	a.m. = am,
+	p.m. = pm
+}
+
+# ???
+dateCircaIndicator = [circa, c, c., ca, ca.]
+dateProbablyIndicator = [probablement]
+dateUncertaintyIndicator = [~]
+#dateUncertaintyYearIndicator = [y]
+dateUncertaintyYearIndicator = [a]
+#dateUncertaintyDayIndicator = [d]
+dateUncertaintyDayIndicator = [j]
+
+# What to use to indicate a geological date ("millions of years ago")
+dateMYA = [mya]
+
+# What to use to indicate radiocarbon dates ("before present")
+dateBP = [bp]
+
+dateADIndicator = ad
+dateBCIndicator = bc
+ADBCTable = {
+	a.d. = ad,
+	b.c. = bc
+}
+
+#nowDate = [now]
+nowDate = [maintenant]
+#todayDate = [today]
+todayDate = [aujourd'hui]
+#yesterdayDate = [yesterday]
+yesterdayDate = [hier]
+#tomorrowDate = [tomorrow]
+tomorrowDate = [demain]
+undatedDate = [undated, unknown]
+
+#presentDate = [present, ?, ??, ???, ????]
+presentDate = [présent, ?, ??, ???, ????]
+#beforeQualifier = [before]
+earlyQualifier = [early]
+midQualifier = [mid, middle]
+lateQualifier = [late]
+beforeQualifier = [avant]
+#diedQualifier = [d., d, died]
+diedQualifier = [m., m, mort]
+#afterQualifier = [after]
+afterQualifier = [après]
+#bornQualifier = [b., b, born]
+# ??? "né le", "née le"  
+bornQualifier = [n., n, né]
+
+# Text to indicate century (as in "20th century")
+centuryIndicator = [century, jahrhundert, cent]
+
+# Text to indicate decdae (as in "1920s")
+decadeIndicator = [s]
+
+# list of numeric suffixes, starting with the one for zero
+# (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
+#ordinalSuffixes = [th, st, nd, rd]
+# ??? à revoir
+ordinalSuffixes = [th, er, e, e]
+#ordinalSuffixDefault = th
+ordinalSuffixDefault = e
+
+# in delimited dates (ex. 12/10/2009) is the first number a month or a day?
+# set to "0" for European style dates (day comes first); "1" for American-style dates (month comes first)
+#monthComesFirstInDelimitedDate = 1
+monthComesFirstInDelimitedDate = 0
+
+# character(s) to append to day in full (not delimited) date
+# eg. in the date "1. February 2009", "." is the daySuffix
+# Note: you can put arbitrary text here - only punctuation
+daySuffix = 
+
+# Definite articles
+#definiteArticles = [the]
+definiteArticles = [le]
+
+# Indefinite articles
+#indefiniteArticles = [a, an]
+# ??? une 
+indefiniteArticles = [un]
+
+# Seasons
+winterSeason = [winter]
+springSeason = [spring]
+summerSeason = [summer]
+autumnSeason = [autumn, fall]

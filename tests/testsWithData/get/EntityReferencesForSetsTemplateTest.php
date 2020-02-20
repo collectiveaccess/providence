@@ -29,9 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
+require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
 
 class EntityReferencesForSetsTemplateTest extends BaseTestWithData {
 	# -------------------------------------------------------
@@ -40,7 +41,7 @@ class EntityReferencesForSetsTemplateTest extends BaseTestWithData {
 	 */
 	private $opt_set = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -105,7 +106,7 @@ class EntityReferencesForSetsTemplateTest extends BaseTestWithData {
 		// establish everything went ok
 		$this->assertEquals('TEST', $this->opt_set->get('set_code'));
 		// should return primary label
-		$this->assertEquals('Homer J. Simpson', $this->opt_set->get('ca_sets.entity_reference'));
+		$this->assertEquals('Homer J. Simpson', $this->opt_set->get('ca_sets.entity_reference', ['output' => 'text']));
 		$this->assertEquals('Homer J. Simpson', $this->opt_set->getWithTemplate('^ca_sets.entity_reference'));
 	}
 	# -------------------------------------------------------

@@ -86,7 +86,7 @@ $vs_username = $this->getVar('username');
 			<input type="hidden" name="username" value="<?php print $vs_username; ?>"/>
 <?php 	} ?>
 
-			<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_LOGIN__, _t("Submit"),"reset", array('icon_position' => __CA_NAV_BUTTON_ICON_POS_RIGHT__)); ?></div>
+			<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Submit"),"reset", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
 			</form>
 <?php } ?>
 			<?php print caNavLink($this->request, _t("Back to login"), 'loginLink', 'system/auth', 'login', ''); ?>

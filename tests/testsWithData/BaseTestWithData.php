@@ -29,12 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
-require_once(__CA_LIB_DIR__.'/ca/Service/ItemService.php');
-require_once(__CA_LIB_DIR__.'/core/Search/SearchIndexer.php');
+require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
+require_once(__CA_LIB_DIR__.'/Search/SearchIndexer.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 
-abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
+abstract class BaseTestWithData extends TestCase {
 	/**
 	 * @var array list of records we created and their custom 'keys/identifiers' set in the original array
 	 */
@@ -58,7 +59,7 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	/**
 	 * Inserts test data set by implementation
 	 */
-	public function setUp() {
+	protected function setUp() : void {
 		global $g_request;
 		$vo_response = new ResponseHTTP();
 		$g_request = $this->opo_request = new RequestHTTP($vo_response);
@@ -105,11 +106,10 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	/**
 	 * Delete all records we created for this test to avoid side effects with other tests
 	 */
-	public function tearDown() {
+	protected function tearDown() : void {
 		if($this->opb_care_about_side_effects) {
-			$o_dm = Datamodel::load();
 			foreach($this->opa_record_map as $vs_table => &$va_records) {
-				$t_instance = $o_dm->getInstance($vs_table);
+				$t_instance = Datamodel::getInstance($vs_table);
 				// delete in reverse order so that we can properly
 				// catch potential hierarchical relationships
 				rsort($va_records);

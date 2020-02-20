@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,11 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/Db.php');
-	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/Db.php');
+	require_once(__CA_LIB_DIR__.'/Configuration.php');
+	require_once(__CA_LIB_DIR__.'/Datamodel.php');
 	require_once(__CA_MODELS_DIR__."/ca_users.php");
  
 	class recentRegistrationsWidget extends BaseWidget implements IWidget {
@@ -37,7 +37,7 @@
 		private $opo_config;
 		private $opo_datamodel;
 		
-		static $s_widget_settings = array();
+		static $s_widget_settings = [];
 		# -------------------------------------------------------
 		public function __construct($ps_widget_path, $pa_settings) {
 			$this->title = _t('Registrations');
@@ -45,7 +45,6 @@
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recentRegistrations.conf');
-			$this->opo_datamodel = Datamodel::load();
 		}
 		# -------------------------------------------------------
 		/**
@@ -58,12 +57,12 @@
 				$vb_available = false;
 			}
 
-			return array(
+			return [
 				'description' => $this->getDescription(),
-				'errors' => array(),
-				'warnings' => array(),
+				'errors' => [],
+				'warnings' => [],
 				'available' => $vb_available,
-			);
+			];
 		}
 		# -------------------------------------------------------
 		public function renderWidget($ps_widget_id, &$pa_settings) {
@@ -94,11 +93,10 @@
 			
 			$t_user = new ca_users();
 			# --- get public access only users, sort on registration date, desc
-			$va_users_list = $t_user->getUserList(array('sort' => 'registered_on', 'sort_direction' => 'desc', 'userclass' => 1));
+			$va_users_list = $t_user->getUserList(['sort' => 'registered_on', 'sort_direction' => 'desc', 'userclass' => 1]);
 			if(is_array($va_users_list) && sizeof($va_users_list)){
-				$va_filtered_list = array();
+				$va_filtered_list = [];
 				#$va_profile_prefs = $t_user->getValidPreferences('profile');
-				print_r($va_profile_prefs);
 				foreach($va_users_list as $vn_key => $va_user){
 					if(($vn_show_type == 1) && ($va_user["active"])){
 						# --- only show new registrations in need of approval ---- active == null
@@ -107,18 +105,20 @@
 					$va_filtered_list[$vn_key] = $va_user;
 					# --- package the vars for display
 					$va_user_vars = caUnserializeForDatabase($va_user["vars"]);				
-					$va_user_vars_display = array();
-					foreach($va_user_vars["_user_preferences"] as $vs_code => $vs_user_var){
-						if($t_user->isValidPreference($vs_code)){
-							$va_user_vars_display[$vs_code] = $vs_user_var;
-							$va_pref_info = $t_user->getPreferenceInfo($vs_code);
-							if($va_pref_info["choiceList"]){
-								# --- convert stored value to label used in dropdown
-								$vs_user_var = array_search($vs_user_var, $va_pref_info["choiceList"]);
-							}
-							$va_user_vars_display[$vs_code] = $va_pref_info["label"].": ".$vs_user_var;
-						}
-					}
+					$va_user_vars_display = [];
+					if(is_array($va_user_vars["_user_preferences"])) {
+                        foreach($va_user_vars["_user_preferences"] as $vs_code => $vs_user_var){
+                            if($t_user->isValidPreference($vs_code)){
+                                $va_user_vars_display[$vs_code] = $vs_user_var;
+                                $va_pref_info = $t_user->getPreferenceInfo($vs_code);
+                                if($va_pref_info["choiceList"]){
+                                    # --- convert stored value to label used in dropdown
+                                    $vs_user_var = array_search($vs_user_var, $va_pref_info["choiceList"]);
+                                }
+                                $va_user_vars_display[$vs_code] = $va_pref_info["label"].": ".$vs_user_var;
+                            }
+                        }
+                    }
 					$va_filtered_list[$vn_key]["user_preferences"] = $va_user_vars_display;
 				
 				}
@@ -138,11 +138,11 @@
 		 * Add widget user actions
 		 */
 		public function hookGetRoleActionList($pa_role_list) {
-			$pa_role_list['widget_recentRegistrations'] = array(
+			$pa_role_list['widget_recentRegistrations'] = [
 				'label' => _t('Recent registrations widget'),
 				'description' => _t('Actions for recent registrations widget'),
 				'actions' => recentRegistrationsWidget::getRoleActionList()
-			);
+			];
 			return $pa_role_list;
 		}
 		# -------------------------------------------------------
@@ -150,32 +150,32 @@
 		 * Get widget user actions
 		 */
 		static public function getRoleActionList() {
-			return array(
+			return [
 				'can_use_recent_registrations_widget' => array(
 					'label' => _t('Can use recent registrations widget'),
 					'description' => _t('User can use dashboard widget that lists recently created registrations.')
 				)
-			);
+			];
 
 		}
 		# -------------------------------------------------------
 	}
 	
-	 BaseWidget::$s_widget_settings['recentRegistrationsWidget'] = array(
-			'show_moderated_type' => array(
+	 BaseWidget::$s_widget_settings['recentRegistrationsWidget'] = [
+			'show_moderated_type' => [
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 40, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '0',
-				'options' => array(
+				'options' => [
 					_t('Only unmoderated') => '1',
 					_t('All') => "0",
-				),
+				],
 				'label' => _t('Display mode'),
 				'description' => _t('Type of registrations to display')
-			),
-			'display_limit' => array(
+			],
+			'display_limit' => [
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 6, 'height' => 1,
@@ -183,6 +183,5 @@
 				'default' => 10,
 				'label' => _t('Display limit'),
 				'description' => _t('Limits the number of registrations to be listed in the widget.')
-			),
-	);
-?>
+			],
+	];

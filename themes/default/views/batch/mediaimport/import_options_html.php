@@ -35,8 +35,8 @@
  	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
 
 	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
+		caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
 		'',
 		''
 	);
@@ -49,7 +49,7 @@
 
 	<div class="sectionBox">
 <?php
-		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 		print caHTMLHiddenInput('import_target', array('value' => $this->getVar('import_target')));
 ?>
 		<div class='bundleLabel'>
@@ -79,11 +79,11 @@
 			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
 			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
 
-			openDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-			disabledDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__, array('class' => 'disabled')); ?>",
+			openDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+			disabledDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1, array('class' => 'disabled')); ?>",
 
-			folderIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/folder_small.png" border="0" title="Folder" style="margin-right: 7px;"/>',
-			fileIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/file_small.png" border="0" title="File" style="margin-right: 7px;"/>',
+			folderIcon: "<?php print caNavIcon(__CA_NAV_ICON_FOLDER__, 1); ?>",
+			fileIcon: "<?php print caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
 
 			displayFiles: true,
 			allowFileSelection: false,
@@ -96,7 +96,7 @@
 			dragAndDropUploadUrl: "<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
 
 			initItemID: '<?php print addslashes($va_last_settings['importFromDirectory']); ?>',
-			indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+			indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
 			currentSelectionDisplayID: 'browseCurrentSelection',
 
@@ -452,7 +452,7 @@
 	<?php
 		foreach(array('ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections') as $vs_rel_table) {
 			if ($o_config->get("{$vs_rel_table}_disable")) { continue; }
-			if (!($t_rel_table = $t_instance->getAppDatamodel()->getInstanceByTableName($vs_rel_table))) { continue; }
+			if (!($t_rel_table = Datamodel::getInstanceByTableName($vs_rel_table))) { continue; }
 			$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), $vs_rel_table);
 			if (!$t_rel) { continue; }
 	?>

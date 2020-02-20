@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/MetadataImportController.php : 
+ * app/lib/MetadataImportController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2016 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,11 +38,11 @@
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
- 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchMetadataImportProgress.php");
+ 	require_once(__CA_LIB_DIR__."/Datamodel.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
+ 	require_once(__CA_LIB_DIR__."/BatchProcessor.php");
+ 	require_once(__CA_LIB_DIR__."/BatchMetadataImportProgress.php");
 
  
  	class MetadataImportController extends ActionController {
@@ -65,7 +65,6 @@
  			AssetLoadManager::register('panel');
  			
  			
- 			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
  		}
@@ -96,18 +95,6 @@
  		}
  		# -------------------------------------------------------
  		/**
- 		 *
- 		 *
- 		 * 
- 		 */
- 		public function Save() {
- 			// Load mapping
- 			
- 			// Return to mapping list
-			$this->Edit();
- 		}
- 		# -------------------------------------------------------
- 		/**
  		 * 
  		 *
  		 * 
@@ -126,7 +113,7 @@
 				}
 			}
 			
-			$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
+			$va_response['uploadMessage'] = (($vn_upload_count = (is_array($va_response['copied']) && sizeof($va_response['copied'])) == 1)) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
 			if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
 				$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 worksheet', $vn_skip_count) : _t('Skipped %1 worksheet', $vn_skip_count);
 			}
@@ -165,7 +152,7 @@
  			global $g_ui_locale_id;
  			$t_importer = $this->getImporterInstance();
  			
- 			if (!$t_subject = $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true)) {
+ 			if (!$t_subject = Datamodel::getInstanceByTableNum($t_importer->get('table_num'), true)) {
  				return $this->Index();
  			}
  			
@@ -196,6 +183,25 @@
  			}
  			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
  				$va_last_settings['fileImportPath'] = $vs_file_import_path;
+ 			}
+ 			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
+ 				$va_last_settings['fileImportPath'] = $vs_file_import_path;
+ 			}
+ 			
+ 			if ($va_last_settings['fileInput'] === 'googledrive') {
+ 				if ($google_url = caValidateGoogleSheetsUrl($google_url_orig = $this->request->getParameter('google_drive_url', pString))) {
+ 					try {
+						$tmp_file = caFetchFileFromUrl($google_url);
+					} catch (ApplicationException $e) {
+						$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+						return $this->Run();
+					}
+					$va_last_settings['googleDriveUrl'] = $google_url_orig;
+					$_FILES['sourceFile']['tmp_name'] = $tmp_file;
+ 				} else {
+ 					$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
+ 					return $this->Run();
+ 				}
  			}
  			
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
@@ -238,6 +244,42 @@
  		 *
  		 * 
  		 */
+ 		public function Load() {
+ 			$google_url = caValidateGoogleSheetsUrl($this->request->getParameter('google_drive_url', pString));
+ 			if (!$google_url) {
+ 				$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
+ 				return $this->Index();
+ 			}
+ 			
+ 			try {
+ 				$tmp_file = caFetchFileFromUrl($google_url);
+ 			} catch (ApplicationException $e) {
+ 				$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+				return $this->Index();
+ 			}
+			
+			$errors = [];
+			$is_new = true;
+			try {
+				$t_importer = ca_data_importers::loadImporterFromFile($tmp_file, $errors, ['logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO, 'sourceUrl' => $google_url], $is_new);
+			} catch (Exception $e) {
+				$t_importer = null; 
+				$errors = [_t('Could not read Excel data')];
+			}
+			if ($t_importer) {
+				$this->notification->addNotification($is_new ? _t("Added import worksheet %1", $t_importer->get('importer_code')) : _t("Updated import worksheet %1", $t_importer->get('importer_code')), __NOTIFICATION_TYPE_INFO__);
+			} else {
+				$this->notification->addNotification(_t("Could not add import worksheet: %1", join("; ", $errors)), __NOTIFICATION_TYPE_ERROR__);
+			}
+			unlink($tmp_file);
+ 			$this->Index();
+ 		}
+		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 *
+ 		 * 
+ 		 */
  		public function Download() {
  			$t_importer = new ca_data_importers();
  			if(($vn_importer_id = $this->request->getParameter("importer_id", pInteger)) && $t_importer->load($vn_importer_id) && $t_importer->getFileInfo('worksheet')) {
@@ -274,7 +316,6 @@
  		 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
  		 */
  		public function info($pa_parameters) {
- 			$o_dm 				= Datamodel::load();
  			$t_importer = $this->getImporterInstance(false);
  			$this->view->setVar('t_item', $t_importer);
 			$this->view->setVar('result_context', $this->opo_result_context);

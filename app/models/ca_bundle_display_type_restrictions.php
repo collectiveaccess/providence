@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 global $_ca_bundle_display_type_restriction_settings;
 $_ca_bundle_display_type_restriction_settings = array(
@@ -174,7 +174,7 @@ class ca_bundle_display_type_restrictions extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			"display_id"
 		),
 		"RELATED_TABLES" => array(
 		

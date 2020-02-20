@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,6 +111,52 @@ var caUI = caUI || {};
 			}
 			
 			// ------------------------------------------------------------------------------------
+			
+			caUI.utils.sortObjIdno = function(arr) {
+				var sortedKeys = new Array();
+				var sortedObj = {};
+				var trans = {};
+				
+				// Separate keys and sort them
+				for (var i in arr){
+				    var elements = i.split(/[ ]+/);
+				    var acc = [];
+				    for (var ie in elements) {
+				        var e = elements[ie];
+				        if (e == '') { continue; }
+				        var r;
+				        if (r = e.match(/^([\d]+)$/)) {
+				            var e = String(parseInt(r[1]));
+                            while (e.length < 10) {e = "0" + e;}
+				        } 
+				        acc.push(e);
+				    }
+				    var tk = acc.join(' ');
+				    //var tk = i.replace(/[ ]+/, ' ').trim();
+				    trans[tk] = i;
+					sortedKeys.push(tk);
+				}
+				sortedKeys.sort(caUI.utils._caseInsensitiveSort);
+				console.log(sortedKeys);
+				// Reconstruct sorted obj based on keys
+				for (var i in sortedKeys){
+					sortedObj[trans[sortedKeys[i]]] = arr[trans[sortedKeys[i]]];
+				}
+				return sortedObj;
+			};
+			
+			caUI.utils._caseInsensitiveSort = function(a, b) { 
+			   var ret = 0;
+			   a = a.toLowerCase();
+			   b = b.toLowerCase();
+			   if(a > b) 
+				  ret = 1;
+			   if(a < b) 
+				  ret = -1; 
+			   return ret;
+			}
+			
+			// ------------------------------------------------------------------------------------
 			// Update state/province form drop-down based upon country setting
 			// Used by BaseModel for text fields with DISPLAY_TYPE DT_COUNTRY_LIST and DT_STATEPROV_LIST
 			//
@@ -180,6 +226,65 @@ var caUI = caUI || {};
 				};
 				return filesize;
 			};
+			
+			// --------------------------------------------------------------------------------
+			// Convert time interval between a timestamp and now into readable version
+			//
+			// @param seconds int Start of interval as Unix timestamp
+			// @param precision int Maximum levels of precision (Eg. if set to 2 show minutes and seconds; if set to 1 show only minutes). Default is no limit.
+			// @param separator string separator between quantities. Default is a comma.
+			// @param divisors object Optional block of terms associated with divisors. Used to localized output. If omitted default English terms are used.
+			//
+			// @return string Readable version of time interval
+			//
+			caUI.utils.formatInterval = function(seconds, precision, separator, divisors) {
+				if (divisors === undefined) {
+					divisors = {
+						31536000: {'singular': 'year', 'plural': 'years', 'divisor': 31536000 },
+						2628000: {'singular': 'month', 'plural': 'months', 'divisor': 2628000 },
+						86400: {'singular': 'day', 'plural': 'days', 'divisor': 86400 },
+						3600: {'singular': 'hour', 'plural': 'hours', 'divisor': 3600 },
+						60: {'singular': 'minute', 'plural': 'minutes', 'divisor': 60 },
+						1: {'singular': 'second', 'plural': 'seconds', 'divisor': 1 }
+					};
+				}
+				
+				if(precision === undefined) { precision = -1; }
+				if(separator === undefined) { separator = ', '; }
+				
+				var interval = (Date.now()/1000) - seconds;
+				var out = [];
+				var divisorList = [31536000, 2628000, 86400, 3600, 60 , 1];
+				
+				for(i in divisorList) {
+					divisor = divisorList[i];
+					// If there is at least 1 of the divisor's time period
+					var value = Math.floor(interval / divisor);
+					if(value > 0) {
+						// Add the formatted value - divisor pair to the output array.
+						// Omits the plural for a singular value.
+						if(value == 1) {
+							out.push(value + " " + divisors[divisor]['singular']);
+						} else {
+							out.push(value + " " + divisors[divisor]['plural']);
+						}
+
+						// Stop looping if we've hit the precision limit
+						precision--;
+						if(precision === 0) {
+							break;
+						}
+					}
+
+					// Strip this divisor from the total seconds
+					interval %= divisor;
+				}
+
+				if (out.length === 0) {
+					out.push("0 " + divisors[divisor]['plural']);
+				}
+				return out.join(separator);
+			};
 		
 			caUI.utils.formatNumber = function formatNumber( number, decimals, dec_point, thousands_sep ) {
 				// http://kevin.vanzonneveld.net
@@ -199,6 +304,23 @@ var caUI = caUI || {};
  
 				return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
 			};
+			
+			//
+			// https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+			//
+			caUI.utils.hexToRgb = function(hex, format) {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                var colors = result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+                
+                if (format && colors) {
+                    return format.replace(/%r/, colors.r).replace(/%g/, colors.g).replace(/%b/, colors.b);
+                }
+                return colors;
+            };
 			
 			
 			//

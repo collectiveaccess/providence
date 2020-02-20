@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,6 +48,7 @@ var caUI = caUI || {};
 			levelDataUrl: '',
 			initDataUrl: '',
 			editUrl: '',
+			sortSaveUrl: '',
 
 			editUrlForFirstLevel: '',
 			editDataForFirstLevel: '',	// name of key in data to use for item_id in first level, if different from other levels
@@ -63,9 +64,12 @@ var caUI = caUI || {};
 			defaultItemID: null,	// set to default value to show when no initItemID is set; note that initItemID is an ID to open with *and select.* defaultItemID merely specifies an item to open with, but not select.
 			useAsRootID: null,		// if set to an item_id, that is used at the root of the display hierarchy
 
+			excludeItemIDs: [],		// Skip items with ids in this list
+
 			className: 'hierarchyBrowserLevel',
 			classNameSelected: 'hierarchyBrowserLevelSelected',
 			classNameContainer: 'hierarchyBrowserContainer',
+			classNameContainerReadOnly: 'hierarchyBrowserContainerReadOnly',
 
 			currentSelectionDisplayID: '',
 			currentSelectionDisplayFormat: '%1',
@@ -82,6 +86,10 @@ var caUI = caUI || {};
 			autoShrink: false,
 			autoShrinkMaxHeightPx: 180,
 			autoShrinkAnimateID: '',
+			
+			allowDragAndDropSorting: false,
+			dragAndDropSortInProgress: false,
+			dontAllowDragAndDropSortForFirstLevel: false,
 
 			/* how do we treat disabled items in the browser? can be
 			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link and apply the disabled class ('classNameDisabled' option)
@@ -94,7 +102,9 @@ var caUI = caUI || {};
 			displayCurrentSelectionOnLoad: true,
 			typeMenuID: '',
 
+			indicator: '',	
 			indicatorUrl: '',
+			
 			editButtonIcon: '',
 			disabledButtonIcon: '',
 
@@ -110,11 +120,15 @@ var caUI = caUI || {};
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
 			_queuedLoadsForLevel: [],			// parameters for pending loads per-level
 
-			maxItemsPerHierarchyLevelPage: 500	// maximum number of items to load at one time into a level
+			maxItemsPerHierarchyLevelPage: 500,	// maximum number of items to load at one time into a level
+			
+			selectMultiple: ''
 		}, options);
 		
 		
 		that.useAsRootID = parseInt(that.useAsRootID);
+		
+		that.excludeItemIDs = that.excludeItemIDs.map(function(x) { return x + ""; });		// force all ids to string to ensure comparisons work (item ids from service are strings)
 
 		if (!that.levelDataUrl) {
 			alert("No level data url specified for " + that.name + "!");
@@ -132,7 +146,7 @@ var caUI = caUI || {};
 				jQuery('#' + that.container).append("<div class='" + that.classNameContainer + "' id='" + that.container + "_select_container'></div>");
 			}
 		}
-
+		jQuery('#' + that.container).append("<div class='" + that.classNameContainerReadOnly + "' id='" + that.container + "_readonly'></div>");
 		if (that.typeMenuID) {
 			jQuery('#' + that.typeMenuID).hide();
 		}
@@ -146,6 +160,7 @@ var caUI = caUI || {};
 		// @param int item_id The database id of the item to be used as the root of the hierarchy. If omitted the useAsRootID option value is used, or if that is not available whatever root the server decides to use.
 		//
 		that.setUpHierarchy = function(item_id) {
+			that.isReadOnly(that.readOnly, false);
 			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : 0, 1, null, true); return; }
 			that.levelDivs = [];
 			that.levelLists = [];
@@ -193,6 +208,22 @@ var caUI = caUI || {};
 					jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
 				}
 			});
+			
+		
+		}
+		// --------------------------------------------------------------------------------
+		// 
+		//
+		// @param bool
+		//
+		that.isReadOnly = function(readonly, animate) {
+		    if(animate === undefined) { animate = true; }
+			if (readonly !== null) {
+				that.readOnly = readonly;
+				
+				that.readOnly ? jQuery("#" + that.container + "_readonly").fadeIn(animate ? 500 : 0) : jQuery("#" + that.container + "_readonly").fadeOut(animate ? 500 : 0);
+			}
+			return that.readOnly;
 		}
 		// --------------------------------------------------------------------------------
 		// Clears hierarchy level display
@@ -417,8 +448,8 @@ var caUI = caUI || {};
 						if (!item) { continue; }
 						if (!item.name) { item.name = '??? ' + item['item_id']; }
 						if (item['item_id']) {
-							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
-								that.selectedItemIDs[0] = item['item_id'];
+							if (that.excludeItemIDs && (Array.isArray(that.excludeItemIDs)) && (that.excludeItemIDs.length > 0) && (that.excludeItemIDs.indexOf(item['item_id']) >= 0)) {
+								continue;
 							}
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
@@ -426,7 +457,7 @@ var caUI = caUI || {};
 							if (that.uiStyle == 'horizontal') {
 								var moreButton = '';
 								if (that.editButtonIcon) {
-									if (item.children > 0) {
+									if ((item.children > 0) || ((level == 0) && (item.children == null))){
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' >" + that.editButtonIcon + "</a></div>";
 									} else {
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren'>" + that.disabledButtonIcon + "</a></div>";
@@ -442,7 +473,7 @@ var caUI = caUI || {};
 									switch (that.disabledItems) {
 										case 'full':
 											jQuery('#' + newLevelListID).append(
-												"<li class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 											);
 											break;
 										case 'hide': // item is hidden -> noop
@@ -451,17 +482,17 @@ var caUI = caUI || {};
 										case 'disabled':
 										default:
 											jQuery('#' + newLevelListID).append(
-												"<li class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
+												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
 											);
 											break;
 									}
 								} else if ((!((level == 0) && that.dontAllowEditForFirstLevel))) {
 									jQuery('#' + newLevelListID).append(
-										"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 									);
 								} else {
 									jQuery('#' + newLevelListID).append(
-										"<li class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 									);
 								}
 
@@ -498,12 +529,30 @@ var caUI = caUI || {};
 										editUrl = that.editUrl;
 									}
 									if (editUrl) {
-										jQuery('#' + newLevelListID + " li:last a:last").click(function() {
-											jQuery(document).attr('location', editUrl + jQuery(this).data(editData));
+										jQuery('#' + newLevelListID + " li:last a:last").click(function(e) {
+											if (that.dragAndDropSortInProgress) { e.preventDefault(); return false; }
+											if(that.selectMultiple){
+												// code to add + infront of items when multiple selections for or browse are permitted
+												// #facet_apply is in ajax_browse_Facet_html.php
+												if (jQuery(this).attr('facet_item_selected') == '1') {
+													jQuery(this).attr('facet_item_selected', '');
+												} else {
+													jQuery(this).attr('facet_item_selected', '1');
+												}
+
+												if (jQuery(".facetItem[facet_item_selected='1']").length > 0) {
+													jQuery("#facet_apply").show();
+												} else {
+													jQuery("#facet_apply").hide();
+												}
+											}else{
+												jQuery(document).attr('location', editUrl + jQuery(this).data(editData));
+											}
 											return false;
 										});
 									} else {
-										jQuery('#' + newLevelListID + " li:last a:last").click(function() {
+										jQuery('#' + newLevelListID + " li:last a:last").click(function(e) {
+											if (that.dragAndDropSortInProgress) { e.preventDefault(); return false; }
 											var l = jQuery(this).parent().parent().parent().data('level');
 											var item_id = jQuery(this).data('item_id');
 											var has_children = jQuery(this).data('has_children');
@@ -514,26 +563,26 @@ var caUI = caUI || {};
 								}
 
 								// hierarchy forward navigation
-								if (!that.readOnly) {
-									jQuery('#' + newLevelListID + " li:last a:first").click(function() {
-										var l = jQuery(this).parent().parent().parent().parent().data('level');
-										var item_id = jQuery(this).data('item_id');
-										var has_children = jQuery(this).data('has_children');
-										that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, jQuery(this).data('item'));
+								
+								jQuery('#' + newLevelListID + " li:last a:first").click(function() {
+									if (that.readOnly) { return false; }
+									var l = jQuery(this).parent().parent().parent().parent().data('level');
+									var item_id = jQuery(this).data('item_id');
+									var has_children = jQuery(this).data('has_children');
+									that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, jQuery(this).data('item'));
 
-										// scroll to new level
-										that.setUpHierarchyLevel(l + 1, item_id, 0, undefined, true);
-										jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
+									// scroll to new level
+									that.setUpHierarchyLevel(l + 1, item_id, 0, undefined, true);
+									jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
 
-										return false;
-									});
-								}
+									return false;
+								});
 
-								if (that.readOnly) {
-									jQuery('#' + newLevelListID + " li:first a").click(function() {
-										return false;
-									});
-								}
+								// if (that.readOnly) {
+// 									jQuery('#' + newLevelListID + " li:first a").click(function() {
+// 										return false;
+// 									});
+// 								}
 
 								if ((that.allowExtractionFromHierarchy) && (that.extractFromHierarchyButtonIcon)) {
 									jQuery('#' + newLevelListID + ' #hierBrowser_' + that.name + '_extract').unbind('click.extract').bind('click.extract', function() {
@@ -553,20 +602,47 @@ var caUI = caUI || {};
 						} else {
 							if (item.parent_id && (that.selectedItemIDs.length == 0)) { that.selectedItemIDs[0] = item.parent_id; }
 						}
-					}//);
+					}
+
+					if (item_id && that.doDragAndDropSorting(item_id) && that.sortSaveUrl && (((level == 0) && !that.dontAllowDragAndDropSortForFirstLevel) || (level > 0))) {
+						jQuery("#" + newLevelListID).sortable({ opacity: 0.7, 
+							revert: 0.2, 
+							scroll: true , 
+							update: function(e, ui) {
+								var dragged_dom_id = jQuery(ui.item).find("a").attr('id');
+								var dragged_item_id = jQuery("#" + dragged_dom_id).data('item_id');
+								
+								var after_dom_id = jQuery(ui.item).prev().find("a").attr('id');
+								var after_item_id = jQuery("#" + after_dom_id).data('item_id');
+								
+								jQuery.getJSON(that.sortSaveUrl, {'id': dragged_item_id, 'after_id': after_item_id}, function(d) {
+									if (!d) { alert("Could not save reordering"); return false; }
+									if (d.errors.length > 0) { alert("Could not save reordering: " + d.errors.join('; ')); return false; }
+									if (d.timestamp) { jQuery("#" + newLevelListID).closest('form').find('input[name=form_timestamp]').val(d.timestamp); }
+									return false;
+								});
+								
+							},
+							start: function(e, ui) {
+								that.dragAndDropSortInProgress = true;
+							},
+							stop: function(e, ui) {
+								that.dragAndDropSortInProgress = false;
+							}
+						});
+					}
 
 					var dontDoSelectAndScroll = false;
 					if (!foundSelected && that.selectedItemIDs[level]) {
 						var p = jQuery('#' + newLevelDivID).data("page");
 						if (!p || (p < 0)) { p = 0; }
-
+						
 						jQuery('#' + newLevelDivID).data("page", p);
-						if (jQuery('#' + newLevelDivID).data('itemCount') > (p * that.maxItemsPerHierarchyLevelPage)) {
-							if (!that._pageLoadsForLevel[level] || !that._pageLoadsForLevel[level][p]) {		// is page loaded?
+						if (parseInt(jQuery('#' + newLevelDivID).data('itemCount')) > parseInt(p * that.maxItemsPerHierarchyLevelPage)) {
+							if (!that._pageLoadsForLevel[level] || !that._pageLoadsForLevel[level][p + 1]) {		// is page loaded?
 								if (!that._pageLoadsForLevel[level]) { that._pageLoadsForLevel[level] = []; }
 								that._pageLoadsForLevel[level][p] = true;
-
-								that.queueHierarchyLevelDataLoad(level, item_id, false, newLevelDivID, newLevelListID, selected_item_id, p * that.maxItemsPerHierarchyLevelPage, true);
+								that.queueHierarchyLevelDataLoad(level, item_id, false, newLevelDivID, newLevelListID, selected_item_id, (p + 1) * that.maxItemsPerHierarchyLevelPage, true);
 
 								dontDoSelectAndScroll = true;	// we're still trying to find selected item so don't try to select it
 							}
@@ -575,8 +651,6 @@ var caUI = caUI || {};
 						// Treat sequential page load as init so selected item is highlighted
 						is_init = true;
 					}
-
-
 
 					if (that.uiStyle == 'horizontal') {
 						if (!is_init) {
@@ -680,6 +754,20 @@ var caUI = caUI || {};
 			}
 		}
 		// --------------------------------------------------------------------------------
+		// Determine if drag and drop sorting is permitted. The allowDragAndDropSorting option can be
+		// either a boolean, in which case sorting is supported (or not) across the board, or an object
+		// with properties set to trigger ids from first-level items and boolean values indicating whether
+		// drag and drop sorting is permitted for the list under that first-level item. The object format
+		// is used when displaying lists in the hierarchy browser to provide for per-list sort settings.
+		//
+		// @param int id 
+		// @return mixed boolean and object with sorting map. 
+		//
+		that.doDragAndDropSorting = function(id) {
+			if (typeof that.allowDragAndDropSorting !== 'object') return that.allowDragAndDropSorting;
+			return that.allowDragAndDropSorting[id];
+		}
+		// --------------------------------------------------------------------------------
 		// Records user selection of an item
 		//
 		// @param int level The level where the selected item resides
@@ -740,27 +828,37 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.showIndicator = function(newLevelDivID) {
-			if (!that.indicatorUrl) { return; }
-			if (jQuery('#' + newLevelDivID + ' img._indicator').length > 0) {
-				jQuery('#' + newLevelDivID + ' img._indicator').show();
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			if (jQuery('#' + newLevelDivID + ' div._indicator').length > 0) {
+				jQuery('#' + newLevelDivID + ' div._indicator').show();
 				return;
 			}
+			
 			var level = jQuery('#' + newLevelDivID).data('level');
+				
+			if (that.indicatorUrl) {
+				var img = document.createElement('img');
+				img.src = that.indicatorUrl;
+				img.className = '_indicatorImg';
+				
+				that.indicator = that.indicatorUrl;
+			} 
+				
+				
+			var indicator = document.createElement('div');
 			if (that.uiStyle == 'vertical') {
-				var indicator = document.createElement('img');
-				indicator.src = that.indicatorUrl;
-				indicator.className = '_indicator';
 				if (level == 0) { jQuery('#' + newLevelDivID).append("<br/>"); }
-				jQuery('#' + newLevelDivID).append(indicator);
 			} else {
-				var indicator = document.createElement('img');
-				indicator.src = that.indicatorUrl;
+				jQuery(indicator).append(that.indicator);
 				indicator.className = '_indicator';
 				indicator.style.position = 'absolute';
 				indicator.style.left = '50%';
 				indicator.style.top = '50%';
-				jQuery('#' + newLevelDivID).append(indicator);
 			}
+			jQuery('#' + newLevelDivID).append(indicator);
+			
+			return;
 		}
 		// --------------------------------------------------------------------------------
 		// Remove spinning progress indicator from specified level <div>
@@ -768,7 +866,9 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.hideIndicator = function(newLevelDivID) {
-			jQuery('#' + newLevelDivID + ' img._indicator').hide();		// hide loading indicator
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			jQuery('#' + newLevelDivID + ' div._indicator').hide();		// hide loading indicator
 		}
 		// --------------------------------------------------------------------------------
 		// Returns database id (the primary key in the database, *NOT* the DOM ID) of currently selected item

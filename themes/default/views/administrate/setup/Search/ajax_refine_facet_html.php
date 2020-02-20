@@ -48,7 +48,7 @@
 	
 	$vs_group_mode 			= $this->getVar('group_mode');
 	if (!$va_facet||!$vs_facet_name) { 
-		print 'No facet defined'; 
+		print _t('No facet defined'); 
 		return;
 	}
 	
@@ -71,7 +71,7 @@
 	}
 ?>
 </div>
-<h2><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+<h2><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 
 
 <div class="browseSelectPanelContentArea">
@@ -170,7 +170,7 @@
 				}
 				
 				foreach($va_groups as $vs_group) {
-					$vs_group = unicode_ucfirst($vs_group);
+					$vs_group = caUcFirstUTF8Safe($vs_group);
 					$vs_alpha_key = '';
 					foreach($va_label_order_by_fields as $vs_f) {
 						$vs_alpha_key .= $va_item[$vs_f];

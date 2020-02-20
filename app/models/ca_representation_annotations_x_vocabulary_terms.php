@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_representation_annotations_x_vocabulary_terms'] = array(
@@ -168,7 +168,7 @@ class ca_representation_annotations_x_vocabulary_terms extends BaseRelationshipM
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'annotation_id'
+			'annotation_id', 'item_id'
 		),
 		"RELATED_TABLES" => array(
 		

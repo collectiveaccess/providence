@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/EditorController.php : 
+ * app/lib/EditorController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -39,11 +39,11 @@
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
- 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
- 	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchEditorProgress.php");
+ 	require_once(__CA_LIB_DIR__."/Datamodel.php");
+ 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+ 	require_once(__CA_LIB_DIR__."/ResultContext.php");
+ 	require_once(__CA_LIB_DIR__."/BatchProcessor.php");
+ 	require_once(__CA_LIB_DIR__."/BatchEditorProgress.php");
  
  	class EditorController extends ActionController {
  		# -------------------------------------------------------
@@ -61,7 +61,6 @@
  			AssetLoadManager::register('bundleListEditorUI');
  			AssetLoadManager::register('panel');
  			
- 			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
  		}
@@ -82,7 +81,7 @@
  			}
  			
  			// Can user batch edit this table?
- 			if (!$this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 			if (!$this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_set->get('table_num')))) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -94,10 +93,10 @@
  			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
  			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-				array(),
-				array(),
+				[],
+				[],
 				false,
-				array('restrictToTypes' => $t_set->getTypesForItems())
+				['restrictToTypes' => array_keys($t_set->getTypesForItems())]
 			);
  			if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
  				$this->request->setActionExtra($va_nav['defaultScreen']);
@@ -122,7 +121,7 @@
  			}
  			
  			// Can user batch edit this table?
- 			if (!$this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 			if (!$this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_set->get('table_num')))) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -164,7 +163,7 @@
  		public function Delete($pa_options=null) {
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
 
- 			if (!$this->request->user->canDoAction('can_batch_delete_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 			if (!$this->request->user->canDoAction('can_batch_delete_'.Datamodel::getTableName($t_set->get('table_num')))) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3230?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -200,7 +199,7 @@
  			}
  			
  			// Can user batch edit this table?
- 			if (!$this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 			if (!$this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_set->get('table_num')))) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -275,7 +274,7 @@
  			}
  			
  			
- 			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_set->get('table_num'));
+ 			$t_subject = Datamodel::getInstanceByTableNum($t_set->get('table_num'));
  			$t_ui = new ca_editor_uis();
  			if (!isset($pa_options['ui']) && !$pa_options['ui']) {
  				$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
@@ -335,7 +334,7 @@
  				isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
  				isset($pa_params['requires']) ? $pa_params['requires'] : null,
  				false,
- 				array('hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false, 'returnTypeRestrictions' => true, 'restrictToTypes' => $t_set->getTypesForItems())
+ 				['hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false, 'returnTypeRestrictions' => true, 'restrictToTypes' => array_keys($t_set->getTypesForItems())]
  			);
  			
  			if (!$this->request->getActionExtra()) {
@@ -355,7 +354,6 @@
  		public function info($pa_parameters) {
  			$vn_set_id = $this->request->getParameter('set_id', pInteger);
  		
- 			$o_dm 				= Datamodel::load();
  			$t_set				= new ca_sets($vn_set_id);
  			
  			if (!$t_set->getPrimaryKey()) { 
@@ -367,7 +365,7 @@
  				die("You don't have access to the set");
  			}
  			
- 			$t_item 			= $o_dm->getInstanceByTableNum($t_set->get('table_num'), true);
+ 			$t_item 			= Datamodel::getInstanceByTableNum($t_set->get('table_num'), true);
  			
  		
  			$this->view->setVar('t_set', $t_set);

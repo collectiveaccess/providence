@@ -30,10 +30,10 @@
 	$vn_items_per_page = $this->getVar('current_items_per_page');
 	
 	if (!$this->request->isAjax()) {
-		print caFormTag($this->request, 'Index', 'PlaceBasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+		print caFormTag($this->request, 'Index', 'PlaceBasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 			print caFormControlBox(
 				'<div class="simple-search-box">'._t('Search').': <input type="text" id="browseSearch" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/></div>'.
-					caJSButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'submitSearch', array(), 
+					caFormJSButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'submitSearch', array(), 
 					array('href' => '#', 'onclick' => 'caCloseBrowser(); jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', 'SearchPlaces', 'Index', array('search' => '')).'" + escape(jQuery("#browseSearch").attr("value"))); return false;')),
 				'',
 				'<a href="#" id="browseToggle" class="form-button"></a>'
@@ -50,7 +50,7 @@
 				<form action='#'>
 <?php	
 					print "<div>";
-					print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a>", "<span id='browseCurrentSelection'>?</span>");
+					print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon(__CA_NAV_ICON_ADD__, 1)."</a>", "<span id='browseCurrentSelection'>?</span>");
 					print "</div>";
 ?>
 				</form>
@@ -83,10 +83,10 @@
 					initDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyAncestorList'); ?>',
 					
 					editUrl: '<?php print caNavUrl($this->request, 'editor/places', 'PlaceEditor', 'Edit', array('place_id' => '')); ?>',
-					editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+					editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 					
 					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-					indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+					indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 					typeMenuID: 'browseTypeMenu',
 					
 					currentSelectionDisplayID: 'browseCurrentSelection'

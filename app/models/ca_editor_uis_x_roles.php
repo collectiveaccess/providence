@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_editor_uis_x_roles'] = array(
@@ -151,7 +151,7 @@ class ca_editor_uis_x_roles extends BaseRelationshipModel {
 	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			'ui_id', 'role_id'
 		),
 		"RELATED_TABLES" => array(
 		

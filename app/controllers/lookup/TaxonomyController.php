@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
-	require_once(__CA_LIB_DIR__."/core/Configuration.php");
+	require_once(__CA_LIB_DIR__."/Configuration.php");
  	
  
  	class TaxonomyController extends ActionController {
@@ -41,7 +41,7 @@
 			$ps_query = trim($this->request->getParameter('term', pString));
 			$vo_conf = Configuration::load();
 			$va_items = array();
-			if (unicode_strlen($ps_query) >= 3) {
+			if (mb_strlen($ps_query) >= 3) {
 				try {
 					/* // ITIS
 					$i = 0;

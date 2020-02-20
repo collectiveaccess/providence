@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 global $_ca_metadata_type_restriction_settings;
 $_ca_metadata_type_restriction_settings = array(		// global
@@ -219,7 +219,7 @@ class ca_metadata_type_restrictions extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			"element_id"
 		),
 		"RELATED_TABLES" => array(
 		
@@ -265,7 +265,6 @@ class ca_metadata_type_restrictions extends BaseModel {
 			$t_rel = new ca_relationship_types();
 			$va_rels = $t_rel->getRelationshipsUsingTypes();
 			
-			$o_dm = Datamodel::load();
 			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
 				BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'][$va_rel_table_info['name']] = $vn_table_num;
 			}
@@ -300,7 +299,7 @@ class ca_metadata_type_restrictions extends BaseModel {
 		
 		$va_types = array();
 		foreach($va_tables as $vs_table_name => $vn_table_num) {
-			$t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num, true);
+			$t_instance = Datamodel::getInstanceByTableNum($vn_table_num, true);
 			$va_types[$vn_table_num] = array('' => '-');
 			if (is_a($t_instance, "BaseRelationshipModel")) {
 				$va_rel_types = $t_rel_types->getRelationshipInfo($vn_table_num);

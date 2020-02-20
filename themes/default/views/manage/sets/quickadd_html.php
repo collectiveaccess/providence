@@ -60,8 +60,8 @@
 	<div class='quickAddDialogHeader'><?php 
 		print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types)))."</div>"; 
 		if ($vb_can_edit) {
-			print "<div class='quickAddControls'>".caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caQuickAddFormHandler.save(event);"))
-			.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}".$vs_field_name_prefix.$vs_n."\").parent().data(\"panel\").hidePanel();"))."</div>\n";
+			print "<div class='quickAddControls'>".caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caQuickAddFormHandler.save(event);"))
+			.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}".$vs_field_name_prefix.$vs_n."\").parent().data(\"panel\").hidePanel();"))."</div>\n";
 		}
 		print "<div class='quickAddProgress'></div><br style='clear: both;'/>";
 ?>
@@ -71,18 +71,11 @@
 	<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
 	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?php print $vs_field_name_prefix.$vs_n; ?>">
 <?php
-			$va_force_new_label = array();
-			foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
-				$va_force_new_label[$vs_fld] = '';
-			}
-			$va_force_new_label['locale_id'] = $g_ui_locale_id;							// use default locale
-			$va_force_new_label[$t_subject->getLabelDisplayField()] = $vs_q;				// query text is used for display field
-			
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
 					'restrictToTypes' => array($t_subject->get('type_id')),
 					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
-					'forceLabelForNew' => $va_force_new_label							// force query text to be default in label fields
+					'forceLabelForNew' => $this->getVar('forceLabel')							// force query text to be default in label fields
 			));
 			
 			print join("\n", $va_form_elements);

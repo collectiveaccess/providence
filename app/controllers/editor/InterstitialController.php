@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	require_once(__CA_LIB_DIR__."/ca/BaseInterstitialController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseInterstitialController.php");
  
  	class InterstitialController extends BaseInterstitialController {
  		# -------------------------------------------------------
@@ -39,4 +39,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

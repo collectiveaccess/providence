@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,24 +45,24 @@
 ?>
 			<form id="tagListForm" method="post">
 			
-			<table id="caTagsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+			<table id="caTagsList" class="listtable">
 				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Tags', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_APPROVE__); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
-					<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'tags', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
+					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Tags', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
+					<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'tags', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
 				</div>
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">
-							<?php print _t('Item tagged'); ?>
+							<?php print _t('Item'); ?>
+						</th>
+						<th class="list-header-unsorted">
+							<?php print _t('Tag'); ?>
 						</th>
 						<th class="list-header-unsorted">
 							<?php print _t('Author'); ?>
 						</th>
 						<th class="list-header-unsorted">
 							<?php print _t('Date'); ?>
-						</th>
-						<th class="list-header-unsorted">
-							<?php print _t('Tag'); ?>
 						</th>
 						<th class="{sorter: false} list-header-nosort"><?php print _t('Select'); ?></th>
 					</tr>
@@ -73,22 +73,22 @@
 ?>
 					<tr>
 						<td>
-							<?php print $va_tag['item_tagged']; ?>
+							<?php print caEditorLink($this->request, $va_tag['item_tagged'], '', $va_tag['table_num'], $va_tag['row_id']); ?>
+						</td>
+						<td>
+							<?php print caNavLink($this->request, $tag = $va_tag['tag'], '', 'find', 'QuickSearch', 'Index', ['search' => "ca_item_tags.tag:\"{$tag}\""]); ?>
 						</td>
 						<td>
 <?php 
 							if($va_tag['user_id']){
-								print $va_tag['fname']." ".$va_tag['lname']."<br/>".$va_tag['user_email'];
+								print $va_tag['fname']." ".$va_tag['lname']." (".$va_tag['user_email'].")";
 							}else{
-								print $va_tag['name']."<br/>".$va_tag['user_email'];
+								print $va_tag['name']." (".$va_tag['user_email'].")";
 							}
 ?>
 						</td>
 						<td>
 							<?php print $va_tag['created_on']; ?>
-						</td>
-						<td>
-							<?php print $va_tag['tag']; ?>
 						</td>
 						<td>
 							<input type="checkbox" name="tag_relation_id[]" value="<?php print $va_tag['relation_id']; ?>">

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,17 +31,21 @@
 		<script language="JavaScript" type="text/javascript">
 		/* <![CDATA[ */
 			jQuery(document).ready(function(){
-				jQuery('#caSavedSearchesList').caFormatListTable();
+				jQuery('#caItemList').caFormatListTable();
 			});
 		/* ]]> */
 		</script>
 		<div class="sectionBox">
+<?php
+	print caFormControlBox(
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'',
+			"<a href='#' onclick='jQuery(\"#SavedSearchesListForm\").attr(\"action\", \"".caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete')."\").submit();' class='form-button'><span class='delete'>".caNavIcon(__CA_NAV_ICON_DELETE__, 2)." "._t('Delete selected')."</span></a>"
+		); 
+?>
 			<form id="SavedSearchesListForm">
 			
-			<table id="caSavedSearchesList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
-				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#SavedSearchesListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__);?>Delete</span></a>
-				</div>
+			<table id="caItemList" class="listtable">
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">
@@ -53,7 +57,7 @@
 						<th class="list-header-unsorted">
 							<?php print _t('Search term/name'); ?>
 						</th>
-						<th class="{sorter: false} list-header-nosort"><input type='checkbox' name='record' value='' id='savedSearchesSelectAllControl' class='savedSearchesControl' onchange="jQuery('.savedSearchesControl').attr('checked', jQuery('#savedSearchesSelectAllControl').attr('checked'));"/></th>
+						<th class="{sorter: false} list-header-nosort listtableEdit"><input type='checkbox' name='record' value='' id='savedSearchesSelectAllControl' class='' onchange="jQuery('.savedSearchesControl').attr('checked', jQuery('#savedSearchesSelectAllControl').attr('checked'));"/></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -89,12 +93,12 @@
 					case "ca_collections":
 						$vs_display_table = _t("Collections");
 						$vs_controller .= "Collections";
-					break;
+						break;
 					# ------------------------
 					case "ca_occurrences":
 						$vs_display_table = _t("Occurrences");
 						$vs_controller .= "Occurrences";
-					break;
+						break;
 					# ------------------------
 				}
 				foreach($va_searches as $vs_search_type => $va_search_info){
@@ -112,7 +116,7 @@
 							<td>
 								<?php print caNavLink($this->request, $vs_search, "", "find", $vs_controller.(($vs_search_type == "advanced_search") ? "Advanced": ""), 'doSavedSearch', array("saved_search_key" => $vs_key)); ?>
 							</td>
-							<td>
+							<td class="listtableEdit">
 								<input type="checkbox" class="savedSearchesControl" name="saved_search_id[]" value="<?php print $vs_table."-".$vs_search_type."-".$vs_key; ?>">
 							</td>
 						</tr>

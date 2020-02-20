@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
  
 	class measurementsSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
@@ -44,12 +44,12 @@
 		 * Override checkStatus() to return true
 		 */
 		public function checkStatus() {
-			return array(
+			return [
 				'description' => $this->getDescription(),
-				'errors' => array(),
-				'warnings' => array(),
+				'errors' => [],
+				'warnings' => [],
 				'available' => true,
-			);
+			];
 		}
 		# -------------------------------------------------------
 		/**
@@ -63,32 +63,39 @@
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
 			$vs_units = $pa_item['settings']['measurementsSplitter_units'];
-			
 			if (is_array($pm_value)) {
 				$va_measurements = $pm_value;	// for input formats that support repeating values
 			} else {
-				$pm_value = preg_replace("![^\d\.A-Za-z\"\"’”]+!", "", $pm_value);
-				$va_measurements = array($pm_value);
+				$pm_value = preg_replace("!\([^\)]*\)!", "", $pm_value);        // remove parentheticals
+				$pm_value = preg_replace("![^\d\.A-Za-z\"\'\"’” \/]+!", " ", $pm_value);
+				$va_measurements = [$pm_value];
 			}
-		
-			$va_vals = array();	
+			
+			$va_vals = [];	
 			
 			foreach($va_measurements as $vs_measurement) {
 				$va_val = [];
 				
-				$va_parsed_measurements = caParseLengthExpression($vs_measurement, ['delimiter' => $pa_item['settings']['measurementsSplitter_delimiter'], 'units' => $pa_item['settings']['measurementsSplitter_units']]);
+				$va_parsed_measurements = caParseLengthExpression($vs_measurement, ['returnExtractedMeasurements' => true, 'delimiter' => $pa_item['settings']['measurementsSplitter_delimiter'], 'units' => $pa_item['settings']['measurementsSplitter_units']]);
+				
 				if(is_array($va_elements = $pa_item['settings']['measurementsSplitter_elements'])) {
 					$vn_set_count = 0;
 					foreach($va_elements as $vn_i => $va_element) {
 						if (!is_array($va_element)) { continue; }
 						if (!sizeof($va_parsed_measurements)) { break; }
-					
-						if ($vs_measurement = array_shift($va_parsed_measurements)) {
-					
+					    
+					    $va_measurement = array_shift($va_parsed_measurements);
+					    if(((strpos($va_measurement['source'], '/') !== false) || (preg_match("![\d\.]+[ ]*[\"'a-zA-Z\.]+[ ]+[\d\.]+[ ]*[a-zA-Z\.\"\']+!", $va_measurement['source'])))) {
+                            $vs_measurement = $va_measurement['source'];
+                            if (!preg_match("![A-Za-z\.\"']+[ ]*$!", $vs_measurement)) {  $vs_measurement .= " ".$va_measurement['units']; }
+                        } else {
+                            $vs_measurement = $va_measurement['string'];
+						}
+						if ($vs_measurement) {
 							// Set label
 							$va_val[$va_element['quantityElement']] = $vs_measurement;
 							if (isset($va_element['typeElement']) && $va_element['typeElement']) {
-								$va_val[$va_element['typeElement']] = BaseRefinery::parsePlaceholder($va_element["type"], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
+								$va_val[$va_element['typeElement']] = BaseRefinery::parsePlaceholder($va_element["type"], $pa_source_data, $pa_item, $vn_c, ['reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true]);
 							}
 							$vn_set_count++;
 						}
@@ -96,18 +103,17 @@
 			
 					// Set attributes
 					if (is_array($pa_item['settings']['measurementsSplitter_attributes'])) {
-						$va_attr_vals = array();
+						$va_attr_vals = [];
 						foreach($pa_item['settings']['measurementsSplitter_attributes'] as $vs_element_code => $vs_v) {
 							// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 							// but we only supports non-repeating attribute values, so we join any values here and call it a day.
-							$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
+							$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, ['reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true]);
 						}
 						$va_val = array_merge($va_val, $va_attr_vals);
 					}
 				}
 				if ($vn_set_count > 0) { $va_vals[] = $va_val; }
 			}
-			
 			return $va_vals;
 		}
 		# -------------------------------------------------------	
@@ -160,4 +166,3 @@
 				'description' => _t('Sets or maps metadata for the list item record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			)
 		);
-?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,20 +31,21 @@
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	$(document).ready(function(){
-		$('#caEventList').caFormatListTable();
+		$('#caItemList').caFormatListTable();
 	});
 /* ]]> */
 </script>
 <div class="sectionBox">
-	<?php 
+<?php 
+		print caFormTag($this->request, 'Index', 'eventsLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caEventList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			_t('Date range').': '.caFormTag($this->request, 'Index', 'eventsLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('events_list_search')))."</form>"
+			_t('From %1', caHTMLTextInput('search', array('size' => 12, 'value' => $this->getVar('events_list_search'), 'class' => 'dateBg'))).caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'eventsLogSearch')
 		); 
-	?>
-	
-	<table id="caEventList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		print "</form>";
+?>	
+	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -68,7 +69,7 @@
 ?>
 			<tr>
 				<td>
-					<?php print date("n/d/Y@g:i:sa T", $va_event['date_time']); ?>
+					<?php print caGetLocalizedDate($va_event['date_time']); ?>
 				</td>
 				<td>
 					<?php print $va_event['code']; ?>

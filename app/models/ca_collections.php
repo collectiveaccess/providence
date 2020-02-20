@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,9 +35,9 @@
    */
 
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
-
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 	'NAME_SINGULAR' 	=> _t('collection'),
@@ -189,11 +189,46 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+		),
+		'submission_user_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this object')
+		),
+		'submission_group_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted for group'), 'DESCRIPTION' => _t('Group this object was submitted under')
+		),
+		'submission_status_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'submission_statuses',
+			'LABEL' => _t('Submission status'), 'DESCRIPTION' => _t('Indicates submission status of the object.')
+		),
+		'submission_via_form' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Submission via form'), 'DESCRIPTION' => _t('Indicates what contribute form was used to create the submission.')
 		)
 	)
 );
 
 class ca_collections extends RepresentableBaseModel implements IBundleProvider {
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
@@ -375,6 +410,9 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
 		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
+		$this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
+		$this->BUNDLES['ca_item_comments'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Comments'));
+		
 		$this->BUNDLES['ca_loans'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans'));
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
 		
@@ -384,7 +422,86 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+		
+		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History tracking – current value'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override BaseModel::hierarchyWithTemplate() to optionally include top level of objects in collection hierarchy when 
+	 * object-collection hierarchies are enabled. 
+	 * 
+	 * @param string $ps_template 
+	 * @param array $pa_options Any options supported by BaseModel::getHierarchyAsList() and caProcessTemplateForIDs() as well as:
+	 *		sort = An array or semicolon delimited list of elements to sort on. [Default is null]
+	 * 		sortDirection = Direction to sorting, either 'asc' (ascending) or 'desc' (descending). [Default is asc]
+	 *		includeObjects = Include top level of objects in collection hierarchy when object-collection hierarchies are enabled. id values for included objects will be prefixed with "ca_objects:" [Default is true]
+	 *		objectTemplate = Display template to use for included objects. [Default is to use the value set in app.conf in the "ca_objects_hierarchy_browser_display_settings" directive]
+	 * @return array
+	 */
+	public function hierarchyWithTemplate($ps_template, $pa_options=null) {
+		$va_vals = parent::hierarchyWithTemplate($ps_template, $pa_options);
+		if ($this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && caGetOption('includeObjects', $pa_options, true) && ($ps_object_template = caGetOption('objectTemplate', $pa_options, $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings')))) {
+			$va_collection_ids = array_map(function($v) { return $v['id']; }, $va_vals);
+			
+			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')], ['returnAs' => 'searchResult']);
+			$va_objects_by_collection = [];
+			while($qr->nextHit()) {
+				$va_objects_by_collection[$qr->get('ca_objects_x_collections.collection_id')][] = $qr->get('ca_objects_x_collections.object_id');
+ 			}
+ 			
+ 			$t_obj = new ca_objects();
+ 			$va_objects = [];
+ 			
+ 			if ($this->getAppConfig()->get('ca_collections_hierarchy_summary_show_full_object_hierarachy')) {
+                foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
+                    foreach($va_object_ids as $vn_object_id) {
+                        $va_objects[$vn_collection_id][$vn_object_id] = $t_obj->hierarchyWithTemplate($ps_object_template, ['object_id' => $vn_object_id, 'returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+                    }
+                }
+            
+                $va_vals_proc = [];
+                foreach($va_vals as $vn_i => $va_val) {
+                    $va_vals_proc[] = $va_val;
+                    if(isset($va_objects[$va_val['id']])) {
+                        foreach($va_objects[$va_val['id']] as $vn_object_id => $va_object_hierarchy) {
+                            foreach($va_object_hierarchy as $va_obj) {
+                                $va_vals_proc[] = [
+                                    'level' => $va_val['level'] + (int)$va_obj['level'],
+                                    'id' => "ca_objects:".$va_obj['id'],
+                                    'parent_id' => "ca_collections:{$va_val['id']}",
+                                    'display' => $va_obj['display']
+                                ];
+                            }
+                        }
+                    }
+                }
+            } else {
+                foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
+                    $va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+                }
+            
+                $va_vals_proc = [];
+                foreach($va_vals as $vn_i => $va_val) {
+                    $va_vals_proc[] = $va_val;
+                    if(isset($va_objects[$va_val['id']])) {
+                        foreach($va_objects[$va_val['id']] as $vn_j => $vs_object_display_value) {
+                            $va_vals_proc[] = [
+                                'level' => $va_val['level'] + 1,
+                                'id' => "ca_objects:".$va_objects_by_collection[$va_val['id']][$vn_j],
+                                'parent_id' => "ca_collections:{$va_val['id']}",
+                                'display' => $vs_object_display_value
+                            ];
+                        }
+                    }
+                }
+            }
+ 			$va_vals = $va_vals_proc;
+		}
+		
+		return $va_vals;
 	}
 	# ------------------------------------------------------
 }
-?>

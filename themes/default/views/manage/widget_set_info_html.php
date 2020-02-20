@@ -26,34 +26,24 @@
  * ----------------------------------------------------------------------
  */
  
-	$va_sets = $this->getVar('sets');
+	$va_sets 				= $this->getVar('sets');
+	$vn_type_id				= $this->getVar('type_id');
+	$vs_type_name_singular	= $this->getVar('type_name_singular');
+	$vs_type_name_plural	= $this->getVar('type_name_plural');
 	
 	if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
 ?>
-<h3 class='setStats'><?php print _t('Set Statistics'); ?>:
+<h3 class='setStats'><?php print _t('%1 Statistics', $vs_type_name_singular); ?>:
 <div><?php
-		if (sizeof($va_sets['mine']) == 1) {
-			print _t("1 set available to you");
-		} else {
-			print _t("%1 sets available to you", sizeof($va_sets['mine']));
-		}
+		print _t("%1 available to you", sizeof($va_sets['mine']));
 		print "<br/>\n";
-		if (sizeof($va_sets['user']) == 1) {
-			print _t("1 set created by users");
-		} else {
-			print _t("%1 sets created by users", sizeof($va_sets['user']));
-		}
+		print _t("%1 created by users", sizeof($va_sets['user']));
 		print "<br/>\n";
-		if (sizeof($va_sets['public']) == 1) {
-			print _t("1 set created by the public");
-		} else {
-			print _t("%1 sets created by the public", sizeof($va_sets['public']));
-		}
-		
+		print _t("%1 created by the public", sizeof($va_sets['public']));
 ?></div>
-</h3><h3><?php print _t('Show sets'); ?>:
+</h3><h3 class='setStats'><?php print _t('Show %1', $vs_type_name_plural); ?>:
 <div><?php
-			print caFormTag($this->request, 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+			print caFormTag($this->request, 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 	
 			$va_options = array(
 				_t('Available to you') => 0,
@@ -71,12 +61,12 @@
 <?php	
 	} else {
 ?>
-<h3><?php print _t('Your sets'); ?>:
+<h3><?php print _t('Your %1', $vs_type_name_plural); ?>:
 <div><?php
 		if (sizeof($va_sets['mine']) == 1) {
-			print _t("1 set is available");
+			print _t("1 %1 is available", $vs_type_name_singular);
 		} else {
-			print _t("%1 sets are available", sizeof($va_sets['mine']));
+			print _t("%1 %2 are available", sizeof($va_sets['mine']), $vs_type_name_plural);
 		}
 ?></div>
 </h3>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,18 +25,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/ApplicationChangeLog.php');
- 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+ 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/IWidget.php');
+ 	require_once(__CA_LIB_DIR__.'/ApplicationChangeLog.php');
+ 	require_once(__CA_LIB_DIR__.'/Datamodel.php');
+ 	require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
  
 	class recentChangesWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
 		private $opo_datamodel;
 		
-		static $s_widget_settings = array(	);
+		static $s_widget_settings = [];
 		
 		# -------------------------------------------------------
 		public function __construct($ps_widget_path, $pa_settings) {
@@ -45,7 +45,6 @@
 			parent::__construct($ps_widget_path, $pa_settings);
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recentChangesWidget.conf');
-			$this->opo_datamodel = Datamodel::load();
 		}
 		# -------------------------------------------------------
 		/**
@@ -70,7 +69,7 @@
 			parent::renderWidget($ps_widget_id, $pa_settings);
 			$this->opo_view->setVar('change_log', new ApplicationChangeLog());
 			
-			if ($t_table = $this->opo_datamodel->getInstanceByTableName($pa_settings['display_type'], true)) {
+			if ($t_table = Datamodel::getInstanceByTableName($pa_settings['display_type'], true)) {
 				$this->opo_view->setVar('table_num', $t_table->tableNum()); 	
 				$this->opo_view->setVar('table_name_plural', $t_table->getProperty('NAME_PLURAL')); 	
 				
@@ -141,4 +140,3 @@
 				'description' => _t('Threshold (in hours) to display change log entries for')
 			)
 		);
-?>

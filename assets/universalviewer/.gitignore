@@ -1,0 +1,85 @@
+#################
+## Bower Components
+#################
+
+lib
+!src/lib
+!src/extensions/**/lib
+!dist/**/lib
+
+#################
+## TypeScript
+#################
+
+.tscache
+
+#################
+## Webstorm
+#################
+
+.idea
+
+#################
+## Node
+#################
+
+lib-cov
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+pids
+logs
+results
+
+npm-debug.log
+node_modules
+
+#################
+## JavaScript
+#################
+
+*.js
+*.js.map
+*.min.map
+!tasks/*.js
+!config.js
+!Gruntfile.js
+!gulpfile.js
+!src/lib/*.js
+!src/*/*/lib/*.js
+!src/extensions/*/dependencies.js
+!dist/**/*.js
+
+#################
+## Build
+#################
+
+build/
+src/extensions/*/build
+
+#################
+## Dist
+#################
+
+dist/*.tar
+dist/*.zip
+
+#################
+## Themes
+#################
+
+src/themes
+
+#################
+## Misc
+#################
+
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.tmp.txt

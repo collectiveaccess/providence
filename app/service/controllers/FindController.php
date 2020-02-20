@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/ca/Service/SearchJSONService.php');
+	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+	require_once(__CA_LIB_DIR__.'/Service/SearchJSONService.php');
 
 	class FindController extends BaseServiceController {
 		# -------------------------------------------------------

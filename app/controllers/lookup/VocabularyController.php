@@ -26,15 +26,13 @@
  * ----------------------------------------------------------------------
  */
  
- 	require_once(__CA_LIB_DIR__."/core/Media.php");
- 	require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
+ 	require_once(__CA_LIB_DIR__."/Media.php");
+ 	require_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
  	require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
- 	require_once(__CA_LIB_DIR__."/ca/Search/ListItemSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ListItemSearch.php");
  	require_once(__CA_MODELS_DIR__."/ca_objects.php");
- 	
- 
- require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
+ 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
  
  	class VocabularyController extends BaseLookupController {
  		# -------------------------------------------------------
@@ -72,4 +70,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

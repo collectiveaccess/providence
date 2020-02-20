@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
+ 	require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
  
 
 	
@@ -79,13 +79,4 @@
 			return $pa_menu_bar;
 		}
 		# -------------------------------------------------------
-		/**
-		 * Get plugin user actions
-		 */
-		static public function getRoleActionList() {
-			return array();
-		}
-		# -------------------------------------------------------
 	}
-
-?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
+require_once(__CA_LIB_DIR__.'/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_set_item_labels'] = array(
@@ -68,7 +68,7 @@ BaseModel::$s_ca_models_definitions['ca_set_item_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Caption'), 'DESCRIPTION' => _t('Caption for the set item.'),
-				'BOUNDS_LENGTH' => array(1,255)
+				'BOUNDS_LENGTH' => array(1,1024)
 		)
  	)
 );
@@ -188,4 +188,3 @@ class ca_set_item_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>

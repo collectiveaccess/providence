@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/ca/Service/ModelService.php');
+	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+	require_once(__CA_LIB_DIR__.'/Service/ModelService.php');
 
 	class AuthController extends BaseServiceController {
 		# -------------------------------------------------------
@@ -35,28 +35,26 @@
  		}
 		# -------------------------------------------------------
 		public function login() {
-			$o_session = $this->getRequest()->getSession();
-			if(!$o_session->getSessionID()) {
+			if(!Session::getSessionID()) {
 				$this->view->setVar("errors", array("Invalid session"));
 				$this->render("json_error.php");
 				return;
 			}
 
-			$this->view->setVar("content",array('authToken' => $o_session->getServiceAuthToken()));
+			$this->view->setVar("content",array('authToken' => Session::getServiceAuthToken()));
 			$this->render('json.php');
 		}
 		# -------------------------------------------------------
 		public function logout() {
-			$o_session = $this->getRequest()->getSession();
-			if(!$o_session->getSessionID()) {
+			if(!Session::getSessionID()) {
 				$this->view->setVar("errors", array("Invalid session"));
 				$this->render("json_error.php");
 				return;
 			}
 
-			$o_session->deleteSession();
+			Session::deleteSession();
 
-			$this->view->setVar("content",array('authToken' => $o_session->getServiceAuthToken()));
+			$this->view->setVar("content",array('authToken' => Session::getServiceAuthToken()));
 			$this->render('json.php');
 		}
 		# -------------------------------------------------------

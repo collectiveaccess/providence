@@ -34,7 +34,7 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 global $_ca_editor_ui_bundle_placement_settings;
 $_ca_editor_ui_bundle_placement_settings = array(		// global
@@ -69,7 +69,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 		'takesLocale' => false,
 		'default' => "",
 		'label' => _t('Width'),
-		'description' => _t('Width, in characters or pixels, of search form elements.')
+		'description' => _t('Width, in characters or pixels.')
 	),
 	'height' => array(
 		'formatType' => FT_TEXT,
@@ -78,7 +78,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 		'takesLocale' => false,
 		'default' => "",
 		'label' => _t('Height'),
-		'description' => _t('Width, in characters or pixels, of search form elements.')
+		'description' => _t('Width, in characters or pixels.')
 	),
 	'readonly' => array(
 		'formatType' => FT_NUMBER,
@@ -239,7 +239,7 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			'screen_id'
 		),
 		"RELATED_TABLES" => array(
 		
@@ -315,7 +315,7 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 		
 		if ($qr_res->nextRow()) {
 			if (!($vn_table_num = $qr_res->get('editor_type'))) { return null; }
-			return $this->getAppDatamodel()->getTableName($vn_table_num);
+			return Datamodel::getTableName($vn_table_num);
 		}
 		return null;	
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,9 +27,9 @@
  */
 
  	require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
-	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
+	require_once(__CA_LIB_DIR__.'/Search/ObjectSearch.php');
  	require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
-	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
+	require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
  	class CheckOutController extends ActionController {
  		# -------------------------------------------------------
@@ -93,7 +93,7 @@
  					$t_checkout = ca_object_checkouts::getCurrentCheckoutInstance($pn_object_id);
  					$vn_current_user_id = $t_checkout->get('user_id');
  					$va_reservations = $t_object->getCheckoutReservations();
- 					$vn_num_reservations = sizeof($va_reservations);
+ 					$vn_num_reservations = is_array($va_reservations) ? sizeof($va_reservations) : 0;
  					
  					$vs_current_user_checkout_date = $t_checkout->get('checkout_date', array('timeOmit' => true));
  					
@@ -102,7 +102,7 @@
  				case __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__:
  					// get reservations list
  					$va_reservations = $t_object->getCheckoutReservations();
- 					$vn_num_reservations = sizeof($va_reservations);
+ 					$vn_num_reservations = is_array($va_reservations) ? sizeof($va_reservations) : 0;
  					$t_checkout = ca_object_checkouts::getCurrentCheckoutInstance($pn_object_id);
  					$vs_current_user_checkout_date = $t_checkout->get('created_on', array('timeOmit' => true));
  					
@@ -150,7 +150,7 @@
  				'media' => $t_object->getWithTemplate('^ca_object_representations.media.icon'),
  				'status' => $vn_status,
  				'status_display' => $vs_status_display,
- 				'numReservations' => sizeof($va_reservations),
+ 				'numReservations' => is_array($va_reservations) ? sizeof($va_reservations) : 0,
  				'reservations' => $va_reservations,
  				'config' => $va_checkout_config,
  				'current_user_id' => $vn_current_user_id,
@@ -178,48 +178,49 @@
  		public function SaveTransaction() {
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			$ps_item_list = $this->request->getParameter('item_list', pString);
- 			
- 			$pa_item_list = json_decode($ps_item_list, true);
+ 			$pa_item_list = json_decode(stripslashes($ps_item_list), true);
+ 			if (!is_array($pa_item_list)) { $pa_item_list = []; }
  			
  			$t_checkout = ca_object_checkouts::newCheckoutTransaction();
  			$va_ret = array('status' => 'OK', 'total' => sizeof($pa_item_list), 'errors' => array(), 'checkouts' => array());
- 			
- 			
- 			$t_object = new ca_objects();
- 			foreach($pa_item_list as $vn_i => $va_item) {
-				if (!$t_object->load(array('object_id' => $va_item['object_id'], 'deleted' => 0))) { continue; }
+ 				
+ 			if(is_array($pa_item_list)) {
+				$t_object = new ca_objects();
+				foreach($pa_item_list as $vn_i => $va_item) {
+					if (!$t_object->load(array('object_id' => $va_item['object_id'], 'deleted' => 0))) { continue; }
 				
-				$vs_name = $t_object->getWithTemplate("^ca_objects.preferred_labels.name (^ca_objects.idno)");
-				if ($va_checkout_info = $t_checkout->objectIsOut($va_item['object_id'])) {
-					if ($va_checkout_info['user_id'] == $pn_user_id) {
-						// user already has item so skip it
-						$va_ret['errors'][$va_item['object_id']] = _t('User already has <em>%1</em>', $vs_name);
-						continue;
-					}
-					try {
-						$vb_res = $t_checkout->reserve($va_item['object_id'], $pn_user_id, $va_item['note'], array('request' => $this->request));
-						if ($vb_res) {
-							$va_ret['checkouts'][$va_item['object_id']] = _t('Reserved <em>%1</em>', $vs_name);
-						} else {
-							$va_ret['errors'][$va_item['object_id']] = _t('Could not reserve <em>%1</em>: %2', $vs_name, join('; ', $t_checkout->getErrors()));
+					$vs_name = $t_object->getWithTemplate("^ca_objects.preferred_labels.name (^ca_objects.idno)");
+					if ($va_checkout_info = $t_checkout->objectIsOut($va_item['object_id'])) {
+						if ($va_checkout_info['user_id'] == $pn_user_id) {
+							// user already has item so skip it
+							$va_ret['errors'][$va_item['object_id']] = _t('User already has <em>%1</em>', $vs_name);
+							continue;
 						}
-					} catch (Exception $e) {
-						$va_ret['errors'][$va_item['object_id']] = _t('Could not reserve <em>%1</em>: %2', $vs_name, $e->getMessage());
-					}
-				} else {
-					try {
-						$vb_res = $t_checkout->checkout($va_item['object_id'], $pn_user_id, $va_item['note'], $va_item['due_date'], array('request' => $this->request));
+						try {
+							$vb_res = $t_checkout->reserve($va_item['object_id'], $pn_user_id, $va_item['note'], array('request' => $this->request));
+							if ($vb_res) {
+								$va_ret['checkouts'][$va_item['object_id']] = _t('Reserved <em>%1</em>', $vs_name);
+							} else {
+								$va_ret['errors'][$va_item['object_id']] = _t('Could not reserve <em>%1</em>: %2', $vs_name, join('; ', $t_checkout->getErrors()));
+							}
+						} catch (Exception $e) {
+							$va_ret['errors'][$va_item['object_id']] = _t('Could not reserve <em>%1</em>: %2', $vs_name, $e->getMessage());
+						}
+					} else {
+						try {
+							$vb_res = $t_checkout->checkout($va_item['object_id'], $pn_user_id, $va_item['note'], $va_item['due_date'], array('request' => $this->request));
 				
-						if ($vb_res) {
-							$va_ret['checkouts'][$va_item['object_id']] = _t('Checked out <em>%1</em>; due date is %2', $vs_name, $va_item['due_date']);
-						} else {
-							$va_ret['errors'][$va_item['object_id']] = _t('Could not check out <em>%1</em>: %2', $vs_name, join('; ', $t_checkout->getErrors()));
+							if ($vb_res) {
+								$va_ret['checkouts'][$va_item['object_id']] = _t('Checked out <em>%1</em>; due date is %2', $vs_name, $va_item['due_date']);
+							} else {
+								$va_ret['errors'][$va_item['object_id']] = _t('Could not check out <em>%1</em>: %2', $vs_name, join('; ', $t_checkout->getErrors()));
+							}
+						} catch (Exception $e) {
+							$va_ret['errors'][$va_item['object_id']] = _t('Could not check out <em>%1</em>: %2', $vs_name, $e->getMessage());
 						}
-					} catch (Exception $e) {
-						$va_ret['errors'][$va_item['object_id']] = _t('Could not check out <em>%1</em>: %2', $vs_name, $e->getMessage());
 					}
 				}
- 			}
+			}
  			
  			$this->view->setVar('data', $va_ret);
  			$this->render('checkout/ajax_data_json.php');

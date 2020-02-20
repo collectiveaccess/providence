@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,8 +31,8 @@
  	$vb_importers_available = (is_array($va_importer_list) && sizeof($va_importer_list));
  	
  	print $vs_control_box = caFormControlBox(
-		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Import"), 'caWorldCatResultsForm')) : '').' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
+		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Import"), 'caWorldCatResultsForm')) : '').' '.
+		(caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
 		'',
 		''
 	);
@@ -40,12 +40,12 @@
  <form action="#" id="caWorldCatSearchForm">
  	<div class="formLabel">
  		<?php print _t('Find in WorldCat').': '.caHTMLTextInput("term", array('value' => '', 'id' => 'caWorldCatTerm'), array('width' => '250px')); ?>
- 		<a href="#" id="caWorldCatTermLookup" class="button"><?php print _t('Go'); ?> &rsaquo;</a>
+ 		<a href="#" id="caWorldCatTermLookup" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
  	</div>
  </form>
  
 <?php
-	print caFormTag($this->request, 'Run', 'caWorldCatResultsForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+	print caFormTag($this->request, 'Run', 'caWorldCatResultsForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
 	<div class="<?php print $vb_importers_available ? 'formLabel' : 'formLabelError'; ?>">
 <?php
@@ -64,10 +64,15 @@
  	
  	<br style="clear"/>
  	
-	<div id="caWorldCatResults" class="bundleContainer">
-		<div class="caWorldCatResultsMessage">
-			<?php print _t('Enter a WorldCat search above to begin'); ?>
+ 	<div class="caWorldCatResultsContainer">
+		<div id="caWorldCatResults" class="bundleContainer">
+			<div class="caWorldCatResultsMessage">
+				<?php print _t('Enter a WorldCat search above to begin'); ?>
+			</div>
 		</div>
+<?php
+	print $this->request->config->get('worlcat_isbn_exists_key');
+?>
 	</div>
 	
 	<div class='formLabel'>
@@ -150,7 +155,8 @@
 			if (jQuery.isArray(data['results']) && (data['results'].length > 0)) {
 				for(var i=0; i < data['results'].length; i++) {
 					if (data['results'][i].id > 0) {
-						html += "<li class='caWorldCatResultItem'><input type='checkbox' name='WorldCatID[]' value='" + data['results'][i].id + "' class='caWorldCatSearchResultCheckbox'/> <a href='#' class='caWorldCatSearchResultItem'>" + data['results'][i].label + "</a> <div class='caWorldCatSearchResultDetails' id='caWorldCatSearchResult_" + i + "'></div></li>";
+						var existing_object_display_text = data['results'][i].existingObject;
+						html += "<li class='caWorldCatResultItem'><input type='checkbox' name='WorldCatID[]' value='" + data['results'][i].id + "' class='caWorldCatSearchResultCheckbox'/> <a href='#' class='caWorldCatSearchResultItem'>" + data['results'][i].label + "</a> " + existing_object_display_text + " <div class='caWorldCatSearchResultDetails' id='caWorldCatSearchResult_" + i + "'></div></li>";
 					} else {
 						html += "<li class='caWorldCatResultItem'>" + data['results'][i].label + "</li>";
 					}

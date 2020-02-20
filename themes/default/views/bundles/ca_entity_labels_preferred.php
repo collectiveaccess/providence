@@ -28,8 +28,9 @@
  
 	$vs_id_prefix 						= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_labels 							= $this->getVar('labels');
-	$t_label 								= $this->getVar('t_label');
+	$t_label 							= $this->getVar('t_label');
 	$va_initial_values 					= $this->getVar('label_initial_values');
+	$t_subject							= $this->getVar('t_subject');
 	if (!$va_force_new_labels 		= $this->getVar('new_labels')) { $va_force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
 	$va_settings = 		$this->getVar('settings');
@@ -38,6 +39,13 @@
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_entities', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	$vb_batch			= $this->getVar('batch');
+	$vs_bundle_preview = '';
+	if(isset($va_settings['displayTemplate'])) {
+		$vs_bundle_preview = $t_subject->getWithTemplate($va_settings['displayTemplate']);
+	}
+	if(!$vs_bundle_preview) {
+		$vs_bundle_preview = current($va_initial_values)['displayname'];
+	}
 	if ($vb_batch) {
 		print caBatchEditorPreferredLabelsModeControl($t_label, $vs_id_prefix);
 	} else {
@@ -56,8 +64,9 @@
 ?>
 	<textarea class='caLabelTemplate' style='display: none;'>
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
+			<div id="caDupeLabelMessageBox_{n}" class='caDupeLabelMessageBox'></div>
 			<div style="float: right;">
-				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 			<table class="objectRepresentationListItem">
 				<tr valign="middle">
@@ -149,7 +158,9 @@
 								<td>
 									<?php print $t_label->htmlFormElement('other_forenames', null, array('name' => "{fieldNamePrefix}other_forenames_{n}", 'id' => "{fieldNamePrefix}other_forenames_{n}", "value" => "{{other_forenames}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred')); ?>
 								</td>
-								<td colspan="3"><?php print $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred', 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?><td>
+								<td colspan="3">
+									<?php print $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred', 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
+								</td>
 							</tr>
 						</table>
 <?php
@@ -169,7 +180,7 @@
 		<div class="caLabelList">
 		
 		</div>
-		<div class='button labelInfo caAddLabelButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
+		<div class='button labelInfo caAddLabelButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
 	</div>
 </div>
 <script type="text/javascript">
@@ -185,8 +196,11 @@
 		labelListClassName: 'caLabelList',
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
-		bundlePreview: <?php $va_cur = current($va_initial_values); print caEscapeForBundlePreview($va_cur['displayname']); ?>,
+		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+		checkForDupes: <?php print ($t_label->getAppConfig()->get('ca_entities_warn_when_preferred_label_exists') ? 'true' : 'false') ?>,
+		checkForDupesUrl: '<?php print caNavUrl($this->request, 'editor/entities', 'EntityEditor', 'checkForDupeLabels')?>',
+		dupeLabelWarning: '<?php print _t('Label is already in use'); ?>'
 	});
 </script>

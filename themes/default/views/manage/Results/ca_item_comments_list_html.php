@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,117 +25,96 @@
  *
  * ----------------------------------------------------------------------
  */ 
- 	$vo_result = $this->getVar('result');
-	$vn_items_per_page = $this->getVar('current_items_per_page');
+ 	$result = $this->getVar('result');
+	$items_per_page = $this->getVar('current_items_per_page');
 	
+	$i = 0;
+	$item_count = 0;
 ?>
-	<div id="commentsResults">
-		<form id="commentListForm"><input type="hidden" name="mode" value="search">
-		
+	<div id="commentsResults">	
 		<div style="text-align:right;">
-			<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_APPROVE__); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
-			<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
+			<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
+			<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
 		</div>
-		<table id="caCommentsList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:10px;">
+		<table id="caItemList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:10px;">
 			<thead>
 				<tr>
 					<th class="list-header-nosort">
-						<?php print _t('Author'); ?>
+						<?php print _t('Item'); ?>
 					</th>
 					<th class="list-header-nosort">
 						<?php print _t('Comment'); ?>
 					</th>
 					<th class="list-header-nosort">
-						<?php print _t('Media'); ?>
-					</th>
-					<th class="list-header-nosort">
-						<?php print _t('Rating'); ?>
+						<?php print _t('Author'); ?>
 					</th>
 					<th class="list-header-nosort">
 						<?php print _t('Date'); ?>
 					</th>
 					<th class="list-header-nosort">
-						<?php print _t('Commented On'); ?>
+						<?php print _t('Status'); ?>
 					</th>
 					<th class="list-header-nosort">
-						<?php print _t('Status'); ?>
+						<?php print _t('Notes'); ?>
 					</th>
 					<th class="list-header-nosort"><?php print _t('Select'); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 
-<?php
-		$i = 0;
-		$vn_item_count = 0;
-		$o_tep = new TimeExpressionParser();
-		$o_datamodel = Datamodel::load();
-		
-		while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-			if (!($t_table = $o_datamodel->getInstanceByTableNum($vo_result->get('ca_item_comments.table_num'), true))) {
-				continue;
-			}
+<?php	
+
+        $comment_data = ca_item_comments::getItemCommentDataForResult($result, ['itemsPerPage' => $items_per_page, 'request' => $this->request]);
+        
+        $item_count = 0;
+		while(($item_count < $items_per_page) && $result->nextHit()) {
+		    $d = ca_item_comments::getItemCommentDataForDisplay($result, $comment_data);
 ?>
 				<tr>
 					<td>
+<?php
+						print !$d['id'] ? $d['label'] : caEditorLink($this->request, $d['label'], '', $d['table_num'], $d['id'])." ({$d['idno']})";
+?>
+					</td>
+					<td>
+						<div class="caUserCommentsListComment">
+							<?php print $d['comment']; ?>
+						</div>
+					</td>
+					<td>
 						<div class="caUserCommentsListName">
 <?php 
-						if($vo_result->get('ca_item_comments.user_id')){
-							print $vo_result->get('ca_users.fname')." ".$vo_result->get('ca_users.lname')."<br/>".$vo_result->get('ca_users.email');
-						}else{
-							print $vo_result->get('ca_item_comments.name')."<br/>".$vo_result->get('ca_item_comments.user_email');
-						}
+						    print "{$d['name']} ({$d['email']})";
 ?>
 						</div>
 					</td>
 					<td>
-						<div class="caUserCommentsListComment">
-							<?php print $vo_result->get('ca_item_comments.comment'); ?>
-						</div>
-					</td>	
+<?php 
+						print $d['created_on'];
+?>
+					</td>
+					<td>
+						<?php print $d['moderated_on'] ? _t("Approved") : _t("Needs moderation"); ?>
+					</td>
 					<td>
 <?php
-						if($vo_result->getMediaTag('ca_item_comments.media1', "thumbnail")){
-							print "<span style='white-space: nowrap;'>".$vo_result->getMediaTag("ca_item_comments.media1", "thumbnail");
-							print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), '', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $vo_result->get('ca_item_comments.comment_id'), 'mode' => 'search', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
+                        if ($d['notes']) { print "{$d['notes']}<br/>\n"; }
+						if($result->getMediaTag('ca_item_comments.media1', "thumbnail")){
+							print "<span style='white-space: nowrap;'>".$result->getMediaTag("ca_item_comments.media1", "thumbnail");
+							print caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t('Download'), '', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $result->get('ca_item_comments.comment_id'), 'mode' => 'search', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
 							print "</span>";
 						}
 ?>
 					</td>
 					<td>
-						<?php print ($vn_tmp = $vo_result->get('ca_item_comments.rating')) ? $vn_tmp : "-"; ?>
-					</td>
-					<td>
-<?php 
-						$o_tep->setUnixTimestamps($vn_tmp = $vo_result->get('ca_item_comments.created_on'), $vn_tmp);
-						print $o_tep->getText();
-?>
-					</td>
-					<td>
-<?php
-						$vs_commented_on = "";
-						if ($t_table->load($vo_result->get('ca_item_comments.row_id'))) {
-							$vs_commented_on = $t_table->getLabelForDisplay(false);
-							if ($vs_idno = $t_table->get('idno')) {
-								$vs_commented_on .= ' ['.$vs_idno.']';
-							}
-						}
-
-						print $vs_commented_on;
-?>
-					</td>
-					<td>
-						<?php print $vo_result->get('ca_item_comments.moderated_on') ? _t("Approved") : _t("Needs moderation"); ?>
-					</td>
-					<td>
-						<input type="checkbox" name="comment_id[]" value="<?php print $vo_result->get('comment_id'); ?>">
+						<input type="checkbox" name="comment_id[]" value="<?php print $result->get('comment_id'); ?>">
 					</td>
 				</tr>
 <?php
 			$i++;
-			$vn_item_count++;
+			$item_count++;
 		}
 ?>
 			</tbody>
-		</table></form>
+		</table>
 	</div><!--end commentsResults -->

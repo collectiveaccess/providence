@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,6 +88,9 @@ BaseModel::$s_ca_models_definitions['ca_locales'] = array(
 );
 
 class ca_locales extends BaseModel {
+
+    use SyncableBaseModel;
+
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -190,6 +193,8 @@ class ca_locales extends BaseModel {
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
 		$vm_rc = parent::insert($pa_options);
+		
+		$this->setGUID($pa_options);
 		$this->flushLocaleListCache();
 		return $vm_rc;
 	}
@@ -324,6 +329,24 @@ class ca_locales extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * 
+	 *
+	 * @return areay
+	 */
+	static public function getCataloguingLocaleList() {
+		return self::getLocaleList(['available_for_cataloguing_only' => true]);
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return areay
+	 */
+	static public function getCataloguingLocaleCodes() {
+		return array_keys(self::getLocaleList(['available_for_cataloguing_only' => true, 'index_by_code' => true]));
+	}
+	# ------------------------------------------------------
+	/**
 	 *
 	 */
 	public function getName() {
@@ -395,6 +418,17 @@ class ca_locales extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Non-static version of ca_locales::codeToID() offered for compatibility reasons
+	 *
+	 * @param string $ps_code A language code in the form <language>_<country> (eg. en_US)
+	 * @return int The locale_id of the locale, or null if the code is invalid
+	 * @seealso ca_locales::codeToID()
+	 */
+	public function localeCodeToID($ps_code) {
+		return ca_locales::codeToID($ps_code);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns the locale_id of the specified locale, or null if the code is invalid. Note that this does not 
 	 * change the state of the model - it just returns the locale_id. If you want to actually load a model instance
 	 * with a locale record, use loadLocaleByCode()
@@ -402,11 +436,23 @@ class ca_locales extends BaseModel {
 	 * @param string $ps_code A language code in the form <language>_<country> (eg. en_US)
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 */
-	public function localeCodeToID($ps_code) {
+	static public function codeToID($ps_code) {
+		if (strlen($ps_code) == 0) { return null; }
 		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
 		return MemoryCache::fetch($ps_code, 'LocaleCodeToId');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Non-static version of ca_locales::IDToCode() offered for compatibility reasons
+	 *
+	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
+	 * @return string A language code in the form <language>_<country> (eg. en_US)
+	 * @seealso ca_locales::IDToCode()
+	 */
+	public function localeIDToCode($pn_id) {
+		return ca_locales::IDToCode($pn_id);
 	}
 	# ------------------------------------------------------
 	/**
@@ -416,11 +462,23 @@ class ca_locales extends BaseModel {
 	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
 	 * @return string A language code in the form <language>_<country> (eg. en_US)
 	 */
-	public function localeIDToCode($pn_id) {
+	static public function IDToCode($pn_id) {
+		if (strlen($pn_id) == 0) { return null; }
 		if (!MemoryCache::contains($pn_id, 'LocaleIdToCode')){
 			ca_locales::getLocaleList();
 		}
 		return MemoryCache::fetch($pn_id, 'LocaleIdToCode');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Non-static version of ca_locales::IDToName() offered for compatibility reasons
+	 *
+	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
+	 * @return string The name of the locale
+	 * @seealso ca_locales::IDToName()
+	 */
+	public function localeIDToName($pn_id) {
+		return ca_locales::IDToName($pn_id);
 	}
 	# ------------------------------------------------------
 	/**
@@ -430,11 +488,38 @@ class ca_locales extends BaseModel {
 	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
 	 * @return string The name of the locale
 	 */
-	public function localeIDToName($pn_id) {
+	static public function IDToName($pn_id) {
+		if (strlen($pn_id) == 0) { return null; }
 		if (!MemoryCache::contains($pn_id, 'LocaleIdToName')){
 			ca_locales::getLocaleList();
 		}
 		return MemoryCache::fetch($pn_id, 'LocaleIdToName');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of locales for the specified language. 
+	 *
+	 * @param string $ps_language A locale (ex. "en_US") or langage (ex. "en") code.
+	 * @param array $pa_options Options include:
+	 *		codesOnly = Return a list of locale codes for the given language. If not set then a list of arrays with details about each relevant locale is returned. [Default is false]
+	 *
+	 * @return array An array of arrays, each containing information about a locale. If the "codesOnly" option is set then a simple list of locale codes is returned.
+	 */
+	static function localesForLanguage($ps_language, $pa_options=null) {
+		$va_language = explode('_', $ps_language);
+		$ps_language = array_shift($va_language);
+		$pb_codes_only = caGetOption('codesOnly', $pa_options, false);
+		//$va_locales =  array_filter(ca_locales::getLocaleList(['index_by_code' => true]), function($v, $k) use ($ps_language) { return ($ps_language == array_shift(explode('_', $k))); }, ARRAY_FILTER_USE_BOTH);
+	
+	    $va_locales = [];
+	    $va_list = ca_locales::getLocaleList(['index_by_code' => true]);
+	    foreach($va_list as $k => $v) {
+	        if ($ps_language == array_shift(explode('_', $k))) { 
+	            $va_locales[$k] = $v;
+	        }
+	    }
+	    
+		return $pb_codes_only ? array_keys($va_locales) : $va_locales;
 	}
 	# ------------------------------------------------------
 }

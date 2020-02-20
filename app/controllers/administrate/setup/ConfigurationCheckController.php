@@ -26,11 +26,11 @@
  * ----------------------------------------------------------------------
  */
 
-include_once(__CA_LIB_DIR__."/core/Search/SearchEngine.php");
-include_once(__CA_LIB_DIR__."/core/Media.php");
-include_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
-include_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-include_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
+include_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
+include_once(__CA_LIB_DIR__."/Media.php");
+include_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
+include_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+include_once(__CA_LIB_DIR__."/ConfigurationCheck.php");
 include_once(__CA_MODELS_DIR__."/ca_change_log.php");
 
 class ConfigurationCheckController extends ActionController {

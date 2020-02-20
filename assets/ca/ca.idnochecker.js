@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.idnochecker.js
+ * js/ca.idnochecker.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,7 +46,7 @@ var caUI = caUI || {};
 		
 		
 		that.checkIDNo = function() { 
-			jQuery('#' + that.idnoStatusID).html((that.processIndicator ? '<img src=\'' + that.processIndicator + '\' border=\'0\'/>' : ''));
+			jQuery('#' + that.idnoStatusID).html((that.processIndicator ? that.processIndicator : ''));
 			var ids = jQuery.makeArray(jQuery(that.idnoFormElementIDs.join(',')));
 			
 			var vals = [];
@@ -75,7 +75,7 @@ var caUI = caUI || {};
 						if (that.searchUrl) {
 							msg = "<a href='" + that.searchUrl + idno + "'>" + msg + "</a>";
 						}
-						jQuery('#' + that.idnoStatusID).html((that.errorIcon ? '<img src=\'' + that.errorIcon + '\' border=\'0\'/> ' : '') + msg).show(0);
+						jQuery('#' + that.idnoStatusID).html((that.errorIcon ? that.errorIcon + ' ' : '') + msg).show(0);
 					} else{
 						jQuery('#' + that.idnoStatusID).html('').hide(0);
 					}

@@ -930,6 +930,39 @@
         </item>
       </items>
     </list>
+    <list code="object_circulation_statuses" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object circulation statuses</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="available" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Available</name_singular>
+              <name_plural>Available</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="in_library" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>In-library use only</name_singular>
+              <name_plural>In-library use only</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="unavailable" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Unavailable</name_singular>
+              <name_plural>Unavailable</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="object_lot_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1238,16 +1271,10 @@
     <list code="loan_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Loan label type values</name>
+          <name>Loan types</name>
         </label>
         <label locale="en_CA">
-          <name>Loan label type values</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Valeurs de type de libellé de prêt</name>
-        </label>
-        <label locale="sv_SE">
-          <name>Lån etikettyp värden</name>
+          <name>Loan types</name>
         </label>
       </labels>
       <items>
@@ -3260,9 +3287,6 @@
             <placement code="icon">
               <bundle>icon</bundle>
             </placement>
-            <placement code="validation_format">
-              <bundle>validation_format</bundle>
-            </placement>
             <placement code="ca_settings">
               <bundle>settings</bundle>
             </placement>
@@ -3372,8 +3396,14 @@
             <placement code="sub_type_left_id">
               <bundle>sub_type_left_id</bundle>
             </placement>
+            <placement code="include_subtypes_left">
+              <bundle>include_subtypes_left</bundle>
+            </placement>
             <placement code="sub_type_right_id">
               <bundle>sub_type_right_id</bundle>
+            </placement>
+            <placement code="include_subtypes_right">
+              <bundle>include_subtypes_right</bundle>
             </placement>
             <placement code="rank">
               <bundle>rank</bundle>
@@ -3576,9 +3606,6 @@
             <placement code="form_code">
               <bundle>form_code</bundle>
             </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
-            </placement>
             <placement code="is_system">
               <bundle>is_system</bundle>
             </placement>
@@ -3587,6 +3614,9 @@
             </placement>
             <placement code="ca_settings">
               <bundle>settings</bundle>
+            </placement>
+            <placement code="ca_search_form_type_restrictions">
+              <bundle>ca_search_form_type_restrictions</bundle>
             </placement>
             <placement code="ca_users">
               <bundle>ca_users</bundle>
@@ -3646,9 +3676,6 @@
             <placement code="display_code">
               <bundle>display_code</bundle>
             </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
-            </placement>
             <placement code="is_system">
               <bundle>is_system</bundle>
             </placement>
@@ -3684,6 +3711,54 @@
           <bundlePlacements>
             <placement code="ca_bundle_display_placements">
               <bundle>ca_bundle_display_placements</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="metadata_alert_rule_config_ui" type="ca_metadata_alert_rules">
+      <labels>
+        <label locale="en_US">
+          <name>Metadata alert rule editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Metadata alert rule name</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_metadata_alert_triggers">
+              <bundle>ca_metadata_alert_triggers</bundle>
+            </placement>
+            <placement code="ca_users">
+              <bundle>ca_users</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Recipient users</setting>
+                <setting name="add_label" locale="en_US">Add user</setting>
+              </settings>
+            </placement>
+            <placement code="ca_user_groups">
+              <bundle>ca_user_groups</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Recipient user groups</setting>
+                <setting name="add_label" locale="en_US">Add group</setting>
+              </settings>
+            </placement>
+            <placement code="ca_metadata_alert_rule_type_restrictions">
+              <bundle>ca_metadata_alert_rule_type_restrictions</bundle>
+            </placement>
+            <placement code="code">
+              <bundle>code</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -3751,33 +3826,6 @@
             </placement>
             <placement code="status">
               <bundle>status</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-            <label locale="en_CA">
-              <name>Relationships</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Relations</name>
-            </label>
-            <label locale="sv_SE">
-              <name>Relationer</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_object_lots">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_places</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -3905,6 +3953,108 @@
           <bundlePlacements>
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="site_page_editor_ui" type="ca_site_pages">
+      <labels>
+        <label locale="en_US">
+          <name>Site page editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="title">
+              <bundle>title</bundle>
+            </placement>
+            <placement code="path">
+              <bundle>path</bundle>
+            </placement>
+            <placement code="description">
+              <bundle>description</bundle>
+            </placement>
+            <placement code="ca_site_pages_content">
+              <bundle>ca_site_pages_content</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="keywords">
+              <bundle>keywords</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="standard_representation_ui" type="ca_object_representations">
+      <labels>
+        <label locale="en_US">
+          <name>Object representation editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="screen_23_0" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels1">
+              <bundle>preferred_labels</bundle>
+            </placement>
+            <placement code="idno2">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="media3">
+              <bundle>media</bundle>
+            </placement>
+            <placement code="access4">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status5">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="data_dictionary" type="ca_metadata_dictionary_entries">
+      <labels>
+        <label locale="en_US">
+          <name>Data dictionary editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="0" color="000000">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels1">
+              <bundle>preferred_labels</bundle>
+            </placement>
+            <placement code="bundle_name4">
+              <bundle>bundle_name</bundle>
+            </placement>
+            <placement code="table_num4">
+              <bundle>table_num</bundle>
+            </placement>
+            <placement code="ca_metadata_dictionary_rules6">
+              <bundle>ca_metadata_dictionary_rules</bundle>
+            </placement>
+            <placement code="settings6">
+              <bundle>settings</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -5180,6 +5330,60 @@
         </type>
       </types>
     </relationshipTable>
+
+    <relationshipTable name="ca_occurrences_x_collections">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>est lié à</typename>
+              <typename_reverse>est lié à</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>är relaterad till</typename>
+              <typename_reverse>är relaterad till</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft />
+          <subTypeRight />
+        </type>
+      </types>
+    </relationshipTable>
+
+    <relationshipTable name="ca_object_lots_x_vocabulary_terms">
+      <types>
+        <type code="subject" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>has subject</typename>
+              <typename_reverse>is subject</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>has subject</typename>
+              <typename_reverse>is subject</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>a pour sujet</typename>
+              <typename_reverse>est le sujet</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>har ämnet</typename>
+              <typename_reverse>är ämnet</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft />
+          <subTypeRight />
+        </type>
+      </types>
+    </relationshipTable>
   </relationshipTypes>
   <roles>
     <role code="admin">
@@ -5319,35 +5523,6 @@
       </roles>
     </group>
   </groups>
-  <displays>
-    <display code="researcher_display" type="ca_objects" system="1">
-      <labels>
-        <label locale="en_US">
-          <name>Researcher Display</name>
-        </label>
-      </labels>
-      <bundlePlacements>
-        <placement code="idno">
-          <bundle>ca_objects.idno</bundle>
-        </placement>        
-        <placement code="preferred_labels">
-          <bundle>ca_objects.preferred_labels</bundle>
-        </placement>
-        <placement code="description">
-          <bundle>ca_objects.description</bundle>
-        </placement>
-        <placement code="date">
-          <bundle>ca_objects.date</bundle>
-        </placement>
-        <placement code="type">
-          <bundle>ca_objects.type_id</bundle>
-        </placement>        
-        <placement code="entities">
-          <bundle>ca_entities</bundle>
-        </placement>       
-      </bundlePlacements>
-    </display>   
-  </displays>
   
    <searchForms>
   	<searchForm code="ca_objects_adv_search" type="ca_objects" system="1">

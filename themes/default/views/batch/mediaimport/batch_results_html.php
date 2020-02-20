@@ -89,7 +89,7 @@
 			foreach($pa_notices as $vn_id => $va_notice) {
 				switch($va_notice['status']) {
 					case 'SUCCESS':
-						$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): ".$va_notice['status']."</li>";
+						$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
 						break;
 					case 'SKIPPED':
 					case 'MATCHED':
@@ -97,7 +97,7 @@
 						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']."</li>";
 						break;
 					default:
-						$vs_buf .= "<li><em>".$va_notice['label']."</em> (".$va_notice['idno']."): ".$va_notice['status']."</li>";
+						$vs_buf .= "<li><em>".$va_notice['label']."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
 						break;
 				}
 			}
@@ -106,7 +106,7 @@
 		
 		if ($pa_general['set_id']) {
 			$vs_buf .= 
-				caNavButton($po_request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)).' '.
+				caNavButton($po_request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)).' '.
 				_t('Batch edit set <em>%1</em> containing imported media', caNavLink($po_request, $pa_general['setName'], '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id'])));
 		}
 		

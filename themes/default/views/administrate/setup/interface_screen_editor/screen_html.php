@@ -31,10 +31,10 @@
 	$t_ui = $this->getVar('t_ui');
 	
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'InterfaceScreenEditorForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit/'.$this->request->getActionExtra(), array('screen_id' => $vn_subject_id)), 
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'InterfaceScreenEditorForm').' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit/'.$this->request->getActionExtra(), array('screen_id' => $vn_subject_id)), 
 		'', 
-		(intval($vn_subject_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Delete/'.$this->request->getActionExtra(), array('screen_id' => $vn_subject_id)) : ''
+		(intval($vn_subject_id) > 0) ? caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Delete/'.$this->request->getActionExtra(), array('screen_id' => $vn_subject_id)) : ''
 	);
 ?>
 	<div class="sectionBox">

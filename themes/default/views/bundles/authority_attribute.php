@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,18 +58,18 @@ print caHTMLHiddenInput(
 );
 ?>
 
-<div id='caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>' class='caRelationQuickAddPanel'>
-	<div id='caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>ContentArea'>
+<div id='caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n}' class='caRelationQuickAddPanel'>
+	<div id='caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>ContentArea_{n}'>
 		<div class='dialogHeader'><?php print _t('Quick Add'); ?></div>
 	</div>
 </div>
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
 		if (caUI.initPanel) {
-			var caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>;
-			caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?> = caUI.initPanel({
-				panelID: 'caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>',
-				panelContentID: 'caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>ContentArea',
+			var caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n};
+			caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n} = caUI.initPanel({
+				panelID: 'caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n}',
+				panelContentID: 'caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>ContentArea_{n}',
 				exposeBackgroundColor: '#000000',
 				exposeBackgroundOpacity: 0.7,
 				panelTransitionSpeed: 400,
@@ -101,17 +101,17 @@ print caHTMLHiddenInput(
 				$.ajax({
 					url: '<?php print $vs_url; ?>',
 					dataType: 'json',
-					data: { term: request.term, quickadd: 1, noInline: 0 },
+					data: { term: request.term, quickadd: <?php print $this->getVar('allowQuickadd') ? 1 : 0; ?>, noInline: <?php print $this->getVar('allowQuickadd') ? 0 : 1; ?> },
 					success: function( data ) {
 						response(data);
 					}
 				});
 			},
 			select: function( event, ui ) {
-				var quickaddPanel = caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>;
+				var quickaddPanel = caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n};
 				var quickaddUrl = '<?php print $vs_quickadd_url; ?>';
 
-				if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
+				if(!parseInt(ui.item.id) || (ui.item.id == 0)) {
 					var panelUrl = quickaddUrl;
 					//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
 
@@ -123,6 +123,11 @@ print caHTMLHiddenInput(
 					quickAddPanelContent.data('autocompleteItemIDID', '<?php print $vs_field_name_prefix; ?>_{n}');
 					event.preventDefault();
 					return;
+				} else {
+					if(ui.item.id == -1) {
+						event.preventDefault();
+						return;
+					}
 				}
 
 				jQuery('#<?php print $vs_field_name_prefix; ?>_{n}').val(ui.item.id);

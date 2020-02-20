@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
  
 	class listItemSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
@@ -104,6 +104,15 @@
 				'label' => _t('Match on'),
 				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
 			),
+			'listItemSplitter_ignoreType' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore type when trying to match row'),
+				'description' => _t('Ignore type when trying to match row.')
+			),
 			'listItemSplitter_ignoreParent' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
@@ -111,7 +120,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Ignore parent when trying to match row'),
-				'description' => _t('gnore parent when trying to match row.')
+				'description' => _t('Ignore parent when trying to match row.')
 			),
 			'listItemSplitter_dontCreate' => array(
 				'formatType' => FT_TEXT,
@@ -122,6 +131,24 @@
 				'label' => _t('Do not create new records'),
 				'description' => _t('If set splitter will only match on existing records and will not create new ones.')
 			),
+			'listItemSplitter_hierarchicalDelimiter' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchical delimiter'),
+				'description' => _t('Sets the value of the delimiter to break hierarchical values on.')
+			),
+			'listItemSplitter_hierarchicalListItemTypes' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchical list item types'),
+				'description' => _t('A semicolon-delimited list of list item types to apply to hierarchical list items extracted using the hierarchical delimiter.')
+			),
 			'listItemSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
@@ -130,6 +157,15 @@
 				'default' => '',
 				'label' => _t('Relationship type'),
 				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
+			),
+			'listItemSplitter_extractRelationshipType' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Extract relationship type'),
+				'description' => _t('If set splitter will attempt to extract relationship type from data. By default it will look for text enclosed in parens. Set to {} or [] or look for text enclosed with those brackets instead.')
 			),
 			'listItemSplitter_listItemType' => array(
 				'formatType' => FT_TEXT,
@@ -211,6 +247,23 @@
 				'default' => '',
 				'label' => _t('Non-preferred labels'),
 				'description' => _t('List of non-preferred labels to apply to list items.')
+			),
+			'listItemSplitter_relationships' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of relationships to process.')
+			),
+			'listItemSplitter_relatedEntities' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of entity relationships to process.')
 			)
 		);
-?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,13 +32,13 @@
 	$t_list = new ca_lists();
 	
 	$vs_set_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
-							'<div style="float:right; margin: 3px;">'.
-								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).'</a>'.
+							'<div class="caNavHeaderIcon">'.
+								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
 							'</div>'.
 						'<form action="#">'._t('New search form for ').' '.caHTMLSelect('table_num', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.
 						'</div>';
 						
-	//$vs_set_type_menu = caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD__, _t('New form'), 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => 0));
+	//$vs_set_type_menu = caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t('New form'), 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => 0));
 ?>
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
@@ -60,7 +60,7 @@
 		); 
 	?>
 	
-	<table id="caFormList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caFormList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -72,7 +72,7 @@
 				<th class="list-header-unsorted">
 					<?php print _t('Content type'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort">&nbsp;</th>
+				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
 		</thead>
 		<tbody>
@@ -90,10 +90,10 @@
 				<td>
 					<?php print $va_form['search_form_content_type']; ?>
 				</td>
-				<td>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				<td class="listtableEditDelete">
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				
 				</td>
 			</tr>
 <?php

@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,14 +33,15 @@ if (!$this->getVar('no_hierarchies_defined')) {
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
+	$vn_start				= (int)$this->getVar('start');
 ?>
 <div id="scrollingResults">
 
 <form id="caFindResultsForm">
-	<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table class="listtable">
 		<thead>
 		<tr>
-		<th style="width:10px; text-align:center;" class='list-header-nosort'>
+		<th class='list-header-nosort addItemToSetControl'>
 			<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
 		</th>
 <?php
@@ -49,22 +50,20 @@ if (!$this->getVar('no_hierarchies_defined')) {
 		foreach($va_display_list as $va_display_item) {
 			if ($va_display_item['is_sortable']) {
 				if ($vs_current_sort == $va_display_item['bundle_sort']) {
-					print "<th class='list-header-sorted-asc'><span id='listHeader".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display'])."</nobr></span></th>";
+					print "<th class='list-header-sorted-asc'><span id='listHeader".$vn_id_count."'><nobr>".((mb_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display'])."</nobr></span></th>";
 					TooltipManager::add('#listHeader'.$vn_id_count , 'Currently sorting by '.$va_display_item['display']);
 				} else {
-					print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, ((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display']), '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
+					print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, ((mb_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display']), '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
 					TooltipManager::add('#listHeader1'.$vn_id_count , 'Click to sort by '.$va_display_item['display']);
 				}
 			} else {
-				print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display'])."</nobr></span></th>";
+				print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>".((mb_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display'])."</nobr></span></th>";
 				TooltipManager::add('#listHeader2'.$vn_id_count , $va_display_item['display']);
 			}
 			$vn_id_count++;
 		}
 ?>
-		<th class='list-header-nosort'>
-			<?php print _t("Edit"); ?>
-		</th>
+		<th class='list-header-nosort listtableEditDelete'> </th>
 		</tr></thead><tbody>
 <?php
 		$i = 0;
@@ -76,15 +75,16 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			($i == 2) ? $i = 0 : "";
 ?>
 			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-				<td style="width:10px">
+				<td class="addItemToSetControl">
 					<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_item_id; ?>' class="addItemToSetControl" />
+					<div><?php print $vn_start + $vn_item_count + 1; ?></div>
 				</td>
 <?php
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
-				print "<td class='editDelete'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'list-button', 'ca_list_items', $vn_item_id, array());
-				print " <a href='#' class='list-button' onclick='caOpenBrowserWith({$vn_item_id});'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, array('title' => _t('View in hierarchy')))."</a>";
+				print "<td class='listtableEditDelete'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'list-button', 'ca_list_items', $vn_item_id, array());
+				print " <a href='#' onclick='caOpenBrowserWith({$vn_item_id}); return false;'>".caNavIcon(__CA_NAV_ICON_GO__, 2, array('title' => _t('View in hierarchy')))."</a>";
 				print "</td>";		
 ?>	
 			</tr>
@@ -115,7 +115,6 @@ if (!$this->getVar('no_hierarchies_defined')) {
 </div><!--end scrollingResults -->
 <?php
 	TooltipManager::add('.hierarchyIcon', _t("View in Hierarchy"));
-	TooltipManager::add('.editIcon', _t("Edit List Item"));
 }
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>

@@ -34,8 +34,8 @@
 <p>Note that depending upon the size of your database reloading sort values can take from a few minutes to an hour or more. During the reloading process the system will remain usable but search and browse functions may return incorrectly sorted results. </p>
 	");
 	
-	print caFormTag($this->request, 'reload', 'caSortValuesReloadForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t("Reload sort values"), 'caSortValuesReloadForm', array())."</div>";
+	print caFormTag($this->request, 'reload', 'caSortValuesReloadForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Reload sort values"), 'caSortValuesReloadForm', array())."</div>";
 	print "</form>";
 	print "</div>\n";
 ?>

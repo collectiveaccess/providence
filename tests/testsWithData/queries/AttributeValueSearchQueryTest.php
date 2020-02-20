@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
@@ -38,7 +39,7 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
@@ -100,11 +101,11 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 				),
 
 				// Georeference
-				'georeference' => array(
-					array(
-						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
-					),
-				),
+				// 'georeference' => array(
+// 					array(
+// 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
+// 					),
+// 				),
 
 				// coverageNotes
 				'coverageNotes' => array(
@@ -112,12 +113,19 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 						'coverageNotes' => '', // add blank value for [BLANK] search test
 					),
 				),
+
+				// Date in a container
+				'date' => array(
+					array(
+						'dates_value' => '1985'
+					)
+				)
 			)
 		)));
 
 		// search queries
 		$this->setSearchQueries(array(
-			/*'My Test Image' => 1,
+			'My Test Image' => 1,
 
 			// plain text
 			'Lorem ipsum' => 1,
@@ -142,6 +150,9 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.dimensions_length:[0.5ft to 1ft]' => 1,
 			'ca_objects.dimensions_length:[1ft to 2ft]' => 0,
 
+			// it's not inconceivable that someone enters something like this!?
+			//'ca_objects.dimensions_length:"25cm to 30 cm"' => 1, // turns out SqlSearch can't to this
+
 			// weight
 			'ca_objects.dimensions_weight:2lbs' => 1,
 			'ca_objects.dimensions_weight:[1lbs to 2lbs]' => 1,
@@ -160,26 +171,28 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.integer_test:24 AND ca_objects.integer_test:1984' => 0,
 
 			// Currency
-			'ca_objects.currency_test:$100' => 1,*/
+			'ca_objects.currency_test:$100' => 1,
 			'ca_objects.currency_test:[$99.99 to $100.01]' => 1,
 			'ca_objects.currency_test:EUR100' => 0,
 			'ca_objects.currency_test:USD100' => 1,
 			'ca_objects.currency_test:CAD100' => 0,
+			// multiterm phrase query
+			'ca_objects.currency_test:"100 EUR"' => 0,
 
 			// Georeference
-			'ca_objects.georeference:[36.4,-123.5 to 38.5,-121.9]' => 1, // actual lucene range search
-			'ca_objects.georeference:[36.4,-121.9 to 38.5,-123.5]' => 1, // order shouldn't matter
-			'ca_objects.georeference:[38.5,-121.9 to 36.4,-123.5]' => 1, // order shouldn't matter
-			'ca_objects.georeference:[40.0,-121.9 to 40.1,-123.5]' => 0,
-			'ca_objects.georeference:[38.5,-124.0 to 36.4,-123.5]' => 0,
-
-			'ca_objects.georeference:"[37.4224879,-122.08422 ~ 5km]"' => 1, // special range query embedded in a lucene phrase query
-			'ca_objects.georeference:"[40.0,-125.0 ~ 5km]"' => 0,
-			'ca_objects.georeference:"[36.4,-123.5 to 38.5,-121.9]"' => 1, // special range query embedded in a lucene phrase query
-			'ca_objects.georeference:"[36.4,-121.9 to 38.5,-123.5]"' => 1, // order shouldn't matter
-			'ca_objects.georeference:"[38.5,-121.9 to 36.4,-123.5]"' => 1, // order shouldn't matter
-			'ca_objects.georeference:"[40.0,-121.9 to 40.1,-123.5]"' => 0,
-			'ca_objects.georeference:"[38.5,-124.0 to 36.4,-123.5]"' => 0,
+			// 'ca_objects.georeference:[36.4,-123.5 to 38.5,-121.9]' => 1, // actual lucene range search
+// 			'ca_objects.georeference:[36.4,-121.9 to 38.5,-123.5]' => 1, // order shouldn't matter
+// 			'ca_objects.georeference:[38.5,-121.9 to 36.4,-123.5]' => 1, // order shouldn't matter
+// 			'ca_objects.georeference:[40.0,-121.9 to 40.1,-123.5]' => 0,
+// 			'ca_objects.georeference:[38.5,-124.0 to 36.4,-123.5]' => 0,
+// 
+// 			'ca_objects.georeference:"[37.4224879,-122.08422 ~ 5km]"' => 1, // special range query embedded in a lucene phrase query
+// 			'ca_objects.georeference:"[40.0,-125.0 ~ 5km]"' => 0,
+// 			'ca_objects.georeference:"[36.4,-123.5 to 38.5,-121.9]"' => 1, // special range query embedded in a lucene phrase query
+// 			'ca_objects.georeference:"[36.4,-121.9 to 38.5,-123.5]"' => 1, // order shouldn't matter
+// 			'ca_objects.georeference:"[38.5,-121.9 to 36.4,-123.5]"' => 1, // order shouldn't matter
+// 			'ca_objects.georeference:"[40.0,-121.9 to 40.1,-123.5]"' => 0,
+// 			'ca_objects.georeference:"[38.5,-124.0 to 36.4,-123.5]"' => 0,
 
 			// Blank values
 			'ca_objects.coverageNotes:"[BLANK]"' => 1,			// actually has a blank value
@@ -205,7 +218,19 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.dimensions_weight:[BLANK]' => 0,
 			'ca_objects.dimensions_length:[BLANK]' => 0,
 			'ca_objects.url_source:[BLANK]' => 0,
-			'ca_objects.internal_notes:[BLANK]' => 0
+			'ca_objects.internal_notes:[BLANK]' => 0,
+
+			// dates in containers
+			'ca_objects.dates_value:1985' => 1,
+			'ca_objects.date.dates_value:1985' => 1, // for container advanced searches
+			'ca_objects.dates_value:1986' => 0,
+			'ca_objects.date.dates_value:1986' => 0, // for container advanced searches
+
+			// same as phrases
+			'ca_objects.dates_value:"1985"' => 1,
+			'ca_objects.date.dates_value:"1985"' => 1, // for container advanced searches
+			'ca_objects.dates_value:"1986"' => 0,
+			'ca_objects.date.dates_value:"1986"' => 0, // for container advanced searches
 		));
 	}
 	# -------------------------------------------------------

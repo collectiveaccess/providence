@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,13 +37,14 @@ if (!$this->getVar('no_hierarchies_defined')) {
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
 	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+	$vn_start				= (int)$this->getVar('start');
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
-		<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table class="listtable">
 			<thead>
 			<tr>
-			<th style="width:10px; text-align:center;" class='list-header-nosort'>
+			<th class='list-header-nosort addItemToSetControl'>
 				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
 			</th>
 			<th class='list-header-nosort'>
@@ -54,7 +55,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			$vn_id_count = 0;
 			foreach($va_display_list as $va_display_item) {
 				$vs_item_display_str =
-					((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
+					((mb_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
 
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {
@@ -92,13 +93,14 @@ if (!$this->getVar('no_hierarchies_defined')) {
 				($i == 2) ? $i = 0 : "";
 ?>
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-					<td style="width:10px;">
+					<td class="addItemToSetControl">
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_location_id; ?>' class="addItemToSetControl" />
+						<div><?php print $vn_start + $vn_item_count + 1; ?></div>
 					</td>
 <?php
-					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_storage_locations', $vn_location_id, array())."</td>";
+					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_storage_locations', $vn_location_id, array());
 					if ($vs_mode == 'search') { 
-						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_HIER__)."</a>";
+						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon(__CA_NAV_ICON_HIER__, 2)."</a>";
 					}
 					print "</td>";		
 					foreach($va_display_list as $vn_placement_id => $va_info) {
@@ -112,10 +114,10 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			}
 ?>
 			</tbody>
+			<tfoot>
 <?php
 			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
 ?>
-				<tfoot>
 					<tr>
 						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
 <?php
@@ -124,10 +126,17 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						}
 ?>
 					</tr>
-				</tfoot>
 <?php
 			}
+			if ($vs_bottom_line_totals = $this->getVar('bottom_line_totals')) {
+?>				
+					<tr>
+						<td colspan="<?php print sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?php print $vs_bottom_line_totals; ?></td>
+					</tr>
+<?php		
+			}
 ?>
+			</tfoot>
 		</table>
 	</form>
 </div><!--end scrollingResults -->

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,6 +63,7 @@
 
 	$vs_url_string = '';
 	foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
+		if ($vs_key == 'ids') { continue; }
 		$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
 	}
 
@@ -99,7 +100,7 @@
 
 		jQuery('#tableContent<?php print $vs_id_prefix; ?> .list-header-unsorted a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-desc a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-asc a').click(function(event) {
 			event.preventDefault();
-			jQuery.get(event.target + '<?php print $vs_url_string; ?>', caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
+			jQuery.post(event.target, <?php print json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
 		});
 
 		tableContent.find('form').each(function() {
@@ -120,7 +121,7 @@
 		// when ready, pull in the result list via the RelatedList search controller and the JS helper caAsyncSearchResultForm() above
 ?>
 		jQuery(document).ready(function() {
-			jQuery.get('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', $va_additional_search_controller_params); ?>', caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
+			jQuery.post('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', []); ?>', <?php print json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
 		});
 <?php
 	}
@@ -152,9 +153,9 @@
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+						<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						
-						<a href="<?php print urldecode(caEditorUrl($this->request, $t_item->tableName(), '{'.$t_item->primaryKey().'}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_GO__); ?></a>
+						<a href="<?php print urldecode(caEditorUrl($this->request, $t_item->tableName(), '{'.$t_item->primaryKey().'}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"><?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
 					</td>
 				</tr>
 			</table>
@@ -177,7 +178,7 @@
 <?php
 	if (!$vb_read_only) {
 ?>	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
 <?php
 	}
 ?>
@@ -252,8 +253,9 @@
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
 			showEmptyFormsOnLoad: 1,
-			autocompleteUrl: '<?php print $vs_navurl = caNavUrl($this->request, 'lookup', ucfirst($t_item->getProperty('NAME_SINGULAR')), 'Get', $va_lookup_params); ?>',
+			autocompleteUrl: '<?php print $vs_navurl = caNavUrl($this->request, 'lookup', ucfirst(str_replace(" ", "", ucwords($t_item->getProperty('NAME_SINGULAR'), ' '))), 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
+			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
 			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,

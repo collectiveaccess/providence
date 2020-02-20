@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004 - 2012 Whirl-i-Gig
+ * Copyright 2004-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,29 +29,106 @@
 # Only works with JPEG tiles; we skip extracting tile mimetype from the Tilepic file
 # to save time. If you are using non-JPEG tiles (unlikely, right?) then change the 
 # Content-type header below.
-require("../../setup.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
 
-$vo_conf = Configuration::load();
+$is_windows = (substr(PHP_OS, 0, 3) == 'WIN');
+$filepath = $_REQUEST["p"];
+$tile = $_REQUEST["t"];
+$win_disk = '';
+if ($is_windows) {
+        $p = explode(DIRECTORY_SEPARATOR, __FILE__);
+        $script_path = join("/", array_slice($p, 0, -3));
+        $win_disk = $p[0];
+} else {
+    	$script_path = join("/", array_slice(explode(DIRECTORY_SEPARATOR, isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__), 0, -3));
+}
+$filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", preg_replace("/\.tpc\$/", "", $filepath));
 
-$ps_filepath = 	$_REQUEST["p"];
-$pn_tile = $_REQUEST["t"];
+$fp = explode("/", $filepath); array_shift($fp);
+$sp = array_reverse(explode("/", $script_path)); array_pop($sp);
+foreach ($sp as $i => $s) {
+    if ($s === $fp[$i]) {
+        unset($sp[$i]);
+        continue;
+    }
+    break;
+}
+$script_path = $win_disk."/".join("/", array_reverse($sp));
+$filepath = preg_replace("/[^A-Za-z0-9_\-\/]/", "", $filepath);
 
-$ps_filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", $ps_filepath);
-$ps_filepath = preg_replace("/\.tpc\$/", "", $ps_filepath);
-$ps_filepath = str_replace($vo_conf->get('ca_media_url_root'),"", $ps_filepath);
-$ps_filepath = preg_replace("/[^A-Za-z0-9_\-\/]/", "", $ps_filepath);
-
-$vs_media_root = $vo_conf->get('ca_media_root_dir');
-
-if (file_exists($vs_media_root."/".$ps_filepath.".tpc")) {
+if (file_exists("{$script_path}{$filepath}.tpc")) {
 	header("Content-type: image/jpeg");
-	$vs_output = TilepicParser::getTileQuickly($vs_media_root."/".$ps_filepath.".tpc", $pn_tile);
-	header("Content-Length: ".strlen($vs_output));
-	print $vs_output;
+	$output = caTilepicGetTileQuickly($script_path."/".$filepath.".tpc", $tile);
+	header("Content-Length: ".strlen($output));
+	print $output;
 	exit;
 } else {
 	die("Invalid file");
 }
-?>
+
+# ------------------------------------------------------------------------------------
+# Utilities
+# ---------
+# These are copied from TilepicParser as local functions for performance reasons.
+# Including these from external libraries creates too much overhead.
+# ------------------------------------------------------------------------------------
+function caTilepicGetTileQuickly($filepath, $tile_number, $print_errors=true) {
+	# --- Tile numbers start at 1, *NOT* 0 in parameter!
+	if ($fh = @fopen($filepath,'r')) {
+		# look for signature
+		$sig = fread ($fh, 4);
+		if (preg_match("/TPC\n/", $sig)) {
+			$buf = fread($fh, 4);
+			$x = unpack("Nheader_size", $buf);
+			
+			if ($x['header_size'] <= 8) { 
+				if ($print_errors) { print "Tilepic header length is invalid"; }
+				fclose($fh);
+				return false;
+			}
+			# --- get tile offsets (start of each tile)
+			if (!fseek($fh, ($x['header_size']) + (($tile_number - 1) * 4))) {
+				$x = unpack("Noffset", fread($fh, 4)); 
+				$y = unpack("Noffset", fread($fh, 4)); 
+				
+				$x["offset"] = caTilepicUnpackLargeInt($x["offset"]);
+				$y["offset"] = caTilepicUnpackLargeInt($y["offset"]);
+				
+				$vn_len = $y["offset"] - $x["offset"];
+				if (!fseek($fh, $x["offset"])) {
+					$buf = fread($fh, $vn_len);
+					fclose($fh);
+					return $buf;
+				} else {
+					if ($print_errors) { print "File seek error while getting tile; tried to seek to ".$x["offset"]." and read $vn_len bytes"; }
+					fclose($fh);
+					return false;
+				}
+			} else {
+				if ($print_errors) { print "File seek error while getting tile offset"; }
+				fclose($fh);
+				return false;
+			}
+		} else {
+			if ($print_errors) { print "File is not Tilepic format"; }
+			fclose($fh);
+			return false;
+		}
+	} else {
+		if ($print_errors) { print "Couldn't open file $filepath"; }
+		fclose($fh);
+		return false;
+	}
+}
+# ------------------------------------------------------------------------------------
+#
+# This function gets around a bug in PHP when unpacking large ints on 64bit Opterons
+#
+function caTilepicUnpackLargeInt($the_int) {
+	$b = sprintf("%b", $the_int); // binary representation
+	if(strlen($b) == 64){
+		$new = substr($b, 33);
+		$the_int = bindec($new);
+	}
+	return $the_int;
+}
+# ------------------------------------------------------------------------------------

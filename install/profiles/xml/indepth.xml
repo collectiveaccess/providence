@@ -362,14 +362,6 @@
             </label>
           </labels>
         </item>
-        <item idno="bahamas" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Bahamas</name_singular>
-              <name_plural>Bahamas</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="ethiopia" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">

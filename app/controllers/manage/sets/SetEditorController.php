@@ -27,8 +27,9 @@
  */
 
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
- 	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
-	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
+ 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+	require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
+	require_once(__CA_APP_DIR__.'/helpers/exportHelpers.php');
 
  	class SetEditorController extends BaseEditorController {
  		# -------------------------------------------------------
@@ -85,15 +86,17 @@
 		 *
 		 */
  		public function Delete($pa_options=null) {
- 			list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
+			list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
 
- 			if (!$vn_subject_id) { return; }
-			  if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
+			if (!$vn_subject_id) { return; }
+			if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
 				$this->postError(2320, _t("Access denied"), "SetsEditorController->Delete()");
-			  }
-			  else {
+			} else {
 				parent::Delete($pa_options);
-			  }
+				if((bool)$this->request->getParameter('confirm', pInteger)) {
+					$this->response->setRedirect(caNavUrl($this->request, 'manage', 'Set', 'ListSets', []));
+				}
+			}
 		}
 		# -------------------------------------------------------
 		/**
@@ -144,7 +147,7 @@
 
  			$pn_row_id = $this->request->getParameter('row_id', pInteger);
 
- 			$t_row = $this->opo_datamodel->getInstanceByTableNum($pn_table_num, true);
+ 			$t_row = Datamodel::getInstanceByTableNum($pn_table_num, true);
  			if (!($t_row->load($pn_row_id))) {
  				$va_errors[] = _t("Row_id is invalid");
  			}
@@ -183,7 +186,6 @@
 		 */
 		public function getSetMedia() {
 			set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
-			$o_dm = Datamodel::load();
 			$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
 			if (!$t_set->getPrimaryKey()) {
 				$this->notification->addNotification(_t('No set defined'), __NOTIFICATION_TYPE_ERROR__);
@@ -198,8 +200,8 @@
 				return false;
 			}
 
-			$vs_subject_table = $o_dm->getTableName($t_set->get('table_num'));
-			$t_instance = $o_dm->getInstanceByTableName($vs_subject_table);
+			$vs_subject_table = Datamodel::getTableName($t_set->get('table_num'));
+			$t_instance = Datamodel::getInstanceByTableName($vs_subject_table);
 
 			$qr_res = $vs_subject_table::createResultSet($va_record_ids);
 			$qr_res->filterNonPrimaryRepresentations(false);
@@ -280,7 +282,40 @@
 			}
 			return;
 		}
- 		# -------------------------------------------------------
+		# -------------------------------------------------------
+		# Export set items
+		# -------------------------------------------------------
+		public function exportSetItems() {
+			set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
+			
+			$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
+			if (!$t_set->getPrimaryKey()) {
+				$this->notification->addNotification(_t('No set defined'), __NOTIFICATION_TYPE_ERROR__);
+				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
+				return false;
+			}
+
+			$va_record_ids = array_keys($t_set->getItemRowIDs(array('limit' => 100000)));
+			if(!is_array($va_record_ids) || !sizeof($va_record_ids)) {
+				$this->notification->addNotification(_t('No items are available for export'), __NOTIFICATION_TYPE_ERROR__);
+				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
+				return false;
+			}
+
+			$vs_subject_table = Datamodel::getTableName($t_set->get('table_num'));
+			$t_instance = Datamodel::getInstanceByTableName($vs_subject_table);
+
+			$qr_res = $vs_subject_table::createResultSet($va_record_ids);
+			$qr_res->filterNonPrimaryRepresentations(false);
+			
+			# --- get the export format/template to use
+			$ps_export_format = $this->request->getParameter('export_format', pString);
+			
+			caExportResult($this->request, $qr_res, $ps_export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set]);
+			
+			return;
+		}
+		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		/**
@@ -292,4 +327,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

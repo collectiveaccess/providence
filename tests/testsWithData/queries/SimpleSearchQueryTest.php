@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
@@ -38,7 +39,7 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class SimpleSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
@@ -93,6 +94,8 @@ class SimpleSearchQueryTest extends AbstractSearchQueryTest {
 			'asdf' => 0,
 			'ca_objects.type_id:image OR ca_objects.type_id:dataset' => 2,
 			'"physical" AND (ca_objects.type_id:image OR ca_objects.type_id:dataset)' => 0,
+			'((test) AND ((physical) AND (object))) AND (ca_objects.access:0)' => 1,
+			'((test) AND ((ca_objects.status:0) AND (object))) AND (ca_objects.access:0)' => 1
 		));
 	}
 	# -------------------------------------------------------

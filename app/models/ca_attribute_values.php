@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_attribute_values.php : table access class for table ca_attribute_values
+ * app/models/ca_attribute_values.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,9 +34,9 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
 require_once(__CA_MODELS_DIR__.'/ca_attribute_value_multifiles.php');
-require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
@@ -86,7 +86,7 @@ BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
 				'LABEL' => 'Longtext value container 2', 'DESCRIPTION' => 'Second longtext attribute value container'
 		),
 		'value_blob' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
@@ -250,6 +250,8 @@ class ca_attribute_values extends BaseModel {
 	 * @param string $ps_value The user-input value to parse
 	 * @param array $pa_element_info An array of information about the element for which this value will be set
 	 * @param int $pn_attribute_id The attribute_id of the attribute to add the value to
+	 * @param array $pa_options Options include:
+	 *      skipExistingValues = attempt to detect and skip values already attached to the specified row to which the attribute is bound. [Default is false]
 	 *
 	 * @return int Returns the value_id of the newly created value. If the value cannot be added due to an error, false is returned. "Silent" failures, for which the user should not see an error message, are indicated by a null return value.
 	 */
@@ -270,6 +272,26 @@ class ca_attribute_values extends BaseModel {
 		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
 		
 		if (is_array($va_values)) {
+		    if ((caGetOption('skipExistingValues', $pa_options, false)) && ($t_attr = caGetOption('t_attribute', $pa_options, null)) && ($t_instance = $t_attr->getRowInstance())) {
+                if(is_array($va_attrs = $t_instance->getAttributesByElement($vn_attr_element_id = $t_attr->get('element_id')))){
+                    $o_attr_value->loadTypeSpecificValueFromRow($va_values);
+                    $vs_new_value = (string)$o_attr_value->getDisplayValue($pa_options);
+                    
+                    $vb_already_exists = false;
+                    foreach($va_attrs as $o_attr) {
+                        foreach($o_attr->getValues() as $o_val) {
+                            if ((int)$o_val->getElementID() !== (int)$pa_element_info['element_id']) { continue; }
+                            $vs_old_value = (string)$o_val->getDisplayValue($pa_options);
+                            if (strlen($vs_old_value) && strlen($vs_new_value) && ($vs_old_value === $vs_new_value)) {
+                                return null;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+		
+		
 			$this->useBlobAsFileField(false);
 			if (!$o_attr_value->numErrors()) {
 				foreach($va_values as $vs_key => $vs_val) {
@@ -296,7 +318,7 @@ class ca_attribute_values extends BaseModel {
 		
 	
 			if (!$this->numErrors()) {
-				return $this->insert();
+				return $this->insert($pa_options);
 			} else {
 				return false;
 			}
@@ -359,6 +381,18 @@ class ca_attribute_values extends BaseModel {
 			return $va_values;
 		}
 		
+		// Clear cache against attribute and any pages
+		$vn_id = $this->getPrimaryKey();
+		CompositeCache::delete("attribute:{$vn_id}", 'IIIFMediaInfo');
+		CompositeCache::delete("attribute:{$vn_id}", 'IIIFTileCounts');
+		
+		$vn_p = 1;
+		while(CompositeCache::contains($vs_key = "attribute:{$vn_id}:{$vn_p}", "IIIFMediaInfo")) {
+			CompositeCache::delete($vs_key, 'IIIFMediaInfo');
+			CompositeCache::delete($vs_key, 'IIIFTileCounts');
+			$vn_p++;
+		}
+		
 		$this->update();
 		
 		if ($this->numErrors()) {
@@ -390,7 +424,7 @@ class ca_attribute_values extends BaseModel {
 		$vn_primary_key = $this->getPrimaryKey();
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 		if($vn_primary_key && $vn_rc) {
-			$this->removeGUID($vn_primary_key);
+			//$this->removeGUID($vn_primary_key);
 		}
 		return $vn_rc;
 	}
@@ -609,6 +643,77 @@ class ca_attribute_values extends BaseModel {
  			return intval($qr_res->get('c'));
  		}
  		return 0;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Return first attribute value id found for the specified element and value.
+ 	 *
+ 	 * @param mixed $element_id An element code or numeric element_id
+ 	 * @param mixed $value An attribute value (numeric or text)
+ 	 * @param array $options Options include:
+ 	 *      transaction = A transaction within which to perform the value search. [Default is null]
+ 	 *
+ 	 * @return int A value_id or null if no value is found.
+ 	 */
+ 	static public function getValueIDFor($element_id, $value, $options=null) {
+ 	    if (!is_numeric($element_id)) { 
+            require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+ 	        $element_id = ca_metadata_elements::getElementID($element_id); 
+ 	   }
+ 	
+        if ($element_id > 0) {
+ 	        $db = ($trans = caGetOption('transaction', $options, null)) ? $trans->getDb() : new Db();
+ 	        
+ 	        
+ 	        if(is_array($value)) { 
+ 	            $params = $sql_wheres = [];
+ 	            foreach($value as $k => $v) {
+ 	                if ($v && in_array($k, ['value_longtext1', 'value_longtext2', 'value_decimal1', 'value_decimal2', 'value_integer1'])) { 
+ 	                    $sql_wheres[] = "{$k} = ?";
+ 	                    $params[] = $v;
+ 	                }
+ 	            }
+ 	            if(!sizeof($sql_wheres)) { return null; }
+ 	            
+ 	            array_unshift($params, $element_id);
+                $qr = $db->query("
+                    SELECT value_id FROM ca_attribute_values WHERE element_id = ? AND ".(join(" AND ", $sql_wheres))." LIMIT 1
+                ", $params);
+ 	        } else {
+                $qr = $db->query("
+                    SELECT value_id FROM ca_attribute_values WHERE element_id = ? AND value_longtext1 = ? LIMIT 1
+                ", [$element_id, $value]);
+            }
+ 	        
+ 	        if ($qr->nextRow()) {
+ 	            return $qr->get('value_id');
+ 	        }
+ 	    }
+ 	    return null;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Return raw attribute value data for a value_id.
+ 	 *
+ 	 * @param int $value_id 
+ 	 * @param array $options Options include:
+ 	 *      transaction = A transaction within which to perform the value search. [Default is null]
+ 	 *
+ 	 * @return array Dictionary with raw attribute value fields (value_longtext1, value_longtext2, value_blob, value_decimal1, value_decimal2, value_integer1, item_id) or null if value_id is invalid.
+ 	 */
+ 	static public function getValuesFor($value_id, $options=null) {
+        if ($value_id > 0) {
+ 	        $db = ($trans = caGetOption('transaction', $options, null)) ? $trans->getDb() : new Db();
+ 	        
+ 	        $qr = $db->query("
+ 	            SELECT value_longtext1, value_longtext2, value_blob, value_decimal1, value_decimal2, value_integer1, item_id FROM ca_attribute_values WHERE value_id = ?
+ 	        ", [(int)$value_id]);
+
+ 	        if ($qr->nextRow()) {
+ 	            return $qr->getRow();
+ 	        }
+ 	    }
+ 	    return null;
  	}
 	# ------------------------------------------------------
 }

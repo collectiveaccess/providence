@@ -52,9 +52,9 @@
 			}
 			$vo_conf = Configuration::load();
 			$va_items = array();
-			if (unicode_strlen($ps_query) >= 3) {
+			if (mb_strlen($ps_query) >= 3) {
 				try {
-					$vs_data = caQueryExternalWebservice('http://id.loc.gov/search/?q='.urlencode('"'.$ps_query.'"').$vs_voc_query.'&format=atom&count=150');
+					$vs_data = caQueryExternalWebservice('http://id.loc.gov/search/?q='.urlencode($ps_query).'&format=atom&count=150'.$vs_voc_query);
 
 					if ($vs_data) {
 						$o_xml = @simplexml_load_string($vs_data);

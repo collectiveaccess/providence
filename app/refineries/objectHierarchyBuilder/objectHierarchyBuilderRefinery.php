@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
- 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
-	require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
+ 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
+	require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
  
 	class objectHierarchyBuilderRefinery extends BaseRefinery {
@@ -63,8 +63,7 @@
 			
 			$t_mapping = caGetOption('mapping', $pa_options, null);
 			if ($t_mapping) {
-				$o_dm = Datamodel::load();
-				if ($t_mapping->get('table_num') != $o_dm->getTableNum('ca_objects')) { 
+				if ($t_mapping->get('table_num') != Datamodel::getTableNum('ca_objects')) { 
 					if ($o_log) {
 						$o_log->logError(_t("objectHierarchyBuilder refinery may only be used in imports to ca_objects"));
 					}
@@ -81,6 +80,7 @@
 			
 			// Set object parents
 			if ($va_parents = $pa_item['settings']['objectHierarchyBuilder_parents']) {
+				$pa_options['refinery'] = $this;
 				$vn_parent_id = caProcessRefineryParents('objectHierarchyBuilder', 'ca_objects', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			
@@ -94,6 +94,15 @@
 		 */
 		public function returnsMultipleValues() {
 			return false;
+		}
+		# -------------------------------------------------------	
+		/**
+		 * objectHierarchyBuilder returns actual row_ids, not idnos
+		 *
+		 * @return bool
+		 */
+		public function returnsRowIDs() {
+			return true;
 		}
 		# -------------------------------------------------------
 	}

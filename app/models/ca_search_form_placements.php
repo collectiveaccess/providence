@@ -34,7 +34,7 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 global $_ca_editor_search_form_placement_settings;
 $_ca_editor_search_form_placement_settings = array(		// global
@@ -159,7 +159,7 @@ class ca_search_form_placements extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			'form_id'
 		),
 		"RELATED_TABLES" => array(
 		

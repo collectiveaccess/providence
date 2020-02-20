@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.seteditor.js
+ * js/ca.seteditor.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,7 @@ var caUI = caUI || {};
 			editSetItemsURL: null,			// url of set item editor (without item_id parameter key or value)
 			
 			editSetItemButton: null,		// html to use for edit set item button
+			deleteSetItemButton: null,		// html to use for delete set item button
 			
 			initialValues: null,
 			initialValueOrder: null,			/* id's to list display list in; required because Google Chrome doesn't iterate over keys in an object in insertion order [doh] */	
@@ -62,7 +63,7 @@ var caUI = caUI || {};
 			// setup autocompleter
 			jQuery('#' + that.setItemAutocompleteID).autocomplete(
 				{
-					source: that.lookupURL,
+					source: that.lookupURL + "?quickadd=0&noInline=1",
 					minLength: 3, max: 50, html: true,
 					select: function(event, ui) {
 						jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': ui.item.id, 'displayTemplate': that.displayTemplate} , 
@@ -104,7 +105,9 @@ var caUI = caUI || {};
 			
 			var itemID = valueArray['item_id'];
 			var rID = rowID + ((itemID > 0) ? "_" + itemID : "");
-			console.log("item=" + itemID, rowID, rID, repHTML);
+			
+			var counterHTML = '';
+			counterHTML = '<div class="setItemCounter"></div> ';
 			
 			var editLinkHTML = '';
 			if ((that.editSetItemButton) && (itemID > 0)) {
@@ -112,14 +115,14 @@ var caUI = caUI || {};
 			}
 			
 			var itemHTML = "<li class='setItem' id='" + that.fieldNamePrefix + "setItem" + rID +"'><div id='" + that.fieldNamePrefix + "setItemContainer" + rID + "' class='imagecontainer'>";
-			if (itemID > 0)  { itemHTML += "<div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + itemID + "'>&nbsp;</a></div>"; }
+			if (itemID > 0)  { itemHTML += "<div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + itemID + "'>" + that.deleteSetItemButton + "</a></div>"; }
 			var displayLabel;
 			if(valueArray.displayTemplate) {
 				displayLabel = valueArray.displayTemplate;
 			} else {
 				displayLabel = valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]";
 			}
-			itemHTML += "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
+			itemHTML += counterHTML + "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
 			
 			if (prepend) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).prepend(itemHTML);
@@ -172,6 +175,11 @@ var caUI = caUI || {};
 				}
 			});
 			
+			// set the number of each item in list
+			$('.setItemCounter').each(function(i, obj) {
+				$(this).html(i + 1);
+			});
+			
 			// set warning if no items on load
 			jQuery('#' + that.fieldNamePrefix + that.setItemListID + ' li.setItem').length ? jQuery('#' + that.fieldNamePrefix + that.setNoItemWarningID).hide() : jQuery('#' + that.fieldNamePrefix + that.setNoItemWarningID).show();
 			jQuery('#' + that.rowIDListID).val(that.getRowIDs().join(';'));
@@ -200,7 +208,16 @@ var caUI = caUI || {};
 				}
 				jQuery(v).remove();
 			});
-			indexedValues = caUI.utils.sortObj(indexedValues, true);
+			
+			switch(key) {
+				case 'name':
+					indexedValues = caUI.utils.sortObj(indexedValues, true);
+					break;
+				case 'idno':
+					indexedValues = caUI.utils.sortObjIdno(indexedValues);
+					break;
+			}
+			
 			
 			jQuery.each(indexedValues, function(k, v) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).append(v);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,31 +43,15 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 
 		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
-		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/base.css" type="text/css" media="screen" />
-		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/sets.css" type="text/css" media="screen" />
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
-		<!--[if (!IE)|(gte IE 8)]><!-->
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/viewer-datauri.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/plain-datauri.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/plain.css" media="screen" rel="stylesheet" type="text/css" />
-		<!--<![endif]-->
-		<!--[if lte IE 7]>
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/viewer.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/plain.css" media="screen" rel="stylesheet" type="text/css" />
-		<![endif]-->
-		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
-		<!-- disabling systematic call to fullcalendar.css as it is now called through AssetLoadManager:register('calendar') inside app/controllers/client/library/ListController.php (L52)
-        <link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/fullcalendar/fullcalendar.css" type="text/css" media="screen" />
-        -->
-
 <?php
 	print AssetLoadManager::getLoadHTML($this->request);
 	print MetaTagManager::getHTML();
 	
-	if (file_exists($this->request->getThemeDirectoryPath().'/css/local.css')) {
-		print '<link rel="stylesheet" href="'.$this->request->getThemeUrlPath().'/css/local.css" type="text/css" media="screen" />
-';
+	if ($vs_local_css_url_path = $this->request->getUrlPathForThemeFile("css/local.css")) {
+		print "<link rel='stylesheet' href='{$vs_local_css_url_path}' type='text/css' media='screen' />
+";
 	}
 	
 	//
@@ -97,6 +81,7 @@
 			// initialize CA Utils
 			caUI.initUtils({unsavedChangesWarningMessage: '<?php _p('You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes.'); ?>'});
 
+			var caPromptManager = caUI.initPromptManager();
 		</script>
 		<!--[if lte IE 6]>
 			<style type="text/css">
@@ -105,7 +90,8 @@
 			}
 			</style>
 			<![endif]-->
-		<!-- super fish end menus -->
+		<!-- super fish end menus -->	
+        <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 	</head>	
 	<body>
 		<div align="center">

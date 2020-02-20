@@ -74,7 +74,7 @@
 								$vs_style = "style='clear:left;'";
 								$i = 1;
 							}
-							print "<a href='#' class='facetLink facet{$vs_facet_code}' onclick='caUIBrowsePanel.showBrowsePanel(\"{$vs_facet_code}\"); $(\".facetLink\").removeClass(\"active\"); $(\".facet{$vs_facet_code}\").addClass(\"active\");' ".$vs_style.">".$va_facet_info['label_plural'].caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a>";
+							print "<a href='#' class='facetLink facet{$vs_facet_code}' onclick='caUIBrowsePanel.showBrowsePanel(\"{$vs_facet_code}\"); $(\".facetLink\").removeClass(\"active\"); $(\".facet{$vs_facet_code}\").addClass(\"active\");' ".$vs_style.">".caNavIcon(__CA_NAV_ICON_ADD__, 1)." ".$va_facet_info['label_plural']."</a>";
 
 						}
 ?>
@@ -117,8 +117,7 @@
 							$vs_style = "style='clear:left;'";
 							$i = 1;
 						}
-						print "<div class='facetHeadingLink facet{$vs_facet_code}' ".$vs_style."><a href='#' onclick='caUIBrowsePanel.showBrowsePanel(\"{$vs_facet_code}\"); $(\".facetHeadingLink\").removeClass(\"active\"); $(\".facet{$vs_facet_code}\").addClass(\"active\");'>".$va_facet_info['label_plural'].caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a></div>\n";
-						#print "<div class='facetDescription'>".$va_facet_info["description"]."</div>";
+						print "<div class='facetHeadingLink facet{$vs_facet_code}' ".$vs_style."><a href='#' onclick='caUIBrowsePanel.showBrowsePanel(\"{$vs_facet_code}\"); $(\".facetHeadingLink\").removeClass(\"active\"); $(\".facet{$vs_facet_code}\").addClass(\"active\");'>".caNavIcon(__CA_NAV_ICON_ADD__, 1)." ".$va_facet_info['label_plural']."</a></div>\n";
 					}
 					print "<div style='clear:both; height:1px;'><!-- empty --></div></div><!-- end facetList -->";
 				}

@@ -62,7 +62,7 @@ AppController::getInstance()->removeAllPlugins();
 			<div class="loginFormElement"><?php print _t("User Name"); ?>:<br/>
 				<input type="text" name="username" size="25"/>
 			</div>
-			<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_LOGIN__, _t("Submit"),'forgot', array('icon_position' => __CA_NAV_BUTTON_ICON_POS_RIGHT__)); ?></div>
+			<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Submit"),'forgot', array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
 			</form>
 		</div><!-- end loginForm -->
 	</div><!-- end loginBox -->

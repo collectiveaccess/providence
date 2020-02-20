@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2017 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 global $_ca_editor_ui_screen_type_restriction_settings;
 $_ca_editor_ui_screen_type_restriction_settings = array(
@@ -174,7 +174,7 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			'screen_id'
 		),
 		"RELATED_TABLES" => array(
 		
@@ -225,4 +225,3 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

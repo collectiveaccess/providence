@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/ca/ObjectRelationshipBaseModel.php');
+require_once(__CA_LIB_DIR__.'/ObjectRelationshipBaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_vocabulary_terms'] = array(
@@ -168,7 +168,7 @@ class ca_objects_x_vocabulary_terms extends ObjectRelationshipBaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'object_id'
+			'object_id', 'item_id'
 		),
 		"RELATED_TABLES" => array(
 		

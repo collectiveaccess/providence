@@ -46,58 +46,58 @@
         </label>
       </labels>
       <items>
-          <item idno="audio" enabled="0" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Audio</name_singular>
-                <name_plural>Audio</name_plural>
-              </label>
-            </labels>
-            <items>
-              <item idno="audio_analog" enabled="1" default="0">
-                <labels>
-                  <label locale="en_US" preferred="1">
-                    <name_singular>Analog Audio</name_singular>
-                    <name_plural>Analog Audio</name_plural>
-                  </label>
-                </labels>
-              </item>
-              <item idno="audio_digital" enabled="1" default="0">
-                <labels>
-                  <label locale="en_US" preferred="1">
-                    <name_singular>Digital Audio</name_singular>
-                    <name_plural>Digital Audio</name_plural>
-                  </label>
-                </labels>
-              </item>
-            </items>
-          </item>
-          <item idno="moving_image" enabled="0" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Moving Image</name_singular>
-                <name_plural>Moving Images</name_plural>
-              </label>
-            </labels>
-            <items>
-              <item idno="moving_analog" enabled="1" default="0">
-                <labels>
-                  <label locale="en_US" preferred="1">
-                    <name_singular>Analog Moving Image</name_singular>
-                    <name_plural>Analog Moving Images</name_plural>
-                  </label>
-                </labels>
-              </item>
-              <item idno="moving_digital" enabled="1" default="0">
-                <labels>
-                  <label locale="en_US" preferred="1">
-                    <name_singular>Digital Moving Image</name_singular>
-                    <name_plural>Digital Moving Images</name_plural>
-                  </label>
-                </labels>
-              </item>
-            </items>
-          </item>
+        <item idno="audio" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Audio</name_singular>
+              <name_plural>Audio</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="audio_analog" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Analog Audio</name_singular>
+                  <name_plural>Analog Audio</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="audio_digital" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Digital Audio</name_singular>
+                  <name_plural>Digital Audio</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="moving_image" enabled="0" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Moving Image</name_singular>
+              <name_plural>Moving Images</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="moving_analog" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Analog Moving Image</name_singular>
+                  <name_plural>Analog Moving Images</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="moving_digital" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Digital Moving Image</name_singular>
+                  <name_plural>Digital Moving Images</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
         <item idno="supporting_asset" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
@@ -3734,55 +3734,55 @@
               <name_plural>FILM</name_plural>
             </label>
           </labels>
-          <items>  
-          <item idno="option2"  rank="8" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>8mm</name_singular>
-                <name_plural>8mm</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option3"  rank="3" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>16mm</name_singular>
-                <name_plural>16mm</name_plural>
-              </label>
-            </labels>
-          </item>
+          <items>
+            <item idno="option2"  rank="8" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>8mm</name_singular>
+                  <name_plural>8mm</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="option3"  rank="3" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>16mm</name_singular>
+                  <name_plural>16mm</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option4" rank="5" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>35mm</name_singular>
-                <name_plural>35mm</name_plural>
-              </label>
-            </labels>
-          </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>35mm</name_singular>
+                  <name_plural>35mm</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option5" rank="6" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>70mm</name_singular>
-                <name_plural>70mm</name_plural>
-              </label>
-            </labels>
-          </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>70mm</name_singular>
+                  <name_plural>70mm</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option6" rank="7" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>9.5mm</name_singular>
-                <name_plural>9.5mm</name_plural>
-              </label>
-            </labels>
-          </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>9.5mm</name_singular>
+                  <name_plural>9.5mm</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option7" rank="4" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Super-8mm</name_singular>
-                <name_plural>Super-8mm</name_plural>
-              </label>
-            </labels>
-          </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Super-8mm</name_singular>
+                  <name_plural>Super-8mm</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
         </item>
         <item idno="video_types" rank="9" enabled="0" default="0">
@@ -3792,640 +3792,640 @@
               <name_plural>VIDEO</name_plural>
             </label>
           </labels>
-          <items>  
-         <item idno="videocassette" rank="13" enabled="1" default="0">
+          <items>
+            <item idno="videocassette" rank="13" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>videocassette</name_singular>
                   <name_plural>videocassette</name_plural>
                 </label>
               </labels>
-         </item>
-            <item idno="option7" rank="14" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>8mm video</name_singular>
-              <name_plural>8mm video</name_plural>
-            </label>
-          </labels>
-        </item>
+            </item>
+            <item idno="8mm_video" rank="14" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>8mm video</name_singular>
+                  <name_plural>8mm video</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option8" rank="15" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>8mm: Hi8 Video</name_singular>
-              <name_plural>8mm: Hi8 Video</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>8mm: Hi8 Video</name_singular>
+                  <name_plural>8mm: Hi8 Video</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option9" rank="16" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>8mm: Digital-8</name_singular>
-              <name_plural>8mm: Digital-8</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>8mm: Digital-8</name_singular>
+                  <name_plural>8mm: Digital-8</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option11" rank="17" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1/4 inch videotape: Akai</name_singular>
-              <name_plural>1/4 inch videotape: Akai</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1/4 inch videotape: Akai</name_singular>
+                  <name_plural>1/4 inch videotape: Akai</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option13" rank="18" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1/2 inch videotape: CV</name_singular>
-              <name_plural>1/2 inch videotape: CV</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1/2 inch videotape: CV</name_singular>
+                  <name_plural>1/2 inch videotape: CV</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option14" rank="19" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1/2 inch videotape: EIAJ Type 1</name_singular>
-              <name_plural>1/2 inch videotape: EIAJ Type 1</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1/2 inch videotape: EIAJ Type 1</name_singular>
+                  <name_plural>1/2 inch videotape: EIAJ Type 1</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option15" rank="20" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1/2 inch videotape: VCR</name_singular>
-              <name_plural>1/2 inch videotape: VCR</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1/2 inch videotape: VCR</name_singular>
+                  <name_plural>1/2 inch videotape: VCR</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option16" rank="21" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1/2 inch videotape: V2000</name_singular>
-              <name_plural>1/2 inch videotape: V2000</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1/2 inch videotape: V2000</name_singular>
+                  <name_plural>1/2 inch videotape: V2000</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option17" rank="22" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1/2 inch videotape:Hawkeye/Recam/M</name_singular>
-              <name_plural>1/2 inch videotape:Hawkeye/Recam/M</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1/2 inch videotape:Hawkeye/Recam/M</name_singular>
+                  <name_plural>1/2 inch videotape:Hawkeye/Recam/M</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option19" rank="10" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>3/4 inch videotape: U-matic</name_singular>
-              <name_plural>3/4 inch videotape: U-matic</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>3/4 inch videotape: U-matic</name_singular>
+                  <name_plural>3/4 inch videotape: U-matic</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option20" rank="23" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>3/4 inch videotape: U-matic SP</name_singular>
-              <name_plural>3/4 inch videotape: U-matic SP</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>3/4 inch videotape: U-matic SP</name_singular>
+                  <name_plural>3/4 inch videotape: U-matic SP</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option22" rank="24" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1 inch videotape: PI-3V</name_singular>
-              <name_plural>1 inch videotape: PI-3V</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1 inch videotape: PI-3V</name_singular>
+                  <name_plural>1 inch videotape: PI-3V</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option23" rank="25" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1 inch videotape: EV-200</name_singular>
-              <name_plural>1 inch videotape: EV-200</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1 inch videotape: EV-200</name_singular>
+                  <name_plural>1 inch videotape: EV-200</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option24" rank="26" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1 inch videotape: EL3400</name_singular>
-              <name_plural>1 inch videotape: EL3400</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1 inch videotape: EL3400</name_singular>
+                  <name_plural>1 inch videotape: EL3400</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option25" rank="27" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1 inch videotape: SMPTE Type A</name_singular>
-              <name_plural>1 inch videotape: SMPTE Type A</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1 inch videotape: SMPTE Type A</name_singular>
+                  <name_plural>1 inch videotape: SMPTE Type A</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option26" rank="28" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1 inch videotape: SMPTE Type B</name_singular>
-              <name_plural>1 inch videotape: SMPTE Type B</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1 inch videotape: SMPTE Type B</name_singular>
+                  <name_plural>1 inch videotape: SMPTE Type B</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option27" rank="29" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1 inch videotape: SMPTE Type C</name_singular>
-              <name_plural>1 inch videotape: SMPTE Type C</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1 inch videotape: SMPTE Type C</name_singular>
+                  <name_plural>1 inch videotape: SMPTE Type C</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option28" rank="30" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1 inch videotape: IVC-700/800/900</name_singular>
-              <name_plural>1 inch videotape: IVC-700/800/900</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1 inch videotape: IVC-700/800/900</name_singular>
+                  <name_plural>1 inch videotape: IVC-700/800/900</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option29" rank="31" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>1 inch videotape: Helical BVH-1000</name_singular>
-              <name_plural>1 inch videotape: Helical BVH-1000</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>1 inch videotape: Helical BVH-1000</name_singular>
+                  <name_plural>1 inch videotape: Helical BVH-1000</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option31" rank="32" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>2 inch videotape: Quad</name_singular>
-              <name_plural>2 inch videotape: Quad</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>2 inch videotape: Quad</name_singular>
+                  <name_plural>2 inch videotape: Quad</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option32" rank="33" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>2 inch videotape: Helical Ampex VR-1500</name_singular>
-              <name_plural>2 inch videotape: Helical Ampex VR-1500</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>2 inch videotape: Helical Ampex VR-1500</name_singular>
+                  <name_plural>2 inch videotape: Helical Ampex VR-1500</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option33" rank="34" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>2 inch videotape: Sony Helical SV-201</name_singular>
-              <name_plural>2 inch videotape: Sony Helical SV-201</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>2 inch videotape: Sony Helical SV-201</name_singular>
+                  <name_plural>2 inch videotape: Sony Helical SV-201</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option34" rank="35" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>2 inch videotape: Helical IVC-9000</name_singular>
-              <name_plural>2 inch videotape: Helical IVC-9000</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>2 inch videotape: Helical IVC-9000</name_singular>
+                  <name_plural>2 inch videotape: Helical IVC-9000</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option36" rank="11" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Betacam</name_singular>
-              <name_plural>Betacam</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Betacam</name_singular>
+                  <name_plural>Betacam</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option37" rank="36" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Betacam SP</name_singular>
-              <name_plural>Betacam SP</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Betacam SP</name_singular>
+                  <name_plural>Betacam SP</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option38" rank="37" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Betacam Digital (Digi Beta)</name_singular>
-              <name_plural>Betacam Digital (Digi Beta)</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Betacam Digital (Digi Beta)</name_singular>
+                  <name_plural>Betacam Digital (Digi Beta)</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option39" rank="38" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Betacam SX</name_singular>
-              <name_plural>Betacam SX</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Betacam SX</name_singular>
+                  <name_plural>Betacam SX</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option40" rank="39" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Betamax/Super/HB</name_singular>
-              <name_plural>Betamax/Super/HB</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Betamax/Super/HB</name_singular>
+                  <name_plural>Betamax/Super/HB</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option42" rank="40" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DV Mini</name_singular>
-              <name_plural>DV Mini</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DV Mini</name_singular>
+                  <name_plural>DV Mini</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option43" rank="41" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVC-Pro 25</name_singular>
-              <name_plural>DVC-Pro 25</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVC-Pro 25</name_singular>
+                  <name_plural>DVC-Pro 25</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option44" rank="42" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVC-Pro 50</name_singular>
-              <name_plural>DVC-Pro 50</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVC-Pro 50</name_singular>
+                  <name_plural>DVC-Pro 50</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option45" rank="43" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVC-Pro 50/P</name_singular>
-              <name_plural>DVC-Pro 50/P</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVC-Pro 50/P</name_singular>
+                  <name_plural>DVC-Pro 50/P</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option46" rank="44" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVCam: Sony</name_singular>
-              <name_plural>DVCam: Sony</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVCam: Sony</name_singular>
+                  <name_plural>DVCam: Sony</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option48" rank="45" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>D1</name_singular>
-              <name_plural>D1</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>D1</name_singular>
+                  <name_plural>D1</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option49" rank="46" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>D2</name_singular>
-              <name_plural>D2</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>D2</name_singular>
+                  <name_plural>D2</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option50" rank="47" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>D3</name_singular>
-              <name_plural>D3</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>D3</name_singular>
+                  <name_plural>D3</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option51" rank="48" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>D5</name_singular>
-              <name_plural>D5</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>D5</name_singular>
+                  <name_plural>D5</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option52" rank="49" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>D6</name_singular>
-              <name_plural>D6</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>D6</name_singular>
+                  <name_plural>D6</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option53" rank="50" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>D7</name_singular>
-              <name_plural>D7</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>D7</name_singular>
+                  <name_plural>D7</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option55" rank="51" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>HD: D5</name_singular>
-              <name_plural>HD: D5</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>HD: D5</name_singular>
+                  <name_plural>HD: D5</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option56" rank="52" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>HD: D9</name_singular>
-              <name_plural>HD: D9</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>HD: D9</name_singular>
+                  <name_plural>HD: D9</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option57" rank="53" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>HD: DVC PRO HD</name_singular>
-              <name_plural>HD: DVC PRO HD</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>HD: DVC PRO HD</name_singular>
+                  <name_plural>HD: DVC PRO HD</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option58" rank="54" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>HDCAM</name_singular>
-              <name_plural>HDCAM</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="option60" rank="12" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>VHS</name_singular>
-              <name_plural>VHS</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>HDCAM</name_singular>
+                  <name_plural>HDCAM</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="option60" rank="12" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>VHS</name_singular>
+                  <name_plural>VHS</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option61" rank="55" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>S-VHS</name_singular>
-              <name_plural>S-VHS</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>S-VHS</name_singular>
+                  <name_plural>S-VHS</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option62" rank="56" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>W-VHS</name_singular>
-              <name_plural>W-VHS</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>W-VHS</name_singular>
+                  <name_plural>W-VHS</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option64" rank="57" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>CD-Video</name_singular>
-              <name_plural>CD-Video</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>CD-Video</name_singular>
+                  <name_plural>CD-Video</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option65" rank="58" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>CD-ROM</name_singular>
-              <name_plural>CD-ROM</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>CD-ROM</name_singular>
+                  <name_plural>CD-ROM</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option66" rank="59" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVD-Video</name_singular>
-              <name_plural>DVD-Video</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVD-Video</name_singular>
+                  <name_plural>DVD-Video</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option67" rank="60" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>HD-Videodisc</name_singular>
-              <name_plural>HD-Videodisc</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>HD-Videodisc</name_singular>
+                  <name_plural>HD-Videodisc</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option68" rank="61" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>BD-Videodisc</name_singular>
-              <name_plural>BD-Videodisc</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>BD-Videodisc</name_singular>
+                  <name_plural>BD-Videodisc</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option69" rank="62" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>UMD-Videodisc: Sony</name_singular>
-              <name_plural>UMD-Videodisc: Sony</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>UMD-Videodisc: Sony</name_singular>
+                  <name_plural>UMD-Videodisc: Sony</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option70" rank="63" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>EVD-Videodisc: China</name_singular>
-              <name_plural>EVD-Videodisc: China</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>EVD-Videodisc: China</name_singular>
+                  <name_plural>EVD-Videodisc: China</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option71" rank="64" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVD-R</name_singular>
-              <name_plural>DVD-R</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVD-R</name_singular>
+                  <name_plural>DVD-R</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option72" rank="65" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVD+R</name_singular>
-              <name_plural>DVD+R</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVD+R</name_singular>
+                  <name_plural>DVD+R</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option73" rank="66" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVD-RW</name_singular>
-              <name_plural>DVD-RW</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVD-RW</name_singular>
+                  <name_plural>DVD-RW</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option74" rank="67" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVD+RW</name_singular>
-              <name_plural>DVD+RW</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVD+RW</name_singular>
+                  <name_plural>DVD+RW</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option75" rank="68" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVD+R DL</name_singular>
-              <name_plural>DVD+R DL</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DVD+R DL</name_singular>
+                  <name_plural>DVD+R DL</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option77" rank="69" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Laser Videodisc CAV: 12-inch</name_singular>
-              <name_plural>Laser Videodisc CAV: 12-inch</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Laser Videodisc CAV: 12-inch</name_singular>
+                  <name_plural>Laser Videodisc CAV: 12-inch</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option78" rank="70" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Laser Videodisc CLV: 12-inch</name_singular>
-              <name_plural>Laser Videodisc CLV: 12-inch</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Laser Videodisc CLV: 12-inch</name_singular>
+                  <name_plural>Laser Videodisc CLV: 12-inch</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option80" rank="71" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Hard Drive</name_singular>
-              <name_plural>Hard Drive</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Hard Drive</name_singular>
+                  <name_plural>Hard Drive</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option81" rank="72" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Flash Memory</name_singular>
-              <name_plural>Flash Memory</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Flash Memory</name_singular>
+                  <name_plural>Flash Memory</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option83" rank="73" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Cartivision</name_singular>
-              <name_plural>Cartivision</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cartivision</name_singular>
+                  <name_plural>Cartivision</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option84" rank="74" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>CVC</name_singular>
-              <name_plural>CVC</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>CVC</name_singular>
+                  <name_plural>CVC</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option85" rank="75" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DCT</name_singular>
-              <name_plural>DCT</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>DCT</name_singular>
+                  <name_plural>DCT</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option86" rank="76" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>ED-Beta</name_singular>
-              <name_plural>ED-Beta</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ED-Beta</name_singular>
+                  <name_plural>ED-Beta</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option87" rank="77" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>EIAJ Cartridge</name_singular>
-              <name_plural>EIAJ Cartridge</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>EIAJ Cartridge</name_singular>
+                  <name_plural>EIAJ Cartridge</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option88" rank="78" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>HDD1000</name_singular>
-              <name_plural>HDD1000</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>HDD1000</name_singular>
+                  <name_plural>HDD1000</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option89" rank="79" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>HDV1000</name_singular>
-              <name_plural>HDV1000</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>HDV1000</name_singular>
+                  <name_plural>HDV1000</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option90" rank="80" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Macthronics MVC-10</name_singular>
-              <name_plural>Macthronics MVC-10</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Macthronics MVC-10</name_singular>
+                  <name_plural>Macthronics MVC-10</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option91" rank="81" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>M-II</name_singular>
-              <name_plural>M-II</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>M-II</name_singular>
+                  <name_plural>M-II</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option92" rank="82" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>MPEG IMX</name_singular>
-              <name_plural>MPEG IMX</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>MPEG IMX</name_singular>
+                  <name_plural>MPEG IMX</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option93" rank="83" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>UniHi</name_singular>
-              <name_plural>UniHi</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>UniHi</name_singular>
+                  <name_plural>UniHi</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option94" rank="84" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>V-Cord</name_singular>
-              <name_plural>V-Cord</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>V-Cord</name_singular>
+                  <name_plural>V-Cord</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option95" rank="85" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>V-Cord II</name_singular>
-              <name_plural>V-Cord II</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>V-Cord II</name_singular>
+                  <name_plural>V-Cord II</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option96" rank="86" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>VTR150</name_singular>
-              <name_plural>VTR150</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>VTR150</name_singular>
+                  <name_plural>VTR150</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option97" rank="87" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>VTR600</name_singular>
-              <name_plural>VTR600</name_plural>
-            </label>
-          </labels>
-        </item>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>VTR600</name_singular>
+                  <name_plural>VTR600</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="option98" rank="88" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>VX</name_singular>
-              <name_plural>VX</name_plural>
-            </label>
-          </labels>
-        </item>
-        </items>
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>VX</name_singular>
+                  <name_plural>VX</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
         </item>
       </items>
     </list>
@@ -4547,7 +4547,7 @@
               <name_plural>Hi8</name_plural>
             </label>
           </labels>
-        </item>     
+        </item>
         <item idno="option139" rank="15" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -4692,7 +4692,7 @@
               <name_plural>DAT</name_plural>
             </label>
           </labels>
-        </item>     
+        </item>
         <item idno="option121" rank="15" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -4806,62 +4806,62 @@
         </label>
       </labels>
       <items>
-          <item idno="option0" enabled="1" default="1">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular> </name_singular>
-                <name_plural> </name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option20" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Binder</name_singular>
-                <name_plural>Binder</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option21" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Book</name_singular>
-                <name_plural>Book</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option22" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Manuscript</name_singular>
-                <name_plural>Manuscript</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option23" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Newspaper</name_singular>
-                <name_plural>Newspaper</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option24" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Paper</name_singular>
-                <name_plural>Paper</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option25" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Periodical</name_singular>
-                <name_plural>Periodical</name_plural>
-              </label>
-            </labels>
-          </item>
+        <item idno="option0" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option20" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Binder</name_singular>
+              <name_plural>Binder</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option21" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Book</name_singular>
+              <name_plural>Book</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option22" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Manuscript</name_singular>
+              <name_plural>Manuscript</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option23" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Newspaper</name_singular>
+              <name_plural>Newspaper</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option24" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Paper</name_singular>
+              <name_plural>Paper</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option25" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Periodical</name_singular>
+              <name_plural>Periodical</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="option1" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -5473,222 +5473,222 @@
             </label>
           </labels>
         </item>
-          <item idno="option74" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Autochrome</name_singular>
-                <name_plural>Autochrome</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option75" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Caricature</name_singular>
-                <name_plural>Caricature</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option76" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Carte de viste</name_singular>
-                <name_plural>Carte de viste</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option77" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Color print</name_singular>
-                <name_plural>Color print</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option78" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Contact sheet</name_singular>
-                <name_plural>Contact sheet</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option79" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Daguerrotype</name_singular>
-                <name_plural>Daguerrotype</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option80" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Digital file</name_singular>
-                <name_plural>Digital file</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option81" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Drawing</name_singular>
-                <name_plural>Drawing</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option82" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Engraving</name_singular>
-                <name_plural>Engraving</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option83" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Glass negative</name_singular>
-                <name_plural>Glass negative</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option84" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Glass slide</name_singular>
-                <name_plural>Glass slide</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option85" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Illustration</name_singular>
-                <name_plural>Illustration</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option86" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Lithograph</name_singular>
-                <name_plural>Lithograph</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option87" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Map</name_singular>
-                <name_plural>Map</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option88" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Nitrate negative</name_singular>
-                <name_plural>Nitrate negative</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option89" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Other (see note)</name_singular>
-                <name_plural>Other (see note)</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option90" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Painting</name_singular>
-                <name_plural>Painting</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option91" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Photo research file</name_singular>
-                <name_plural>Photo research file</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option92" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Photocopy</name_singular>
-                <name_plural>Photocopy</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option93" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Photograph</name_singular>
-                <name_plural>Photograph</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option94" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Postcard</name_singular>
-                <name_plural>Postcard</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option95" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Print</name_singular>
-                <name_plural>Print</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option96" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Slide</name_singular>
-                <name_plural>Slide</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option97" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Stereoview</name_singular>
-                <name_plural>Stereoview</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option98" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Still</name_singular>
-                <name_plural>Still</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option99" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Transparency</name_singular>
-                <name_plural>Transparency</name_plural>
-              </label>
-            </labels>
-          </item>
-          <item idno="option100" enabled="1" default="0">
-            <labels>
-              <label locale="en_US" preferred="1">
-                <name_singular>Woodcut</name_singular>
-                <name_plural>Woodcut</name_plural>
-              </label>
-            </labels>
-          </item>
+        <item idno="option74" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Autochrome</name_singular>
+              <name_plural>Autochrome</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option75" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Caricature</name_singular>
+              <name_plural>Caricature</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option76" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Carte de viste</name_singular>
+              <name_plural>Carte de viste</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option77" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Color print</name_singular>
+              <name_plural>Color print</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option78" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Contact sheet</name_singular>
+              <name_plural>Contact sheet</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option79" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Daguerrotype</name_singular>
+              <name_plural>Daguerrotype</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option80" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Digital file</name_singular>
+              <name_plural>Digital file</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option81" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Drawing</name_singular>
+              <name_plural>Drawing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option82" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Engraving</name_singular>
+              <name_plural>Engraving</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option83" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glass negative</name_singular>
+              <name_plural>Glass negative</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option84" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glass slide</name_singular>
+              <name_plural>Glass slide</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option85" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Illustration</name_singular>
+              <name_plural>Illustration</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option86" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lithograph</name_singular>
+              <name_plural>Lithograph</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option87" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Map</name_singular>
+              <name_plural>Map</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option88" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Nitrate negative</name_singular>
+              <name_plural>Nitrate negative</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option89" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other (see note)</name_singular>
+              <name_plural>Other (see note)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option90" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Painting</name_singular>
+              <name_plural>Painting</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option91" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Photo research file</name_singular>
+              <name_plural>Photo research file</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option92" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Photocopy</name_singular>
+              <name_plural>Photocopy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option93" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Photograph</name_singular>
+              <name_plural>Photograph</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option94" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Postcard</name_singular>
+              <name_plural>Postcard</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option95" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Print</name_singular>
+              <name_plural>Print</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option96" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Slide</name_singular>
+              <name_plural>Slide</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option97" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stereoview</name_singular>
+              <name_plural>Stereoview</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option98" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Still</name_singular>
+              <name_plural>Still</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option99" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Transparency</name_singular>
+              <name_plural>Transparency</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="option100" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Woodcut</name_singular>
+              <name_plural>Woodcut</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="option102" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -8861,7 +8861,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-<!-- REVISED 2013 -->
+    <!-- REVISED 2013 -->
     <metadataElement code="pbcoreExtension" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -8954,14 +8954,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-          <restriction code="r2">
-            <table>ca_objects</table>
-            <settings>
-              <setting name="minAttributesPerRow">0</setting>
-              <setting name="maxAttributesPerRow">255</setting>
-              <setting name="minimumAttributeBundlesToDisplay">1</setting>
-            </settings>
-          </restriction>
+        <restriction code="r2">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="pbcoreIdentifier" datatype="Container">
@@ -9003,14 +9003,14 @@
         </metadataElement>
       </elements>
       <typeRestrictions>
-          <restriction code="r1">
-            <table>ca_objects</table>
-            <settings>
-              <setting name="minAttributesPerRow">0</setting>
-              <setting name="maxAttributesPerRow">255</setting>
-              <setting name="minimumAttributeBundlesToDisplay">1</setting>
-            </settings>
-          </restriction>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
         <restriction code="r2">
           <table>ca_occurrences</table>
           <settings>
@@ -9092,18 +9092,18 @@
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="pbcoreGenre" datatype="List" list="pbcore_genre_types">
-        <labels>
-          <label locale="en_US">
-            <name>Genre</name>
-          </label>
-        </labels>
-        <documentationUrl>http://www.pbcore.org/PBCore/genre.html</documentationUrl>
-        <settings>
-          <setting name="fieldWidth">100</setting>
-          <setting name="fieldHeight">1</setting>
-          <setting name="minChars">0</setting>
-          <setting name="maxChars">255</setting>
-        </settings>
+      <labels>
+        <label locale="en_US">
+          <name>Genre</name>
+        </label>
+      </labels>
+      <documentationUrl>http://www.pbcore.org/PBCore/genre.html</documentationUrl>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">255</setting>
+      </settings>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_occurrences</table>
@@ -10208,11 +10208,11 @@
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="pbcoreDate" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Temporal Coverage</name>
-              <description></description>
-            </label>
+      <labels>
+        <label locale="en_US">
+          <name>Temporal Coverage</name>
+          <description></description>
+        </label>
       </labels>
       <documentationUrl></documentationUrl>
       <settings/>
@@ -10506,7 +10506,7 @@
             </placement>
             <placement code="ca_attribute_containerID">
               <bundle>ca_attribute_containerID</bundle>
-             </placement>
+            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -10522,10 +10522,10 @@
             <placement code="ca_attribute_pbcoreFormatPhysAudio">
               <bundle>ca_attribute_pbcoreFormatPhysAudio</bundle>
             </placement>
-             <placement code="ca_attribute_pbcoreFormatPhysOther">
+            <placement code="ca_attribute_pbcoreFormatPhysOther">
               <bundle>ca_attribute_pbcoreFormatPhysOther</bundle>
             </placement>
-              <placement code="ca_attribute_pbcoreFormatPhysDigital">
+            <placement code="ca_attribute_pbcoreFormatPhysDigital">
               <bundle>ca_attribute_pbcoreFormatPhysDigital</bundle>
             </placement>
             <placement code="ca_attribute_pbcoreFormatPhysMovingImages">
@@ -10534,10 +10534,10 @@
             <placement code="ca_attribute_pbcoreFormatDigMovingImages">
               <bundle>ca_attribute_pbcoreFormatDigMovingImages</bundle>
             </placement>
-             <placement code="ca_attribute_pbcoreFormatDigAudio">
+            <placement code="ca_attribute_pbcoreFormatDigAudio">
               <bundle>ca_attribute_pbcoreFormatDigAudio</bundle>
-            </placement>       
-             <placement code="ca_attribute_pbcoreMediaTypes">
+            </placement>
+            <placement code="ca_attribute_pbcoreMediaTypes">
               <bundle>ca_attribute_pbcoreMediaTypes</bundle>
             </placement>
             <placement code="ca_attribute_pbcoreGenerationMovingImages">
@@ -10546,7 +10546,7 @@
             <placement code="ca_attribute_pbcoreGenerationAudio">
               <bundle>ca_attribute_pbcoreGenerationAudio</bundle>
             </placement>
-             <placement code="ca_attribute_pbcoreGenerationOther">
+            <placement code="ca_attribute_pbcoreGenerationOther">
               <bundle>ca_attribute_pbcoreGenerationOther</bundle>
             </placement>
             <placement code="ca_attribute_pbcoreFormatTimeStart">
@@ -10570,13 +10570,13 @@
                 <setting name="add_label" locale="en_US">Add language</setting>
               </settings>
             </placement>
-             <placement code="ca_attribute_pbcoreCoreAudioStandards">
+            <placement code="ca_attribute_pbcoreCoreAudioStandards">
               <bundle>ca_attribute_pbcoreCoreAudioStandards</bundle>
             </placement>
-             <placement code="ca_attribute_pbcoreCoreMovingStandards">
+            <placement code="ca_attribute_pbcoreCoreMovingStandards">
               <bundle>ca_attribute_pbcoreCoreMovingStandards</bundle>
             </placement>
-             <placement code="ca_attribute_pbcoreFormatChanConf">
+            <placement code="ca_attribute_pbcoreFormatChanConf">
               <bundle>ca_attribute_pbcoreFormatChanConf</bundle>
               <settings>
                 <setting name="add_label" locale="en_US">Add channel configuration</setting>
@@ -10682,7 +10682,7 @@
                 <setting name="restrict_to_relationship_types">referenced</setting>
                 <setting name="restrict_to_relationship_types">replaced</setting>
                 <setting name="restrict_to_relationship_types">required</setting>
-             </settings>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -10802,7 +10802,7 @@
                 <setting name="add_label" locale="en_US">Add term</setting>
               </settings>
             </placement>
-             <placement code="ca_attribute_lcshFull">
+            <placement code="ca_attribute_lcshFull">
               <bundle>ca_attribute_lcshFull</bundle>
             </placement>
           </bundlePlacements>
@@ -10918,7 +10918,7 @@
                 <setting name="add_label" locale="en_US">Add term</setting>
               </settings>
             </placement>
-             <placement code="ca_attribute_lcshFull">
+            <placement code="ca_attribute_lcshFull">
               <bundle>ca_attribute_lcshFull</bundle>
             </placement>
           </bundlePlacements>
@@ -10961,7 +10961,7 @@
             <placement code="idno">
               <bundle>idno</bundle>
             </placement>
-             <placement code="ca_attribute_pbcoreDate">
+            <placement code="ca_attribute_pbcoreDate">
               <bundle>ca_attribute_pbcoreDate</bundle>
             </placement>
             <placement code="ca_attribute_pbcoreDescription">
@@ -10970,11 +10970,11 @@
             <placement code="ca_attribute_pbcoreGenre">
               <bundle>ca_attribute_pbcoreGenre</bundle>
             </placement>
-             <placement code="ca_places">
+            <placement code="ca_places">
               <bundle>ca_places</bundle>
-               <settings>
+              <settings>
                 <setting name="label" locale="en_US">Spatial Coverage</setting>
-                 <setting name="add_label" locale="en_US">add Spatial Coverage</setting>
+                <setting name="add_label" locale="en_US">add Spatial Coverage</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_pbcoreAnnotation">
@@ -10992,89 +10992,89 @@
             </label>
           </labels>
           <bundlePlacements>
-             <placement code="ca_creators">
+            <placement code="ca_creators">
               <bundle>ca_entities</bundle>
-               <settings>
-                 <setting name="restrict_to_relationship_types">architect</setting>
-                 <setting name="restrict_to_relationship_types">artist</setting>
-                 <setting name="restrict_to_relationship_types">author</setting>
-                 <setting name="restrict_to_relationship_types">cartographer</setting>
-                 <setting name="restrict_to_relationship_types">choreographer</setting>
-                 <setting name="restrict_to_relationship_types">compiler</setting>
-                 <setting name="restrict_to_relationship_types">composer</setting>
-                 <setting name="restrict_to_relationship_types">designer</setting>
-                 <setting name="restrict_to_relationship_types">enacting_jurisdiction</setting>
-                 <setting name="restrict_to_relationship_types">filmmaker</setting>
-                 <setting name="restrict_to_relationship_types">interviewee</setting>
-                 <setting name="restrict_to_relationship_types">interviewer</setting>
-                 <setting name="restrict_to_relationship_types">inventor</setting>
-                 <setting name="restrict_to_relationship_types">photographer</setting>
-                 <setting name="restrict_to_relationship_types">praeses</setting>
-                 <setting name="restrict_to_relationship_types">programmer</setting>
-                 <setting name="restrict_to_relationship_types">respondent</setting>               
-                 <setting name="label" locale="en_US">Creators</setting>
+              <settings>
+                <setting name="restrict_to_relationship_types">architect</setting>
+                <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="restrict_to_relationship_types">author</setting>
+                <setting name="restrict_to_relationship_types">cartographer</setting>
+                <setting name="restrict_to_relationship_types">choreographer</setting>
+                <setting name="restrict_to_relationship_types">compiler</setting>
+                <setting name="restrict_to_relationship_types">composer</setting>
+                <setting name="restrict_to_relationship_types">designer</setting>
+                <setting name="restrict_to_relationship_types">enacting_jurisdiction</setting>
+                <setting name="restrict_to_relationship_types">filmmaker</setting>
+                <setting name="restrict_to_relationship_types">interviewee</setting>
+                <setting name="restrict_to_relationship_types">interviewer</setting>
+                <setting name="restrict_to_relationship_types">inventor</setting>
+                <setting name="restrict_to_relationship_types">photographer</setting>
+                <setting name="restrict_to_relationship_types">praeses</setting>
+                <setting name="restrict_to_relationship_types">programmer</setting>
+                <setting name="restrict_to_relationship_types">respondent</setting>
+                <setting name="label" locale="en_US">Creators</setting>
                 <setting name="add_label" locale="en_US">Add creators</setting>
               </settings>
             </placement>
             <placement code="ca_contributors">
               <bundle>ca_entities</bundle>
-               <settings>
-                  <!-- Contributors (RDA)-->
-                 <setting name="restrict_to_relationship_types">abridger</setting>
-                 <setting name="restrict_to_relationship_types">animator</setting>
-                 <setting name="restrict_to_relationship_types">arranger_music</setting>
-                 <setting name="restrict_to_relationship_types">art_director</setting>
-                 <setting name="restrict_to_relationship_types">choreographer</setting>
-                 <setting name="restrict_to_relationship_types">composer</setting>
-                 <setting name="restrict_to_relationship_types">court_reporter</setting>
-                 <setting name="restrict_to_relationship_types">costume_designer</setting>
-                 <setting name="restrict_to_relationship_types">draftsman</setting>
-                 <setting name="restrict_to_relationship_types">editor</setting>
-                 <setting name="restrict_to_relationship_types">editor_compilation</setting>
-                 <setting name="restrict_to_relationship_types">editor_moving_image</setting>
-                 <setting name="restrict_to_relationship_types">illustrator</setting>
-                 <setting name="restrict_to_relationship_types">interviewee</setting>
-                 <setting name="restrict_to_relationship_types">interviewer</setting>
-                 <setting name="restrict_to_relationship_types">musical_director</setting>
-                 <setting name="restrict_to_relationship_types">performer</setting>
-                 <setting name="restrict_to_relationship_types">presenter</setting>
-                 <setting name="restrict_to_relationship_types">production_designer</setting>
-                 <setting name="restrict_to_relationship_types">recording_engineer</setting>
-                 <setting name="restrict_to_relationship_types">recordist</setting>
-                 <setting name="restrict_to_relationship_types">stage_director</setting>
-                 <setting name="restrict_to_relationship_types">surveyor</setting>
-                 <setting name="restrict_to_relationship_types">translator</setting>
-                 <setting name="restrict_to_relationship_types">transcriber</setting>
-                 <setting name="restrict_to_relationship_types">writer_added_commentary</setting>
-                 <setting name="restrict_to_relationship_types">writer_added_text</setting>
-                 <setting name="restrict_to_relationship_types">writer_added_lyrics</setting>
-                  <!-- Other Contributors-->
+              <settings>
+                <!-- Contributors (RDA)-->
+                <setting name="restrict_to_relationship_types">abridger</setting>
+                <setting name="restrict_to_relationship_types">animator</setting>
+                <setting name="restrict_to_relationship_types">arranger_music</setting>
+                <setting name="restrict_to_relationship_types">art_director</setting>
+                <setting name="restrict_to_relationship_types">choreographer</setting>
+                <setting name="restrict_to_relationship_types">composer</setting>
+                <setting name="restrict_to_relationship_types">court_reporter</setting>
+                <setting name="restrict_to_relationship_types">costume_designer</setting>
+                <setting name="restrict_to_relationship_types">draftsman</setting>
+                <setting name="restrict_to_relationship_types">editor</setting>
+                <setting name="restrict_to_relationship_types">editor_compilation</setting>
+                <setting name="restrict_to_relationship_types">editor_moving_image</setting>
+                <setting name="restrict_to_relationship_types">illustrator</setting>
+                <setting name="restrict_to_relationship_types">interviewee</setting>
+                <setting name="restrict_to_relationship_types">interviewer</setting>
+                <setting name="restrict_to_relationship_types">musical_director</setting>
+                <setting name="restrict_to_relationship_types">performer</setting>
+                <setting name="restrict_to_relationship_types">presenter</setting>
+                <setting name="restrict_to_relationship_types">production_designer</setting>
+                <setting name="restrict_to_relationship_types">recording_engineer</setting>
+                <setting name="restrict_to_relationship_types">recordist</setting>
+                <setting name="restrict_to_relationship_types">stage_director</setting>
+                <setting name="restrict_to_relationship_types">surveyor</setting>
+                <setting name="restrict_to_relationship_types">translator</setting>
+                <setting name="restrict_to_relationship_types">transcriber</setting>
+                <setting name="restrict_to_relationship_types">writer_added_commentary</setting>
+                <setting name="restrict_to_relationship_types">writer_added_text</setting>
+                <setting name="restrict_to_relationship_types">writer_added_lyrics</setting>
+                <!-- Other Contributors-->
                 <setting name="restrict_to_relationship_types">actor</setting>
-                 <setting name="restrict_to_relationship_types">commentator</setting>
-                 <setting name="restrict_to_relationship_types">conductor</setting>
-                 <setting name="restrict_to_relationship_types">director</setting>
-                 <setting name="restrict_to_relationship_types">director_photography</setting>
-                 <setting name="restrict_to_relationship_types">host</setting>
-                 <setting name="restrict_to_relationship_types">instrumentalist</setting>
-                 <setting name="restrict_to_relationship_types">moderator</setting>
-                 <setting name="restrict_to_relationship_types">narrator</setting>
-                 <setting name="restrict_to_relationship_types">panelist</setting>
-                 <setting name="restrict_to_relationship_types">producer</setting>
-                  <setting name="restrict_to_relationship_types">production_company</setting>
-                 <setting name="restrict_to_relationship_types">speaker</setting>
-                 <setting name="restrict_to_relationship_types">sponsoring_body</setting>
-                 <setting name="label" locale="en_US">Contributors</setting>
+                <setting name="restrict_to_relationship_types">commentator</setting>
+                <setting name="restrict_to_relationship_types">conductor</setting>
+                <setting name="restrict_to_relationship_types">director</setting>
+                <setting name="restrict_to_relationship_types">director_photography</setting>
+                <setting name="restrict_to_relationship_types">host</setting>
+                <setting name="restrict_to_relationship_types">instrumentalist</setting>
+                <setting name="restrict_to_relationship_types">moderator</setting>
+                <setting name="restrict_to_relationship_types">narrator</setting>
+                <setting name="restrict_to_relationship_types">panelist</setting>
+                <setting name="restrict_to_relationship_types">producer</setting>
+                <setting name="restrict_to_relationship_types">production_company</setting>
+                <setting name="restrict_to_relationship_types">speaker</setting>
+                <setting name="restrict_to_relationship_types">sponsoring_body</setting>
+                <setting name="label" locale="en_US">Contributors</setting>
                 <setting name="add_label" locale="en_US">Add contributors</setting>
               </settings>
             </placement>
             <placement code="ca_publishers">
               <bundle>ca_entities</bundle>
-               <settings>
+              <settings>
                 <setting name="restrict_to_relationship_types">publisher</setting>
-                 <setting name="restrict_to_relationship_types">rights_holder</setting>
-                 <setting name="restrict_to_relationship_types">distributor</setting>
-                 <setting name="restrict_to_relationship_types">presenter</setting>
-                 <setting name="label" locale="en_US">Publishers</setting>
+                <setting name="restrict_to_relationship_types">rights_holder</setting>
+                <setting name="restrict_to_relationship_types">distributor</setting>
+                <setting name="restrict_to_relationship_types">presenter</setting>
+                <setting name="label" locale="en_US">Publishers</setting>
                 <setting name="add_label" locale="en_US">Add publishers</setting>
               </settings>
             </placement>
@@ -11997,461 +11997,461 @@
       </types>
     </relationshipTable>
     <relationshipTable name="ca_entities_x_occurrences">
-        <types>
+      <types>
         <!-- Creators (RDA)-->
-          <type code="architect" default="1">
-            <labels>
-              <label locale="en_US">              
-                <typename>is architect of</typename>
-                <typename_reverse>has as architect</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="artist" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is artist of</typename>
-                <typename_reverse>has as artist</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="author" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is author of</typename>
-                <typename_reverse>has as author</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="cartographer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is cartographer of</typename>
-                <typename_reverse>has as cartographer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="choreographer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is choreographer of</typename>
-                <typename_reverse>has as choreographer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="compiler" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is compiler of</typename>
-                <typename_reverse>has as compiler</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="composer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is composer of</typename>
-                <typename_reverse>has as composer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="designer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is designer of</typename>
-                <typename_reverse>has as designer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="enacting_jurisdiction" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is enacting jurisdiction of</typename>
-                <typename_reverse>has as enacting jurisdiction</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="filmmaker" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is filmmaker of</typename>
-                <typename_reverse>has as filmmaker</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="interviewee" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is interviewee of</typename>
-                <typename_reverse>has as interviewee</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="interviewer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is interviewer of</typename>
-                <typename_reverse>has as interviewer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="inventor" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is inventor of</typename>
-                <typename_reverse>has as inventor</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="librettist" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is librettist of</typename>
-                <typename_reverse>has as librettist</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="lyricist" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is lyricist of</typename>
-                <typename_reverse>has as lyricist</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="photographer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is photographer of</typename>
-                <typename_reverse>has as photographer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="praeses" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is praeses of</typename>
-                <typename_reverse>has as praeses</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="programmer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is programmer of</typename>
-                <typename_reverse>has as programmer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="respondent" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is respondent of</typename>
-                <typename_reverse>has as respondent</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="screenwriter" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is screenwriter of</typename>
-                <typename_reverse>has as screenwriter</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
+        <type code="architect" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is architect of</typename>
+              <typename_reverse>has as architect</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="artist" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is artist of</typename>
+              <typename_reverse>has as artist</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="author" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is author of</typename>
+              <typename_reverse>has as author</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="cartographer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is cartographer of</typename>
+              <typename_reverse>has as cartographer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="choreographer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is choreographer of</typename>
+              <typename_reverse>has as choreographer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="compiler" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is compiler of</typename>
+              <typename_reverse>has as compiler</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="composer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is composer of</typename>
+              <typename_reverse>has as composer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="designer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is designer of</typename>
+              <typename_reverse>has as designer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="enacting_jurisdiction" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is enacting jurisdiction of</typename>
+              <typename_reverse>has as enacting jurisdiction</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="filmmaker" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is filmmaker of</typename>
+              <typename_reverse>has as filmmaker</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="interviewee" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is interviewee of</typename>
+              <typename_reverse>has as interviewee</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="interviewer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is interviewer of</typename>
+              <typename_reverse>has as interviewer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="inventor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is inventor of</typename>
+              <typename_reverse>has as inventor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="librettist" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is librettist of</typename>
+              <typename_reverse>has as librettist</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="lyricist" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is lyricist of</typename>
+              <typename_reverse>has as lyricist</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="photographer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is photographer of</typename>
+              <typename_reverse>has as photographer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="praeses" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is praeses of</typename>
+              <typename_reverse>has as praeses</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="programmer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is programmer of</typename>
+              <typename_reverse>has as programmer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="respondent" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is respondent of</typename>
+              <typename_reverse>has as respondent</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="screenwriter" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is screenwriter of</typename>
+              <typename_reverse>has as screenwriter</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
         <!-- Non-creators -->
-          <type code="addressee" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is addressee of</typename>
-                <typename_reverse>has as addressee</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="appellant" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is appellant of</typename>
-                <typename_reverse>has as appellant</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="appellee" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is appellee of</typename>
-                <typename_reverse>has as appellee</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="court_governed" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is court governed of</typename>
-                <typename_reverse>has as court governed</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="dedicator" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is dedicator of</typename>
-                <typename_reverse>has as dedicator</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="dedicatee" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is dedicatee of</typename>
-                <typename_reverse>has as dedicatee</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="defendant" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is defendant of</typename>
-                <typename_reverse>has as defendant</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="degree" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is degree granting institution of</typename>
-                <typename_reverse>has as degree granting institution</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="director" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is director of</typename>
-                <typename_reverse>has as director</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="film_director" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is film director of</typename>
-                <typename_reverse>has as film director</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="radio_director" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is radio director of</typename>
-                <typename_reverse>has as radio director</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="television_director" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is television director of</typename>
-                <typename_reverse>has as television director</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="director_photography" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is director of photography of</typename>
-                <typename_reverse>has as director of photography</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="honouree" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is honouree of</typename>
-                <typename_reverse>has as honouree</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="host_institution" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is host institution of</typename>
-                <typename_reverse>has as host institution</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="issuing_body" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is issuing body of</typename>
-                <typename_reverse>has as issuing body</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="judge" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is judge of</typename>
-                <typename_reverse>has as judge</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="jurisdiction_governed" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is jurisdiction governed of</typename>
-                <typename_reverse>has as jurisdiction governed</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="plaintiff" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is plaintiff of</typename>
-                <typename_reverse>has as plaintiff</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="producer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is producer of</typename>
-                <typename_reverse>has as producer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="film_producer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is film producer of</typename>
-                <typename_reverse>has as film producer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="radio_producer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is radio producer of</typename>
-                <typename_reverse>has as radio producer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="television_producer" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is television producer of</typename>
-                <typename_reverse>has as television producer</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="production_company" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is production company of</typename>
-                <typename_reverse>has as production company</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
-          <type code="sponsoring_body" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>is sponsoring body of</typename>
-                <typename_reverse>has as sponsoring body</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
+        <type code="addressee" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is addressee of</typename>
+              <typename_reverse>has as addressee</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="appellant" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is appellant of</typename>
+              <typename_reverse>has as appellant</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="appellee" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is appellee of</typename>
+              <typename_reverse>has as appellee</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="court_governed" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is court governed of</typename>
+              <typename_reverse>has as court governed</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="dedicator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is dedicator of</typename>
+              <typename_reverse>has as dedicator</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="dedicatee" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is dedicatee of</typename>
+              <typename_reverse>has as dedicatee</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="defendant" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is defendant of</typename>
+              <typename_reverse>has as defendant</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="degree" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is degree granting institution of</typename>
+              <typename_reverse>has as degree granting institution</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="director" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is director of</typename>
+              <typename_reverse>has as director</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="film_director" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is film director of</typename>
+              <typename_reverse>has as film director</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="radio_director" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is radio director of</typename>
+              <typename_reverse>has as radio director</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="television_director" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is television director of</typename>
+              <typename_reverse>has as television director</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="director_photography" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is director of photography of</typename>
+              <typename_reverse>has as director of photography</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="honouree" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is honouree of</typename>
+              <typename_reverse>has as honouree</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="host_institution" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is host institution of</typename>
+              <typename_reverse>has as host institution</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="issuing_body" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is issuing body of</typename>
+              <typename_reverse>has as issuing body</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="judge" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is judge of</typename>
+              <typename_reverse>has as judge</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="jurisdiction_governed" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is jurisdiction governed of</typename>
+              <typename_reverse>has as jurisdiction governed</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="plaintiff" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is plaintiff of</typename>
+              <typename_reverse>has as plaintiff</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="producer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is producer of</typename>
+              <typename_reverse>has as producer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="film_producer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is film producer of</typename>
+              <typename_reverse>has as film producer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="radio_producer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is radio producer of</typename>
+              <typename_reverse>has as radio producer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="television_producer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is television producer of</typename>
+              <typename_reverse>has as television producer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="production_company" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is production company of</typename>
+              <typename_reverse>has as production company</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="sponsoring_body" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is sponsoring body of</typename>
+              <typename_reverse>has as sponsoring body</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
         <!-- Contributors (RDA)-->
-       <type code="abridger" default="0">
+        <type code="abridger" default="0">
           <labels>
             <label locale="en_US">
               <typename>is abridger of</typename>

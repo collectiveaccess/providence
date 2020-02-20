@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.relationbundle.js
+ * js/ca.relationbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,10 +50,8 @@ var caUI = caUI || {};
 			var i, typeList, types = [], lists = [];
 			
 			var item_type_id = values['item_type_id'];
-			
 			// use type map to convert a child type id to the parent type id used in the restriction
 			if (options.relationshipTypes && options.relationshipTypes['_type_map'] && options.relationshipTypes['_type_map'][item_type_id]) { item_type_id = options.relationshipTypes['_type_map'][item_type_id]; }
-			
 			if (options.relationshipTypes && (typeList = options.relationshipTypes[item_type_id])) {
 				for(i=0; i < typeList.length; i++) {
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
@@ -68,7 +66,14 @@ var caUI = caUI || {};
 				if(typeof options.lists != 'object') { options.lists = [options.lists]; }
 				options.extraParams.lists = options.lists.join(";");
 			}
-
+			
+			// restrict to access point
+			if (options && options.restrictToAccessPoint && options.restrictToAccessPoint.length) {
+				if (!options.extraParams) { options.extraParams = {}; }
+				if (typeof options.restrictToAccessPoint != 'string') { options.restrictToAccessPoint = ''; }
+				options.extraParams.restrictToAccessPoint = options.restrictToAccessPoint;
+			}
+			
 			// restrict to search expression
 			if (options && options.restrictToSearch && options.restrictToSearch.length) {
 				if (!options.extraParams) { options.extraParams = {}; }
@@ -90,6 +95,18 @@ var caUI = caUI || {};
 				}
 			}
 			
+			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
+			jQuery.each(types, function (i, t) {
+				var type_direction = (t.direction) ? t.direction+ "_" : '';
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "'>" + t.typename + "</option>");
+			});
+			
+			// select default
+			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + values['relationship_type_id'] + "\"], #" + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + values['rel_type_id'] + "\"]").prop('selected', true);
+		
+			// set current type
+			jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', item_type_id);
+			
 			if (caUI && caUI.utils && caUI.utils.showUnsavedChangesWarning) {
 				// Attached change handler to form elements in relationship
 				jQuery('#' + options.itemID + id + ' select, #' + options.itemID + id + ' input, #' + options.itemID + id + ' textarea').not('.dontTriggerUnsavedChangeWarning').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
@@ -99,7 +116,7 @@ var caUI = caUI || {};
 		options.onAddItem = function(id, options, isNew) {
 			if (!isNew) { return; }
 			
-			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
+			var autocompleter_id = options.fieldNamePrefix + 'autocomplete' + id;
 
 			jQuery('#' + autocompleter_id).relationshipLookup( 
 				jQuery.extend({ minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
@@ -117,41 +134,44 @@ var caUI = caUI || {};
 						if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
 							if (!options.autocompleteOptions.onSelect(autocompleter_id, ui.item)) { return false; }
 						}
-						
-						if(!parseInt(ui.item.id) && options.quickaddPanel) {
-							var panelUrl = options.quickaddUrl;
-							//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
-							if (options && options.types) {
-								if(Object.prototype.toString.call(options.types) === '[object Array]') {
-									options.types = options.types.join(",");
-								}
-								if (options.types.length > 0) {
-									panelUrl += '/types/' + options.types;
-								}
-							}
-							//if (options.fieldNamePrefix && (options.fieldNamePrefix.length > 0)) {
-							//	panelUrl += '/field_name_prefix/' + options.fieldNamePrefix;
-							//}
-							options.quickaddPanel.showPanel(panelUrl, null, null, {q: ui.item._query, field_name_prefix: options.fieldNamePrefix});
-							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
-							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
-							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
-							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
-							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('relationbundle', that);
 					
-							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
+						// returnTextValues option allows free text to be entered; relationship autocomplete
+						// values are returned as suggested test. The literal text entered is returned as the selected value
+						// rather than the item_id
+						if (!options.returnTextValues) {
+							if(!parseInt(ui.item.id) && options.quickaddPanel) {
+								var panelUrl = options.quickaddUrl;
+								if (options && options.types) {
+									if(Object.prototype.toString.call(options.types) === '[object Array]') {
+										options.types = options.types.join(",");
+									}
+									if (options.types.length > 0) {
+										panelUrl += '/types/' + options.types;
+									}
+								}
+								options.quickaddPanel.showPanel(panelUrl, null, null, {q: ui.item._query, field_name_prefix: options.fieldNamePrefix});
+								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteRawID', id);
+								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
+								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
+								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
+								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
+								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('relationbundle', that);
 					
-							jQuery("#" + options.autocompleteInputID + id).val('');
+								jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
+					
+								jQuery("#" + options.autocompleteInputID + id).val('');
 							
-							event.preventDefault();
-							return;
-						} else {
-							if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
-								jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
 								event.preventDefault();
 								return;
+							} else {
+								if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
+									jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
+									event.preventDefault();
+									return;
+								}
 							}
 						}
+						
 						options.select(id, ui.item);
 						
 						jQuery('#' + autocompleter_id).val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
@@ -159,10 +179,12 @@ var caUI = caUI || {};
 					},
 					change: function( event, ui ) {
 						// If nothing has been selected remove all content from autocompleter text input
-						if(!jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val()) {
-							jQuery('#' + autocompleter_id).val('');
+						if (!options.returnTextValues) {
+								if(!jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val()) {
+									jQuery('#' + autocompleter_id).val('');
+								}
+							}
 						}
-					}
 				}, options.autocompleteOptions)
 			).on('click', null, {}, function() { this.select(); });
 			
@@ -179,14 +201,15 @@ var caUI = caUI || {};
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');
 			var i, typeList, types = [];
 			var default_type = 0;
-			
+	
 			if (jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id') == type_id) {
 				// noop - don't change relationship types unless you have to
 			} else {
+				var types_output = {};
 				if (options.relationshipTypes && (typeList = options.relationshipTypes[type_id])) {
 					for(i=0; i < typeList.length; i++) {
 						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
-						
+						types_output[typeList[i].type_id] = 1;
 						if (parseInt(typeList[i].is_default) === 1) {
 							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
@@ -195,14 +218,15 @@ var caUI = caUI || {};
 				// look for null (these are unrestricted and therefore always displayed)
 				if (options.relationshipTypes && (typeList = options.relationshipTypes['NULL'])) {
 					for(i=0; i < typeList.length; i++) {
+						if(types_output[typeList[i].type_id]) continue;
 						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
-						
+				
 						if (parseInt(typeList[i].is_default) === 1) {
 							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
 					}
 				}
-				
+		
 				types.sort(function(a,b) {
 					a.rank = parseInt(a.rank);
 					b.rank = parseInt(b.rank);
@@ -211,26 +235,25 @@ var caUI = caUI || {};
 					} 
 					return (a.typename > b.typename) ? 1 : ((b.typename > a.typename) ? -1 : 0);
 				});
-				
+		
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
 				jQuery.each(types, function (i, t) {
 					var type_direction = (t.direction) ? t.direction+ "_" : '';
 					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "'>" + t.typename + "</option>");
 				});
-				
+		
 				// select default
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + default_type + "\"]").prop('selected', true);
-			
+	
 				// set current type
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);
 			}
 			that.showUnsavedChangesWarning(true);
 		};
 		
-		options.sort = function(key) {
+		options.sort = function(key, label) {
 			var indexedValues = {};
-
-			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .roundedRel'), function(k, v) {
+			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .labelInfo'), function(k, v) {
 				var id_string = jQuery(v).attr('id');
 				if (id_string) {
 					var matches = /_([\d]+)$/.exec(id_string);
@@ -239,12 +262,17 @@ var caUI = caUI || {};
 				jQuery(v).detach();
 			});
 
-			var sortUrl = that.sortUrl + '/ids/' + Object.keys(indexedValues).join(',') + '/sortKeys/' + key;
+			var sortUrl = that.sortUrl; // + '/sortKeys/' + key;
 			var sortedValues = {};
+			
+			var sortDirection = jQuery('#' + that.fieldNamePrefix + 'RelationBundleSortDirectionControl').val();
+			if (sortDirection.toLowerCase() !== 'desc') { sortDirection = 'asc'; }
 
 			// we actually have to wait for the result here ... hence, ajax() with async=false instead of getJSON()
 			jQuery.ajax({
 				url: sortUrl,
+				type: 'POST',
+				data: { 'ids': Object.keys(indexedValues).join(','), 'sortDirection': sortDirection, 'sortKeys': key },
 				dataType: 'json',
 				async: false,
 				success: function(data) {
@@ -253,6 +281,8 @@ var caUI = caUI || {};
 					}
 				}
 			});
+
+			jQuery('#' + that.fieldNamePrefix + 'caCurrentSortLabel').html(label);
 			
 			var whatsLeft = jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html();
 			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html('');
@@ -264,7 +294,6 @@ var caUI = caUI || {};
 			
 			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).append(whatsLeft);
 			
-			caUI.utils.showUnsavedChangesWarning(true);
 			that._updateSortOrderListIDFormElement();
 		};
 	

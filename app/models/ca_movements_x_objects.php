@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,8 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/ca/ObjectRelationshipBaseModel.php');
+require_once(__CA_LIB_DIR__.'/ObjectRelationshipBaseModel.php');
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_movements_x_objects'] = array(
@@ -95,6 +96,9 @@ BaseModel::$s_ca_models_definitions['ca_movements_x_objects'] = array(
 );
 
 class ca_movements_x_objects extends ObjectRelationshipBaseModel {
+
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -209,35 +213,35 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	/**
 	 *
 	 */
-	public function insert($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) {  
-			$this->set('effective_date', $this->_getMovementDate()); 
-		}
-		return parent::insert($pa_options);
-	}
+	// public function insert($pa_options=null) {
+// 		if (!$this->get('effective_date', array('getDirectDate' => true))) {  
+// 			$this->set('effective_date', $this->_getMovementDate()); 
+// 		}
+// 		return parent::insert($pa_options);
+// 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function update($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) { 
-			$this->set('effective_date',  $this->_getMovementDate()); 
-		}
-		return parent::update($pa_options);
-	}
+	// public function update($pa_options=null) {
+// 		if (!$this->get('effective_date', array('getDirectDate' => true))) { 
+// 			$this->set('effective_date',  $this->_getMovementDate()); 
+// 		}
+// 		return parent::update($pa_options);
+// 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	private function _getMovementDate() {
-	 	$vs_date = null;
-	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
-			$t_movement = new ca_movements($this->get('movement_id'));
-			if ($t_movement->getPrimaryKey()) {
-				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");
-			}
-		}
-		return ($vs_date) ? $vs_date : _t('now');
-	}
+	// private function _getMovementDate() {
+// 	 	$vs_date = null;
+// 	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
+// 			$t_movement = new ca_movements($this->get('movement_id'));
+// 			if ($t_movement->getPrimaryKey()) {
+// 				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");
+// 			}
+// 		}
+// 		return ($vs_date) ? $vs_date : _t('now');
+// 	}
 	# ------------------------------------------------------
 }

@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/ca/BaseRepresentationRelationship.php');
+require_once(__CA_LIB_DIR__.'/BaseRepresentationRelationship.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations_x_vocabulary_terms'] = array(
@@ -175,7 +175,7 @@ class ca_object_representations_x_vocabulary_terms extends BaseRepresentationRel
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'representation_id'
+			'representation_id', 'item_id'
 		),
 		"RELATED_TABLES" => array(
 		

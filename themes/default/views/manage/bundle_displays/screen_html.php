@@ -33,10 +33,10 @@
 	<div class="sectionBox">
 <?php
 		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'BundleDisplayEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Edit/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)), 
+			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'BundleDisplayEditorForm').' '.
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Edit/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)), 
 			'', 
-			(intval($vn_display_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Delete/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)) : ''
+			(intval($vn_display_id) > 0) ? "<span class='deleteButton'>".caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Delete/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)).'<span>' : ''
 		);
 		
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/display_id/'.$vn_display_id, 'BundleDisplayEditorForm', null, 'POST', 'multipart/form-data');

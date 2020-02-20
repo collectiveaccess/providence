@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,8 +31,8 @@
 
 <div class="dashboardWidgetContentContainer">
 	<ul>
-		<li><a href="http://www.collectiveaccess.org"><?php print _t("Project website"); ?>: http://www.collectiveaccess.org</a></li>
-		<li><a href="http://docs.collectiveaccess.org"><?php print _t("Documentation"); ?>: http://docs.collectiveaccess.org</a></li>
-		<li><a href="http://www.collectiveaccess.org/forum/"><?php print _t("Forum"); ?>: http://www.collectiveaccess.org/support/forum/</a></li>
+		<li><a href="https://www.collectiveaccess.org"><?php print _t("Project website"); ?>: https://www.collectiveaccess.org</a></li>
+		<li><a href="https://docs.collectiveaccess.org"><?php print _t("Documentation"); ?>: https://docs.collectiveaccess.org</a></li>
+		<li><a href="https://support.collectiveaccess.org"><?php print _t("Forum"); ?>: https://support.collectiveaccess.org</a></li>
 	</ul>
 </div>

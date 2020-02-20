@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.genericbundle.js
+ * js/ca.genericbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,7 +71,7 @@ var caUI = caUI || {};
 			partialLoadUrl: null,
 			loadFrom: 0,
 			loadSize: 5,
-			partialLoadMessage: "Load next %",
+			partialLoadMessage: "Load next %num",
 			partialLoadIndicator: null,
 			onPartialLoad: null,	// called after partial data load is completed
 
@@ -83,6 +83,8 @@ var caUI = caUI || {};
 			firstItemColor: null,
 			itemColor: null,
 			lastItemColor: null,
+			oddColor: null,
+			evenColor: null,
 
 			isSortable: false,
 			listSortOrderID: null,
@@ -147,9 +149,9 @@ var caUI = caUI || {};
 			var end = (that.loadFrom + that.loadSize)
 			if (end > that.totalValueCount) { end = that.totalValueCount % that.loadSize; } else { end = that.loadSize; }
 
-			var msg = that.partialLoadMessage.replace("%", end + "/" + that.totalValueCount);
+			var msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
 			jQuery(that.container + " ." + that.itemListClassName).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
-			jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__next').on('click', function(e) {
+			jQuery(that.container + " ." + that.itemListClassName).on('click', '.caItemLoadNextBundles', function(e) {
 				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').show();
 				that.loadNextValues();
 				e.preventDefault();
@@ -221,10 +223,12 @@ var caUI = caUI || {};
 			templateValues.fieldNamePrefix = this.fieldNamePrefix; // always pass field name prefix to template
 
 			// Set default value for new items
+			var is_new = id ? false : true;
 			if (!id) {
 				jQuery.each(this.defaultValues, function(k, v) {
 					if (v && !templateValues[k]) { templateValues[k] = v; }
 				});
+				id = 'new_' + this.getCount();	// set id to ensure sub-fields get painted with unsaved warning handler
 			}
 
 			// replace values in template
@@ -251,7 +255,7 @@ var caUI = caUI || {};
 			}
 
 			if (this.onInitializeItem && (initialValues && !initialValues['_handleAsNew'])) {
-				this.onInitializeItem(id, initialValues, this, isNew);
+				this.onInitializeItem(is_new ? null : id, initialValues, this, isNew);
 			}
 
 			var that = this;	// for closures
@@ -268,9 +272,6 @@ var caUI = caUI || {};
 
 				var info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
-					if (!this.initialValues[id]) {
-						console.log("err", this.initialValues, this.initialValues[id], id, info, info[1]);
-					}
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
@@ -446,6 +447,13 @@ var caUI = caUI || {};
 				if (options.lastItemColor) {
 					jQuery(this.container + " ." + options.listItemClassName + ":last").css('background-color', '#' + options.lastItemColor);
 				}
+			} else if((options.oddColor) || (options.evenColor)) {
+				if (options.oddColor) {		// use :even because jQuery is zero-based (eg. 1, 3, 5... are "even" but we consider them "odd")
+					jQuery(this.container + " ." + options.listItemClassName + ":even").css('background-color', '#' + options.oddColor);
+				}	
+				if (options.evenColor) {	// use :odd because jQuery is zero-based (eg. 0, 2, 4... are "odd" but we consider them "even")
+					jQuery(this.container + " ." + options.listItemClassName + ":odd").css('background-color', '#' + options.evenColor);
+				}	
 			}
 			return this;
 		};

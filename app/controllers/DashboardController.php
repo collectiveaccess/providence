@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/DashboardManager.php');
+ 	require_once(__CA_LIB_DIR__.'/DashboardManager.php');
  
  	class DashboardController extends ActionController {
  		# -------------------------------------------------------
@@ -72,6 +72,11 @@
  		# -------------------------------------------------------
  		public function clear() {
  			$this->opo_dashboard_manager->clearDashboard();
+ 			$this->render('dashboard/dashboard_html.php');
+ 		}
+		# -------------------------------------------------------
+ 		public function default() {
+ 			$this->opo_dashboard_manager->defaultDashboard();
  			$this->render('dashboard/dashboard_html.php');
  		}
  		# -------------------------------------------------------

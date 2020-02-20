@@ -11,7 +11,7 @@
 		</form>
 	</div>
 	<div class="caLibrarySubmitListContainer">
-		<?php print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Next'), 'nextButton', array(), array()); ?>
+		<?php print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Next'), 'nextButton', array(), array()); ?>
 	</div>
 </div>
 

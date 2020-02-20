@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,7 @@
  	AssetLoadManager::register('setEditorUI');
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$va_items 				= $this->getVar('items');
+	$va_items 				= caSanitizeArray($this->getVar('items'), ['removeNonCharacterData' => false]);
 	$t_set 					= $this->getVar('t_set');
 	$vn_set_id 				= $t_set->getPrimaryKey();
 	$t_row 					= $this->getVar('t_row');
@@ -53,12 +53,21 @@
 		</div>
 <?php
 	} else {
+	print "<div class='bundleSubLabel'>";
+	if(is_array($va_items) && sizeof($va_items)) {
+		print caGetPrintFormatsListAsHTMLForSetItemBundles($vs_id_prefix, $this->request, $t_set, $t_set->getItemRowIDs());
+	}
 ?>
-	<div class="caItemListSortControls">
-		<?php print _t('Sort by'); ?>:<br/>
+    <div class="caItemListSortControls">
+		<?php print _t('Sort by'); ?>:
 		<a href="#" onclick="setEditorOps.sort('name'); return false;"><?php print _t('name'); ?></a>&nbsp;&nbsp;
 		<a href="#" onclick="setEditorOps.sort('idno'); return false;"><?php print _t('identifier'); ?></a>
 	</div>
+<?php
+	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
+	
+?>
+	
 	<div id="<?php print $vs_id_prefix; ?>setItems" class="setItems">
 		<div class="setEditorAddItemForm" id="<?php print $vs_id_prefix; ?>addItemForm">
 			<?php print _t('Add %1', $vs_type_singular).': '; ?>
@@ -84,7 +93,8 @@
 					rowIDListID: '<?php print $vs_id_prefix; ?>setRowIDList',
 					displayTemplate: <?php print (isset($va_settings['displayTemplate']) ? json_encode($va_settings['displayTemplate']) : 'null'); ?>,
 					
-					editSetItemButton: '<?php print addslashes(caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__)); ?>',
+					editSetItemButton: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>',
+					deleteSetItemButton: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>',
 					
 					lookupURL: '<?php print $va_lookup_urls['search']; ?>',
 					itemInfoURL: '<?php print caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',

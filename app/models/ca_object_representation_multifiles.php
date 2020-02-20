@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,8 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/BaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representation_multifiles'] = array(
@@ -97,7 +96,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representation_multifiles'] = arr
  	)
 );
 
-class ca_object_representation_multifiles extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
+class ca_object_representation_multifiles extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -209,6 +208,117 @@ class ca_object_representation_multifiles extends BundlableLabelableBaseModelWit
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+ 	 * Check if currently loaded row is readable
+ 	 *
+ 	 * @param RequestHTTP $po_request
+ 	 * @param string $ps_bundle_name Optional bundle name to test readability on. If omitted readability is considered for the item as a whole.
+ 	 * @return bool True if record can be read by the current user, false if not
+ 	 */
+	function isReadable($po_request, $ps_bundle_name=null) {
+		$t_rep = new ca_object_representations($this->get('representation_id'));
+		
+		// Check type restrictions
+ 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+			$vn_type_access = $po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
+			if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
+				return false;
+			}
+		}
+		
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
+				return false;
+			}
+		}
+		
+		if ($ps_bundle_name) {
+			if ($po_request->user->getBundleAccessLevel('ca_object_representations', $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
+		}
+		
+		if ((defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET"))) {
+			$va_access = caGetUserAccessValues($po_request);
+			if (is_array($va_access) && sizeof($va_access) && !in_array($t_rep->get('access'), $va_access)) { return false; }
+		}
+		
+		return true;
+	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Check if currently loaded row is save-able
+ 	 *
+ 	 * @param RequestHTTP $po_request
+ 	 * @param string $ps_bundle_name Optional bundle name to test write-ability on. If omitted write-ability is considered for the item as a whole.
+ 	 * @return bool True if record can be saved, false if not
+ 	 */
+ 	public function isSaveable($po_request, $ps_bundle_name=null) {
+		$t_rep = new ca_object_representations($this->get('representation_id'));
+		
+ 		// Check type restrictions
+ 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+			$vn_type_access = $po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
+			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $t_rep->getPrimaryKey()) {
+			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
+				return false;
+			}
+		}
+		
+ 		// Check actions
+ 		if (!$t_rep->getPrimaryKey() && !$po_request->user->canDoAction('can_create_ca_object_representations')) {
+ 			return false;
+ 		}
+ 		if ($t_rep->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_ca_object_representations')) {
+ 			return false;
+ 		}
+ 		
+		if ($ps_bundle_name) {
+			if ($po_request->user->getBundleAccessLevel('ca_object_representations', $ps_bundle_name) < __CA_BUNDLE_ACCESS_EDIT__) { return false; }
+		}
+ 		
+ 		return true;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Check if currently loaded row is deletable
+ 	 */
+ 	public function isDeletable($po_request) {
+		$t_rep = new ca_object_representations($this->get('representation_id'));
+		
+ 		// Is row loaded?
+ 		if (!$t_rep->getPrimaryKey()) { return false; }
+ 		
+ 		// Check type restrictions
+ 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+			$vn_type_access = $po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
+			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $t_rep->getPrimaryKey()) {
+			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
+				return false;
+			}
+		}
+		
+ 		// Check actions
+ 		if (!$t_rep->getPrimaryKey() || !$po_request->user->canDoAction('can_delete_ca_object_representations')) {
+ 			return false;
+ 		}
+ 		
+ 		return true;
+ 	}
 	# ------------------------------------------------------
 }
-?>

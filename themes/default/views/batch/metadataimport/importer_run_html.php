@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,15 +30,15 @@ $t_importer 			= $this->getVar('t_importer');
 $va_last_settings 		= $this->getVar('last_settings');
 
 print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data import"), 'caBatchMetadataImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MetadataImport', 'Index', array()),
+		caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute data import"), 'caBatchMetadataImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'MetadataImport', 'Index', array()),
 		'', 
 		''
 	);
 ?>
 <div class="sectionBox">
 <?php
-		print caFormTag($this->request, 'ImportData/'.$this->request->getActionExtra(), 'caBatchMetadataImportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caFormTag($this->request, 'ImportData/'.$this->request->getActionExtra(), 'caBatchMetadataImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Importer'); ?></span> 
@@ -88,6 +88,15 @@ print $vs_control_box = caFormControlBox(
 		$va_attr = array('value' => 'import',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileBrowserRadio');
 		if (caGetOption('fileInput', $va_last_settings, 'file') === 'import') { $va_attr['checked'] = 'checked'; }	
 		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From the import directory')." <div id='caFileBrowserContainer'>".$this->getVar('file_browser')."</div>";
+?>
+								</td>
+							</tr>
+							<tr class="caFileSourceControls" id='caFileGoogleDriveContainer'>
+								<td class="caSourceFileControlRadio">
+<?php		
+		$va_attr = array('value' => 'googledrive',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileGoogleDriveRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'googledrive') { $va_attr['checked'] = 'checked'; }	
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From GoogleDrive')." <span id='caFileGoogleDriveInputContainer'>".caHTMLTextInput('google_drive_url', ['value' => caGetOption('googleDriveUrl', $va_last_settings, ''), 'class' => 'urlBg', 'id' => 'caFileGoogleDriveInput'], ['width' => '500px'])."</span>";
 ?>
 								</td>
 							</tr>
@@ -171,7 +180,7 @@ print $vs_control_box = caFormControlBox(
 	});
 	
 	var caDataReaderInfo = <?php print json_encode(ca_data_importers::getInfoForAvailableInputFormats()); ?>;
-	var caImporterInfo = <?php print json_encode(ca_data_importers::getImporters()); ?>;
+	var caImporterInfo = <?php print json_encode(ca_data_importers::getImporters(null, ['dontIncludeWorksheet' => true])); ?>;
 	
 	function caSetBatchMetadataImportFormState(dontAnimate) {
 		var info;
@@ -242,13 +251,28 @@ print $vs_control_box = caFormControlBox(
 				jQuery('#caImportAllDatasetsContainer').hide(dontAnimate ? 0 : 150);
 			}
 		}
+		
+		if(currentFormat.toLowerCase() !== 'xlsx') {
+			jQuery("#caFileGoogleDriveContainer").hide();
+			if(jQuery("#caFileGoogleDriveRadio").is(":checked")) {
+				jQuery("#caFileInputRadio").attr('checked', true);
+			}
+		}  else {
+			jQuery("#caFileGoogleDriveContainer").show();
+		}
 			
 		if (jQuery("#caFileInputRadio").is(":checked")) {
-			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150).attr('disabled', false);
 			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', true);
+		} else if(jQuery("#caFileGoogleDriveRadio").is(":checked")) {
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150).attr('disabled', true);
+			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', false);
 		} else {
-			jQuery("#caFileInputContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileInputContainer").attr('disabled', true);
 			jQuery("#caFileBrowserContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', true);
 		}
 	}
 	
