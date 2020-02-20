@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -146,7 +146,7 @@ class ElementsController extends BaseEditorController {
 			$vo_db = $t_element->getDb();
 			if($vn_parent_id){
 				$qr_tmp = $vo_db->query("
-					SELECT MAX(rank) AS rank
+					SELECT MAX(`rank`) AS `rank`
 					FROM ca_metadata_elements
 					WHERE parent_id=?
 				",$vn_parent_id);
@@ -494,7 +494,7 @@ class ElementsController extends BaseEditorController {
 					WHERE
 						(parent_id=?)
 						AND
-						(rank>?)
+						(`rank` > ?)
 					ORDER BY
 						`rank`
 			",$pn_parent_id,$vn_rank);
@@ -510,7 +510,7 @@ class ElementsController extends BaseEditorController {
 					WHERE
 						(parent_id=?)
 						AND
-						(`rank`=?)
+						(`rank` = ?)
 					ORDER BY
 						`rank`
 			",$pn_parent_id,$vn_rank);
