@@ -1325,7 +1325,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				}
 
 				if (method_exists($t_item, 'getMetadataDictionaryRuleViolations') && is_array($va_violations = $t_item->getMetadataDictionaryRuleViolations()) && (($total_num_violations = (sizeof($va_violations))) > 0)) {
-					if (!is_array($violations_for_current_screen = $t_item->getMetadataDictionaryRuleViolations(null, ['screen_id' => $po_view->request->getActionExtra()]))) { $violations_for_current_screen = []; }
+					$screen_id = $po_view->request->getActionExtra();
+					if (!$screen_id || !is_array($violations_for_current_screen = $t_item->getMetadataDictionaryRuleViolations(null, ['screen_id' => $screen_id]))) { $violations_for_current_screen = []; }
 					$total_num_violations_for_current_screen = sizeof($violations_for_current_screen);
 
 					$va_violation_messages = [];
@@ -1339,10 +1340,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						} else {
 						    $b = explode(".", $va_violation['bundle_name']);
 						    $bundle = array_pop($b);
-					
-						    $placements = $t_ui->getPlacementsForBundle($bundle, $po_view->request, []);
+						        
+						    $placements = $t_ui->getPlacementsForBundle($va_violation['bundle_name'], $po_view->request, []);
 						    if (!is_array($placements) || !sizeof($placements)) {
 						        $placements = $t_ui->getPlacementsForBundle("ca_attribute_{$bundle}", $po_view->request, []);
+						        if (!is_array($placements) || !sizeof($placements)) {
+						        	$placements = $t_ui->getPlacementsForBundle($bundle, $po_view->request, []);
+						        }
 						    }
 						    if(is_array($placements)) {
 						        $placement = array_shift($placements);

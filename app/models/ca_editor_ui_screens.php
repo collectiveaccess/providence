@@ -490,6 +490,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 *		table = if using the returnAllAvailableIfEmpty option and you expect a list of available bundles to be returned if no display is loaded, you must specify the table the bundles are intended for use with with this option. Either the table name or number may be used.
 	 *		user_id = if specified then placements are only returned if the user has at least read access to the display,
 	 *		screen_id = get placements for specified screen id rather than currently loaded screen. [Default is null]
+	 *		placement_id = get specific placementrather than currently loaded screen. [Default is null]
 	 * @return array List of placements in display order. Array is keyed on bundle name. Values are arrays with the following keys:
 	 *		placement_id = primary key of ca_editor_ui_bundle_placements row - a unique id for the placement
 	 *		bundle_name = bundle name (a code - not for display)
@@ -509,28 +510,43 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		//	return array();
 		//}
 		
-		if (!($vn_screen_id = caGetOption('screen_id', $pa_options, null)) && !($vn_screen_id = $this->getPrimaryKey())) {
+		$vn_screen_id = caGetOption('screen_id', $pa_options, null);
+		$vn_placement_id = caGetOption('placement_id', $pa_options, null);
+		
+		if (!$vn_screen_id && !$vn_placement_id && !($vn_screen_id = $this->getPrimaryKey())) {
 			if ($pb_return_all_available_if_empty && $ps_table) {
 				return ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id] = $this->getAvailableBundles($ps_table, ['table' => $ps_table]);
 			}
 			return []; 
 		}
 		$vn_screen_id = preg_replace("!^screen!i", "", $vn_screen_id);
+		$vn_placement_id = preg_replace("!^P!i", "", $vn_placement_id);
 		
 		
-		if (!$pb_no_cache && isset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]) && ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]) {
+		if (!$pb_no_cache && $vn_screen_id && isset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]) && ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]) {
 			return ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id];
 		}
 		
 		$o_db = $this->getDb();
 		
-		$qr_res = $o_db->query("
-			SELECT placement_id, bundle_name, placement_code, settings, `rank`
-			FROM ca_editor_ui_bundle_placements
-			WHERE
-				screen_id = ?
-			ORDER BY `rank`
-		", [(int)$vn_screen_id]);
+		if ($vn_placement_id) {
+			$qr_res = $o_db->query("
+				SELECT placement_id, bundle_name, placement_code, settings, `rank`
+				FROM ca_editor_ui_bundle_placements
+				WHERE
+					placement_id = ?
+				ORDER BY `rank`
+			", [(int)$vn_placement_id]);
+		} else {
+			$qr_res = $o_db->query("
+				SELECT placement_id, bundle_name, placement_code, settings, `rank`
+				FROM ca_editor_ui_bundle_placements
+				WHERE
+					screen_id = ?
+				ORDER BY `rank`
+			", [(int)$vn_screen_id]);
+
+		}
 		
 		$va_available_bundles = ($pb_settings_only) ? array() : $this->getAvailableBundles();
 		$va_placements = array();

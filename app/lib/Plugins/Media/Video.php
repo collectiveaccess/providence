@@ -285,7 +285,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	/**
 	 *
 	 */
-	public function read ($filepath) {
+	public function read ($filepath, $mimetype="", $options=null) {
 		if (!file_exists($filepath)) {
 			$this->postError(1650, _t("File %1 does not exist", $filepath), "WLPlugVideo->read()");
 			$this->opa_media_metadata = array();

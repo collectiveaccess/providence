@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2016 Whirl-i-Gig
+ * Copyright 2003-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,14 +247,14 @@ class Media extends BaseObject {
 		return $this->instance->getExtractedMetadata();
 	}
 	# ----------------------------------------------------------
-	public function read($filepath) {
+	public function read($filepath, $mimetype=null, $options=null) {
 		if ((!$this->instance) || ($filepath != $this->filepath)) {
 			$this->instance = $this->divineFileFormat($filepath, ['returnPluginInstance' => true]);
 		}
 			
 		if ($this->instance) {
 			$this->instance->init();
-			$vn_res = $this->instance->read($filepath, $mimetype);
+			$vn_res = $this->instance->read($filepath, $mimetype, $options);
 		  if ($this->DEBUG) { print "USING ".$plugin_info["NAME"]."\n"; }
 			if (!$vn_res) {
 				$this->postError(1605, join("; ", $this->instance->getErrors()), "Media->read()");	

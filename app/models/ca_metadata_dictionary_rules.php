@@ -272,6 +272,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	 * @param array $pa_options Options include:
 	 *		db = Database connection to use. If omitted a new connection is created. [Default is null]
 	 *		bundles = List of bundle name to return rules for. If omitted all rules for all bundles are returned. [Default is null]
+	 *		table = Table to restrict entries to. If omitted rules for all tables are returned. [Default is null]
 	 *
 	 * @return array List of rules. Each rule is an array with rule data.
 	 */
@@ -289,6 +290,10 @@ class ca_metadata_dictionary_rules extends BaseModel {
 		if($va_bundles = caGetOption('bundles', $pa_options, null, array('castTo' => 'array'))) {
 			$va_wheres[] = "(cmde.bundle_name IN (?))";
 			$va_params[] = $va_bundles;
+		}
+		if(($table = caGetOption('table', $pa_options, null)) && $table_num = Datamodel::getTableNum($table)) {
+			$va_wheres[] = "(cmde.table_num = ?)";
+			$va_params[] = $table_num;
 		}
 		if (sizeof($va_wheres) > 0) { $vs_sql .= " WHERE ".join(" AND ", $va_wheres); }
 		
