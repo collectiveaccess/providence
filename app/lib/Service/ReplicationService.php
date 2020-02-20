@@ -224,6 +224,10 @@ class ReplicationService {
 			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['forceValuesForAllAttributeSLots' => true]));
 		}
 
+        foreach($va_log as $i => $l) {
+            unset($va_log[$i]['snapshot']['media_content']);
+        }
+
 		return $va_log;
 	}
 	# -------------------------------------------------------
@@ -462,6 +466,7 @@ class ReplicationService {
 		$va_results = [];
 		if(is_array($va_guids_to_check)) {
 			foreach($va_guids_to_check as $vs_guid) {
+				if(!trim($vs_guid)) { continue; }
 				if (!($va_results[$vs_guid] = ca_guids::getInfoForGUID($vs_guid))) {
 					$va_results[$vs_guid] = '???';
 				}
