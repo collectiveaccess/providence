@@ -112,7 +112,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$this->opo_plugin_config = Configuration::load($vs_prepopulate_cfg);
 		}
 
-		if(!($this->opo_plugin_config->get('prepopulate_fields_on_save') || $this->opo_plugin_config->get('prepopulate_fields_on_load'))) {
+		if(!(bool)$this->opo_plugin_config->get('prepopulate_fields_on_save') && !(bool)$this->opo_plugin_config->get('prepopulate_fields_on_load')) {
 			return false;
 		}
 
