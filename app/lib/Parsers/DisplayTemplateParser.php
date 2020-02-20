@@ -420,9 +420,9 @@ class DisplayTemplateParser {
 					break;
 				case 'if':
 					if (strlen($vs_rule = $o_node->rule) && ExpressionParser::evaluate($vs_rule, $pa_vals)) {
-						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);	
+						$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);	
 						 
-						if ($pb_is_case) { break(2); }
+						if ($pb_is_case && $content) { break(2); }
 					}
 					break;
 				case 'ifdef':
@@ -436,8 +436,8 @@ class DisplayTemplateParser {
 					
 					if ((($vs_tag == 'ifdef') && $vb_defined) || (($vs_tag == 'ifnotdef') && $vb_defined)) {
 						// Make sure returned values are not empty
-						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $v=DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);
-						if ($pb_is_case) { break(2); }
+						$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $v=DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);
+						if ($pb_is_case && $content) {  break(2); }
 					}
 					break;
 				case 'ifcount':
@@ -486,8 +486,8 @@ class DisplayTemplateParser {
 					
 					if ($vb_bool == 'AND') {
 						if (($vn_min <= $vm_count) && (($vn_max >= $vm_count) || !$vn_max)) {
-							$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);
-							if ($pb_is_case) { break(2); }
+							$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);
+							if ($pb_is_case && $content) { break(2); }
 						}
 					} else {
 						$vb_all_have_count = true;
@@ -498,8 +498,8 @@ class DisplayTemplateParser {
 							}	
 						}
 						if ($vb_all_have_count) {
-							$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
-							if ($pb_is_case) { break(2); }
+							$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
+							if ($pb_is_case && $content) { break(2); }
 						}
 					}
 					break;
@@ -512,8 +512,8 @@ class DisplayTemplateParser {
 							
 							foreach($va_following_tags as $vs_following_tag) {
 								if(isset($pa_vals[$vs_following_tag]) && strlen($pa_vals[$vs_following_tag])) {
-									$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
-									if ($pb_is_case) { break(2); }
+									$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
+									if ($pb_is_case && $content) { break(2); }
 								}
 							}
 						}
@@ -543,8 +543,8 @@ class DisplayTemplateParser {
 							
 								foreach($va_following_tags as $vs_following_tag) {
 									if(isset($pa_vals[$vs_following_tag]) && strlen($pa_vals[$vs_following_tag])) {
-										$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
-										if ($pb_is_case) { break(2); }
+										$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
+										if ($pb_is_case && $content) { break(2); }
 									}
 									break;
 								}
@@ -554,9 +554,9 @@ class DisplayTemplateParser {
 					break;
 				case 'expression':
 					if ($vs_exp = trim($o_node->getInnerText())) {
-						$vs_acc .= ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), array_merge($pa_options, ['quote' => true])), $pa_vals);
+						$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), array_merge($pa_options, ['quote' => true])), $pa_vals);
 						
-						if ($pb_is_case) { break(2); }
+						if ($pb_is_case && $content) { break(2); }
 					}
 					break;
 				case 'unit':
@@ -716,8 +716,8 @@ class DisplayTemplateParser {
 						}
 						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
-						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
-						if ($pb_is_case) { break(2); }
+						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						if ($pb_is_case && $content) { break(2); }
 					} else { 
 						if ($t_instance->isRelationship()) {
 							// Allow subunits to inherit incorrectly placed restrict/exclude types options
@@ -877,8 +877,8 @@ class DisplayTemplateParser {
 						}
 						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
-						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
-						if ($pb_is_case) { break(2); }
+						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						if ($pb_is_case && $content) { break(2); }
 					}
 				
 					break;
@@ -1671,9 +1671,9 @@ class DisplayTemplateParser {
 					break;
 				case 'if':
 					if (strlen($vs_rule = $o_node->rule) && ExpressionParser::evaluate($vs_rule, $pa_values)) {
-						$vs_acc .= DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, $pa_options);	
+						$vs_acc .= $content = DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, $pa_options);	
 						 
-						if ($pb_is_case) { break(2); }
+						if ($pb_is_case && $content) { break(2); }
 					}
 					break;
 				case 'ifdef':
@@ -1682,8 +1682,8 @@ class DisplayTemplateParser {
 					
 					if ((($vs_tag == 'ifdef') && $vb_defined) || (($vs_tag == 'ifnotdef') && $vb_defined)) {
 						// Make sure returned values are not empty
-						$vs_acc .= DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, $pa_options);
-						if ($pb_is_case) { break(2); }
+						$vs_acc .= $content = DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, $pa_options);
+						if ($pb_is_case && $content) { break(2); }
 					}
 					break;
 				default:
