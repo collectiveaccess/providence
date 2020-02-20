@@ -50,6 +50,9 @@
 	    'headerHeight' => 1 * $cmToTwips,
 	    'footerHeight' => 1 * $cmToTwips,
 	    'colsNum' => 1,
+	    'pageSizeW' => 8.5 * 1440,
+	    'pageSizeH' => 11 * 1440
+	    
 	);
 	$section = $phpWord->addSection($sectionStyle);
 
@@ -87,7 +90,7 @@
 	
 // Define table style arrays
 $styleTable = array('borderSize'=>0, 'borderColor'=>'ffffff', 'cellMargin'=>80);
-$styleFirstRow = array('borderBottomSize'=>18, 'borderBottomColor'=>'0000FF');
+$styleFirstRow = array('borderBottomSize'=>18, 'borderBottomColor'=>'CCCCCC');
 
 // Define cell style arrays
 $styleCell = array('valign'=>'center');

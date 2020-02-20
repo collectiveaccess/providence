@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2018 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -206,7 +206,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->metadata;
 	}
 	# ------------------------------------------------
-	public function read ($filepath) {
+	public function read ($filepath, $mimetype="", $options=null) {
 		if (!file_exists($filepath)) {
 			$this->postError(1650, _t("File %1 does not exist", $filepath), "WLPlugQuicktimeVR->read()");
 			$this->handle = "";

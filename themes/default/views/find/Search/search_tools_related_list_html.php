@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,8 +26,9 @@
  * ----------------------------------------------------------------------
  */
  
- 	$t_subject = $this->getVar('t_subject');
-	$vs_url_string = $this->getVar('relatedListURLParamString');
+ 	$t_subject 		= $this->getVar('t_subject');
+	$vs_url_string 	= $this->getVar('relatedListURLParamString');
+ 	$params			= $this->getVar('relatedListParams');
 
 ?>
 <div id="searchToolsBox_<?php print $this->getVar('interstitialPrefix'); ?>" class="relatedListSearchToolsBox">
@@ -43,6 +44,8 @@
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', array('value' => 1));
 			print caHTMLHiddenInput('find_type', array('value' => $this->getVar('find_type')));
 			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'));
+			
+		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 			?>
 			</form>
 		</div>
@@ -64,8 +67,11 @@
 			
 			print caHTMLSelect('label_form', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_label_form'), 'width' => '150px'))."\n";
 			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm_'.$this->getVar('interstitialPrefix'));
+
+		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 ?>
-			<input type='hidden' name='download' value='1'/></form>
+			<input type='hidden' name='download' value='1'/>
+			</form>
 		</div><!-- end col -->
 <?php
 	}
@@ -81,8 +87,11 @@
 		}
 		print caHTMLSelect('export_format', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_export_format'), 'width' => '150px'))."\n";
 		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm_'.$this->getVar('interstitialPrefix'));
+
+		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 ?>
-		<input type='hidden' name='download' value='1'/></form>
+		<input type='hidden' name='download' value='1'/>
+		</form>
 	</div>
 <?php
 	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_object_representations')) && ($this->request->user->canDoAction('can_download_ca_object_representations')) && is_array($va_download_versions = $this->request->config->getList('ca_object_representation_download_versions'))) {
@@ -104,6 +113,7 @@
 		}
 		ksort($va_options);
 		
+		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 		print caHTMLSelect('mode', $va_options, array('id' => 'caDownloadRepresentationMode', 'class' => 'searchToolsSelect'), array('value' => null, 'width' => '150px'))."\n";
 ?>
 			<a href='#' onclick="caDownloadRepresentations_<?php print $this->getVar('interstitialPrefix'); ?>(jQuery('#caDownloadRepresentationMode').val());" class="button"><?php print _t('Download'); ?> &rsaquo;</a>

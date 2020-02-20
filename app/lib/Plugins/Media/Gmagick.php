@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2019 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -432,7 +432,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->metadata;
 	}
 	# ----------------------------------------------------------
-	public function read($ps_filepath, $mimetype="") {
+	public function read($ps_filepath, $mimetype="", $options=null) {
 		if (!(($this->handle) && ($ps_filepath === $this->filepath))) {
 			
 			if ($mimetype == 'image/tilepic') {
@@ -465,7 +465,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$ps_filepath = $this->_dcrawConvertToTiff($ps_filepath);
 				}
 
-				if(!($handle = $this->_gmagickRead($ps_filepath))) {
+				if(!($handle = $this->_gmagickRead($ps_filepath, $options))) {
 					return false; // plugin cant handle format
 				}
 
@@ -1168,7 +1168,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $vs_tmp_name.'.tiff';
 	}
 	# ----------------------------------------------------------------------
-	private function _gmagickRead($ps_filepath) {
+	private function _gmagickRead($ps_filepath, $options=null) {
 		try {
 			$handle = new Gmagick($ps_filepath);
 			$this->setResourceLimits($handle);
@@ -1195,6 +1195,11 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if(caExifToolInstalled()) {
 					$va_metadata['EXIF'] = caExtractMetadataWithExifTool($ps_filepath, true);
 				}
+			}
+			
+			// rewrite file name to use originally uploaded name
+			if(array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+				$va_metadata['EXIF']['FILE']['FileName'] = $f;
 			}
 
 			// Rotate incoming image as needed

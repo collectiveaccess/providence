@@ -1372,10 +1372,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			    $pa_bundle_settings['definition'][$g_ui_locale] = $va_dictionary_entry['settings']['definition'];
 			}
 			if (caGetOption('mandatory', $va_dictionary_entry['settings'], false)) {
-				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').caExtractSettingsValueByUserLocale('definition', $pa_bundle_settings);
+				$def = caExtractSettingsValueByUserLocale('definition', $pa_bundle_settings);
+				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').(is_array($def) ? $def[$g_ui_locale] : $def);
 			}
 			
-			$va_violations = $this->getMetadataDictionaryRuleViolations($dict_bundle_spec);
+			$va_violations = $this->getMetadataDictionaryRuleViolations($dict_bundle_spec, ['placement_id' => (int)str_replace("P", "", $ps_placement_code)]);
 			if (is_array($va_violations) && sizeof($va_violations)) {
 				$va_violation_text = array();
 				foreach($va_violations as $va_violation) {
@@ -1956,9 +1957,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		
-		//if (is_array($va_violations) && sizeof($va_violations)) {
-			//$vs_label .= "<img src='".$pa_options['request']->getThemeUrlPath()."/graphics/icons/warning_small.gif' style='margin-left: 5px;' onclick='jQuery(this).parent().find(\".caMetadataDictionaryDefinitionToggle\").click();  return false;'/>";
-		//} 
+		if (is_array($va_violations) && sizeof($va_violations)) {
+			$vs_label .= caNavIcon(__CA_NAV_ICON_ALERT__, "12px", ['style' => 'margin: 0 0 5px 5px;', 'onclick' => 'jQuery(this).parent().find(\'.caMetadataDictionaryDefinitionToggle\').click();  return false;']);
+		} 
 
 		$vs_output = str_replace("^ELEMENT", $vs_element, $vs_display_format);
 		$vs_output = str_replace("^ERRORS", join('; ', $va_errors), $vs_output);
@@ -1981,7 +1982,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (is_array($violations_to_prompt) && sizeof($violations_to_prompt)) {
 			$prompt_id = $pa_options['bundle_id'].'_bundle';
 			$violations_text = array_map(function($v) { return caExtractSettingsValueByUserLocale('violationMessage', $v); }, $violations_to_prompt);
-			$prompt = "<script type='text/javascript'>caPromptManager.addPrompt('{$prompt_id}', '".addslashes(preg_replace("![\n\r\t ]+!", " ", join("; ", $violations_text)))."');</script>";
+			$prompt = "<script type='text/javascript'>caPromptManager.addPrompt('{$prompt_id}', '".addslashes(preg_replace("![\n\r\t ]+!", " ", join("<br/>", $violations_text)))."');</script>";
 		}
 		return (caGetOption('contentOnly', $pa_options, false) ? $vs_element : $vs_output).$prompt;
 	}
@@ -7662,6 +7663,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $options Options include:
 	 *		limitToShowAsPrompt = 
 	 *		screen_id = 
+	 *		placement_id = 
 	 *
 	 * @return array|null
 	 */
@@ -7671,12 +7673,12 @@ side. For many self-relations the direction determines the nature and display te
 	 	$limit_to_show_as_prompt = caGetOption('limitToShowAsPrompt', $options, false);
 	 	
 	 	$bundles_on_screen = null;
-	 	if ($screen_id = caGetOption('screen_id', $options, null)) {
+	 	if (($screen_id = caGetOption('screen_id', $options, null)) || ($placement_id = caGetOption('placement_id', $options, null))) {
 	 		$t_screen = Datamodel::getInstance('ca_editor_ui_screens', true);
-	 		if (is_array($screen_placements = $t_screen->getPlacements(['screen_id' => $screen_id]))) {
+	 		if (is_array($screen_placements = $t_screen->getPlacements($placement_id ? ['placement_id' => $placement_id] : ['screen_id' => $screen_id]))) {
 	 			$bundles_on_screen = array_map(function($v) { return preg_replace("!^ca_attribute_!", "", $v['bundle_name']); }, $screen_placements);
 	 		}
-	 	}
+	 	} 
 	 	$o_db = $this->getDb();
 	 	
 	 	$va_sql_params = array($vn_id, $this->tableNum());
@@ -7707,19 +7709,59 @@ side. For many self-relations the direction determines the nature and display te
 	 	while($qr_res->nextRow()) {
 	 		$bundle_name = $qr_res->get('bundle_name'); 
 	 		$bundle_elements = explode('.', $bundle_name);
+	 		$rule_settings = caUnserializeForDatabase($qr_res->get('settings'));
 	 		
-	 		if (is_array($bundles_on_screen) && !in_array(join(".", $bundle_elements), $bundles_on_screen)) {
-	 			if (sizeof($bundle_elements) > 1) { array_shift($bundle_elements); }
-	 			if (is_array($bundles_on_screen) && !in_array(join(".", $bundle_elements), $bundles_on_screen)) { continue; }
-	 		}
+			$vn_violation_id = $qr_res->get('violation_id');
 	 		$vn_rule_id = $qr_res->get('rule_id');
+	 		
 	 		$t_rule = (isset($va_rule_instances[$vn_rule_id])) ? $va_rule_instances[$vn_rule_id] : ($va_rule_instances[$vn_rule_id] = new ca_metadata_dictionary_rules($vn_rule_id));
-	 	
-	 		if ($t_rule && $t_rule->getPrimaryKey()) {
-	 			$show_as_prompt = $t_rule->getSetting('showasprompt');
+	 		if (!$t_rule || !$t_rule->getPrimaryKey()) { continue; }
+	 		
+	 		$show_as_prompt = $t_rule->getSetting('showasprompt');
+	 		
+	 		if ($limit_to_show_as_prompt && !$show_as_prompt) { continue; }
+	 		
+	 		if (is_array($bundles_on_screen)) {
+	 			if (!in_array(join(".", $bundle_elements), $bundles_on_screen)) {
+	 				if (sizeof($bundle_elements) > 1) { array_shift($bundle_elements); }
+	 				if (is_array($bundles_on_screen) && !in_array(join(".", $bundle_elements), $bundles_on_screen)) { continue; }
+	 			}
 	 			
-	 			if ($limit_to_show_as_prompt && !$show_as_prompt) { continue; }
-				$vn_violation_id = $qr_res->get('violation_id');
+	 			$p = join(".", $bundle_elements);
+	 				 			
+	 			$rule_settings_restrict_to_types = array_filter(caGetOption(['restrict_to_types', 'restrictToTypes'], $rule_settings, []), function($v) { return strlen($v); });
+	 			$rule_settings_restrict_to_relationship_types = array_filter(caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $rule_settings, []), function($v) { return strlen($v); });
+	 			
+	 			foreach($bundles_on_screen as $placement_id => $placement_bundle_name) {
+	 				if ($placement_bundle_name == $p) {
+	 					// Compare bundle type and relationship type restrictions; only show errors when the are set and equal
+	 					$placement_restrict_to_types = array_filter(caGetOption(['restrict_to_types', 'restrictToTypes'], $screen_placements[$placement_id]['settings'], []), function($v) { return strlen($v); });
+	 					$placement_restrict_to_relationship_types = array_filter(caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $screen_placements[$placement_id]['settings'], []), function($v) { return strlen($v); });
+	 					
+	 					if (sizeof($placement_restrict_to_types) && !sizeof(array_intersect($placement_restrict_to_types, $rule_settings_restrict_to_types))) {
+	 						continue;
+	 					}
+	 						
+	 					if (sizeof($placement_restrict_to_relationship_types) && !sizeof(array_intersect($placement_restrict_to_relationship_types, $rule_settings_restrict_to_relationship_types))) {
+	 						continue;
+	 					}
+	 					$va_violations[$vn_violation_id] = array(
+							'violation_id' => $vn_violation_id,
+							'bundle_name' => $bundle_name,
+							'placement_code' => $screen_placements[$placement_id]['placement_code'],
+							'label' => $t_rule->getSetting('label'),
+							'violationMessage' => $t_rule->getSetting('violationMessage'),
+							'code' => $qr_res->get('rule_code'),
+							'level' => $vs_level = $qr_res->get('rule_level'),
+							'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $vs_level),
+							'description' => $t_rule->getSetting('description'),
+							'showasprompt' => $show_as_prompt,
+							'created_on' => $qr_res->get('created_on'),
+							'last_checked_on' => $qr_res->get('last_checked_on')
+						);
+	 				}
+	 			}
+	 		} else {
 	 			$va_violations[$vn_violation_id] = array(
 	 				'violation_id' => $vn_violation_id,
 	 				'bundle_name' => $bundle_name,
@@ -7748,7 +7790,7 @@ side. For many self-relations the direction determines the nature and display te
 		$t_violation = new ca_metadata_dictionary_rule_violations();
 		if ($this->inTransaction()) { $t_violation->setTransaction($this->getTransaction()); }
 		
-		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $o_db, 'bundles' => caGetOption('bundles', $pa_options, null)));
+		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $o_db, 'table' => $this->tableNum(), 'bundles' => caGetOption('bundles', $pa_options, null)));
 		$vn_violation_count = 0;
 		$va_violations = array();
 		foreach($va_rules as $va_rule) {

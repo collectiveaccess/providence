@@ -1348,7 +1348,7 @@ class BaseModel extends BaseObject {
 								} else {
 									$vm_orig_value = $vm_value;
 									$vm_value = preg_replace("/[^\d\-\.]+/", "", $vm_value); # strip non-numeric characters
-									if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
+									if (!preg_match("/^[\-]{0,1}[\d\.]+$/", $vm_value)) {
 										$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()", $this->tableName().'.'.$vs_field);
 										return false;
 									}
@@ -4292,7 +4292,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					}
 
 					# ok process file...
-					if (!($m->read($this->_SET_FILES[$ps_field]['tmp_name']))) {
+					if (!($m->read($this->_SET_FILES[$ps_field]['tmp_name'], null, ['original_filename' => $vs_original_filename]))) {
 						$this->errors = array_merge($this->errors, $m->errors());	// copy into model plugin errors
 						set_time_limit($vn_max_execution_time);
 						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
@@ -4414,7 +4414,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							if (!isset($va_media_objects[$basis])) {
 								$o_media = new Media();
 								$basis_vi = $this->_MEDIA_VOLUMES->getVolumeInformation($media_desc[$basis]['VOLUME']);
-								if ($o_media->read($p=$basis_vi['absolutePath']."/".$media_desc[$basis]['HASH']."/".$media_desc[$basis]['MAGIC']."_".$media_desc[$basis]['FILENAME'])) {
+								if ($o_media->read($p=$basis_vi['absolutePath']."/".$media_desc[$basis]['HASH']."/".$media_desc[$basis]['MAGIC']."_".$media_desc[$basis]['FILENAME'], null, ['original_filename' => $vs_original_filename])) {
 									$va_media_objects[$basis] = $o_media;
 								} else {
 									$m = $va_media_objects['_original'];

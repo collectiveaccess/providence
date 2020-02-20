@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2019 Whirl-i-Gig
+ * Copyright 2006-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -319,7 +319,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		return array();
 	}
 	# ------------------------------------------------
-	public function read ($ps_filepath) {
+	public function read ($ps_filepath, $mimetype="", $options=null) {
 		if (is_array($this->handle) && ($this->handle["filepath"] == $ps_filepath)) {
 			// noop
 		} else {
