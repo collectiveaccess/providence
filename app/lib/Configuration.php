@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2019 Whirl-i-Gig
+ * Copyright 2000-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -754,13 +754,17 @@ class Configuration {
 			if ($vn_in_quote && !in_array($vn_state, [10,20])) {
 				switch($vn_state) {
 					case 30:
-						$this->ops_error = "Missing trailing quote in list '$vs_key'<br/><strong>Last ".sizeof($va_token_history)." tokens were: </strong>".$this->_formatTokenHistory($va_token_history, array('outputAsHTML' => true));
-						break;
+						// $this->ops_error = "Missing trailing quote in list '$vs_key'<br/><strong>Last ".sizeof($va_token_history)." tokens were: </strong>".$this->_formatTokenHistory($va_token_history, array('outputAsHTML' => true));
+ 						//break;
+						continue(2);	// allow multiline quoted entries
 					case 40:
 					case 50:
-						$this->ops_error = "Missing trailing quote in associative array '$vs_key'<br/><strong>Last ".sizeof($va_token_history)." tokens were: </strong>".$this->_formatTokenHistory($va_token_history, array('outputAsHTML' => true));
+						//$this->ops_error = "Missing trailing quote in associative array '$vs_key'<br/><strong>Last ".sizeof($va_token_history)." tokens were: </strong>".$this->_formatTokenHistory($va_token_history, array('outputAsHTML' => true));
+						//break;
+						continue(2);	// allow multiline quoted entries
 					default:
 						$this->ops_error = "Missing trailing quote in '$vs_key' [Last token was '{$vs_token}'; state was $vn_state]<br/><strong>Last ".sizeof($va_token_history)." tokens were: </strong>".$this->_formatTokenHistory($va_token_history, array('outputAsHTML' => true));
+						break;
 				}
 				fclose($r_file);
 
