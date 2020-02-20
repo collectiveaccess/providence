@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -706,6 +706,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				case 'ImageSourceData':
 				case 'ICC_Profile':
 					continue(2);
+					break;
+				case 'FileDateTime':
+					$vs_val = caGetLocalizedDate($vs_val, ['timeOmit' => false]);
 					break;
 			}
 			$vs_buf .= "<tr><td width='130'>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_val, $pn_level + 1, $vs_key)."</td></tr>";
