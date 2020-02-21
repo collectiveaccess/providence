@@ -51,7 +51,7 @@ class ExifDataReader extends BaseDataReader {
 		
 		$this->ops_title = _t('EXIF data reader');
 		$this->ops_display_name = _t('Embedded EXIF media metadata');
-		$this->ops_description = _t('Reads Embedded EXIF Media Metadata');
+		$this->ops_description = _t('Reads embedded EXIF media metadata');
 		
 		$this->opa_formats = array('exif');	// must be all lowercase to allow for case-insensitive matching
 	}
