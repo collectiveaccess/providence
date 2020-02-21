@@ -56,7 +56,7 @@
 			if (is_array(self::$plugin_names)) { return self::$plugin_names; }
 		
 			self::$plugin_names = [];
-			$dir = opendir($p =__CA_LIB_DIR__.'/plugins/BanHammer');
+			$dir = opendir($p =__CA_LIB_DIR__.'/Plugins/BanHammer');
 			if (!$dir) { throw new ApplicationException(_t('Cannot open BanHammer plugin directory %1', p)); }
 	
 			while (($plugin = readdir($dir)) !== false) {

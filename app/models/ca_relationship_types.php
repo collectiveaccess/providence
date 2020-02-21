@@ -350,14 +350,21 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * Return information, including typenames filterd by user locale, for relationship types for the 
 	 * specified relationship table (eg. ca_objects_x_entities, ca_entities_x_occurrences).
 	 *
+	 * @params mixed $pm_table_name_or_num
+	 * @params string $ps_type_code
+	 * @params array $options Options include:
+	 *      includeTypeCodesAsKeys = Also set type codes are keys in the returned array. [Default is false]
+	 *
 	 * Returns array keyed on relationship type_id; values are associative arrays keys on ca_relationship_types/ca_relationship_type_labels field names
 	 */
-	public function getRelationshipInfo($pm_table_name_or_num, $ps_type_code=null) {
+	public function getRelationshipInfo($pm_table_name_or_num, $ps_type_code=null, $options=null) {
 		if (!is_numeric($pm_table_name_or_num)) {
 			$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		} else {
 			$vn_table_num = $pm_table_name_or_num;
 		}
+		
+		$include_type_codes_as_keys = caGetOption('includeTypeCodesAsKeys', $options, false);
 		
 		$params = [(int)$vn_table_num];
 		$vs_type_sql = '';
@@ -374,11 +381,14 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 				(crt.table_num = ?) {$vs_type_sql}
 		", $params);
 		
-		$va_relationships = array();
+		$va_relationships = [];
 		while ($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
 			$va_row['type_code'] = mb_strtolower($va_row['type_code']);
-			$va_relationships[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_row;
+			$va_relationships[$qr_res->get('type_id')][$locale_id = $qr_res->get('locale_id')] = $va_row;
+			if ($include_type_codes_as_keys) {
+			    $va_relationships[$va_row['type_code']][$locale_id] = $va_row;
+			}
 		}
 		return caExtractValuesByUserLocale($va_relationships);
 	}

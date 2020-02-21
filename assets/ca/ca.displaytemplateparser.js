@@ -102,6 +102,9 @@ var caUI = caUI || {};
         	"⅞": "7/8",
         	"⅒": "1/10"
         };
+        
+        that.tagRegex = /[\^]+([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
+        
         // --------------------------------------------------------------------------------
         // Define methods
         // --------------------------------------------------------------------------------
@@ -118,10 +121,8 @@ var caUI = caUI || {};
         	if (!template) return '';
             
             // get tags from template
-            var tagRegex = /[\^]+([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
-            var tagList = template.match(tagRegex);
+            var tagList = template.match(that.tagRegex);
             var fullTagList = tagList;
-            
             
             // rewrite tags
             var j = 1;
@@ -162,7 +163,7 @@ var caUI = caUI || {};
                 }
             });
             }
-            tagList = template.match(tagRegex);
+            tagList = template.match(that.tagRegex);
             var t = template;    
             var unitRegex = /([\.]{0,1}[\d]+[ \d\.\,\/]*)([^\d ]+)/g, bAtLeastOneValueIsSet = false;
             
@@ -631,11 +632,12 @@ var caUI = caUI || {};
            return that.displayFractionsFor.reduce(function(acc, v) { var tmp = v.split('/'); return (parseInt(tmp[1]) > acc) ? parseInt(tmp[1]) : acc}, 0);
         }
         // --------------------------------------------------------------------------------
+        //
         that.parseTagOpts = function(tag) {
             var s = tag.split(/[%&]+/);
-            s.shift();
+            var tagRoot = s.shift().replace("^", "");
             
-            var opts = {'_fields': []};
+            var opts = {'_fields': [], 'tag': tagRoot};
             for(var i in s) {
                 var p = s[i].split(/=/);
                 
@@ -645,6 +647,57 @@ var caUI = caUI || {};
                 opts['_fields'].push(p[0]);
             }
             return opts;
+        };
+        // --------------------------------------------------------------------------------
+        //
+        that.getTagList = function(template) {
+            return template.match(that.tagRegex);
+        };
+        // --------------------------------------------------------------------------------
+        // Process generate templates with caret-prefixed values. Eg. template is
+        // "^title (^idno)"
+        //
+        // and values are 
+        //
+        // { 'title': 'City of Quartz', 'idno': '2004.001' }
+        //
+        // Currently the only formatting tag construct support is <ifdef code=''>...</ifdef>
+        //
+        that.processTemplate = function(template, values) {
+        	var tagList = template.match(that.tagRegex);
+            
+            // rewrite tags
+            var tp = jQuery("<div>" + template + "</div>");
+            if (tagList) {
+           		jQuery.each(tagList, function(i, tag) {
+					var tagBits = tag.split(/[\~&%]+/);
+					var tagRoot = tagBits[0].replace("^", "");
+           			if (values[tagRoot] && (values[tagRoot].length > 0)) {
+           				jQuery.each(tp.find("ifdef[code=" + tagRoot + "]"), function(k, v) {
+							jQuery(v).replaceWith(jQuery(v).html());
+						});
+           				
+           			} else {
+           				tp.find("ifdef[code=" + tagRoot + "]").remove();
+           			}
+           		});
+           		var str = tp.html();
+           		
+           		jQuery.each(tagList, function(i, tag) {
+					var tagBits = tag.split(/[\~&%]+/);
+					var tagRoot = tagBits[0].replace("^", "");
+           			
+           			if (values[tagRoot] !== undefined) {
+           				str = str.replace(tag, values[tagRoot]);
+           			} else {
+           				str = str.replace(tag, '');
+           			}
+           		});
+           		
+           		return str;
+           	
+           	} 
+           	return template;
         };
         // --------------------------------------------------------------------------------
         return that;

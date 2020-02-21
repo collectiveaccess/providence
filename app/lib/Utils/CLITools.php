@@ -474,30 +474,26 @@
 				return false;
 			}
 			
-			
-			if (!($xpath = strtolower((string)$po_opts->getOption('xpath')))) {
-				$input_format = strtolower((string)$po_opts->getOption('format'));
-			
-				switch($input_format) {
-					case 'fmpxml':
-					case 'fmpxmlresult':
-						require_once(__CA_LIB_DIR__."/Import/DataReaders/FMPXMLResultReader.php");
-						$reader = new FMPXMLResultReader();
-						break;
-					case 'pastperfect':
-					case 'pp':
-						require_once(__CA_LIB_DIR__."/Import/DataReaders/PastPerfectXMLReader.php");
-						$reader = new PastPerfectXMLReader();
-						break;
-					default:
-						if ($input_format) {
-							CLITools::addError(_t("%1 is not a valid input format. Defaulting to PastPerfect.", $input_format));
-						} else {
-							CLITools::addMessage(_t("No input format was specified. Defaulting to PastPerfect."));
-						}
-						$xpath = "//export";
-						break;
-				}
+			$input_format = strtolower((string)$po_opts->getOption('format'));
+		
+			switch($input_format) {
+				case 'fmpxml':
+				case 'fmpxmlresult':
+					require_once(__CA_LIB_DIR__."/Import/DataReaders/FMPXMLResultReader.php");
+					$reader = new FMPXMLResultReader();
+					break;
+				case 'pastperfect':
+				case 'pp':
+					require_once(__CA_LIB_DIR__."/Import/DataReaders/PastPerfectXMLReader.php");
+					$reader = new PastPerfectXMLReader();
+					break;
+				default:
+					if ($input_format) {
+						CLITools::addError(_t("%1 is not a valid input format. Defaulting to PastPerfect.", $input_format));
+					} else {
+						CLITools::addMessage(_t("No input format was specified. Defaulting to PastPerfect."));
+					}
+					break;
 			}
 			
 			$output_format = strtolower((string)$po_opts->getOption('outputFormat'));
@@ -551,7 +547,6 @@
 				"file|f-s" => _t('XML file to convert.'),
 				"out|o-s" => _t('File to write delimited output to.'),
 				"format|i=s" => _t('XML format of input file. Valid options are "PastPerfect" (PastPerfect XML export files), "FMPXML" (FileMaker Pro XML Result format).'),
-				"xpath|x=s" => _t('XPath expression to select XML tags for conversion. If set, input format option is igored.'),
 				"outputFormat|t=s" => _t('Format of output (CSV or tab-delimited). Default is CSV.'),
 			);
 		}
@@ -574,7 +569,7 @@
 		 *
 		 */
 		public static function convert_xml_to_delimitedShortHelp() {
-			return _t("Convert selected tags in an XML file to delimited text (CSV or tab-delimited). All sub-tags of selected tags are output into delimited rows of data. Tags may be selected using an XPath expression or with file format presets. For example, the input format \"PastPerfect\" will employ the XPath expression //export to select all <export> tags and output data tags contained within into rows of delimited data.");
+			return _t("Convert selected tags in an XML file to delimited text (CSV or tab-delimited). All sub-tags of selected tags are output into delimited rows of data. The input format \"PastPerfect\" will employ the XPath expression //export to select all <export> tags and output data tags contained within into rows of delimited data.");
 		}
 		# -------------------------------------------------------
 		# Filter invalid characters thay may be embedded in XML files. 

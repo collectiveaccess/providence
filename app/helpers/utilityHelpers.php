@@ -4188,7 +4188,12 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Copy file from URL and write to destination in file system.
 	 *
+	 * @param string $url
+	 * @param string $dest File path to write data to. If omitted a temporary file will be created. [Default is null]
+	 * 
+	 * @return string Path to file
 	 */
 	function caFetchFileFromUrl($url, $dest=null) {
 		$tmp_file = $dest ? $dest : tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
@@ -4212,7 +4217,12 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Compare two arrays. Returns true if both are arrays that contain the same items in any order.
 	 *
+	 * @param array $a First array
+	 * @param array $b Second array
+	 *
+	 * @return bool
 	 */
 	function caArraysAreEqual($a, $b) {
 		return (
@@ -4221,5 +4231,22 @@ function caFileIsIncludable($ps_file) {
 			 && count($a) == count($b) 
 			 && array_diff($a, $b) === array_diff($b, $a)
 		);
+	}
+	# ----------------------------------------
+	/**
+	 * Returns number of times idno is used.
+	 *
+	 * @param string $idno The idno to search for.
+	 * @param string $table Table to look for idno in. If omitted "ca_objects" is assumed. [Default is null]
+	 *
+	 * @return int Number of times idno is used for records in specified table.
+	 */
+	function caIdnoUseCount($idno, $table=null) {
+		if (!$table || !($instance = Datamodel::getInstance($table, true))) {
+			$table = 'ca_objects';
+			$instance = Datamodel::getInstance($table, true);
+		}
+		if (!($idno_fld = $instance->getProperty('ID_NUMBERING_ID_FIELD'))) { return false; }
+		return $table::find($x=[$idno_fld => $idno], ['returnAs' => 'count']);
 	}
 	# ----------------------------------------

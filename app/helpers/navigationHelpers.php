@@ -103,6 +103,7 @@
  	define('__CA_NAV_ICON_NUKE__', 62);
  	define('__CA_NAV_ICON_FULL_RESULTS__', 63);
  	define('__CA_NAV_ICON_EXPORT_SMALL__', 64);
+ 	define('__CA_NAV_ICON_HOME__', 65);
  	
  	/**
  	 * Icon position constants
@@ -878,7 +879,10 @@
 				break;
 			case __CA_NAV_ICON_EXPORT_SMALL__: 
 				$vs_fa_class = 'fa-external-link-square';
-				break;																							
+				break;	
+			case __CA_NAV_ICON_HOME__:
+				$vs_fa_class = 'fa-home';
+				break;																						
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;

@@ -496,7 +496,7 @@ class Replicator {
                                                             
                                                             // mark as seen so we don't process the same thing twice
                                                             $va_source_log_entries_for_missing_guids_seen_guids[$va_log_entry['guid']] = true;
-                                                            if ((sizeof($va_entries) >= 10) || (sizeof($va_source_log_entries_for_missing_guid) == 0)) { break; }
+                                                            if ((is_array($va_entries) && (sizeof($va_entries) >= 10)) || (is_array($va_source_log_entries_for_missing_guid) && (sizeof($va_source_log_entries_for_missing_guid) == 0))) { break; }
                                                         }
                                                         
                                                         ksort($va_entries);
@@ -606,7 +606,7 @@ class Replicator {
                                         foreach(array_keys($va_dependency_list) as $k1) {
                                             unset($va_dependency_list[$k1][$vs_missing_guid]);
                                         }
-                                        if (sizeof($va_dependency_list[$va_log_entry['guid']]) > 0) { 
+                                        if (is_array($va_dependency_list[$va_log_entry['guid']]) && sizeof($va_dependency_list[$va_log_entry['guid']]) > 0) { 
                                             // Skip log entry because it still has dependencies
                                             $this->log(_t("Skipped log_id %1 [%2] because it still has dependencies: %3", $vn_mlog_id, $va_log_entry['guid'], print_R($va_dependency_list[$va_log_entry['guid']], true)),Zend_Log::DEBUG);
                                             continue;

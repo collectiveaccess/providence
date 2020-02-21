@@ -3050,6 +3050,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// pass bundle settings
 		
 		if(!is_array($pa_bundle_settings['prepopulateQuickaddFields'])) { $pa_bundle_settings['prepopulateQuickaddFields'] = []; }
+		
+		if (method_exists($t_item, 'policy2bundleconfig') && ($default_policy = $t_item->getDefaultHistoryTrackingCurrentValuePolicy())) {	// TODO: make policy configurable?
+			$o_view->setVar('history_tracking_policy', $default_policy);
+			$o_view->setVar('history_tracking_policy_info', $t_item::policy2bundleconfig(['policy' => $default_policy]));
+		}
 		$o_view->setVar('settings', $pa_bundle_settings);
 		$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
 		
@@ -4694,9 +4699,15 @@ if (!$vb_batch) {
 							}
 						}
 					    
-					    if (!caGetOption('hide_update_location_controls', $va_bundle_settings, false)) {
+					    if (!caGetOption('hide_update_location_controls', $va_bundle_settings, false) || !caGetOption('hide_return_to_home_location_controls', $va_bundle_settings, false)) {
 							// set storage location
-							if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations_idnew_0", pInteger)) {
+							if ($this->hasField('home_location_id') && $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations_return_homenew_0", pInteger) == 1) {
+								$vn_location_id = $this->get('home_location_id');
+							} else {
+								$vn_location_id = $vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations_idnew_0", pInteger);
+							}
+							
+							if ($vn_location_id) {
 								$t_loc = Datamodel::getInstance('ca_storage_locations', true);
 								
 								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
@@ -4711,7 +4722,7 @@ if (!$vb_batch) {
 										// is effective date set?
 										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations__effective_datenew_0", pString);
 						
-										$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id);
+										$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $vs_effective_date);
 										if ($this->numErrors()) {
 											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
 										} else {
