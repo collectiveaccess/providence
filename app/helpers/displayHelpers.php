@@ -3502,16 +3502,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$va_tags_to_process = $va_subelements_to_process = $va_tag_values = [];
 
 		foreach($pa_placements as $pa_placement) {
-			if (!$pr_res) { return null; }
 			$pr_res->seek(0);
 
-			if (!($vs_template = caGetOption('template', $pa_options, $pa_placement['settings']['bottom_line']))) { return null; }
+			if (!($vs_template = caGetOption('template', $pa_options, $pa_placement['settings']['bottom_line']))) { 
+				$pr_res->seek($vn_current_index);	// Restore current position of search result
+				return null; 
+			}
 
 			$vs_bundle_name = $pa_placement['bundle'];
 
 			$va_tmp = explode(".", $vs_bundle_name);
 
 			if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
+				$pr_res->seek($vn_current_index);	// Restore current position of search result
 				return null;
 			}
 
@@ -3529,6 +3532,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			//		Ex. 	^SUM:valuation = sum of "valuation" sub-element
 			//				^SUM = sum of primary value in non-container element
 			if (!preg_match("!(\^[A-Z]+[\:]{0,1}[A-Za-z0-9\_\-]*)!", $vs_template, $va_tags)) {
+				$pr_res->seek($vn_current_index);	// Restore current position of search result
 				return $vs_template;
 			}
 
@@ -3735,9 +3739,6 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 					break;
 			}
-
-			// Restore current position of search result
-			$pr_res->seek(0);
 
 			foreach($va_tag_values as $vs_value_name => $va_tag_data) {
 				foreach($va_tag_data as $vs_tag => $vs_tag_value) {
