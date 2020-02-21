@@ -246,7 +246,7 @@ class ca_user_sorts extends BaseModel {
 		if(!is_int($pn_rank)) { $pn_rank = 0; }
 
 		$this->getDb()->query(
-			'INSERT INTO ca_user_sort_items (sort_id, bundle_name, `rank) VALUES(?, ?, ?)',
+			'INSERT INTO ca_user_sort_items (sort_id, bundle_name, `rank`) VALUES(?, ?, ?)',
 			$this->getPrimaryKey(), $ps_bundle_name, $pn_rank
 		);
 

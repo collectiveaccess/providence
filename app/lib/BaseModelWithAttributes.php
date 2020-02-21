@@ -1264,9 +1264,18 @@
 		 * @see BaseModelWithAttributes::getTypeCodeForID()
 		 */
 		public static function typeCodeForID($pn_type_id) {
+			$key = get_called_class()."_{$pn_type_id}";
+			if(CompositeCache::contains($key, 'BaseModelWithAttributesTypeIDs')) { 
+				return CompositeCache::fetch($key, 'BaseModelWithAttributesTypeIDs');
+			}
+			
 			$t = Datamodel::getInstance(get_called_class(), true);
 			$va_types = $t->getTypeList();
-			return isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
+			
+			$v = isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
+			
+			CompositeCache::save($key, $v, 'BaseModelWithAttributesTypeIDs');
+			return $v;
 		}
 		# ------------------------------------------------------------------
 		/**

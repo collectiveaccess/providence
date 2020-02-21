@@ -206,7 +206,8 @@
  		 * @return string PDF content
  		 */
  		public function renderFile($ps_file_path, $pa_options=null) {
- 			return $this->render($ps_file_path, $pa_options);
+ 			if (!$this->renderer) { return null; }
+ 			return $this->renderer->render($ps_file_path, $pa_options);
  		}
  		# --------------------------------------------------------------------------------
 		/**

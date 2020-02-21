@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -121,6 +121,14 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
+		),
+		'home_location_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => null,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object.')
 		),
 		'is_deaccessioned' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
@@ -616,6 +624,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$this->BUNDLES['submitted_by_user'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submitted by'), 'displayOnly' => true);
 		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
+		
+		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location'), 'displayOnly' => true);
 	}
 	# ------------------------------------------------------
 	/**
@@ -979,14 +989,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	 * @return BaseRelationshipModel
  	 */
  	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
- 		if ($vn_rc = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
- 			
- 			// if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id)) {
-//  				$this->deriveCurrentLocationForBrowse();
-//  			}
- 		}
- 		
- 		return $vn_rc;
+ 		return parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options);
  	}
  	# ------------------------------------------------------
  	/**
@@ -1004,14 +1007,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	 * @return int
  	 */
  	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
- 		if ($vn_rc = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
- 			
- 		//	if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id)) {
- 		//		$this->deriveCurrentLocationForBrowse();
- 		//	}
- 		}
- 		
- 		return $vn_rc;
+ 	    return parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options);
  	}
  	# ------------------------------------------------------
  	/**
@@ -1023,14 +1019,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	 * @return int
  	 */
  	public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id) {
- 		if ($vn_rc = parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id)) {
- 			
- 			// if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, null)) {
-//  				$this->deriveCurrentLocationForBrowse();
-//  			}
- 		}
- 		
- 		return $vn_rc;
+ 		return parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id);
  	}
  	# ------------------------------------------------------
  	/**
@@ -1042,14 +1031,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	 * @return int
  	 */
  	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
- 		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options)) {
- 			
- 			// if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, $pm_type_id)) {
-//  				$this->deriveCurrentLocationForBrowse();
-//  			}
- 		}
- 		
- 		return $vn_rc;
+ 		return parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options);
  	}
  	# ------------------------------------------------------
  	# Object checkout 
@@ -1184,5 +1166,27 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 
 		return $o_view->render('ca_object_circulation_status_html.php');
 	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+		switch($ps_bundle_name) {
+			case 'home_location_value':
+				$q = caMakeSearchResult('ca_objects', [$pn_row_id]);
+				if ($q && $q->nextHit()) {
+					if(($home_location_id = $q->get('ca_objects.home_location_id')) && ($t_loc = ca_storage_locations::find(['location_id' => $home_location_id], ['returnAs' => 'firstModelInstance']))) {
+						if (!($t = Configuration::load()->get('home_location_display_template'))) {
+							$t = caGetOption('display_template', $pa_options, '^ca_storage_locations.hierarchy.preferred_labels');
+						}
+						return $t_loc->getWithTemplate($t);
+					}
+				}
+				break;
+			default:
+				return self::renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options);
+				break;
+		}
+	}	
 	# ------------------------------------------------------
 }

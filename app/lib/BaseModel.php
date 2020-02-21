@@ -1203,7 +1203,7 @@ class BaseModel extends BaseObject {
 		if (is_array($pa_fields) && sizeof($pa_fields)) {
 			foreach($pa_fields as $vs_fld) {
 				if ($this->hasField($vs_fld)) {
-					$va_fld_list[$vs_fld] = true;
+					$va_fld_list["`{$vs_fld}`"] = true;
 				}
 			}
 			$va_fld_list = array_keys($va_fld_list);
