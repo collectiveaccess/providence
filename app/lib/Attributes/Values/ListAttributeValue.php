@@ -212,6 +212,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'validForRootOnly' => 1,
 		'description' => _t('Template formatting current selection text. You may use the following tags: ^current (the currently selected list item), ^parent (the parent of the currently selected list item), ^hierarchy (the full hierarchal path to the list item).')
 	),
+	'minimizeExistingValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Minimize existing values?'),
+		'description' => _t('Check this option if existing values should displayed in a minimized, non-editable format.)')
+	)
 );
 
 

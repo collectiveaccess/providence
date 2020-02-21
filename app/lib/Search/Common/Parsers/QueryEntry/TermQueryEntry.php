@@ -141,8 +141,8 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    $query = new Zend_Search_Lucene_Search_Query_MultiTerm();
 
 	    foreach ($tokens as $token) {
-		$term = new Zend_Search_Lucene_Index_Term(mb_strtolower($token), $this->_field);
-		$query->addTerm($term, true);
+			$term = new Zend_Search_Lucene_Index_Term(mb_strtolower($token), $this->_field);
+			$query->addTerm($term, true);
 	    }
 
 	    $query->setBoost($this->_boost);

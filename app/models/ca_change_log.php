@@ -440,6 +440,8 @@ class ca_change_log extends BaseModel {
 									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { $va_snapshot = ['SKIP' => true]; continue(2); }
 								} elseif($t_instance instanceof BaseModel) {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
+								} elseif($t_instance instanceof BaseLabel) {
+									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 
 							} else {
 								$va_snapshot = ['SKIP' => true];
@@ -486,6 +488,8 @@ class ca_change_log extends BaseModel {
 								} elseif (isset($va_many_to_one_rels[$vs_fld]) && ($t_rel_item = Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_fld]['one_table'], true))) {
 									// handle many-one keys
 									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_rel_item->tableNum(), $vm_val);
+								} else {
+									$va_snapshot[$vs_fld . '_guid'] = null;
 								}
 
 								// handle media ...
@@ -570,6 +574,7 @@ class ca_change_log extends BaseModel {
 										//}
 									}
 								}
+								if (!isset($va_snapshot[$vs_fld . '_guid'])) { $va_snapshot[$vs_fld . '_guid'] = null; }
 
 								// handle foreign keys for labels (add guid for main record)
 								if($t_instance instanceof BaseLabel) {

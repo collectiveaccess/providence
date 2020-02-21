@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/editor/objects/quickadd_result_json.php : 
+ * app/views/editor/objects/set_home_location_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *

@@ -85,7 +85,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		//
 		// Are we duplicating?
@@ -236,7 +236,7 @@ class BaseEditorController extends ActionController {
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		if($vn_above_id) {
 			// Convert "above" id (the id of the record we're going to make the newly created record parent of
@@ -460,7 +460,7 @@ class BaseEditorController extends ActionController {
 		if (!$vn_subject_id) { return; }
 
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 
 		if (!$vs_type_name = $t_subject->getTypeName()) {
@@ -681,7 +681,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
 			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
@@ -778,7 +778,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
         if (!is_array($last_settings = Session::getVar($t_subject->tableName().'_summary_last_settings'))) { $last_settings = []; }
 
@@ -922,7 +922,7 @@ class BaseEditorController extends ActionController {
 	public function PrintBundle($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		//
 		// PDF output
@@ -1013,7 +1013,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 
 		if (ca_user_roles::isValidAction('can_view_change_log_'.$t_subject->tableName()) && (!$this->request->user->canDoAction('can_view_change_log_'.$t_subject->tableName()))) {
@@ -1036,7 +1036,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
@@ -1055,7 +1055,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
@@ -1145,7 +1145,7 @@ class BaseEditorController extends ActionController {
 	public function ChangeType($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 
 		if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
@@ -1500,7 +1500,7 @@ class BaseEditorController extends ActionController {
 	public function exportItem() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		$pn_mapping_id = $this->request->getParameter('mapping_id', pInteger);
 
@@ -1521,7 +1521,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		require_once(__CA_MODELS_DIR__.'/ca_watch_list.php');
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 
 		$va_errors = array();
@@ -1567,7 +1567,7 @@ class BaseEditorController extends ActionController {
 	public function getHierarchyForDisplay($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 
 		$vs_hierarchy_display = $t_subject->getHierarchyNavigationHTMLFormBundle($this->request, 'caHierarchyOverviewPanelBrowser', array(), array('open_hierarchy' => true, 'no_close_button' => true, 'hierarchy_browse_tab_class' => 'foo'));
@@ -1583,7 +1583,7 @@ class BaseEditorController extends ActionController {
 	public function reload() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		$ps_bundle = $this->request->getParameter("bundle", pString);
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
@@ -1617,7 +1617,7 @@ class BaseEditorController extends ActionController {
 	public function loadBundles() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 		
 		$ps_bundle_name = $this->request->getParameter("bundle", pString);
 		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
@@ -1638,7 +1638,7 @@ class BaseEditorController extends ActionController {
 	public function processTemplate() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		// http://providence.dev/index.php/editor/objects/ObjectEditor/processTemplate/object_id/1/template/^ca_objects.idno
 		$ps_template = $this->request->getParameter("template", pString);
@@ -1655,7 +1655,7 @@ class BaseEditorController extends ActionController {
 	public function getMediaAttributeList() {
 	    list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 		
 		$ps_bundle_name = $this->request->getParameter("bundle", pString);
 		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
@@ -2481,7 +2481,7 @@ class BaseEditorController extends ActionController {
 			if($vb_download_for_record){
 				$t_download_log->log(array(
 						"user_id" => $this->request->getUserID(), 
-						"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
+						"ip_addr" => RequestHTTP::ip(), 
 						"table_num" => Datamodel::getTableNum($this->ops_table_name), 
 						"row_id" => $vn_child_id, 
 						"representation_id" => $pn_representation_id ? $pn_representation_id : null, 
@@ -2537,7 +2537,7 @@ class BaseEditorController extends ActionController {
 		$ps_version = $this->request->getParameter('version', pString);
 
 
-		if (!$this->_checkAccess($t_subject)) { return false; }
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		//
 		// Does user have access to bundle?
@@ -2579,7 +2579,7 @@ class BaseEditorController extends ActionController {
 		$t_download_log = new Downloadlog();
 		$t_download_log->log(array(
 				"user_id" => $this->request->getUserID(), 
-				"ip_addr" => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null, 
+				"ip_addr" => RequestHTTP::ip(), 
 				"table_num" => Datamodel::getTableNum($this->ops_table_name), 
 				"row_id" => $vn_subject_id, 
 				"representation_id" => null, 
@@ -2637,6 +2637,114 @@ class BaseEditorController extends ActionController {
 		}
 
 		$this->response->addContent(json_encode($va_stored_files));
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function SetHomeLocation($options=null) {
+		$object_id = $this->request->getParameter('object_id', pInteger);
+		if (!($t_subject = ca_objects::find($object_id, ['returnAs' => 'firstModelInstance']))) { 
+			throw new ApplicationException(_t('Invalid id'));
+		}
+		if (!$this->_checkAccess($t_subject)) { 
+			throw new ApplicationException(_t('Access denied to object'));
+		}
+		$location_id = $this->request->getParameter('location_id', pInteger);
+		if (!($t_location = ca_storage_locations::find($location_id, ['returnAs' => 'firstModelInstance']))) { 
+			throw new ApplicationException(_t('Invalid id'));
+		}
+		$t_subject->set('home_location_id', $location_id);
+		$t_subject->update();
+		
+		if ($t_subject->numErrors() > 0) {
+			$resp = ['ok' => 0, 'errors' => $t_subject->getErrors()];
+		} else {
+			$resp = ['ok' => 1, 'label' => $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')), 'timestamp' => time()];
+		}
+		
+		$this->view->setVar('response', $resp);
+		$this->render('set_home_location_json.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function ReturnToHomeLocations($options=null) {
+		if(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
+			$resp = ['ok' => 0, 'message' => _t('No policies configured'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
+		} else {
+			$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
+		
+			$updated = $already_home = $errors = [];
+			$msg = '';
+			if(is_array($policies) && sizeof($policies)) {
+		
+				$object_ids = array_map(function($v) { return (int)$v; }, explode(';',$this->request->getParameter('ids', pString)));
+		
+				$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
+				
+				while($qr_objects->nextHit()) {
+					$object_id = $qr_objects->getPrimaryKey();
+					$t_object = $qr_objects->getInstance();
+		
+					if (!($location_id = $t_object->get('home_location_id'))) { continue; }
+					if (!$t_object->isSaveable($this->request)) { continue; }
+	
+					foreach($policies as $n => $p) {
+						if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
+						
+						$pe = $p['elements']['ca_storage_locations'];
+						$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
+						if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
+						
+						// Interstitials?
+						$effective_date = null;
+						$interstitial_values = [];
+						if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
+							foreach($interstitial_elements as $e) {
+								switch($e) {
+									case 'effective_date':
+										$effective_date = 'today';
+										break;
+								}
+							}
+						}
+						
+						if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
+							$already_home[] = $object_id;
+							continue;
+						}
+						
+						$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
+						ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
+		
+						if($t_object->numErrors() > 0) {
+							$errors[] = $object_id;
+						} else {
+							$updated[] = $object_id;
+						}
+					}
+				}	
+				$n = sizeof($updated);
+				$h = sizeof($already_home);
+				
+				if($h > 0) {
+					$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $h);
+				} else {
+					$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'));
+				}
+				if (sizeof($errors)) {
+					$msg .= '; '._t('%1 errors', sizeof($errors));
+				}
+				$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
+			} else {
+				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
+			}
+			
+		}
+		$this->view->setVar('response', $resp);
+		$this->render('../objects/return_to_home_locations.php');
 	}
 	# -------------------------------------------------------
 	/**

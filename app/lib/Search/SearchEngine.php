@@ -367,7 +367,7 @@ class SearchEngine extends SearchBase {
 				'search_expression' => $ps_search, 
 				'num_hits' => sizeof($va_hits),
 				'form_id' => $vn_search_form_id, 
-				'ip_addr' => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null,
+				'ip_addr' => RequestHTTP::ip(),
 				'details' => $vs_log_details,
 				'search_source' => __CA_APP_TYPE__.($vs_search_source ? ":{$vs_search_source}" : ""),
 				'execution_time' => $vn_execution_time

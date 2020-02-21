@@ -336,7 +336,7 @@
 							$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
 							$vn_c++;
 							
-							if ($vn_c > $vn_max_items_per_page) { break; }
+							if ($vn_c >= $vn_max_items_per_page) { break; }
 						}
 
 						$va_items_for_locale = caExtractValuesByUserLocale($va_items);
