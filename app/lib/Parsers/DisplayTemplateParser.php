@@ -442,7 +442,7 @@ class DisplayTemplateParser {
 					break;
 				case 'ifcount':
 					$vn_min = (int)$o_node->min;
-					$vn_max = (int)$o_node->max;
+					$vn_max = strlen($o_node->max) ? (int)$o_node->max : null;
 					
 					if(!is_array($va_codes = DisplayTemplateParser::_getCodesFromAttribute($o_node)) || !sizeof($va_codes)) { break; }
 					
@@ -465,7 +465,6 @@ class DisplayTemplateParser {
 					$vs_filter_regex = $vs_filter ? self::_makeFilterRegex((string)$vs_filter) : null;
 					
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
-					
 					if (($vn_limit = ($vn_max > 0) ? $vn_max : $vn_min) == 0) { $vn_limit = 1; }
 					$vn_limit++;
 					foreach($va_codes as $vs_code) {
@@ -485,14 +484,14 @@ class DisplayTemplateParser {
 					}
 					
 					if ($vb_bool == 'AND') {
-						if (($vn_min <= $vm_count) && (($vn_max >= $vm_count) || !$vn_max)) {
+						if (($vn_min <= $vm_count) && (($vn_max >= $vm_count) || is_null($vn_max))) {
 							$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);
 							if ($pb_is_case && $content) { break(2); }
 						}
 					} else {
 						$vb_all_have_count = true;
 						foreach($vm_count as $vs_code => $vn_count) {
-							if(!(($vn_min <= $vn_count) && (($vn_max >= $vn_count) || !$vn_max))) {
+							if(!(($vn_min <= $vn_count) && (($vn_max >= $vn_count) || is_null($vn_max)))) {
 								$vb_all_have_count = false;
 								break(2);
 							}	
