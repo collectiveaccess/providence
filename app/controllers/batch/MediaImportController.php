@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -168,15 +168,8 @@
 				$this->getView()->setVar($vs_import_target.'_representation_relationship_type', $t_rel->getRelationshipTypesAsHTMLSelect('ltor',null,null, array('name' => $vs_import_target.'_representation_relationship_type'), array('value' => $va_last_settings[$vs_import_target.'_representation_relationship_type'])));
 			}
  		
- 			$va_importer_list = ca_data_importers::getImporters(null, array('formats' => array('exif')));
- 			$va_object_importer_options = $va_object_representation_importer_options = array("-" => '');
- 			foreach($va_importer_list as $vn_importer_id => $va_importer_info) {
- 				if ($va_importer_info['table_num'] == $t_instance->tableNum()) { // target table
- 					$va_object_importer_options[$va_importer_info['label']] = $vn_importer_id;
- 				} elseif($va_importer_info['table_num'] == Datamodel::getTableNum('ca_object_representations')) {
- 					$va_object_representation_importer_options[$va_importer_info['label']] = $vn_importer_id;
- 				}
- 			}
+ 			$va_object_importer_options = ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName()], 'nullOption' => '-']);
+ 			$va_object_representation_importer_options = ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => ['ca_object_representations'], 'nullOption' => '-']);
 
  			$this->view->setVar($vs_import_target.'_mapping_list', caHTMLSelect($vs_import_target.'_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings[$vs_import_target.'_mapping_id'])));
  			$this->view->setVar($vs_import_target.'_mapping_list_count', sizeof($va_object_importer_options));

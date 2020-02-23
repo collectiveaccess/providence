@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -4093,7 +4093,7 @@ if (!$vb_batch) {
 										$vn_rank = $va_rep_ids_sorted[$vn_rank_index];
 									}
 									
-									$this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('idno' => $vs_idno, 'is_transcribable' => $vn_is_transcribable), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
+									$t_rep = $this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('idno' => $vs_idno, 'is_transcribable' => $vn_is_transcribable), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
 									if ($this->numErrors()) {
 										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
 										foreach($this->errors() as $o_e) {
@@ -4106,6 +4106,30 @@ if (!$vb_batch) {
 													$po_request->addActionError($o_e, $vs_f, $va_rep['relation_id']);
 													break;
 											}
+										}
+									} elseif($vs_path) {
+										// import embedded metadata?
+										$vn_object_representation_mapping_id = $po_request->getParameter($vs_prefix_stub.'importer_id_'.$va_rep['relation_id'], pInteger);
+										
+										$log = caGetImportLogger(['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level')]);
+										if(!$vn_object_representation_mapping_id && is_array($media_metadata_extraction_defaults = $po_request->getAppConfig()->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
+											$media_mimetype = $t_rep->get('mimetype');
+											
+											foreach($media_metadata_extraction_defaults as $m => $importer_code) {
+												if(caCompareMimetypes($media_mimetype, $m)) {
+													if (!($vn_object_representation_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
+														if ($log) { $log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
+													}
+													break;
+												}
+											}
+                                        }
+										
+										if ($vn_object_representation_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $vn_object_representation_mapping_id], ['returnAs' => 'firstModelInstance']))) {
+											$format = $t_mapping->getSetting('inputFormats');
+											if(is_array($format)) { $format = array_shift($format); }
+											if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
+											ca_data_importers::importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
 										}
 									}
 									
@@ -4232,6 +4256,29 @@ if (!$vb_batch) {
                                         if ($t_rep && is_array($pa_options['existingRepresentationMap'])) { 
                                             $pa_options['existingRepresentationMap'][$vs_path] = $t_rep->getPrimaryKey();
                                         }
+                                        // import embedded metadata?
+                                        $vn_object_representation_mapping_id = $po_request->getParameter($vs_prefix_stub.'importer_id_new_'.$va_matches[1], pInteger);
+										
+                                        if(!$vn_object_representation_mapping_id && is_array($media_metadata_extraction_defaults = $po_request->getAppConfig()->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
+											$media_mimetype = $t_rep->get('mimetype');
+										
+											$log = caGetImportLogger(['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level')]);
+											foreach($media_metadata_extraction_defaults as $m => $importer_code) {
+												if(caCompareMimetypes($media_mimetype, $m)) {
+													if (!($vn_object_representation_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
+														if ($log) { $log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
+													}
+													break;
+												}
+											}
+                                        }
+                                        
+										if ($vn_object_representation_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $vn_object_representation_mapping_id], ['returnAs' => 'firstModelInstance']))) {
+											$format = $t_mapping->getSetting('inputFormats');
+											if(is_array($format)) { $format = array_shift($format); }
+											if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
+											ca_data_importers::importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
+										}
                                     }
                                 }
                             }
