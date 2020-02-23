@@ -167,14 +167,24 @@
 				$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), 'ca_object_representations');
 				$this->getView()->setVar($vs_import_target.'_representation_relationship_type', $t_rel->getRelationshipTypesAsHTMLSelect('ltor',null,null, array('name' => $vs_import_target.'_representation_relationship_type'), array('value' => $va_last_settings[$vs_import_target.'_representation_relationship_type'])));
 			}
- 		
- 			$va_object_importer_options = ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName()], 'nullOption' => '-']);
- 			$va_object_representation_importer_options = ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => ['ca_object_representations'], 'nullOption' => '-']);
-
- 			$this->view->setVar($vs_import_target.'_mapping_list', caHTMLSelect($vs_import_target.'_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings[$vs_import_target.'_mapping_id'])));
- 			$this->view->setVar($vs_import_target.'_mapping_list_count', sizeof($va_object_importer_options));
- 			$this->view->setVar('ca_object_representations_mapping_list', caHTMLSelect('ca_object_representations_mapping_id', $va_object_representation_importer_options, array(), array('value' => $va_last_settings['ca_object_representations_mapping_id'])));
- 			$this->view->setVar('ca_object_representations_mapping_list_count', sizeof($va_object_representation_importer_options));
+ 			if((bool)$this->request->config->get('allow_user_selection_of_embedded_metadata_extraction_mapping')) {
+ 				$add_null_opt = (bool)$this->request->config->get('allow_user_embedded_metadata_extraction_mapping_null_option');
+ 				$va_object_importer_options = ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName()], 'nullOption' => $add_null_opt ? '-' : null]);
+ 				$va_object_representation_importer_options = ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => ['ca_object_representations'], 'nullOption' => $add_null_opt ? '-' : null]);
+				
+				$this->view->setVar($vs_import_target.'_mapping_list', caHTMLSelect($vs_import_target.'_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings[$vs_import_target.'_mapping_id'])));
+				
+				$c = sizeof($va_object_importer_options);
+				if ($add_null_opt) { $c--;}
+				$this->view->setVar($vs_import_target.'_mapping_list_count', $c);
+				$this->view->setVar('ca_object_representations_mapping_list', caHTMLSelect('ca_object_representations_mapping_id', $va_object_representation_importer_options, array(), array('value' => $va_last_settings['ca_object_representations_mapping_id'])));
+				
+				$c = sizeof($va_object_representation_importer_options);
+				if ($add_null_opt) { $c--;}
+				$this->view->setVar('ca_object_representations_mapping_list_count', $c);
+			} else {
+				$va_object_importer_options = $va_object_representation_importer_options = null;
+			}
  			
  			//
  			// Available sets

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -507,7 +507,7 @@
 			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO");
 
 			if (!is_writeable($vs_log_dir)) { $vs_log_dir = caGetTempDirPath(); }
-			$vn_log_level = caLogLevelStringToNumber($vs_log_level);
+			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 			$o_log = new KLogger($vs_log_dir, $vn_log_level);
 
 			$vs_import_target = caGetOption('importTarget', $pa_options, 'ca_objects');
@@ -1076,15 +1076,46 @@
 				}
 
 				if ($t_instance->getPrimaryKey()) {
-					// Perform import of embedded metadata (if required)
-					if ($vn_mapping_id) {
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()]]);//, 'transaction' => $o_trans]);
+					
+					if(!$vn_mapping_id && is_array($media_metadata_extraction_defaults = $o_config->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
+						$media_mimetype = $t_new_rep->get('mimetype');
+					
+						foreach($media_metadata_extraction_defaults as $m => $importer_code) {
+							if(caCompareMimetypes($media_mimetype, $m)) {
+								if (!($vn_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
+									if ($o_log) { $o_log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
+								}
+								break;
+							}
+						}
+					}
+					
+					if ($vn_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $vn_mapping_id], ['returnAs' => 'firstModelInstance']))) {
+						$format = $t_mapping->getSetting('inputFormats');
+						if(is_array($format)) { $format = array_shift($format); }
+						if ($o_log) { $o_log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $o_config->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()]]); 
+					}
+					
+					
+					if(!$vn_object_representation_mapping_id && is_array($media_metadata_extraction_defaults = $o_config->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
+						$media_mimetype = $t_new_rep->get('mimetype');
+					
+						foreach($media_metadata_extraction_defaults as $m => $importer_code) {
+							if(caCompareMimetypes($media_mimetype, $m)) {
+								if (!($vn_object_representation_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
+									if ($o_log) { $o_log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
+								}
+								break;
+							}
+						}
 					}
 					
 					if ($vn_object_representation_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $vn_object_representation_mapping_id], ['returnAs' => 'firstModelInstance']))) {
 						$format = $t_mapping->getSetting('inputFormats');
 						if(is_array($format)) { $format = array_shift($format); }
-						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $vs_log_level, 'format' => $format, 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()]]); //, 'transaction' => $o_trans]);
+						if ($o_log) { $o_log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $o_config->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()]]); 
 					}
 
 					$va_notices[$t_instance->getPrimaryKey()] = array(
@@ -1243,7 +1274,7 @@
 			
 			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
 			
-			$vn_log_level = caLogLevelStringToNumber($vs_log_level);
+			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
 			if (!isURL($ps_source) && is_dir($ps_source)) {
 				$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, false);
@@ -1307,5 +1338,40 @@
         public static function getErrorList() {
             return BatchProcessor::$s_import_error_list;
         }
+		# ----------------------------------------
+		/**
+		 *
+		 */
+		private static function _logLevelStringToNumber($ps_log_level) {
+			if (is_numeric($ps_log_level)) {
+				$vn_log_level = (int)$ps_log_level;
+			} else {
+				switch($ps_log_level) {
+					case 'DEBUG':
+						$vn_log_level = KLogger::DEBUG;
+						break;
+					case 'NOTICE':
+						$vn_log_level = KLogger::NOTICE;
+						break;
+					case 'WARN':
+						$vn_log_level = KLogger::WARN;
+						break;
+					case 'ERR':
+						$vn_log_level = KLogger::ERR;
+						break;
+					case 'CRIT':
+						$vn_log_level = KLogger::CRIT;
+						break;
+					case 'ALERT':
+						$vn_log_level = KLogger::ALERT;
+						break;
+					default:
+					case 'INFO':
+						$vn_log_level = KLogger::INFO;
+						break;
+				}
+			}
+			return $vn_log_level;
+		}
 		# ----------------------------------------
 	}
