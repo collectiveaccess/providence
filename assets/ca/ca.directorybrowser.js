@@ -219,7 +219,7 @@ var caUI = caUI || {};
 							setTimeout(function() {
 									jQuery("#" + that.uploadProgressID).hide(250);
 								}, 3000);
-							that.setUpHierarchyLevel(level, item_id, is_init, selected_item_id, true);	// reload file list
+							that.setUpHierarchyLevel(level, item_id, false, selected_item_id, true);	// reload file list
 						}
 					},
 					progressall: function (e, data) {
