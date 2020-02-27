@@ -394,11 +394,11 @@
     } else {
         if(sizeof($rel_types) > 1) {
 ?>
-			<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}type_id_{n}'), $va_settings)) : _t('Add representation'); ?></h2>
+			<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $va_settings)) : _t('Add representation'); ?></h2>
 <?php
     } else {
         // Embed type when only a single type is available
-        print caHTMLHiddenInput('{fieldNamePrefix}type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
+        print caHTMLHiddenInput('{fieldNamePrefix}rel_type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
     }
 ?>
 			<span class="formLabelError">{error}</span>

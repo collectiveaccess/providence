@@ -2618,25 +2618,29 @@ class BaseEditorController extends ActionController {
 
 
 		// Cleanup any old files here
-		$va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, array('modifiedSince' => time() - $vn_timeout));
-		foreach($va_files_to_delete as $vs_file_to_delete) {
-			@unlink($vs_file_to_delete);
+		// $va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, ['modifiedSince' => time() - $vn_timeout]);
+// 		foreach($va_files_to_delete as $vs_file_to_delete) {
+// 			@unlink($vs_file_to_delete);
+// 		}
+
+		$stored_files = [];
+		
+		if(is_array($_FILES['files'])) {
+			foreach($_FILES['files']['tmp_name'] as $i => $f) {
+				
+				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
+				copy($f, $dest_path = "{$vs_tmp_directory}/userMedia{$vn_user_id}/{$dest_filename}");
+
+				// write file metadata
+				file_put_contents("{$dest_path}_metadata", json_encode([
+					'original_filename' => $_FILES['files'][$i]['name'],
+					'size' => filesize($dest_path)
+				]));
+				$stored_files[] = "userMedia{$vn_user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
+			}
 		}
 
-		$va_stored_files = array();
-		foreach($_FILES as $vn_i => $va_file) {
-			$vs_dest_filename = pathinfo($va_file['tmp_name'], PATHINFO_FILENAME);
-			copy($va_file['tmp_name'], $vs_dest_path = $vs_tmp_directory."/userMedia{$vn_user_id}/{$vs_dest_filename}");
-
-			// write file metadata
-			file_put_contents("{$vs_dest_path}_metadata", json_encode(array(
-				'original_filename' => $va_file['name'],
-				'size' => filesize($vs_dest_path)
-			)));
-			$va_stored_files[$vn_i] = "userMedia{$vn_user_id}/{$vs_dest_filename}"; // only return the user directory and file name, not the entire path
-		}
-
-		$this->response->addContent(json_encode($va_stored_files));
+		$this->response->addContent(json_encode(['files' => $stored_files, 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 	}
 	# -------------------------------------------------------
 	/**

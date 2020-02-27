@@ -3974,7 +3974,13 @@ div.directoryBrowserLevelVertical {
     font-weight: normal;
 }
 
-a.directoryBrowserLevelSelected {
+.directoryBrowserLevel a i {
+    text-decoration: none;
+    font-weight: normal;
+    color: #ccc;
+}
+
+a.directoryBrowserLevelSelected, a.directoryBrowserLevelSelected i {
     color: #000000;
     text-decoration: none;
     font-weight: bold;
@@ -7575,4 +7581,30 @@ span.statisticsDashboardSelectedGroup {
 
 span.statisticsDashboardSelectedsite {
     font-weight: bold;
+}
+
+/* "new" ca_object_representations_bundle */
+.objectRepresentationMediaUploadStatus {
+    font-size:16px;
+    color: #828282;
+    text-align: left;
+    padding: 10px;
+    line-height:1.3em;
+    overflow: hidden;
+    height: 2.4em;
+}
+
+.objectRepresentationImporterUploadArea {
+	border: 1px dashed #ccc; 
+	text-align: center; 
+	padding: 5px; 
+	display: block;
+	width: 120px;
+	height: 120px;
+}
+
+.objectRepresentationImporterUploadAreaMessage {
+	font-size: 16px; 
+	color: #333;
+	margin-top: 50px;
 }

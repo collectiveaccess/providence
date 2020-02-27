@@ -1185,13 +1185,33 @@
             foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
                 $pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
             }
+            
+            $vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
+            $bundles_to_save = caGetOption('showBundlesForEditing', $pa_bundle_settings, null);
+            
             $va_reps = $this->getRepresentations(array('thumbnail', 'original'), null, $pa_options);
         
             $t_item = new ca_object_representations();
             $va_rep_type_list = $t_item->getTypeList();
-            $va_errors = array();
+            $va_errors = [];
             
-            $vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
+            
+            // Fetch additional bundles for display and in-bundle editing
+            $bundle_data = [];
+            if(is_array($bundles_to_save) && sizeof($va_reps)) {
+            	$representation_ids = array_map(function($v) { return $v['representation_id']; }, $va_reps);
+            	$qr_reps = caMakeSearchResult('ca_object_representations', $representation_ids);
+            	while($qr_reps->nextHit()) {
+            		$d = [];
+            		foreach($bundles_to_save as $b) {
+            			$f = array_pop(explode('.', $b));
+            			$d[$f] = $qr_reps->get("ca_object_representations.{$f}");
+            		}
+            	
+            		$bundle_data[$qr_reps->get('ca_object_representations.representation_id')] = $d;
+            	}
+            } 
+            
 
             // Paging
             $vn_primary_id = 0;
@@ -1252,6 +1272,10 @@
                         'fetched_on' => date('c', $va_rep['fetched_on']),
                         'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on'])) : ""
                     );
+                    
+                    if (is_array($bundle_data[$va_rep['representation_id']])) {
+                    	$va_initial_values[$va_rep['relation_id']] = array_merge($va_initial_values[$va_rep['relation_id']], $bundle_data[$va_rep['representation_id']]);
+                    }
 
                     $vn_i++;
                 }

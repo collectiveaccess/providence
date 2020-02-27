@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1142,6 +1142,37 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('Do not show transcription drop-down.')
 							);
 						}
+						
+						$va_additional_settings['uiStyle'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "275px", 'height' => "1",
+							'takesLocale' => false,
+							'options' => [
+								_t('Classic') => 'CLASSIC',
+								_t('New UI with batch uploading') => 'NEW_UI'
+							],
+							'default' => '',
+							'multiple' => true,
+							'label' => _t('User interface style'),
+							'description' => _t('')
+						];
+						
+						$va_additional_settings['showBundlesForEditing'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "275px", 'height' => "100px",
+							'takesLocale' => false,
+							'showMetadataElementsWithDataType' => [__CA_ATTRIBUTE_VALUE_TEXT__,__CA_ATTRIBUTE_VALUE_DATERANGE__,__CA_ATTRIBUTE_VALUE_TIMECODE__,__CA_ATTRIBUTE_VALUE_URL__,__CA_ATTRIBUTE_VALUE_CURRENCY__,__CA_ATTRIBUTE_VALUE_LENGTH__,__CA_ATTRIBUTE_VALUE_WEIGHT__,__CA_ATTRIBUTE_VALUE_LIST__,__CA_ATTRIBUTE_VALUE_INTEGER__,__CA_ATTRIBUTE_VALUE_NUMERIC__],
+							'table' => 'ca_object_representations',
+							'includeIntrinsics' => true,
+							'default' => '',
+							'multiple' => true,
+							'label' => _t('Show for editing'),
+							'description' => _t('')
+						];
+						
+						
                     }
 
 					if($vs_bundle == 'ca_sets') {

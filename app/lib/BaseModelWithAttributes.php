@@ -1523,6 +1523,8 @@
 							'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 20, 
 							'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 							'class' => (isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '',
+							'name' => (isset($pa_options['name']) && $pa_options['name']) ? $pa_options['name'] : null,
+							'id' => (isset($pa_options['id']) && $pa_options['id']) ? $pa_options['id'] : null,
 							'format' => '^ELEMENT',
 							'forSimpleForm' => true,
 							'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT'
@@ -1822,7 +1824,11 @@
 				// Include "current_value" syntax if policy is set
 				$vs_subelement_code = $this->tableName().'.'.($policy ? "current_value.{$policy}." : '').($vb_is_sub_element ? $t_parent->get('element_code').'.' : '').(($vs_element_code !== $va_element['element_code']) ? "{$vs_element_code}." : "").$va_element['element_code'];
 				
-				$vm_values = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : null;
+				if(is_null($vm_values = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : null)) {
+					if ($v = caGetOption('value', $pa_options, null)) {
+						$vm_values = $v;
+					}
+				}
 				
 				// Use current row value as default value if option is set
 				if (is_null($vm_values) && $use_current_row_value) { 
@@ -1871,14 +1877,17 @@
 				
 				
 					// escape any special characters in jQuery selectors
+					$f = (isset($pa_options['name']) && $pa_options['name']) ? $pa_options['name'] : $vs_fld_name;
+					
 					$vs_form_element = str_replace(
 						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')",
-						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
+						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $f)."')", 
 						$vs_form_element
 					);
-					$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $vs_fld_name, $vs_form_element);
-				
-					$vs_form_element = str_replace('{n}', '', $vs_form_element);
+					$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $f, $vs_form_element);
+					if (caGetOption('removeTemplateNumberPlaceholders', $pa_options, true)) {
+						$vs_form_element = str_replace('{n}', '', $vs_form_element);
+					}
 					$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
 				}
 				
@@ -1898,6 +1907,10 @@
 			$o_view->setVar('elements', $va_elements_by_container);
 			$o_view->setVar('element_ids', $va_element_ids);
 			$o_view->setVar('element_set_label', $this->getAttributeLabel($t_element->get('element_id')));
+			
+			if(caGetOption('elementsOnly', $pa_options, false)) {
+				return ['element_ids' => $va_element_ids, 'elements' => $va_elements_by_container];
+			}
 			
 			return $o_view->render(caGetOption('view', $pa_options, 'ca_search_form_attributes.php'));
 		}
@@ -1929,7 +1942,7 @@
 						break;
 					case $vs_type_id_fld_name:
 						$pa_options['value'] = $this->get($ps_field);
-						$vs_element =  $this->getTypeListAsHTMLFormElement($pa_options['name'], array(), $pa_options);
+						$vs_element =  $this->getTypeListAsHTMLFormElement($pa_options['name'], array('id' => caGetOption('id', $pa_options, null)), $pa_options);
 						break;
 				}
 				

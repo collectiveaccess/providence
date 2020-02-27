@@ -805,6 +805,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			foreach($va_placements as $va_placement) {
 				if ($va_placement['bundle_name'] === $ps_bundle_name) {
 					return 'Screen'.$vn_screen_id;
+				} elseif(str_replace("ca_attribute_", "", $va_placement['bundle_name']) === $ps_bundle_name) {
+					return 'Screen'.$vn_screen_id;
 				}
 			}
 		}
