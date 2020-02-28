@@ -873,6 +873,19 @@
 							$vs_value = false;
 						}
 						break;
+					case 'checktypelimitinconfig':
+						$vs_pref = $va_tmp[1];
+						if ($vb_not = (substr($vs_pref, 0, 1) == '!') ? true : false) {
+							$vs_pref = substr($vs_pref, 1);
+						}
+						
+						$vs_table = $va_tmp[2];
+						
+						$l = caMakeTypeIDList($vs_table, $this->opo_request->config->get($vs_pref),['dontIncludeSubtypesInTypeRestriction' => true]);
+						$s = (int)Session::getVar("{$vs_table}_type_id");
+						$vs_value = in_array($s, $l, true);
+						if ($vb_not) { $vs_value = !$vs_value; }
+						break;
 					case 'global':
 						if (isset($va_tmp[2])) {
 							$vs_value = ($GLOBALS[$va_tmp[1]] == $va_tmp[2]) ? true : false;
