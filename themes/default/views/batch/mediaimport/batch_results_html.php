@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,7 +55,7 @@
 
 <?php
 	function caIncrementBatchMediaImportProgress($po_request, $pn_rows_complete, $pn_total_rows, $ps_message, $t_new_rep, $pn_elapsed_time, $pn_memory_used, $pn_num_processed, $pn_num_errors) {
-		$pn_percentage = ($pn_rows_complete/$pn_total_rows) * 100;
+		$pn_percentage = ($pn_total_rows > 0) ?($pn_rows_complete/$pn_total_rows) * 100 : 0;
 		if (is_null($ps_message)) {
 			$ps_message = _t('Processed %1/%2', $pn_rows_complete, $pn_total_rows);
 		}
@@ -92,6 +92,8 @@
 						$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
 						break;
 					case 'SKIPPED':
+					case 'EXISTS':
+					case 'NO_MATCH':
 					case 'MATCHED':
 					case 'RELATED':
 						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']."</li>";

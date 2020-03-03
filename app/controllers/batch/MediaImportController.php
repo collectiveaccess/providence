@@ -549,7 +549,7 @@
  			if(file_exists($path = "{$tmp_dir}/{$file}.csv")) {
  				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  				$o_view->setVar('archive_path', $path);
- 				$o_view->setVar('archive_name', (strpos($path, "SkipLog") !== false) ? "skipped_files_log.txt" : "error_log.txt");
+ 				$o_view->setVar('archive_name', (strpos($path, "SkipLog") !== false) ? "skipped_files_log.csv" : "error_log.csv");
  				$this->response->addContent($o_view->render('download_file_binary.php'));
  				return;
  			} else {

@@ -756,7 +756,7 @@
 						'label' => $f,
 						'message' =>  $vs_msg = _t('Skipped %1 from %2 because it already exists %3', $f, $vs_relative_directory, $po_request ? caEditorLink($po_request, _t('(view)'), 'button', 'ca_object_representations', $t_dupe->getPrimaryKey()) : ''),
 						'file' => $f,
-						'status' => 'SKIPPED'
+						'status' => 'EXISTS'
 					);
 					$o_log->logInfo($vs_msg);
  					continue;
@@ -1180,7 +1180,7 @@
 						'label' => $f,
 						'message' => $vs_msg = (($vs_import_mode == 'ALWAYS_MATCH') ? _t('Skipped %1 from %2 because it could not be matched', $f, $vs_relative_directory) : _t('Skipped %1 from %2', $f, $vs_relative_directory)),
 						'file' => $f,
-						'status' => 'SKIPPED'
+						'status' => 'NO_MATCH'
 					);
 					$o_log->logInfo($vs_msg);
 				}
@@ -1198,12 +1198,12 @@
 			
 			$error_count = $skip_count = 0;
 			foreach($va_notices as $k => $notice) {
-				if ($notice['status'] == 'SKIPPED') {
-					fputcsv($r_skip, ['file' => $notice['file'], 'message' => $notice['message'], 'status' => $notice['status']]);
+				if (in_array($notice['status'], ['EXISTS', 'NO_MATCH'])) {
+					fputcsv($r_skip, ['file' => $notice['file'], 'message' => strip_tags($notice['message']), 'status' => $notice['status']]);
 					$skip_count++;
 				}
 				if ($notice['status'] == 'ERROR') {
-					fputcsv($r_skip, ['idno' => $notice['idno'], 'file' => $notice['file'], 'message' => $notice['message'], 'status' => $notice['status']]);
+					fputcsv($r_skip, ['idno' => $notice['idno'], 'file' => $notice['file'], 'message' => strip_tags($notice['message']), 'status' => $notice['status']]);
 					$skip_count++;
 				}
 			}		
