@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2019 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1249,6 +1249,14 @@
 
 			if ($po_request && isset($pa_options['sendMail']) && $pa_options['sendMail']) {
 				if ($vs_email = trim($po_request->user->get('email'))) {
+					$attachments = [];
+					if ($skip_count > 0) { 
+						$attachments[] = ['path' => $skip_log, 'name' => 'skipped_files_log.csv', 'mimetype' => 'text/csv'];
+					}
+					if ($error_count > 0) { 
+						$attachments[] = ['path' => $error_log, 'name' => 'error_log.csv', 'mimetype' => 'text/csv'];
+					}
+				
 					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch media import completed', $po_request->config->get('app_display_name')), 'batch_media_import_completed.tpl',
 						array(
 							'notices' => $va_notices, 'errors' => $va_errors,
@@ -1259,7 +1267,7 @@
 							'completedOn' => caGetLocalizedDate(time()),
 							'setName' => ($vn_set_id) ? $vs_set_name : null,
 							'elapsedTime' => caFormatInterval($vn_elapsed_time)
-						), null, null, ['source' => 'Batch media import complete']
+						), null, null, ['source' => 'Batch media import complete', 'attachments' => $attachments]
 					);
 				}
 			}
