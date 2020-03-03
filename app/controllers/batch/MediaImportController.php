@@ -292,8 +292,7 @@
 					$va_options,
 					array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
 				{
-					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
-					
+					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");	
 				}
 				$this->render('mediaimport/batch_queued_html.php');
 			} else { 
@@ -540,6 +539,24 @@
  			$this->view->setVar('response', $va_response);
  			$this->render('mediaimport/file_upload_response_json.php');
  		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function DownloadLog() {
+ 			$tmp_dir = caGetTempDirPath(['useAppTmpDir' => true]);
+ 			$file = preg_replace("![^A-Za-z0-9_]+!", "", $this->request->getParameter('file', pString));
+ 			if(file_exists($path = "{$tmp_dir}/{$file}.csv")) {
+ 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
+ 				$o_view->setVar('archive_path', $path);
+ 				$o_view->setVar('archive_name', (strpos($path, "SkipLog") !== false) ? "skipped_files_log.txt" : "error_log.txt");
+ 				$this->response->addContent($o_view->render('download_file_binary.php'));
+ 				return;
+ 			} else {
+ 				$this->notification->addNotification(_t('Invalid log'), __NOTIFICATION_TYPE_ERROR__);
+ 				$this->Index();
+ 			}
+ 		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler
  		# ------------------------------------------------------------------
@@ -557,4 +574,3 @@
  		}
 		# ------------------------------------------------------------------
  	}
- ?>

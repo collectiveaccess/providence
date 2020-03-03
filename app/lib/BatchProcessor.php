@@ -651,6 +651,7 @@
 								'idno' => '',
 								'label' => _t('Create set %1', $vs_set_create_name),
 								'message' =>  $vs_msg = _t('Failed to create set %1: %2', $vs_set_create_name, join("; ", $t_set->getErrors())),
+								'file' => '',
 								'status' => 'SET ERROR'
 							);
 							$o_log->logError($vs_msg);
@@ -661,6 +662,7 @@
 									'idno' => '',
 									'label' => _t('Add label to set %1', $vs_set_create_name),
 									'message' =>  $vs_msg = _t('Failed to add label to set: %1', join("; ", $t_set->getErrors())),
+									'file' => '',
 									'status' => 'SET ERROR'
 								);
 								$o_log->logError($vs_msg);
@@ -678,6 +680,7 @@
 					'idno' => '',
 					'label' => _t('You do not have access to set %1', $vs_set_create_name),
 					'message' =>  $vs_msg = _t('Cannot add to set %1 because you do not have edit access', $vs_set_create_name),
+					'file' => '',
 					'status' => 'SET ERROR'
 				);
 
@@ -752,6 +755,7 @@
 						'idno' => '',
 						'label' => $f,
 						'message' =>  $vs_msg = _t('Skipped %1 from %2 because it already exists %3', $f, $vs_relative_directory, $po_request ? caEditorLink($po_request, _t('(view)'), 'button', 'ca_object_representations', $t_dupe->getPrimaryKey()) : ''),
+						'file' => $f,
 						'status' => 'SKIPPED'
 					);
 					$o_log->logInfo($vs_msg);
@@ -872,6 +876,7 @@
 													'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 													'label' => $t_instance->getLabelForDisplay(),
 													'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using expression "%4"', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false), $va_regex_info['displayName']),
+													'file' => $f,
 													'status' => 'MATCHED'
 												);
 												$o_log->logInfo($vs_msg);
@@ -894,6 +899,7 @@
  							'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
  							'label' => $t_instance->getLabelForDisplay(),
  							'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using filename', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false)),
+ 							'file' => $f,
  							'status' => 'MATCHED'
  						);
 						$o_log->logInfo($vs_msg);
@@ -944,6 +950,7 @@
 							'label' => $t_instance->getLabelForDisplay(),
 							'errors' => $t_instance->errors(),
 							'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+							'file' => $f,
 							'status' => 'ERROR',
 						);
 						$o_log->logError($vs_msg);
@@ -1007,6 +1014,7 @@
 								'label' => $t_instance->getLabelForDisplay(),
 								'errors' => $t_instance->errors(),
 								'message' => $vs_msg = _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+								'file' => $f,
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
@@ -1036,6 +1044,7 @@
 								'label' => $t_instance->getLabelForDisplay(),
 								'errors' => $t_instance->errors(),
 								'message' => $vs_msg = _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+								'file' => $f,
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
@@ -1062,6 +1071,7 @@
 								'label' => $t_instance->getLabelForDisplay(),
 								'errors' => $t_instance->errors(),
 								'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+								'file' => $f,
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
@@ -1122,6 +1132,7 @@
 						'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 						'label' => $t_instance->getLabelForDisplay(),
 						'message' => $vs_msg = _t('Imported %1 as %2', $f, $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD'))),
+						'file' => $f,
 						'status' => 'SUCCESS'
 					);
 					$o_log->logInfo($vs_msg);
@@ -1145,6 +1156,7 @@
 											'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 											'label' => $vs_label = $t_instance->getLabelForDisplay(),
 											'message' => $vs_msg = _t('Added relationship between <em>%1</em> and %2 <em>%3</em>', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay()),
+											'file' => $f,
 											'status' => 'RELATED'
 										);
 										$o_log->logInfo($vs_msg);
@@ -1153,6 +1165,7 @@
 											'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 											'label' => $vs_label = $t_instance->getLabelForDisplay(),
 											'message' => $vs_msg = _t('Could not add relationship between <em>%1</em> and %2 <em>%3</em>: %4', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay(), join("; ", $t_instance->getErrors())),
+											'file' => $f,
 											'status' => 'ERROR'
 										);
 										$o_log->logError($vs_msg);
@@ -1166,6 +1179,7 @@
 						'idno' => '',
 						'label' => $f,
 						'message' => $vs_msg = (($vs_import_mode == 'ALWAYS_MATCH') ? _t('Skipped %1 from %2 because it could not be matched', $f, $vs_relative_directory) : _t('Skipped %1 from %2', $f, $vs_relative_directory)),
+						'file' => $f,
 						'status' => 'SKIPPED'
 					);
 					$o_log->logInfo($vs_msg);
@@ -1175,6 +1189,35 @@
 			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processing completed"), null, time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
 			}
+			
+			// Write error and skip logs
+			$r_err = fopen($error_log = caGetTempFileName("mediaImporterErrorLog", "csv", ['useAppTmpDir' => true]), "w");
+			fputcsv($r_err, ['idno', 'file', 'message', 'status']);
+			$r_skip = fopen($skip_log = caGetTempFileName("mediaImporterSkipLog", "csv", ['useAppTmpDir' => true]), "w");	
+			fputcsv($r_skip, ['file', 'message', 'status']);
+			
+			$error_count = $skip_count = 0;
+			foreach($va_notices as $k => $notice) {
+				if ($notice['status'] == 'SKIPPED') {
+					fputcsv($r_skip, ['file' => $notice['file'], 'message' => $notice['message'], 'status' => $notice['status']]);
+					$skip_count++;
+				}
+				if ($notice['status'] == 'ERROR') {
+					fputcsv($r_skip, ['idno' => $notice['idno'], 'file' => $notice['file'], 'message' => $notice['message'], 'status' => $notice['status']]);
+					$skip_count++;
+				}
+			}		
+			fclose($r_skip);
+			
+			foreach($va_errors as $k => $error) {
+				if ($error['status'] == 'ERROR') {
+					fputcsv($r_err, ['idno' => $error['idno'], 'file' => $error['file'], 'message' => $error['message'], 'status' => $error['status']]);
+					$error_count++;
+				}
+			}		
+			fclose($r_err);
+			
+			
 
 			$vn_elapsed_time = time() - $vn_start_time;
 			if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
@@ -1185,7 +1228,9 @@
 					'batchSize' => $vn_num_items,
 					'table' => $t_instance->tableName(),
 					'set_id' => $t_set->getPrimaryKey(),
-					'setName' => $t_set->getLabelForDisplay()
+					'setName' => $t_set->getLabelForDisplay(),
+					'errorlog' => ($error_count > 0) ? $error_log : null,
+					'skiplog' => ($skip_count > 0) ? $skip_log : null
 				);
 				$ps_callback($po_request, $va_general, $va_notices, $va_errors);
 			}

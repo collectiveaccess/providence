@@ -641,9 +641,15 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * 
 	 *
+	 * @param array $options Options include:
+	 *		useAppTmpDir = Return application temporary directory rather than system tmp directory in all cases. [Default is false]
+	 *
+	 * @return string
 	 */
-	function caGetTempDirPath() {
+	function caGetTempDirPath($options=null) {
+		if(caGetOption('useAppTmpDir', $options, false)) { return __CA_APP_DIR__."/tmp"; }
 		if (function_exists('sys_get_temp_dir')) {
 			return sys_get_temp_dir();
 		}
@@ -670,8 +676,8 @@ function caFileIsIncludable($ps_file) {
 		}
 	}
 	# ----------------------------------------
-	function caGetTempFileName($ps_prefix, $ps_extension = null) {
-		$vs_tmp = tempnam(caGetTempDirPath(), $ps_prefix);
+	function caGetTempFileName($ps_prefix, $ps_extension = null, $options=null) {
+		$vs_tmp = tempnam(caGetTempDirPath($options), $ps_prefix);
 		@unlink($vs_tmp);
 
 		if($ps_extension && strlen($ps_extension)>0) {

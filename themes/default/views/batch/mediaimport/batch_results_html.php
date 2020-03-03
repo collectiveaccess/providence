@@ -110,6 +110,12 @@
 				_t('Batch edit set <em>%1</em> containing imported media', caNavLink($po_request, $pa_general['setName'], '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id'])));
 		}
 		
+		if ($pa_general['skiplog']) {
+			$vs_buf .= caNavLink($po_request, _t("Download skipped files log"), '', '*', '*', 'DownloadLog', ['file' => pathinfo($pa_general['skiplog'], PATHINFO_FILENAME)])."<br/>";
+		}
+		if ($pa_general['errorlog']) {
+			$vs_buf .= caNavLink($po_request, _t("Download error log"), '', '*', '*', 'DownloadLog', ['file' => pathinfo($pa_general['errorlog'], PATHINFO_FILENAME)])."<br/>";
+		}
 		print "<script type='text/javascript'>";
 		print "jQuery('#batchProcessingMediaPreview').hide();";
 		print "jQuery('#batchProcessingReport').html('".addslashes($vs_buf)."').fadeIn(300);"; 
