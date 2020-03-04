@@ -141,7 +141,7 @@
  			$this->view->setVar('file_path', $t_caption->getFilePath('caption_file'));
  			$va_info = $t_caption->getFileInfo("caption_file");
  			
- 			switch($this->request->user->getPreference('downloaded_file_naming')) {
+ 			switch($mode = $this->request->user->getPreference(['ca_object_representations_downloaded_file_naming', 'downloaded_file_naming'])) {
  				case 'idno':
  					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
  					break;
@@ -153,7 +153,9 @@
  					break;
  				case 'original_name':
  				default:
- 					if ($va_info['ORIGINAL_FILENAME']) {
+ 					if (strpos($mode, "^") !== false) { // template
+						$this->view->setVar('download_name', caProcessTemplateForIDs($mode, 'ca_object_representations', [$pn_representation_id]).".vtt");
+ 					} elseif ($va_info['ORIGINAL_FILENAME']) {
  						$this->view->setVar('download_name', $va_info['ORIGINAL_FILENAME']."_captions_{$vs_locale}.vtt");
  					} else {
  						$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
