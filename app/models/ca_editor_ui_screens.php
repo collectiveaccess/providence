@@ -1079,6 +1079,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => 5,
 								'label' => _t('Sort options'),
 								'description' => _t('Limits sort options on this bundle.')
+							),
+							'effectiveDateDefault' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "275px", 'height' => 1,
+								'label' => _t('Default effective date'),
+								'description' => _t('Default effective date value for newly added relationships. Leave blank if you do not wish to set an effective date.')
 							)
 						);
 					}
