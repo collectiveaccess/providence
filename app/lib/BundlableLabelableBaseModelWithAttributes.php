@@ -5405,7 +5405,7 @@ if (!$vb_batch) {
 			}
 		}
 		foreach($va_rels_to_add as $va_rel_to_add) {
-			$this->addRelationship($va_rel_to_add['bundle'], $va_rel_to_add['row_id'], $va_rel_to_add['type_id'], null, null, $va_rel_to_add['direction']);
+			$this->addRelationship($va_rel_to_add['bundle'], $va_rel_to_add['row_id'], $va_rel_to_add['type_id'], _t(caGetOption('effectiveDateDefault', $pa_settings, null)), null, $va_rel_to_add['direction']);
 			if ($this->numErrors()) {
 				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 			}

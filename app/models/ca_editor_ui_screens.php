@@ -1089,6 +1089,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Show relationship count in header?'),
 								'description' => _t('If checked the number of relationships will be displayed in the header for the field.')
 							),
+							'effectiveDateDefault' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "275px", 'height' => 1,
+								'label' => _t('Default effective date'),
+								'description' => _t('Default effective date value for newly added relationships. Leave blank if you do not wish to set an effective date.')
+							)
 						);
 					}
 											
