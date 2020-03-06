@@ -204,6 +204,7 @@
 			
 			$va_attr_values = $t_attr->getAttributeValues();
 			
+			$element = null;
 			if (
 			    // this may return a false positive if the attribute is a container with media or file attributes, 
 			    // as ca_attribute_values records for those will only be present if a file was uploaded
@@ -218,12 +219,17 @@
 				// so we need to force a save.
 		       $this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
 			} else {
+				if(!$elements) { $elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }); }
+				
+				$element_codes = array_flip(array_map(function($v) { return $v['element_code']; }, $elements));
+				
 				// Have any of the values changed?
 				foreach($va_attr_values as $o_attr_value) {
 					$vn_element_id = $o_attr_value->getElementID();
 					$vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
 					$vn_element_datatype = ca_metadata_elements::getElementDatatype($vn_element_id);
 					
+					unset($element_codes[$vs_element_code]);
 					if (
 						(
 							isset($pa_values[$vn_element_id]) && ($pa_values[$vn_element_id] !== $o_attr_value->getDisplayValue()) 
@@ -250,6 +256,15 @@
 					) {
 						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
 						break;
+					}
+				}
+				
+				if(sizeof($element_codes) > 0) {
+					foreach($element_codes as $element_code => $element_id) {
+						if(isset($pa_values[$element_code]) && $pa_values[$element_code]) {
+							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
+							break;
+						}
 					}
 				}
 			}
