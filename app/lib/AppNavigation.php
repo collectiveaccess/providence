@@ -705,7 +705,18 @@
 			$vs_buf = '';
 			foreach($pa_menu_nav as $va_submenu_item) {
 				$vs_buf .= "<li>";
-				$vb_disabled = ((isset($va_submenu_item['is_enabled']) && $va_submenu_item['is_enabled']) || (is_array($pa_defaults) && $pa_defaults['module'] && $pa_defaults['module'] == "find")) ? false : true;
+				
+				// Only force "find" items to be links if hierarchical results expansion is enabled, otherwise you
+				// end up with menu items that return nothing. No one likes that.
+				$result_expansion = true;
+				$info = caFindControllerNameInfo($pa_defaults['controller']);
+				if ($type_id = isset($va_submenu_item['parameters']['type_id']) ? $va_submenu_item['parameters']['type_id'] : null) {
+					$dont_expand_types = caMakeTypeIDList($info['table'], $this->opo_config->get($info['table'].'_find_dont_expand_hierarchically'));
+					if (is_array($dont_expand_types) && in_array($type_id, $dont_expand_types)) {
+						$result_expansion = false;
+					}
+				}
+				$vb_disabled = ((isset($va_submenu_item['is_enabled']) && $va_submenu_item['is_enabled']) || (is_array($pa_defaults) && $pa_defaults['module'] && $pa_defaults['module'] == "find") && $result_expansion) ? false : true;
 				
 				if ($vb_disabled) {
 					$vs_buf .= caHTMLLink(caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path) ? 'sf-menu-disabled-selected' : '')));
