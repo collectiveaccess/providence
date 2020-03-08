@@ -9,7 +9,7 @@
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
  * Copyright 2009-2020 Whirl-i-Gig
  *
- * For more information visit http://www.CollectiveAccess.org
+ * For more information visit http://www.CollectiveA<a href="ca_objects.php">ca_objects.php</a>ccess.org
  *
  * This program is free software; you may redistribute it and/or modify it under
  * the terms of the provided license as published by Whirl-i-Gig
@@ -56,7 +56,9 @@
 		'noInline' => (!$vb_quick_add_enabled ||(bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
 	);
 
-	if(caGetOption('showCount', $va_settings, false)) { print ($count = $this->getVar('relationship_count')) ? "({$count})" : ''; }
+	$count = $this->getVar('relationship_count');
+	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	$num_per_page = caGetOption('numItemsPerPage', $va_settings, 10);
 	
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
@@ -74,7 +76,7 @@
 <?php
 	print "<div class='bundleSubLabel'>";
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 		print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'), $this->getVar('history_tracking_policy'));
 	}
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
@@ -237,6 +239,7 @@
 ?>
 		
 		</div>
+		<div class="caNewItemList"></div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
@@ -317,6 +320,7 @@
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			newItemListClassName: 'caNewItemList',
 			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
@@ -335,6 +339,11 @@
 			itemColor: '<?php print $vs_color; ?>',
 			firstItemColor: '<?php print $vs_first_color; ?>',
 			lastItemColor: '<?php print $vs_last_color; ?>',
+			
+			totalValueCount: <?php print (int)$count; ?>,
+			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $va_settings['placement_id'], 'bundle' => 'ca_objects')); ?>',
+			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			loadSize: <?php print $num_per_page; ?>,
 
 <?php if($vb_quick_add_enabled) { ?>			
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,

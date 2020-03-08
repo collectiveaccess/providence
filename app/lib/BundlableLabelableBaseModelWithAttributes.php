@@ -1215,7 +1215,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				switch($ps_bundle_name) {
 					# -------------------------------
 					case 'ca_object_representations':
-						return parent::getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
+						return $this->getBundleFormValuesForRepresentations($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					case 'ca_entities':
 					case 'ca_places':
@@ -2904,6 +2904,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_item = Datamodel::getInstance($ps_related_table);
 		$vb_is_many_many = false;
 		
+		$limit = caGetOption('limit', $pa_options, caGetOption('numItemsPerPage', $pa_bundle_settings, null));
+		
 		$va_path = array_keys(Datamodel::getPath($this->tableName(), $ps_related_table));
 		if ($this->tableName() == $ps_related_table) {
 			// self relationship
@@ -2943,7 +2945,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			'template' => caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings),
 			'primaryIDs' => array($this->tableName() => array($this->getPrimaryKey())),
 			'request' => $po_request,
-			'stripTags' => true
+			'stripTags' => true,
+			
+			'start' => caGetOption('start', $pa_options, 0),
+			'limit' => $limit
 		];
 
 		if($ps_related_table == 'ca_sets') {
@@ -2954,7 +2959,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 			// sort
 			if($ps_sort = caGetOption('sort', $va_get_related_opts, null)) {
-				$va_items = caSortArrayByKeyInValue($va_items, array($ps_sort), caGetOption('sortDirectio ', $va_get_related_opts, 'ASC'));
+				$va_items = caSortArrayByKeyInValue($va_items, array($ps_sort), caGetOption('sortDirection', $va_get_related_opts, 'ASC'));
 			}
 
 			$va_vals = [];
@@ -2967,16 +2972,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 
 			return $va_vals;
-		} elseif(($ps_related_table == 'ca_objects') && ($this->tableName() == 'ca_storage_locations') && (strlen($vs_mode = $pa_bundle_settings['locationTrackingMode']) > 0)) {
-			// Limit list to objects _currently_ in this location
-			if(!($qr_results = $this->getLocationContents($vs_mode))) { return []; }
-			
-			if (sizeof($va_ids = $qr_results->getAllFieldValues('ca_objects.object_id')) == 0) { return []; }
-			$qr_rel_items = caMakeSearchResult('ca_objects', $va_ids);
-			
-			return caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
-		} elseif (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
-			// Show fill list
+		} elseif (sizeof($va_items = $this->getRelatedItems($ps_related_table, array_merge($va_get_related_opts, ['start' => caGetOption('start', $pa_options, 0), 'limit' => $limit])))) {
+			// Show full list
 			
 			$va_opts['relatedItems'] = $va_items;
 			if ($vb_is_many_many) {
@@ -2990,7 +2987,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
 		}
 
-		return array();
+		return [];
 	}
  	# ------------------------------------------------------
  	/**
@@ -3084,7 +3081,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$va_initial_values = $this->getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
 
-		$o_view->setVar('relationship_count', sizeof($va_initial_values));
+
+		$c = (caGetOption('limit', $pa_options, caGetOption('numItemsPerPage', $pa_bundle_settings, null)) > 0) ? $this->getRelatedItems($ps_related_table, ['returnAs' => 'count']) : sizeof($va_initial_values);
+		$o_view->setVar('relationship_count', $c);
 		
 		$va_force_new_values = array();
 		if (isset($pa_options['force']) && is_array($pa_options['force'])) {

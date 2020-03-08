@@ -57,7 +57,9 @@
 		'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
 	);
 	
-	if(caGetOption('showCount', $va_settings, false)) { print ($count = $this->getVar('relationship_count')) ? "({$count})" : ''; }
+	$count = $this->getVar('relationship_count');
+	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	$num_per_page = caGetOption('numItemsPerPage', $va_settings, 10);
 	
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
@@ -173,6 +175,7 @@
 ?>
 		
 		</div>
+		<div class="caNewItemList"></div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
@@ -259,6 +262,7 @@
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			newItemListClassName: 'caNewItemList',
 			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
@@ -290,6 +294,11 @@
 			itemColor: '<?php print $vs_color; ?>',
 			firstItemColor: '<?php print $vs_first_color; ?>',
 			lastItemColor: '<?php print $vs_last_color; ?>',
+			
+			totalValueCount: <?php print (int)$count; ?>,
+			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $va_settings['placement_id'], 'bundle' => 'ca_occurrences')); ?>',
+			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			loadSize: <?php print $num_per_page; ?>,
 			
 			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>

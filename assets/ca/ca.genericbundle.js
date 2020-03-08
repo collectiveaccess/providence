@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,6 +42,7 @@ var caUI = caUI || {};
 			templateClassName: 'caItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			newItemListClassName: '',
 			listItemClassName: 'caRelatedItem',
 			itemClassName: 'labelInfo',
 			localeClassName: 'labelLocale',
@@ -90,6 +91,8 @@ var caUI = caUI || {};
 			listSortOrderID: null,
 			listSortItems: null // if set, limits sorting to items specified by selector
 		}, options);
+		
+		if (!that.newItemListClassName) { that.newItemListClassName = that.itemListClassName; }
 
 		if (that.maxRepeats == 0) { that.maxRepeats = 65535; }
 
@@ -126,8 +129,8 @@ var caUI = caUI || {};
 			if (!that.partialLoadUrl) { return false; }
 
 			jQuery.getJSON(that.partialLoadUrl, { start: that.loadFrom, limit: that.loadSize }, function(data) {
-				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').remove();
-				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__next').remove();
+				jQuery(that.container + " ." + that.itemListClassName + ' .caItemLoadNextBundles').remove();
+				
 				that.loadFrom += that.loadSize;
 				that.appendToInitialValues(data);
 
@@ -151,11 +154,17 @@ var caUI = caUI || {};
 
 			var msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
 			jQuery(that.container + " ." + that.itemListClassName).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
-			jQuery(that.container + " ." + that.itemListClassName).on('click', '.caItemLoadNextBundles', function(e) {
-				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').show();
+			jQuery(that.container + " ." + that.itemListClassName).off().on('click', '.caItemLoadNextBundles', function(e) {
+				jQuery(that.container + " ." + that.itemListClassName).off(); // remove handler to prevent repeated calls
+				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').show(); // show loading indicator
 				that.loadNextValues();
 				e.preventDefault();
 				return false;
+			}).on('scroll', null, function(e) {
+				// Trigger load of next page when bottom of current result set is reached.
+				if ((jQuery(this).scrollTop() + jQuery(this).height()) >= jQuery(this)[0].scrollHeight) {
+					jQuery(that.container + " ." + that.itemListClassName + " .caItemLoadNextBundles").click();	
+				}
 			});
 		}
 
@@ -237,21 +246,21 @@ var caUI = caUI || {};
 			if(options.useAnimation) {
 				jQuery(jElement).hide();
 				if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
-					jQuery(this.container + " ." + this.itemListClassName).prepend(jElement);
+					jQuery(this.container + " ." + this.newItemListClassName).prepend(jElement);
 				} else {
-					jQuery(this.container + " ." + this.itemListClassName).append(jElement);
+					jQuery(this.container + " ." + (isNew ? this.newItemListClassName : this.itemListClassName)).append(jElement);
 				}
 				jQuery(jElement).slideDown(this.animationDuration);
 			} else {
 				if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
-					jQuery(this.container + " ." + this.itemListClassName).prepend(jElement);
+					jQuery(this.container + " ." + this.newItemListClassName).prepend(jElement);
 				} else {
-					jQuery(this.container + " ." + this.itemListClassName).append(jElement);
+					jQuery(this.container + " ." + (isNew ? this.newItemListClassName : this.itemListClassName)).append(jElement);
 				}
 			}
 
 			if (!dontUpdateBundleFormState && $.fn['scrollTo']) {	// scroll to newly added bundle
-				jQuery(this.container + " ." + this.itemListClassName).scrollTo("999999px", 250);
+				jQuery(this.container + " ." + this.newItemListClassName).scrollTo("999999px", 250);
 			}
 
 			if (this.onInitializeItem && (initialValues && !initialValues['_handleAsNew'])) {

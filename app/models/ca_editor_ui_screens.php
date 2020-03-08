@@ -1096,6 +1096,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "275px", 'height' => 1,
 								'label' => _t('Default effective date'),
 								'description' => _t('Default effective date value for newly added relationships. Leave blank if you do not wish to set an effective date.')
+							),
+							'numItemsPerPage' => array(
+								'formatType' => FT_NUMBER,
+								'displayType' => DT_FIELD,
+								'default' => 100,
+								'width' => "275px", 'height' => 1,
+								'label' => _t('Number of items to load per page'),
+								'description' => _t('Maximum number of relationships to render on initial load.')
 							)
 						);
 					}

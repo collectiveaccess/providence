@@ -1181,7 +1181,7 @@
         /**
          *
          */
-        public function getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null) {		
+        public function getBundleFormValuesForRepresentations($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null) {		
             foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
                 $pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
             }

@@ -534,16 +534,16 @@
 	/** 
 	 *
 	 */
-	function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values) {
+	function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $placement_id) {
 		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => null, 'showOnlyIn' => 'editor_relationship_bundle']);
 		if(!is_array($va_formats)) { $va_formats = []; }
 		$vs_pk = $pt_related->primaryKey();
 		
 		$va_ids = [];
 		
-		foreach($pa_initial_values as $vn_relation_id => $va_info) {
-			$va_ids[$vn_relation_id] = $va_info[$vs_pk];
-		}
+		// foreach($pa_initial_values as $vn_relation_id => $va_info) {
+// 			$va_ids[$vn_relation_id] = $va_info[$vs_pk];
+// 		}
 		
 		$va_options = [];
 		if (sizeof($va_formats) > 0) {
@@ -575,7 +575,7 @@
 			<script type='text/javascript'>
 				function caGetExport{$ps_id_prefix}() {
 					var s = jQuery('#{$ps_id_prefix}_reportList').val();
-					var f = jQuery('<form id=\"caTempExportForm\" action=\"{$vs_url}/export_format/' + s + '\" method=\"post\" style=\"display:none;\"><textarea name=\"ids\">".json_encode($va_ids)."</textarea></form>');
+					var f = jQuery('<form id=\"caTempExportForm\" action=\"{$vs_url}/export_format/' + s + '\" method=\"post\" style=\"display:none;\"><input type=\"hidden\" name=\"placement_id\" value=\"{$placement_id}\"></form>');
 					jQuery('body #caTempExportForm').replaceWith(f).hide();
 					f.submit();
 				}
