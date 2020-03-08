@@ -30,6 +30,7 @@
 	$t_instance 		= $this->getVar('t_instance');
 	$t_item 			= $this->getVar('t_item');				// entity
 	$t_item_rel 		= $this->getVar('t_item_rel');
+	$t_subject 			= $this->getVar('t_subject');
 	$va_settings 		= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
