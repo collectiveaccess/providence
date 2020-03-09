@@ -117,9 +117,11 @@ var caUI = caUI || {};
 		}
 
 		that.appendToInitialValues = function(initialValues) {
-			jQuery.each(initialValues, function(i, v) {
-				that.initialValues[i] = v;
-				that.addToBundle(i, v, true);
+			var sort_order = initialValues.sort;
+			var data = initialValues.data;
+			jQuery.each(sort_order, function(i, v) {
+				that.initialValues[v] = data[v];
+				that.addToBundle(v, data[v], true);
 				return true;
 			});
 			that.updateBundleFormState();
@@ -154,8 +156,8 @@ var caUI = caUI || {};
 
 			var msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
 			jQuery(that.container + " ." + that.itemListClassName).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
-			jQuery(that.container + " ." + that.itemListClassName).off().on('click', '.caItemLoadNextBundles', function(e) {
-				jQuery(that.container + " ." + that.itemListClassName).off(); // remove handler to prevent repeated calls
+			jQuery(that.container + " ." + that.itemListClassName).off('click').off('scroll').on('click', '.caItemLoadNextBundles', function(e) {
+				jQuery(that.container + " ." + that.itemListClassName).off('click'); // remove handler to prevent repeated calls
 				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').show(); // show loading indicator
 				that.loadNextValues();
 				e.preventDefault();

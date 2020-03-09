@@ -2975,7 +2975,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		} elseif (sizeof($va_items = $this->getRelatedItems($ps_related_table, array_merge($va_get_related_opts, ['start' => caGetOption('start', $pa_options, 0), 'limit' => $limit])))) {
 			// Show full list
 			
-			$va_opts['relatedItems'] = $va_items;
+			$va_opts['relatedItems'] = caSortArrayByKeyInValue($va_items, ['rank']);
 			if ($vb_is_many_many) {
 				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
 				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
@@ -5317,7 +5317,7 @@ if (!$vb_batch) {
 					$vs_direction = $va_tmp[0];
 				}
 				
-				$vs_effective_daterange = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_effective_date".$va_rel_item[$vs_key], pString);
+				//$vs_effective_daterange = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_effective_date".$va_rel_item[$vs_key], pString);
 				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
 					
 				if ($this->numErrors()) {
@@ -5412,7 +5412,7 @@ if (!$vb_batch) {
 		
 		return true;
  	}
-
+ 	# ------------------------------------------------------
 	/**
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_form_prefix

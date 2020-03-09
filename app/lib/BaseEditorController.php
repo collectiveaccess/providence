@@ -1627,8 +1627,10 @@ class BaseEditorController extends ActionController {
 		if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
 
 		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+		
+		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true));
 
-		$this->response->addContent(json_encode($t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true))));
+		$this->response->addContent(json_encode(['sort' => array_keys($d), 'data' => $d]));
 	}
 	# ------------------------------------------------------------------
 	/**
