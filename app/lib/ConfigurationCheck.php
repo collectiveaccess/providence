@@ -376,7 +376,7 @@ final class ConfigurationCheck {
 	private static function _baseGuesses() {
 		return [
 			str_replace("/index.php", "", str_replace("\\", "/", $_SERVER["SCRIPT_FILENAME"])),
-			$_SERVER['SCRIPT_FILENAME'] ? pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3)
+			$_SERVER['SCRIPT_FILENAME'] ? pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3))
 		];
 	}
 	# -------------------------------------------------------
