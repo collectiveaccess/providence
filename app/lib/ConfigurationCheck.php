@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -341,15 +341,15 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	public static function caUrlRootQuickCheck() {
-		$probably_correct_bases =  self::_urlRootGuesses();
+		$possible_url_roots =  self::_urlRootGuesses();
 		
 		if (caGetOSFamily() === OS_WIN32) {	// Windows paths are case insensitive
-			if(!in_array(strtolower(__CA_URL_ROOT__), array_map(function($v) { return strtolower($v); }, $probably_correct_bases))) {
-				self::addError(_t("It looks like the __CA_URL_ROOT__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. We came up with this suggestion because you accessed this script via &quot;&lt;your_hostname&gt;%2&quot;.",$vs_probably_correct_urlroot,$vs_script_name));
+			if(!in_array(strtolower(__CA_URL_ROOT__), array_map(function($v) { return strtolower($v); }, $possible_url_roots))) {
+				self::addError(_t("It looks like the __CA_URL_ROOT__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;.",$possible_url_roots[0]));
 			}
 		} else {
-			if(!in_array(__CA_URL_ROOT__, $probably_correct_bases)) {
-				self::addError(_t("It looks like the __CA_URL_ROOT__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. We came up with this suggestion because you accessed this script via &quot;&lt;your_hostname&gt;%2&quot;. Note that paths are case sensitive.",$vs_probably_correct_urlroot,$vs_script_name));
+			if(!in_array(__CA_URL_ROOT__, $possible_url_roots)) {
+				self::addError(_t("It looks like the __CA_URL_ROOT__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. Note that paths are case sensitive.",$possible_url_roots[0]));
 			}
 		}
 		return true;
@@ -359,15 +359,15 @@ final class ConfigurationCheck {
 	 * I suspect that the application would die before we even reach this check if the base dir is messed up?
 	 */
 	public static function caBaseDirQuickCheck() {
-		$probably_correct_bases = self::_baseGuesses();
+		$possible_bases = self::_baseGuesses();
 
 		if (caGetOSFamily() === OS_WIN32) {	// Windows paths are case insensitive
-			if(!in_array(strtolower(__CA_URL_ROOT__), array_map(function($v) { return strtolower($v); }, $probably_correct_bases))) {
-				self::addError(_t("It looks like the __CA_BASE_DIR__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. We came up with this suggestion because the location of this script is &quot;%2&quot;.",$vs_probably_correct_base,$vs_script_filename));
+			if(!in_array(strtolower(__CA_BASE_DIR__), array_map(function($v) { return strtolower($v); }, $possible_bases))) {
+				self::addError(_t("It looks like the __CA_BASE_DIR__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;.",$possible_bases[0]));
 			}
 		} else {
-			if(!in_array(__CA_URL_ROOT__, $probably_correct_bases)) {
-				self::addError(_t("It looks like the __CA_BASE_DIR__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. We came up with this suggestion because the location of this script is &quot;%2&quot;. Note that paths are case sensitive.",$vs_probably_correct_base,$vs_script_filename));
+			if(!in_array(__CA_BASE_DIR__, $possible_bases)) {
+				self::addError(_t("It looks like the __CA_BASE_DIR__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. Note that paths are case sensitive.",$possible_bases[0]));
 			}
 		}
 		return true;
