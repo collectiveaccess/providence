@@ -341,15 +341,14 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	public static function caUrlRootQuickCheck() {
-		$vs_script_name = str_replace("\\", "/", $_SERVER["SCRIPT_NAME"]);
-		$vs_probably_correct_urlroot = str_replace("/index.php", "", $vs_script_name);
+		$probably_correct_bases =  self::_urlRootGuesses();
 		
 		if (caGetOSFamily() === OS_WIN32) {	// Windows paths are case insensitive
-			if(strcasecmp($vs_probably_correct_urlroot, __CA_URL_ROOT__) != 0) {
+			if(!in_array(strtolower(__CA_URL_ROOT__), array_map(function($v) { return strtolower($v); }, $probably_correct_bases))) {
 				self::addError(_t("It looks like the __CA_URL_ROOT__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. We came up with this suggestion because you accessed this script via &quot;&lt;your_hostname&gt;%2&quot;.",$vs_probably_correct_urlroot,$vs_script_name));
 			}
 		} else {
-			if(!($vs_probably_correct_urlroot == __CA_URL_ROOT__)) {
+			if(!in_array(__CA_URL_ROOT__, $probably_correct_bases)) {
 				self::addError(_t("It looks like the __CA_URL_ROOT__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. We came up with this suggestion because you accessed this script via &quot;&lt;your_hostname&gt;%2&quot;. Note that paths are case sensitive.",$vs_probably_correct_urlroot,$vs_script_name));
 			}
 		}
@@ -360,19 +359,32 @@ final class ConfigurationCheck {
 	 * I suspect that the application would die before we even reach this check if the base dir is messed up?
 	 */
 	public static function caBaseDirQuickCheck() {
-		$vs_script_filename = str_replace("\\", "/", $_SERVER["SCRIPT_FILENAME"]);
-		$vs_probably_correct_base = str_replace("/index.php", "", $vs_script_filename);
+		$probably_correct_bases = self::_baseGuesses();
 
 		if (caGetOSFamily() === OS_WIN32) {	// Windows paths are case insensitive
-			if(strcasecmp($vs_probably_correct_base, __CA_BASE_DIR__) != 0) {
+			if(!in_array(strtolower(__CA_URL_ROOT__), array_map(function($v) { return strtolower($v); }, $probably_correct_bases))) {
 				self::addError(_t("It looks like the __CA_BASE_DIR__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. We came up with this suggestion because the location of this script is &quot;%2&quot;.",$vs_probably_correct_base,$vs_script_filename));
 			}
 		} else {
-			if(!($vs_probably_correct_base == __CA_BASE_DIR__)) {
+			if(!in_array(__CA_URL_ROOT__, $probably_correct_bases)) {
 				self::addError(_t("It looks like the __CA_BASE_DIR__ variable in your setup.php is not set correctly. Please try to set it to &quot;%1&quot;. We came up with this suggestion because the location of this script is &quot;%2&quot;. Note that paths are case sensitive.",$vs_probably_correct_base,$vs_script_filename));
 			}
 		}
 		return true;
+	}
+	# -------------------------------------------------------
+	private static function _baseGuesses() {
+		return [
+			str_replace("/index.php", "", str_replace("\\", "/", $_SERVER["SCRIPT_FILENAME"])),
+			join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3))
+		];
+	}
+	# -------------------------------------------------------
+	private static function _urlRootGuesses() {
+		return [
+			str_replace("/index.php", "", str_replace("\\", "/", $_SERVER["SCRIPT_NAME"])),
+			str_replace(isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '', '', __CA_BASE_DIR__)
+		];
 	}
 	# -------------------------------------------------------
 	public static function PHPModuleRequirementQuickCheck() {
