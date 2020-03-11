@@ -253,15 +253,23 @@ var caUI = caUI || {};
 		
 		options.sort = function(key, label) {
 			var indexedValues = {};
-			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .labelInfo'), function(k, v) {
-				var id_string = jQuery(v).attr('id');
-				if (id_string) {
-					var matches = /_([\d]+)$/.exec(id_string);
-					indexedValues[parseInt(matches[1])] = v;
-				}
-				jQuery(v).detach();
-			});
+// 			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .labelInfo'), function(k, v) {
+// 				var id_string = jQuery(v).attr('id');
+// 				if (id_string) {
+// 					var matches = /_([\d]+)$/.exec(id_string);
+// 					indexedValues[parseInt(matches[1])] = v;
+// 				}
+// 				jQuery(v).detach();
+// 			});
 
+
+			console.log("w", caBundleUpdateManager);
+			if (caBundleUpdateManager) {
+				caBundleUpdateManager.reloadBundleByPlacementID(that.placementID);
+				console.log("UPDATE", that);
+			}
+			return;
+			
 			var sortUrl = that.sortUrl; // + '/sortKeys/' + key;
 			var sortedValues = {};
 			
@@ -272,7 +280,7 @@ var caUI = caUI || {};
 			jQuery.ajax({
 				url: sortUrl,
 				type: 'POST',
-				data: { 'ids': Object.keys(indexedValues).join(','), 'sortDirection': sortDirection, 'sortKeys': key },
+				data: { 'placement_id': that.placementID, 'primary_table': that.interstitialPrimaryTable, 'primary_id': that.interstitialPrimaryID, 'sortDirection': sortDirection, 'sortKeys': key },
 				dataType: 'json',
 				async: false,
 				success: function(data) {

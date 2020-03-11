@@ -2755,10 +2755,30 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 
-		$vs_table_name = $this->getRequest()->getParameter('table', pString);
-		$t_instance = Datamodel::getInstance($vs_table_name, true);
-
-		$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
+		if ($placement_id = $this->getRequest()->getParameter('placement_id', pInteger)) {
+			$vn_primary_table = $this->getRequest()->getParameter('primary_table', pString);
+			$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
+			
+			// Generate list of related items from editor UI placement when defined	...
+			//
+			// TODO: convert the entire related list UI mess to use passed placement_id's rather than giant lists of related IDs
+			// For now support both placement_ids and passed ID lists
+			$placement = new ca_editor_ui_bundle_placements($placement_id);
+			if (!$placement->isLoaded()) {
+				throw new ApplicationException(_('Invalid placement_id'));
+			}
+			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
+	
+			if (!($t_instance->load($vn_primary_id))) { 
+				throw new ApplicationException(_('Invalid id'));
+			}
+			$va_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+		} else {
+		
+			$vs_table_name = $this->getRequest()->getParameter('table', pString);
+			$t_instance = Datamodel::getInstance($vs_table_name, true);
+			$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
+		}
 		$va_sort_keys = explode(',', $this->getRequest()->getParameter('sortKeys', pString));
 
 		if(!($vs_sort_direction = strtolower($this->getRequest()->getParameter('sortDirection', pString))) || !in_array($vs_sort_direction, array('asc', 'desc'))) {
