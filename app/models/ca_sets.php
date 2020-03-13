@@ -530,6 +530,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			publicUsers =
 	 *			name = 
 	 *          byUser = return sets grouped by user with access. The array will be key'ed by sortable user name. Each entry includes a 'user' array with information about the user and a 'sets' array with the list of sets that user has access to. [Default is false]
+	 *          codes = 
+	 *          includeItems = 
 	 *          item_id = Get set that contains specified item_id
 	 *
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
@@ -544,6 +546,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$pb_omit_counts = isset($pa_options['omitCounts']) ? (bool)$pa_options['omitCounts'] : false;
 		$ps_set_name = isset($pa_options['name']) ? $pa_options['name'] : null;
 		$pn_item_id = isset($pa_options['item_id']) ? (int)$pa_options['item_id'] : null;
+		$codes = caGetOption('codes', $pa_options, null);
+		if ($codes && !is_array($codes)) { $codes = [$codes]; }
+		
+		$include_items = caGetOption('includeItems', $pa_options, false);
 		
 		$pb_by_user = caGetOption('byUser', $pa_options, null);
 		
@@ -570,6 +576,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if ($vn_table_num) {
 			$va_sql_wheres[] = "(cs.table_num = ?)";
 			$va_sql_params[] = (int)$vn_table_num;
+		}
+		
+		if(is_array($codes) && sizeof($codes)) {
+		    $va_sql_wheres[] = "(cs.set_code IN (?))";
+			$va_sql_params[] = $codes;
 		}
 		
 		if ($pb_set_ids_only) {
@@ -756,6 +767,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			
 			$t_list = new ca_lists();
 			while($qr_res->nextRow()) {
+				$set_id = $qr_res->get('set_id');
 				$vn_table_num = $qr_res->get('table_num');
 				if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {
 					$vs_set_type = $va_type_name_cache[$vn_table_num] = $this->getSetContentTypeName($vn_table_num, array('number' => 'plural'));
@@ -763,7 +775,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
 				
-				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
+				$extras = ['item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type];
+				
+				if ($include_items) {
+				    $extras['items'] = caExtractValuesByUserLocale(ca_sets::getItemsForSet($set_id, $pa_options));
+				}
+				
+				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), $extras);
 			}
 			
 			if ($pb_by_user) {
@@ -846,7 +864,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function getAvailableSetsForItem($pm_table_name_or_num, $pn_row_id, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!($va_full_set_list = $this->getSets(array_merge(array('table' => $pm_table_name_or_num), $pa_options)))) { return null; }
-		if (!($va_current_set_list = $this->getSetsForItem($pm_table_name_or_num, $pn_row_id, $pa_options))) { return null; }
+		if (!($va_current_set_list = $this->getSetsForItem($pm_table_name_or_num, $pn_row_id, $pa_options))) { $va_current_set_list = []; }
 		
 		$va_available_sets = array();
 		foreach($va_full_set_list as $vn_set_id => $va_set_info_by_locale) {
@@ -1633,6 +1651,18 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
+	 *
+	 */
+	public static function getItemsForSet($set_code_or_id, $options=null) {
+	    if(!($t_set = ca_sets::find(['set_code' => $set_code_or_id], ['returnAs' => 'firstModelInstance']))) {
+	        $t_set = ca_sets::find(['set_id' => $set_code_or_id], ['returnAs' => 'firstModelInstance']);
+	    }
+	    if (!$t_set) { return null; }
+	    
+	    return $t_set->getItems($options);
+	} 
+	# ------------------------------------------------------
+	/**
 	 * Returns information on items in current set
 	 *
 	 * @param array $pa_options Optional array of options. Supported options are:
@@ -1841,6 +1871,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				
 				if (isset($pa_options['thumbnailVersions']) && is_array($pa_options['thumbnailVersions'])) {
 					foreach($pa_options['thumbnailVersions'] as $vs_version) {
+						$va_row['representation_tag_'.$vs_version.'_as_link'] = caDetailLink($qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text)), '', $t_rel_table->tableName(), $qr_res->get("ca_set_items.row_id"));
 						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text));
 						$va_row['representation_url_'.$vs_version] = $qr_res->getMediaUrl('media', $vs_version);
 						$va_row['representation_path_'.$vs_version] = $qr_res->getMediaPath('media', $vs_version);
@@ -2463,23 +2494,49 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			if($pa_options["parents_only"]){
 				$va_sql_wheres[] = "cs.parent_id IS NULL";
 			}
-			$qr_res = $o_db->query("SELECT cs.set_id, cs.user_id, type_id, cu.fname, cu.lname
+			$qr_res = $o_db->query("SELECT COUNT(*) c, cs.set_id, cs.user_id, cs.type_id, cs.table_num, cu.fname, cu.lname
 									FROM ca_sets cs
 									INNER JOIN ca_users AS cu ON cs.user_id = cu.user_id
+									LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 									".join("\n", $va_extra_joins)."
 									".(sizeof($va_sql_wheres) ? "WHERE " : "")." ".join(" AND ", $va_sql_wheres)."
+									
+									GROUP BY cs.set_id
 									", $va_sql_params);
-			$va_sets = array();
-			$t_list = new ca_lists();
+			$va_sets = [];
+
+			$set_ids = $qr_res->getAllFieldValues('set_id');
+			
+			if (sizeof($set_ids) > 0) {
+                $labels = $this->getPreferredDisplayLabelsForIDs($set_ids);
+
+                $qr_counts = $o_db->query("
+                    SELECT COUNT(*) c, cs.set_id
+                    FROM ca_sets cs
+                    INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
+                    WHERE cs.set_id IN (?) 
+                    GROUP BY cs.set_id
+                ",[$set_ids]);
+                $counts = [];
+                while($qr_counts->nextRow()) {
+                    $counts[$qr_counts->get('set_id')] = (int)$qr_counts->get('c');
+                }
+            } else {
+                $labels = $counts = [];
+            }
+
+			$qr_res->seek(0);
 			while($qr_res->nextRow()) {
 				$vn_table_num = $qr_res->get('table_num');
-				if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {
-					$vs_set_type = $va_type_name_cache[$vn_table_num] = $this->getSetContentTypeName($vn_table_num, array('number' => 'plural'));
-				}
+				$set_id = $qr_res->get('set_id');
 				
-				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
+				$vs_type = $this->getTypeName($qr_res->get('type_id'));
 			
-				$va_sets[$qr_res->get('set_id')] = array_merge($qr_res->getRow(), array('set_content_type' => $vs_set_type, 'set_type' => $vs_type));
+				$va_sets[$set_id = $qr_res->get('set_id')] = array_merge($qr_res->getRow(), [
+					'set_content_type' => $vs_set_type, 'set_type' => $vs_type,
+					'label' => $labels[$set_id], 'count' => isset($counts[$set_id]) ? $counts[$set_id] : 0,
+					'item_type_singular' => Datamodel::getTableProperty($vn_table_num, 'NAME_SINGULAR'), 'item_type_plural' => Datamodel::getTableProperty($vn_table_num, 'NAME_PLURAL')
+				]);
 			}
 			return $va_sets;
 		}else{
@@ -2816,6 +2873,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	 *		versions = Considers set existance subject to acccess the user. 
 	 *		access = Consider set to exist if user has at least the specified access level. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then a set will be considered to exist if the user has at least read access. 
 	 *		checkAccess = Consider set to exist if it has a public access level with the specified values. Can be a single value or array if you wish to filter on multiple public access values.
+	 *		template =
 	 *			
 	 * @return array
 	 */
@@ -2826,8 +2884,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			return false;
 		}
 		
-		$reps = array_values(caExtractValuesByUserLocale($set->getItems(['thumbnailVersions' => caGetOption('versions', $options, ['large'])])));
-		return array_map(function($r) { return ['key' => md5($r['representation_url_large']), 'url' => $r['representation_url_large'], 'caption' => $r['set_item_label']]; }, $reps);
+		$reps = array_values(caExtractValuesByUserLocale($set->getItems(['thumbnailVersions' => caGetOption('versions', $options, ['large']), 'template' => caGetOption('template', $options, null)])));
+		return array_map(function($r) { return ['key' => md5($r['representation_url_large']), 'url' => $r['representation_url_large'], 'media_tag' => $r['representation_tag_large'], 'media_tag_link' => $r['representation_tag_large_as_link'], 'caption' => $r['displayTemplate']]; }, $reps);
 	}
 	# ---------------------------------------------------------------
 	/**

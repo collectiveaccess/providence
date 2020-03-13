@@ -98,7 +98,7 @@
                 if ($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id)) {
                     $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null));
 			    } else {
-			        $this->opa_sorts = [];
+			        $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request));
 			    }
 			} else {
 			    $this->opa_sorts = [];
@@ -141,7 +141,8 @@
 
 			// Set display options
 			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
-			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
+			
+			if(($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) && ($t_instance::typeCodeForID($vn_type_id))) { // occurrence searches are inherently type-restricted
 				$va_display_options['restrictToTypes'] = array($vn_type_id);
 			}
 
@@ -447,9 +448,8 @@
 						$vn_left = $vn_left_margin;
 							
 						switch($vs_renderer) {
-							case 'PhantomJS':
 							case 'wkhtmltopdf':
-								// WebKit based renderers (PhantomJS, wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
+								// WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
 								$vn_page_count++;
 								$vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
 								break;
@@ -849,7 +849,7 @@
 								// make sure we don't download representations the user isn't allowed to read
 								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $vn_representation_id)){ continue; }
 								
-								switch($this->request->user->getPreference('downloaded_file_naming')) {
+								switch($mode = $this->request->user->getPreference([$this->ops_tablename.'_downloaded_file_naming', 'downloaded_file_naming'])) {
 									case 'idno':
 										$vs_filename = "{$vs_idno_proc}{$vn_index}.{$vs_ext}";
 										break;
@@ -861,16 +861,21 @@
 										break;
 									case 'original_name':
 									default:
-										if ($vs_original_name) {
+										if (strpos($mode, "^") !== false) { // template
+											$vs_filename = caProcessTemplateForIDs($mode, 'ca_object_representations', [$vn_representation_id]);
+										} elseif ($vs_original_name) {
 											$va_tmp = explode('.', $vs_original_name);
 											if (sizeof($va_tmp) > 1) { 
 												if (strlen($vs_filename_ext = array_pop($va_tmp)) < 3) {
 													$va_tmp[] = $vs_filename_ext;
 												}
 											}
-											$vs_filename = join('_', $va_tmp)."{$vn_index}.{$vs_ext}";
+											$vs_filename = join('_', $va_tmp)."{$vn_index}";
 										} else {
-											$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}.{$vs_ext}";
+											$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}";
+										}
+										if (!preg_match("!\.{$vs_ext}!", $vs_filename)) {
+											$vs_filename .= ".{$vs_ext}";
 										}
 										break;
 								}

@@ -59,4 +59,3 @@ class CSVDelimitedDataReader extends BaseDelimitedDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

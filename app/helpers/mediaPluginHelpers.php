@@ -388,39 +388,6 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Detects if PhantomJS (http://www.phantomjs.org) is installed in the given path.
-	 * @param string $ps_phantomjs_path path to PhantomJS executable
-	 * @return boolean 
-	 */
-	function caPhantomJSInstalled($ps_phantomjs_path=null) {
-		//if (CompositeCache::contains("mediahelper_phantomjs_installed")) { return CompositeCache::fetch("mediahelper_phantomjs_installed"); }
-		if(!$ps_phantomjs_path) { $ps_phantomjs_path = caGetExternalApplicationPath('phantomjs'); }
-		
-		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !@is_readable($ps_phantomjs_path)) { 
-			CompositeCache::save("mediahelper_phantomjs_installed", false);
-			return false; 
-		}
-		
-		if (!@is_readable($ps_phantomjs_path)) { 
-			CompositeCache::save("mediahelper_phantomjs_installed", false);
-			return false; 
-		}
-		
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_phantomjs_installed", true);
-			return true; 
-		}	// don't try exec test on Windows
-		
-		exec($ps_phantomjs_path." > /dev/null", $va_output, $vn_return);
-		
-		$vb_ret = ($vn_return == 0);
-		
-		CompositeCache::save("mediahelper_phantomjs_installed", $vb_ret);
-		
-		return $vb_ret;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
 	 * Detects if wkhtmltopdf (http://www.wkhtmltopdf.org) is installed in the given path.
 	 * @param string $ps_wkhtmltopdf_path path to wkhtmltopdf executable
 	 * @return boolean 

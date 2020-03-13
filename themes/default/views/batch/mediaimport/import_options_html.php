@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -292,7 +292,7 @@
 		</div>
 
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print (($this->getVar('ca_object_representations_mapping_list_count') > 1) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 1)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
+			<span class="formLabelText"><?php print (($this->getVar('ca_object_representations_mapping_list_count') > 0) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 0)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList" >
 						<div style='padding:10px 0px 10px 10px;'>
@@ -304,7 +304,7 @@
 											print "<br/>";
 											print _t('Set %1 access to<br/>%2', caGetTableDisplayName($t_instance->tableName(), false), $t_instance->htmlFormElement('access', '', array('name' => $t_instance->tableName().'_access')));
 
-											if ($this->getVar($t_instance->tableName().'_mapping_list_count') > 1) {
+											if ($this->getVar($t_instance->tableName().'_mapping_list_count') > 0) {
 												print "<br/>";
 												print _t('Extract embedded metadata into %1 using mapping<br/>%2', caGetTableDisplayName($t_instance->tableName(), false), $this->getVar($t_instance->tableName().'_mapping_list'));
 											}
@@ -316,7 +316,7 @@
 											print "<br/>";
 											print _t('Set representation access to<br/>%1', $t_rep->htmlFormElement('access', '', array('name' => 'ca_object_representations_access')));
 
-											if ($this->getVar('ca_object_representations_mapping_list_count') > 1) {
+											if ($this->getVar('ca_object_representations_mapping_list_count') > 0) {
 												print "<br/>";
 												print _t('Extract embedded metadata into representation using mapping<br/>%1', $this->getVar('ca_object_representations_mapping_list'));
 											}

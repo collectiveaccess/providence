@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,7 +72,7 @@ var caUI = caUI || {};
 			classNameContainerReadOnly: 'hierarchyBrowserContainerReadOnly',
 
 			currentSelectionDisplayID: '',
-			currentSelectionDisplayFormat: '%1',
+			currentSelectionDisplayFormat: '<ifdef code="hierarchy">^hierarchy%delimiter=_➜_ ➜ </ifdef>^current',
 			currentSelectionIDID: '',
 			allowSelection: true,
 
@@ -104,6 +104,7 @@ var caUI = caUI || {};
 
 			indicator: '',	
 			indicatorUrl: '',
+			incrementalLoadIndicator: '',
 			
 			editButtonIcon: '',
 			disabledButtonIcon: '',
@@ -118,13 +119,15 @@ var caUI = caUI || {};
 			_numOpenLoads: 0,					// number of AJAX loads pending
 			_openLoadsForLevel:[],				// counts of loads pending per-level
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
-			_queuedLoadsForLevel: [],			// parameters for pending loads per-level
+			_queuedLoadsForLevel: [],			// parameters for pending loads per-level,
+			_foundSelectedForLevel: [],			// track whether selected has been loaded for each level,
 
 			maxItemsPerHierarchyLevelPage: 500,	// maximum number of items to load at one time into a level
 			
 			selectMultiple: ''
 		}, options);
 		
+		if (!that.incrementalLoadIndicator) { that.incrementalLoadIndicator = that.indicator; }
 		
 		that.useAsRootID = parseInt(that.useAsRootID);
 		
@@ -165,7 +168,9 @@ var caUI = caUI || {};
 			that.levelDivs = [];
 			that.levelLists = [];
 			that.selectedItemIDs = [];
-			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
+			that._foundSelectedForLevel = [];
+
+			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {	// get ancestors for item_id and load each level
 				if (typeof data === 'object') {
 					var dataAsList = [];
 					for(var o in data) {
@@ -208,8 +213,6 @@ var caUI = caUI || {};
 					jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
 				}
 			});
-			
-		
 		}
 		// --------------------------------------------------------------------------------
 		// 
@@ -282,6 +285,8 @@ var caUI = caUI || {};
 				var selected_item_id_cl = selected_item_id;
 
 				jQuery('#' + newLevelDivID).scroll(function () {
+					if(that.isLoadingLevel) { return; }		// Don't do scroll-based loading if we're already loading a level... otherwise we can get bouncy loads 
+															// (Eg. lots of pages loaded at the same time)
 					if((jQuery('#' + newLevelDivID).scrollTop() + jQuery('#' + newLevelDivID).height()) >= (jQuery('#' + newLevelDivID).prop('scrollHeight'))) {
 						var p = jQuery('#' + newLevelDivID).data("page");
 
@@ -295,10 +300,11 @@ var caUI = caUI || {};
 
 						jQuery('#' + newLevelDivID).data("page", p);
 						var l = jQuery('#' + newLevelDivID).data('level');
-
+					
 						if (!that._pageLoadsForLevel[l] || !that._pageLoadsForLevel[l][p]) {		// is page loaded?
 							if (!that._pageLoadsForLevel[l]) { that._pageLoadsForLevel[l] = []; }
 							that._pageLoadsForLevel[l][p] = true;
+							that.showIncrementalLoadIndicator(newLevelListID);
 							that.queueHierarchyLevelDataLoad(l, item_id, false, newLevelDivID, newLevelListID, selected_item_id_cl, p * that.maxItemsPerHierarchyLevelPage, true);
 						}
 					}
@@ -382,7 +388,6 @@ var caUI = caUI || {};
 		that.loadHierarchyLevelData = function() {
 			if (that.isLoadingLevel) { return; }
 			that.isLoadingLevel = true;
-
 			var id_list = [];
 			var itemIDsToLevelInfo = {};
 			var is_init = false;
@@ -426,8 +431,11 @@ var caUI = caUI || {};
 			if (!id_list.length) { that.isLoadingLevel = false; return; }
 
 			var start = 0;
+			var onLoadSelection = null;
+			
 			jQuery.getJSON(that.levelDataUrl, { id: id_list.join(';'), bundle: that.bundle, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : '', start: start * that.maxItemsPerHierarchyLevelPage, max: (that.uiStyle == 'vertical') ? 0 : that.maxItemsPerHierarchyLevelPage }, function(dataForLevels) {
 				var longestLevel = 0;
+				
 				jQuery.each(dataForLevels, function(key, data) {
 					var tmp = key.split(":");
 					var item_id = tmp[0];
@@ -453,6 +461,7 @@ var caUI = caUI || {};
 							}
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
+								that._foundSelectedForLevel[level] = true;
 							}
 							if (that.uiStyle == 'horizontal') {
 								var moreButton = '';
@@ -578,12 +587,6 @@ var caUI = caUI || {};
 									return false;
 								});
 
-								// if (that.readOnly) {
-// 									jQuery('#' + newLevelListID + " li:first a").click(function() {
-// 										return false;
-// 									});
-// 								}
-
 								if ((that.allowExtractionFromHierarchy) && (that.extractFromHierarchyButtonIcon)) {
 									jQuery('#' + newLevelListID + ' #hierBrowser_' + that.name + '_extract').unbind('click.extract').bind('click.extract', function() {
 										that.extractItemFromHierarchy(item['item_id'], item);
@@ -596,8 +599,10 @@ var caUI = caUI || {};
 							}
 							// Pass item_id to caller if required
 							if (is_init && that.selectOnLoad && that.onSelection && item['item_id'] == selected_item_id) {
-								var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
-								that.onSelection(item['item_id'], item.parent_id, item.name, formattedDisplayString, item.type_id);
+								onLoadSelection = {
+									'level': level,
+									'item': item
+								};
 							}
 						} else {
 							if (item.parent_id && (that.selectedItemIDs.length == 0)) { that.selectedItemIDs[0] = item.parent_id; }
@@ -633,15 +638,19 @@ var caUI = caUI || {};
 					}
 
 					var dontDoSelectAndScroll = false;
-					if (!foundSelected && that.selectedItemIDs[level]) {
+					if (!foundSelected && that.selectedItemIDs[level] && !that._foundSelectedForLevel[level]) {
 						var p = jQuery('#' + newLevelDivID).data("page");
 						if (!p || (p < 0)) { p = 0; }
 						
 						jQuery('#' + newLevelDivID).data("page", p);
+						
 						if (parseInt(jQuery('#' + newLevelDivID).data('itemCount')) > parseInt(p * that.maxItemsPerHierarchyLevelPage)) {
 							if (!that._pageLoadsForLevel[level] || !that._pageLoadsForLevel[level][p + 1]) {		// is page loaded?
 								if (!that._pageLoadsForLevel[level]) { that._pageLoadsForLevel[level] = []; }
-								that._pageLoadsForLevel[level][p] = true;
+								that._pageLoadsForLevel[level][p+1] = true;
+								jQuery('#' + newLevelDivID).data("page", p+1);
+								
+								console.log("add to queue", item_id, newLevelDivID, p + 1);
 								that.queueHierarchyLevelDataLoad(level, item_id, false, newLevelDivID, newLevelListID, selected_item_id, (p + 1) * that.maxItemsPerHierarchyLevelPage, true);
 
 								dontDoSelectAndScroll = true;	// we're still trying to find selected item so don't try to select it
@@ -691,13 +700,10 @@ var caUI = caUI || {};
 
 					that._numOpenLoads--;
 					that._openLoadsForLevel[level] = false;
+					that.hideIncrementalLoadIndicator(newLevelListID);
 
 					that.updateTypeMenu();
 
-					// Handle loading of long hierarchy levels via ajax on scroll
-					if (that.uiStyle == 'horizontal') {
-
-					}
 					that.hideIndicator(newLevelDivID);
 				});
 
@@ -725,9 +731,12 @@ var caUI = caUI || {};
 				}
 
 				that.isLoadingLevel = false;
-
-				// try to load any outstanding level pages
-				that.loadHierarchyLevelData();
+				that.loadHierarchyLevelData();	// try to load additional queued data requests
+				
+				// update current selection info after initial load if required
+				if(onLoadSelection) {
+					that.selectItem(onLoadSelection.level, onLoadSelection.item.item_id, onLoadSelection.item.parent_id, onLoadSelection.item.has_children, onLoadSelection.item);
+				}
 			});
 		}
 		// --------------------------------------------------------------------------------
@@ -741,7 +750,7 @@ var caUI = caUI || {};
 				while(l >= 0) {
 					if (that.displayCurrentSelectionOnLoad && (jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).length > 0)) {
 						if (that.currentSelectionDisplayID) {
-							jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayFormat.replace('%1', jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).html()));
+							jQuery('#' + that.currentSelectionDisplayID).html(that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
 						}
 						break;
 					}
@@ -780,7 +789,7 @@ var caUI = caUI || {};
 			if (!that.allowSelection) return false;
 
 			// set current selection display
-			var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
+			var formattedDisplayString = that._getCurrentSelectionStr(item, level);
 
 			if (that.currentSelectionDisplayID) {
 				jQuery('#' + that.currentSelectionDisplayID).html(formattedDisplayString);
@@ -861,14 +870,40 @@ var caUI = caUI || {};
 			return;
 		}
 		// --------------------------------------------------------------------------------
-		// Remove spinning progress indicator from specified level <div>
+		// Remove spinning progress indicator in specified level <div>
 		//
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.hideIndicator = function(newLevelDivID) {
 			if (!that.indicatorUrl && !that.indicator) { return; }
 			
-			jQuery('#' + newLevelDivID + ' div._indicator').hide();		// hide loading indicator
+			jQuery('#' + newLevelDivID + ' div._indicator').remove();		// hide loading indicator
+		}
+		// --------------------------------------------------------------------------------
+		// Display spinning progress indicator in specified level list during partial load
+		//
+		// @param string newLevelDivID The ID of the <div> containing the level
+		//
+		that.showIncrementalLoadIndicator = function(newLevelListID) {
+			if (that.uiStyle == 'horizontal') {
+				var indicator = document.createElement('li');
+				jQuery(indicator).append(that.incrementalLoadIndicator);
+				indicator.className = '_indicator';
+			
+				jQuery('#' + newLevelListID).append(indicator);
+			}
+		}
+		// --------------------------------------------------------------------------------
+		// Remove spinning progress indicator from specified level list during partial load
+		//
+		// @param string newLevelDivID The ID of the <div> containing the level
+		//
+		that.hideIncrementalLoadIndicator = function(newLevelListID) {
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			if (that.uiStyle == 'horizontal') {
+				jQuery('#' + newLevelListID + ' li._indicator').remove();		// hide loading indicator
+			}
 		}
 		// --------------------------------------------------------------------------------
 		// Returns database id (the primary key in the database, *NOT* the DOM ID) of currently selected item
@@ -881,6 +916,46 @@ var caUI = caUI || {};
 		//
 		that.numLevels = function() {
 			return that.levelDivs.length;
+		}
+		// --------------------------------------------------------------------------------
+		// Generate display string for current location display. If a template is defined (in that.currentSelectionDisplayFormat)
+		// and caDisplayTemplateParser has been loaded we will evaluate the template with the following tags: ^current (current location name),
+		// ^parent (name of parent of current location) and ^hierarchy (the full hierarchical path to the current location). For hierarchy
+		// a delimiter can be set by appending a delimiter option (Eg. ^hierarchy%delimiter=;)
+		//
+		that._getCurrentSelectionStr = function(item, level) {
+			if(caDisplayTemplateParser.processTemplate) {
+				var str = that.currentSelectionDisplayFormat;
+				var tags = caDisplayTemplateParser.getTagList(str);
+				
+				var hierarchy = '';
+				for(var i in tags) {
+					var tag = tags[i];
+					var opts = caDisplayTemplateParser.parseTagOpts(tag);
+					if (opts.tag === 'hierarchy') {
+						var h = [];
+						var delimiter = opts['delimiter'];
+						if (!delimiter) { delimiter = '; '; }
+						
+						var l = level - 1;
+						var parent_id = item.parent_id;
+						
+						while((l >= 0) && (parent_id > 0)) {
+							var pitem = jQuery('#hierBrowser_' + that.name + '_level_' + (l) + '_item_' + parent_id).data('item');
+							if (!pitem) { break; }
+							h.push(pitem.name);
+							l--;
+							parent_id = pitem.parent_id;
+						}
+						hierarchy = h.reverse().join(delimiter);
+					}
+				}
+					
+				var parent = jQuery('#hierBrowser_' + that.name + '_level_' + (level-1) + '_item_' + item.parent_id).data('item');
+			
+				return caDisplayTemplateParser.processTemplate(str, { 'current': jQuery("<div>" + item.name + "</div>").text(), 'parent': jQuery("<div>" + (parent ? parent.name : '') + "</div>").text(), 'hierarchy': jQuery("<div>" + hierarchy + "</div>").text() });
+			}
+			return item.name;
 		}
 		// --------------------------------------------------------------------------------
 		// END method definitions

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -282,6 +282,9 @@
  			$va_errors = $this->request->getActionErrors();							// all errors from all sources
  			$va_general_errors = $this->request->getActionErrors('general');		// just "general" errors - ones that are not attached to a specific part of the form
  			
+ 			if(!is_array($va_errors)) { $va_errors = []; }
+ 			if(!is_array($va_general_errors)) { $va_general_errors = []; }
+ 			
  			if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
  				$va_error_list = array();
  				$vb_no_save_error = false;
@@ -313,7 +316,7 @@
  				$va_name = array();
  			}
  			$va_response = array(
- 				'status' => sizeof($va_error_list) ? 10 : 0,
+ 				'status' => (is_array($va_error_list) && sizeof($va_error_list)) ? 10 : 0,
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,

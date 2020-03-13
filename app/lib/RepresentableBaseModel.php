@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2019 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -693,7 +693,7 @@
 		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *      label = Preferred label in specified locale for representation. [Default is null]
 		 *      type_id = Type to force representation to. [Default is null]
-		 * @return bool True on success, false on failure, null if no row has been loaded into the object model 
+		 * @return bool ca_object_representations model instance on success, false on failure, null if no row has been loaded into the object model 
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
@@ -790,7 +790,7 @@
 					}
 				}
 			
-				return true;
+				return $t_rep;
 			}
 			return false;
 		}

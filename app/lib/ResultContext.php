@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2019 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -508,7 +508,7 @@
 				if (isset($va_context['type_id']) && ($va_context['type_id'] != $pn_type_id)) {
 					$pb_type_restriction_has_changed = true;
 				}
-				$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
+				$_GET['type_id'] = $pn_type_id;								// push type_id into globals so breadcrumb trail can pick it up
 				return $pn_type_id;
 			}
 			return null;
@@ -524,7 +524,11 @@
 		 * @return int - type_id as set
 		 */
 		public function setTypeRestriction($pn_type_id) {
-			return $this->setContextValue('type_id', $pn_type_id);
+			$t = $this->ops_table_name;
+			if ($t::typeCodeForID($pn_type_id)) {	// make sure type is valid for current table
+				return $this->setContextValue('type_id', $pn_type_id);
+			} 
+			return null;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -539,7 +543,15 @@
  				if ($va_context = $this->getContext()) {
 					$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"];
 				}
- 				if (!$pn_display_id) { $pn_display_id = null; }
+ 				if (!$pn_display_id) { 
+ 					// Try to guess
+ 					require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
+ 					$t_display = new ca_bundle_displays();
+ 					if (is_array($displays = $t_display->getBundleDisplays(['restrictToTypes' => $pn_type_id ? [$pn_type_id] : null]))) {
+ 						$pn_display_id = array_shift(array_keys($displays));
+ 					}
+ 					if (!$pn_display_id) { $pn_display_id = null; }
+ 				}
  				return $pn_display_id;
  			} else {
  				// page set by request param so set context

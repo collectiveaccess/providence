@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * TEIReader.php : 
+ * MediaInfoDataReader.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,8 @@
 require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
-class TEIReader extends BaseXMLDataReader {
-	# -------------------------------------------------------
+class MediaInfoDataReader extends BaseXMLDataReader {
+# -------------------------------------------------------
 	/**
 	 * Skip root tag when evaluating XPath?
 	 *
@@ -49,7 +49,7 @@ class TEIReader extends BaseXMLDataReader {
 	/**
 	 * XML namespace URL used by data
 	 */
-	protected $ops_xml_namespace = 'http://www.tei-c.org/ns/1.0';
+	protected $ops_xml_namespace = 'http://www.pbcore.org/PBCore/PBCoreNamespace.html';
 	
 	/**
 	 * XML namespace prefix to pair with namespace URL
@@ -61,12 +61,12 @@ class TEIReader extends BaseXMLDataReader {
 	/**
 	 * XPath to select data for reading
 	 */
-	protected $ops_xpath = '//n:TEI';
+	protected $ops_xpath = '//n:pbcoreInstantiationDocument';
 	
 	/**
 	 * 
 	 */
-	protected $ops_root_tag = 'TEI';
+	protected $ops_root_tag = 'pbcoreInstantiationDocument';
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
@@ -88,14 +88,72 @@ class TEIReader extends BaseXMLDataReader {
 	/**
 	 *
 	 */
-	public function __construct($ps_source=null, $pa_options=null){
-		parent::__construct($ps_source, $pa_options);
+	public function __construct($source=null, $options=null){
+		parent::__construct($source, $options);
 		
-		$this->ops_title = _t('Text Encoding Initiative (TEI) XML Reader');
-		$this->ops_display_name = _t('Text Encoding Initiative (TEI) XML');
-		$this->ops_description = _t('Reads Text Encoding Initiative (TEI) XML files');
+		$this->ops_title = _t('MediaInfo data reader');
+		$this->ops_display_name = _t('MediaInfo embedded media metadata');
+		$this->ops_description = _t('Reads embedded media metadata using MediaInfo');
 		
-		$this->opa_formats = array('tei');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = ['mediainfo'];	// must be all lowercase to allow for case-insensitive matching
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param string $ps_source
+	 * @param array $pa_options Options include:
+	 *		basePath = 
+	 *		fromString = XML string to parse if $ps_source is set to null. [Default is null]
+	 *
+	 * @return bool
+	 */
+	public function read($ps_source, $pa_options=null) {		
+		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
+		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
+	
+		parent::read($ps_source, $pa_options);
+		
+		if ($ps_base_path = caGetOption('basePath', $pa_options, null)) {
+			$va_tmp = explode("/", $ps_base_path);
+			$this->ops_base_root_tag = array_pop($va_tmp);
+			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
+		}
+		
+		if ($ps_source) { 			
+			exec($ps_mediainfo_path." --Output=PBCore2 ".caEscapeShellArg($ps_source), $va_output, $vn_return);
+			if (!is_array($va_output) || !sizeof($va_output)) { return null; }
+			$xml = join("\n", $va_output);
+			
+			if(!($this->opo_xml = @DOMDocument::loadXML($xml))) { return false;}
+		} elseif($str = caGetOption('fromString', $pa_options, null))  {
+			if(!($this->opo_xml = @DOMDocument::loadXML($str))) { return false;}
+		} else {
+			return false;
+		}
+		try {
+			$this->opo_xpath = new DOMXPath($this->opo_xml);
+		} catch (Exception $e) {
+			return false;
+		}
+		
+		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
+			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
+		}
+		
+		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath, null, $this->opb_register_root_tag);
+
+		$this->opn_current_row = 0;
+		return $this->opo_handle ? true : false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
+	public function getInputType() {
+		return __CA_DATA_READER_INPUT_FILE__;
 	}
 	# -------------------------------------------------------
 }

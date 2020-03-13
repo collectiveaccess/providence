@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,7 @@ require_once(__CA_LIB_DIR__."/Zend/Registry.php");
 
 require_once(__CA_LIB_DIR__."/Utils/Debug.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/logHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/requestHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/initializeLocale.php");
 

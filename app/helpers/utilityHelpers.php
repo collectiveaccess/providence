@@ -641,9 +641,15 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * 
 	 *
+	 * @param array $options Options include:
+	 *		useAppTmpDir = Return application temporary directory rather than system tmp directory in all cases. [Default is false]
+	 *
+	 * @return string
 	 */
-	function caGetTempDirPath() {
+	function caGetTempDirPath($options=null) {
+		if(caGetOption('useAppTmpDir', $options, false)) { return __CA_APP_DIR__."/tmp"; }
 		if (function_exists('sys_get_temp_dir')) {
 			return sys_get_temp_dir();
 		}
@@ -670,8 +676,8 @@ function caFileIsIncludable($ps_file) {
 		}
 	}
 	# ----------------------------------------
-	function caGetTempFileName($ps_prefix, $ps_extension = null) {
-		$vs_tmp = tempnam(caGetTempDirPath(), $ps_prefix);
+	function caGetTempFileName($ps_prefix, $ps_extension = null, $options=null) {
+		$vs_tmp = tempnam(caGetTempDirPath($options), $ps_prefix);
 		@unlink($vs_tmp);
 
 		if($ps_extension && strlen($ps_extension)>0) {
@@ -4188,7 +4194,12 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Copy file from URL and write to destination in file system.
 	 *
+	 * @param string $url
+	 * @param string $dest File path to write data to. If omitted a temporary file will be created. [Default is null]
+	 * 
+	 * @return string Path to file
 	 */
 	function caFetchFileFromUrl($url, $dest=null) {
 		$tmp_file = $dest ? $dest : tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
@@ -4212,7 +4223,12 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Compare two arrays. Returns true if both are arrays that contain the same items in any order.
 	 *
+	 * @param array $a First array
+	 * @param array $b Second array
+	 *
+	 * @return bool
 	 */
 	function caArraysAreEqual($a, $b) {
 		return (
@@ -4221,5 +4237,22 @@ function caFileIsIncludable($ps_file) {
 			 && count($a) == count($b) 
 			 && array_diff($a, $b) === array_diff($b, $a)
 		);
+	}
+	# ----------------------------------------
+	/**
+	 * Returns number of times idno is used.
+	 *
+	 * @param string $idno The idno to search for.
+	 * @param string $table Table to look for idno in. If omitted "ca_objects" is assumed. [Default is null]
+	 *
+	 * @return int Number of times idno is used for records in specified table.
+	 */
+	function caIdnoUseCount($idno, $table=null) {
+		if (!$table || !($instance = Datamodel::getInstance($table, true))) {
+			$table = 'ca_objects';
+			$instance = Datamodel::getInstance($table, true);
+		}
+		if (!($idno_fld = $instance->getProperty('ID_NUMBERING_ID_FIELD'))) { return false; }
+		return $table::find($x=[$idno_fld => $idno], ['returnAs' => 'count']);
 	}
 	# ----------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,6 +50,8 @@
 	$vn_left_sub_type_id = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
 	$vn_right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
 	$rel_types          = $t_item_rel->getRelationshipTypes($vn_left_sub_type_id, $vn_right_sub_type_id);
+	
+	$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
 
 	// don't allow editing if user doesn't have access to any of the representation types
 	if(sizeof(caGetTypeListForUser('ca_object_representations', array('access' => __CA_BUNDLE_ACCESS_EDIT__)))  < 1) {
@@ -180,7 +182,7 @@
     }
     if(!$dont_show_transcribe) {
 ?>
-									<br/><h3><?php print _t('Transcribable?'); ?></h3> {is_transcribable_display}
+									<h3><?php print _t('Transcribable?'); ?></h3> {is_transcribable_display}
 									<h3><?php print _t('Transcriptions'); ?></h3> {num_transcriptions}
 <?php
     }
@@ -228,6 +230,20 @@
     }
 ?>					
 								<br class="clear"/>
+<?php
+	if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
+?>
+	<div class="caObjectRepresentationDetailEditorElement">
+		<div class="formLabel">
+<?php
+			print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
+?>
+		</div>
+	</div>
+	<br class="clear"/>
+<?php
+	}
+?>
 							
 								<div class="caObjectRepresentationDetailEditorHeading"><?php print _t('Update media'); ?></div>
 								<table id="{fieldNamePrefix}upload_options{n}">
@@ -413,11 +429,25 @@
     }
     if (!$dont_show_transcribe) {
 ?>
-				<br/><div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('is_transcribable', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}is_transcribable_{n}", 'name' => "{fieldNamePrefix}is_transcribable_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
+				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('is_transcribable', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}is_transcribable_{n}", 'name' => "{fieldNamePrefix}is_transcribable_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
 <?php
     }
 ?>		
 				<br class="clear"/>
+<?php
+	if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
+?>
+	<div class="caObjectRepresentationDetailEditorElement">
+		<div class="formLabel">
+<?php
+			print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
+?>
+		</div>
+	</div>
+	<br class="clear"/>
+<?php
+	}
+?>
 			</div>
 			
 			<table id="{fieldNamePrefix}upload_options{n}">
@@ -494,7 +524,7 @@
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
+            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($va_settings, ['includeInterstitialSortsFor' => $t_subject->tableName()]));
 
 		    if (($vn_rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";

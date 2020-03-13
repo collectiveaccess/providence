@@ -773,15 +773,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$is_new = true;
 		
-		if (!is_array($pa_options) || !isset($pa_options['logDirectory']) || !$pa_options['logDirectory'] || !file_exists($pa_options['logDirectory'])) {
-			if (!($pa_options['logDirectory'] = $o_config->get('batch_metadata_import_log_directory'))) {
-				$pa_options['logDirectory'] = ".";
-			}
-		}
-		
-		if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
-			throw new ApplicationException(_t("Cannot write log to %1. Please check the directory's permissions and retry loading.", $pa_options['logDirectory']));
-		}
+		$o_log = caGetImportLogger($pa_options['logDirectory'], $pa_options['logLevel']);
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
 		$o_sheet = $o_excel->getActiveSheet();
@@ -1310,20 +1302,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
-			if (!caGetOption('logToTempDirectoryIfLogDirectoryIsNotWritable', $pa_options, false)) {
-				ca_data_importers::logImportError(_t("Cannot write log to %1. Please check the directory permissions and retry the import.", $pa_options['logDirectory']));
-				return false;
-			} else {
-				$vs_original_log_directory = $pa_options['logDirectory'];
-				ca_data_importers::logImportError(_t("Cannot write log to %1. Writing log to %2 instead.", $vs_original_log_directory, $pa_options['logDirectory'] = caGetTempDirPath()));
-				if (!($o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null)) {
-					ca_data_importers::logImportError(_t("Cannot write log to either %1 or %2. Please check the directory permissions and retry the import.", $vs_original_log_directory, $pa_options['logDirectory']));
-					return false;
-				}
-			}
-		}
-		$o_log = new KLogger($pa_options['logDirectory'], $pa_options['logLevel']);
+		$o_log = caGetImportLogger($pa_options['logDirectory'], $pa_options['logLevel']);
 		
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
 		
@@ -1668,18 +1647,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($vs_idno && isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'])) {
 					$vs_idno .= $va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'];
 				}
+										
+				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions']) && is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
+					$vs_idno = self::_processAppliedRegexes($o_reader, $va_mapping_items[$vn_idno_mapping_item_id], 0, $va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'], $vs_idno, $va_row, $va_row_with_replacements);
+				}
 				
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'])) {
 					$vs_idno = DisplayTemplateParser::processTemplate($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'], $va_row_with_replacements, ['getFrom' => $o_reader]);
-				}
-										
-				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions']) && is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
-					if(is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
-						foreach($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'] as $vn_regex_index => $va_regex) {
-							if (!strlen($va_regex['match'])) { continue; }
-							$vs_idno = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i') , $va_regex['replaceWith'], $vs_idno);
-						}
-					}
 				}
 				
 				if ($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'] && $va_mapping_items[$vn_idno_mapping_item_id]['settings']['treatAsIdentifiersForMultipleRows']) {
@@ -1964,17 +1938,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vm_val = $vm_parsed_val;
 								}
 							}
-							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
-								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row_with_replacements, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logReference' => $vs_idno]))), array('getFrom' => $o_reader));
-							}
 						
 							if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
-								if(is_array($va_item['settings']['applyRegularExpressions'])) {
-									foreach($va_item['settings']['applyRegularExpressions'] as $vn_regex_index => $va_regex) {
-										if (!strlen($va_regex['match'])) { continue; }
-										$vm_val = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i') , $va_regex['replaceWith'], $vm_val);
-									}
-								}
+								$vm_val = self::_processAppliedRegexes($o_reader, $va_item, $vn_i, $va_item['settings']['applyRegularExpressions'], $vm_val, $va_row, $va_row_with_replacements);
+							}
+							
+							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
+								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row_with_replacements, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logReference' => $vs_idno]))), array('getFrom' => $o_reader));
 							}
 						
 							$va_vals[$vn_i] = $vm_val;
@@ -2329,8 +2299,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Process data in subject record
 				//
-				// print_r($va_content_tree);
-				// die("END\n\n");
+				//print_r($va_content_tree);
+				//die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
@@ -3292,6 +3262,60 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		return $va_extracted_values;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of available importers as array suitable for generating an HTML <select>
+	 *
+	 * @param array $options Options inclide:
+	 *		tables = Tables to return importers for (Ex. ['ca_objects', 'ca_object_representations']). If not specified all importers are returned. [Default is null]
+	 *		formats = Limit returned importers to specified formats (Ex. ['exif', 'mediainfo']). If not specified all formats are returned. [Default is null]
+	 * 		nullOption = Include a no-value option using the specified text as label. [Default is null]
+	 */
+	public static function getImportersAsHTMLOptions($options=null) {
+		if (is_array($tables = caGetOption('tables', $options, null))) {
+			$tables = array_filter(array_map(function($v) { return (int)Datamodel::getTableNum($v); }, $tables), function($v) { return (bool)$v; });;
+		}
+		
+		$importer_list = ca_data_importers::getImporters(null, $options);
+		
+		$importer_options = ($n = caGetOption('nullOption', $options, null)) ? [$n => ''] : [];
+		foreach($importer_list as $importer_id => $importer_info) {
+			if (!is_array($tables) || !sizeof($tables) || in_array((int)$importer_info['table_num'], $tables, true)) { 
+				$importer_options[$importer_info['label']] = $importer_id;
+			} 
+		}
+		
+		return $importer_options;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _processAppliedRegexes($o_reader, $item, $index, $regexes, $val, &$row, &$row_with_replacements) {
+		if(is_array($regexes)) {
+			foreach($regexes as $regex_index => $regex_info) {
+				if (!strlen($regex_info['match'])) { continue; }
+				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
+				
+				if (!preg_match($regex, $val, $matches)) { continue; }
+			
+				foreach($matches as $mi => $m) {
+					if($mi === 0) { continue; }
+					if ($o_reader->valuesCanRepeat()) {
+						$row_with_replacements[$item['source'].":{$mi}"][$index] = $row[$item['source'.":{$mi}"]][$index] = $row[mb_strtolower($item['source'].":{$mi}")][$index] = $m;
+					} else {
+						$row_with_replacements[$item['source'].":{$mi}"] = $row[$item['source'.":{$mi}"]] = $row[mb_strtolower($item['source'].":{$mi}")] = $m;
+					}
+				}
+				
+				if($regex_info['replaceWith']) {
+					$val = preg_replace($regex , $regex_info['replaceWith'], $val);
+				}
+			}
+		}
+		
+		return $val;
 	}
 	# ------------------------------------------------------
 }
