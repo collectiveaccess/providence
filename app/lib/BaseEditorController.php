@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1983,6 +1983,12 @@ class BaseEditorController extends ActionController {
 				}
 			}
 			
+			if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+				$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
+				unset($va_display_info['use_mirador_for_image_list_length_at_least']);
+				unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
+			}
+			
 			if(!$vn_subject_id) {
 				if (is_array($va_subject_ids = $t_instance->get($t_subject->tableName().'.'.$t_subject->primaryKey(), array('returnAsArray' => true))) && sizeof($va_subject_ids)) {
 					$vn_subject_id = array_shift($va_subject_ids);
@@ -2072,6 +2078,12 @@ class BaseEditorController extends ActionController {
 							$va_display_info['viewer'] = $vs_viewer_name = 'Mirador';
 						}
 					}
+				}
+				
+				if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+					$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
+					unset($va_display_info['use_mirador_for_image_list_length_at_least']);
+					unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
 				}
 				
 				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));

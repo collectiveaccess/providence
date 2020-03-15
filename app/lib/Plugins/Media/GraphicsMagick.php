@@ -862,9 +862,8 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	}
 	# ------------------------------------------------
 	/** 
-	 *
+	 * This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	 */
-	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
 		if(!caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) { return false; }
 
