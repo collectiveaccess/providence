@@ -1213,7 +1213,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 			
 				// rewrite file name to use originally uploaded name
-				if(array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+				if(isset($va_metadata['EXIF']) && is_array($va_metadata['EXIF']) && array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
 					$va_metadata['EXIF']['FILE']['FileName'] = $f;
 				}
 
