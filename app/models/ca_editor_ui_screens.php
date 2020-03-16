@@ -1202,6 +1202,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 
+					if ($vs_bundle == 'ca_objects') {
+						$va_additional_settings['showReturnToHomeLocations'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'default' => 0,
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Show <em>return to home locations</em> control?'),
+							'description' => _t('If checked a control will be displayed allowing all related objects to be returned to their home locations (if set).')
+						);
+					}
 					if ($vs_bundle == 'ca_object_lots') {
 						$va_additional_settings['display_template'] = array(
 							'formatType' => FT_TEXT,
