@@ -85,7 +85,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 		'displayType' => DT_CHECKBOXES,
 		'width' => 30, 'height' => 1,
 		'takesLocale' => false,
-		'default' => '0',
+		'default' => 0,
 		'label' => _t('Read only?'),
 		'description' => _t('If checked, field will not be editable.')
 	),

@@ -172,7 +172,81 @@
 		
 		return $vs_tag;
 	}
-	 
+	# ---------------------------------------
+	/**
+	 * Return information for "find" controllers by controller name
+	 *
+	 * @param string $controller Name of controller
+	 *
+	 * @return array 
+	 */
+	function caFindControllerNameInfo($controller) {
+		if (CompositeCache::contains($controller, 'caFindControllerNameInfo')) {
+			return CompositeCache::fetch($controller, 'caFindControllerNameInfo');
+		}
+		if(!preg_match("!^([A-Z]{1}[a-z]+)(.*)$!", $controller, $m)) { 
+			CompositeCache::save($controller, null, 'caFindControllerNameInfo');
+			return null; 
+		}
+		
+		$find_type = $m[1];
+		$is_advanced = false;
+		if(preg_match("!^([A-Z]{1}[a-z]+)Advanced$!", $m[2], $madm)) { 
+			$table_desc = $madm[1];
+			$is_advanced = true;
+			$find_type .= 'Advanced';
+		} else {
+			$table_desc = $m[2];
+		}
+		
+		$table_map = [
+			'Objects' => 'ca_objects',
+			'Entities' => 'ca_entities',
+			'Places' => 'ca_places',
+			'Occurrences' => 'ca_occurrences',
+			'ObjectLots' => 'ca_object_lots',
+			'Collections' => 'ca_collections', 
+			'StorageLocations' => 'ca_storage_locations',
+			'ListItems' => 'ca_list_items',	
+			'ObjectRepresentations' => 'ca_object_representations',	
+			'RepresentationAnnotations' => 'ca_representation_annotations',	
+			'UserRepresentationAnnotations' => 'ca_user_representation_annotations',
+			'RelationshipTypes' => 'ca_relationship_types',	
+			'Loans' => 'ca_loans',	
+			'Movements' => 'ca_movements',	
+			'Tours' => 'ca_tours',	
+			'TourStops' => 'ca_tour_stops'	
+		];
+		
+		if(isset($table_map[$table_desc])) {
+			$table = $table_map[$table_desc];
+			
+			$config = Configuration::load();
+			$type_map = [
+				'Search' => caMakeTypeIDList($table, $config->get("{$table}_no_search_for_types")),
+				'SearchAdvanced' => caMakeTypeIDList($table, $config->get("{$table}_no_advanced_search_for_types")),
+				'Browse' => caMakeTypeIDList($table, $config->get("{$table}_no_browse_for_types")),
+			];
+		
+			$ret = [
+				'find_type' => $find_type,
+				'table' => $table,
+				'table_desc' => $table_desc,
+				'advanced' => $is_advanced,
+				'find_interface_restriction_configuration' => $type_map,
+				'controller_names' => [
+					'Search' => "Search{$table_desc}",
+					'SearchAdvanced' => "Search{$table_desc}Advanced",
+					'Browse' => "Browse{$table_desc}",
+					
+				]
+			];
+			CompositeCache::save($controller, $ret, 'caFindControllerNameInfo');
+			return $ret;
+		}
+		CompositeCache::save($controller, null, 'caFindControllerNameInfo');
+		return null;
+	}
 	# ---------------------------------------
 	/**
 	 * 
