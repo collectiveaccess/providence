@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,6 +56,9 @@
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
 		'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
 	);
+	
+	if(caGetOption('showCount', $va_settings, false)) { print ($count = $this->getVar('relationship_count')) ? "({$count})" : ''; }
+	
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {

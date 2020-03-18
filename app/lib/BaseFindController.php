@@ -849,7 +849,7 @@
 								// make sure we don't download representations the user isn't allowed to read
 								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $vn_representation_id)){ continue; }
 								
-								switch($this->request->user->getPreference('downloaded_file_naming')) {
+								switch($mode = $this->request->user->getPreference([$this->ops_tablename.'_downloaded_file_naming', 'downloaded_file_naming'])) {
 									case 'idno':
 										$vs_filename = "{$vs_idno_proc}{$vn_index}.{$vs_ext}";
 										break;
@@ -861,16 +861,21 @@
 										break;
 									case 'original_name':
 									default:
-										if ($vs_original_name) {
+										if (strpos($mode, "^") !== false) { // template
+											$vs_filename = caProcessTemplateForIDs($mode, 'ca_object_representations', [$vn_representation_id]);
+										} elseif ($vs_original_name) {
 											$va_tmp = explode('.', $vs_original_name);
 											if (sizeof($va_tmp) > 1) { 
 												if (strlen($vs_filename_ext = array_pop($va_tmp)) < 3) {
 													$va_tmp[] = $vs_filename_ext;
 												}
 											}
-											$vs_filename = join('_', $va_tmp)."{$vn_index}.{$vs_ext}";
+											$vs_filename = join('_', $va_tmp)."{$vn_index}";
 										} else {
-											$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}.{$vs_ext}";
+											$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}";
+										}
+										if (!preg_match("!\.{$vs_ext}!", $vs_filename)) {
+											$vs_filename .= ".{$vs_ext}";
 										}
 										break;
 								}
