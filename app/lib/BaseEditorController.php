@@ -1923,7 +1923,9 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-			
+		if(!$t_subject) { 
+			throw new ApplicationException(_t('Invalid id'));
+		}
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			//
 			// View FT_MEDIA attribute media 
@@ -2416,7 +2418,7 @@ class BaseEditorController extends ActionController {
 				$va_rep_info = $va_rep['info'][$ps_version];
 				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 				
-				switch($vs_mode = $this->request->config->get([$t_subject->tableName().'_downloaded_file_naming', 'downloaded_file_naming'])) {
+				switch($vs_mode = $this->request->config->get('downloaded_file_naming')) {
 					case 'idno':
 						$vs_file_name = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						break;
@@ -2429,7 +2431,14 @@ class BaseEditorController extends ActionController {
 					case 'original_name':
 					default:
 					    if (strpos($vs_mode, "^") !== false) { // template
-							$vs_file_name = caProcessTemplateForIDs($vs_mode, 'ca_object_representations', [$vn_representation_id]);
+					        $vals = [];
+					        foreach(array_merge($va_rep['info'], $va_rep_info) as $k => $v) {
+					            if(is_array($v)) { continue; }
+					            if ($k == 'original_filename') { $v = pathinfo($v, PATHINFO_FILENAME); }
+					            $vals[strtolower($k)] = preg_replace('![^A-Za-z0-9_\-]+!', '_', $v);
+					        }
+					        $vals['idno'] = $vs_idno_proc;
+				            $vs_file_name = caProcessTemplate($vs_mode, $vals);
 						} elseif (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
 							$va_tmp = explode('.', $va_rep['info']['original_filename']);
 							if (sizeof($va_tmp) > 1) {
@@ -2439,16 +2448,13 @@ class BaseEditorController extends ActionController {
 							}
 							$vs_file_name = join('_', $va_tmp);
 						} else {
-							$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c;
+							$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						}
 
 						if (isset($va_file_names[$vs_file_name.'.'.$va_rep_info['EXTENSION']])) {
 							$vs_file_name.= "_{$vn_c}";
 						}
-						
-						if (!preg_match("!\.{$va_rep_info['EXTENSION']}$!", $vs_file_name)) {
-							$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
-						}
+						$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
 						break;
 				}
 				
