@@ -203,7 +203,6 @@
 			$vn_attr_element_id = $t_attr->get('element_id');
 			
 			$va_attr_values = $t_attr->getAttributeValues();
-			
 			$element = null;
 			if (
 			    // this may return a false positive if the attribute is a container with media or file attributes, 
@@ -213,7 +212,7 @@
 			    // so if it looks like it may be a mismatch we do another, more costly, element calcuation to be sure
 			    is_array($elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }))
 			    &&    
-			    (sizeof($elements) !== (sizeof($pa_values) - 1))
+			    (sizeof($elements) !== sizeof($pa_values))
 			) {		// -1 to remove locale_id which is not in attribute values array
 				// Value arrays are different sizes - probably means the elements in the set have been reconfigured (sub-elements added or removed)
 				// so we need to force a save.
