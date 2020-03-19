@@ -161,7 +161,11 @@ class ExcelDataReader extends BaseDataReader {
 		if ($vm_ret = parent::get($pn_col, $pa_options)) { return $vm_ret; }
 		
 		if(!is_numeric($pn_col)) {
-			$pn_col = PHPExcel_Cell::columnIndexFromString($pn_col);
+		    try {
+			    $pn_col = PHPExcel_Cell::columnIndexFromString($pn_col);
+			} catch(Exception $e) {
+			    throw new ApplicationException(_t('Invalid Excel (XLSX) column specified \'%1\'', $pn_col));
+			}
 		}
 
 		if (is_array($this->opa_row_buf) && ((int)$pn_col > 0) && ((int)$pn_col <= sizeof($this->opa_row_buf))) {
