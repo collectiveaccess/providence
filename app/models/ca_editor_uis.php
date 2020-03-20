@@ -428,7 +428,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_user_groups
 						WHERE
-							group_id IN (?)
+							group_id IN (?) AND (access > 0)
 					)
 				)";
 				$va_params[] = array_keys($va_groups);
@@ -441,7 +441,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_roles
 						WHERE
-							role_id IN (?)
+							role_id IN (?) AND (access > 0)
 					)
 				)";
 				$va_params[] = array_keys($va_roles);
@@ -804,6 +804,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			
 			foreach($va_placements as $va_placement) {
 				if ($va_placement['bundle_name'] === $ps_bundle_name) {
+					return 'Screen'.$vn_screen_id;
+				} elseif(str_replace("ca_attribute_", "", $va_placement['bundle_name']) === $ps_bundle_name) {
 					return 'Screen'.$vn_screen_id;
 				}
 			}
