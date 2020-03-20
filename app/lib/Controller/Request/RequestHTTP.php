@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2019 Whirl-i-Gig
+ * Copyright 2007-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -525,6 +525,9 @@ class RequestHTTP extends Request {
 		return RequestHTTP::$html_purifier;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getParameter($pa_name, $pn_type, $ps_http_method=null, $pa_options=array()) {
 		if(!is_array($pa_name)) { $pa_name = [$pa_name]; }
 		
@@ -576,7 +579,9 @@ class RequestHTTP extends Request {
 					if(caGetOption('retainBackslashes', $pa_options, true)) {
 						$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
 					}
-					$vm_val = rawurldecode($vm_val);
+					if(caGetOption('urldecode', $pa_options, true)) {
+						$vm_val = rawurldecode($vm_val);
+					}
 					return $vm_val;
 				}
 				break;

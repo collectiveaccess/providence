@@ -1080,6 +1080,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Sort options'),
 								'description' => _t('Limits sort options on this bundle.')
 							),
+							'showCount' => array(
+								'formatType' => FT_NUMBER,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "10", 'height' => "1",
+								'takesLocale' => false,
+								'default' => 0,
+								'label' => _t('Show relationship count in header?'),
+								'description' => _t('If checked the number of relationships will be displayed in the header for the field.')
+							),
 							'effectiveDateDefault' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_FIELD,
