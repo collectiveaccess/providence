@@ -28,6 +28,8 @@
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "league/climate": ">=1.0.0",
     "opis/json-schema": "^1.0",
-    "onelogin/php-saml": ">=2.0"
+    "onelogin/php-saml": ">=2.0",
+    "caseyamcl/phpoaipmh": "^3.0",
+    "guzzlehttp/guzzle":   "^6.3"
   }
 }
