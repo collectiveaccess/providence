@@ -1404,7 +1404,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			if ($vn_limit && ($vn_i >= $vn_limit)) { break; }
 
 			$vn_pk_val = $po_result->get($t_instance->primaryKey());
-			$va_return[$vn_pk_val] = ca_data_exporters::exportRecord($ps_exporter_code,$vn_pk_val);
+			$va_return[$vn_pk_val] = ca_data_exporters::exportRecord($ps_exporter_code,$vn_pk_val, $pa_options);
 
 			$vn_i++;
 		}
@@ -1614,7 +1614,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logInfo(_t("Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]", $pn_item_id, $pn_table_num, $pn_record_id));
 
 		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
-		$t_instance = ca_data_exporters::loadInstanceByID($pn_record_id,$pn_table_num);
+		$t_instance = ca_data_exporters::loadInstanceByID($pn_record_id,$pn_table_num, $pa_options);
 
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
@@ -2218,7 +2218,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_table_num
 	 * @return BundlableLabelableBaseModelWithAttributes|bool|null
 	 */
-	static public function loadInstanceByID($pn_record_id,$pn_table_num) {
+	static public function loadInstanceByID($pn_record_id,$pn_table_num, $pa_options=null) {
 		if(sizeof(ca_data_exporters::$s_instance_cache)>10) {
 			array_shift(ca_data_exporters::$s_instance_cache);
 		}
@@ -2227,7 +2227,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id];
 		} else {
 			$t_instance = Datamodel::getInstanceByTableNum($pn_table_num);
-			if(!$t_instance->load($pn_record_id)) {
+			if (caGetOption('dontFilterByACL', $pa_options, false) && method_exists($t_instance, 'disableACL')) {
+				$t_instance->disableACL(true);
+			} 
+			
+			if(!$t_instance->load($pn_record_id, true)) {
 				return false;
 			}
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id] = $t_instance;

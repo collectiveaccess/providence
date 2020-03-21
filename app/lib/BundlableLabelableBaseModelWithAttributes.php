@@ -93,6 +93,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected $_rowAsSearchResult;
+	
+	/**
+	 *
+	 */
+	protected $disable_acl = false;
+	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
@@ -6961,11 +6967,21 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------		
 	/**
+	 * Temporarily disable ACL item-based access control for this instance
+	 *
+	 * @return bool True if model supports ACL, false if not
+	 */
+	public function disableACL($disabled=true) {
+		return $this->disable_acl = $disabled;
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
 	 * Checks if model supports ACL item-based access control
 	 *
 	 * @return bool True if model supports ACL, false if not
 	 */
 	public function supportsACL() {
+		if($this->disable_acl) { return false; }
 		if ($this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
