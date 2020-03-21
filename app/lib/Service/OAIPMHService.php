@@ -554,11 +554,11 @@ class OAIPMHService extends BaseService {
 			}
 		
 			// Export data using metadata mapping
-			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode($metadataPrefix), $qr_res, array('start' => $cursor, 'limit' => $listLimit));
+			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode($metadataPrefix), $qr_res, array('start' => $cursor, 'limit' => $listLimit, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 			if (is_array($va_items) && sizeof($va_items)) {
 				$va_timestamps = $t_change_log->getLastChangeTimestampsForIDs($vs_table, array_keys($va_items));
 				foreach($va_items as $vn_id => $vs_item_xml) {
-				
+					if(!$vs_item_xml) { continue; }
 					if ($vb_show_deleted && $va_deleted_items[$vn_id]) {
 						$headerData = array(
 							'identifier' => OaiIdentifier::itemToOaiId($vn_id),
