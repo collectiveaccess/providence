@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2018 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1501,7 +1501,8 @@
 					'_natural' => $natural_sort_label,
 					'ca_object_representations.preferred_labels.name_sort' => _t('name'),
 					'ca_object_representations.type_id' => _t('type'),
-					'ca_object_representations.idno_sort' => _t('idno')
+					'ca_object_representations.idno_sort' => _t('idno'),
+					'ca_object_representations.original_filename' => _t('file name')
 				);
 				break;
 			case 'ca_objects':
@@ -1590,6 +1591,12 @@
 				$pb_distinguish_interstitials = caGetOption('distinguishInterstitials', $pa_options, true);
 				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 					$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
+				}
+				
+				foreach(['is_primary'] as $f) {
+					if($t_rel->hasField($f)) {
+						$va_base_fields[$vs_relation_table.'.'.$f] = $t_rel->getFieldInfo($f, 'LABEL');
+					}
 				}
 			}
 			

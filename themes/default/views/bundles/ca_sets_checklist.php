@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,7 +51,7 @@
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$vn_table_num.'_sets', $va_settings);
 ?>
-<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?php print $vs_id_prefix; ?>_sets" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -95,7 +95,7 @@
 </div>
 			
 <script type="text/javascript">
-	caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>', {
+	caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>_sets', {
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['set_id'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,

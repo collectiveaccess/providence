@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -154,7 +154,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 			'prop' => 'pageimages|info|extracts',
 			'inprop' => 'url',
 			'piprop' => 'name|thumbnail',
-			'pithumbsize' => '200px',
+			'pithumbsize' => '200',
 			'format' => 'json'
 		);
 
