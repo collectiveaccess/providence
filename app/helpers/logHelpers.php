@@ -40,15 +40,42 @@
 	 * Return KLogger instance for import log
 	 *
 	 * @param array $options Options include:
-	 *		logDirectory = Directory containing logs. [Default is to use app.conf batch_metadata_import_log_directory value]
-	 *		logLevel = KLogger numeric constant of string code for log level. Valid string codes are DEBUG, NOTICE, WARN, ERR, CRIT, ALERT and INFO. [Default is INFO]
-	 *		logToTempDirectoryIfLogDirectoryIsNotWritable = Log to system temporary directory if configured log directory is not writable. [Default is false]
+	 *
+	 *                       logDirectory = Directory containing logs. [Default is to use app.conf
+	 *                       batch_metadata_import_log_directory value]
+	 *
+	 *                       logLevel = KLogger numeric constant of string code for log level. Valid string codes are
+	 *                       DEBUG, NOTICE, WARN, ERR, CRIT, ALERT and INFO. [Default is INFO]
+	 *
+	 *                       logToTempDirectoryIfLogDirectoryIsNotWritable = Log to system temporary directory if
+	 *                       configured log directory is not writable. [Default is false]
 	 *
 	 * @return KLogger instance
+	 * @throws ApplicationException
 	 */
 	function caGetImportLogger($options=null) {
+		return caGetLogger($options, 'batch_metadata_import_log_directory');
+	}
+
+	/**
+	 * Return KLogger instance for log
+	 *
+	 * @param array $options Options include:
+	 *
+	 *                       logDirectory = Directory containing logs. [Default is to use app.conf $ps_opt_name value]
+	 *
+	 *                       logLevel = KLogger numeric constant of string code for log level. Valid string codes
+	 *                       are DEBUG, NOTICE, WARN, ERR, CRIT, ALERT and INFO. [Default is INFO]
+	 *
+	 *                       logToTempDirectoryIfLogDirectoryIsNotWritable = Log to system temporary directory if
+	 *                       configured log directory is not writable. [Default is false]
+	 *
+	 * @return KLogger instance
+	 * @throws ApplicationException
+	 */
+	function caGetLogger($options=null, $ps_opt_name=null) {
 		$config = Configuration::load();
-		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $config->get('batch_metadata_import_log_directory')))) {
+		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $config->get($ps_opt_name)))) {
 			$log_dir = '.';
 		}
 		
