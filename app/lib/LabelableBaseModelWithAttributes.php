@@ -504,6 +504,7 @@
 		 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false]
  	 	 *		includeDeleted = If set deleted rows are returned in result set. [Default is false]
+ 	 	 *		dontFilterByACL = If set don't enforce item-level ACL rules. [Default is false]
  	 	 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
@@ -981,11 +982,13 @@
 		
 			$vs_pk = $t_instance->primaryKey();
 		
+			$dont_filter_by_acl = caGetOption('dontFilterByACL', $pa_options, false);
 			
 			switch($ps_return_as) {
 				case 'firstmodelinstance':
 					while($qr_res->nextRow()) {
 						$o_instance = new $vs_table;
+						if($dont_filter_by_acl && method_exists($t_instance, "disableACL")) { $o_instance->disableACL(true); }
 						if ($o_instance->load($qr_res->get($vs_pk))) {
 							return $o_instance;
 						}
@@ -996,6 +999,7 @@
 					$va_instances = [];
 					while($qr_res->nextRow()) {
 						$o_instance = new $vs_table;
+						if($dont_filter_by_acl && method_exists($t_instance, "disableACL")) { $o_instance->disableACL(true); }
 						if ($o_instance->load($qr_res->get($vs_pk))) {
 							$va_instances[] = $o_instance;
 							$vn_c++;

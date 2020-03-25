@@ -1530,7 +1530,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Get data for current row
 			//
-			$va_row = array_replace($o_reader->getRow(), $va_environment);
+			$va_row = $va_raw_row = array_replace($o_reader->getRow(), $va_environment);
 			
 			// replace values (EXPERIMENTAL)
 			$va_row_with_replacements = $va_row;
@@ -1857,6 +1857,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
 				
 				
+						$use_raw = caGetOption('useRawValuesWhenTestingExpression', $va_item['settings'], true);
+				
 						// Get location in content tree for addition of new content
 						$va_item_dest = explode(".",  $va_item['destination']);
 						if ((sizeof($va_item_dest) == 2) && Datamodel::tableExists($va_item_dest[0]) && ($va_item_dest[1] == 'related')) {
@@ -1938,6 +1940,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vm_val = $vm_parsed_val;
 								}
 							}
+							
+							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
+								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row_with_replacements, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logReference' => $vs_idno]))), array('getFrom' => $o_reader));
+							}
+							
+							if (isset($va_item['settings']['skipIfExpression']) && strlen(trim($va_item['settings']['skipIfExpression']))) {
+								try {
+								    if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipIfExpression'], $use_raw ? $va_raw_row : $va_row_with_replacements)) {
+										$o_log->logInfo(_t('[%1] Skipped mapping because skipIfExpression %2 is true', $vs_idno, $va_item['settings']['skipIfExpression']));
+										continue(2);
+									}
+								} catch (Exception $e) {
+									$o_log->logDebug("[%1] Could not evaluate expression %2: %3", $vs_idno, $va_item['settings']['skipIfExpression'], $e->getMessage());
+								}
+							}
 						
 							if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
 								$vm_val = self::_processAppliedRegexes($o_reader, $va_item, $vn_i, $va_item['settings']['applyRegularExpressions'], $vm_val, $va_row, $va_row_with_replacements);
@@ -1987,7 +2004,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (isset($va_item['settings']['skipRowIfExpression']) && strlen(trim($va_item['settings']['skipRowIfExpression']))) {
 									
 								try {
-									if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipRowIfExpression'], $va_row_with_replacements)) {
+									if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipRowIfExpression'], $use_raw ? $va_raw_row : $va_row_with_replacements)) {
 										$o_log->logInfo(_t('[%1] Skipped row %2 because expression %3 is true', $vs_idno, $vn_row, $va_item['settings']['skipRowIfExpression']));
 										continue(4);
 									}
@@ -2010,7 +2027,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							if (isset($va_item['settings']['skipGroupIfExpression']) && strlen(trim($va_item['settings']['skipGroupIfExpression']))) {
 								try {
-								   if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipGroupIfExpression'], $va_row_with_replacements)) {
+								   if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipGroupIfExpression'], $use_raw ? $va_raw_row : $va_row_with_replacements)) {
 										$o_log->logInfo(_t('[%1] Skipped group %2 because skipRowIfExpression %3 is true', $vs_idno, $vn_group_id, $va_item['settings']['skipGroupIfExpression']));
 										continue(3);
 									}
@@ -2031,16 +2048,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								continue(3);
 							}
 						
-							if (isset($va_item['settings']['skipIfExpression']) && strlen(trim($va_item['settings']['skipIfExpression']))) {
-								try {
-								    if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipIfExpression'], $va_row_with_replacements)) {
-										$o_log->logInfo(_t('[%1] Skipped mapping because skipIfExpression %2 is true', $vs_idno, $va_item['settings']['skipIfExpression']));
-										continue(2);
-									}
-								} catch (Exception $e) {
-									$o_log->logDebug("[%1] Could not evaluate expression %2: %3", $vs_idno, $va_item['settings']['skipIfExpression'], $e->getMessage());
-								}
-							}
 						
                             //
                             // If type is was set in content tree then use that instead of what was specified initially
@@ -2299,7 +2306,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Process data in subject record
 				//
-				//print_r($va_content_tree);
+				// print_r($va_content_tree);
 				//die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
