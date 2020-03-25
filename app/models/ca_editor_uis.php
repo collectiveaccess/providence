@@ -428,7 +428,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_user_groups
 						WHERE
-							group_id IN (?)
+							group_id IN (?) AND (access > 0)
 					)
 				)";
 				$va_params[] = array_keys($va_groups);
@@ -441,7 +441,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_roles
 						WHERE
-							role_id IN (?)
+							role_id IN (?) AND (access > 0)
 					)
 				)";
 				$va_params[] = array_keys($va_roles);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,9 @@
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $va_settings);
+	
+	if(caGetOption('showCount', $va_settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
+	
 ?>
 <div id="<?php print $vs_id_prefix; ?>" class='setItemEditor'>
 <?php
@@ -53,10 +56,10 @@
 		</div>
 <?php
 	} else {
-	print "<div class='bundleSubLabel'>";
-	if(is_array($va_items) && sizeof($va_items)) {
-		print caGetPrintFormatsListAsHTMLForSetItemBundles($vs_id_prefix, $this->request, $t_set, $t_set->getItemRowIDs());
-	}
+		print "<div class='bundleSubLabel'>";
+		if(is_array($va_items) && sizeof($va_items)) {
+			print caGetPrintFormatsListAsHTMLForSetItemBundles($vs_id_prefix, $this->request, $t_set, $t_set->getItemRowIDs());
+		}
 ?>
     <div class="caItemListSortControls">
 		<?php print _t('Sort by'); ?>:

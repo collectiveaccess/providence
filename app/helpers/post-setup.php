@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2019 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,9 +36,8 @@
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
 if (!defined("__CA_BASE_DIR__")) {
-	define("__CA_BASE_DIR__", join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3)));
+	define("__CA_BASE_DIR__", ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3)));
 }
-
 
 #
 # __CA_URL_ROOT__ = the root-relative URL path to your CollectiveAccess installation

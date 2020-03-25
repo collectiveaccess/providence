@@ -1647,18 +1647,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($vs_idno && isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'])) {
 					$vs_idno .= $va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'];
 				}
+										
+				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions']) && is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
+					$vs_idno = self::_processAppliedRegexes($o_reader, $va_mapping_items[$vn_idno_mapping_item_id], 0, $va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'], $vs_idno, $va_row, $va_row_with_replacements);
+				}
 				
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'])) {
 					$vs_idno = DisplayTemplateParser::processTemplate($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'], $va_row_with_replacements, ['getFrom' => $o_reader]);
-				}
-										
-				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions']) && is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
-					if(is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
-						foreach($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'] as $vn_regex_index => $va_regex) {
-							if (!strlen($va_regex['match'])) { continue; }
-							$vs_idno = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i') , $va_regex['replaceWith'], $vs_idno);
-						}
-					}
 				}
 				
 				if ($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'] && $va_mapping_items[$vn_idno_mapping_item_id]['settings']['treatAsIdentifiersForMultipleRows']) {
@@ -1945,6 +1940,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vm_val = $vm_parsed_val;
 								}
 							}
+							
 							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
 								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row_with_replacements, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logReference' => $vs_idno]))), array('getFrom' => $o_reader));
 							}
@@ -1961,12 +1957,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 						
 							if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
-								if(is_array($va_item['settings']['applyRegularExpressions'])) {
-									foreach($va_item['settings']['applyRegularExpressions'] as $vn_regex_index => $va_regex) {
-										if (!strlen($va_regex['match'])) { continue; }
-										$vm_val = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i') , $va_regex['replaceWith'], $vm_val);
-									}
-								}
+								$vm_val = self::_processAppliedRegexes($o_reader, $va_item, $vn_i, $va_item['settings']['applyRegularExpressions'], $vm_val, $va_row, $va_row_with_replacements);
+							}
+							
+							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
+								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row_with_replacements, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logReference' => $vs_idno]))), array('getFrom' => $o_reader));
 							}
 						
 							$va_vals[$vn_i] = $vm_val;
@@ -3299,6 +3294,35 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return $importer_options;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _processAppliedRegexes($o_reader, $item, $index, $regexes, $val, &$row, &$row_with_replacements) {
+		if(is_array($regexes)) {
+			foreach($regexes as $regex_index => $regex_info) {
+				if (!strlen($regex_info['match'])) { continue; }
+				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
+				
+				if (!preg_match($regex, $val, $matches)) { continue; }
+			
+				foreach($matches as $mi => $m) {
+					if($mi === 0) { continue; }
+					if ($o_reader->valuesCanRepeat()) {
+						$row_with_replacements[$item['source'].":{$mi}"][$index] = $row[$item['source'.":{$mi}"]][$index] = $row[mb_strtolower($item['source'].":{$mi}")][$index] = $m;
+					} else {
+						$row_with_replacements[$item['source'].":{$mi}"] = $row[$item['source'.":{$mi}"]] = $row[mb_strtolower($item['source'].":{$mi}")] = $m;
+					}
+				}
+				
+				if($regex_info['replaceWith']) {
+					$val = preg_replace($regex , $regex_info['replaceWith'], $val);
+				}
+			}
+		}
+		
+		return $val;
 	}
 	# ------------------------------------------------------
 }
