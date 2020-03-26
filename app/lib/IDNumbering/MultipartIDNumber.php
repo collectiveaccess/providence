@@ -1106,7 +1106,8 @@ class MultipartIDNumber extends IDNumber {
 	public function makeTemplateFromValue($ps_value, $pn_max_num_replacements=0, $pb_no_placeholders=false) {
 		$vs_separator = $this->getSeparator();
 		$va_values = $this->explodeValue($ps_value);
-		$va_elements = $this->getElements();
+		if (!is_array($va_elements = $this->getElements())) { $va_elements = []; }
+		
 		$vn_num_serial_elements = 0;
 		foreach ($va_elements as $va_element_info) {
 			if ($va_element_info['type'] == 'SERIAL') { $vn_num_serial_elements++; }
