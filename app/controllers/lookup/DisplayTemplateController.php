@@ -30,7 +30,7 @@ require_once(__CA_LIB_DIR__ . '/Controller/ActionController.php');
 class DisplayTemplateController extends ActionController {
 	# -------------------------------------------------------
 	public function Get() {
-		$ps_template = $this->getRequest()->getParameter('template', pString);
+		$ps_template = $this->getRequest()->getParameter('template', pString, 'GET', ['urldecode' => false]);
 		$ps_table = $this->getRequest()->getParameter('table', pString);
 		$pn_id = $this->getRequest()->getParameter('id', pString);
 

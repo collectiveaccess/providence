@@ -1080,6 +1080,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Sort options'),
 								'description' => _t('Limits sort options on this bundle.')
 							),
+							'showCount' => array(
+								'formatType' => FT_NUMBER,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "10", 'height' => "1",
+								'takesLocale' => false,
+								'default' => 0,
+								'label' => _t('Show relationship count in header?'),
+								'description' => _t('If checked the number of relationships will be displayed in the header for the field.')
+							),
 							'effectiveDateDefault' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_FIELD,
@@ -2210,7 +2219,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$va_placements = $t_screen->getPlacements(array('user_id' => $po_request->getUserID()));
 			
 			// remove deleted bundles
-			
 			foreach($va_placements as $vn_placement_id => $va_bundle_info) {
 				if (!in_array($va_bundle_info['bundle_name'].'_'.$va_bundle_info['placement_id'], $va_bundles)) {
 					$t_screen->removePlacement($va_bundle_info['placement_id'], array('user_id' => $po_request->getUserID()));
@@ -2239,6 +2247,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_(.*)$!", $vs_key, $va_matches)) {
+						// For newly created placements (id=0) trim extra underscores off of settings names that originate in generic settings form generator
+						if((int)$va_matches[1] === 0) {
+							$va_matches[2] = trim($va_matches[2], '_');
+						}
+					
 						// is this locale-specific?
 						if (preg_match('!(.*)_([a-z]{2}_[A-Z]{2})$!', $va_matches[2], $va_locale_matches)) {
 							$vn_locale_id = isset($va_locale_list[$va_locale_matches[2]]) ? (int)$va_locale_list[$va_locale_matches[2]]['locale_id'] : 0;

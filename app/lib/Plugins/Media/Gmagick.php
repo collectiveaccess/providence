@@ -934,56 +934,71 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	/** 
-	 *
+	 * This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	 */
-	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		$vo_plugin = null;
-
-		// gmagick multi-image object traversal seems to be broken
-		// the traversal works but writeimage always takes the first image in a sequence no matter where you set the pointer (with nextimage())
-		// until this is fixed, we're going to try and use one of the other plugins to do this
-		
-		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
-			$vo_plugin = new WLPlugMediaGraphicsMagick();
-		} else if(caMediaPluginImagickInstalled()){
-			$vo_plugin = new WLPlugMediaImagick();
-		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
-			$vo_plugin = new WLPlugMediaImageMagick();
-		}
-
-		if(is_object($vo_plugin) && file_exists($this->filepath)){
-			$vo_plugin->register();
-
-			// read original file
-			$vo_plugin->divineFileFormat($this->filepath);
-			$vo_plugin->read($this->filepath);
-			$va_return = $vo_plugin->writePreviews($this->filepath,$pa_options);
-			
-			return $va_return;
+		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
+			if (!($tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
+				// no dir
+				return false;
+			}
 		} else {
-			return null;
+			$tmp_dir = $pa_options['outputDirectory'];
 		}
+
+		$output_file_prefix = tempnam($tmp_dir, 'caMultipagePreview');
+
+		$files = [];
+		$i = 0;
+		
+		do {
+			if ($i > 0) { $this->handle->nextImage(); }
+			
+			$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
+			$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+			
+			$i++;
+		} while($this->handle->hasnextimage());
+		
+		$this->handle->setimageindex(0);
+		
+		@unlink($output_file_prefix);
+		
+		if(sizeof($files) === 1) { return false; }
+		return $files;
+
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
-		// the gmagick multi image feature seems broken -> try and use one of the other plugins to do this
-		$vo_plugin = null;
+		if(!is_array($pa_files)) { return false; }
 
-		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
-			$vo_plugin = new WLPlugMediaGraphicsMagick();
-		} else if(caMediaPluginImagickInstalled()){
-			$vo_plugin = new WLPlugMediaImagick();
-		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
-			$vo_plugin = new WLPlugMediaImageMagick();
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$vs_archive_original = $vs_archive_original.".tif";
+
+		$vo_orig = new Gmagick();
+		$this->setResourceLimits($vo_orig);
+
+		$i = 0;
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				$vo_gmagick = new Gmagick();
+				$this->setResourceLimits($vo_gmagick);
+
+				if($vo_gmagick->readImage($vs_file)){
+					$vo_orig->addImage($vo_gmagick);
+				}
+				$i++;
+			}
 		}
 
-		if(is_object($vo_plugin)){
-			$vo_plugin->register();
-			return $vo_plugin->joinArchiveContents($pa_files,$pa_options);	
-		} else {
-			return false;
+		if($i > 0){
+			if($vo_orig->writeImages($vs_archive_original,true)){
+				return $vs_archive_original;
+			}
 		}
+
+		return false;
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
@@ -1178,127 +1193,122 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			$this->metadata = array();
 
-		if (WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath]) {
-			$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath];
-		} else {
-			// handle metadata
+			if (WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath]) {
+				$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath];
+			} else {
+				// handle metadata
 
-			/* EXIF */
-			if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			    $va_exif_data = @exif_read_data($ps_filepath, 'IFD0', true, false);
-			    $vn_exif_size = strlen(print_R($va_exif_data, true));
-				if (($vn_exif_size <= $this->opo_config->get('dont_use_exif_read_data_if_larger_than')) && (is_array($va_exif = caSanitizeArray($va_exif_data)))) { $va_metadata['EXIF'] = $va_exif; }
-			}
-
-			// if the builtin EXIF extraction is not used or failed for some reason, try ExifTool
-			if(!isset($va_metadata['EXIF']) || !is_array($va_metadata['EXIF'])) {
-				if(caExifToolInstalled()) {
-					$va_metadata['EXIF'] = caExtractMetadataWithExifTool($ps_filepath, true);
+				/* EXIF */
+				if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
+					$va_exif_data = @exif_read_data($ps_filepath, 'IFD0', true, false);
+					$vn_exif_size = strlen(print_R($va_exif_data, true));
+					if (($vn_exif_size <= $this->opo_config->get('dont_use_exif_read_data_if_larger_than')) && (is_array($va_exif = caSanitizeArray($va_exif_data)))) { $va_metadata['EXIF'] = $va_exif; }
 				}
-			}
-			
-			// rewrite file name to use originally uploaded name
-			if(array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
-				$va_metadata['EXIF']['FILE']['FileName'] = $f;
-			}
 
-			// Rotate incoming image as needed
-
-			if (isset($va_metadata['EXIF']['IFD0']['Orientation'])) {
-				$vn_orientation = $va_metadata['EXIF']['IFD0']['Orientation'];
-				$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_image_tmp');
-
-				$vb_is_rotated = false;
-				switch ($vn_orientation) {
-					case 3:
-						$this->handle->rotateimage("#FFFFFF", 180);
-						unset($va_metadata['EXIF']['IFD0']['Orientation']);
-						$vb_is_rotated = true;
-						break;
-					case 6:
-						$this->handle->rotateimage("#FFFFFF", 90);
-						unset($va_metadata['EXIF']['IFD0']['Orientation']);
-						$vb_is_rotated = true;
-						break;
-					case 8:
-						$this->handle->rotateimage("#FFFFFF", -90);
-						unset($va_metadata['EXIF']['IFD0']['Orientation']);
-						$vb_is_rotated = true;
-						break;
-				}
-			}
-
-			// get XMP
-			$o_xmp = new XMPParser();
-			if ($o_xmp->parse($ps_filepath)) {
-				if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
-					$va_metadata['XMP'] = array();
-					foreach($va_xmp_metadata as $vs_xmp_tag => $va_xmp_values) {
-						$va_metadata['XMP'][$vs_xmp_tag] = join('; ',$va_xmp_values);
+				// if the builtin EXIF extraction is not used or failed for some reason, try ExifTool
+				if(!isset($va_metadata['EXIF']) || !is_array($va_metadata['EXIF'])) {
+					if(caExifToolInstalled()) {
+						$va_metadata['EXIF'] = caExtractMetadataWithExifTool($ps_filepath, true);
 					}
-
 				}
+			
+				// rewrite file name to use originally uploaded name
+				if(isset($va_metadata['EXIF']) && is_array($va_metadata['EXIF']) && array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+					$va_metadata['EXIF']['FILE']['FileName'] = $f;
+				}
+
+				// Rotate incoming image as needed
+
+				if (isset($va_metadata['EXIF']['IFD0']['Orientation'])) {
+					$vn_orientation = $va_metadata['EXIF']['IFD0']['Orientation'];
+
+					switch ($vn_orientation) {
+						case 3:
+							$this->handle->rotateimage("#FFFFFF", 180);
+							unset($va_metadata['EXIF']['IFD0']['Orientation']);
+							break;
+						case 6:
+							$this->handle->rotateimage("#FFFFFF", 90);
+							unset($va_metadata['EXIF']['IFD0']['Orientation']);
+							break;
+						case 8:
+							$this->handle->rotateimage("#FFFFFF", -90);
+							unset($va_metadata['EXIF']['IFD0']['Orientation']);
+							break;
+					}
+				}
+
+				// get XMP
+				$o_xmp = new XMPParser();
+				if ($o_xmp->parse($ps_filepath)) {
+					if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
+						$va_metadata['XMP'] = array();
+						foreach($va_xmp_metadata as $vs_xmp_tag => $va_xmp_values) {
+							$va_metadata['XMP'][$vs_xmp_tag] = join('; ',$va_xmp_values);
+						}
+
+					}
+				}
+
+				// try to get IPTC and DPX with GraphicsMagick, if available
+				 if(caMediaPluginGraphicsMagickInstalled()) {
+					/* IPTC metadata */
+					$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
+					@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want
+					$vs_iptc_file .= '.iptc';
+					exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+ 
+					$vs_iptc_data = file_get_contents($vs_iptc_file);
+					@unlink($vs_iptc_file);
+ 
+					$va_iptc_raw = iptcparse($vs_iptc_data);
+ 
+					$va_iptc_tags = array(
+						'2#004'=>'Genre',
+						'2#005'=>'DocumentTitle',
+						'2#010'=>'Urgency',
+						'2#015'=>'Category',
+						'2#020'=>'Subcategories',
+						'2#025'=>'Keywords',
+						'2#040'=>'SpecialInstructions',
+						'2#055'=>'CreationDate',
+						'2#060'=>'TimeCreated',
+						'2#080'=>'AuthorByline',
+						'2#085'=>'AuthorTitle',
+						'2#090'=>'City',
+						'2#095'=>'State',
+						'2#100'=>'CountryCode',
+						'2#101'=>'Country',
+						'2#103'=>'OTR',
+						'2#105'=>'Headline',
+						'2#110'=>'Credit',
+						'2#115'=>'PhotoSource',
+						'2#116'=>'Copyright',
+						'2#120'=>'Caption',
+						'2#122'=>'CaptionWriter'
+					);
+ 
+					$va_iptc = array();
+					if (is_array($va_iptc_raw)) {
+						foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
+							if(isset($va_iptc_tags[$vs_iptc_tag])) {
+								$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
+							}
+						}
+					}
+ 
+					if (sizeof($va_iptc)) {
+						$va_metadata['IPTC'] = $va_iptc;
+					}
+ 
+					/* DPX metadata */
+					exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
+				}
+
+				if (sizeof(WLPlugMediaGmagick::$s_metadata_read_cache) > 100) { WLPlugMediaGmagick::$s_metadata_read_cache = array_slice(WLPlugMediaGmagick::$s_metadata_read_cache, 50); }
+				$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath] = $va_metadata;
 			}
-
-			// try to get IPTC and DPX with GraphicsMagick, if available
-			 if(caMediaPluginGraphicsMagickInstalled()) {
- 				/* IPTC metadata */
- 				$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
- 				@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want
- 				$vs_iptc_file .= '.iptc';
- 				exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
- 
- 				$vs_iptc_data = file_get_contents($vs_iptc_file);
- 				@unlink($vs_iptc_file);
- 
- 				$va_iptc_raw = iptcparse($vs_iptc_data);
- 
- 				$va_iptc_tags = array(
- 					'2#004'=>'Genre',
- 					'2#005'=>'DocumentTitle',
- 					'2#010'=>'Urgency',
- 					'2#015'=>'Category',
- 					'2#020'=>'Subcategories',
- 					'2#025'=>'Keywords',
- 					'2#040'=>'SpecialInstructions',
- 					'2#055'=>'CreationDate',
- 					'2#060'=>'TimeCreated',
- 					'2#080'=>'AuthorByline',
- 					'2#085'=>'AuthorTitle',
- 					'2#090'=>'City',
- 					'2#095'=>'State',
- 					'2#100'=>'CountryCode',
- 					'2#101'=>'Country',
- 					'2#103'=>'OTR',
- 					'2#105'=>'Headline',
- 					'2#110'=>'Credit',
- 					'2#115'=>'PhotoSource',
- 					'2#116'=>'Copyright',
- 					'2#120'=>'Caption',
- 					'2#122'=>'CaptionWriter'
- 				);
- 
- 				$va_iptc = array();
- 				if (is_array($va_iptc_raw)) {
- 					foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
- 						if(isset($va_iptc_tags[$vs_iptc_tag])) {
- 							$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
- 						}
- 					}
- 				}
- 
- 				if (sizeof($va_iptc)) {
- 					$va_metadata['IPTC'] = $va_iptc;
- 				}
- 
- 				/* DPX metadata */
- 				exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
- 				if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
- 			}
-
-			if (sizeof(WLPlugMediaGmagick::$s_metadata_read_cache) > 100) { WLPlugMediaGmagick::$s_metadata_read_cache = array_slice(WLPlugMediaGmagick::$s_metadata_read_cache, 50); }
-			$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath] = $va_metadata;
-		}
 
 			return $handle;
 		} catch(Exception $e) {

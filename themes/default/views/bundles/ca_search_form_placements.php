@@ -76,7 +76,8 @@
 				
 				displayBundleListID: '<?php print $vs_id_prefix; ?>displayBundleList',
 				
-				settingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>"
+				settingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
+				saveSettingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
 			});		
 		});
 	</script>

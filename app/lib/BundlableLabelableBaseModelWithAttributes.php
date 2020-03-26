@@ -3055,6 +3055,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$o_view->setVar('history_tracking_policy', $default_policy);
 			$o_view->setVar('history_tracking_policy_info', $t_item::policy2bundleconfig(['policy' => $default_policy]));
 		}
+		
+		if ($po_request->config->get('always_show_counts_for_relationship_bundles_in_editor')) { 
+			$pa_bundle_settings['showCount'] = true;
+		}
 		$o_view->setVar('settings', $pa_bundle_settings);
 		$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
 		
@@ -3080,6 +3084,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$va_initial_values = $this->getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
 
+		$o_view->setVar('relationship_count', sizeof($va_initial_values));
+		
 		$va_force_new_values = array();
 		if (isset($pa_options['force']) && is_array($pa_options['force'])) {
 			foreach($pa_options['force'] as $vn_id) {
@@ -5624,7 +5630,7 @@ if (!$vb_batch) {
 		if (!$pa_row_ids || !is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return array(); }
 
 		$pb_return_labels_as_array = (isset($pa_options['returnLabelsAsArray']) && $pa_options['returnLabelsAsArray']) ? true : false;
-		$pn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : 1000;
+		$pn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : 4000;
 		$pn_start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
 
 		if (is_numeric($pm_rel_table_name_or_num)) {
@@ -7386,11 +7392,21 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------		
 	/**
+	 * Temporarily disable ACL item-based access control for this instance
+	 *
+	 * @return bool True if model supports ACL, false if not
+	 */
+	public function disableACL($disabled=true) {
+		return $this->disable_acl = $disabled;
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
 	 * Checks if model supports ACL item-based access control
 	 *
 	 * @return bool True if model supports ACL, false if not
 	 */
 	public function supportsACL() {
+		if($this->disable_acl) { return false; }
 		if ($this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}

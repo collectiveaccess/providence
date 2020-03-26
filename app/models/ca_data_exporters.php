@@ -1429,7 +1429,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			if ($vn_limit && ($vn_i >= $vn_limit)) { break; }
 
 			$vn_pk_val = $po_result->get($t_instance->primaryKey());
-			$va_return[$vn_pk_val] = ca_data_exporters::exportRecord($ps_exporter_code,$vn_pk_val);
+			$va_return[$vn_pk_val] = ca_data_exporters::exportRecord($ps_exporter_code,$vn_pk_val, $pa_options);
 
 			$vn_i++;
 		}
@@ -1639,7 +1639,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logInfo(_t("Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]", $pn_item_id, $pn_table_num, $pn_record_id));
 
 		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
-		if (!($t_instance = ca_data_exporters::loadInstanceByID($pn_record_id,$pn_table_num))) {
+		if (!($t_instance = ca_data_exporters::loadInstanceByID($pn_record_id, $pn_table_num, $pa_options))) {
 			throw new ApplicationException(_t("Record with ID %1 does not exist in table %2", $pn_record_id, $pn_table_num));
 		}
 
@@ -2244,7 +2244,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_table_num
 	 * @return BundlableLabelableBaseModelWithAttributes|bool|null
 	 */
-	static public function loadInstanceByID($pn_record_id,$pn_table_num) {
+	static public function loadInstanceByID($pn_record_id,$pn_table_num, $pa_options=null) {
 		if(sizeof(ca_data_exporters::$s_instance_cache)>10) {
 			array_shift(ca_data_exporters::$s_instance_cache);
 		}
@@ -2257,10 +2257,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$t_instance = null;
 			if (is_numeric($pn_record_id)) {
 				// Try numeric id
-				$t_instance = $table::find($pn_record_id, ['returnAs' => 'firstModelInstance']);
+				$t_instance = $table::find($pn_record_id, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
 			}
 			if(!$t_instance) {
-				$t_instance = $table::find([Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD') => $pn_record_id], ['returnAs' => 'firstModelInstance']);
+				$t_instance = $table::find([Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD') => $pn_record_id], array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
 			}
 			
 			if (!$t_instance) {

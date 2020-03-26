@@ -428,7 +428,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_user_groups
 						WHERE
-							group_id IN (?)
+							group_id IN (?) AND (access > 0)
 					)
 				)";
 				$va_params[] = array_keys($va_groups);
@@ -441,7 +441,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_roles
 						WHERE
-							role_id IN (?)
+							role_id IN (?) AND (access > 0)
 					)
 				)";
 				$va_params[] = array_keys($va_roles);
@@ -614,6 +614,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if ($vn_user_id = $po_request->getUserID()) {
 			$t_user = $po_request->getUser();
 			
+			$acc = null;
 			// Check for user access
 			$qr_users = $t_user->getDb()->query("
 				SELECT screen_id, user_id, access 
@@ -621,8 +622,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 				WHERE
 					user_id = ? AND screen_id = ?", array($vn_user_id, $vn_screen_id));
 					
-			if ($qr_users->nextRow()) {
-				return (int)$qr_users->get('access');
+			while ($qr_users->nextRow()) {
+				$uacc = (int)$qr_users->get('access');
+				if(($uacc > $acc) || is_null($acc)) { $acc = $uacc; }
 			}
 			
 			// Check for group access
@@ -634,8 +636,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					WHERE
 						group_id IN (?) AND screen_id = ?", array(array_keys($va_groups), $vn_screen_id));
 						
-				if ($qr_groups->nextRow()) {
-					return (int)$qr_groups->get('access');
+				while ($qr_groups->nextRow()) {
+					$uacc = (int)$qr_groups->get('access');
+					if(($uacc > $acc) || is_null($acc)) { $acc = $uacc; }
 				}
 			}		
 			
@@ -648,10 +651,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					WHERE
 						role_id IN (?) AND screen_id = ?", array(array_keys($va_roles), $vn_screen_id));
 						
-				if ($qr_roles->nextRow()) {
-					return (int)$qr_roles->get('access');
+				while ($qr_roles->nextRow()) {
+					$uacc = (int)$qr_roles->get('access');
+					if(($uacc > $acc) || is_null($acc)) { $acc = $uacc; }
 				}
-			}			
+			}	
+			if(!is_null($acc)) { return $acc; }	
 		}
 		
 		$qr_all = $t_user->getDb()->query("

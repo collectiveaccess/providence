@@ -48,7 +48,20 @@
 			$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
-			
+
+			$va_log_options = array();
+			$vs_log_dir = $po_opts->getOption('log');
+			if ($vs_log_dir){
+				$va_log_options = array( 'logDirectory' => $vs_log_dir );
+			}
+			$vs_loglevel = $po_opts->getOption('log_level');
+			if ($vs_loglevel) {
+				$va_log_options['logLevel'] = $vs_loglevel;
+			}
+			$o_log = caGetLogger( $va_log_options, 'reprocess_media_log_directory' );
+
+			if ($o_log) { $o_log->logDebug(_t("[reprocess-media] Start preparing to reprocess media")); }
+
 			if (in_array('all', $pa_kinds) || in_array('ca_object_representations', $pa_kinds)) {
 				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
 				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
@@ -101,6 +114,11 @@
 					$va_params[] = $va_object_ids;
 				}
 
+				if ( $o_log ) {
+					$o_log->logDebug( _t( "[reprocess-media] Running query for '$vs_sql_joins' and '$vs_sql_where' with params '"
+					                      . str_replace(array("\r", "\n"), '',var_export( $va_params, true ) . "'" )) );
+				}
+
 				$qr_reps = $o_db->query("
 					SELECT *
 					FROM ca_object_representations
@@ -114,7 +132,11 @@
 					$va_media_info = $qr_reps->getMediaInfo('media');
 					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 
-					if (!$quiet) { print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id')))); }
+					if (!$quiet) {
+						$vs_message = _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id')));
+						print CLIProgressBar::next(1, $vs_message);
+						if ($o_log) { $o_log->logDebug($vs_message); }
+					}
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(is_array($pa_mimetypes) && sizeof($pa_mimetypes)) {
 						$vb_mimetype_match = false;
@@ -138,7 +160,9 @@
 					}
 
 					if ($t_rep->numErrors()) {
-						CLIUtils::addError(_t("Error processing representation media: %1", join('; ', $t_rep->getErrors())));
+						$vs_message = _t("Error processing representation media: %1", join('; ', $t_rep->getErrors()));
+						CLIUtils::addError($vs_message);
+						if ($o_log) { $o_log->logDebug($vs_message); }
 					}
 				}
 				if (!$quiet) { print CLIProgressBar::finish(); }
@@ -171,14 +195,23 @@
 									$va_media_info = $t_attr_val->getMediaInfo('value_blob');
 									$vs_original_filename = is_array($va_media_info) ? $va_media_info['ORIGINAL_FILENAME'] : '';
 
-									if (!$quiet) { print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id))); }
+									if (!$quiet) {
+										$vs_message = _t( "Re-processing %1",
+											( $vs_original_filename ? $vs_original_filename . " ({$vn_value_id})"
+												: $vn_value_id ) );
+										print CLIProgressBar::next(1, $vs_message );
+										if ($o_log) { $o_log->logDebug($vs_message); }
+									}
 
 
 									$t_attr_val->set('value_blob', $t_attr_val->getMediaPath('value_blob', 'original'), array('original_filename' => $vs_original_filename));
 
 									$t_attr_val->update();
 									if ($t_attr_val->numErrors()) {
-										CLIUtils::addError(_t("Error processing attribute media: %1", join('; ', $t_attr_val->getErrors())));
+										$vs_message = _t( "Error processing attribute media: %1",
+											join( '; ', $t_attr_val->getErrors() ) );
+										CLIUtils::addError( $vs_message );
+										if ($o_log) { $o_log->logDebug($vs_message); }
 									}
 								}
 							}
@@ -202,14 +235,20 @@
 
 							$media_info = $t_instance->getMediaInfo($pk);
 
-							if (!$quiet) { print CLIProgressBar::next(1, _t("Re-processing %1 from %2", $id, $icon_table)); }
+							if (!$quiet) {
+								$vs_message = _t( "Re-processing %1 from %2", $id, $icon_table );
+								print CLIProgressBar::next(1, $vs_message );
+								if ($o_log) { $o_log->logDebug($vs_message); }
+							}
 
 
 							$t_instance->set('icon', ($p = $t_instance->getMediaPath('icon', 'original')) ? $p : $t_instance->getMediaPath('icon', 'iconlarge'));
 
 							$t_instance->update();
 							if ($t_instance->numErrors()) {
-								CLIUtils::addError(_t("Error processing icon media: %1", join('; ', $t_instance->getErrors())));
+								$vs_message = _t( "Error processing icon media: %1", join( '; ', $t_instance->getErrors() ) );
+								CLIUtils::addError( $vs_message );
+								if ($o_log) { $o_log->logDebug($vs_message); }
 							}
 						}	
 					}
@@ -228,6 +267,8 @@
 			return array(
 				"mimetypes|m-s" => _t("Limit re-processing to specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
 				"versions|v-s" => _t("Limit re-processing to specified versions. Separate multiple versions with commas."),
+				"log|L-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log_level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"quiet|q" => _t('Suppress progress messages.'),
 				"start_id|s-n" => _t('Representation id to start reloading at'),
 				"end_id|e-n" => _t('Representation id to end reloading at'),

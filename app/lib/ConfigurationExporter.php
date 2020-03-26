@@ -841,11 +841,12 @@ final class ConfigurationExporter {
 				$vo_ui->appendChild($vo_user_access);
 
 				foreach($va_users as $va_user_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_user_info['access']))) === false) { continue; }
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_user_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("user", $va_user_info["user_name"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_user_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 
@@ -855,11 +856,12 @@ final class ConfigurationExporter {
 				$vo_ui->appendChild($vo_group_access);
 
 				foreach($va_groups as $va_group_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_group_info['access']))) === false) { continue; }
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_group_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("group", $va_group_info["code"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 			
@@ -869,11 +871,13 @@ final class ConfigurationExporter {
 				$vo_ui->appendChild($vo_role_access);
 
 				foreach($va_roles as $va_role_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_role_info['access']))) === false) { continue; }
+					
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_role_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("role", $va_role_info["code"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_role_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 
@@ -943,11 +947,13 @@ final class ConfigurationExporter {
                     $vo_screen->appendChild($vo_user_access);
 
                     foreach($va_users as $va_user_info) {
+                    	if (($acc = $this->_convertUserGroupAccessToString(intval($va_user_info['access']))) === false) { continue; }
+					
                         $vo_permission = $this->opo_dom->createElement("permission");
                         $vo_user_access->appendChild($vo_permission);
 
                         $vo_permission->setAttribute("user", $va_user_info["user_name"]);
-                        $vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_user_info['access'])));
+                        $vo_permission->setAttribute("access", $acc);
                     }
                 }
 
@@ -957,11 +963,13 @@ final class ConfigurationExporter {
                     $vo_screen->appendChild($vo_group_access);
 
                     foreach($va_groups as $va_group_info) {
+                    	if (($acc = $this->_convertUserGroupAccessToString(intval($va_group_info['access']))) === false) { continue; }
+					
                         $vo_permission = $this->opo_dom->createElement("permission");
                         $vo_group_access->appendChild($vo_permission);
 
                         $vo_permission->setAttribute("group", $va_group_info["code"]);
-                        $vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
+                        $vo_permission->setAttribute("access", $acc);
                     }
                 }
             
@@ -971,11 +979,13 @@ final class ConfigurationExporter {
                     $vo_screen->appendChild($vo_role_access);
 
                     foreach($va_roles as $va_role_info) {
+                    	if (($acc = $this->_convertUserGroupAccessToString(intval($va_role_info['access']))) === false) { continue; }
+					
                         $vo_permission = $this->opo_dom->createElement("permission");
                         $vo_role_access->appendChild($vo_permission);
 
                         $vo_permission->setAttribute("role", $va_role_info["code"]);
-                        $vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_role_info['access'])));
+                        $vo_permission->setAttribute("access", $acc);
                     }
                 }
 
@@ -1573,11 +1583,13 @@ final class ConfigurationExporter {
 				$vo_form->appendChild($vo_user_access);
 
 				foreach($va_users as $va_user_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_user_info['access']))) === false) { continue; }
+					
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_user_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("user", $va_user_info["user_name"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_user_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 
@@ -1587,11 +1599,13 @@ final class ConfigurationExporter {
 				$vo_form->appendChild($vo_group_access);
 
 				foreach($va_groups as $va_group_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_group_info['access']))) === false) { continue; }
+					
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_group_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("group", $va_group_info["code"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 			
@@ -1601,11 +1615,13 @@ final class ConfigurationExporter {
 				$vo_form->appendChild($vo_role_access);
 
 				foreach($va_roles as $va_role_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_role_info['access']))) === false) { continue; }
+					
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_role_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("role", $va_role_info["code"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_role_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 
@@ -1733,7 +1749,9 @@ final class ConfigurationExporter {
 			if(is_array($va_users) && (sizeof($va_users)>0)) {
 				$vs_buf .= "\t\t<userAccess>\n";
 				foreach($va_users as $va_user_info) {
-					$vs_buf .= "\t\t\t<permission user='".$va_user_info["user_name"]."' access='".$this->_convertUserGroupAccessToString(intval($va_user_info['access']))."'/>\n";
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_user_info['access']))) === false) { continue; }
+					
+					$vs_buf .= "\t\t\t<permission user='".$va_user_info["user_name"]."' access='{$acc}'/>\n";
 				}
 
 				$vs_buf .= "\t\t</userAccess>\n";
@@ -1743,7 +1761,9 @@ final class ConfigurationExporter {
 			if(is_array($va_groups) && (sizeof($va_groups)>0)) {
 				$vs_buf .= "\t\t<groupAccess>\n";
 				foreach($va_groups as $va_group_info) {
-					$vs_buf .= "\t\t\t<permission group='".$va_group_info["code"]."' access='".$this->_convertUserGroupAccessToString(intval($va_group_info['access']))."'/>\n";
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_group_info['access']))) === false) { continue; }
+					
+					$vs_buf .= "\t\t\t<permission group='".$va_group_info["code"]."' access='{$acc}'/>\n";
 				}
 
 				$vs_buf .= "\t\t</groupAccess>\n";
@@ -1753,7 +1773,9 @@ final class ConfigurationExporter {
 			if(is_array($va_roles) && (sizeof($va_roles)>0)) {
 				$vs_buf .= "\t\t<roleAccess>\n";
 				foreach($va_roles as $va_role_info) {
-					$vs_buf .= "\t\t\t<permission role='".$va_role_info["code"]."' access='".$this->_convertUserGroupAccessToString(intval($va_role_info['access']))."'/>\n";
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_role_info['access']))) === false) { continue; }
+					
+					$vs_buf .= "\t\t\t<permission role='".$va_role_info["code"]."' access='{$acc}'/>\n";
 				}
 
 				$vs_buf .= "\t\t</roleAccess>\n";
