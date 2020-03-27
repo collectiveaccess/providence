@@ -29,8 +29,13 @@
  * @name PDF display
  * @type omit
  * @pageSize letter
- * @pageOrientation landscape
+ * @pageOrientation portrait
  * @tables ca_objects
+ *
+ * @marginTop 0.75in
+ * @marginLeft 0.25in
+ * @marginBottom 0.5in
+ * @marginRight 0.25in
  *
  * ----------------------------------------------------------------------
  */
@@ -40,74 +45,80 @@
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vn_num_items			= (int)$vo_result->numHits();
+	$t_set					= $this->getVar("t_set");
 	
 	$vn_start 				= 0;
 
 	print $this->render("pdfStart.php");
 	print $this->render("header.php");
 	print $this->render("footer.php");
+	
+
 ?>
 		<div id='body'>
-			<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="0">
+			<div class="row">
+				<table>
+				<tr><td>
+					<div class='title'><?php print $t_set->get("ca_sets.preferred_labels.name"); ?></div>
+<?php
+					if($t_set->get("description")){
+						print "<p>".$t_set->get("description")."</p>";
+					}
+?>
+				</td></tr>
+				</table>
+			</div>
 <?php
 
 		$vo_result->seek(0);
 		
-		$i = 0;
-		$vn_line_count = 0;
+		$vn_c = 0;
 		while($vo_result->nextHit()) {
-			$vn_movement_id = $vo_result->get('object_id');
-			
-			($i == 2) ? $i = 0 : "";
+			$vn_c++;
+			$vn_object_id = $vo_result->get('ca_objects.object_id');		
 ?>
-			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
-			<td>
-				<table  width="100%"  cellpadding="0" cellspacing="0" class='summary' style='border:1px solid #ccc;'>
-					<tr style='background-color:#eeeeee;'>
-<?php
-				$i_field = 0;
-				$va_end_array = end($va_display_list);
-				foreach($va_display_list as $vn_placement_id => $va_display_item) {
-
-					$vs_display_value = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true));
-					if (($header_has_ended == "yes") | (($header_has_ended != "yes") && ($i_field == 1))) {
-						print "<td class='label'>".$va_display_item['display']."</td>";
-					} 
-					if (($header_has_ended != "yes") && ($i_field == 0)) {
-						$va_colspan = "colspan='2'";
+			<div class="row">
+			<table>
+			<tr>
+				<td><b><?php print $vn_c; ?></b>&nbsp;&nbsp;</td>
+				<td>
+<?php 
+					if ($vs_path = $vo_result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
+						print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
 					} else {
-						$va_colspan = "";
-					}
-					print "<td style='width:250px;' class='value' ".$va_colspan.">".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value)."</td>";
-					$i_field++;
-					if ($i_field == 2) {
-						$header_has_ended = "yes";
-					}
-					if (($header_has_ended == "yes") && ($i_field == 2)) {
-						$i_field = 0;
-					}
-					if (($header_has_ended == "yes") && ($i_field == 0)) {
-						print "</tr><tr>";
-					}
-					if ($va_end_array == $va_display_item) {
-						print "</tr>";
-					}
-					
-				}
-				$header_has_ended = "no";
-?>		
-					
-				</table>
-				<hr>
-			</td>	
-			</tr>
+?>
+						<div class="imageTinyPlaceholder">&nbsp;</div>
+<?php					
+					}	
+?>								
+
+				</td><td>
+					<div class="metaBlock">
 <?php
-			$i++;			
-			
+						print "<div class='title'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 	
+?>
+						<table  width="100%"  cellpadding="0" cellspacing="0">
+<?php				
+					
+						foreach($va_display_list as $vn_placement_id => $va_display_item) {	
+							if (!($vs_display_value = trim($t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true))))) { continue; }
+?>
+							<tr>
+								<td width="30%" style='padding: 4px;'><?php print $va_display_item['display']; ?></td>
+								<td style='padding: 4px;'><?php print $vs_display_value; ?></td>
+							</tr>
+<?php
+						}						
+?>
+						</table>
+					</div>				
+				</td>	
+			</tr>
+			</table>	
+			</div>
+<?php
 		}
 ?>
-			</table>
-		</div><!-- end body -->
 		</div>
 <?php
 	print $this->render("pdfEnd.php");
