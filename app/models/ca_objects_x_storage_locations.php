@@ -221,8 +221,7 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	 *
 	 */
 	public function insert($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) {  $this->set('effective_date', _t('now')); }
-		//if (!$this->get('source_info')) {  $this->set('source_info', $this->_getStorageLocationInfo()); }
+		if (!caGetOption('dontAutomaticallySetEffectiveDate', $pa_options, false) && !$this->get('effective_date', array('getDirectDate' => true))) {  $this->set('effective_date', _t('now')); }
 		
 		try { 
 			return parent::insert($pa_options);
@@ -236,8 +235,7 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	 *
 	 */
 	public function update($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) { $this->set('effective_date', _t('now')); }
-		//if (!$this->get('source_info')) {  $this->set('source_info', $this->_getStorageLocationInfo()); }
+		if (!caGetOption('dontAutomaticallySetEffectiveDate', $pa_options, false) && !$this->get('effective_date', array('getDirectDate' => true))) { $this->set('effective_date', _t('now')); }
 		
 		try {
 			return parent::update($pa_options);
@@ -245,22 +243,6 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 			// Dupes will throw exception
 			return false;
 		}
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	// private function _getStorageLocationInfo() {
-// 	    require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
-// 		$t_loc = new ca_storage_locations($this->get('location_id'));
-// 		if ($t_loc->getPrimaryKey()) {
-// 			return array(
-// 				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
-// 				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
-// 			);
-// 		} else {
-// 			return array('path' => array('?'), 'ids' => array(0));
-// 		}
-// 	}	
+	}	
 	# ------------------------------------------------------
 }
