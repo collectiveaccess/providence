@@ -33,7 +33,8 @@
  /**
    *
    */
-   
+
+	require_once(__CA_APP_DIR__."/lib/Logging/KLogger/KLogger.php");
 
 	# ---------------------------------------
 	/**
