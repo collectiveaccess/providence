@@ -337,7 +337,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		switch($ps_mimetype) {
 			case 'application/ctm':
 				if(file_exists($this->filepath) && caOpenCTMInstalled()){
-					exec(caGetExternalApplicationPath('openctm').' '.caEscapeShellArg($this->filepath)." ".caEscapeShellArg($ps_filepath).".ctm --method MG2 --level 9 2>&1", $va_output);
+					caExec(caGetExternalApplicationPath('openctm').' '.caEscapeShellArg($this->filepath)." ".caEscapeShellArg($ps_filepath).".ctm --method MG2 --level 9 2>&1", $va_output);
 					return "{$ps_filepath}.ctm";	
 				} else {
 					@unlink("{$ps_filepath}.ctm");
@@ -352,7 +352,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 						if (caMeshlabServerInstalled()) {
 							putenv("DISPLAY=:0");
 							chdir('/usr/local/bin');
-							exec(caGetExternalApplicationPath('meshlabserver')." -i ".caEscapeShellArg($this->filepath)." -o ".caEscapeShellArg($ps_filepath).".stl 2>&1", $va_output);
+							caExec(caGetExternalApplicationPath('meshlabserver')." -i ".caEscapeShellArg($this->filepath)." -o ".caEscapeShellArg($ps_filepath).".stl 2>&1", $va_output);
 							return "{$ps_filepath}.stl";	
 						} elseif(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
 							return "{$ps_filepath}.stl";	

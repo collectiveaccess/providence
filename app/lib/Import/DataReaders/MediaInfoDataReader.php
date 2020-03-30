@@ -121,7 +121,7 @@ class MediaInfoDataReader extends BaseXMLDataReader {
 		}
 		
 		if ($ps_source) { 			
-			exec($ps_mediainfo_path." --Output=PBCore2 ".caEscapeShellArg($ps_source), $va_output, $vn_return);
+			caExec($ps_mediainfo_path." --Output=PBCore2 ".caEscapeShellArg($ps_source), $va_output, $vn_return);
 			if (!is_array($va_output) || !sizeof($va_output)) { return null; }
 			$xml = join("\n", $va_output);
 			
