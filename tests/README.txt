@@ -4,10 +4,13 @@ If you receive errors while running any of these tests it may indicate a bug in 
 
 For more information see http://wiki.collectiveaccess.org/index.php?title=Unit_Tests
 
-To create the testing database, run `tests/database_setup.sh`, it will use the `testing` profile as a default. It will
+To create the testing database, run `tests/database_setup.sh`, it will
 create a MYSQL database with following connection settings:
 
 	* host: localhost
 	* database: ca_test
 	* user: ca_test
 	* password: password
+
+To install a profile, run `tests/profile.setup.sh <PROFILE>`. It will use the `testing`
+profile as a default if no profile is provided.
