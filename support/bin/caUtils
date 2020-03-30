@@ -237,11 +237,9 @@
 			foreach($_SERVER['argv'] as $vs_opt) {
 				if (preg_match("!^\-\-hostname\=([A-Za-z0-9_\-\.:]+)!", $vs_opt, $va_matches) || preg_match("!^\-h\=([A-Za-z0-9_\-\.:]+)!", $vs_opt, $va_matches)) {
 					$_SERVER['HTTP_HOST'] = $va_matches[1];
-					break;
 				}
 				if (preg_match('!^\-\-setup\=([A-Za-z0-9_\-\/\.:]+)$!', $vs_opt, $va_matches)) {
 					$vs_setup_path = $va_matches[1];
-					break;
 				}
 			}
 		}
