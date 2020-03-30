@@ -171,21 +171,30 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
-		
+
 		if ($this->register()) {
 			$va_status['available'] = true;
-		} 
-		
-		if (!caMediaPluginGhostscriptInstalled($this->ops_ghostscript_path)) { 
+		}
+
+		if (!caMediaPluginGhostscriptInstalled($this->ops_ghostscript_path)) {
 			$va_status['warnings'][] = _t("Ghostscript cannot be found: image previews will not be created");
 		}
-		if (!caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) { 
+		else{
+			$va_status['notices'][] = _t("Found Ghostscript");
+		}
+		if (!caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
 			$va_status['warnings'][] = _t("PDFToText cannot be found: indexing of text in PDF files will not be performed; you can obtain PDFToText at http://www.foolabs.com/xpdf/download.html");
 		}
-		if (!caPDFMinerInstalled($this->ops_pdfminer_path)) { 
+		else{
+			$va_status['notices'][] = _t("Found PDFToText");
+		}
+		if (!caPDFMinerInstalled($this->ops_pdfminer_path)) {
 			$va_status['warnings'][] = _t("PDFMiner cannot be found: indexing of text locations in PDF files will not be performed; you can obtain PDFMiner at http://www.unixuser.org/~euske/python/pdfminer/index.html");
 		}
-		
+		else{
+			$va_status['warnings'][] = _t("Found PDFMiner");
+		}
+
 		return $va_status;
 	}
 	# ------------------------------------------------
