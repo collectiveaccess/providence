@@ -1,5 +1,4 @@
 language: php
-sudo: required
 os: linux
 dist: bionic
 
@@ -9,11 +8,19 @@ addons:
     - mysql-server-5.7
     - mysql-client-core-5.7
     - mysql-client-5.7
-    
+
+git:
+  depth: 5
+
 php:
   - 7.2
   - 7.3
   - 7.4
+
+cache:
+  - directories:
+      # Cache vendor folder will speed up environment setup
+      - vendor
 
 services:
   - mysql
@@ -22,12 +29,18 @@ env:
   # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
   - PROFILE=testing
 
+before_install:
+  # Remove xdebug to increase speed
+  - phpenv config-rm xdebug.ini
+  # Set up database
+  - tests/database_setup.sh
+
 install:
   # Create setup.php
   - ln -s .travis.setup.php setup.php
-  - composer update
+  - composer update --prefer-dist --prefer-stable
   # Install the testing profile
-  - tests/database_setup.sh "$PROFILE"
+  - tests/profile_setup.sh "$PROFILE"
 
 before_script:
   # Go into the tests directory to run the tests
