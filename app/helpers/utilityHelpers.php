@@ -4265,3 +4265,21 @@ function caFileIsIncludable($ps_file) {
 		return $table::find($x=[$idno_fld => $idno], ['returnAs' => 'count']);
 	}
 	# ----------------------------------------
+	/**
+	 * Shows a variable in JSON format.
+	 *
+	 * @param $var
+	 *
+	 * @return string
+	 */
+	function caPrettyJson( $var ) {
+		return gettype( $var ) . ' ' . json_encode(
+				$var,
+				JSON_UNESCAPED_SLASHES |
+				JSON_UNESCAPED_UNICODE |
+				JSON_PRETTY_PRINT |
+				JSON_PARTIAL_OUTPUT_ON_ERROR |
+				JSON_INVALID_UTF8_SUBSTITUTE
+			);
+	}
+	# ----------------------------------------

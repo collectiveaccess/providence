@@ -1,5 +1,5 @@
 language: php
-sudo: required
+os: linux
 dist: bionic
 
 addons:
@@ -8,11 +8,19 @@ addons:
     - mysql-server-5.7
     - mysql-client-core-5.7
     - mysql-client-5.7
-    
+
+git:
+  depth: 5
+
 php:
   - 7.2
   - 7.3
   - 7.4
+
+cache:
+  - directories:
+      # Cache vendor folder will speed up environment setup
+      - vendor
 
 services:
   - mysql
@@ -21,18 +29,18 @@ env:
   # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
   - PROFILE=testing
 
+before_install:
+  # Remove xdebug to increase speed
+  - phpenv config-rm xdebug.ini
+  # Set up database
+  - tests/database_setup.sh
+
 install:
-  # Initialise the database instance for the test
-  - sudo mysql -uroot -e 'create database ca_test;'
-  - sudo mysql -uroot -e "grant all on ca_test.* to 'ca_test'@'localhost' identified by 'password';"
-  # Set environment variables
-  - export COLLECTIVEACCESS_HOME="$(pwd)"
-  - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
   # Create setup.php
   - ln -s .travis.setup.php setup.php
-  - composer update
+  - composer update --prefer-dist
   # Install the testing profile
-  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=support@collectiveaccess.org > install.log
+  - tests/profile_setup.sh "$PROFILE"
 
 before_script:
   # Go into the tests directory to run the tests

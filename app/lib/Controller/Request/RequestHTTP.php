@@ -535,8 +535,8 @@ class RequestHTTP extends Request {
 			if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
 				$vm_val = $this->opa_params[$ps_http_method][$ps_name];
 			} else {
-				foreach(array('GET', 'POST', 'PATH', 'COOKIE', 'REQUEST') as $vs_http_method) {
-					$vm_val = (isset($this->opa_params[$vs_http_method]) && isset($this->opa_params[$vs_http_method][$ps_name])) ? $this->opa_params[$vs_http_method][$ps_name] : null;
+				foreach(array('GET', 'POST', 'PATH', 'COOKIE', 'REQUEST') as $http_method) {
+					$vm_val = (isset($this->opa_params[$http_method]) && isset($this->opa_params[$http_method][$ps_name])) ? $this->opa_params[$http_method][$ps_name] : null;
 					if (isset($vm_val)) {
 						break;
 					}
@@ -605,9 +605,9 @@ class RequestHTTP extends Request {
 		if($pa_http_methods && !is_array($pa_http_methods)) { $pa_http_methods = array($pa_http_methods); }
 		$va_params = array();
 		if (!is_array($pa_http_methods)) { $pa_http_methods = array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'); }
-		foreach($pa_http_methods as $vs_http_method) {
-			if (isset($this->opa_params[$vs_http_method]) && is_array($this->opa_params[$vs_http_method])) {
-				$va_params = array_merge($va_params, $this->opa_params[$vs_http_method]);
+		foreach($pa_http_methods as $http_method) {
+			if (isset($this->opa_params[$http_method]) && is_array($this->opa_params[$http_method])) {
+				$va_params = array_merge($va_params, $this->opa_params[$http_method]);
 			}
 		}
 		return $va_params;
@@ -636,44 +636,53 @@ class RequestHTTP extends Request {
 		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
 		    
 			if (
-			    !($vn_port = (int)$this->getAppConfig()->get('out_of_process_search_indexing_port'))
+			    !($port = (int)$this->getAppConfig()->get('out_of_process_search_indexing_port'))
 			    && 
-			    !($vn_port = (int)getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PORT'))
+			    !($port = (int)getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PORT'))
 			) {
                 if(__CA_SITE_PROTOCOL__ == 'https') { 
-                    $vn_port = 443;	
+                    $port = 443;	
                 } elseif(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
-                    $vn_port = $_SERVER['SERVER_PORT'];
+                    $port = $_SERVER['SERVER_PORT'];
                 } else {
-                    $vn_port = 80;
+                    $port = 80;
                 }
             }
 			
 			if (
-			    !($vs_proto = trim($this->getAppConfig()->get('out_of_process_search_indexing_protocol')))
+			    !($proto = trim($this->getAppConfig()->get('out_of_process_search_indexing_protocol')))
 			    && 
-			    !($vs_proto = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PROTOCOL'))
+			    !($proto = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PROTOCOL'))
 			) {
-			    $vs_proto = (($vn_port == 443) || (__CA_SITE_PROTOCOL__ == 'https')) ? 'tls' : 'tcp';
+			    $proto = (($port == 443) || (__CA_SITE_PROTOCOL__ == 'https')) ? 'ssl' : 'tcp';
 			}
 			
 			if (
-			    !($vs_indexing_hostname = trim($this->getAppConfig()->get('out_of_process_search_indexing_hostname')))
+			    !($indexing_hostname = trim($this->getAppConfig()->get('out_of_process_search_indexing_hostname')))
 			    && 
-			    !($vs_indexing_hostname = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_HOSTNAME'))
+			    !($indexing_hostname = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_HOSTNAME'))
 			) {
-			    $vs_indexing_hostname = __CA_SITE_HOSTNAME__;
+			    $indexing_hostname = __CA_SITE_HOSTNAME__;
 			}
 			// trigger async search indexing
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
                 if (!ca_search_indexing_queue::lockExists()) {
-                    $r_socket = fsockopen($vs_proto . '://'. $vs_indexing_hostname, $vn_port, $errno, $err, 3);
+                	$dont_verify_ssl_cert = (bool)$this->getAppConfig()->get('out_of_process_search_indexing_dont_verify_ssl_cert');
+                    $context = stream_context_create([
+						'ssl' => [
+							'verify_peer' => !$dont_verify_ssl_cert,
+							'verify_peer_name' => !$dont_verify_ssl_cert
+						]
+					]);
+
+					$r_socket = stream_socket_client($proto . '://'. $indexing_hostname.':'.$port, $errno, $errstr, ini_get("default_socket_timeout"), STREAM_CLIENT_CONNECT, $context);
+
                     if ($r_socket) {
-                        $vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
-                        $vs_http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
-                        $vs_http .= "Connection: Close\r\n\r\n";
-                        fwrite($r_socket, $vs_http);
+                        $http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
+                        $http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
+                        $http .= "Connection: Close\r\n\r\n";
+                        fwrite($r_socket, $http);
                         fclose($r_socket);
                     }
                 }

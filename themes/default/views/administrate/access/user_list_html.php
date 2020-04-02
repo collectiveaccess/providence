@@ -96,7 +96,7 @@
 					<?php print $va_user['active'] ? _t('Yes') : _t('No'); ?>
 				</td>
 				<td>
-					<?php print ($va_user['last_login'] > 0) ? $o_tep->getText() : '-'; ?>
+					<?php print ($va_user['last_login'] > 0) ? "<span style='display:none;'>".$va_user['last_login']."</span>".$o_tep->getText() : '-'; ?>
 				</td>
 				<td class="listtableEditDelete">
 					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/access', 'Users', 'Edit', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>

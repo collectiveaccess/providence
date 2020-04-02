@@ -668,6 +668,16 @@ if (!$for_current_value_reindex) {
 					}
 
 					$va_data['datatype'] = (int)ca_metadata_elements::getElementDatatype($va_matches[1]);
+					
+					if ($va_data['datatype'] === 0) {
+						// get child ids for container - we need to pass indexing settings for each
+						if(is_array($child_ids = ca_metadata_elements::getElementsForSet($va_matches[1], ['idsOnly' => true]))) {
+							foreach($child_ids as $child_id) {
+								if(!is_array($va_fields_to_index['_ca_attribute_'.$child_id])) { continue; }
+								$va_data['_ca_attribute_'.$child_id] = $va_fields_to_index['_ca_attribute_'.$child_id];
+							}
+						}
+					}
 					$this->_indexAttribute($t_subject, $pn_subject_row_id, $va_matches[1], $va_data);
 
 				} else {
@@ -958,8 +968,18 @@ if (!$for_current_value_reindex) {
                                         $vb_is_attr = true;
 
                                         $va_rel_field_info['datatype'] = (int)ca_metadata_elements::getElementDatatype($va_matches[1]);
-
-                                        $this->_indexAttribute($t_rel, $vn_row_id, $va_matches[1], array_merge($va_rel_field_info, ['PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id]), ['t_inheritance_subject' => $t_subject, 'inheritance_subject_id' => $pn_subject_row_id, 'currentValues' => ($m == 'current_values'), 'policy' => $p]);
+						
+										$va_data = array_merge($va_rel_field_info, ['PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id]);
+										if ($va_rel_field_info['datatype'] === 0) {
+											// get child ids for container - we need to pass indexing settings for each
+											if(is_array($child_ids = ca_metadata_elements::getElementsForSet($va_matches[1], ['idsOnly' => true]))) {
+												foreach($child_ids as $child_id) {
+													if(!is_array($field_list['_ca_attribute_'.$child_id])) { continue; }
+													$va_data['_ca_attribute_'.$child_id] = $field_list['_ca_attribute_'.$child_id];
+												}
+											}
+										}
+                                        $this->_indexAttribute($t_rel, $vn_row_id, $va_matches[1], $va_data, ['t_inheritance_subject' => $t_subject, 'inheritance_subject_id' => $pn_subject_row_id, 'currentValues' => ($m == 'current_values'), 'policy' => $p]);
                                     }
 
                                     $vs_fld_data = trim($va_field_data[$vs_rel_field]);
@@ -1501,11 +1521,13 @@ if (!$for_current_value_reindex) {
                                 }
 								
 								$va_sub_data = $pa_data;
-								if(isset($pa_data[$vs_sub_element_code]) && is_array($pa_data[$vs_sub_element_code])) {
-									$va_sub_data = array_merge($pa_data, $pa_data[$vs_sub_element_code]);
-								}
 								$va_sub_data['container_id'] = $vo_attribute->getAttributeID();
-
+								
+								if(isset($pa_data['_ca_attribute_'.$vn_sub_element_id]) && is_array($pa_data['_ca_attribute_'.$vn_sub_element_id])) {
+									$va_sub_data = array_merge($pa_data, $pa_data['_ca_attribute_'.$vn_sub_element_id]);
+								}
+								$va_sub_data = array_filter($va_sub_data, function($v) { return !is_array($v) && (strlen($v) > 0); });
+								
 								$this->opo_engine->indexField($pn_subject_table_num, "{$field_num_prefix}{$vn_sub_element_id}", $pn_row_id, $va_values_to_index, $va_sub_data);
 								$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, "{$field_num_prefix}{$vn_sub_element_id}", $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, $va_values_to_index, $va_sub_data, $pa_options);
 								
@@ -1514,7 +1536,11 @@ if (!$for_current_value_reindex) {
 
 							// Clear out any elements that aren't defined
 							foreach(array_keys($va_sub_element_ids) as $vn_e) {
-								$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_e, $pn_row_id, [''], array_merge($pa_data, ['container_id' => $vo_attribute->getAttributeID()]));
+								$va_sub_data = $pa_data;
+								if(isset($pa_data['_ca_attribute_'.$vn_e]) && is_array($pa_data['_ca_attribute_'.$vn_e])) {
+									$va_sub_data = array_merge($pa_data, $pa_data['_ca_attribute_'.$vn_e]);
+								}
+								$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_e, $pn_row_id, [''], array_merge($va_sub_data, ['container_id' => $vo_attribute->getAttributeID()]));
 								$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, $field_num_prefix.$vn_e, $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, [''], $pa_data);
 							}
 						}
@@ -1523,7 +1549,13 @@ if (!$for_current_value_reindex) {
 					// we are deleting a container so cleanup existing sub-values
 					if (is_array($va_sub_elements = $this->opo_metadata_element->getElementsInSet($pm_element_code_or_id))) {
 						foreach($va_sub_elements as $vn_i => $va_element_info) {
-							$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$va_element_info['element_id'], $pn_row_id, [''], $pa_data);
+							$va_sub_data = $pa_data;
+							
+							$sub_element_id = $va_element_info['element_id'];
+							if(isset($pa_data['_ca_attribute_'.$sub_element_id]) && is_array($pa_data['_ca_attribute_'.$sub_element_id])) {
+								$va_sub_data = array_merge($pa_data, $pa_data['_ca_attribute_'.$sub_element_id]);
+							}
+							$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$sub_element_id, $pn_row_id, [''], $va_sub_data);
 							$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, $field_num_prefix.$va_element_info['element_id'], $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, [''], $pa_data);
 						}
 					}

@@ -7925,7 +7925,8 @@ side. For many self-relations the direction determines the nature and display te
 				// create array of values present in rule
 				$va_row = array($va_rule['bundle_name'] => $vs_val = $this->get($va_rule['bundle_name']));
 				foreach($va_expression_tags as $vs_tag) {
-					$va_row[$vs_tag] = $this->get($vs_tag);
+					$t = caParseTagOptions($vs_tag);
+					$va_row[$vs_tag] = $this->get($t['tag'], $t['options']);
 				}
 			}
 			

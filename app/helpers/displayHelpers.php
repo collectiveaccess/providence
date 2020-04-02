@@ -1657,7 +1657,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						if ($vs_id_fld = $t_content_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
 							$vs_label .= " (".$t_content_instance->get($vs_id_fld).")";
 						}
-						$vs_buf .= "<strong>"._t("Is %1", caGetTableDisplayName($vn_item_table_num, false)."</strong>: ".caEditorLink($vs_label, '', $vn_item_table_num, $vn_row_id))."<br/>\n";
+						$vs_buf .= "<strong>"._t("Is %1", caGetTableDisplayName($vn_item_table_num, false)."</strong>: ".caEditorLink($po_view->request, $vs_label, '', $vn_item_table_num, $vn_row_id))."<br/>\n";
 					}
 
 					$vs_buf .= "</div>\n";
