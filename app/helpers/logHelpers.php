@@ -34,7 +34,6 @@
    *
    */
    require_once(__CA_LIB_DIR__."/Logging/KLogger/KLogger.php");
-
 	# ---------------------------------------
 	/**
 	 * Return KLogger instance for import log
@@ -56,7 +55,7 @@
 	function caGetImportLogger($options=null) {
 		return caGetLogger($options, 'batch_metadata_import_log_directory');
 	}
-
+	# ---------------------------------------
 	/**
 	 * Return KLogger instance for log
 	 *
@@ -70,12 +69,14 @@
 	 *                       logToTempDirectoryIfLogDirectoryIsNotWritable = Log to system temporary directory if
 	 *                       configured log directory is not writable. [Default is false]
 	 *
+	 * @param string $opt_name Name of app.conf configuration entry to use for log directory. [Default is null - use current working directory]
+	 *
 	 * @return KLogger instance
 	 * @throws ApplicationException
 	 */
-	function caGetLogger($options=null, $ps_opt_name=null) {
+	function caGetLogger($options=null, $opt_name=null) {
 		$config = Configuration::load();
-		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $config->get($ps_opt_name)))) {
+		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $config->get($opt_name)))) {
 			$log_dir = '.';
 		}
 		
