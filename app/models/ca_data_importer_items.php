@@ -567,6 +567,33 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Display name format'),
 			'description' => _t('Transform label using options for formatting entity display names. Default is to use value as is. Other options are surnameCommaForename, forenameCommaSurname, forenameSurname. See DataMigrationUtils::splitEntityName().')
 		);
+		$va_settings['mediaPrefix'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media prefix'),
+			'description' => _t('Path to import directory containing files references for media or file metadata attributes.')
+		);
+		$va_settings['matchType'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media match type'),
+			'description' => _t('Determines how file names are compared to the match value. Valid values are STARTS, ENDS, CONTAINS and EXACT. (Default is EXACT)')
+		);
+		$va_settings['matchMode'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media match mode'),
+			'description' => _t('Determines whether to search on file names, enclosing directory names or both. Valid values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES and FILE_NAME. (Default is FILE_NAME).')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

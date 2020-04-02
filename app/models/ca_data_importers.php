@@ -2206,6 +2206,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$va_group_buf[$vn_c]['_truncateLongLabels'] = true;
 								}
 							}
+							
+							if(isset($va_item['settings']['mediaPrefix']) && $va_item['settings']['mediaPrefix']) {
+								$va_group_buf[$vn_c]['_mediaPrefix'] = $va_item['settings']['mediaPrefix'];
+								$va_group_buf[$vn_c]['_matchType'] = $va_item['settings']['matchType'];
+								$va_group_buf[$vn_c]['_matchMode'] = $va_item['settings']['matchMode'];
+							}
+							
 							switch($vs_item_terminal) {
 							    case 'type_id':
 							        if(($vs_target_table == $vs_subject_table_name) && (sizeof($va_item_dest) == 2)) {
@@ -2661,6 +2668,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 											$vs_locale = $t_mapping->getSetting('locale');
 											$va_opts['locale'] = $vs_locale;
+											
+											if(isset($va_element_data[$vs_element]['_mediaPrefix'])) { 
+												$va_opts['mediaPrefix'] = $va_element_data[$vs_element]['_mediaPrefix']; 
+												$va_opts['matchMode'] = $va_element_data[$vs_element]['_matchMode']; 
+												$va_opts['matchType'] = $va_element_data[$vs_element]['_matchType']; 
+											}
 											$t_subject->addAttribute($va_element_content, $vs_element, null, $va_opts);
 											$t_subject->update(['queueIndexing' => true]);
 											

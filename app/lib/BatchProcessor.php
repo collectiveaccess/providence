@@ -463,7 +463,7 @@
 		 * Compare file name to entries in skip-file list and return true if file matches any entry.
 		 */
 		private static function _skipFile($ps_file, $pa_skip_list) {
-		    if (preg_match("!SynoResource!", $ps_file)) { return true; }        // skip Synology res files
+		    if (preg_match("!SynoResource!", $ps_file)) { return true; } // skip Synology res files
 			foreach($pa_skip_list as $vn_i => $vs_skip) {
 				if (strpos($vs_skip, "*") !== false) {
 					// is wildcard
