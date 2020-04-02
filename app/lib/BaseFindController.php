@@ -501,6 +501,18 @@
 			$this->opo_result_context->setParameter('last_export_type', $ps_output_type);
 			$this->opo_result_context->saveContext();
 			
+			$primary_table = $this->request->getParameter('primaryTable', pString);
+			$primary_id = $this->request->getParameter('primaryID', pInteger);
+			
+			
+			// Pass prmary record, if defined into view
+			if ($t_primary = Datamodel::getInstance($primary_table, true)) {
+				$t_primary->load($primary_id);
+				$this->view->setVar('primary', $t_primary);
+			} else {
+				$this->view->setVar('primary', null);
+			}
+			
 			if(substr($ps_output_type, 0, 4) !== '_pdf') {
 				switch($ps_output_type) {
 					case '_xlsx':

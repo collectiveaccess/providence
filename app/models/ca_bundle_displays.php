@@ -529,14 +529,14 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			
 			$t_user = new ca_users($pn_user_id);
 			while($qr_res->nextRow()) {
-				$vs_bundle_name = $qr_res->get('bundle_name');
+				$vs_bundle_name = $vs_bundle_name_proc = $qr_res->get('bundle_name');
 				$va_bundle_name = explode(".", $vs_bundle_name);
 				if (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) > 2)) {
 					array_pop($va_bundle_name);
-					$vs_bundle_name = join('.', $va_bundle_name);
+					$vs_bundle_name_proc = join('.', $va_bundle_name);
 				} elseif (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) === 1)) {
 					$va_bundle_name[] = 'related';
-					$vs_bundle_name = join('.', $va_bundle_name);
+					$vs_bundle_name_proc = $vs_bundle_name = join('.', $va_bundle_name);
 				}
 				$vb_user_can_edit = $t_subject->isSaveable(caGetOption('request', $pa_options, null), $vs_bundle_name);
 				
@@ -545,7 +545,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_placements[$vn_placement_id]['allowEditing'] = $vb_user_can_edit;
 							
 				if (!$pb_settings_only) {
-					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
+					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name_proc]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
 					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings, 'table' => $vs_subject_table));
 				} else {

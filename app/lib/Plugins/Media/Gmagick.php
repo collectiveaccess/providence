@@ -284,7 +284,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function divineFileFormat($ps_filepath) {
 		# is it a camera raw image?
 		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
-			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			caExec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 			if ($vn_return == 0) {
 				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
 					$this->opa_raw_list[$ps_filepath] = true;
@@ -934,56 +934,71 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	/** 
-	 *
+	 * This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	 */
-	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		$vo_plugin = null;
-
-		// gmagick multi-image object traversal seems to be broken
-		// the traversal works but writeimage always takes the first image in a sequence no matter where you set the pointer (with nextimage())
-		// until this is fixed, we're going to try and use one of the other plugins to do this
-		
-		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
-			$vo_plugin = new WLPlugMediaGraphicsMagick();
-		} else if(caMediaPluginImagickInstalled()){
-			$vo_plugin = new WLPlugMediaImagick();
-		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
-			$vo_plugin = new WLPlugMediaImageMagick();
-		}
-
-		if(is_object($vo_plugin) && file_exists($this->filepath)){
-			$vo_plugin->register();
-
-			// read original file
-			$vo_plugin->divineFileFormat($this->filepath);
-			$vo_plugin->read($this->filepath);
-			$va_return = $vo_plugin->writePreviews($this->filepath,$pa_options);
-			
-			return $va_return;
+		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
+			if (!($tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
+				// no dir
+				return false;
+			}
 		} else {
-			return null;
+			$tmp_dir = $pa_options['outputDirectory'];
 		}
+
+		$output_file_prefix = tempnam($tmp_dir, 'caMultipagePreview');
+
+		$files = [];
+		$i = 0;
+		
+		do {
+			if ($i > 0) { $this->handle->nextImage(); }
+			
+			$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
+			$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+			
+			$i++;
+		} while($this->handle->hasnextimage());
+		
+		$this->handle->setimageindex(0);
+		
+		@unlink($output_file_prefix);
+		
+		if(sizeof($files) === 1) { return false; }
+		return $files;
+
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
-		// the gmagick multi image feature seems broken -> try and use one of the other plugins to do this
-		$vo_plugin = null;
+		if(!is_array($pa_files)) { return false; }
 
-		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
-			$vo_plugin = new WLPlugMediaGraphicsMagick();
-		} else if(caMediaPluginImagickInstalled()){
-			$vo_plugin = new WLPlugMediaImagick();
-		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
-			$vo_plugin = new WLPlugMediaImageMagick();
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$vs_archive_original = $vs_archive_original.".tif";
+
+		$vo_orig = new Gmagick();
+		$this->setResourceLimits($vo_orig);
+
+		$i = 0;
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				$vo_gmagick = new Gmagick();
+				$this->setResourceLimits($vo_gmagick);
+
+				if($vo_gmagick->readImage($vs_file)){
+					$vo_orig->addImage($vo_gmagick);
+				}
+				$i++;
+			}
 		}
 
-		if(is_object($vo_plugin)){
-			$vo_plugin->register();
-			return $vo_plugin->joinArchiveContents($pa_files,$pa_options);	
-		} else {
-			return false;
+		if($i > 0){
+			if($vo_orig->writeImages($vs_archive_original,true)){
+				return $vs_archive_original;
+			}
 		}
+
+		return false;
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
@@ -1153,7 +1168,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugGmagick->read()");
 			return false;
 		}
-		exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
+		caExec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugGmagick->read()");
 			return false;
@@ -1198,7 +1213,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 			
 				// rewrite file name to use originally uploaded name
-				if(array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+				if(isset($va_metadata['EXIF']) && is_array($va_metadata['EXIF']) && array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
 					$va_metadata['EXIF']['FILE']['FileName'] = $f;
 				}
 
@@ -1241,7 +1256,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
 					@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want
 					$vs_iptc_file .= '.iptc';
-					exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					caExec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
  
 					$vs_iptc_data = file_get_contents($vs_iptc_file);
 					@unlink($vs_iptc_file);
@@ -1287,7 +1302,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					}
  
 					/* DPX metadata */
-					exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					caExec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
 				}
 

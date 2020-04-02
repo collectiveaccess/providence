@@ -172,7 +172,12 @@ function caInstallVendorLibraries() {
 		}
 		$output = [];
 		putenv("COLLECTIVEACCESS_HOME=".__CA_BASE_DIR__);
-		exec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		
+		if(function_exists("caExec")) {
+			caExec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		} else {
+			exec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		}
 		if ($ret > 0) {
 			return ["Composer installation failed: ".join("; ", $output)];
 		}
@@ -180,7 +185,12 @@ function caInstallVendorLibraries() {
 		$output = [];
 		putenv("COMPOSER_HOME=".__CA_BASE_DIR__."/app/tmp");
 		chdir(__CA_BASE_DIR__);
-		exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		
+		if(function_exists("caExec")) {
+			caExec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		} else {
+			exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		}
 		if ($ret > 0) {
 			return ["Library installation failed: ".join("; ", $output)];
 		}

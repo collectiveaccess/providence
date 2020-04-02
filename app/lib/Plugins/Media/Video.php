@@ -602,11 +602,11 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->opa_media_metadata["mime_type"] != 'application/x-shockwave-flash')) {
-					exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
 						// try again, without attempting to force aspect ratio, as this seems to cause ffmpeg to barf at specific frame sizes and input aspect ratios
-						exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					}
 
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
@@ -625,11 +625,11 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->opa_media_metadata["mime_type"] != "application/x-shockwave-flash")) {
-					exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
 						// try again, with -ss 1 (seems to work consistently on some files where other -ss values won't work)
-						exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04  -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"   -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04  -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"   -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					}
 
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
@@ -653,7 +653,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					if (($vn_audio_sample_freq != 44100) && ($vn_audio_sample_freq != 22050) && ($vn_audio_sample_freq != 11025)) {
 						$vn_audio_sample_freq = 44100;
 					}
-					exec($vs_cmd = caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f flv -b ".intval($vn_video_bitrate)." -ab ".intval($vn_audio_bitrate)." -ar ".intval($vn_audio_sample_freq)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					caExec($vs_cmd = caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f flv -b ".intval($vn_video_bitrate)." -ab ".intval($vn_audio_bitrate)." -ar ".intval($vn_audio_sample_freq)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if (($vn_return < 0) || ($vn_return > 1) || (filesize($filepath.".".$ext) == 0)) {
 						@unlink($filepath.".".$ext);
 						$this->postError(1610, _t("Couldn't convert file to FLV format"), "WLPlugVideo->write()");
@@ -766,7 +766,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					
 					$vs_cmd = '';
 					if ($vs_ffmpeg_command) {
-						exec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." {$vs_ffmpeg_command} ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." {$vs_ffmpeg_command} ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					} else {
 						if ($vs_vpreset) {
 							$vs_other_params = "";
@@ -779,13 +779,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 							if($vs_res && $vs_res!=''){
 								$vs_other_params.="-s ".$vs_res;
 							}
-							exec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac {$vs_other_params} -vpre {$vs_vpreset} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+							caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac {$vs_other_params} -vpre {$vs_vpreset} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 						} else {
 							if(!$vb_twopass) {
-								exec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+								caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
 							} else {
-								exec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-								exec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+								caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+								caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 								// probably cleanup logfiles here
 							}
 						}
@@ -804,7 +804,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					
 					// try to hint for streaming
 					if (file_exists($this->ops_path_to_qt_faststart)) {
-						exec($this->ops_path_to_qt_faststart." ".caEscapeShellArg($filepath.".".$ext)." ".caEscapeShellArg($filepath."_tmp.".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						caExec($this->ops_path_to_qt_faststart." ".caEscapeShellArg($filepath.".".$ext)." ".caEscapeShellArg($filepath."_tmp.".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 						rename("{$filepath}_tmp.{$ext}", "{$filepath}.{$ext}");
 					}
 					# ------------------------------------
@@ -919,7 +919,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caVideoPreview');
 		$vs_output_file = $vs_output_file_prefix.'%05d.jpg';
 		
-		exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -r ".$vs_freq." -ss {$vn_s} -t {$vn_previewed_duration} -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($vs_output_file). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+		caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -r ".$vs_freq." -ss {$vn_s} -t {$vn_previewed_duration} -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($vs_output_file). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 		$vn_i = 1;
 		$va_files = array();
 		while(file_exists($vs_output_file_prefix.sprintf("%05d", $vn_i).'.jpg')) {
@@ -952,7 +952,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		$vn_duration = $vn_end - $vn_start;
 		
-		exec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+		caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			@unlink($ps_filepath);
 			$this->postError(1610, _t("Error extracting clip from %1 to %2: %3", $ps_start, $ps_end, join("; ", $va_output)), "WLPlugVideo->writeClip()");

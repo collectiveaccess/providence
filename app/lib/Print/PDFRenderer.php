@@ -177,7 +177,7 @@
                     $ghostscript_path = $external_app_config->get('ghostscript_app');
                     file_put_contents($basefile = caGetTempFileName("caPDF"), $content);
                     $outfile = caGetTempFileName("caPDF");
-                    exec("{$ghostscript_path} -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile={$outfile} {$basefile} ".join(" ", array_map(function($v) { return caEscapeShellArg($v); }, $append)).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+                    caExec("{$ghostscript_path} -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile={$outfile} {$basefile} ".join(" ", array_map(function($v) { return caEscapeShellArg($v); }, $append)).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
                     $content = file_get_contents($outfile);
                     @unlink($outfile);
                     @unlink($basefile);
