@@ -71,7 +71,7 @@
 			return true; 
 		}	// don't try exec test on Windows
 		
-		exec($ps_imagemagick_path.'/identify 2> /dev/null', $va_output, $vn_return);
+		caExec($ps_imagemagick_path.'/identify 2> /dev/null', $va_output, $vn_return);
 		
 		$vb_ret =  (($vn_return >= 0) && ($vn_return < 127));
 		
@@ -100,7 +100,7 @@
 			return  true; 
 		} // don't try exec test on Windows
 		
-		exec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
+		caExec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
@@ -124,7 +124,7 @@
 			return false; 
 		}
 
-		exec($ps_path_to_dcraw.' -i 2> /dev/null', $va_output, $vn_return);
+		caExec($ps_path_to_dcraw.' -i 2> /dev/null', $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
@@ -153,7 +153,7 @@
 			return true; 
 		}	// don't try exec test on Windows
 		
-		exec($ps_path_to_ffmpeg.'> /dev/null 2>&1', $va_output, $vn_return);
+		caExec($ps_path_to_ffmpeg.'> /dev/null 2>&1', $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
@@ -182,7 +182,7 @@
 			return true; 
 		} // don't try exec test on Windows
 		
-		exec($ps_path_to_ghostscript." -v 2> /dev/null", $va_output, $vn_return);
+		caExec($ps_path_to_ghostscript." -v 2> /dev/null", $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
@@ -206,7 +206,7 @@
 			return false; 
 		}
 		
-		exec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
+		caExec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
@@ -234,7 +234,7 @@
 			return true; 
 		} // don't try exec test on Windows
 		
-		exec($ps_path_to_libreoffice." --version 2> /dev/null", $va_output, $vn_return);
+		caExec($ps_path_to_libreoffice." --version 2> /dev/null", $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
@@ -293,7 +293,7 @@
 			CompositeCache::save("mediahelper_mediainfo_installed", true);
 			return true; 
 		} // don't try exec test on Windows
-		exec($ps_mediainfo_path." --Help > /dev/null",$va_output,$vn_return);
+		caExec($ps_mediainfo_path." --Help > /dev/null",$va_output,$vn_return);
 		$vb_ret = ($vn_return == 255) || ($vn_return == 0);
 		
 		CompositeCache::save("mediahelper_mediainfo_installed", $vb_ret);
@@ -318,7 +318,7 @@
 			CompositeCache::save("mediahelper_openctm_installed", true);
 			return true; 
 		}	// don't try exec test on Windows
-		exec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
+		caExec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
 		$vb_ret = ($vn_return == 0);
 		
 		CompositeCache::save("mediahelper_openctm_installed", $vb_ret);
@@ -346,7 +346,7 @@
 		
 		putenv("DISPLAY=:0");
 		chdir('/usr/local/bin');
-		exec($ps_meshlabserver_path." --help > /dev/null",$va_output,$vn_return);
+		caExec($ps_meshlabserver_path." --help > /dev/null",$va_output,$vn_return);
 		
 		$vb_ret = ($vn_return == 1);
 		
@@ -378,7 +378,7 @@
 			return true; 
 		} // don't try exec test on Windows
 		
-		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
+		caExec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
 		
 		$vb_ret = ($vn_return == 100);
 		
@@ -410,7 +410,7 @@
 			return true; 
 		} // don't try exec test on Windows
 		
-		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
+		caExec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
 		
 		$vb_ret = (($vn_return == 0) || ($vn_return == 1));
 		
@@ -443,7 +443,7 @@
 			return true; 
 		} // don't try exec test on Windows
 		
-		exec($ps_exiftool_path." > /dev/null",$va_output,$vn_return);
+		caExec($ps_exiftool_path." > /dev/null",$va_output,$vn_return);
 	
 		$vb_ret = ($vn_return == 0);
 		
@@ -466,7 +466,7 @@
 		if (caExifToolInstalled()) {
 			$vs_unknown_param = ($pb_skip_unknown ? '' : '-u');
 			$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
-			exec("{$vs_path_to_exif_tool} -json -a {$vs_unknown_param} -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			caExec("{$vs_path_to_exif_tool} -json -a {$vs_unknown_param} -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 
 			if($vn_return == 0) {
 				$va_data = json_decode(join("\n", $va_output), true);
@@ -712,7 +712,7 @@
 		if($vs_subject_table_export = caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_pk)) {
 			$vs_export_filename = caGetTempFileName('mediaMetadataSubjExport','xml');
 			if(@file_put_contents($vs_export_filename, $vs_subject_table_export) === false) { return false; }
-			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			caExec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
 			@unlink($vs_export_filename);
 			@unlink("{$vs_tmp_filepath}_original");
 		}
@@ -724,7 +724,7 @@
 		if($vs_representation_export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
 			$vs_export_filename = caGetTempFileName('mediaMetadataRepExport','xml');
 			if(@file_put_contents($vs_export_filename, $vs_representation_Export) === false) { return false; }
-			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			caExec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
 			@unlink($vs_export_filename);
 			@unlink("{$vs_tmp_filepath}_original");
 		}
@@ -1022,7 +1022,7 @@
 		// try graphicsmagick
 		if ((!$o_config->get('dont_use_graphicsmagick_to_identify_pdfs')) && caMediaPluginGraphicsMagickInstalled()) {
 			$vs_graphicsmagick_path = caGetExternalApplicationPath('graphicsmagick');
-			exec($vs_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec($vs_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 
 			array_pop($va_output); // last line is blank
 			if (is_array($va_output) && (sizeof($va_output) > 0)) {
@@ -1042,7 +1042,7 @@
 		// try imagemagick
 		if ((!$o_config->get('dont_use_imagemagick_to_identify_pdfs')) && caMediaPluginImageMagickInstalled()) {
 			$vs_imagemagick_path = caGetExternalApplicationPath('imagemagick');
-			exec($vs_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec($vs_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 		
 			array_pop($va_output); // last line is blank
 			if (is_array($va_output) && (sizeof($va_output) > 0)) {
@@ -1063,7 +1063,7 @@
 		if (caMediaPluginPdftotextInstalled()) {
 			$vs_path_to_pdf_to_text = str_replace("pdftotext", "pdfinfo", caGetExternalApplicationPath('pdftotext'));
 			
-			exec("{$vs_path_to_pdf_to_text} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec("{$vs_path_to_pdf_to_text} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			
 			if (($vn_return == 0) && sizeof($va_output) > 0) {
 				$va_info = [];

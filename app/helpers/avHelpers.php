@@ -179,7 +179,7 @@ function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
 	//
 	// TODO: why don't we parse this from the XML output like civilized people?
 	//
-	exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+	caExec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 	$vs_cat = "GENERIC";
 	$va_return = array();
 	foreach($va_output as $vs_line){
@@ -212,7 +212,7 @@ function caExtractVideoFileDurationWithMediaInfo($ps_filepath) {
 	if(!caMediaInfoInstalled($ps_mediainfo_path)) { return false; }
 
 	$va_output = array();
-	exec($ps_mediainfo_path.' --Inform="Video;%Duration/String3%" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+	caExec($ps_mediainfo_path.' --Inform="Video;%Duration/String3%" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 	if(!is_array($va_output) || (sizeof($va_output) != 1)) { return null; }
 	$va_tmp = explode(':', array_shift($va_output));
 

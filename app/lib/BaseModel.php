@@ -163,7 +163,7 @@ class BaseModel extends BaseObject {
 	/**
 	 * @access private
 	 */
-	var $_FIELD_VALUES;
+	var $_FIELD_VALUES = [];
 
 	/**
 	 * @access protected
