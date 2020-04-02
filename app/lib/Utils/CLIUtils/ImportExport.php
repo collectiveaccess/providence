@@ -460,7 +460,6 @@
 			$vb_dryrun = (bool)$po_opts->getOption('dryrun');
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 			
 			$env = json_decode($po_opts->getOption('environment'), true);
 
@@ -468,44 +467,13 @@
 				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 			}
 
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $po_opts->getOption('log-level'), 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
 				CLIUtils::addMessage(_t("Imported data from source %1", $vs_data_source));
 				return true;
 			}
-		}
-		/**
-		* Helper function to get log levels
-		*/
-		private static function getLogLevel($po_opts){
-			$vn_log_level = KLogger::INFO;
-			switch($vs_log_level = $po_opts->getOption('log-level')) {
-				case 'DEBUG':
-					$vn_log_level = KLogger::DEBUG;
-					break;
-				case 'NOTICE':
-					$vn_log_level = KLogger::NOTICE;
-					break;
-				case 'WARN':
-					$vn_log_level = KLogger::WARN;
-					break;
-				case 'ERR':
-					$vn_log_level = KLogger::ERR;
-					break;
-				case 'CRIT':
-					$vn_log_level = KLogger::CRIT;
-					break;
-				case 'ALERT':
-					$vn_log_level = KLogger::ALERT;
-					break;
-				default:
-				case 'INFO':
-					$vn_log_level = KLogger::INFO;
-					break;
-			}
-			return $vn_log_level;
 		}
 		# -------------------------------------------------------
 		/**

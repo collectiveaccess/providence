@@ -773,7 +773,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$is_new = true;
 		
-		$o_log = caGetImportLogger($pa_options['logDirectory'], $pa_options['logLevel']);
+		$o_log = caGetImportLogger($pa_options);
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
 		$o_sheet = $o_excel->getActiveSheet();
@@ -1302,7 +1302,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		$o_log = caGetImportLogger($pa_options['logDirectory'], $pa_options['logLevel']);
+		$o_log = caGetImportLogger($pa_options);
 		
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
 		
