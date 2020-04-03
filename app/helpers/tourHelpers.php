@@ -80,4 +80,5 @@ require_once(__CA_MODELS_DIR__.'/ca_tour_stops.php');
 		return $t_stop->load(array('tour_id' => $vn_tour_id, 'idno' => $ps_idno));
 	}
 	# ---------------------------------------
+	# TODO: Redundant closing tag
 ?>

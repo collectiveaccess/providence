@@ -292,8 +292,9 @@
 		} else {
 			$vs_alt = $vs_title = '';
 		}
-		
-		
+
+
+		# TODO: Undefined variable $va_icon_attributes
 		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_tag .= $ps_content;
@@ -349,8 +350,9 @@
 			'align' => 'absmiddle'
 		);
 		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
-			
-		
+
+
+		# TODO: Undefined variable $va_icon_attributes
 		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes)) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
@@ -510,8 +512,9 @@
 			'class' => 'form-button-left',
 			'style' => "padding-right: {$vn_padding}px"
 		);
-		
-		
+
+
+		# TODO: Undefined variable $va_icon_attributes
 		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
@@ -583,7 +586,8 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		
+
+		# TODO: Undefined variable $va_icon_attributes
 		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
@@ -877,9 +881,9 @@
 			case __CA_NAV_ICON_FULL_RESULTS__:
 				$vs_fa_class = 'fa-bars';
 				break;
-			case __CA_NAV_ICON_EXPORT_SMALL__: 
+			case __CA_NAV_ICON_EXPORT_SMALL__:
 				$vs_fa_class = 'fa-external-link-square';
-				break;	
+				break;
 			case __CA_NAV_ICON_HOME__:
 				$vs_fa_class = 'fa-home';
 				break;																						
@@ -972,7 +976,8 @@
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
 	 *		action - if set, action of returned link will be set to the supplied value
 	 *      quick_add - if set to true, returned link will point to the QuickAdd controller instead
-	 * @return string
+	 *
+	 * @return array|string
 	 */
 	function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
 		if (is_numeric($ps_table)) {
@@ -1172,7 +1177,9 @@
 		}
 		
 		$vn_id_for_idno = null;
-		if(((int)$pn_id > 0) && ($vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls($ps_table)) && is_array($attr_list = $t_table->getAttributeForIDs($vs_use_alt_identifier_in_urls, [$pn_id]))) {
+		if ( ( (int) $pn_id > 0 ) && ( $vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls( $ps_table ) )
+		     && is_array( $attr_list = $t_table->getAttributeForIDs( $vs_use_alt_identifier_in_urls, [ $pn_id ] ) )
+		) {
 		    $va_attr = array_values($attr_list);
 		    if (is_array($va_attr[0]) && ($vn_id_for_idno = array_shift($va_attr[0]))) {
 				$vb_id_exists = true;

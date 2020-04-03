@@ -289,6 +289,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_value}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+			# TODO: Undefined variable $g_list_item_ids_for_values
 		    if(isset($g_list_item_ids_for_values[$vs_cache_key])) { return $g_list_item_ids_for_values[$vs_cache_key]; }
         }
         
@@ -318,6 +319,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+			# TODO: Undefined variable $g_list_item_values_for_ids
 		    if(isset($g_list_item_values_for_ids[$vs_cache_key])) { return $g_list_item_values_for_ids[$vs_cache_key]; }
         }
         
@@ -498,8 +500,8 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
 		
 		if (!is_array($pm_item_id)) { $pm_item_id = [$pm_item_id]; }
-		
-		$va_acc = caGetOption('includeSelf', $pa_options, false) ? [$pn_item_id] : [];
+
+		$va_acc = caGetOption('includeSelf', $pa_options, false) ? $pm_item_id : [];
 		foreach($pm_item_id as $pn_item_id) {
 			if (is_array($va_ancestors = $t_item->getHierarchyAncestors($pn_item_id, ['idsOnly' => true, 'includeSelf' => caGetOption('includeSelf', $pa_options, false)]))) {
 				$va_acc = array_merge($va_acc, $va_ancestors);

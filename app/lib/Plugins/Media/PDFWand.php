@@ -475,7 +475,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			$this->postError(1655, _t("Invalid transformation %1", $ps_operation), "WLPlugPDFWand->transform()");
 			return false;
 		}
-		
+
+		# TODO: Unused variable
 		# get parameters for this operation
 		$sparams = $this->info["TRANSFORMATIONS"][$ps_operation];
 		
@@ -832,13 +833,16 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		) as $vs_k) {
 			if (!isset($pa_options[$vs_k])) { $pa_options[$vs_k] = null; }
 		}
-		
+
+		# TODO: Unused variable
 		$vn_viewer_width = intval($pa_options['viewer_width']);
 		if ($vn_viewer_width < 100) { $vn_viewer_width = 400; }
+		# TODO: Unused variable
 		$vn_viewer_height = intval($pa_options['viewer_height']);
 		if ($vn_viewer_height < 100) { $vn_viewer_height = 400; }
-		
+
 		if (!($vs_id = isset($pa_options['id']) ? $pa_options['id'] : $pa_options['name'])) {
+			# TODO: Unused variable
 			$vs_id = '_pdf';
 		}
 		
@@ -849,7 +853,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				$vs_poster_frame = _t("View PDF document");
 			}
 			
-			return $vs_buf;
+			return $vs_poster_frame;
 		} else {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!is_array($pa_properties)) { $pa_properties = array(); }

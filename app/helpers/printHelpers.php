@@ -44,7 +44,7 @@
 	/**
 	 *
 	 *
-	 * @return string
+	 * @return array|string
 	 */
 	function caGetPrintTemplateDirectoryPath($ps_type) {
 		$va_paths = [];
@@ -344,7 +344,7 @@
 	 * @param $ps_value string The value to convert. Valid units are in, cm, mm, px and p. If units are invalid or omitted points are assumed.
 	 * @param $ps_units string A valid measurement unit: in, cm, mm, px, p (inches, centimeters, millimeters, pixels, points) respectively.
 	 *
-	 * @return int Converted measurement. If the output units are omitted or otherwise not valid, pixels are assumed.
+	 * @return array|int
 	 */
 	function caParseMeasurement($ps_value, $pa_options=null) {
 		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
@@ -385,6 +385,7 @@
 				if (($pn_barcode_height < 1) || ($pn_barcode_height > 8)) {
 					$pn_barcode_height = 1;
 				}
+				# TODO: Multiple definitions exist for class 'QRCode'
 				QRcode::png($ps_value, "{$vs_tmp}.png", QR_ECLEVEL_H, $pn_barcode_height);
 				return $vs_tmp;
 				break;
@@ -444,6 +445,7 @@
 	/** 
 	 *
 	 */
+	# TODO: Unused function caPrintLabels
 	function caPrintLabels($po_view, $po_result, $ps_title) {
 		try {
 			$po_view->setVar('title', $ps_title);
@@ -512,11 +514,12 @@
 					}
 				}
 			}
-			
+
+			# TODO: Not in class context
 			$vs_content .= $this->render("pdfEnd.php");
 			
 			
-			
+			# TODO: Undefined function caExportAsPDF
 			caExportAsPDF($po_view, $vs_template_identifier, caGetOption('filename', $va_template_info, 'labels.pdf'), []);
 
 			$vb_printed_properly = true;

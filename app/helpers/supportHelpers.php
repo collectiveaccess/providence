@@ -450,6 +450,7 @@
 		}
 	
 		print "\n\nIMPORT COMPLETE.\n";
+		# TODO: Missing return statement
 	}
 	# ---------------------------------------
 	/**
@@ -491,8 +492,8 @@
 		}
 		
 		$vs_ulan_import_mode = $o_config->get('ulan_import_target');
-		
-		
+
+
 		$t_list = null;
 		
 		if ($vs_ulan_import_mode == 'ca_entities') {
@@ -528,7 +529,14 @@
 			$o_log->logError("Invalid ULAN import mode {$vs_ulan_import_mode}");
 			die("ERROR: invalid ULAN import mode {$vs_ulan_import_mode}\n");
 		}
-		
+		// get list item label types (should be defined by base installation profile [base.profile])
+		// if your installation didn't use a profile inheriting from base.profile then you should make sure
+		// that a list with code='list_item_label_types' is defined and the following four item codes are defined.
+		// If these are not defined then the AAT will still import, but without any distinction between
+		// terms, facets and guide terms
+		$vn_list_item_label_type_uf = 					$t_list->getItemIDFromList('list_item_label_types', 'uf');
+		$vn_list_item_label_type_alt = 					$t_list->getItemIDFromList('list_item_label_types', 'alt');
+
 		$vn_last_message_length = 0;
 		$vn_term_count = 0;
 		$va_subject = array();
@@ -999,8 +1007,8 @@
 	
 	
 			if (in_array($vs_parent_id, array('500000000', '500000001'))) {		
-				if(!$t_item->load($vn_child_item_id)) {
-					$o_log->logError("Could not load item for {$vs_child_id} (was translated to item_id={$vn_child_item_id})");
+				if(!$t_item->load($vs_child_id)) {
+					$o_log->logError("Could not load item for {$vs_child_id} (was translated to item_id={$vs_child_id})");
 					continue;
 				}	
 				$t_item->set('parent_id', $vn_list_root_id);
@@ -1035,6 +1043,7 @@
 			}
 		}
 
+		# TODO: Undefined variable $vn_list_item_relation_type_id_related
 		if ($vn_list_item_relation_type_id_related > 0) {
 			$o_log->logInfo("Begin adding ULAN related term links");
 			$vn_last_message_length = 0;
@@ -1080,5 +1089,6 @@
 	
 		$o_log->logInfo("ULAN import complete. Took {$vs_time} ({$vn_duration})");
 		print "\n\nIMPORT COMPLETE. Took {$vs_time} ({$vn_duration})\n";
+		# TODO: Missing return statement
 	}
 	# ---------------------------------------

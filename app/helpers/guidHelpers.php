@@ -41,5 +41,6 @@ try{
 	}
 	define('__CA_SYSTEM_GUID__', $vs_system_guid);
 } catch(DatabaseException $e) {
+	# TODO: Exception 'DatabaseException' is never thrown in the corresponding try block
 	// noop
 }

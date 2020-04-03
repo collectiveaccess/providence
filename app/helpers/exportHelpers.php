@@ -418,7 +418,7 @@
 				
 				$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
 				$o_writer->save('php://output');
-				return;
+				exit;
 				break;
 			case 'pdf':
 				//
@@ -427,9 +427,9 @@
 				caExportViewAsPDF($o_view, $va_template_info, (($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results')).'_'.date("Y-m-d").'.pdf', []);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
-		
-				return;
+				exit;
 		}
+		# TODO: Missing return statement
 	}
 	# ----------------------------------------
 	/**

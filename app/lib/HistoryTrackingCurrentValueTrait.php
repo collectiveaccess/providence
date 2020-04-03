@@ -300,7 +300,7 @@
 		 *
 		 * @return string Policy name
 		 */
-		public function getDefaultHistoryTrackingCurrentValuePolicy() {
+		static public function getDefaultHistoryTrackingCurrentValuePolicy() {
 			return self::getDefaultHistoryTrackingCurrentValuePolicyForTable($this->tableName());
 		}
 		# ------------------------------------------------------

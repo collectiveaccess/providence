@@ -177,7 +177,7 @@
 	/**
 	 * 
 	 *
-	 * @return string 
+	 * @return array|string
 	 */
 	function caSearchUrl($po_request, $ps_table, $ps_search=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
 		
@@ -361,7 +361,7 @@
 	 *			contexts =
 	 *			... any other options passed through as-is to SearchEngine::search()
 	 *
-	 * @return array 
+	 * @return array|string
 	 */
 	function caPuppySearch($po_request, $ps_search_expression, $pa_blocks, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -819,8 +819,8 @@
 				switch(ca_metadata_elements::getElementDatatype($vs_possible_element)) {
 					case 3:
 						$va_values = array();
-						foreach($pa_form_values[$vs_dotless_element] as $vn_i => $vm_value) {
-							$va_values[$vn_i] = caGetListItemByIDForDisplay($vm_value);
+						foreach($pa_form_values[$vs_dotless_element] as $vn_j => $vm_value) {
+							$va_values[$vn_j] = caGetListItemByIDForDisplay($vm_value);
 						}
 						break;
 					default:
@@ -851,7 +851,8 @@
 	function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 		$o_config = Configuration::load();
 		$o_query_parser = new LuceneSyntaxParser();
-		$o_query_parser->setEncoding($o_config->get('character_set'));
+		$vs_char_set = $o_config->get( 'character_set' );
+		$o_query_parser->setEncoding( $vs_char_set );
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 		
 		if ($purifier = RequestHTTP::getPurifier()) { $ps_search = $purifier->purify($ps_search); }
@@ -906,7 +907,7 @@
 					break;	
 				case 'Zend_Search_Lucene_Search_Query_Range':
 					$vs_field = caGetLabelForBundle($subquery->getLowerTerm()->field);
-					$va_query[] = ($vs_field && !$pb_omit_field_names ? "{$v_field}: " : "")._t("%1 to %2", $subquery->getLowerTerm()->text, $subquery->getUpperTerm()->text);
+					$va_query[] = ($vs_field && !$pb_omit_field_names ? "{$vs_field}: " : "")._t("%1 to %2", $subquery->getLowerTerm()->text, $subquery->getUpperTerm()->text);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Wildcard':
 					$va_query[] = "*";
@@ -940,6 +941,7 @@
 				$va_items = $po_parsed_query;
 				$va_signs = null;
 				break;
+			# TODO: Branch in 'switch' is a duplicate of 'case 'Zend_Search_Lucene_Search_Query_Phrase'' branch
 			case 'Zend_Search_Lucene_Search_Query_Range':
 				$va_items = $po_parsed_query;
 				$va_signs = null;
@@ -1687,11 +1689,12 @@
 	/**
 	 * Get given sort fields (semi-colon separated list from ResultContext) for display,
 	 * i.e. as array of human readable names
+	 *
 	 * @param string $ps_table
-	 * @param array $ps_sort_fields
+	 * @param string $ps_sort_fields
 	 * @param array $pa_options
 	 *
-	 * @return string
+	 * @return array|string
 	 */
 	function caGetSortForDisplay($ps_table, $ps_sort_fields, $pa_options=null) {
 	    if (!is_array($pa_options)) { $pa_options = []; }
@@ -1715,7 +1718,8 @@
 	function caSearchIsForSets($ps_search, $pa_options=null) {
 		$o_config = Configuration::load();
 		$o_query_parser = new LuceneSyntaxParser();
-		$o_query_parser->setEncoding($o_config->get('character_set'));
+		$$vs_char_set = $o_config->get( 'character_set' );
+		$o_query_parser->setEncoding( $$vs_char_set );
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 		
 		$ps_search = preg_replace('![\']+!', '', $ps_search);

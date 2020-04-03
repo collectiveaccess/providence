@@ -490,6 +490,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 				$this->properties["typename"] = $this->handle->getimageformat();
 
+				# TODO: Call to method __clone from invalid context
 				$this->ohandle = clone $this->handle;
 				return 1;
 			}
@@ -1146,7 +1147,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		if(is_array($this->tmpfiles_to_delete)) {
 		    foreach($this->tmpfiles_to_delete as $f) {
-		        @unlink($tmpfiles_to_delete);
+		        @unlink($f);
 		    }
 		}
 	}

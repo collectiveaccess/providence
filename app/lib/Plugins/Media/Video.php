@@ -265,6 +265,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		} else {
 			return '';
 		}
+		# TODO: Missing return statement
 	}
 	# ------------------------------------------------
 	/**
@@ -507,7 +508,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 		
 		$do_crop = 0;
-		
+
+		# TODO: Unused variable
 		# get parameters for this operation
 		$sparams = $this->info["TRANSFORMATIONS"][$operation];
 
@@ -801,7 +803,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 						}
 						return false;
 					}
-					
+
+					# TODO: Field 'ops_path_to_qt_faststart' not found in WLPlugMediaVideo
 					// try to hint for streaming
 					if (file_exists($this->ops_path_to_qt_faststart)) {
 						caExec($this->ops_path_to_qt_faststart." ".caEscapeShellArg($filepath.".".$ext)." ".caEscapeShellArg($filepath."_tmp.".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
@@ -901,6 +904,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vn_preview_height= (isset($pa_options['height']) && ((int)$pa_options['height'] > 0)) ? (int)$pa_options['height'] : 320;
 		
 		$vn_s = $vn_start_at;
+		# TODO: Unused variable
 		$vn_e = $vn_duration - $vn_end_at;
 		$vn_num_frames = ($vn_previewed_duration)/$vn_frame_interval;
 		
@@ -1090,8 +1094,10 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vs_id = 				$pa_options["id"] ? $pa_options["id"] : "mp4_player";
 
 				$vs_poster_frame_url =	$pa_options["poster_frame_url"];
-				
+
+				# TODO: Unused variable
 				$vs_flash_vars = 		$pa_options["viewer_parameters"];
+				# TODO: Unused variable
 				$viewer_base_url =		$pa_options["viewer_base_url"];
 
 				$vn_width =				$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
@@ -1100,7 +1106,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_captions = 			caGetOption("captions", $pa_options, array(), array('castTo' => 'array'));
 				
 				ob_start();
-	
+
+			# TODO: Unused variable
 			$vs_config = 'config={"playlist":[{"url":"'.$vs_poster_frame_url.'", "scaling": "fit"}, {"url": "'.$ps_url.'","autoPlay":false,"autoBuffering":true, "scaling": "fit"}]};';
 ?>
 			<!-- Begin VideoJS -->
@@ -1141,6 +1148,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case "video/x-ms-asf":
 			case "video/x-ms-wmv":
 				$vs_id = 						$pa_options["id"] ? $pa_options["id"] : "mp4_player";
+				# TODO: Unused variable
 				$vs_poster_frame_url =			$pa_options["poster_frame_url"];
 				$vn_width =						$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
 				$vn_height =					$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $pa_properties["height"];
@@ -1156,6 +1164,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				break;
 			# ------------------------------------------------
 		}
+		# TODO: Missing return statement
 	}
 
 	# ------------------------------------------------

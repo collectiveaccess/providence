@@ -291,7 +291,8 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugImageMagick->divineFileFormat()");
 			return false;
 		}
-			
+
+		# TODO: Remove since it is unreachable code.
 		# is it a tilepic?
 		$tp = new TilepicParser();
 		if ($tp->isTilepic($filepath)) {
@@ -480,7 +481,8 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugImageMagick->transform()");
 			return false;
 		}
-		
+
+		# TODO: Unused variable
 		# get parameters for this operation
 		$sparams = $this->info["TRANSFORMATIONS"][$operation];
 		
@@ -494,7 +496,8 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$w = min($cw, round($w)); 
 			$h = min($ch, round($h));
 		}
-		
+
+		# TODO: Unused variable
 		$do_crop = 0;
 		switch($operation) {
 			# -----------------------
@@ -756,6 +759,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		# -----------------------
 		case "CROP":
 			$x = $parameters["x"];
+			# TODO: Unused variable, crop uses only $x
 			$y = $parameters["y"];
 			$w = $parameters["width"];
 			$h = $parameters["height"];

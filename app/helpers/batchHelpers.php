@@ -237,7 +237,7 @@
 	/**
 	 * 
 	 */
-	function caBatchGetMediaFilenameToIdnoRegexList($options=null) {
+	function caBatchGetMediaFilenameToIdnoRegexList($pa_options=null) {
 		$o_config = Configuration::load();
 		$o_log = caGetOption('log', $pa_options, null);
 		
@@ -265,7 +265,7 @@
 	/**
 	 * 
 	 */
-	function caBatchGetIdnoRegexList($options=null) {
+	function caBatchGetIdnoRegexList($pa_options=null) {
 		$o_config = Configuration::load();
 		$o_log = caGetOption('log', $pa_options, null);
 		
@@ -293,7 +293,7 @@
 	/**
 	 * 
 	 */
-	function caBatchGetMediaFilenameReplacementRegexList($options=null) {
+	function caBatchGetMediaFilenameReplacementRegexList($pa_options=null) {
 		$o_config = Configuration::load();
 		$o_log = caGetOption('log', $pa_options, null);
 		

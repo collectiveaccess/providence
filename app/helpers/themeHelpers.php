@@ -51,7 +51,7 @@
 
         if (file_exists($vs_base_path.$vs_file_path)) {
             // Graphic is present in currently configured theme
-			return caHTMLImage($vs_base_url_path.$vs_file_path, $pa_attributes, $pa_options);
+			return caHTMLImage($vs_base_url_path.$vs_file_path, array_merge($pa_attributes, $pa_options));
 		}
 
         $o_config = Configuration::load();		
@@ -61,7 +61,8 @@
             while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
                 $i++;
                 if (file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/{$vs_file_path}")) {
-                    return caHTMLImage(__CA_THEMES_URL__."/{$vs_inherit_from_theme}/{$vs_file_path}", $pa_attributes, $pa_options);
+	                #TODO: Method call uses 3 parameters, but method signature uses 2 parameters
+                    return caHTMLImage(__CA_THEMES_URL__."/{$vs_inherit_from_theme}/{$vs_file_path}", array_merge($pa_attributes, $pa_options));
                 }
                 
                 if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
@@ -71,7 +72,8 @@
         }
 
         // Fall back to default theme
-		return caHTMLImage($po_request->getDefaultThemeUrlPath().$vs_file_path, $pa_attributes, $pa_options);
+		#TODO: Method call uses 3 parameters, but method signature uses 2 parameters
+		return caHTMLImage($po_request->getDefaultThemeUrlPath().$vs_file_path, array_merge($pa_attributes, $pa_options));
 	}
 	# ---------------------------------------
 	/**
@@ -426,6 +428,7 @@
 		# --- get reps as thumbnails
 		$va_reps = $pt_object->getRepresentations(array($ps_version), null, array("checkAccess" => caGetUserAccessValues($po_request), 'primaryOnly' => $pb_primary_only));
 		if(sizeof($va_reps) < 2){
+			# TODO: Missing return statement
 			return;
 		}
 		$va_links = array();
@@ -492,6 +495,7 @@
 				break;
 			# ---------------------------------
 		}
+		# TODO: Missing return statement
 	}
 	# ---------------------------------------
 	/*
@@ -1055,7 +1059,8 @@
 			$vs_tag_proc = $va_parse['tag'];
 			$va_opts = $va_parse['options'];
 			$va_opts['checkAccess'] = $po_request ? caGetUserAccessValues($po_request) : null;
-			
+
+			# TODO: Undefined variable $va_default_form_values
 			if (($vs_default_value = caGetOption('default', $va_opts, null)) || ($vs_default_value = caGetOption($vs_tag_proc, $va_default_form_values, null))) { 
 				$va_default_form_values[$vs_tag_proc] = $vs_default_value;
 				unset($va_opts['default']);
@@ -1085,7 +1090,7 @@
 					break;
 				default:
 					if (preg_match("!^(.*):label$!", $vs_tag_proc, $va_matches)) {
-						$po_view->setVar($vs_tag, $vs_tag_val = $t_subject->getDisplayLabel($va_matches[1]));
+						$po_view->setVar($vs_tag, $vs_tag_val = $pt_subject->getDisplayLabel($va_matches[1]));
 					} elseif (preg_match("!^(.*):boolean$!", $vs_tag_proc, $va_matches)) {
 						$po_view->setVar($vs_tag, caHTMLSelect($vs_tag_proc.'[]', array(_t('AND') => 'AND', _t('OR') => 'OR', 'AND NOT' => 'AND NOT'), array('class' => 'caAdvancedSearchBoolean')));
 					} elseif (preg_match("!^(.*):relationshipTypes$!", $vs_tag_proc, $va_matches)) {
@@ -1290,6 +1295,7 @@ jQuery(document).ready(function() {
 		# --- get collections configuration
 		$o_collections_config = caGetCollectionsConfig();
 		if($o_collections_config->get("export_max_levels") && ($vn_level > $o_collections_config->get("export_max_levels"))){
+			# TODO: Missing return statement
 			return;
 		}
 		$t_list = new ca_lists();
