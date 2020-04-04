@@ -291,7 +291,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugImageMagick->divineFileFormat()");
 			return false;
 		}
-			
+
 		# is it a tilepic?
 		$tp = new TilepicParser();
 		if ($tp->isTilepic($filepath)) {
@@ -882,7 +882,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 
 		$va_output = array();
-		caExec($this->ops_imagemagick_path.'/identify -format "%m\n" '.caEscapeShellArg($this->filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+		caExec( $this->commandWithDefaultArgs('identify') . ' -format "%m\n" ' . caEscapeShellArg($this->filepath) . (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 		
 		// don't extract previews from "normal" images (the output line count is always # of files + 1)
 		if(sizeof($va_output)<=2) { return false; } 
@@ -890,7 +890,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caMultipagePreview');
 		$vs_output_file = $vs_output_file_prefix.'_%05d.jpg';
 
-		caExec($this->ops_imagemagick_path.'/convert '.caEscapeShellArg($this->filepath)." ".$vs_output_file.(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+		caExec( $this->commandWithDefaultArgs('convert') . ' ' . caEscapeShellArg($this->filepath) . " " . $vs_output_file . (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 
 		$vn_i = 0;
 		$va_files = array();
@@ -923,7 +923,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 
 		if(sizeof($va_acceptable_files)){
-			caExec($this->ops_imagemagick_path."/convert ".join(" ",$va_acceptable_files)." ".$vs_archive_original.(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec( $this->commandWithDefaultArgs('convert') . ' ' . join(" ",$va_acceptable_files) . " " . $vs_archive_original . (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			if($vn_return === 0){
 				return $vs_archive_original;
 			}
@@ -1013,7 +1013,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _imageMagickIdentify($ps_filepath) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
-			caExec($this->ops_imagemagick_path.'/identify -format "%m" '.caEscapeShellArg($ps_filepath.'[0]').(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec( $this->commandWithDefaultArgs('identify') . ' -format "%m" ' . caEscapeShellArg( $ps_filepath . '[0]') . (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			return $this->magickToMimeType($va_output[0]);
 		}
 		return null;
@@ -1041,14 +1041,14 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 			}
 			
-			caExec($this->ops_imagemagick_path."/identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec( $this->commandWithDefaultArgs('identify') . " -format '%[DPX:*]' " . caEscapeShellArg($ps_filepath) . (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
 			
 			/* IPTC metadata */
 			$vs_iptc_file = tempnam(caGetTempDirPath(), 'imiptc');
 			@rename($vs_iptc_file, $vs_iptc_file.'.iptc'); // IM uses the file extension to figure out what we want
 			$vs_iptc_file .= '.iptc';
-			caExec($this->ops_imagemagick_path."/convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec( $this->commandWithDefaultArgs('convert') . ' ' . caEscapeShellArg($ps_filepath) . " " . caEscapeShellArg($vs_iptc_file) . (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 
 			$vs_iptc_data = file_get_contents($vs_iptc_file);
 			@unlink($vs_iptc_file);
@@ -1104,7 +1104,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	private function _imageMagickRead($ps_filepath, $options=null) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 		
-			caExec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%[colorspace];%[depth];%[xresolution];%[yresolution]\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec( $this->commandWithDefaultArgs('identify') . ' -format "%m;%w;%h;%[colorspace];%[depth];%[xresolution];%[yresolution]\n" ' . caEscapeShellArg($ps_filepath) . (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			
 			$va_tmp = explode(';', $va_output[0]);
 			
@@ -1264,11 +1264,11 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					array_unshift($va_ops['convert'], '-quality '.intval($pn_quality));
 				}
 				array_unshift($va_ops['convert'], '-colorspace RGB');
-				caExec($this->ops_imagemagick_path.'/convert '.caEscapeShellArg($vs_input_file.'[0]').' '.join(' ', $va_ops['convert']).' '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""));
+				caExec( $this->commandWithDefaultArgs('convert') . ' ' . caEscapeShellArg( $vs_input_file . '[0]') . ' ' . join(' ', $va_ops['convert']) . ' ' . caEscapeShellArg($ps_filepath) . (caIsPOSIX() ? " 2> /dev/null" : ""));
 				$vs_input_file = $ps_filepath;
 			}
 			if (is_array($va_ops['composite']) && sizeof($va_ops['composite'])) {
-				caExec($this->ops_imagemagick_path.'/composite '.join(' ', $va_ops['composite']).' '.caEscapeShellArg($vs_input_file.'[0]').' '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""));
+				caExec( $this->commandWithDefaultArgs('composite') . join(' ', $va_ops['composite']) . ' ' . caEscapeShellArg( $vs_input_file . '[0]') . ' ' . caEscapeShellArg($ps_filepath) . (caIsPOSIX() ? " 2> /dev/null" : ""));
 			}	
 			
 			return true;
@@ -1276,4 +1276,44 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return null;
 	}
 	# ------------------------------------------------
+
+	/**
+	 * Load command default arguments from configuration
+	 *
+	 * @param $command
+	 * @param $default
+	 *
+	 * @return string
+	 */
+	public function getCommandDefaultArgs( $command, $default ) {
+		$command = trim( $command );
+
+		return $this->opo_external_app_config->get( "imagemagick_${command}_args", $default );
+	}
+
+	/**
+	 * Return absolute path to command and default arguments
+	 *
+	 * @param      $command
+	 * @param null $default_args
+	 *
+	 * @return string
+	 */
+	public function commandWithDefaultArgs( $command, $default_args = null ) {
+		return $this->command( $command ) . " " . $this->getCommandDefaultArgs( $command, $default_args );
+	}
+
+	/**
+	 * Return absolute path to command
+	 *
+	 * @param $command
+	 *
+	 * @return string
+	 */
+	public function command( $command ) {
+		$command = trim( $command );
+
+		return "{$this->ops_imagemagick_path}/$command";
+	}
+
 }
