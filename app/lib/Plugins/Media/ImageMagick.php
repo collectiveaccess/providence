@@ -45,18 +45,31 @@ include_once(__CA_LIB_DIR__."/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/Parsers/MediaMetadata/XMPParser.php");
 
-trait DefaultArgsConfiguration {
+/**
+ * Trait CommandConfiguration
+ *
+ * Manage the command configuration, application and default args.
+ *
+ * TODO: Refactor to be included in BaseMediaPlugin so it is available in all media classes.
+ */
+trait CommandConfiguration {
 
 	static private $opo_external_app_config_static = null;
 	private $ops_base_path = null;
-	private $app_name = null;
+	private $ops_command_name = null;
 
-	public function initDefaultArgs( $ps_app_name, $ps_config ) {
-		$this->app_name = $ps_app_name;
+	/**
+	 * Initialize
+	 *
+	 * @param $ps_command_name Set application name. Used for getting settings from configuration file.
+	 * @param $ps_basepath_setting Name of the setting to the base path
+	 */
+	public function initCommandConfiguration( $ps_command_name, $ps_basepath_setting ) {
+		$this->ops_command_name = $ps_command_name;
 		if ( self::$opo_external_app_config_static == null ) {
 			self::$opo_external_app_config_static = Configuration::load( __CA_CONF_DIR__ . "/external_applications.conf" );
 		}
-		$this->ops_base_path = self::$opo_external_app_config_static->get( $ps_config );
+		$this->ops_base_path = self::$opo_external_app_config_static->get( $ps_basepath_setting );
 	}
 
 	/**
@@ -70,7 +83,7 @@ trait DefaultArgsConfiguration {
 	public function getCommandDefaultArgs( $command, $default ) {
 		$command = trim( $command );
 
-		return self::$opo_external_app_config_static->get( $this->app_name . "_${command}_args", $default );
+		return self::$opo_external_app_config_static->get( $this->ops_command_name . "_${command}_args", $default );
 	}
 
 	/**
@@ -102,7 +115,7 @@ trait DefaultArgsConfiguration {
 
 class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
-	use DefaultArgsConfiguration;
+	use CommandConfiguration;
 
 	var $errors = array();
 	
@@ -282,7 +295,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function __construct() {
 		$this->description = _t('Provides image processing and conversion services using ImageMagick via exec() calls to ImageMagick binaries');
 		$this->init();
-		$this->initDefaultArgs('imagemagick', 'imagemagick_path');
+		$this->initCommandConfiguration('imagemagick', 'imagemagick_path');
 	}
 	# ------------------------------------------------
 	# Tell WebLib what kinds of media this plug-in supports
