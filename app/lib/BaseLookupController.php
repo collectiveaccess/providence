@@ -82,7 +82,12 @@
 				$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
 				$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
 				$pb_quiet = (bool)$this->request->getParameter('quiet', pInteger);
-			
+				
+				if((!(bool)$o_config->get('allow_duplicate_items_in_sets')) && ($set_id = $this->request->getParameter('set_id', pInteger))) {
+					$t_set = new ca_sets($set_id);
+					$va_excludes = array_keys($t_set->getItemRowIDs());
+				}
+				
 				if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
 				$va_items = array();
 				if (($vn_str_len = mb_strlen($ps_query)) > 0) {
@@ -209,7 +214,7 @@
 				
 					$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);
 				}
-				if (!is_array($va_items)) { $va_items = array(); }
+				if (!is_array($va_items)) { $va_items = []; }
 			
 				// Optional output simple list of labels instead of full data format
 				if ((bool)$this->request->getParameter('simple', pInteger)) { 
