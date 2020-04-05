@@ -79,4 +79,16 @@ class ImageMagickTest extends TestCase {
 		$this->assertEquals( '/usr/bin/convert -limit thread 1', $command );
 	}
 
+	/**
+	 * First attempt for unit testing and mocks.
+	 */
+	public function testCheckStatus() {
+		$imagemagick_plugin = $this->getMockBuilder( WLPlugMediaImageMagick::class )->onlyMethods( [ 'register' ] )
+		                           ->getMock();
+		$imagemagick_plugin->method( 'register' )->willReturn( array( 'info' => 1 ) );
+		$status = $imagemagick_plugin->checkStatus();
+
+		$this->assertIsArray( $status );
+		$this->assertTrue( $status['available'] );
+	}
 }
