@@ -45,7 +45,65 @@ include_once(__CA_LIB_DIR__."/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/Parsers/MediaMetadata/XMPParser.php");
 
+trait DefaultArgsConfiguration {
+
+	static private $opo_external_app_config_static = null;
+	private $ops_base_path = null;
+	private $app_name = null;
+
+	public function initDefaultArgs( $ps_app_name, $ps_config ) {
+		$this->app_name = $ps_app_name;
+		if ( self::$opo_external_app_config_static == null ) {
+			self::$opo_external_app_config_static = Configuration::load( __CA_CONF_DIR__ . "/external_applications.conf" );
+		}
+		$this->ops_base_path = self::$opo_external_app_config_static->get( $ps_config );
+	}
+
+	/**
+	 * Load command default arguments from configuration
+	 *
+	 * @param $command
+	 * @param $default
+	 *
+	 * @return string
+	 */
+	public function getCommandDefaultArgs( $command, $default ) {
+		$command = trim( $command );
+
+		return self::$opo_external_app_config_static->get( $this->app_name . "_${command}_args", $default );
+	}
+
+	/**
+	 * Return absolute path to command and default arguments
+	 *
+	 * @param      $command
+	 * @param null $default_args
+	 *
+	 * @return string
+	 */
+	public function commandWithDefaultArgs( $command, $default_args = null ) {
+		return $this->command( $command ) . " " . $this->getCommandDefaultArgs( $command, $default_args );
+	}
+
+	/**
+	 * Return absolute path to command
+	 *
+	 * @param $command
+	 *
+	 * @return string
+	 */
+	public function command( $command ) {
+		$command = trim( $command );
+
+		return "{$this->ops_base_path}/$command";
+	}
+
+}
+
 class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
+
+	use DefaultArgsConfiguration;
+
 	var $errors = array();
 	
 	var $filepath;
@@ -55,10 +113,8 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $metadata = array();
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_imagemagick_path;
-	var $ops_graphicsmagick_path;
-	
+
 	var $info = array(
 		"IMPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -225,6 +281,8 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function __construct() {
 		$this->description = _t('Provides image processing and conversion services using ImageMagick via exec() calls to ImageMagick binaries');
+		$this->init();
+		$this->initDefaultArgs('imagemagick', 'imagemagick_path');
 	}
 	# ------------------------------------------------
 	# Tell WebLib what kinds of media this plug-in supports
@@ -235,7 +293,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
 		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
 		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
-		
+
 		if (caMediaPluginImagickInstalled()) {	
 			return null;	// don't use if Imagick is available
 		} 
@@ -1276,44 +1334,5 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return null;
 	}
 	# ------------------------------------------------
-
-	/**
-	 * Load command default arguments from configuration
-	 *
-	 * @param $command
-	 * @param $default
-	 *
-	 * @return string
-	 */
-	public function getCommandDefaultArgs( $command, $default ) {
-		$command = trim( $command );
-
-		return $this->opo_external_app_config->get( "imagemagick_${command}_args", $default );
-	}
-
-	/**
-	 * Return absolute path to command and default arguments
-	 *
-	 * @param      $command
-	 * @param null $default_args
-	 *
-	 * @return string
-	 */
-	public function commandWithDefaultArgs( $command, $default_args = null ) {
-		return $this->command( $command ) . " " . $this->getCommandDefaultArgs( $command, $default_args );
-	}
-
-	/**
-	 * Return absolute path to command
-	 *
-	 * @param $command
-	 *
-	 * @return string
-	 */
-	public function command( $command ) {
-		$command = trim( $command );
-
-		return "{$this->ops_imagemagick_path}/$command";
-	}
 
 }
