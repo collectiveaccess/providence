@@ -489,8 +489,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 				$this->properties["typename"] = $this->handle->getimageformat();
-
-				$this->ohandle = clone $this->handle;
+				
+				$this->ohandle = is_object($this->handle) ? clone $this->handle : null;
 				return 1;
 			}
 		} else {
@@ -1102,7 +1102,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function reset() {
 		if ($this->ohandle) {
-			$this->handle = clone $this->ohandle;
+			$this->handle = is_object($this->ohandle) ? clone $this->ohandle : null;
 			# load image properties
 			$va_tmp = $this->handle->getimagegeometry();
 			$this->properties["width"] = $va_tmp['width'];
@@ -1146,7 +1146,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		if(is_array($this->tmpfiles_to_delete)) {
 		    foreach($this->tmpfiles_to_delete as $f) {
-		        @unlink($tmpfiles_to_delete);
+		        @unlink($f);
 		    }
 		}
 	}

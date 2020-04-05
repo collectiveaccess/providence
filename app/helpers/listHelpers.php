@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2018 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -286,6 +286,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	$g_list_item_ids_for_values = [];
 	function caGetListItemIDForValue($ps_list_code, $ps_value, $pa_options=null) {
+		global $g_list_item_ids_for_values;
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_value}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
@@ -314,6 +315,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	$g_list_item_values_for_ids = [];
 	function caGetListItemValueForID($pn_id, $pa_options=null) {
+		global $g_list_item_values_for_ids;
 		if(!$pn_id || !is_numeric($pn_id)) { return null; }
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_id);
 		
@@ -498,8 +500,8 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
 		
 		if (!is_array($pm_item_id)) { $pm_item_id = [$pm_item_id]; }
-		
-		$va_acc = caGetOption('includeSelf', $pa_options, false) ? [$pn_item_id] : [];
+
+		$va_acc = caGetOption('includeSelf', $pa_options, false) ? $pm_item_id : [];
 		foreach($pm_item_id as $pn_item_id) {
 			if (is_array($va_ancestors = $t_item->getHierarchyAncestors($pn_item_id, ['idsOnly' => true, 'includeSelf' => caGetOption('includeSelf', $pa_options, false)]))) {
 				$va_acc = array_merge($va_acc, $va_ancestors);

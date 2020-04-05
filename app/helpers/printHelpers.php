@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,7 +44,7 @@
 	/**
 	 *
 	 *
-	 * @return string
+	 * @return array|string
 	 */
 	function caGetPrintTemplateDirectoryPath($ps_type) {
 		$va_paths = [];
@@ -341,10 +341,12 @@
 	 * the units specified by the $ps_units parameter. Units are limited to inches, centimeters, millimeters, pixels and points as
 	 * this function is primarily used to switch between units used when generating PDFs.
 	 *
+	 * If the output units are omitted or otherwise not valid, pixels are assumed.
+	 *
 	 * @param $ps_value string The value to convert. Valid units are in, cm, mm, px and p. If units are invalid or omitted points are assumed.
 	 * @param $ps_units string A valid measurement unit: in, cm, mm, px, p (inches, centimeters, millimeters, pixels, points) respectively.
 	 *
-	 * @return int Converted measurement. If the output units are omitted or otherwise not valid, pixels are assumed.
+	 * @return array Converted measurement as array with two keys: value and units. 
 	 */
 	function caParseMeasurement($ps_value, $pa_options=null) {
 		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
@@ -439,96 +441,6 @@
 	 */
 	function caDoPrintViewTagSubstitution($po_view, $po_result, $ps_template_path, $pa_options=null) {
 		return caDoTemplateTagSubstitution($po_view, $po_result, $ps_template_path, ['render' => false, 'barcodes' => true, 'clearVars' => true]);
-	}
-	# ---------------------------------------
-	/** 
-	 *
-	 */
-	function caPrintLabels($po_view, $po_result, $ps_title) {
-		try {
-			$po_view->setVar('title', $ps_title);
-			
-			// render labels
-			$vn_width = 				caConvertMeasurement(caGetOption('labelWidth', $va_template_info, null), 'mm');
-			$vn_height = 				caConvertMeasurement(caGetOption('labelHeight', $va_template_info, null), 'mm');
-			
-			$vn_top_margin = 			caConvertMeasurement(caGetOption('marginTop', $va_template_info, null), 'mm');
-			$vn_bottom_margin = 		caConvertMeasurement(caGetOption('marginBottom', $va_template_info, null), 'mm');
-			$vn_left_margin = 			caConvertMeasurement(caGetOption('marginLeft', $va_template_info, null), 'mm');
-			$vn_right_margin = 			caConvertMeasurement(caGetOption('marginRight', $va_template_info, null), 'mm');
-			
-			$vn_horizontal_gutter = 	caConvertMeasurement(caGetOption('horizontalGutter', $va_template_info, null), 'mm');
-			$vn_vertical_gutter = 		caConvertMeasurement(caGetOption('verticalGutter', $va_template_info, null), 'mm');
-			
-			$va_page_size =				PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
-			$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
-			
-			$vn_label_count = 0;
-			$vn_left = $vn_left_margin;
-			
-			$vn_top = $vn_top_margin;
-			
-			$vs_content = $this->render("pdfStart.php");
-			
-			
-			$va_defined_vars = array_keys($po_view->getAllVars());		// get list defined vars (we don't want to copy over them)
-			$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
-			
-			$va_barcode_files_to_delete = [];
-			
-			$vn_page_count = 0;
-			while($po_result->nextHit()) {
-				$va_barcode_files_to_delete = array_merge($va_barcode_files_to_delete, caDoPrintViewTagSubstitution($po_view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values)));
-				
-				$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
-				$vs_content .= $this->render($va_template_info['path']);
-				$vs_content .= "</div>\n";
-				
-				$vn_label_count++;
-				
-				$vn_left += $vn_vertical_gutter + $vn_width;
-				
-				if (($vn_left + $vn_width) > $vn_page_width) {
-					$vn_left = $vn_left_margin;
-					$vn_top += $vn_horizontal_gutter + $vn_height;
-				}
-				if (($vn_top + $vn_height) > (($vn_page_count + 1) * $vn_page_height)) {
-					
-					// next page
-					if ($vn_label_count < $po_result->numHits()) { $vs_content .= "<div class=\"pageBreak\">&nbsp;</div>\n"; }
-					$vn_left = $vn_left_margin;
-						
-					switch($vs_renderer) {
-						case 'wkhtmltopdf':
-							// WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
-							$vn_page_count++;
-							$vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
-							break;
-						case 'domPDF':
-						default:
-							// domPDF wants things positioned in a per-page coordinate space (Eg. the upper left hand corner of each page is 0,0)
-							$vn_top = $vn_top_margin;								
-							break;
-					}
-				}
-			}
-			
-			$vs_content .= $this->render("pdfEnd.php");
-			
-			
-			
-			caExportAsPDF($po_view, $vs_template_identifier, caGetOption('filename', $va_template_info, 'labels.pdf'), []);
-
-			$vb_printed_properly = true;
-			
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-			
-		} catch (Exception $e) {
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-			
-			$vb_printed_properly = false;
-			$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
-		}
 	}
 	# ---------------------------------------
 	/** 

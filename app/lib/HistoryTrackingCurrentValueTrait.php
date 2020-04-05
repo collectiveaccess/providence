@@ -296,7 +296,7 @@
 		}
 		# ------------------------------------------------------
 		/**
-		 * Return default policy for table
+		 * Return default policy for table. This is a non-static version of getDefaultHistoryTrackingCurrentValuePolicyForTable()
 		 *
 		 * @return string Policy name
 		 */

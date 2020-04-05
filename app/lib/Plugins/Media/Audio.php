@@ -784,8 +784,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 				ob_start();
 ?>
-			<div class="<?php print (isset($pa_options["class"])) ? $pa_options["class"] : "caAudioPlayer"; ?>">
-				<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" <?php print ($vs_poster_url = caGetOption('posterURL', $pa_options, null)) ? "poster='{$vs_poster_url}'" : ''; ?> type="audio/mp3" controls="controls"></audio>
+			<div class="<?php print (isset($pa_options["class"]) ? $pa_options["class"] : "caAudioPlayer"); ?>">
+				<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" <?php print ($vs_poster_url = caGetOption('posterURL', $pa_options, null) ? "poster='{$vs_poster_url}'" : ''); ?> type="audio/mp3" controls="controls"></audio>
 			</div>	
 			<script type="text/javascript">
 				jQuery(document).ready(function() {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -418,7 +418,7 @@
 				
 				$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
 				$o_writer->save('php://output');
-				return;
+				exit;
 				break;
 			case 'pdf':
 				//
@@ -427,9 +427,11 @@
 				caExportViewAsPDF($o_view, $va_template_info, (($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results')).'_'.date("Y-m-d").'.pdf', []);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
-		
-				return;
+				exit;
+				break;
 		}
+		
+		return null;
 	}
 	# ----------------------------------------
 	/**
