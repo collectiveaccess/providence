@@ -1326,6 +1326,10 @@
 			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
 			$vb_import_all_datasets =  caGetOption('importAllDatasets', $pa_options, false); 
 			
+			if ($limit_log_to = caGetOption('limitLogTo', $pa_options, null)) {
+				$limit_log_to = array_map(function($v) { return strtoupper($v); }, preg_split("![;,]+!", $limit_log_to));
+			}
+			
 			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
 			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
@@ -1339,7 +1343,7 @@
 			$vn_file_num = 0;
 			foreach($va_sources as $vs_source) {
 				$vn_file_num++;
-				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('originalFilename' => caGetOption('originalFilename', $pa_options, null), 'fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
+				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('originalFilename' => caGetOption('originalFilename', $pa_options, null), 'fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'limitLogTo' => $limit_log_to, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
 					$va_errors['general'][] = array(
 						'idno' => "*",
 						'label' => "*",

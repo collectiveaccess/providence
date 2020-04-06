@@ -1225,14 +1225,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *		format = Format of data being imported. MANDATORY
 	 *		logDirectory = path to directory where logs should be written
 	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
-	 *			KLogger::EMERG = Emergency messages (system is unusable)
-	 *			KLogger::ALERT = Alert messages (action must be taken immediately)
-	 *			KLogger::CRIT = Critical conditions
-	 *			KLogger::ERR = Error conditions
-	 *			KLogger::WARN = Warnings
-	 *			KLogger::NOTICE = Notices (normal but significant conditions)
-	 *			KLogger::INFO = Informational messages
-	 *			KLogger::DEBUG = Debugging messages
+	 *			ALERT = Alert messages (action must be taken immediately)
+	 *			CRIT = Critical conditions
+	 *			ERR = Error conditions
+	 *			WARN = Warnings
+	 *			NOTICE = Notices (normal but significant conditions)
+	 *			INFO = Informational messages
+	 *			DEBUG = Debugging messages
+	 *		limitLogTo = Limit logging to specific event types for log level INFO. Valid values are: 
+	 *			GENERAL (general status messages)
+	 *			EXISTING_RECORD_POLCY (messages relating to merging of existing records
+	 *			SKIP (messages relating to conditional skipping of mappings, groups or records)
+	 *			RELATIONSHIPS (messages relating to creating of relationships)
+	 *
+	 *			Seprate multiple types with commas or semicolors. [Default is null]
 	 *		logToTempDirectoryIfLogDirectoryIsNotWritable = use system temporary directory for log location if specified logDirectory is not writable. [Default is false]
 	 *		dryRun = do import but don't actually save data
 	 *		environment = an array of environment values to provide to the import process. The keys manifest themselves as mappable tags.
@@ -1254,6 +1260,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_notices = $va_errors = array();
 		
+		if($limit_logging_to = caGetOption('limitLoggingTo', $pa_options, null)) {
+			$limit_logging_to = array_map(function($v) { return strtoupper($v); }, preg_split("![;,]+!", $limit_logging_to));
+		}
+		
+		$log_erp = $log_skip = $log_relations = $log_general = true;
+		if (is_array($limit_logging_to)) {
+			$log_erp = (in_array('EXISTING_RECORD_POLICY', $limit_logging_to, true) || is_null($limit_logging_to));
+			$log_skip = (in_array('SKIP', $limit_logging_to, true) || is_null($limit_logging_to));
+			$log_relations = (in_array('RELATIONSHIPS', $limit_logging_to, true) || is_null($limit_logging_to));
+			$log_general = (in_array('GENERAL', $limit_logging_to, true) || is_null($limit_logging_to));
+		}
+		
 		$pb_no_transaction 	= caGetOption('noTransaction', $pa_options, false, array('castTo' => 'bool'));
 		$pa_force_import_for_primary_keys = caGetOption('forceImportForPrimaryKeys', $pa_options, null);
 
@@ -1272,6 +1290,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$po_request 	= caGetOption('request', $pa_options, null);
 		$pb_dry_run 	= caGetOption('dryRun', $pa_options, false);
+		
 		
 		$pn_file_number 		= caGetOption('fileNumber', $pa_options, 0);
 		$pn_number_of_files 	= caGetOption('numberOfFiles', $pa_options, 1);
@@ -1309,7 +1328,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_progress = caGetOption('progressBar', $pa_options, new ProgressBar('WebUI'));
 		if ($vb_show_cli_progress_bar) { $o_progress->setMode('CLI'); $o_progress->set('outputToTerminal', true); }
 		
-		$o_log->logInfo(_t('Started import of %1 using mapping %2', $ps_source, $t_mapping->get("importer_code")));		
+		if($log_general) { $o_log->logInfo(_t('Started import of %1 using mapping %2', $ps_source, $t_mapping->get("importer_code"))); }
 		
 
 		$t = new Timer();
@@ -1573,7 +1592,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								case 'skip':
 								default:
 									if ($vs_action_code != 'skip') {
-										$o_log->logInfo(_t('Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code));
+										if($log_skip) { $o_log->logInfo(_t('Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code)); }
 									} else {
 										$o_log->logDebug(_t('Row was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code));
 									}
@@ -1708,7 +1727,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (is_array($pa_force_import_for_primary_keys) && sizeof($pa_force_import_for_primary_keys) > 0) {
 					$vn_id = array_shift($pa_force_import_for_primary_keys);
 					if (!$t_subject->load($vn_id)) { 
-						$o_log->logInfo(_t('[%1] Skipped import because forced primary key \'%1\' does not exist', $vn_id));
+						if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because forced primary key \'%1\' does not exist', $vn_id)); }
 						ca_data_importers::$s_num_records_skipped++;
 						continue;	// skip because primary key does not exist
 					}
@@ -1721,7 +1740,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-									$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy)); }
 									ca_data_importers::$s_num_records_skipped++;
 									continue(2);	// skip because idno matched
 								}
@@ -1733,7 +1752,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-								$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
 								ca_data_importers::$s_num_records_skipped++;
 								continue(2);	// skip because label matched
 							}
@@ -1749,10 +1768,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 									$t_subject->load($va_ids[0]);
-									$o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy));
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy)); }
 									break;
 								} else {
-								    $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true)));
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
 								}
 							}
 							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
@@ -1764,10 +1783,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 								$t_subject->load($va_ids[0]);
-								$o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
 								$vb_was_preferred_label_match = true;
 							} else {
-							    $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_R($va_pref_label_values, true), print_r($va_base_criteria, true)));
+							    if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_R($va_pref_label_values, true), print_r($va_base_criteria, true))); }
 							}
 							break;	
 						case 'overwrite_on_idno_and_preferred_labels':
@@ -1785,12 +1804,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										ca_data_importers::logImportError(_t('[%1] Could not delete existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
 										// Don't stop?
 									} else {
-										$o_log->logInfo(_t('[%1] Overwrote existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
+										if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy)); }
 										$t_subject->clear();
 										break;
 									}
 								} else {
-								    $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true)));
+								    if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
 								}
 							}
 							if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
@@ -1808,12 +1827,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									ca_data_importers::logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 									// Don't stop?
 								} else {
-									$o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
 									break;
 								}
 								$t_subject->clear();
 							} else {
-							    $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_R($va_pref_label_values, true), print_r($va_base_criteria, true)));
+							    if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_R($va_pref_label_values, true), print_r($va_base_criteria, true))); }
 							}
 							break;
 					}
@@ -1877,46 +1896,46 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							// Evaluate skip-if-empty options before setting default value, addings prefix/suffix or formatting with templates
 							// because "empty" refers to the source value before this sort of additive processing.
 							if (isset($va_item['settings']['skipRowIfEmpty']) && (bool)$va_item['settings']['skipRowIfEmpty'] && !strlen($vm_val)) {
-								$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is empty', $vs_idno, $vn_row, $va_item['destination'], $vn_group_id));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is empty', $vs_idno, $vn_row, $va_item['destination'], $vn_group_id)); }
 								continue(4);
 							}
 							if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
-								$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 is empty', $vs_idno, $vn_group_id, $va_item['destination']));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 is empty', $vs_idno, $vn_group_id, $va_item['destination'])); }
 								continue(3);
 							}
 							if (isset($va_item['settings']['skipIfEmpty']) && (bool)$va_item['settings']['skipIfEmpty'] && !strlen($vm_val)) {
-								$o_log->logInfo(_t('[%1] Skipped mapping because value for %2 is empty', $vs_idno, $va_item['destination']));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping because value for %2 is empty', $vs_idno, $va_item['destination'])); }
 								continue(2);
 							}
 							if ($va_item['settings']['skipIfValue'] && !is_array($va_item['settings']['skipIfValue'])) { $va_item['settings']['skipIfValue'] = array($va_item['settings']['skipIfValue']); }
 							if (isset($va_item['settings']['skipIfValue']) && is_array($va_item['settings']['skipIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipIfValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped mapping %2 because value for %3 matches value %4', $vs_idno, $vn_row, $vs_item_terminal, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping %2 because value for %3 matches value %4', $vs_idno, $vn_row, $vs_item_terminal, $vm_val)); }
 								continue(2);
 							}
 							if ($va_item['settings']['skipIfNotValue'] && !is_array($va_item['settings']['skipIfNotValue'])) { $va_item['settings']['skipIfNotValue'] = array($va_item['settings']['skipIfNotValue']); }
 							if (isset($va_item['settings']['skipIfNotValue']) && is_array($va_item['settings']['skipIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipIfNotValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped mapping %2 because value %4 for %3 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping %2 because value %4 for %3 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vm_val)); }
 								continue(2);
 							}
 							if ($va_item['settings']['skipRowIfValue'] && !is_array($va_item['settings']['skipRowIfValue'])) { $va_item['settings']['skipRowIfValue'] = array($va_item['settings']['skipRowIfValue']); }
 							if (isset($va_item['settings']['skipRowIfValue']) && is_array($va_item['settings']['skipRowIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipRowIfValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val)); }
 								continue(4);
 							}
 							if ($va_item['settings']['skipRowIfNotValue'] && !is_array($va_item['settings']['skipRowIfNotValue'])) { $va_item['settings']['skipRowIfNotValue'] = array($va_item['settings']['skipRowIfNotValue']); }
 							if (isset($va_item['settings']['skipRowIfNotValue']) && is_array($va_item['settings']['skipRowIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipRowIfNotValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val)); }
 								continue(4);
 							}
 							if ($va_item['settings']['skipGroupIfValue'] && !is_array($va_item['settings']['skipGroupIfValue'])) { $va_item['settings']['skipGroupIfValue'] = array($va_item['settings']['skipGroupIfValue']); }
 							if (isset($va_item['settings']['skipGroupIfValue']) && is_array($va_item['settings']['skipGroupIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipGroupIfValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val)); }
 								continue(3);
 							}
 						
 							if ($va_item['settings']['skipGroupIfNotValue'] && !is_array($va_item['settings']['skipGroupIfNotValue'])) { $va_item['settings']['skipGroupIfNotValue'] = array($va_item['settings']['skipGroupIfNotValue']); }
 							if (isset($va_item['settings']['skipGroupIfNotValue']) && is_array($va_item['settings']['skipGroupIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipGroupIfNotValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal)); }
 								continue(3);
 							}
 						
@@ -1968,19 +1987,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 					
 							if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
-								$o_log->logInfo(_t('[%1] Skipped mapping %2 because of type restriction for type %3', $vs_idno, $vn_row, $vs_type));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping %2 because of type restriction for type %3', $vs_idno, $vn_row, $vs_type)); }
 								continue(2);
 							}
 						
 							if ($va_item['settings']['skipRowIfValue'] && !is_array($va_item['settings']['skipRowIfValue'])) { $va_item['settings']['skipRowIfValue'] = array($va_item['settings']['skipRowIfValue']); }
 							if (isset($va_item['settings']['skipRowIfValue']) && is_array($va_item['settings']['skipRowIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipRowIfValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val)); }
 								continue(4);
 							}
 						
 							if ($va_item['settings']['skipRowIfNotValue'] && !is_array($va_item['settings']['skipRowIfNotValue'])) { $va_item['settings']['skipRowIfNotValue'] = array($va_item['settings']['skipRowIfNotValue']); }
 							if (isset($va_item['settings']['skipRowIfNotValue']) && is_array($va_item['settings']['skipRowIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipRowIfNotValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val)); }
 								continue(4);
 							}
 						
@@ -1988,7 +2007,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									
 								try {
 									if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipRowIfExpression'], $va_row_with_replacements)) {
-										$o_log->logInfo(_t('[%1] Skipped row %2 because expression %3 is true', $vs_idno, $vn_row, $va_item['settings']['skipRowIfExpression']));
+										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because expression %3 is true', $vs_idno, $vn_row, $va_item['settings']['skipRowIfExpression'])); }
 										continue(4);
 									}
 								} catch (Exception $e) {
@@ -1998,20 +2017,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 							if ($va_item['settings']['skipIfValue'] && !is_array($va_item['settings']['skipIfValue'])) { $va_item['settings']['skipIfValue'] = array($va_item['settings']['skipIfValue']); }
 							if (isset($va_item['settings']['skipIfValue']) && is_array($va_item['settings']['skipIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipIfValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped mapping %2 because value for %3 matches value %4', $vs_idno, $vn_row, $vs_item_terminal, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping %2 because value for %3 matches value %4', $vs_idno, $vn_row, $vs_item_terminal, $vm_val)); }
 								continue(2);
 							}
 						
 							if ($va_item['settings']['skipIfNotValue'] && !is_array($va_item['settings']['skipIfNotValue'])) { $va_item['settings']['skipIfNotValue'] = array($va_item['settings']['skipIfNotValue']); }
 							if (isset($va_item['settings']['skipIfNotValue']) && is_array($va_item['settings']['skipIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipIfNotValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped mapping %2 because value %4 for %3 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping %2 because value %4 for %3 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vm_val)); }
 								continue(2);
 							}
 						
 							if (isset($va_item['settings']['skipGroupIfExpression']) && strlen(trim($va_item['settings']['skipGroupIfExpression']))) {
 								try {
 								   if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipGroupIfExpression'], $va_row_with_replacements)) {
-										$o_log->logInfo(_t('[%1] Skipped group %2 because skipRowIfExpression %3 is true', $vs_idno, $vn_group_id, $va_item['settings']['skipGroupIfExpression']));
+										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because skipRowIfExpression %3 is true', $vs_idno, $vn_group_id, $va_item['settings']['skipGroupIfExpression'])); }
 										continue(3);
 									}
 								} catch (Exception $e) {
@@ -2021,20 +2040,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							if ($va_item['settings']['skipGroupIfValue'] && !is_array($va_item['settings']['skipGroupIfValue'])) { $va_item['settings']['skipGroupIfValue'] = array($va_item['settings']['skipGroupIfValue']); }
 							if (isset($va_item['settings']['skipGroupIfValue']) && is_array($va_item['settings']['skipGroupIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipGroupIfValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val)); }
 								continue(3);
 							}
 						
 							if ($va_item['settings']['skipGroupIfNotValue'] && !is_array($va_item['settings']['skipGroupIfNotValue'])) { $va_item['settings']['skipGroupIfNotValue'] = array($va_item['settings']['skipGroupIfNotValue']); }
 							if (isset($va_item['settings']['skipGroupIfNotValue']) && is_array($va_item['settings']['skipGroupIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipGroupIfNotValue'])) {
-								$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal));
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal)); }
 								continue(3);
 							}
 						
 							if (isset($va_item['settings']['skipIfExpression']) && strlen(trim($va_item['settings']['skipIfExpression']))) {
 								try {
 								    if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipIfExpression'], $va_row_with_replacements)) {
-										$o_log->logInfo(_t('[%1] Skipped mapping because skipIfExpression %2 is true', $vs_idno, $va_item['settings']['skipIfExpression']));
+										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping because skipIfExpression %2 is true', $vs_idno, $va_item['settings']['skipIfExpression'])); }
 										continue(2);
 									}
 								} catch (Exception $e) {
@@ -2629,7 +2648,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 																if ($o_trans) { $t_rel_instance->setTransaction($o_trans); }
 																if ($t_rel_instance->load($va_element_content[$vs_element])) {
 																	if ($t_rel_rel = $t_rel_instance->addRelationship($vs_rel_rel_table, $va_rel_rel['id'], $va_rel_rel['_relationship_type'])) {
-																		$o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])));
+																		if($log_relations) { $o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type']))); }
 																	} else {
 																		if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 																			ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2975,7 +2994,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											if ($o_trans) { $t_rel_instance->setTransaction($o_trans); }
 											if ($vn_rel_id && $t_rel_instance->load($vn_rel_id)) {
 												if ($t_rel_rel = $t_rel_instance->addRelationship($vs_rel_rel_table, $va_rel_rel['id'], $va_rel_rel['_relationship_type'])) {
-													$o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])));
+													if($log_relations) { $o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type']))); }
 												} else {
 													if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 														ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -3035,7 +3054,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$opa_app_plugin_manager->hookDataPostImport(array('subject' => $t_subject, 'mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
 			
 			
-				$o_log->logInfo(_t('[%1] Imported %2 as %3 ', $vs_idno, $vs_preferred_label_for_log, $vs_subject_table_name));
+				if($log_general) { $o_log->logInfo(_t('[%1] Imported %2 as %3 ', $vs_idno, $vs_preferred_label_for_log, $vs_subject_table_name)); }
 				$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_SUCCESS__, _t('Imported %1', $vs_idno));
 				
 				if ($t_add_to_set) {
@@ -3049,7 +3068,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 	}
 	
-		$o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_records_skipped, ca_data_importers::$s_num_import_errors));
+		if($log_general) { $o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_records_skipped, ca_data_importers::$s_num_import_errors)); }
 		
 		//if ($vb_show_cli_progress_bar) {
 		$o_progress->setDataForJobID(null, _t('Import complete'), ['numRecordsProcessed' => ca_data_importers::$s_num_records_processed, 'table' => $t_subject->tableName(), 'created' => $va_ids_created, 'updated' => $va_ids_updated]);
@@ -3070,7 +3089,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($pb_dry_run) {
 			if ($o_trans) { $o_trans->rollback(); }
-			$o_log->logInfo(_t('Rollback successful import run in "dry run" mode'));
+			if($log_general) { $o_log->logInfo(_t('Rollback successful import run in "dry run" mode')); }
 		} else {
 			if ($o_trans) { $o_trans->commit(); }
 		}

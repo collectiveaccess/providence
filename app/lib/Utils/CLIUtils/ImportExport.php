@@ -452,6 +452,7 @@
 				CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
 				return false;
 			}
+			
 
 			$vb_direct = (bool)$po_opts->getOption('direct');
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
@@ -467,7 +468,7 @@
 				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 			}
 
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $po_opts->getOption('log-level'), 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $po_opts->getOption('log-level'), 'limitLogTo' => $po_opts->getOption('limit-log-to'), 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
@@ -485,7 +486,8 @@
 				"mapping|m=s" => _t('Mapping to import data with.'),
 				"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
-				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of importance: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+				"limit-log-to|l-s" => _t('Limit logging to specific event types when log level is set to INFO. Limit logging to specific event types for log level INFO. Valid values are: GENERAL (general status messages), EXISTING_RECORD_POLCY (messages relating to merging of existing records, SKIP (messages relating to conditional skipping of mappings, groups or records), RELATIONSHIPS (messages relating to creating of relationships. Seprate multiple types with commas or semicolors.'),
 				"add-to-set|t-s" => _t('Optional identifier of set to add all imported items to.'),
 				"environment|e-s" => _t('JSON-encoded key value pairs to add to import environment values.'),
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
