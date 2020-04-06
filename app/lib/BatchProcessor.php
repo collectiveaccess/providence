@@ -845,31 +845,30 @@
 										$vs_bool = 'OR';
 										$va_values = array();
 										
-										$vs_match_value = $va_matches[1];
-									    if (isset($idno_alts_list[strtolower($vs_match_value)])) { $vs_match_value = $idno_alts_list[strtolower($vs_match_value)];  }
+										$match_value = $va_matches[1];
+									    if (isset($idno_alts_list[strtolower($match_value)])) { $match_value = $idno_alts_list[strtolower($match_value)];  }
 										foreach($va_fields_to_match_on as $vs_fld) {
 											switch($vs_match_type) {
 												case 'STARTS':
-													$vs_match_value = "{$match_value}%";
+													$match_value = "{$match_value}%";
 													break;
 												case 'ENDS':
-													$vs_match_value = "%{$match_value}";
+													$match_value = "%{$match_value}";
 													break;
 												case 'CONTAINS':
-													$vs_match_value = "%{$match_value}%";
+													$match_value = "%{$match_value}%";
 													break;
 											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-												$va_values[$vs_fld] = ['name' => $vs_match_value];
+												$va_values[$vs_fld] = ['name' => $match_value];
 											} elseif(sizeof($va_flds = explode('.', $vs_fld)) > 1) {
-												$va_values[$va_flds[0]][$va_flds[1]] = $vs_match_value;
+												$va_values[$va_flds[0]][$va_flds[1]] = $match_value;
 											} else {
-												$va_values[$vs_fld] = $vs_match_value;
+												$va_values[$vs_fld] = $match_value;
 											}
 										}
 										
 										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
-
 
 										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool, 'restrictToTypes' => $va_limit_matching_to_type_ids)))) {
 											if ($t_instance->load($vn_id)) {
