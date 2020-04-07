@@ -7576,3 +7576,8 @@ span.statisticsDashboardSelectedGroup {
 span.statisticsDashboardSelectedsite {
     font-weight: bold;
 }
+
+.dashboardWidgetContentContainer a.link {
+    text-decoration: underline;
+    color: #1ab3c8;
+}

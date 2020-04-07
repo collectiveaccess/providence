@@ -440,7 +440,7 @@ li.sfHover > a > .sf-sub-indicator {
 /*** NOTIFICATIONS ***/
 
 div.notification-info-box {
-	background:	url('../graphics/icons/info.gif') no-repeat 10px 5px;
+	background:	url('../graphics/icons/info.png') no-repeat 10px 5px;
 	text-indent: 32px;
 	background-color: #eeeeee;
 	padding: 5px;
@@ -972,7 +972,7 @@ div.search-hier-browser-box {
 	margin: 0px;
 	border:none;
 }
-.labelInfo ul li a {_height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0;}
+.labelInfo ul li a {_height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrows_white.png') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0;}
 
 .labelInfo ul li a:hover { background-color: #fff; }
 
@@ -1182,7 +1182,7 @@ table.representationAnnotationListItem {
 }
 
 #objectRepresentationOverlay div.close {
-	background:url(../graphics/buttons/close.png) no-repeat; 
+	background:url(../graphics/icons/glyphicons_192_circle_remove.png) no-repeat;
 	position:absolute; 
 	top:10px; 
 	right:10px;
@@ -1226,7 +1226,7 @@ select.objectRepresentationOverlayControls {
 }
 
 #objectInfoRepresentationOverlay div.close {
-	background:url(../graphics/buttons/close.png) no-repeat; 
+	background:url(../graphics/icons/glyphicons_192_circle_remove.png) no-repeat;
 	position:absolute; 
 	top:10px; 
 	right:10px;
@@ -1257,7 +1257,7 @@ select.objectRepresentationOverlayControls {
 }
 
 #quickLookOverlay div.close {
-	background:url(../graphics/buttons/close.png) no-repeat; 
+	background:url(../graphics/icons/glyphicons_192_circle_remove.png) no-repeat;
 	position:absolute; 
 	top:10px; 
 	right:10px;
@@ -1616,7 +1616,7 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 }
 .ui-tabs-loading em {
     padding: 0 0 0 20px;
-    background: url(loading.gif) no-repeat 0 50%;
+    background: url(images/loading.gif) no-repeat 0 50%;
 }
 
 /* Additional IE specific bug fixes... */
@@ -1906,7 +1906,7 @@ div.browseCriterion {
 	border: 1px solid #999999; 
 	padding: 5px; 
 	height: 90px; 
-	overflow: hide;
+	overflow: hidden;
 }
 
 .browseCriterionLabel {
@@ -1981,7 +1981,7 @@ div.searchFormElementEditorAddGroupButton {
 	border-top: 1px dotted #aaaaaa;
 }
 
-/ * SEARCH FORMS */
+/* SEARCH FORMS */
 
 div.searchFormSelector {
 	float: right;
