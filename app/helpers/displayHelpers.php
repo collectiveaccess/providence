@@ -4810,7 +4810,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *
 	 * @return mixed|string
 	 */
-	function caDisplayName($fname, $lname, $default=null){
+	function caDisplayFullName($fname, $lname, $default=null){
 		$names = [];
 		$fname ? ( $names[] = $fname ) : null ;
 		$lname ? ( $names[] = $lname ) : null ;
