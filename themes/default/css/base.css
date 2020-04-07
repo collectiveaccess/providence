@@ -5234,12 +5234,12 @@ a.dashboardRemoveWidget {
 
 .dashboardWidgetScrollMedium {
     height: 300px;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 .dashboardWidgetScrollLarge {
     height: 400px;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 .dashboardWidgetTable{
