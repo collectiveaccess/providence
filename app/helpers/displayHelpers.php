@@ -4797,3 +4797,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		return $t->getDisplayLabel($bundle);
 	}
 	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caDisplayName($fname, $lname, $default=null){
+		if ($fname && $lname){
+			return $fname . ' ' . $lname;
+		}
+		return _t($default);
+	}
+	# ------------------------------------------------------------------

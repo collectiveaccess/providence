@@ -15,7 +15,7 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
  * This source code is free and modifiable under the terms of 
@@ -32,13 +32,40 @@
 	$vn_jobs_queued_processing = $this->getVar('jobs_queued_processing');
 	$va_jobs_queued = $this->getVar('qd_job_data');
 	$va_jobs_processing = $this->getVar('pr_job_data');
-	
+
+	/**
+	 * Returns a string to render status information in html.
+	 *
+	 * @param $va_status
+	 * @param $view
+	 */
+	function getStatusForDisplay($va_status, $view){
+		$result = "";
+		foreach($va_status as $vs_code => $va_info) {
+			switch($vs_code) {
+				case 'table':
+					$va_tmp = explode(':', $va_status['table']['value']);
+					if ($vs_link = caEditorLink($view->request, $va_info['value'], 'link', $va_tmp[0], $va_tmp[2], array(), array(), array('verifyLink' => true))) {
+						$result .= "<strong>".$va_info['label']."</strong>: ".$vs_link."<br/>\n";
+					} else {
+						$result .=  "<strong>".$va_info['label']."</strong>: ".$va_info['value']." [<em>"._t('DELETED')."</em>]<br/>\n";
+					}
+					break;
+				default:
+					$result .= "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n";
+					break;
+			}
+		}
+
+		return $result;
+	}
 ?>
 
 <div class="dashboardWidgetContentContainer" id="widget_<?php print $vs_widget_id; ?>">
-	<div style="float:right; margin-right: 10px;" id="widget_last_update_display_<?php print $vs_widget_id; ?>">
+	<div class="control-box-right-content" id="widget_last_update_display_<?php print $vs_widget_id; ?>">
 		<?php print _t('Updated at %1', date('H:i')); ?>
 	</div>
+	<div class="clear"></div>
 
 <?php
 	if((sizeof($va_jobs_processing) > 0) || (sizeof($va_jobs_queued) > 0) || (sizeof($va_jobs_done) > 0)){
@@ -79,12 +106,7 @@
 						
 						<?php print "<strong>"._t("Created on")."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["created"])."<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
-<?php 
-						foreach($va_job['status'] as $vs_code => $va_info) {
-							print "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n"; 
-						}
-		
-?>
+						<?php print getStatusForDisplay( $va_job['status'], $this ); ?>
 					</td>
 				</tr>
 <?php
@@ -109,10 +131,7 @@
 						
 						<?php print "<strong>"._t("Created on")."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["created"])."<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
-<?php 
-						foreach($va_job['status'] as $vs_code => $va_info) {
-							print "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n"; 
-						}
+						<?php print getStatusForDisplay($va_job['status'], $this);
 ?>
 					</td>
 				</tr>
@@ -149,24 +168,10 @@
 										'Event Log', '', '', 'logs/Events', 'Index' ) . "</span><br/>\n";
 							}
 						}
-						
-						foreach($va_job['status'] as $vs_code => $va_info) {
-							switch($vs_code) {
-								case 'table':
-									$va_tmp = explode(':', $va_job['status']['table']['value']);
-									if ($vs_link = caEditorLink($this->request, $va_info['value'], 'link', $va_tmp[0], $va_tmp[2], array(), array(), array('verifyLink' => true))) {
-										print "<strong>".$va_info['label']."</strong>: ".$vs_link."<br/>\n";
-									} else {
-										print "<strong>".$va_info['label']."</strong>: ".$va_info['value']." [<em>"._t('DELETED')."</em>]<br/>\n";
-									}
-									break;
-								default:
-									print "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n"; 
-									break;
-							}
-						}
-		
-		?>
+
+						print getStatusForDisplay( $va_job['status'], $this );
+
+						?>
 						<?php print "<strong>"._t("Total processing time")."</strong>: ".$va_job['processing_time']."s<br />"; ?>
 					</td>
 				</tr>
@@ -180,7 +185,11 @@
 	</div><!-- end tabContainer -->
 <?php
 	}else{
-		print _t("There are no running jobs, queued jobs or jobs completed in the last %1 hours.", $this->getVar('hours'));
+		?>
+	<div class="block">
+		<?php print _t("There are no running jobs, queued jobs or jobs completed in the last %1 hours.", $this->getVar('hours'));
+		?>
+	</div><?php
 	}
 ?>
 </div>

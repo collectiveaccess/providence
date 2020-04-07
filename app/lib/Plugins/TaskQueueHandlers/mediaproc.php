@@ -89,7 +89,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 			if (file_exists($va_parameters["FILENAME"])) {
 				$va_params['input_file_size'] = array(
 					'label' => _t('Input file size'),
-					'value' => sprintf("%4.2dM", filesize($va_parameters["FILENAME"])/(1024 * 1024))
+					'value' => sprintf("%s", caFormatFileSize(filesize($va_parameters["FILENAME"])))
 				);
 			}
 			$va_params['table'] = array(
