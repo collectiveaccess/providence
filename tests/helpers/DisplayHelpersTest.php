@@ -89,28 +89,28 @@ class DisplayHelpersTest extends TestCase {
 		$fname = 'Peter';
 		$lname = 'Perkins';
 
-		$this->assertEquals('Peter Perkins', caDisplayName($fname, $lname));
+		$this->assertEquals('Peter Perkins', caDisplayFullName($fname, $lname));
 	}
 	# -------------------------------------------------------
 	public function testDisplayNameOnlyFirstName() {
 		$fname = 'Peter';
 		$lname = null;
 
-		$this->assertEquals('Peter', caDisplayName($fname, $lname));
+		$this->assertEquals('Peter', caDisplayFullName($fname, $lname));
 	}
 	# -------------------------------------------------------
 	public function testDisplayNameOnlySurname() {
 		$fname = null;
 		$lname = 'Perkins';
 
-		$this->assertEquals('Perkins', caDisplayName($fname, $lname));
+		$this->assertEquals('Perkins', caDisplayFullName($fname, $lname));
 	}
 	# -------------------------------------------------------
 	public function testDisplayNameDefault() {
 		$fname = null;
 		$lname = null;
 
-		$this->assertEquals('Faulty Default', caDisplayName($fname, $lname, 'Faulty Default'));
+		$this->assertEquals('Faulty Default', caDisplayFullName($fname, $lname, 'Faulty Default'));
 	}
 	# -------------------------------------------------------
 }
