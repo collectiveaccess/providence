@@ -84,7 +84,7 @@
 				$va_params = caUnserializeForDatabase($va_row["parameters"]);
 				$va_completed[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
 				$va_completed[$va_row["task_id"]]["created"] = $va_row["created_on"];
-				$va_completed[$va_row["task_id"]]["by"] = caDisplayFullName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
+				$va_completed[$va_row["task_id"]]["by"] = caFormatPersonName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
 				$va_completed[$va_row["task_id"]]["completed_on"] = $va_row["completed_on"];
 				$va_completed[$va_row["task_id"]]["error_code"] = $va_row["error_code"];
 				
@@ -122,12 +122,12 @@
 				if(!$vo_tq->rowKeyIsBeingProcessed($va_row["row_key"])){
 					$va_qd_jobs[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
 					$va_qd_jobs[$va_row["task_id"]]["created"] = $va_row["created_on"];
-					$va_qd_jobs[$va_row["task_id"]]["by"] = caDisplayFullName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
+					$va_qd_jobs[$va_row["task_id"]]["by"] = caFormatPersonName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
 					$va_qd_jobs[$va_row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($va_row);
 				} else {
 					$va_pr_jobs[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
 					$va_pr_jobs[$va_row["task_id"]]["created"] = $va_row["created_on"];
-					$va_pr_jobs[$va_row["task_id"]]["by"] = caDisplayFullName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
+					$va_pr_jobs[$va_row["task_id"]]["by"] = caFormatPersonName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
 					$va_pr_jobs[$va_row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($va_row);
 				}
 			}
