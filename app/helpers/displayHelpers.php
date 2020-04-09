@@ -1281,8 +1281,11 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$t_set = new ca_sets();
 			if (is_array($va_sets = caExtractValuesByUserLocale($t_set->getSetsForItem($t_item->tableNum(), $t_item->getPrimaryKey(), array('user_id' => $po_view->request->getUserID(), 'access' => __CA_SET_READ_ACCESS__)))) && sizeof($va_sets)) {
 				$va_links = array();
+				
+				$last_set_id = Session::getVar('last_set_id');
 				foreach($va_sets as $vn_set_id => $va_set) {
-					$va_links[] = "<a href='".caEditorUrl($po_view->request, 'ca_sets', $vn_set_id)."'>".$va_set['name']."</a>";
+					$class = ($last_set_id == $vn_set_id) ? "class='currentSet'" : "";
+					$va_links[] = "<a {$class} href='".caEditorUrl($po_view->request, 'ca_sets', $vn_set_id)."'>".$va_set['name']."</a>";
 				}
 				$vs_more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 			}

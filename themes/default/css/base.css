@@ -7576,3 +7576,8 @@ span.statisticsDashboardSelectedGroup {
 span.statisticsDashboardSelectedsite {
     font-weight: bold;
 }
+
+a.currentSet {
+	font-weight: bold;
+	color: #333;
+}
