@@ -227,6 +227,7 @@ class Replicator {
 						->addGetParameter('pushMediaTo', $vs_push_media_to)
 						->request()->getRawData();
 
+					if(!is_array($va_source_log_entries)) { break; }
                     $log_ids = array_keys($va_source_log_entries);
                     $start_log_id = array_shift($log_ids);
                     $end_log_id = array_pop($log_ids);

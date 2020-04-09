@@ -7583,7 +7583,13 @@ span.statisticsDashboardSelectedsite {
     font-weight: bold;
 }
 
-/* "new" ca_object_representations_bundle */
+/* Current set highlighting */
+a.currentSet {
+	font-weight: bold;
+	color: #333;
+}
+
+/* "New" ca_object_representations_bundle */
 .objectRepresentationMediaUploadStatus {
     font-size:16px;
     color: #828282;

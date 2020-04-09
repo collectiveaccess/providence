@@ -576,6 +576,33 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Use raw data values when testing expression'),
 			'description' => _t('When evaluating conditions to skip a mapping, row or group via an expression using a setting such as skipIfExpression, use raw un-transformed data rather than data that has been transformed with applyRegularExpressions and replacement values.')
 		);
+		$va_settings['mediaPrefix'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media prefix'),
+			'description' => _t('Path to import directory containing files references for media or file metadata attributes.')
+		);
+		$va_settings['matchType'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media match type'),
+			'description' => _t('Determines how file names are compared to the match value. Valid values are STARTS, ENDS, CONTAINS and EXACT. (Default is EXACT)')
+		);
+		$va_settings['matchMode'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media match mode'),
+			'description' => _t('Determines whether to search on file names, enclosing directory names or both. Valid values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES and FILE_NAME. (Default is FILE_NAME).')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

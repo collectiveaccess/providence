@@ -463,7 +463,7 @@
 		 * Compare file name to entries in skip-file list and return true if file matches any entry.
 		 */
 		private static function _skipFile($ps_file, $pa_skip_list) {
-		    if (preg_match("!SynoResource!", $ps_file)) { return true; }        // skip Synology res files
+		    if (preg_match("!(SynoResource|SynoEA)!", $ps_file)) { return true; } // skip Synology res files
 			foreach($pa_skip_list as $vn_i => $vs_skip) {
 				if (strpos($vs_skip, "*") !== false) {
 					// is wildcard
@@ -845,31 +845,30 @@
 										$vs_bool = 'OR';
 										$va_values = array();
 										
-										$vs_match_value = $va_matches[1];
-									    if (isset($idno_alts_list[strtolower($vs_match_value)])) { $vs_match_value = $idno_alts_list[strtolower($vs_match_value)];  }
+										$match_value = $va_matches[1];
+									    if (isset($idno_alts_list[strtolower($match_value)])) { $match_value = $idno_alts_list[strtolower($match_value)];  }
 										foreach($va_fields_to_match_on as $vs_fld) {
 											switch($vs_match_type) {
 												case 'STARTS':
-													$vs_match_value = "{$match_value}%";
+													$match_value = "{$match_value}%";
 													break;
 												case 'ENDS':
-													$vs_match_value = "%{$match_value}";
+													$match_value = "%{$match_value}";
 													break;
 												case 'CONTAINS':
-													$vs_match_value = "%{$match_value}%";
+													$match_value = "%{$match_value}%";
 													break;
 											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-												$va_values[$vs_fld] = ['name' => $vs_match_value];
+												$va_values[$vs_fld] = ['name' => $match_value];
 											} elseif(sizeof($va_flds = explode('.', $vs_fld)) > 1) {
-												$va_values[$va_flds[0]][$va_flds[1]] = $vs_match_value;
+												$va_values[$va_flds[0]][$va_flds[1]] = $match_value;
 											} else {
-												$va_values[$vs_fld] = $vs_match_value;
+												$va_values[$vs_fld] = $match_value;
 											}
 										}
 										
 										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
-
 
 										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool, 'restrictToTypes' => $va_limit_matching_to_type_ids)))) {
 											if ($t_instance->load($vn_id)) {
@@ -1326,6 +1325,10 @@
 			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
 			$vb_import_all_datasets =  caGetOption('importAllDatasets', $pa_options, false); 
 			
+			if ($limit_log_to = caGetOption('limitLogTo', $pa_options, null)) {
+				$limit_log_to = array_map(function($v) { return strtoupper($v); }, preg_split("![;,]+!", $limit_log_to));
+			}
+			
 			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
 			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
@@ -1339,7 +1342,7 @@
 			$vn_file_num = 0;
 			foreach($va_sources as $vs_source) {
 				$vn_file_num++;
-				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('originalFilename' => caGetOption('originalFilename', $pa_options, null), 'fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
+				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('originalFilename' => caGetOption('originalFilename', $pa_options, null), 'fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'limitLogTo' => $limit_log_to, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
 					$va_errors['general'][] = array(
 						'idno' => "*",
 						'label' => "*",

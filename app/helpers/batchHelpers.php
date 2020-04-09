@@ -359,7 +359,7 @@
         
         $va_matched_files = [];
         foreach($va_files as $vs_file) {
-            if (preg_match('!@SynoResource!', $vs_file)) { continue; }
+            if (preg_match('!(SynoResource|SynoEA)!', $vs_file)) { continue; }
             $va_tmp = explode("/", $vs_file);
             $f = array_pop($va_tmp);
             $f_lc = strtolower($f);

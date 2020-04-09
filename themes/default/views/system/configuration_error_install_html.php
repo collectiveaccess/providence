@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,9 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-		$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
-		array_pop($va_tmp);
-		$vs_path = join("/", $va_tmp);
 ?>
 <?php print _t("<div class='error'>An error in your system configuration has been detected</div>
 	    General installation instructions can be found
