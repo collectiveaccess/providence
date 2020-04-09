@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2019 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -177,6 +177,8 @@
  			$va_last_settings['importer_id'] = $this->request->getParameter("importer_id", pInteger); 
  			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
  			$va_last_settings['logLevel'] = $this->request->getParameter("logLevel", pInteger); 
+ 			$va_last_settings['limitLogTo'] = $this->request->getParameter("limitLogTo", pArray); 
+
  			$va_last_settings['dryRun'] = $this->request->getParameter("dryRun", pInteger); 
  			if ($vs_file_input = $this->request->getParameter("fileInput", pString)) {
  				$va_last_settings['fileInput'] = $vs_file_input; 

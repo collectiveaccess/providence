@@ -7580,4 +7580,8 @@ span.statisticsDashboardSelectedsite {
 .dashboardWidgetContentContainer a.link {
     text-decoration: underline;
     color: #1ab3c8;
+
+a.currentSet {
+	font-weight: bold;
+	color: #333;
 }

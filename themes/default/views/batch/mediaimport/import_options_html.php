@@ -459,13 +459,17 @@
 									<tr>
 										<td class='formLabel'>
 	<?php
-				print caHTMLCheckboxInput('create_relationship_for[]', array('value' => $vs_rel_table,  'id' => "caCreateRelationshipForMedia{$vs_rel_table}", 'onclick' => "jQuery('#caRelationshipTypeIdFor{$vs_rel_table}').prop('disabled', !jQuery('#caCreateRelationshipForMedia{$vs_rel_table}').prop('checked'))"), array('dontConvertAttributeQuotesToEntities' => true));
+				$checked = (is_array($va_last_settings['create_relationship_for']) && in_array($vs_rel_table, $va_last_settings['create_relationship_for'])) ? true : false;
+				$default_rel_type_id = isset($va_last_settings['relationship_type_id_for_'.$vs_rel_table]) ? $va_last_settings['relationship_type_id_for_'.$vs_rel_table] : null;
+				print caHTMLCheckboxInput('create_relationship_for[]', array('value' => $vs_rel_table,  'id' => "caCreateRelationshipForMedia{$vs_rel_table}", 'checked' => $checked, 'onclick' => "jQuery('#caRelationshipTypeIdFor{$vs_rel_table}').prop('disabled', !jQuery('#caCreateRelationshipForMedia{$vs_rel_table}').prop('checked'))"), ['dontConvertAttributeQuotesToEntities' => true]);
 				print ' '._t("to %1 with relationship type", $t_rel_table->getProperty('NAME_SINGULAR'));
 	?>
 										</td>
 										<td class='formLabel'>
 	<?php
-				print $t_rel->getRelationshipTypesAsHTMLSelect('ltor', null, null, array('name' => "relationship_type_id_for_{$vs_rel_table}", 'id' => "caRelationshipTypeIdFor{$vs_rel_table}", 'disabled' => 1));
+				$opts = ['name' => "relationship_type_id_for_{$vs_rel_table}", 'id' => "caRelationshipTypeIdFor{$vs_rel_table}"];
+				if(!$checked) { $opts['disabled'] = true; }
+				print $t_rel->getRelationshipTypesAsHTMLSelect('ltor', null, null, $opts, ['value' => $default_rel_type_id]);
 	?>
 										</td>
 									</tr>

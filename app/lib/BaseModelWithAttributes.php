@@ -204,6 +204,10 @@
 			
 			$va_attr_values = $t_attr->getAttributeValues();
 			$element = null;
+			
+			$num_values = sizeof($pa_values);
+			if(array_key_exists('locale_id', $pa_values)) { $num_values--; }
+			
 			if (
 			    // this may return a false positive if the attribute is a container with media or file attributes, 
 			    // as ca_attribute_values records for those will only be present if a file was uploaded
@@ -212,7 +216,7 @@
 			    // so if it looks like it may be a mismatch we do another, more costly, element calcuation to be sure
 			    is_array($elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }))
 			    &&    
-			    (sizeof($elements) !== sizeof($pa_values))
+			    (sizeof($elements) !== $num_values)
 			) {		// -1 to remove locale_id which is not in attribute values array
 				// Value arrays are different sizes - probably means the elements in the set have been reconfigured (sub-elements added or removed)
 				// so we need to force a save.
@@ -249,7 +253,14 @@
 						(
 							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
 							&& 
-							isset($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
+							isset($pa_values[$vs_element_code]) && is_array($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
+							
+						)
+						||
+						(
+							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+							&& 
+							isset($pa_values[$vn_element_id]) && is_array($pa_values[$vn_element_id]) && sizeof($pa_values[$vn_element_id])
 							
 						)
 					) {
@@ -1391,7 +1402,7 @@
 				}
 			}
 			
-			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options, ['value' => $this->get($this->getTypeFieldName())]));
+			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options, ['value' => caGetOption('value', $pa_options, $this->get($this->getTypeFieldName()))]));
 		}
 		# ------------------------------------------------------------------
 		// --- Forms
