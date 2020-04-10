@@ -2250,6 +2250,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if ($vs_item_terminal == 'preferred_labels') { $vs_preferred_label_for_log = $vm_val; }
 							
 									break;
+								case 'access':
+								case 'status':
+									// access & status intrinsics need list item "item_value" *NOT* idno or item_id
+									// You can map item values directly if you want, but most people expect idnos to work
+									// so we do the conversion here.
+									if($t_subject->hasField($vs_item_terminal)) {
+										$list = $t_subject->getFieldInfo($vs_item_terminal, 'LIST');
+										if (strlen($item_val = caGetListItemValueForIdno($list, $vm_val)) > 0) {
+											$vm_val = $item_val;
+										}
+									}
+									
 								default:
 									$va_group_buf[$vn_c][$vs_item_terminal] = $vm_val;
 									if (!$vb_item_error_policy_is_default || !isset($va_group_buf[$vn_c]['_errorPolicy'])) {
