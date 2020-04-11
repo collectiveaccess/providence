@@ -145,6 +145,7 @@
 	 * 		usewysiwygeditor = Use rich text editor (CKEditor) for text element. Only available when the height of the text element is multi-line. [Default is false]
 	 *      cktoolbar = app.conf directive name to pull CKEditor toolbar spec from. [Default is wysiwyg_editor_toolbar]
 	 *      contentUrl = URL to use to load content when CKEditor is use with CA-specific plugins. [Default is null]
+	 *		textAreaTagName = 
 	 * @return string
 	 */
 	function caHTMLTextInput($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -207,12 +208,13 @@
 		}
 		
 		if ($vb_is_textarea) {
+			$tag_name = caGetOption('textAreaTagName', $pa_options, 'textarea');
 			$vs_value = $pa_attributes['value'];
 			if ($pa_attributes['size']) { $pa_attributes['cols'] = $pa_attributes['size']; }
 			unset($pa_attributes['size']);
 			unset($pa_attributes['value']);
 			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
-			$vs_element = "<textarea name='{$ps_name}' wrap='soft' {$vs_attr_string}>".$vs_value."</textarea>\n";
+			$vs_element = "<{$tag_name} name='{$ps_name}' wrap='soft' {$vs_attr_string}>".$vs_value."</{$tag_name}>\n";
 		} else {
 			$pa_attributes['size']  = !$pa_attributes['size'] ?  $pa_attributes['width'] : $pa_attributes['size'];
 			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);

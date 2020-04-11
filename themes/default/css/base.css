@@ -1185,6 +1185,7 @@ div.hint {
     margin-bottom: 5px;
     font-weight: bold;
     text-align: left;
+    break-inside: avoid;
 }
 
 .formLabelPlain {
@@ -3528,37 +3529,31 @@ input.dateBg, textarea.dateBg {
     background-image: url('../graphics/icons/formBgDate.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:30px;
 }
 input.currencyBg, textarea.currencyBg {
     background-image: url('../graphics/icons/formBgCurrency.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:15px;
 }
 input.weightBg, textarea.weightBg {
     background-image: url('../graphics/icons/formBgWeight.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:25px;
 }
 input.timecodeBg, textarea.timecodeBg {
     background-image: url('../graphics/icons/formBgTimecode.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:65px;
 }
 input.urlBg, textarea.urlBg {
     background-image: url('../graphics/icons/formBgUrl.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:30px;
 }
 input.lookupBg, textarea.lookupBg {
     background-image: url('../graphics/icons/formBgLookup.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:15px;
 }
 
 /*** HIERARCHY BROWSER ***/
@@ -7590,7 +7585,16 @@ a.currentSet {
 }
 
 /* "New" ca_object_representations_bundle */
-.objectRepresentationMediaUploadStatus {
+.mediaUploadContainer {
+	width: 680px;
+}
+
+.mediaUploadInfoArea {
+	float: right; 
+	width: 550px;
+}
+
+.mediaUploadStatus {
     font-size:16px;
     color: #828282;
     text-align: left;
@@ -7600,17 +7604,26 @@ a.currentSet {
     height: 2.4em;
 }
 
-.objectRepresentationImporterUploadArea {
+.mediaUploadArea {
 	border: 1px dashed #ccc; 
 	text-align: center; 
-	padding: 5px; 
+	padding: 0px; 
 	display: block;
 	width: 120px;
 	height: 120px;
+	margin-top: 14px;
 }
 
-.objectRepresentationImporterUploadAreaMessage {
+.mediaUploadAreaMessage {
 	font-size: 16px; 
 	color: #333;
-	margin-top: 50px;
+	margin-top: 40px;
+}
+
+.mediaUploadAreaMessage:hover {
+	cursor: pointer;
+}
+
+.mediaUploadAreaMessageCount {
+	font-size: 9px;
 }

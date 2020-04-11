@@ -44,7 +44,6 @@
 	$vn_right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
 	$rel_types          = $t_item_rel->getRelationshipTypes($vn_left_sub_type_id, $vn_right_sub_type_id);
 	
-
 	$read_only			= (isset($settings['readonly']) && $settings['readonly']);
 	$is_batch			= $this->getVar('batch');
 	
@@ -70,38 +69,18 @@
 	}
 	
 	$use_classic_interface = (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
-	$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, []);
+	$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, [], ['castTo' => 'array']);
  	$bundles_to_edit_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_edit);
  	
 	if ($use_classic_interface) {
 		print $this->render('ca_object_representations_classic.php');
 		return;
 	}
- 
- 
  ?>
  <div id="<?php print "{$id_prefix}{$table_num}_rel"; ?>">
- 	<div class="bundleContainer">
-	    <div class='bundleSubLabel'> 
-<?php
-	print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $settings);
-?>
-	    </div>
-		<div class="caItemList">
-			
-		</div>
-<?php
-	if (!$read_only) {
-?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $add_label ? $add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
-<?php
-	}
-?>
- 	</div>
+ 	<div class="bundleContainer"> </div>
+ 	
 	<input type="hidden" id="<?php print $id_prefix; ?>_ObjectRepresentationBundleList" name="<?php print $id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
-
- 
- 
  <?php
 	//
 	// Template to generate display for existing items
@@ -115,26 +94,23 @@
 				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 <?php } ?>	
-			<div style="width: 680px;">
+			<div class="mediaUploadContainer">
 				<div style="float: left;">
 					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{representation_id}'))); ?>'); return false;">{icon}</a></div>
 				</div>
-				<div style="float: right; width: 550px;">
-					<div style="float: left; width: 80%;">
-						<div id='{fieldNamePrefix}rep_info_ro{n}'>
-							<div class='caObjectRepresentationListInfo'>
+				<div class="mediaUploadInfoArea">
+					<div style="float: left; width: 100%;">
+						<div class='caObjectRepresentationListInfo'>
  <?php
-	foreach($bundles_to_edit_proc as $f) {
-		if($t_item->hasField($f)) { // intrinsic
-			print "<div class='formLabel' style='float: left; margin: 0 5px 0 5px;'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '200px', 'value' => '{'.$f.'}'])."</div>\n";
-		} elseif($t_item->hasElement($f)) {
-			$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '200px', 'elementsOnly' => true, 'value' => '{{'.$f.'}}']);
-			$form_element = array_shift(array_shift($form_element_info['elements']));
-			print "<div class='formLabel' style='float: left; margin: 0 5px 0 5px;'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$form_element."</div>\n"; 
-		}
-	}
+						foreach($bundles_to_edit_proc as $f) {
+							if($t_item->hasField($f)) { // intrinsic
+								print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '225px', 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+							} elseif($t_item->hasElement($f)) {
+								$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '225px', 'height' => null, 'elementsOnly' => true, 'value' => '{{'.$f.'}}', 'textAreaTagName' => 'textentry']);
+								print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
+							}
+						}
 ?>
-							</div>
 						</div>
 					</div>
 				</div>
@@ -155,94 +131,59 @@
 <?php
     if(sizeof($rel_types) > 1) {
 ?>
-			<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel__type_id_{n}'), $va_settings)) : _t('Add representation'); ?></h2>
+		<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel__type_id_{n}'), $settings)) : _t('Add representation'); ?></h2>
 <?php
     } else {
         // Embed type when only a single type is available
         print caHTMLHiddenInput('{fieldNamePrefix}rel_type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
     }
 ?>
-			
-			<div id="<?php print $id_prefix; ?>objectRepresentationImporterUploadArea{n}" class="objectRepresentationImporterUploadArea">
-				<div id="<?php print $id_prefix; ?>objectRepresentationImporterUploadAreaMessage{n}" class="objectRepresentationImporterUploadAreaMessage"> </div>
-			</div>
-			<div id="<?php print $id_prefix; ?>objectRepresentationMediaUploadCount{n}" data-count="0"></div>
-			<div id="<?php print $id_prefix; ?>batchProcessingTableProgressGroup{n}" style="display: none;">
-				<div class="objectRepresentationMediaUploadStatus"><span id="<?php print $id_prefix; ?>batchProcessingTableStatus{n}" > </span></div>
-				<div id="<?php print $id_prefix; ?>progressbar{n}"></div>
-			</div>
-			
-			<div>
+			<div class="mediaUploadContainer">
+				<div style="float: left;">
+					<div id="<?php print $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
+						<input type="file" style="display: none;" id="<?php print $id_prefix; ?>UploadFileControl{n}" multiple/>
+						<div id="<?php print $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
+					</div>
+					<div id="<?php print $id_prefix; ?>UploadCount{n}" data-count="0"></div>
+					<div id="<?php print $id_prefix; ?>batchProcessingTableProgressGroup{n}" style="display: none;">
+						<div class="mediaUploadStatus"><span id="<?php print $id_prefix; ?>batchProcessingTableStatus{n}" > </span></div>
+						<div id="<?php print $id_prefix; ?>progressbar{n}"></div>
+					</div>
+				</div>
+				<div class="mediaUploadInfoArea">
 <?php
-	foreach($bundles_to_edit_proc as $f) {
-		if($t_item->hasField($f)) {
-			// instrinsic
-			print "<div class='formLabel' style='float: left; margin: 0 5px 0 5px;'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '200px'])."</div>\n";
-		} elseif($t_item->hasElement($f)) {
-			$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '200px', 'elementsOnly' => true]);
-			$form_element = array_shift(array_shift($form_element_info['elements']));
-			print "<div class='formLabel' style='float: left; margin: 0 5px 0 5px;'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$form_element."</div>\n"; 
-		}
-	}
+				foreach($bundles_to_edit_proc as $f) {
+					if($t_item->hasField($f)) { // intrinsic
+						print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+					} elseif($t_item->hasElement($f)) {
+						$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'textAreaTagName' => 'textentry']);
+						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
+					}
+				}
 ?>
+				</div>
 			</div>
-			
-			<input type="hidden" id="<?php print $id_prefix; ?>_objectRepresentationMediaRefs_{n}" name="<?php print $id_prefix; ?>_objectRepresentationMediaRefs_{n}"/>
+			<input type="hidden" id="<?php print $id_prefix; ?>MediaRefs{n}" name="<?php print $id_prefix; ?>_mediarefs{n}"/>
 			<br class="clear"/>
 		</div>
 		
-		<script>
-			var upload_message = <?php print json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>;
-			jQuery('#<?php print $id_prefix; ?>objectRepresentationImporterUploadAreaMessage{n}').html(upload_message);
-			jQuery('#<?php print $id_prefix; ?>progressbar{n}').progressbar({ value: 0 });
-			jQuery('#<?php print $id_prefix; ?>objectRepresentationImporterUploadArea{n}').fileupload({
-				dataType: 'json',
-				url: '<?php print caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
-				dropZone: jQuery('#<?php print $id_prefix; ?>objectRepresentationImporterUploadArea{n}'),
-				singleFileUploads: false,
-				done: function (e, data) {
-					if (data.result.error) {
-						jQuery("#<?php print $id_prefix; ?>batchProcessingTableProgressGroup{n}").show(250);
-						jQuery("#<?php print $id_prefix; ?>batchProcessingTableStatus{n}").html(data.result.error);
-						setTimeout(function() {
-							jQuery("#<?php print $id_prefix; ?>batchProcessingTableProgressGroup{n}").hide(250);
-						}, 3000);
-					} else {
-						jQuery("#<?php print $id_prefix; ?>batchProcessingTableStatus{n}").html(data.result.msg ? data.result.msg : "");
-						setTimeout(function() {
-							jQuery("#<?php print $id_prefix; ?>batchProcessingTableProgressGroup{n}").hide(250);
-							jQuery("#<?php print $id_prefix; ?>objectRepresentationImporterUploadArea{n}").show(150);
-						}, 1500);
-					}
-					
-					var existing_files = jQuery("#<?php print $id_prefix; ?>_objectRepresentationMediaRefs_{n}").val();
-					var files = (existing_files && existing_files.length > 0) ? existing_files.split(";") : [];
-					files = files.concat(data.result.files);
-					
-					jQuery("#<?php print $id_prefix; ?>objectRepresentationImporterUploadAreaMessage{n}").html(files.length + " uploaded"); //.html(files.length + " uploaded")
-					jQuery("#<?php print $id_prefix; ?>_objectRepresentationMediaRefs_{n}").val(files.join(";"));
-					jQuery("#<?php print $id_prefix; ?>objectRepresentationMediaUploadCount{n}").data('count', files.length);
-				},
-				progressall: function (e, data) {
-					jQuery("#<?php print $id_prefix; ?>objectRepresentationImporterUploadArea{n}").hide(150);
-					if (jQuery("#<?php print $id_prefix; ?>batchProcessingTableProgressGroup{n}").css('display') == 'none') {
-						jQuery("#<?php print $id_prefix; ?>batchProcessingTableProgressGroup{n}").show(250);
-					}
-					var progress = parseInt(data.loaded / data.total * 100, 10);
-					jQuery('#<?php print $id_prefix; ?>progressbar{n}').progressbar("value", progress);
-		
-					var msg = "<?php print _t("Progress: "); ?>%1";
-					jQuery("#<?php print $id_prefix; ?>batchProcessingTableStatus{n}").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
-				
-				}
-			});		
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				caUI.initMediaUploadManager({
+					fieldNamePrefix: '<?= $id_prefix; ?>',
+					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
+					index: '{n}',
+					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
+					progressMessage: '<?= _t("Progress: "); ?>'
+				});	
+			});
 		</script>
 	</textarea>
 	
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($va_settings, ['includeInterstitialSortsFor' => $t_subject->tableName()]));
+            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName()]));
 
 		    if (($vn_rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";

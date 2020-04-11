@@ -375,7 +375,8 @@
  			}
  			$vs_element .= caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
- 				$va_opts
+ 				$va_opts,
+ 				['textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null)]
  			);
 
 			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {

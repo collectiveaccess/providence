@@ -4072,9 +4072,10 @@ if (!$vb_batch) {
 							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
 								
-								$bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, null);
+								$bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, [], ['castTo' => 'array']);
 								$bundles_on_screen_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_save);
-								if (strlen($po_request->getParameter($vs_prefix_stub.$bundles_on_screen_proc[0].'_'.$va_rep['relation_id'], pString)) > 0) {
+								//if (strlen($po_request->getParameter($vs_prefix_stub.$bundles_on_screen_proc[0].'_'.$va_rep['relation_id'], pString)) > 0) {
+								if(is_array($bundles_on_screen_proc) && sizeof($bundles_on_screen_proc)) {
 									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['relation_id']])) {
 										$va_tmp = explode('/', $vs_path);
 										$vs_original_name = array_pop($va_tmp);
@@ -4164,15 +4165,14 @@ if (!$vb_batch) {
 											}
 										}
 									}
-								} else {
-									// is it a delete key?
-									$this->clearErrors();
-									if (($po_request->getParameter($vs_prefix_stub.$va_rep['relation_id'].'_delete', pInteger)) > 0) {
-										// delete!
-										$this->removeRepresentation($va_rep['representation_id']);
-										if ($this->numErrors()) {
-											$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
-										}
+								} 
+								// is it a delete key?
+								$this->clearErrors();
+								if (($po_request->getParameter($vs_prefix_stub.$va_rep['relation_id'].'_delete', pInteger)) > 0) {
+									// delete!
+									$this->removeRepresentation($va_rep['representation_id']);
+									if ($this->numErrors()) {
+										$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
 									}
 								}
 							}
@@ -4197,41 +4197,46 @@ if (!$vb_batch) {
 						} else {
 					
                             // check for new representations to add 
+                            
+							$file_index = 0;
                             $va_file_list = $_FILES;
                             foreach($_REQUEST as $vs_key => $vs_value) {
                                 if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
                                     $va_file_list[$vs_key] = array(
                                         'url' => $vs_value
                                     );
-                                    break;
                                 } elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
                                     $va_file_list[$vs_key] = array(
                                         'tmp_name' => $vs_value,
                                         'name' => $vs_value
                                     );
-                                    break;
                                 } elseif(preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches)){
 									$va_file_list[$vs_key] = array(
 										'tmp_name' => $vs_value,
 										'name' => $vs_value
 									);
-									break;
-								} elseif(preg_match('/^'.$vs_prefix_stub.'objectRepresentationMediaRefs_new_([\d]+)$/', $vs_key, $va_matches)) {
+								} elseif(preg_match('/^'.$vs_prefix_stub.'mediarefsnew_([\d]+)$/', $vs_key, $va_matches)) {
 									$files = explode(";", $vs_value);
 									foreach($files as $f) {
-										$va_file_list[] = array(
+										$va_file_list["{$vs_key}_{$file_index}"] = [		// Add numeric suffix to allow for multiple uploads in a single request
 											'tmp_name' => $f,
 											'name' => $f
-										);
+										];
+										$file_index++;
 									}
-									break;
 								}
                             }
                             
                             foreach($va_file_list as $vs_key => $va_values) {
                                 $this->clearErrors();
                             
-								//if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls) && (($vb_allow_existing_rep && !preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches))||!$vb_allow_existing_rep) ) { continue; }
+								if (
+									!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && 
+									!preg_match('/^'.$vs_prefix_stub.'mediarefsnew_([\d]+)_([\d]+)$/', $vs_key, $va_matches) && 
+									(($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls) && 
+									(($vb_allow_existing_rep && !preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches))||!$vb_allow_existing_rep) ) {  
+										continue; 
+								}
                                 if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
                                     $po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
                                 }

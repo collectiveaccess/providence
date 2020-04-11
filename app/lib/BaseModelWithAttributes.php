@@ -1545,8 +1545,8 @@
 				$vs_fld = array_pop($va_tmp);
 				return $this->htmlFormElementForAttributeSearch($po_request, $vs_fld, array_merge($pa_options, array(
 							'values' => (isset($pa_options['values']) && is_array($pa_options['values'])) ? $pa_options['values'] : array(),
-							'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 20, 
-							'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
+							'width' => array_key_exists('width', $pa_options) ? (($pa_options['width'] > 0) ? $pa_options['width'] : null) : 20, 
+							'height' => array_key_exists('height', $pa_options) ? (($pa_options['height'] > 0) ? $pa_options['height'] : null) : 1, 
 							'class' => (isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '',
 							'name' => (isset($pa_options['name']) && $pa_options['name']) ? $pa_options['name'] : null,
 							'id' => (isset($pa_options['id']) && $pa_options['id']) ? $pa_options['id'] : null,
@@ -1874,6 +1874,7 @@
 					'nullOption' => '-',
 					'value' => $vm_values,
 					'forSearch' => true,
+					'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
 					'render' => $va_element['settings']['render']//(isset($va_element['settings']['render']) && ($va_element['settings']['render'] == 'lookup')) ? $va_element['settings']['render'] : isset($pa_options['render']) ? $pa_options['render'] : 'select'
 				), array_merge($pa_options, $va_override_options));
 				
