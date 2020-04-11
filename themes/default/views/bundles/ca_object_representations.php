@@ -144,11 +144,6 @@
 						<input type="file" style="display: none;" id="<?php print $id_prefix; ?>UploadFileControl{n}" multiple/>
 						<div id="<?php print $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
 					</div>
-					<div id="<?php print $id_prefix; ?>UploadCount{n}" data-count="0"></div>
-					<div id="<?php print $id_prefix; ?>batchProcessingTableProgressGroup{n}" style="display: none;">
-						<div class="mediaUploadStatus"><span id="<?php print $id_prefix; ?>batchProcessingTableStatus{n}" > </span></div>
-						<div id="<?php print $id_prefix; ?>progressbar{n}"></div>
-					</div>
 				</div>
 				<div class="mediaUploadInfoArea">
 <?php
@@ -174,7 +169,7 @@
 					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
 					index: '{n}',
 					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
-					progressMessage: '<?= _t("Progress: "); ?>'
+					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
 				});	
 			});
 		</script>

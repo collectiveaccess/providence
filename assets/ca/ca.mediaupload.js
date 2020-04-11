@@ -35,13 +35,13 @@ var caUI = caUI || {};
 			fieldNamePrefix: '',
 			uploadURL: null,
 			uploadAreaMessage: 'Upload here',
+			uploadAreaIndicator: 'Uploading...',
 			progressMessage: "Progress: ",
 			uploadTotalMessage: "%count uploaded",
 			uploadTotalMessageClass: "mediaUploadAreaMessageCount",
 			index: 0
-			
 		}, options);
-		console.log(that, '#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index, jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index));
+		
 		jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index).html(that.uploadAreaMessage).on('click', function(e) {
 			jQuery('#' + that.fieldNamePrefix + 'UploadFileControl' + that.index).click();
 			e.preventDefault();
@@ -55,15 +55,15 @@ var caUI = caUI || {};
 			singleFileUploads: false,
 			done: function (e, data) {
 				if (data.result.error) {
-					jQuery('#' + that.fieldNamePrefix + 'batchProcessingTableProgressGroup' + that.index).show(250);
-					jQuery('#' + that.fieldNamePrefix + 'batchProcessingTableStatus' + that.index).html(data.result.error);
+					jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).show(250);
+					jQuery('#' + that.fieldNamePrefix + 'ProgressStatus' + that.index).html(data.result.error);
 					setTimeout(function() {
-						jQuery('#' + that.fieldNamePrefix + 'batchProcessingTableProgressGroup' + that.index).hide(250);
+						jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).hide(250);
 					}, 3000);
 				} else {
-					jQuery('#' + that.fieldNamePrefix + 'batchProcessingTableStatus' + that.index).html(data.result.msg ? data.result.msg : "");
+					jQuery('#' + that.fieldNamePrefix + 'ProgressStatus' + that.index).html(data.result.msg ? data.result.msg : "");
 					setTimeout(function() {
-						jQuery('#' + that.fieldNamePrefix + 'batchProcessingTableProgressGroup' + that.index).hide(250);
+						jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).hide(250);
 						jQuery('#' + that.fieldNamePrefix + 'UploadArea' + that.index).show(150);
 					}, 1500);
 				}
@@ -79,14 +79,8 @@ var caUI = caUI || {};
 				jQuery('#' + that.fieldNamePrefix + 'UploadCount' + that.index).data('count', files.length);
 			},
 			progressall: function (e, data) {
-				jQuery('#' + that.fieldNamePrefix + 'UploadArea' + that.index).hide(150);
-				if (jQuery('#' + that.fieldNamePrefix + 'batchProcessingTableProgressGroup' + that.index).css('display') == 'none') {
-					jQuery('#' + that.fieldNamePrefix + 'batchProcessingTableProgressGroup' + that.index).show(250);
-				}
-				var progress = parseInt(data.loaded / data.total * 100, 10);
-				jQuery('#' + that.fieldNamePrefix + 'progressbar' + that.index).progressbar("value", progress);
-	
-				jQuery('#' + that.fieldNamePrefix + 'batchProcessingTableStatus' + that.index).html(that.progressMessage.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
+				var m = "<div class='" + that.uploadTotalMessageClass + "'>" + that.uploadAreaIndicator.replace("%percent", parseInt(data.loaded / data.total * 100, 10) + "%") + "</div>";
+				jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index).html(m);
 			}
 		});	
 		
