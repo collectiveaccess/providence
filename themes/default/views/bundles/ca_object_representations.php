@@ -97,26 +97,48 @@
 			<div class="mediaUploadContainer">
 				<div style="float: left;">
 					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{representation_id}'))); ?>'); return false;">{icon}</a></div>
+					
+					<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator'><?php print _t('Will be primary after save'); ?></div>
+					<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?php print _t('Changes will be applied when you save'); ?></div>
+					<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
 				</div>
 				<div class="mediaUploadInfoArea">
 					<div style="float: left; width: 100%;">
-						<div class='caObjectRepresentationListInfo'>
+						<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' class='updateIcon'><?= caNavIcon(__CA_NAV_ICON_UPDATE__, 1).'</a>'; ?></span>
+						<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationDetailEditorContainer">
  <?php
 						foreach($bundles_to_edit_proc as $f) {
 							if($t_item->hasField($f)) { // intrinsic
-								print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '225px', 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+								print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 							} elseif($t_item->hasElement($f)) {
-								$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '225px', 'height' => null, 'elementsOnly' => true, 'value' => '{{'.$f.'}}', 'textAreaTagName' => 'textentry']);
+								$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'value' => '{{'.$f.'}}', 'textAreaTagName' => 'textentry']);
 								print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
 							}
 						}
 ?>
+							<div class='caObjectRepresentationDetailEditorDoneButton'>
+<?php 
+								print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Done'), '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
+?>
+							</div>	
 						</div>
 					</div>
 				</div>
 			</div>
 			<br class="clear"/>
 		</div>
+		<script type="text/javascript">
+			var <?= $id_prefix; ?>MUM{n}; 
+			jQuery(document).ready(function() {
+				<?= $id_prefix; ?>MUM{n} = caUI.initMediaUploadManager({
+					fieldNamePrefix: '<?= $id_prefix; ?>',
+					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
+					index: '{n}',
+					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
+					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
+				});	
+			});
+		</script>
 	</textarea>
 		
 	<textarea class='caNewItemTemplate' style='display: none;'>
@@ -149,7 +171,7 @@
 <?php
 				foreach($bundles_to_edit_proc as $f) {
 					if($t_item->hasField($f)) { // intrinsic
-						print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+						print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 					} elseif($t_item->hasElement($f)) {
 						$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'textAreaTagName' => 'textentry']);
 						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
@@ -163,8 +185,9 @@
 		</div>
 		
 		<script type="text/javascript">
+			var <?= $id_prefix; ?>MUM{n}; 
 			jQuery(document).ready(function() {
-				caUI.initMediaUploadManager({
+				<?= $id_prefix; ?>MUM{n} = caUI.initMediaUploadManager({
 					fieldNamePrefix: '<?= $id_prefix; ?>',
 					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
 					index: '{n}',

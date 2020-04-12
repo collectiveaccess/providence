@@ -85,12 +85,27 @@ var caUI = caUI || {};
 		});	
 		
 		// --------------------------------------------------------------------------------
-		// Define methods
+		// Methods
 		// --------------------------------------------------------------------------------
-		// that.xxx = function(id) {
-// 			
-// 		}
-		
+		that.openEditor = function(id, primary_id=null) {
+			jQuery('#' + that.fieldNamePrefix + '_detail_editor_' + id).slideDown(250);
+			jQuery('#' + that.fieldNamePrefix + '_rep_info_ro' + id).slideUp(250);
+		};
+	
+		that.closeEditor = function(id) {
+			jQuery('#' + that.fieldNamePrefix + '_detail_editor_' + id).slideUp(250);
+			jQuery('#' + that.fieldNamePrefix + '_rep_info_ro' + id).slideDown(250);
+			jQuery('#' + that.fieldNamePrefix + '_change_indicator_' + id).show();
+		};
+	
+		that.setAsPrimary = function(id) {
+			jQuery('.' + that.fieldNamePrefix + '_is_primary').val('');
+			jQuery('#' + that.fieldNamePrefix + '_is_primary_' + id).val('1');
+			jQuery('.caObjectRepresentationPrimaryIndicator').hide();
+			if (id != primary_id) {
+				jQuery('#' + that.fieldNamePrefix + '_is_primary_indicator_' + id).show();
+			}
+		};
 		
 		// --------------------------------------------------------------------------------
 		
