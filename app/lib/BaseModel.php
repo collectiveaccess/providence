@@ -8727,9 +8727,13 @@ $pa_options["display_form_field_tips"] = true;
 				# ----------------------------
 				case(FT_MEDIA):
 				case(FT_FILE):
+					$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
+					$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
+
 					$vs_element = '<input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/>';
-					
-					// show current media icon 
+					$vs_element .= '<div>' . _t("You can upload up to ${post_max_size} at one time. No individual file may be larger than ${upload_max_filesize}. If you want to upload more than that, you must upload the files separately, use a different upload format, or ask your system administrator to allow larger uploads.") . '</div>';
+
+					// show current media icon
 					if ($vs_version = (array_key_exists('displayMediaVersion', $pa_options)) ? $pa_options['displayMediaVersion'] : 'icon') {
 						$va_valid_versions = $this->getMediaVersions($ps_field);
 						if (!in_array($vs_version, $va_valid_versions)) { 

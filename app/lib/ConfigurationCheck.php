@@ -489,7 +489,7 @@ final class ConfigurationCheck {
 		if($vs_memory_limit == "-1"){ // unlimited memory for php processes -> everything's fine
 			return true;
 		}
-		$vn_memory_limit = self::returnValueInBytes($vs_memory_limit);
+		$vn_memory_limit = caReturnValueInBytes($vs_memory_limit);
 		if($vn_memory_limit < 134217728){
 			self::addError(_t(
 				'The memory limit for your PHP installation may not be sufficient to run CollectiveAccess correctly. '.
@@ -502,8 +502,8 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	public static function uploadLimitExpensiveCheck() {
-		$vn_post_max_size = self::returnValueInBytes(ini_get("post_max_size"));
-		$vn_upload_max_filesize = self::returnValueInBytes(ini_get("upload_max_filesize"));
+		$vn_post_max_size = caReturnValueInBytes(ini_get("post_max_size"));
+		$vn_upload_max_filesize = caReturnValueInBytes(ini_get("upload_max_filesize"));
 
 		if($vn_post_max_size != $vn_upload_max_filesize){
 			self::addError(_t(
@@ -589,20 +589,6 @@ final class ConfigurationCheck {
 			return $qr_res->get('n');
 		}
 		return null;
-	}
-	# -------------------------------------------------------
-	private static function returnValueInBytes($vs_val) {
-		$vs_val = trim($vs_val);
-		$vs_last = strtolower($vs_val[strlen($vs_val)-1]);
-		switch($vs_last) {
-			case 'g':
-				$vs_val *= 1024;
-			case 'm':
-				$vs_val *= 1024;
-			case 'k':
-				$vs_val *= 1024;
-		}
-		return $vs_val;
 	}
 	# -------------------------------------------------------
 	public static function performDatabaseSchemaUpdate() {
