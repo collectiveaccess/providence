@@ -1208,6 +1208,12 @@ div.hint {
     font-size: 9px;
 }
 
+div.formLabelUploadSizeNote {
+	font-weight: normal;
+	font-size: 10px;
+	font-style: italic;
+}
+
 .bundleLabel {
 	position: relative;
 	
