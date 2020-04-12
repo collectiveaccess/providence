@@ -5240,12 +5240,12 @@ a.dashboardRemoveWidget {
 
 .dashboardWidgetScrollMedium {
     height: 300px;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 .dashboardWidgetScrollLarge {
     height: 400px;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 .dashboardWidgetTable{
@@ -7583,7 +7583,16 @@ span.statisticsDashboardSelectedsite {
     font-weight: bold;
 }
 
+.dashboardWidgetContentContainer a.link {
+    text-decoration: underline;
+    color: #1ab3c8;
+
 a.currentSet {
-	font-weight: bold;
-	color: #333;
+    font-weight: bold;
+    color: #333;
+}
+
+.dashboardWidgetContentContainer a.link {
+    text-decoration: underline;
+    color: #1ab3c8;
 }
