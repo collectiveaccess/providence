@@ -412,9 +412,13 @@
 			$vn_width = 						(int)$pa_options["width"];
 			$vn_height = 						(int)$pa_options["height"];
 			
-			$vn_tile_width = 					(int)$pa_options["tile_width"];
-			$vn_tile_height = 					(int)$pa_options["tile_height"];
-			
+			$vn_tile_width = 					caGetOption('tile_width', $pa_options, 256, array('castTo'=>'int'));
+			$vn_tile_height = 					caGetOption('tile_height', $pa_options, 256, array('castTo'=>'int'));
+			// Tiles must be square.
+			if ($vn_tile_width != $vn_tile_height){
+				$vn_tile_height = $vn_tile_width;
+			}
+
 			$vn_layers = 						(int)$pa_options["layers"];
 			
 			if (!($vs_id_name = (string)$pa_options["idname"])) {
@@ -467,7 +471,8 @@
 			$va_opts['info'] = array(
 				'width' => $vn_width,
 				'height' => $vn_height,
-				'tilesize'=> 256,
+				// Set tile size using function options.
+				'tilesize'=> $vn_tile_width,
 				'levels' => $vn_layers
 			);
 			
