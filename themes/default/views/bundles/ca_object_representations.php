@@ -63,15 +63,13 @@
 				$errors[$vn_representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 			}
 		}
-		if ($va_rep['is_primary']) {
-			$primary_id = $va_rep['representation_id'];
-		}
+		if ($va_rep['is_primary']) { $primary_id = (int)$va_rep['representation_id']; }
 	}
 	
 	$use_classic_interface = (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
 	$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, [], ['castTo' => 'array']);
  	$bundles_to_edit_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_edit);
- 	
+	
 	if ($use_classic_interface) {
 		print $this->render('ca_object_representations_classic.php');
 		return;
@@ -95,17 +93,36 @@
 			</div>
 <?php } ?>	
 			<div class="mediaUploadContainer">
-				<div style="float: left;">
-					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{representation_id}'))); ?>'); return false;">{icon}</a></div>
+				<div class="objectRepresentationListImageContainer">
+					<div class="objectRepresentationListImage"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{representation_id}'))); ?>'); return false;">{icon}</a></div>
 					
+					<div id='{fieldNamePrefix}change_{n}' class='mediaMetadataActionButton'><a href='#' id='{fieldNamePrefix}MediaMetadataEditButton{n}'><?= caNavIcon(__CA_NAV_ICON_EDIT_TEXT__, 1).' '._t('Edit').'</a> '; ?></div>
+				
 					<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator'><?php print _t('Will be primary after save'); ?></div>
-					<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?php print _t('Changes will be applied when you save'); ?></div>
+					<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?php print _t('Changes will be applied on save'); ?></div>
+					
 					<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
 				</div>
+				
+				<div class='objectRepresentationMetadataEditorMediaRightCol' id='{fieldNamePrefix}objectRepresentationMetadataEditorMediaRightCol{n}'>
+					<div id="{fieldNamePrefix}primary_{n}" class='mediaMetadataActionButton'><span id="{fieldNamePrefix}primary_{n}"><a href='#' id='{fieldNamePrefix}SetAsPrimaryButton{n}'><?php print caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span></div>
+					
+					<div id="{fieldNamePrefix}edit_{n}" class='mediaMetadataActionButton'><span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1).' '._t('Full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{representation_id}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span></div>
+					
+					<div class="caAnnoEditorLaunchButton annotationTypeClip{annotation_type} caObjectRepresentationListActionButton">
+						<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" id="{fieldNamePrefix}edit_annotations_button_{n}"><?php print caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?php print _t('Annotations'); ?></a></span>
+					</div>
+					<div class="caSetImageCenterLaunchButton annotationTypeSetCenter{annotation_type} caObjectRepresentationListActionButton">
+						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}edit_image_center_{n}"><?php print caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?php print _t('Set center'); ?></a></span>
+					</div>
+				</div>
+				
 				<div class="mediaUploadInfoArea">
 					<div style="float: left; width: 100%;">
-						<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' class='updateIcon'><?= caNavIcon(__CA_NAV_ICON_UPDATE__, 1).'</a>'; ?></span>
-						<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationDetailEditorContainer">
+						<div id='{fieldNamePrefix}rep_info_ro{n}' class='mediaMetadataDisplay'>
+							{_display}
+						</div>
+						<div id='{fieldNamePrefix}detail_editor_{n}' class="objectRepresentationMetadataEditorContainer">
  <?php
 						foreach($bundles_to_edit_proc as $f) {
 							if($t_item->hasField($f)) { // intrinsic
@@ -116,9 +133,9 @@
 							}
 						}
 ?>
-							<div class='caObjectRepresentationDetailEditorDoneButton'>
+							<div class='objectRepresentationMetadataEditorDoneButton'>
 <?php 
-								print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Done'), '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
+								print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Done'), '{fieldNamePrefix}MediaMetadataSaveButton{n}'); 
 ?>
 							</div>	
 						</div>
@@ -132,13 +149,22 @@
 			jQuery(document).ready(function() {
 				<?= $id_prefix; ?>MUM{n} = caUI.initMediaUploadManager({
 					fieldNamePrefix: '<?= $id_prefix; ?>',
-					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
+					uploadURL:  <?= json_encode(caNavUrl($this->request, '*', '*', 'UploadFiles')); ?>,
+					setCenterURL: <?= json_encode(urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetImageCenterEditor', ['representation_id' => '{representation_id}']))); ?>,
+					annotationEditorURL: <?= json_encode(urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', ['representation_id' => '{representation_id}']))); ?>,
 					index: '{n}',
+					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
+					representationID: {representation_id},
 					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
+					isPrimaryLabel: <?= json_encode(caNavIcon(__CA_NAV_ICON_IS_PRIMARY__, 1).' '._t('Is primary')); ?>
 				});	
 			});
 		</script>
+		
+		<!-- image center coordinates -->
+		<input type="hidden" name="{fieldNamePrefix}center_x_{n}" id="{fieldNamePrefix}center_x_{n}" value="{center_x}"/>
+		<input type="hidden" name="{fieldNamePrefix}center_y_{n}" id="{fieldNamePrefix}center_y_{n}" value="{center_y}"/>
 	</textarea>
 		
 	<textarea class='caNewItemTemplate' style='display: none;'>
@@ -167,9 +193,10 @@
 						<div id="<?php print $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
 					</div>
 				</div>
-				<div class="mediaUploadInfoArea">
+				<div class="mediaUploadEditArea">
 <?php
 				foreach($bundles_to_edit_proc as $f) {
+					if(in_array($f, ['media'])) { continue; }
 					if($t_item->hasField($f)) { // intrinsic
 						print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 					} elseif($t_item->hasElement($f)) {
@@ -191,6 +218,7 @@
 					fieldNamePrefix: '<?= $id_prefix; ?>',
 					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
 					index: '{n}',
+					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
 					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
 				});	

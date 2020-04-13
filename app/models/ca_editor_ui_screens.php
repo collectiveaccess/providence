@@ -1182,13 +1182,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'showMetadataElementsWithDataType' => [__CA_ATTRIBUTE_VALUE_TEXT__,__CA_ATTRIBUTE_VALUE_DATERANGE__,__CA_ATTRIBUTE_VALUE_TIMECODE__,__CA_ATTRIBUTE_VALUE_URL__,__CA_ATTRIBUTE_VALUE_CURRENCY__,__CA_ATTRIBUTE_VALUE_LENGTH__,__CA_ATTRIBUTE_VALUE_WEIGHT__,__CA_ATTRIBUTE_VALUE_LIST__,__CA_ATTRIBUTE_VALUE_INTEGER__,__CA_ATTRIBUTE_VALUE_NUMERIC__],
 							'table' => 'ca_object_representations',
-							'includeIntrinsics' => true,
-							'default' => '',
+							'includeIntrinsics' => ['type_id', 'access', 'status', 'idno', 'media', 'original_filename', 'is_transcribable'],
+							'default' => ['idno', 'access'],
 							'multiple' => true,
 							'label' => _t('Show for editing'),
-							'description' => _t('')
+							'description' => _t('Selected metadata elements to allow editing on.')
 						];
-						
 						
                     }
 

@@ -101,7 +101,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				
-				'LABEL' => _t('Media to upload'), 'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
+				'LABEL' => _t('Media'), 'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
 		),
 		'media_metadata' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 

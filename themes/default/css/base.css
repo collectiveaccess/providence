@@ -7592,12 +7592,17 @@ a.currentSet {
 
 /* "New" ca_object_representations_bundle */
 .mediaUploadContainer {
-	width: 680px;
+	width:700px;
 }
 
 .mediaUploadInfoArea {
 	float: right; 
-	width: 550px;
+	width: 460px;
+}
+
+.mediaUploadEditArea {
+	float: right; 
+	width: 570px;
 }
 
 .mediaUploadStatus {
@@ -7632,4 +7637,64 @@ a.currentSet {
 
 .mediaUploadAreaMessageCount {
 	font-size: 9px;
+}
+
+div.objectRepresentationListImage {
+    width: 120px;
+}
+
+div.objectRepresentationListImageContainer {
+	float: left; 
+	width: 120px;
+}
+
+div.objectRepresentationMetadataEditorContainer {
+    display: none;
+	font-size: 10px;
+	overflow: auto;
+	line-height: 14px;
+	font-weight: normal;
+	color: #000000;
+}
+
+div.objectRepresentationNewMetadataEditorContainer {
+    display: none;
+    padding: 10px;
+}
+
+div.objectRepresentationMetadataEditorDoneButton {
+    float: none;
+    clear: both;
+    width: 100%;
+    text-align: center;
+}
+
+.objectRepresentationMetadataEditorMediaRightCol {
+	float: right; 
+	width: 110px;
+}
+
+.objectRepresentationMetadataEditorMediaRightCol .fa {
+	font-size:18px;
+	padding-right:5px;
+}
+
+.mediaMetadataDisplay {
+	font-weight: normal;
+	font-size: 12px;
+}
+
+div.mediaMetadataActionButton {
+    margin: 10px 0 0 0;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+div.mediaMetadataActionButton img{
+	margin-right:5px;
+}
+
+div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
+    text-decoration: none;
+    color: #000;
 }

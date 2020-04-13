@@ -34,11 +34,16 @@ var caUI = caUI || {};
 		var that = jQuery.extend({
 			fieldNamePrefix: '',
 			uploadURL: null,
+			setCenterURL: null,
+			annotationEditorURL: null,
+			primaryID: null,
+			representationID: null,
 			uploadAreaMessage: 'Upload here',
 			uploadAreaIndicator: 'Uploading...',
 			progressMessage: "Progress: ",
 			uploadTotalMessage: "%count uploaded",
 			uploadTotalMessageClass: "mediaUploadAreaMessageCount",
+			isPrimaryLabel: "Is primary",
 			index: 0
 		}, options);
 		
@@ -87,25 +92,118 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Methods
 		// --------------------------------------------------------------------------------
-		that.openEditor = function(id, primary_id=null) {
-			jQuery('#' + that.fieldNamePrefix + '_detail_editor_' + id).slideDown(250);
-			jQuery('#' + that.fieldNamePrefix + '_rep_info_ro' + id).slideUp(250);
+		that.openEditor = function() {
+			jQuery('#' + that.fieldNamePrefix + '_rep_info_ro' + that.index).hide();
+			jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).hide();
+			jQuery('#' + that.fieldNamePrefix + '_detail_editor_' + that.index).removeClass('mediaUploadInfoArea').addClass('mediaUploadEditArea').slideDown(250);
+			jQuery('#' + that.fieldNamePrefix + '_objectRepresentationMetadataEditorMediaRightCol' + that.index).hide();
 		};
 	
-		that.closeEditor = function(id) {
-			jQuery('#' + that.fieldNamePrefix + '_detail_editor_' + id).slideUp(250);
-			jQuery('#' + that.fieldNamePrefix + '_rep_info_ro' + id).slideDown(250);
-			jQuery('#' + that.fieldNamePrefix + '_change_indicator_' + id).show();
+		that.closeEditor = function() {
+			jQuery('#' + that.fieldNamePrefix + '_detail_editor_' + that.index).removeClass('mediaUploadEditArea').addClass('mediaUploadInfoArea').slideUp(250, function() {
+				jQuery('#' + that.fieldNamePrefix + '_rep_info_ro' + that.index).slideDown(50);
+			});
+			jQuery('#' + that.fieldNamePrefix + '_change_indicator_' + that.index).show();
+			jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).show();
+			jQuery('#' + that.fieldNamePrefix + '_objectRepresentationMetadataEditorMediaRightCol' + that.index).show();
 		};
 	
-		that.setAsPrimary = function(id) {
+		that.setAsPrimary = function() {
 			jQuery('.' + that.fieldNamePrefix + '_is_primary').val('');
-			jQuery('#' + that.fieldNamePrefix + '_is_primary_' + id).val('1');
+			jQuery('#' + that.fieldNamePrefix + '_is_primary_' + that.index).val('1');
 			jQuery('.caObjectRepresentationPrimaryIndicator').hide();
-			if (id != primary_id) {
-				jQuery('#' + that.fieldNamePrefix + '_is_primary_indicator_' + id).show();
+			if (that.representationID != that.primaryID) {
+				jQuery('#' + that.fieldNamePrefix + '_is_primary_indicator_' + that.index).show();
 			}
 		};
+		that.showImageCenterEditor = function() {
+			caUI.mediaUploadSetCenterPanels[that.fieldNamePrefix].showPanel(that.setCenterURL, that.setImageCenterForSave);
+		}
+		
+		that.setImageCenterForSave = function() {
+			jQuery("#topNavContainer").show(250);
+			jQuery('#' + that.fieldNamePrefix + '_change_indicator_' + that.index).show();
+		
+			var center_x = parseInt(jQuery('#caObjectRepresentationSetCenterMarker').css('left'))/parseInt(jQuery('#caImageCenterEditorImage').width());
+			var center_y = parseInt(jQuery('#caObjectRepresentationSetCenterMarker').css('top'))/parseInt(jQuery('#caImageCenterEditorImage').height());
+			
+			jQuery('#' + that.fieldNamePrefix + '_center_x_' + that.index).val(center_x);
+			jQuery('#' + that.fieldNamePrefix + '_center_y_' + that.index).val(center_y);
+		}
+		
+		that.showAnnotationEditor = function() {
+			caUI.mediaUploadAnnotationEditorPanels[that.fieldNamePrefix].showPanel(that.annotationEditorURL);
+		}
+		
+		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).on('click', function(e) {
+			that.openEditor(that.index);
+		});
+		
+		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataSaveButton' + that.index).on('click', function(e) {
+			that.closeEditor(that.index);
+		});
+		
+		jQuery('#' + that.fieldNamePrefix + '_SetAsPrimaryButton' + that.index).on('click', function(e) {
+			that.setAsPrimary(that.index);
+		});
+		
+		jQuery('#' + that.fieldNamePrefix + '_edit_image_center_' + that.index).on('click', function(e) {
+			that.showImageCenterEditor(that.index);
+		});
+		
+		jQuery('#' + that.fieldNamePrefix + '_edit_annotations_button_' + that.index).on('click', function(e) {
+			that.showAnnotationEditor(that.index);
+		})
+		
+		if (parseInt(that.representationID) === parseInt(that.primaryID)) {
+			jQuery('#' + that.fieldNamePrefix + '_SetAsPrimaryButton' + that.index).html(that.isPrimaryLabel);
+		}
+		
+		if(!caUI.mediaUploadAnnotationEditorPanels) { caUI.mediaUploadAnnotationEditorPanels = []; }
+		if (!caUI.mediaUploadAnnotationEditorPanels[that.fieldNamePrefix]) {
+			caUI.mediaUploadAnnotationEditorPanels[that.fieldNamePrefix] = caUI.initPanel({ 
+				panelID: 'caAnnoEditor' + that.fieldNamePrefix,								/* DOM ID of the <div> enclosing the panel */
+				panelContentID: 'caAnnoEditor' + that.fieldNamePrefix + 'ContentArea',		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: '#000000',				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: '.close',
+				centerHorizontal: true,
+				onOpenCallback: function() {
+					jQuery('#topNavContainer').hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery('#topNavContainer').show(250);
+				}
+			})
+			jQuery("body").append('<div id="caAnnoEditor' + that.fieldNamePrefix + '" class="caAnnoEditorPanel"><div id="caAnnoEditor' + that.fieldNamePrefix + 'ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
+		}
+		
+		if(!caUI.mediaUploadSetCenterPanels) { caUI.mediaUploadSetCenterPanels = []; }
+		if (!caUI.mediaUploadSetCenterPanels[that.fieldNamePrefix]) {
+			caUI.mediaUploadSetCenterPanels[that.fieldNamePrefix] = caUI.initPanel({ 
+				panelID: 'caImageCenterEditor' + that.fieldNamePrefix,								/* DOM ID of the <div> enclosing the panel */
+				panelContentID: 'caImageCenterEditor' + that.fieldNamePrefix + 'ContentArea',		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: '#000000',				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: '.close',
+				centerHorizontal: true,
+				onOpenCallback: function() {
+					jQuery('#topNavContainer').hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery('#topNavContainer').show(250);
+				}
+			});
+			jQuery('body').append('<div id="caImageCenterEditor' + that.fieldNamePrefix + '" class="caAnnoEditorPanel"><div id="caImageCenterEditor' + that.fieldNamePrefix + 'ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
+		}
+		
+		jQuery(".caAnnoEditorLaunchButton").hide();
+		jQuery(".annotationTypeClipTimeBasedVideo, .annotationTypeClipTimeBasedAudio").show();
+		
+		jQuery(".caSetImageCenterLaunchButton").hide();
+		jQuery(".annotationTypeSetCenterImage, .annotationTypeSetCenterDocument").show();
 		
 		// --------------------------------------------------------------------------------
 		
