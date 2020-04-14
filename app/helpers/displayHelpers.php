@@ -4800,3 +4800,27 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		return $t->getDisplayLabel($bundle);
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Returns concatenated first name and surname, with a default in case
+	 * both values are null.
+	 *
+	 * In case any of the names is missing, no additional (left or right)
+	 * whitespace is included.
+	 *
+	 * @param      $fname
+	 * @param      $lname
+	 * @param null $default
+	 *
+	 * @return mixed|string
+	 */
+	function caFormatPersonName($fname, $lname, $default=null){
+		$names = [];
+		$fname ? ( $names[] = $fname ) : null ;
+		$lname ? ( $names[] = $lname ) : null ;
+
+		if ($fname || $lname){
+			return join( ' ', $names );
+		}
+		return _t($default);
+	}
+	# ------------------------------------------------------------------
