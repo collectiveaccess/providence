@@ -1973,7 +1973,8 @@
 				}
 				
 				if ($vs_element) {
-				    return str_replace("^DESCRIPTION", $vs_field_desc, str_replace("^LABEL", $vs_field_label, str_replace("^EXTRA", '', str_replace("^ELEMENT", $vs_element, $this->_CONFIG->get('form_element_display_format')))));
+					if (!$ps_format) { $ps_format = $this->_CONFIG->get('form_element_display_format'); }
+				    return str_replace("^DESCRIPTION", $vs_field_desc, str_replace("^LABEL", $vs_field_label, str_replace("^EXTRA", '', str_replace("^ELEMENT", $vs_element, $ps_format))));
 				}
 			}
 			

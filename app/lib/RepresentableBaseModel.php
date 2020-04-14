@@ -99,6 +99,8 @@
 			$o_db = $this->getDb();
 			
 			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
+			if (!($t_link = Datamodel::getInstance($vs_linking_table, true))) { return null; }
+			
 			$vs_pk = $this->primaryKey();
 			$vs_limit_sql = '';
 			if ($pn_limit > 0) {
@@ -109,12 +111,13 @@
 				}
 			}
 			
+			
 			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
 		
 			$qr_reps = $o_db->query($vs_sql = "
 				SELECT 	caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, caor.is_transcribable,
 						l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, 
-						caor.md5, caor.mimetype, caor.original_filename, caoor.`rank`, caoor.relation_id
+						caor.md5, caor.mimetype, caor.original_filename, caoor.`rank`, caoor.relation_id".($t_link->hasField('type_id') ? ', caoor.type_id rel_type_id' : '')."
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 				LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
@@ -693,6 +696,8 @@
 		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *      label = Preferred label in specified locale for representation. [Default is null]
 		 *      type_id = Type to force representation to. [Default is null]
+		 *		rel_type_id = Relationship type force representation to use. [Default is null]
+		 *
 		 * @return bool ca_object_representations model instance on success, false on failure, null if no row has been loaded into the object model 
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
@@ -780,6 +785,10 @@
 					}
 					if (isset($pa_options['rank']) && ($vn_rank = (int)$pa_options['rank'])) {
 						$t_oxor->set('rank', $vn_rank);
+					}
+					
+					if (isset($pa_options['rel_type_id']) && ($vn_rel_type_id = (int)$pa_options['rel_type_id']) && $t_oxor->hasField('type_id')) {
+						$t_oxor->set('type_id', $vn_rel_type_id);
 					}
 				
 					$t_oxor->update();
@@ -1250,6 +1259,7 @@
                         'access' => $va_rep['access'],
                         'access_display' => $t_item->getChoiceListValue('access', $va_rep['access']), 
                         'rep_type_id' => $va_rep['type_id'],
+                        'rel_type_id' => $va_rep['rel_type_id'],
                         'rep_type' => $t_item->getTypeName($va_rep['type_id']), 
                         'rep_label' => $va_rep['label'],
                         'is_transcribable' => (int)$va_rep['is_transcribable'],

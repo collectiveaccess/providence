@@ -445,6 +445,20 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['ca_object_representation_captions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Captions/subtitles'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+		
+		$this->BUNDLES['transcription_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of transcriptions'));
+		$this->BUNDLES['page_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of pages'));
+		$this->BUNDLES['preview_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of previews'));
+		$this->BUNDLES['media_dimensions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media dimensions'));
+		$this->BUNDLES['media_duration'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media duration'));
+		$this->BUNDLES['media_class'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media class'));
+		$this->BUNDLES['media_format'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media format'));
+		$this->BUNDLES['media_colorspace'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media colorspace'));
+		$this->BUNDLES['media_resolution'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media resolution'));
+		$this->BUNDLES['media_bitdepth'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit depth'));
+		$this->BUNDLES['media_filesize'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media filesize'));
+		$this->BUNDLES['media_center_x'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media x-coordinate'));
+		$this->BUNDLES['media_center_y'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media y-coordinate'));
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
@@ -1686,8 +1700,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				
  				$va_dimensions = array();
  				if (isset($va_tmp['info'][$vs_version]['WIDTH']) && isset($va_tmp['info'][$vs_version]['HEIGHT'])) {
-					if (($vn_w = $va_tmp['info'][$vs_version]['WIDTH']) && ($vn_h = $va_tmp['info'][$vs_version]['WIDTH'])) {
-						$va_dimensions[] = $va_tmp['info'][$vs_version]['WIDTH'].'p x '.$va_tmp['info'][$vs_version]['HEIGHT'].'p';
+					if (($vn_w = $va_tmp['info'][$vs_version]['WIDTH']) && ($vn_h = $va_tmp['info'][$vs_version]['HEIGHT'])) {
+						$va_dimensions[] = "{$vn_w}p x {$vn_h}p";
 					}
 				}
  				if (isset($va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth']) && ($vn_depth = $va_tmp['info'][$vs_version]['PROPERTIES']['bitdepth'])) {
@@ -2361,5 +2375,92 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		}
  		return 0;
  	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function renderBundleForDisplay($bundle_name, $row_id, $values, $options=null) {
+		switch($bundle_name) {
+			case 'transcription_count':
+				return $this->numTranscriptions($row_id);
+				break;
+			case 'page_count':
+			case 'preview_count':
+				return $this->numFiles($row_id);
+				break;
+			case 'media_dimensions':
+			case 'media_duration':
+			case 'media_class':
+			case 'media_format':
+			case 'media_filesize':
+			case 'media_colorspace':
+			case 'media_resolution':
+			case 'media_bitdepth':
+			case 'media_center_x':
+			case 'media_center_y':
+				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
+					$info = $qr->getMediaInfo('media');
+					$version = caGetOption('version', $options, 'original');
+					
+					switch($bundle_name) {
+						case 'media_dimensions':
+							if (($w = $info[$version]['WIDTH']) && ($h = $info[$version]['HEIGHT'])) {
+								return "{$w}p x {$h}p";
+							}
+							break;
+						case 'media_duration':
+							if (isset($info[$version]['PROPERTIES']['duration']) && ($duration = (float)$info[$version]['PROPERTIES']['duration'])) {
+								$tp = new TimecodeParser(sprintf("%4.1f", $duration).'s');
+								return $tp->getText(caGetOption('durationFormat', $options, 'hms'));
+							}
+							break;
+						case 'media_class':
+							return caGetMediaClass($qr->get('mimetype'));
+							break;
+						case 'media_format':
+							return Media::getTypenameForMimetype($qr->get('mimetype'));
+							break;
+						case 'media_filesize':
+							$filesize = null;
+							if (!isset($info[$version]['PROPERTIES']['filesize']) || !($filesize = $info[$version]['PROPERTIES']['filesize'])) {
+								$filesize = @filesize($qr->getMediaPath('media', $version));
+							}
+							if($filesize > 0) {
+								return caHumanFilesize($filesize);
+							}
+							break;
+						case 'media_colorspace':
+							if (isset($info[$version]['PROPERTIES']['colorspace']) && ($colorspace = $info[$version]['PROPERTIES']['colorspace'])) {
+								return $colorspace;
+							}
+							break;
+						case 'media_resolution':
+							if (isset($info[$version]['PROPERTIES']['resolution']) && is_array($resolution = $info[$version]['PROPERTIES']['resolution'])) {
+								if (isset($resolution['x']) && isset($resolution['y']) && $resolution['x'] && $resolution['y']) {
+									if ($resolution['x'] == $resolution['y']) {
+										return $resolution['x'].'ppi';
+									} else {
+										return $resolution['x'].'x'.$resolution['y'].'ppi';
+									}
+								}
+							}
+							break;
+						case 'media_bitdepth':
+							if (isset($info[$version]['PROPERTIES']['bitdepth']) && ($depth = $info[$version]['PROPERTIES']['bitdepth'])) {
+								return intval($depth).' bpp';
+							}
+							break;
+						case 'media_center_x':
+						case 'media_center_y':
+							if (($rep = $qr->getInstance()) && ($center = $rep->getMediaCenter('media'))) {
+								return ($bundle_name === 'media_center_x') ? $center['x'] : $center['y'];
+							}
+							break;
+					}
+				}
+				break;
+		}
+		return null;
+	}
 	# ------------------------------------------------------
 }

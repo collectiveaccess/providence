@@ -27,7 +27,7 @@
  */
 	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
- 
+// Timer::start("x");
  	$id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');
 	$t_item 			= $this->getVar('t_item');			// object representation
@@ -46,10 +46,10 @@
 	$read_only			= (isset($settings['readonly']) && $settings['readonly']);
 	$is_batch			= $this->getVar('batch');
 	
-	$num_per_page = 100;
+	$num_per_page = 10;
 	
 	$initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $settings, array('start' => 0, 'limit' => $num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
-	$rep_count = sizeof($initial_values);
+	$rep_count = $t_subject->getRepresentationCount($va_settings);
 	
 	$errors = $failed_inserts = [];
 	
@@ -62,15 +62,30 @@
 		}
 		if ($va_rep['is_primary']) { $primary_id = (int)$va_rep['representation_id']; }
 	}
-	
 	$use_classic_interface = (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
 	$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, [], ['castTo' => 'array']);
+	$bundles_to_edit_order = preg_split("![;,]+!", caGetOption('showBundlesForEditingOrder', $settings, '', ['castTo' => 'string']));
  	$bundles_to_edit_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_edit);
+ 
+ 	if (is_array($bundles_to_edit_order) && sizeof($bundles_to_edit_order)) {
+ 		$bundles_to_edit_sorted = [];
+ 		foreach($bundles_to_edit_order as $o) {
+ 			if (!($t = array_pop(explode('.', $o)))) { continue; }
+ 			if (in_array($t, $bundles_to_edit_proc)) { $bundles_to_edit_sorted[] = $t; }
+ 		}
+ 		foreach($bundles_to_edit_proc as $t) {
+ 			if (!in_array($t, $bundles_to_edit_sorted)) { $bundles_to_edit_sorted[] = $t; }
+ 		}
+ 		$bundles_to_edit_proc = $bundles_to_edit_sorted;
+ 	}
+ 	
 	
 	if ($use_classic_interface) {
 		print $this->render('ca_object_representations_classic.php');
 		return;
 	}
+	
+	$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
  ?>
  <div id="<?= "{$id_prefix}{$table_num}_rel"; ?>">
  	<div class="bundleContainer"> </div>
@@ -102,16 +117,32 @@
 				</div>
 				
 				<div class='objectRepresentationMetadataEditorMediaRightCol' id='{fieldNamePrefix}objectRepresentationMetadataEditorMediaRightCol{n}'>
-					<div id="{fieldNamePrefix}primary_{n}" class='mediaMetadataActionButton'><span id="{fieldNamePrefix}primary_{n}"><a href='#' id='{fieldNamePrefix}SetAsPrimaryButton{n}'><?= caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span></div>
+					<div id="{fieldNamePrefix}primary_{n}" class='mediaMetadataActionButton'>
+						<span id="{fieldNamePrefix}primary_{n}"><a href='#' id='{fieldNamePrefix}SetAsPrimaryButton{n}'><?= caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span>
+					</div>
 					
-					<div id="{fieldNamePrefix}edit_{n}" class='mediaMetadataActionButton'><span id="{fieldNamePrefix}edit_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1).' '._t('Full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{representation_id}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span></div>
+					<div id="{fieldNamePrefix}edit_{n}" class='mediaMetadataActionButton'>
+						<span id="{fieldNamePrefix}edit_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1).' '._t('Full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{representation_id}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span>
+					</div>
 					
-					<div class="caAnnoEditorLaunchButton annotationTypeClip{annotation_type} caObjectRepresentationListActionButton">
+					<div class="caAnnoEditorLaunchButton mediaMetadataActionButton annotationTypeClip{annotation_type}">
 						<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" id="{fieldNamePrefix}edit_annotations_button_{n}"><?= caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?= _t('Annotations'); ?></a></span>
 					</div>
-					<div class="caSetImageCenterLaunchButton annotationTypeSetCenter{annotation_type} caObjectRepresentationListActionButton">
+					<div class="caSetImageCenterLaunchButton mediaMetadataActionButton annotationTypeSetCenter{annotation_type}">
 						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}edit_image_center_{n}"><?= caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?= _t('Set center'); ?></a></span>
 					</div>
+					<div class="mediaMetadataActionButton">
+						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}"><?php print caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '1').' '._t('Metadata'); ?></a></a></span>
+					</div>
+<?php
+	if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
+?>
+					<div class='mediaMetadataActionButton'>
+						<span id="{fieldNamePrefix}download_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1).' '._t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => "{representation_id}", $t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
+					</div>
+<?php
+	}
+?>
 				</div>
 				
 				<div class="mediaUploadInfoArea">
@@ -121,14 +152,29 @@
 						</div>
 						<div id='{fieldNamePrefix}detail_editor_{n}' class="objectRepresentationMetadataEditorContainer">
  <?php
+    if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
+?>
+						<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('id' => '{fieldNamePrefix}rel_type_id_{n}', 'name' => '{fieldNamePrefix}rel_type_id_{n}', 'value' => '{rel_type_id}'), $settings)); ?></div>
+<?php
+	} 
 						foreach($bundles_to_edit_proc as $f) {
 							if($t_item->hasField($f)) { // intrinsic
-								print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+								print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 							} elseif($t_item->hasElement($f)) {
 								$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'value' => '{{'.$f.'}}', 'textAreaTagName' => 'textentry']);
 								print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
 							}
 						}
+
+	if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
+?>
+							<div class="formLabel">
+<?php
+								print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
+?>
+							</div>
+<?php
+	}
 ?>
 							<div class='objectRepresentationMetadataEditorDoneButton'>
 <?php 
@@ -137,6 +183,13 @@
 							</div>	
 						</div>
 					</div>
+				</div>
+			</div>
+			<div id="{fieldNamePrefix}media_metadata_container_{n}">	
+				<div id="{fieldNamePrefix}media_metadata_{n}" class="caObjectRepresentationMetadata">
+					<div class='caObjectRepresentationSourceDisplay'>{fetched}</div>
+					<div class='caObjectRepresentationMD5Display'>{md5}</div>
+					<div class='caObjectRepresentationMetadataDisplay'>{metadata}</div>
 				</div>
 			</div>
 			<br class="clear"/>
@@ -172,17 +225,6 @@
 				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 <?php } ?>	
-
-<?php
-    if(sizeof($rel_types) > 1) {
-?>
-		<h2><?= ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel__type_id_{n}'), $settings)) : _t('Add representation'); ?></h2>
-<?php
-    } else {
-        // Embed type when only a single type is available
-        print caHTMLHiddenInput('{fieldNamePrefix}rel_type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
-    }
-?>
 			<div class="mediaUploadContainer">
 				<div style="float: left;">
 					<div id="<?= $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
@@ -192,15 +234,34 @@
 				</div>
 				<div class="mediaUploadEditArea">
 <?php
+    if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
+?>
+				<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)); ?></div>
+<?php
+	} else {
+				// Embed type when only a single type is available
+				print caHTMLHiddenInput('{fieldNamePrefix}rel_type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
+	}
+    
 				foreach($bundles_to_edit_proc as $f) {
 					if(in_array($f, ['media'])) { continue; }
 					if($t_item->hasField($f)) { // intrinsic
-						print "<div class='formLabel'>".$t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+						print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 					} elseif($t_item->hasElement($f)) {
 						$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'textAreaTagName' => 'textentry']);
 						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
 					}
 				}
+				
+				if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
+?>
+					<div class="formLabel">
+<?php
+					print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
+?>
+					</div>
+<?php
+	}
 ?>
 				</div>
 			</div>
@@ -228,8 +289,8 @@
 <?php
             print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName()]));
 
-		    if (($vn_rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
-			    print "<div style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
+		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
+			    print "<div class='mediaMetadataActionButton' style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
             }
 ?>
 		</div>
@@ -252,7 +313,7 @@
  	jQuery(document).ready(function() {
 		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= "{$id_prefix}{$table_num}_rel"; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
-			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'num_transcriptions', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
+			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
 			initialValues: <?= json_encode($initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
 			errors: <?= json_encode($errors); ?>,
@@ -287,12 +348,12 @@
 			totalValueCount: <?= (int)$rep_count; ?>,
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundles', [$t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations']); ?>',
 			loadSize: <?= $num_per_page; ?>,
-			//partialLoadMessage: '<?= addslashes(_t('Load next %num of %total')); ?>',
+			partialLoadMessage: '<?= addslashes(_t('Load next %num of %total')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			onPartialLoad: function(d) {				
 				// Hide annotation editor links for non-timebased media
-				//jQuery(".caAnnoEditorLaunchButton").hide();
-				//jQuery(".annotationTypeClipTimeBasedVideo, .annotationTypeClipTimeBasedAudio").show();
+				jQuery(".caAnnoEditorLaunchButton").hide();
+				jQuery(".annotationTypeClipTimeBasedVideo, .annotationTypeClipTimeBasedAudio").show();
 			}
 		
 		});

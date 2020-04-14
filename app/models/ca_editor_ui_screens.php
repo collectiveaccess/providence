@@ -1117,8 +1117,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => 0,
 							'multiple' => false,
-							'label' => _t('Do not show representation preferred label?'),
-							'description' => _t('Do not show representation preferred label.')
+							'label' => _t('Do not show representation preferred label? (Classic only)'),
+							'description' => _t('Do not show representation preferred label. (Classic only)')
 						);
 						$va_additional_settings['dontShowIdno'] = array(
 							'formatType' => FT_NUMBER,
@@ -1126,8 +1126,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => 0,
 							'multiple' => false,
-							'label' => _t('Do not show representation identifier?'),
-							'description' => _t('Do not show representation identifier.')
+							'label' => _t('Do not show representation identifier? (Classic only)'),
+							'description' => _t('Do not show representation identifier. (Classic only)')
 						);
                         $va_additional_settings['dontShowStatus'] = array(
 							'formatType' => FT_NUMBER,
@@ -1135,8 +1135,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => 0,
 							'multiple' => false,
-							'label' => _t('Do not show status?'),
-							'description' => _t('Do not show status drop-down.')
+							'label' => _t('Do not show status? (Classic only)'),
+							'description' => _t('Do not show status drop-down. (Classic only)')
 						);
 						$va_additional_settings['dontShowAccess'] = array(
 							'formatType' => FT_NUMBER,
@@ -1144,8 +1144,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => 0,
 							'multiple' => false,
-							'label' => _t('Do not show access?'),
-							'description' => _t('Do not show access drop-down.')
+							'label' => _t('Do not show access? (Classic only)'),
+							'description' => _t('Do not show access drop-down. (Classic only)')
 						);
 						
 						if($this->getAppConfig()->get('allow_transcription')) {
@@ -1155,8 +1155,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => 0,
 								'multiple' => false,
-								'label' => _t('Do not show transcription control?'),
-								'description' => _t('Do not show transcription drop-down.')
+								'label' => _t('Do not show transcription control? (Classic only)'),
+								'description' => _t('Do not show transcription drop-down. (Classic only)')
 							);
 						}
 						
@@ -1187,6 +1187,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'multiple' => true,
 							'label' => _t('Show for editing'),
 							'description' => _t('Selected metadata elements to allow editing on.')
+						];
+						$va_additional_settings['showBundlesForEditingOrder'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'width' => "275px", 'height' => "100px",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Metadata element editing order'),
+							'description' => _t('List metadata element codes separated by commas or semicolons in the order in which they should appear. If omitted the default sort order is used.')
 						];
 						
                     }

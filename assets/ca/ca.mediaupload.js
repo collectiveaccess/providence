@@ -135,16 +135,20 @@ var caUI = caUI || {};
 			caUI.mediaUploadAnnotationEditorPanels[that.fieldNamePrefix].showPanel(that.annotationEditorURL);
 		}
 		
+		that.showEmbeddedMetadata = function() {
+			jQuery('#' + that.fieldNamePrefix + '_media_metadata_' + that.index).slideToggle(300);
+		}
+		
 		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).on('click', function(e) {
-			that.openEditor(that.index);
+			that.openEditor();
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataSaveButton' + that.index).on('click', function(e) {
-			that.closeEditor(that.index);
+			that.closeEditor();
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_SetAsPrimaryButton' + that.index).on('click', function(e) {
-			that.setAsPrimary(that.index);
+			that.setAsPrimary();
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_edit_image_center_' + that.index).on('click', function(e) {
@@ -152,8 +156,14 @@ var caUI = caUI || {};
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_edit_annotations_button_' + that.index).on('click', function(e) {
-			that.showAnnotationEditor(that.index);
-		})
+			that.showAnnotationEditor();
+		});
+		
+		jQuery('#' + that.fieldNamePrefix + '_caObjectRepresentationMetadataButton_' + that.index).on('click', function(e) {
+			that.showEmbeddedMetadata();
+		});
+		
+		
 		
 		if (parseInt(that.representationID) === parseInt(that.primaryID)) {
 			jQuery('#' + that.fieldNamePrefix + '_SetAsPrimaryButton' + that.index).html(that.isPrimaryLabel);

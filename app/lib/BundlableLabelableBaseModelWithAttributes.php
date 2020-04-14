@@ -4104,7 +4104,8 @@ if (!$vb_batch) {
 										$vn_rank = $va_rep_ids_sorted[$vn_rank_index];
 									}
 									
-									$t_rep = $this->editRepresentation($va_rep['representation_id'], $vs_path, $vals['locale_id'], $vals['status'], $vals['access'], $vals['is_primary'], $vals, array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vals['type_id']));
+									$vn_rel_type_id = $po_request->getParameter($vs_prefix_stub.'rel_type_id_'.$va_rep['relation_id'], pString);
+									$t_rep = $this->editRepresentation($va_rep['representation_id'], $vs_path, $vals['locale_id'], $vals['status'], $vals['access'], $vals['is_primary'], $vals, array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vals['type_id'], 'rel_type_id' => $vn_rel_type_id));
 									if ($this->numErrors()) {
 										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
 										foreach($this->errors() as $o_e) {
@@ -4250,7 +4251,8 @@ if (!$vb_batch) {
 											$vs_tmp_directory = caGetTempDirPath();
 										}
                                     	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
-                                        $vs_original_name = $va_values['name'];
+                                    	$md = json_decode(file_get_contents("{$vs_path}_metadata"), true);
+                                        $vs_original_name = $md['original_filename'];
                                     } else {
                                         $vs_path = $va_values['tmp_name'];
                                         $vs_original_name = $va_values['name'];
@@ -4288,6 +4290,7 @@ if (!$vb_batch) {
                                     $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
                         
                                     $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, $vals, array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+                                    
                                     if ($this->numErrors()) {
                                         $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
                                     } else {
@@ -4297,7 +4300,7 @@ if (!$vb_batch) {
                                         // import embedded metadata?
                                         $vn_object_representation_mapping_id = $po_request->getParameter($vs_prefix_stub.'importer_id_new_'.$va_matches[1], pInteger);
 										
-                                        if(!$vn_object_representation_mapping_id && is_array($media_metadata_extraction_defaults = $po_request->getAppConfig()->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
+										if(!$vn_object_representation_mapping_id && is_array($media_metadata_extraction_defaults = $po_request->getAppConfig()->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
 											$media_mimetype = $t_rep->get('mimetype');
 										
 											$log = caGetImportLogger(['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level')]);

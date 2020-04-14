@@ -2630,18 +2630,17 @@ class BaseEditorController extends ActionController {
 			$vn_timeout = 24 * 60 * 60;
 		}
 
-
 		// Cleanup any old files here
-		// $va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, ['modifiedSince' => time() - $vn_timeout]);
-// 		foreach($va_files_to_delete as $vs_file_to_delete) {
-// 			@unlink($vs_file_to_delete);
-// 		}
+		$va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, ['modifiedSince' => time() - $vn_timeout]);
+		foreach($va_files_to_delete as $vs_file_to_delete) {
+			@unlink($vs_file_to_delete);
+		}
 
 		$stored_files = [];
 		
 		$user_dir = "{$vs_tmp_directory}/userMedia{$vn_user_id}";
 		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
-		
+	
 		if(is_array($_FILES['files'])) {
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
@@ -2652,14 +2651,14 @@ class BaseEditorController extends ActionController {
 				}
 				
 				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
-				copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
+				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
 
 				// write file metadata
-				file_put_contents("{$dest_path}_metadata", json_encode([
-					'original_filename' => $_FILES['files'][$i]['name'],
+				@file_put_contents("{$dest_path}_metadata", json_encode([
+					'original_filename' => $_FILES['files']['name'][$i],
 					'size' => filesize($dest_path)
 				]));
-				file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
+				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
 				$stored_files[$md5] = "userMedia{$vn_user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
 		}
