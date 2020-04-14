@@ -1796,7 +1796,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									GROUP BY swi.row_id, swi.field_container_id
 								";
 								
-								if (($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) {
+								if (!$vs_direct_sql_query && (($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1)) {
 									$vs_sql .= " HAVING count(distinct sw.stem) >= {$vn_num_terms}";
 								}
 								$t = new Timer();
