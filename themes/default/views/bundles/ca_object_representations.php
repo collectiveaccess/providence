@@ -31,7 +31,6 @@
  	$id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');
 	$t_item 			= $this->getVar('t_item');			// object representation
-	$t_item_label		= $t_item->getLabelTableInstance();
 	$table_num 			= $t_item->tableNum();
 	
 	$t_item_rel 		= $this->getVar('t_item_rel');
@@ -46,8 +45,6 @@
 	
 	$read_only			= (isset($settings['readonly']) && $settings['readonly']);
 	$is_batch			= $this->getVar('batch');
-	
-	$lookup_params = [];
 	
 	$num_per_page = 100;
 	
@@ -75,45 +72,45 @@
 		return;
 	}
  ?>
- <div id="<?php print "{$id_prefix}{$table_num}_rel"; ?>">
+ <div id="<?= "{$id_prefix}{$table_num}_rel"; ?>">
  	<div class="bundleContainer"> </div>
  	
-	<input type="hidden" id="<?php print $id_prefix; ?>_ObjectRepresentationBundleList" name="<?php print $id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
+	<input type="hidden" id="<?= $id_prefix; ?>_ObjectRepresentationBundleList" name="<?= $id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
  <?php
 	//
 	// Template to generate display for existing items
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
 <?php if (!$read_only) { ?>
 			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 <?php } ?>	
 			<div class="mediaUploadContainer">
 				<div class="objectRepresentationListImageContainer">
-					<div class="objectRepresentationListImage"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{representation_id}'))); ?>'); return false;">{icon}</a></div>
+					<div class="objectRepresentationListImage"><a href="#" onclick="caMediaPanel.showPanel('<?= urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{representation_id}'))); ?>'); return false;">{icon}</a></div>
 					
 					<div id='{fieldNamePrefix}change_{n}' class='mediaMetadataActionButton'><a href='#' id='{fieldNamePrefix}MediaMetadataEditButton{n}'><?= caNavIcon(__CA_NAV_ICON_EDIT_TEXT__, 1).' '._t('Edit').'</a> '; ?></div>
 				
-					<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator'><?php print _t('Will be primary after save'); ?></div>
-					<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?php print _t('Changes will be applied on save'); ?></div>
+					<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator'><?= _t('Will be primary after save'); ?></div>
+					<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?= _t('Changes will be applied on save'); ?></div>
 					
 					<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
 				</div>
 				
 				<div class='objectRepresentationMetadataEditorMediaRightCol' id='{fieldNamePrefix}objectRepresentationMetadataEditorMediaRightCol{n}'>
-					<div id="{fieldNamePrefix}primary_{n}" class='mediaMetadataActionButton'><span id="{fieldNamePrefix}primary_{n}"><a href='#' id='{fieldNamePrefix}SetAsPrimaryButton{n}'><?php print caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span></div>
+					<div id="{fieldNamePrefix}primary_{n}" class='mediaMetadataActionButton'><span id="{fieldNamePrefix}primary_{n}"><a href='#' id='{fieldNamePrefix}SetAsPrimaryButton{n}'><?= caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span></div>
 					
-					<div id="{fieldNamePrefix}edit_{n}" class='mediaMetadataActionButton'><span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1).' '._t('Full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{representation_id}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span></div>
+					<div id="{fieldNamePrefix}edit_{n}" class='mediaMetadataActionButton'><span id="{fieldNamePrefix}edit_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1).' '._t('Full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{representation_id}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span></div>
 					
 					<div class="caAnnoEditorLaunchButton annotationTypeClip{annotation_type} caObjectRepresentationListActionButton">
-						<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" id="{fieldNamePrefix}edit_annotations_button_{n}"><?php print caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?php print _t('Annotations'); ?></a></span>
+						<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" id="{fieldNamePrefix}edit_annotations_button_{n}"><?= caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?= _t('Annotations'); ?></a></span>
 					</div>
 					<div class="caSetImageCenterLaunchButton annotationTypeSetCenter{annotation_type} caObjectRepresentationListActionButton">
-						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}edit_image_center_{n}"><?php print caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?php print _t('Set center'); ?></a></span>
+						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}edit_image_center_{n}"><?= caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?= _t('Set center'); ?></a></span>
 					</div>
 				</div>
 				
@@ -168,18 +165,18 @@
 	</textarea>
 		
 	<textarea class='caNewItemTemplate' style='display: none;'>
-		<div id="<?php print $id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
 <?php if (!$read_only) { ?>
 			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 <?php } ?>	
 
 <?php
     if(sizeof($rel_types) > 1) {
 ?>
-		<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel__type_id_{n}'), $settings)) : _t('Add representation'); ?></h2>
+		<h2><?= ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel__type_id_{n}'), $settings)) : _t('Add representation'); ?></h2>
 <?php
     } else {
         // Embed type when only a single type is available
@@ -188,9 +185,9 @@
 ?>
 			<div class="mediaUploadContainer">
 				<div style="float: left;">
-					<div id="<?php print $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
-						<input type="file" style="display: none;" id="<?php print $id_prefix; ?>UploadFileControl{n}" multiple/>
-						<div id="<?php print $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
+					<div id="<?= $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
+						<input type="file" style="display: none;" id="<?= $id_prefix; ?>UploadFileControl{n}" multiple/>
+						<div id="<?= $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
 					</div>
 				</div>
 				<div class="mediaUploadEditArea">
@@ -207,7 +204,7 @@
 ?>
 				</div>
 			</div>
-			<input type="hidden" id="<?php print $id_prefix; ?>MediaRefs{n}" name="<?php print $id_prefix; ?>_mediarefs{n}"/>
+			<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
 			<br class="clear"/>
 		</div>
 		
@@ -243,7 +240,7 @@
 <?php 
 	if (!$vb_read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
 <?php
 	}
 ?>
@@ -251,47 +248,47 @@
 </div>
 
  <script type="text/javascript">
-	var caRelationBundle<?php print $id_prefix; ?>;
+	var caRelationBundle<?= $id_prefix; ?>;
  	jQuery(document).ready(function() {
-		caRelationBundle<?php print $id_prefix; ?> = caUI.initRelationBundle('#<?php print "{$id_prefix}{$table_num}_rel"; ?>', {
-			fieldNamePrefix: '<?php print $id_prefix; ?>_',
-			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'num_transcriptions', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno' <?php print (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
-			initialValues: <?php print json_encode($initial_values); ?>,
-			initialValueOrder: <?php print json_encode(array_keys($initial_values)); ?>,
-			errors: <?php print json_encode($errors); ?>,
-			forceNewValues: <?php print json_encode($failed_inserts); ?>,
-			itemID: '<?php print $id_prefix; ?>Item_',
+		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= "{$id_prefix}{$table_num}_rel"; ?>', {
+			fieldNamePrefix: '<?= $id_prefix; ?>_',
+			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'num_transcriptions', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
+			initialValues: <?= json_encode($initial_values); ?>,
+			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
+			errors: <?= json_encode($errors); ?>,
+			forceNewValues: <?= json_encode($failed_inserts); ?>,
+			itemID: '<?= $id_prefix; ?>Item_',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			itemClassName: 'labelInfo',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
-			showOnNewIDList: ['<?php print $id_prefix; ?>_media_'],
-			hideOnNewIDList: ['<?php print $id_prefix; ?>_edit_','<?php print $id_prefix; ?>_download_', '<?php print $id_prefix; ?>_media_metadata_container_', '<?php print $id_prefix; ?>_edit_annotations_', '<?php print $id_prefix; ?>_edit_image_center_'],
+			showOnNewIDList: ['<?= $id_prefix; ?>_media_'],
+			hideOnNewIDList: ['<?= $id_prefix; ?>_edit_','<?= $id_prefix; ?>_download_', '<?= $id_prefix; ?>_media_metadata_container_', '<?= $id_prefix; ?>_edit_annotations_', '<?= $id_prefix; ?>_edit_image_center_'],
 			enableOnNewIDList: [],
 			showEmptyFormsOnLoad: 1,
-			readonly: <?php print $read_only ? "true" : "false"; ?>,
-			isSortable: true, //<?php print !$read_only && !$batch ? "true" : "false"; ?>,
-			listSortOrderID: '<?php print $id_prefix; ?>_ObjectRepresentationBundleList',
-			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+			readonly: <?= $read_only ? "true" : "false"; ?>,
+			isSortable: true, //<?= !$read_only && !$batch ? "true" : "false"; ?>,
+			listSortOrderID: '<?= $id_prefix; ?>_ObjectRepresentationBundleList',
+			defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
 			
-			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', $lookup_params); ?>',
-			autocompleteInputID: '<?php print $id_prefix; ?>_autocomplete',
+			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', []); ?>',
+			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
 			
 			extraParams: { exact: 1 },
 			
-			minRepeats: <?php print $batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
-			maxRepeats: <?php print $batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
+			minRepeats: <?= $batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= $batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
-			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
+			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
-			totalValueCount: <?php print (int)$rep_count; ?>,
-			//partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>',
-			loadSize: <?php print $num_per_page; ?>,
-			partialLoadMessage: '<?php print addslashes(_t('Load next %num of %total')); ?>',
-			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			totalValueCount: <?= (int)$rep_count; ?>,
+			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundles', [$t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations']); ?>',
+			loadSize: <?= $num_per_page; ?>,
+			//partialLoadMessage: '<?= addslashes(_t('Load next %num of %total')); ?>',
+			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			onPartialLoad: function(d) {				
 				// Hide annotation editor links for non-timebased media
 				//jQuery(".caAnnoEditorLaunchButton").hide();
