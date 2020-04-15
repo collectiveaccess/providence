@@ -71,8 +71,8 @@
 	}
 	
 	$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, [], ['castTo' => 'array']);
-	$bundles_to_edit_order = preg_split("![;,]+!", caGetOption('showBundlesForEditingOrder', $settings, '', ['castTo' => 'string']));
- 	$bundles_to_edit_proc = array_map(function($v) { return join('.', array_slice(explode('.', $v), 1)); }, $bundles_to_edit);
+	$bundles_to_edit_order = preg_split("![;,\n\r]+!", caGetOption('showBundlesForEditingOrder', $settings, '', ['castTo' => 'string']));
+ 	$bundles_to_edit_proc = array_map(function($v) { $f = explode('.', $v); return join('.', (sizeof($f) > 1) ? array_slice($f,  1) : $f); }, $bundles_to_edit);
  
  	if (is_array($bundles_to_edit_order) && sizeof($bundles_to_edit_order)) {
  		$bundles_to_edit_sorted = [];

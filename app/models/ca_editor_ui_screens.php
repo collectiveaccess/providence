@@ -1197,7 +1197,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => '',
 							'label' => _t('Metadata element editing order'),
-							'description' => _t('List metadata element codes separated by commas or semicolons in the order in which they should appear. If omitted the default sort order is used.')
+							'description' => _t('List metadata element codes separated by commas, semicolons or returns in the order in which they should appear. If omitted the default sort order is used.')
 						];
 						
 						$va_additional_settings['numPerPage'] = [
