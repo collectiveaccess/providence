@@ -151,7 +151,7 @@ var caUI = caUI || {};
 
 			var msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
 			jQuery(that.container + " ." + that.itemListClassName).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
-			jQuery(that.container + " ." + that.itemListClassName).on('click', '.caItemLoadNextBundles', function(e) {
+			jQuery(that.container + " ." + that.itemListClassName).off('click').on('click', '.caItemLoadNextBundles', function(e) {
 				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').show();
 				that.loadNextValues();
 				e.preventDefault();

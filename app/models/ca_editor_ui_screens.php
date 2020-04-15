@@ -1181,6 +1181,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => "100px",
 							'takesLocale' => false,
 							'showMetadataElementsWithDataType' => [__CA_ATTRIBUTE_VALUE_TEXT__,__CA_ATTRIBUTE_VALUE_DATERANGE__,__CA_ATTRIBUTE_VALUE_TIMECODE__,__CA_ATTRIBUTE_VALUE_URL__,__CA_ATTRIBUTE_VALUE_CURRENCY__,__CA_ATTRIBUTE_VALUE_LENGTH__,__CA_ATTRIBUTE_VALUE_WEIGHT__,__CA_ATTRIBUTE_VALUE_LIST__,__CA_ATTRIBUTE_VALUE_INTEGER__,__CA_ATTRIBUTE_VALUE_NUMERIC__],
+							'includePreferredLabels' => true,
 							'table' => 'ca_object_representations',
 							'includeIntrinsics' => ['type_id', 'access', 'status', 'idno', 'media', 'original_filename', 'is_transcribable'],
 							'default' => ['idno', 'access'],
@@ -1188,6 +1189,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Show for editing'),
 							'description' => _t('Selected metadata elements to allow editing on.')
 						];
+						
 						$va_additional_settings['showBundlesForEditingOrder'] = [
 							'formatType' => FT_TEXT,
 							'displayType' => DT_FIELD,
@@ -1198,6 +1200,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('List metadata element codes separated by commas or semicolons in the order in which they should appear. If omitted the default sort order is used.')
 						];
 						
+						$va_additional_settings['numPerPage'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'width' => "50px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => 10,
+							'label' => _t('Number of representations per load'),
+							'description' => _t('Maximum number of representation to fetch in a single load.')
+						];
                     }
 
 					if($vs_bundle == 'ca_sets') {

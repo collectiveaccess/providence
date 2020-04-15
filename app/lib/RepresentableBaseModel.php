@@ -140,7 +140,7 @@
 				$va_can_read = $qr_reps->getAllFieldValues('representation_id');
 			}
 			
-			// reexecute query as pdo doesn't support seek()
+			// re-execute query as pdo doesn't support seek()
 			$qr_reps = $o_db->query($vs_sql, $va_type_restriction_filters['params']);
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
@@ -1190,6 +1190,16 @@
         /**
          *
          */
+		public function getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code=null, $pa_bundle_settings=null, $pa_options=null) {
+			if($ps_related_table === 'ca_object_representations') {
+				return $this->getBundleFormValues($ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
+			}
+			return parent::getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
+		}
+		# ------------------------------------------------------
+        /**
+         *
+         */
         public function getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null) {		
             foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
                 $pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
@@ -1233,7 +1243,7 @@
                 $va_display_template_values = array();
                 if($vs_bundle_template && is_array($va_relation_ids = caExtractValuesFromArrayList($va_reps, 'relation_id')) && sizeof($va_relation_ids)) {
                     if ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName())) {
-                        $va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true)));
+                        $va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('start' => null, 'limit' => null, 'returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true)));
                     }
                 }
 

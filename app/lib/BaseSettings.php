@@ -656,6 +656,12 @@
 										$va_select_opts[$va_field_info['LABEL']] = $vs_f;
 									}	
 								}
+								if($va_properties['includePreferredLabels']) {
+									if (!($t_rep = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
+									foreach($t_rep->getLabelUIFields() as $vs_f) {
+										$va_select_opts[$t_rep->getDisplayLabel("{$vs_table}.preferred_labels.{$vs_f}")] = "{$vs_table}.preferred_labels.{$vs_f}";
+									}	
+								}
 							}
 							
 							if (sizeof($va_select_opts)) {	

@@ -139,27 +139,27 @@ var caUI = caUI || {};
 			jQuery('#' + that.fieldNamePrefix + '_media_metadata_' + that.index).slideToggle(300);
 		}
 		
-		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).on('click', function(e) {
+		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).off('click').on('click', function(e) {
 			that.openEditor();
 		});
 		
-		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataSaveButton' + that.index).on('click', function(e) {
+		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataSaveButton' + that.index).off('click').on('click', function(e) {
 			that.closeEditor();
 		});
 		
-		jQuery('#' + that.fieldNamePrefix + '_SetAsPrimaryButton' + that.index).on('click', function(e) {
+		jQuery('#' + that.fieldNamePrefix + '_SetAsPrimaryButton' + that.index).off('click').on('click', function(e) {
 			that.setAsPrimary();
 		});
 		
-		jQuery('#' + that.fieldNamePrefix + '_edit_image_center_' + that.index).on('click', function(e) {
+		jQuery('#' + that.fieldNamePrefix + '_edit_image_center_' + that.index).off('click').on('click', function(e) {
 			that.showImageCenterEditor(that.index);
 		});
 		
-		jQuery('#' + that.fieldNamePrefix + '_edit_annotations_button_' + that.index).on('click', function(e) {
+		jQuery('#' + that.fieldNamePrefix + '_edit_annotations_button_' + that.index).off('click').on('click', function(e) {
 			that.showAnnotationEditor();
 		});
 		
-		jQuery('#' + that.fieldNamePrefix + '_caObjectRepresentationMetadataButton_' + that.index).on('click', function(e) {
+		jQuery('#' + that.fieldNamePrefix + '_caObjectRepresentationMetadataButton_' + that.index).off('click').on('click', function(e) {
 			that.showEmbeddedMetadata();
 		});
 		

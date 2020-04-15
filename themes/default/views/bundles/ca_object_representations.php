@@ -27,7 +27,15 @@
  */
 	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
-// Timer::start("x");
+	
+	$settings 				= $this->getVar('settings');
+	$use_classic_interface 	= (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
+
+	if ($use_classic_interface) {
+		print $this->render('ca_object_representations_classic.php');
+		return;
+	}
+	
  	$id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');
 	$t_item 			= $this->getVar('t_item');			// object representation
@@ -36,36 +44,35 @@
 	$t_item_rel 		= $this->getVar('t_item_rel');
 	$t_subject 			= $this->getVar('t_subject');		// object
 	$add_label 			= $this->getVar('add_label');
-	$settings 			= $this->getVar('settings');
 	
-	$vs_rel_dir         = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
-	$vn_left_sub_type_id = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-	$vn_right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-	$rel_types          = $t_item_rel->getRelationshipTypes($vn_left_sub_type_id, $vn_right_sub_type_id);
+	$rel_dir         	= ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
+	$left_sub_type_id 	= ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+	$right_sub_type_id 	= ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+	$rel_types          = $t_item_rel->getRelationshipTypes($left_sub_type_id, $right_sub_type_id);
 	
 	$read_only			= (isset($settings['readonly']) && $settings['readonly']);
 	$is_batch			= $this->getVar('batch');
 	
-	$num_per_page = 10;
+	$num_per_page 		= caGetOption('numPerPage', $settings, 10);
+	$initial_values 	= caSanitizeArray($this->getVar('initialValues'), ['removeNonCharacterData' => false]);
 	
-	$initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $settings, array('start' => 0, 'limit' => $num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
-	$rep_count = $t_subject->getRepresentationCount($va_settings);
+	$rep_count = $t_subject->getRepresentationCount($settings);
 	
 	$errors = $failed_inserts = [];
 	
 	$primary_id = null;
-	foreach($initial_values as $vn_representation_id => $va_rep) {
-		if(is_array($va_action_errors = $this->request->getActionErrors('ca_object_representations', $vn_representation_id))) {
-			foreach($va_action_errors as $o_error) {
-				$errors[$vn_representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
+	foreach($initial_values as $representation_id => $rep) {
+		if(is_array($action_errors = $this->request->getActionErrors('ca_object_representations', $representation_id))) {
+			foreach($action_errors as $o_error) {
+				$errors[$representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 			}
 		}
-		if ($va_rep['is_primary']) { $primary_id = (int)$va_rep['representation_id']; }
+		if ($rep['is_primary']) { $primary_id = (int)$rep['representation_id']; }
 	}
-	$use_classic_interface = (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
+	
 	$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, [], ['castTo' => 'array']);
 	$bundles_to_edit_order = preg_split("![;,]+!", caGetOption('showBundlesForEditingOrder', $settings, '', ['castTo' => 'string']));
- 	$bundles_to_edit_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_edit);
+ 	$bundles_to_edit_proc = array_map(function($v) { return join('.', array_slice(explode('.', $v), 1)); }, $bundles_to_edit);
  
  	if (is_array($bundles_to_edit_order) && sizeof($bundles_to_edit_order)) {
  		$bundles_to_edit_sorted = [];
@@ -79,11 +86,6 @@
  		$bundles_to_edit_proc = $bundles_to_edit_sorted;
  	}
  	
-	
-	if ($use_classic_interface) {
-		print $this->render('ca_object_representations_classic.php');
-		return;
-	}
 	
 	$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
  ?>
@@ -154,7 +156,7 @@
  <?php
     if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
 ?>
-						<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('id' => '{fieldNamePrefix}rel_type_id_{n}', 'name' => '{fieldNamePrefix}rel_type_id_{n}', 'value' => '{rel_type_id}'), $settings)); ?></div>
+						<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('id' => '{fieldNamePrefix}rel_type_id_{n}', 'name' => '{fieldNamePrefix}rel_type_id_{n}', 'value' => '{rel_type_id}'), $settings)); ?></div>
 <?php
 	} 
 						foreach($bundles_to_edit_proc as $f) {
@@ -163,6 +165,8 @@
 							} elseif($t_item->hasElement($f)) {
 								$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'value' => '{{'.$f.'}}', 'textAreaTagName' => 'textentry']);
 								print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
+							} elseif($f === 'preferred_labels.name') {
+								print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".caHTMLTextInput("{$id_prefix}_rep_label_{n}", ['width' => '500px', 'name' => "{$id_prefix}_rep_label_{n}", 'id' => "{$id_prefix}_rep_label_{n}", 'value' => '{{rep_label}}'])."</div>\n"; 
 							}
 						}
 
@@ -236,7 +240,7 @@
 <?php
     if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
 ?>
-				<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)); ?></div>
+				<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)); ?></div>
 <?php
 	} else {
 				// Embed type when only a single type is available
@@ -250,6 +254,8 @@
 					} elseif($t_item->hasElement($f)) {
 						$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'textAreaTagName' => 'textentry']);
 						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
+					} elseif($f === 'preferred_labels.name') {
+						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".caHTMLTextInput("{$id_prefix}_rep_label_{n}", ['width' => '500px', 'id' => "{$id_prefix}_rep_label_{n}", 'value' => ''])."</div>\n"; 
 					}
 				}
 				
@@ -287,7 +293,7 @@
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName()]));
+            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName()]));
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div class='mediaMetadataActionButton' style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
@@ -299,9 +305,9 @@
 			
 		</div>
 <?php 
-	if (!$vb_read_only) {
+	if (!$read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
 <?php
 	}
 ?>
@@ -330,7 +336,7 @@
 			enableOnNewIDList: [],
 			showEmptyFormsOnLoad: 1,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
-			isSortable: true, //<?= !$read_only && !$batch ? "true" : "false"; ?>,
+			isSortable: <?= !$read_only && !$batch ? "true" : "false"; ?>,
 			listSortOrderID: '<?= $id_prefix; ?>_ObjectRepresentationBundleList',
 			defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
 			
