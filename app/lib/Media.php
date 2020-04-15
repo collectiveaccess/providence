@@ -367,6 +367,10 @@ class Media extends BaseObject {
 	 * @return array List of file extensions
 	 */
 	public static function getImportFileExtensions() {
+		if (CompositeCache::contains('getImportFileExtensions', 'Media')) {
+			return CompositeCache::fetch('getImportFileExtensions', 'Media');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
@@ -377,7 +381,8 @@ class Media extends BaseObject {
 			$va_extensions = array_merge($va_extensions, $o_plugin->getImportExtensions());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getImportFileExtensions', $va_extensions = array_unique($va_extensions), 'Media');
+		return $va_extensions;
 	}
 	# ------------------------------------------------
 	/**
@@ -570,8 +575,7 @@ class Media extends BaseObject {
 	# ------------------------------------------------
 	public function htmlTag($ps_mimetype, $ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
 		if (!$ps_mimetype) { return _t('No media available'); }
-		//$va_plugin_names = $this->getPluginNames();
-		//foreach($va_plugin_names as $vs_plugin_name) {
+		
 		$map = $this->getPluginsForMimetypes();
 		if(is_array($map[$ps_mimetype]) && ($vs_plugin_name = $map[$ps_mimetype][0])) {
 			$p = $this->getUnregisteredPlugin($vs_plugin_name);
