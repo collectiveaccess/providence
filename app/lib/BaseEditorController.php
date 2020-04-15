@@ -1587,6 +1587,9 @@ class BaseEditorController extends ActionController {
 
 		$ps_bundle = $this->request->getParameter("bundle", pString);
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+		
+		$ps_sort = $this->request->getParameter("sort", pString);
+		$ps_sort_direction = $this->request->getParameter("sortDirection", pString);
 
 
 		switch($ps_bundle) {
@@ -1606,7 +1609,7 @@ class BaseEditorController extends ActionController {
 					return;
 				}
 
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, 'P'.$pn_placement_id, $t_placement->get('settings'), array('request' => $this->request, 'contentOnly' => true), $vs_label));
+				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, 'P'.$pn_placement_id, array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
 				break;
 		}
 	}
@@ -1625,10 +1628,14 @@ class BaseEditorController extends ActionController {
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
 		$pn_start = (int)$this->request->getParameter("start", pInteger);
 		if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
+		$sort = $this->request->getParameter("sort", pString);
+		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
 		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+		
+		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
-		$this->response->addContent(json_encode($t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true))));
+		$this->response->addContent(json_encode(['sort' => array_keys($d), 'data' => $d]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2777,6 +2784,8 @@ class BaseEditorController extends ActionController {
 	/**
 	 * Handle sort requests from form editor.
 	 * Gets passed a table name, a list of ids and a key to sort on. Will return a JSON list of the same IDs, just sorted.
+	 *
+	 * TODO: remove this
 	 */
 	public function Sort() {
 		if (!$this->getRequest()->isLoggedIn() || ((int)$this->getRequest()->user->get('userclass') !== 0)) {
@@ -2784,10 +2793,29 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 
-		$vs_table_name = $this->getRequest()->getParameter('table', pString);
-		$t_instance = Datamodel::getInstance($vs_table_name, true);
-
-		$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
+		if ($placement_id = $this->getRequest()->getParameter('placement_id', pInteger)) {
+			$vn_primary_table = $this->getRequest()->getParameter('primary_table', pString);
+			$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
+			
+			// Generate list of related items from editor UI placement when defined	...
+			//
+			// TODO: convert the entire related list UI mess to use passed placement_id's rather than giant lists of related IDs
+			// For now support both placement_ids and passed ID lists
+			$placement = new ca_editor_ui_bundle_placements($placement_id);
+			if (!$placement->isLoaded()) {
+				throw new ApplicationException(_('Invalid placement_id'));
+			}
+			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
+	
+			if (!($t_instance->load($vn_primary_id))) { 
+				throw new ApplicationException(_('Invalid id'));
+			}
+			$va_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+		} else {
+			$vs_table_name = $this->getRequest()->getParameter('table', pString);
+			$t_instance = Datamodel::getInstance($vs_table_name, true);
+			$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
+		}
 		$va_sort_keys = explode(',', $this->getRequest()->getParameter('sortKeys', pString));
 
 		if(!($vs_sort_direction = strtolower($this->getRequest()->getParameter('sortDirection', pString))) || !in_array($vs_sort_direction, array('asc', 'desc'))) {

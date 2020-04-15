@@ -29,6 +29,7 @@
 	AssetLoadManager::register('sortableUI');
 	
 	$settings 				= $this->getVar('settings');
+	
 	$use_classic_interface 	= (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
 
 	if ($use_classic_interface) {
@@ -55,6 +56,10 @@
 	
 	$num_per_page 		= caGetOption('numPerPage', $settings, 10);
 	$initial_values 	= caSanitizeArray($this->getVar('initialValues'), ['removeNonCharacterData' => false]);
+	
+	// Dyamically loaded sort ordering
+	$loaded_sort 			= $this->getVar('sort');
+	$loaded_sort_direction 	= $this->getVar('sortDirection');
 	
 	$rep_count = $t_subject->getRepresentationCount($settings);
 	
@@ -86,10 +91,9 @@
  		$bundles_to_edit_proc = $bundles_to_edit_sorted;
  	}
  	
-	
 	$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
  ?>
- <div id="<?= "{$id_prefix}{$table_num}_rel"; ?>">
+ <div id="<?= $id_prefix; ?>">
  	<div class="bundleContainer"> </div>
  	
 	<input type="hidden" id="<?= $id_prefix; ?>_ObjectRepresentationBundleList" name="<?= $id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
@@ -293,7 +297,7 @@
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName()]));
+            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName(), 'sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div class='mediaMetadataActionButton' style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
@@ -317,7 +321,7 @@
  <script type="text/javascript">
 	var caRelationBundle<?= $id_prefix; ?>;
  	jQuery(document).ready(function() {
-		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= "{$id_prefix}{$table_num}_rel"; ?>', {
+		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= "{$id_prefix}"; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
 			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
 			initialValues: <?= json_encode($initial_values); ?>,
@@ -334,6 +338,7 @@
 			showOnNewIDList: ['<?= $id_prefix; ?>_media_'],
 			hideOnNewIDList: ['<?= $id_prefix; ?>_edit_','<?= $id_prefix; ?>_download_', '<?= $id_prefix; ?>_media_metadata_container_', '<?= $id_prefix; ?>_edit_annotations_', '<?= $id_prefix; ?>_edit_image_center_'],
 			enableOnNewIDList: [],
+			placementID: <?= json_encode($settings['placement_id']); ?>,
 			showEmptyFormsOnLoad: 1,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
 			isSortable: <?= !$read_only && !$batch ? "true" : "false"; ?>,
@@ -350,6 +355,9 @@
 			maxRepeats: <?= $batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
+			
+			loadedSort: <?= json_encode($loaded_sort); ?>,
+			loadedSortDirection: <?= json_encode($loaded_sort_direction); ?>,
 			
 			totalValueCount: <?= (int)$rep_count; ?>,
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundles', [$t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations']); ?>',
