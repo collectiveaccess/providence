@@ -87,7 +87,7 @@ class Modification extends Base {
 			if (is_array($va_filter_vals = caGetOption($vs_code, $va_filters, null)) && sizeof($va_filter_vals)) {
 				if(!in_array($t_instance->get($t_instance->tableName().".{$vs_code}"), $va_filter_vals)) { return false; }
 			}
-			return $t_instance->elementDidChange($vs_code);
+			return $t_instance->attributeDidChange($vs_code);
 		}
 	}
 	

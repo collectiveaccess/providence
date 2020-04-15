@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_APP_DIR__."/helpers/errorHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/systemHelpers.php");
 require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer
 
 require_once(__CA_LIB_DIR__."/Zend/Translate.php");

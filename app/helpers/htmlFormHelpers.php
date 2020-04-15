@@ -96,7 +96,7 @@
 			foreach($pa_content as $vs_val => $vs_opt) {
 				if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
 				if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-				if (!($SELECTED = (((string)$vs_selected_val === (string)$vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
+				if (is_null($vs_selected_val) || !($SELECTED = (((string)$vs_selected_val === (string)$vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
 					$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
 				}
 				$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
@@ -107,7 +107,7 @@
 				foreach($pa_content as $vs_val) {
 					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 					
-					if (!($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
+					if (is_null($vs_selected_val) || !($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
 					}
 					$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
@@ -118,7 +118,7 @@
 					if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
 					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 				
-					if (!($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
+					if (is_null($vs_selected_val) || !($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
 					}
 					$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
@@ -410,9 +410,13 @@
 			$vn_width = 						(int)$pa_options["width"];
 			$vn_height = 						(int)$pa_options["height"];
 			
-			$vn_tile_width = 					(int)$pa_options["tile_width"];
-			$vn_tile_height = 					(int)$pa_options["tile_height"];
-			
+			$vn_tile_width = 					caGetOption('tile_width', $pa_options, 256, array('castTo'=>'int'));
+			$vn_tile_height = 					caGetOption('tile_height', $pa_options, 256, array('castTo'=>'int'));
+			// Tiles must be square.
+			if ($vn_tile_width != $vn_tile_height){
+				$vn_tile_height = $vn_tile_width;
+			}
+
 			$vn_layers = 						(int)$pa_options["layers"];
 			
 			if (!($vs_id_name = (string)$pa_options["idname"])) {
@@ -465,7 +469,8 @@
 			$va_opts['info'] = array(
 				'width' => $vn_width,
 				'height' => $vn_height,
-				'tilesize'=> 256,
+				// Set tile size using function options.
+				'tilesize'=> $vn_tile_width,
 				'levels' => $vn_layers
 			);
 			

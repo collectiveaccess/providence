@@ -76,8 +76,11 @@
 <?php
 	print "<div class='bundleSubLabel'>";
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
-		print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'), $this->getVar('history_tracking_policy'));
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
+		
+		if(caGetOption('showReturnToHomeLocations', $va_settings, false)) {
+			print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'), $this->getVar('history_tracking_policy'));
+		}
 	}
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
 		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);

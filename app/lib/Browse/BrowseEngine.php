@@ -2873,8 +2873,12 @@
 					$o_tep = new TimeExpressionParser();
 
 					// TODO: how do we handle non-latin characters?
-					$va_label_order_by_fields = isset($va_facet_info['order_by_label_fields']) ? $va_facet_info['order_by_label_fields'] : array('label');
-					foreach($va_facet as $vn_i => $va_item) {
+					$va_label_order_by_fields = isset($va_facet_info['order_by_label_fields']) ? $va_facet_info['order_by_label_fields'] : ['label'];
+					foreach($va_facet as $vn_i => $va_item) { 
+						if(!isset($va_item[$va_label_order_by_fields[0]])) { 
+							$va_label_order_by_fields = ['label']; 
+						}
+					
 						$va_groups = array();
 						switch($ps_grouping_field) {
 							case 'label':

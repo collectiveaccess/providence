@@ -452,6 +452,7 @@
 				CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
 				return false;
 			}
+			
 
 			$vb_direct = (bool)$po_opts->getOption('direct');
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
@@ -460,7 +461,6 @@
 			$vb_dryrun = (bool)$po_opts->getOption('dryrun');
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 			
 			$env = json_decode($po_opts->getOption('environment'), true);
 
@@ -468,44 +468,13 @@
 				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 			}
 
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $po_opts->getOption('log-level'), 'limitLogTo' => $po_opts->getOption('limit-log-to'), 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
 				CLIUtils::addMessage(_t("Imported data from source %1", $vs_data_source));
 				return true;
 			}
-		}
-		/**
-		* Helper function to get log levels
-		*/
-		private static function getLogLevel($po_opts){
-			$vn_log_level = KLogger::INFO;
-			switch($vs_log_level = $po_opts->getOption('log-level')) {
-				case 'DEBUG':
-					$vn_log_level = KLogger::DEBUG;
-					break;
-				case 'NOTICE':
-					$vn_log_level = KLogger::NOTICE;
-					break;
-				case 'WARN':
-					$vn_log_level = KLogger::WARN;
-					break;
-				case 'ERR':
-					$vn_log_level = KLogger::ERR;
-					break;
-				case 'CRIT':
-					$vn_log_level = KLogger::CRIT;
-					break;
-				case 'ALERT':
-					$vn_log_level = KLogger::ALERT;
-					break;
-				default:
-				case 'INFO':
-					$vn_log_level = KLogger::INFO;
-					break;
-			}
-			return $vn_log_level;
 		}
 		# -------------------------------------------------------
 		/**
@@ -517,7 +486,8 @@
 				"mapping|m=s" => _t('Mapping to import data with.'),
 				"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
-				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of importance: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+				"limit-log-to|l-s" => _t('Limit logging to specific event types when log level is set to INFO. Limit logging to specific event types for log level INFO. Valid values are: GENERAL (general status messages), EXISTING_RECORD_POLCY (messages relating to merging of existing records, SKIP (messages relating to conditional skipping of mappings, groups or records), RELATIONSHIPS (messages relating to creating of relationships. Seprate multiple types with commas or semicolors.'),
 				"add-to-set|t-s" => _t('Optional identifier of set to add all imported items to.'),
 				"environment|e-s" => _t('JSON-encoded key value pairs to add to import environment values.'),
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),

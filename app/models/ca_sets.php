@@ -1548,6 +1548,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vn_rank_acc = end(array_values($va_row_ranks));
 		
 		$va_rank_updates = array();
+		
+		$rows_in_set = $this->getItemRowIDs();
+		$allow_dupes_in_set = (bool)$this->getAppConfig()->get('allow_duplicate_items_in_sets');
 		foreach($pa_row_ids as $vn_rank => $vn_row_id) {
 			if (isset($va_existing_ranks[$vn_rank])) {
 				$vn_rank_inc = $va_existing_ranks[$vn_rank];
@@ -1566,8 +1569,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 						$va_errors[$vn_row_id] = _t('Could not reorder item %1: %2', $vn_row_id, join('; ', $t_set_item->getErrors()));
 					}
 				}
-			} else {
-				// add item to set
+			} elseif($allow_dupes_in_set || (!$rows_in_set[(int)($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id)])) {
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $pn_user_id, $vn_rank_inc);
 			}
 		}

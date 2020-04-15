@@ -7345,11 +7345,21 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------		
 	/**
+	 * Temporarily disable ACL item-based access control for this instance
+	 *
+	 * @return bool True if model supports ACL, false if not
+	 */
+	public function disableACL($disabled=true) {
+		return $this->disable_acl = $disabled;
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
 	 * Checks if model supports ACL item-based access control
 	 *
 	 * @return bool True if model supports ACL, false if not
 	 */
 	public function supportsACL() {
+		if($this->disable_acl) { return false; }
 		if ($this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
@@ -7868,7 +7878,8 @@ side. For many self-relations the direction determines the nature and display te
 				// create array of values present in rule
 				$va_row = array($va_rule['bundle_name'] => $vs_val = $this->get($va_rule['bundle_name']));
 				foreach($va_expression_tags as $vs_tag) {
-					$va_row[$vs_tag] = $this->get($vs_tag);
+					$t = caParseTagOptions($vs_tag);
+					$va_row[$vs_tag] = $this->get($t['tag'], $t['options']);
 				}
 			}
 			

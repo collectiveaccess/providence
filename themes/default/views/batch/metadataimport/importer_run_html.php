@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2019 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,6 +138,30 @@ print $vs_control_box = caFormControlBox(
 		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
 ?>
 					</p>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Limit log to'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList">
+					<table style="width: 600px; margin-left: 10px;">
+<?php
+		$c = 0;
+		$acc = [];
+		$limit_log_to_selected = caGetOption('limitLogTo', $va_last_settings, [], ['castTo' => 'array']);
+		foreach(['GENERAL' => _t('General information'), 'EXISTING_RECORD_POLICY' => _t('Existing record policy messages'), 'SKIP' => _t('Skip message'), 'RELATIONSHIPS' => _t('Relationship creation messages')] as $level => $name) {
+			$attr = ['value' => $level];
+			if(in_array($level, $limit_log_to_selected)) { $attr['checked'] = true; }
+			$acc[] = "<td class='formLabelPlain' style='padding: 5px'>".caHTMLCheckboxInput('limitLogTo[]', $attr, [])." {$name}</td>";
+			$c++;
+			if (($c % 2) == 0) {
+				print "<tr>".join("", $acc)."</tr>\n";
+				$acc = [];
+			}
+		}
+?>
+					</table>
 				</div>
 			</div>
 		</div>

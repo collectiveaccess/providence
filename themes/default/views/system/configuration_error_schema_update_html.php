@@ -29,20 +29,17 @@
  *
  * ----------------------------------------------------------------------
  */
-		$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
-		array_pop($va_tmp);
-		$vs_path = join("/", $va_tmp);
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess database update</title>
-	<link href="<?php print $vs_path; ?>/themes/default/css/error.css" rel="stylesheet" type="text/css" media='all'/>
+	<link href="<?php print __CA_THEME_URL__; ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
 	<link href='../assets/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/logos/ca_logo.png"/></div><!-- end logo -->
+	<div id="logo"><img src="<?php print __CA_THEME_URL__ ?>/graphics/logos/ca_logo.png"/></div><!-- end logo -->
 	<div id="content">
 		<div class='error'><?php print _t("Updating your database..."); ?></div>
 <?php

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -683,7 +683,7 @@ class BaseEditorController extends ActionController {
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
-		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger')) {
 			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
 		}
 		
@@ -1925,7 +1925,9 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-			
+		if(!$t_subject) { 
+			throw new ApplicationException(_t('Invalid id'));
+		}
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			//
 			// View FT_MEDIA attribute media 
@@ -1983,6 +1985,12 @@ class BaseEditorController extends ActionController {
 						$va_display_info['viewer'] = $vs_viewer_name = 'Mirador';
 					}
 				}
+			}
+			
+			if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+				$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
+				unset($va_display_info['use_mirador_for_image_list_length_at_least']);
+				unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
 			}
 			
 			if(!$vn_subject_id) {
@@ -2074,6 +2082,12 @@ class BaseEditorController extends ActionController {
 							$va_display_info['viewer'] = $vs_viewer_name = 'Mirador';
 						}
 					}
+				}
+				
+				if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+					$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
+					unset($va_display_info['use_mirador_for_image_list_length_at_least']);
+					unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
 				}
 				
 				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2418,7 +2432,7 @@ class BaseEditorController extends ActionController {
 				$va_rep_info = $va_rep['info'][$ps_version];
 				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 				
-				switch($vs_mode = $this->request->config->get([$t_subject->tableName().'_downloaded_file_naming', 'downloaded_file_naming'])) {
+				switch($vs_mode = $this->request->config->get('downloaded_file_naming')) {
 					case 'idno':
 						$vs_file_name = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						break;
@@ -2431,7 +2445,14 @@ class BaseEditorController extends ActionController {
 					case 'original_name':
 					default:
 					    if (strpos($vs_mode, "^") !== false) { // template
-							$vs_file_name = caProcessTemplateForIDs($vs_mode, 'ca_object_representations', [$vn_representation_id]);
+					        $vals = [];
+					        foreach(array_merge($va_rep['info'], $va_rep_info) as $k => $v) {
+					            if(is_array($v)) { continue; }
+					            if ($k == 'original_filename') { $v = pathinfo($v, PATHINFO_FILENAME); }
+					            $vals[strtolower($k)] = preg_replace('![^A-Za-z0-9_\-]+!', '_', $v);
+					        }
+					        $vals['idno'] = $vs_idno_proc;
+				            $vs_file_name = caProcessTemplate($vs_mode, $vals);
 						} elseif (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
 							$va_tmp = explode('.', $va_rep['info']['original_filename']);
 							if (sizeof($va_tmp) > 1) {
@@ -2441,16 +2462,13 @@ class BaseEditorController extends ActionController {
 							}
 							$vs_file_name = join('_', $va_tmp);
 						} else {
-							$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c;
+							$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						}
 
 						if (isset($va_file_names[$vs_file_name.'.'.$va_rep_info['EXTENSION']])) {
 							$vs_file_name.= "_{$vn_c}";
 						}
-						
-						if (!preg_match("!\.{$va_rep_info['EXTENSION']}$!", $vs_file_name)) {
-							$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
-						}
+						$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
 						break;
 				}
 				

@@ -78,6 +78,8 @@
 				return;
 			}
 			
+			Session::setVar('last_set_id', $t_subject->getPrimaryKey());
+			
       		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
  			parent::Edit($pa_values, $pa_options);
  		}

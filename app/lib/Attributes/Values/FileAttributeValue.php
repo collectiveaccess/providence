@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -176,6 +176,20 @@
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_is_file_path = false;
  			$vb_is_user_media = false;
+ 			
+ 			if ($media_prefix = caGetOption('mediaPrefix', $pa_options, null)) {
+ 				$config = Configuration::load();
+ 				if ($batch_media_directory = $config->get('batch_media_import_root_directory')) {
+					$va_files = caBatchFindMatchingMedia($batch_media_directory.$media_prefix, $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
+					foreach($va_files as $vs_file) {
+						if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
+					
+						$ps_value = $vs_file;
+						break;
+					}
+				}
+ 			}
+ 			
  			if (
  				(is_array($ps_value) && $ps_value['_uploaded_file'] && file_exists($ps_value['tmp_name']) && (filesize($ps_value['tmp_name']) > 0))
  				||
