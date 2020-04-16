@@ -1110,6 +1110,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                         unset($va_additional_settings['colorFirstItem']);
                         unset($va_additional_settings['colorLastItem']);
                         unset($va_additional_settings['colorItem']);
+                        unset($va_additional_settings['list_format']);
                         
 						$va_additional_settings['dontShowPreferredLabel'] = array(
 							'formatType' => FT_NUMBER,
