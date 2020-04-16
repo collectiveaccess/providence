@@ -547,7 +547,7 @@
 		
 				currentSelectionIDID: '<?php print $vs_id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>HierarchyBrowserSelectionMessage',
-				currentSelectionDisplayFormat: '<?php print addslashes(_t('Will be moved under <em>%1</em> after next save.')); ?>',
+				currentSelectionDisplayFormat: '<?php print addslashes(_t('Will be moved under <em>^current</em> after next save.')); ?>',
 				
 				allowExtractionFromHierarchy: <?php print ($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) ? 'true' : 'false'; ?>,
 				extractFromHierarchyButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
