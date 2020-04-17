@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -418,7 +418,7 @@
  				    caDisplayTemplateParser.setOptions(".json_encode($va_parser_opts).");
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				";
- 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').on('keyup', function(e) { 
+ 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').on('keyup change', function(e) { 
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				});";
  				
