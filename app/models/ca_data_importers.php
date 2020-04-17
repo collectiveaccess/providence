@@ -1333,7 +1333,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 		$t = new Timer();
 		$vn_start_time = time();
-		$va_log_import_error_opts = array('startTime' => $vn_start_time, 'window' => $r_errors, 'log' => $o_log, 'logReference' => $vs_idno, 'request' => $po_request, 'progressCallback' => (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) ? $ps_callback : null, 'reportCallback' => (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) ? $ps_callback : null);
+		$va_log_import_error_opts = array('startTime' => $vn_start_time, 'window' => $r_errors, 'log' => $o_log, 'logReference' => null, 'request' => $po_request, 'progressCallback' => (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) ? $ps_callback : null, 'reportCallback' => (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) ? $ps_callback : null);
 	
 		global $g_ui_locale_id;	// constant locale set by index.php for web requests
 		if (!($vn_locale_id = caGetOption('locale_id', $pa_options, null))) {	// set as option?	
@@ -1682,6 +1682,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 				$vs_idno = "%";
 			}
+			$va_log_import_error_opts['idno'] = $vs_idno;
+			
 			$vb_idno_is_template = (bool)preg_match('![%]+!', $vs_idno);
 			
 			if (!$vb_idno_is_template) {
@@ -2267,6 +2269,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if ($vs_item_terminal == 'preferred_labels') { $vs_preferred_label_for_log = $vm_val; }
 							
 									break;
+								case 'access':
+								case 'status':
+									// access & status intrinsics need list item "item_value" *NOT* idno or item_id
+									// You can map item values directly if you want, but most people expect idnos to work
+									// so we do the conversion here.
+									if($t_subject->hasField($vs_item_terminal)) {
+										$list = $t_subject->getFieldInfo($vs_item_terminal, 'LIST');
+										if (strlen($item_val = caGetListItemValueForIdno($list, $vm_val)) > 0) {
+											$vm_val = $item_val;
+										}
+									}
+									
 								default:
 									$va_group_buf[$vn_c][$vs_item_terminal] = $vm_val;
 									if (!$vb_item_error_policy_is_default || !isset($va_group_buf[$vn_c]['_errorPolicy'])) {
