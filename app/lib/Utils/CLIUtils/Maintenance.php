@@ -1484,7 +1484,7 @@
 			}
 
 			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+			$vn_log_level = $po_opts->getOption('log-level');
 
 			$o_db = new Db();
 			$qr_items = $o_db->query("
