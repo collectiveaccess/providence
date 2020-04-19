@@ -1844,7 +1844,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				autoShrinkAnimateID: '{$ps_name}_hierarchyBrowser{n}',
 				autoShrinkMaxHeightPx: {$vn_autoshrink_height},
 				
-				currentSelectionDisplayFormat: '".addslashes($current_selection_display_format)."',
+				currentSelectionDisplayFormat: ".json_encode($current_selection_display_format).",
 				
 				currentSelectionDisplayID: '{$ps_name}_browseCurrentSelectionText{n}',
 				onSelection: function(item_id, parent_id, name, display) {

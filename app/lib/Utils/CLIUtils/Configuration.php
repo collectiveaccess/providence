@@ -344,7 +344,7 @@
 				$vs_log_dir = Configuration::load()->get('batch_metadata_import_log_directory');
 			}
 
-			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+			$vn_log_level = $po_opts->getOption('log-level');
 
 			$o_log = (is_writable($vs_log_dir)) ? new KLogger($vs_log_dir, $vn_log_level) : null;
 

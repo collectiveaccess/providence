@@ -1178,9 +1178,11 @@ class MultipartIDNumber extends IDNumber {
 		if (is_null($ps_value)) {
 			if(isset($_REQUEST[$ps_name]) && $_REQUEST[$ps_name]) { return $_REQUEST[$ps_name]; }
 		}
-		if (!is_array($va_element_list = $this->getElements())) { return null; }
+		if (!is_array($va_elements = $this->getElements())) { 
+			return (isset($_REQUEST["{$ps_name}_extra_0"])) ? [$_REQUEST["{$ps_name}_extra_0"]] : null; 
+		}
 
-		$va_element_names = array_keys($va_element_list);
+		$va_element_names = array_keys($va_elements);
 		$vs_separator = $this->getSeparator();
 		$va_element_values = array();
 		if ($ps_value) {
@@ -1219,7 +1221,6 @@ class MultipartIDNumber extends IDNumber {
 		$vb_isset = false;
 		$vb_is_not_empty = false;
 		$va_tmp = array();
-		$va_elements = $this->getElements();
 		foreach($va_elements as $vs_element_name => $va_element_info) {
 			if ($va_element_info['type'] == 'SERIAL') {
 				if ($pb_generate_for_search_form) {
