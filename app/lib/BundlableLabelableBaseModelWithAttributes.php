@@ -5624,6 +5624,19 @@ if (!$vb_batch) {
 				break;
 			default:
 				// is this related with row_id/table_num combo?
+				if ($vs_related_table_name == 'ca_item_tags') {
+					$va_path = [$this->tableName(), 'ca_items_x_tags', 'ca_item_tags'];
+					$vb_is_combo_key_relation = true;
+					
+					$t_item_rel = Datamodel::getInstance($va_path[1]);
+					$vs_item_rel_table_name = $t_item_rel->tableName();
+					$t_rel_item = Datamodel::getInstance($va_path[2]);
+					$vs_rel_item_table_name = $t_rel_item->tableName();
+					$vs_key = $t_item_rel->primaryKey();
+					break;
+				}
+				
+				
 				if (
 					($t_rel_item = Datamodel::getInstance($vs_related_table_name))
 					&&
@@ -6178,7 +6191,12 @@ if (!$vb_batch) {
 			}
 
 			if ($vb_is_combo_key_relation) {
-				$va_joins = array("INNER JOIN {$vs_related_table_name} ON {$vs_related_table_name}.row_id = ".$this->primaryKey(true)." AND {$vs_related_table_name}.table_num = ".$this->tableNum());
+				if ($vs_item_rel_table_name) {
+					$va_joins = ["INNER JOIN {$vs_item_rel_table_name} ON {$vs_item_rel_table_name}.row_id = ".$this->primaryKey(true)." AND {$vs_item_rel_table_name}.table_num = ".$this->tableNum()];
+					$va_joins[] = "INNER JOIN {$vs_related_table_name} ON {$vs_related_table_name}.".$t_rel_item->primaryKey()." = {$vs_item_rel_table_name}.".$t_rel_item->primaryKey();
+				} else {
+					$va_joins = ["INNER JOIN {$vs_related_table_name} ON {$vs_related_table_name}.row_id = ".$this->primaryKey(true)." AND {$vs_related_table_name}.table_num = ".$this->tableNum()];
+				}
 				if(method_exists($t_rel_item, "getLabelTableInstance") && ($t_rel_label = $t_rel_item->getLabelTableInstance())) {
 				    $vs_related_label_table_name = $t_rel_label->tableName();
 				    $vs_rel_pk = $t_rel_item->primaryKey();
