@@ -60,9 +60,7 @@ var caBundleUpdateManager = null;
 			for(l in list) {
 				that.registerBundle(list[l].id, list[l].bundle, list[l].placement_id);
 			}
-			//console.log("list", list);
 		}
-		
 		// --------------------------------------------------------------------------------
 		that.reloadBundle = function(bundle, options) {
 			var b = that.byBundle[bundle];
@@ -72,7 +70,7 @@ var caBundleUpdateManager = null;
 		// --------------------------------------------------------------------------------
 		that.reloadBundleByPlacementID = function(placement_id, options) {
 			var b = that.byPlacementID[placement_id];
-			console.log(placement_id, that.byID, b);
+
 			return that._reload(b, options);
 		}		
 		
@@ -81,12 +79,12 @@ var caBundleUpdateManager = null;
 			if (b) {
 				jQuery.each(b, function(k, v) {
 					var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + v.bundle + "/placement_id/" + v.placement_id;
+					
 					if (options) { 
 					    for(var k in options) {
 					        loadURL += "/" + k + "/" + options[k];
 					    }
 					}
-					console.log('xxx', v.id, v, loadURL);
 					jQuery("#" + v.id).load(loadURL);
 				});
 			}

@@ -89,7 +89,10 @@ var caUI = caUI || {};
 
 			isSortable: false,
 			listSortOrderID: null,
-			listSortItems: null // if set, limits sorting to items specified by selector
+			listSortItems: null, // if set, limits sorting to items specified by selector
+			
+			loadedSort: null,			// Dynamically loaded sort order
+			loadedSortDirection: null
 		}, options);
 		
 		if (!that.newItemListClassName) { that.newItemListClassName = that.itemListClassName; }
@@ -130,7 +133,7 @@ var caUI = caUI || {};
 		that.loadNextValues = function() {
 			if (!that.partialLoadUrl) { return false; }
 
-			jQuery.getJSON(that.partialLoadUrl, { start: that.loadFrom, limit: that.loadSize }, function(data) {
+			jQuery.getJSON(that.partialLoadUrl, { start: that.loadFrom, limit: that.loadSize, sort: that.loadedSort, sortDirection: that.loadedSortDirection }, function(data) {
 				jQuery(that.container + " ." + that.itemListClassName + ' .caItemLoadNextBundles').remove();
 				
 				that.loadFrom += that.loadSize;

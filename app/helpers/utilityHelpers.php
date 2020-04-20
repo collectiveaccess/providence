@@ -321,6 +321,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_include_directories. If set paths to directories are included. Default is false (only files are returned).
 	 * @param array $pa_options Additional options, including:
 	 *		modifiedSince = Only return files and directories modified after a Unix timestamp [Default=null]
+	 *		notModifiedSince = Only return files and directories not modified after a Unix timestamp [Default=null]
 	 * @return array An array of file paths.
 	 */
 	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false, $pa_options=null) {
@@ -338,6 +339,14 @@ function caFileIsIncludable($ps_file) {
 						(is_array($va_stat = @stat("{$dir}/{$item}")))
 						&&
 						($va_stat['mtime'] < $pa_option['modifiedSince'])
+					) { continue; }
+					
+					if (
+						(isset($pa_option['notModifiedSince']) && ($pa_option['notModifiedSince'] > 0))
+						&&
+						(is_array($va_stat = @stat("{$dir}/{$item}")))
+						&&
+						($va_stat['mtime'] >= $pa_option['notModifiedSince'])
 					) { continue; }
 
 					$vb_is_dir = is_dir("{$dir}/{$item}");

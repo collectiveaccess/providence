@@ -104,6 +104,9 @@
  	define('__CA_NAV_ICON_FULL_RESULTS__', 63);
  	define('__CA_NAV_ICON_EXPORT_SMALL__', 64);
  	define('__CA_NAV_ICON_HOME__', 65);
+ 	define('__CA_NAV_ICON_EDIT_TEXT__', 66);
+ 	define('__CA_NAV_ICON_IS_PRIMARY__', 67);
+ 	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
  	
  	/**
  	 * Icon position constants
@@ -694,6 +697,10 @@
 			case __CA_NAV_ICON_EDIT__:
 				$vs_fa_class = 'fa-file';
 				$vs_ca_class = 'editIcon'; 
+				break;		
+			case __CA_NAV_ICON_EDIT_TEXT__:
+				$vs_fa_class = 'fa-edit';
+				$vs_ca_class = 'editTextIcon'; 
 				break;
 			case __CA_NAV_ICON_BATCH_EDIT__:
 				$vs_fa_class = 'fa-magic';
@@ -713,7 +720,10 @@
 				$vs_fa_class = 'fa-download';
 				break;
 			case __CA_NAV_ICON_MAKE_PRIMARY__:
-				$vs_fa_class = 'fa-check';
+				$vs_fa_class = 'fa-check-circle-o';
+				break;
+			case __CA_NAV_ICON_IS_PRIMARY__:
+				$vs_fa_class = 'fa-check-square';
 				break;
 			case __CA_NAV_ICON_APPROVE__:
 				$vs_fa_class = 'fa-thumbs-o-up';
@@ -882,7 +892,10 @@
 				break;	
 			case __CA_NAV_ICON_HOME__:
 				$vs_fa_class = 'fa-home';
-				break;																						
+				break;	
+			case __CA_NAV_ICON_CROSSHAIRS__:
+				$vs_fa_class = 'fa-crosshairs';
+				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;

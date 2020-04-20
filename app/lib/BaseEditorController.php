@@ -1587,6 +1587,9 @@ class BaseEditorController extends ActionController {
 
 		$ps_bundle = $this->request->getParameter("bundle", pString);
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+		
+		$ps_sort = $this->request->getParameter("sort", pString);
+		$ps_sort_direction = $this->request->getParameter("sortDirection", pString);
 
 
 		switch($ps_bundle) {
@@ -1606,7 +1609,7 @@ class BaseEditorController extends ActionController {
 					return;
 				}
 
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, 'P'.$pn_placement_id, $t_placement->get('settings'), array('request' => $this->request, 'contentOnly' => true), $vs_label));
+				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, 'P'.$pn_placement_id, array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
 				break;
 		}
 	}
@@ -1625,10 +1628,12 @@ class BaseEditorController extends ActionController {
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
 		$pn_start = (int)$this->request->getParameter("start", pInteger);
 		if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
+		$sort = $this->request->getParameter("sort", pString);
+		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
 		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
 		
-		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true));
+		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
 		$this->response->addContent(json_encode(['sort' => array_keys($d), 'data' => $d]));
 	}
@@ -2632,27 +2637,40 @@ class BaseEditorController extends ActionController {
 			$vn_timeout = 24 * 60 * 60;
 		}
 
-
 		// Cleanup any old files here
-		$va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, array('modifiedSince' => time() - $vn_timeout));
+		$va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, ['modifiedSince' => time() - $vn_timeout]);
 		foreach($va_files_to_delete as $vs_file_to_delete) {
 			@unlink($vs_file_to_delete);
 		}
 
-		$va_stored_files = array();
-		foreach($_FILES as $vn_i => $va_file) {
-			$vs_dest_filename = pathinfo($va_file['tmp_name'], PATHINFO_FILENAME);
-			copy($va_file['tmp_name'], $vs_dest_path = $vs_tmp_directory."/userMedia{$vn_user_id}/{$vs_dest_filename}");
+		$stored_files = [];
+		
+		$user_dir = "{$vs_tmp_directory}/userMedia{$vn_user_id}";
+		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
+	
+		if(is_array($_FILES['files'])) {
+			foreach($_FILES['files']['tmp_name'] as $i => $f) {
+				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
+				
+				$md5 = md5_file($f);
+				if (isset($user_files["{$user_dir}/md5_{$md5}"])) { 
+					$f = "{$user_dir}/".file_get_contents("{$user_dir}/md5_{$md5}");
+				}
+				
+				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
+				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
 
-			// write file metadata
-			file_put_contents("{$vs_dest_path}_metadata", json_encode(array(
-				'original_filename' => $va_file['name'],
-				'size' => filesize($vs_dest_path)
-			)));
-			$va_stored_files[$vn_i] = "userMedia{$vn_user_id}/{$vs_dest_filename}"; // only return the user directory and file name, not the entire path
+				// write file metadata
+				@file_put_contents("{$dest_path}_metadata", json_encode([
+					'original_filename' => $_FILES['files']['name'][$i],
+					'size' => filesize($dest_path)
+				]));
+				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
+				$stored_files[$md5] = "userMedia{$vn_user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
+			}
 		}
 
-		$this->response->addContent(json_encode($va_stored_files));
+		$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 	}
 	# -------------------------------------------------------
 	/**
@@ -2766,6 +2784,8 @@ class BaseEditorController extends ActionController {
 	/**
 	 * Handle sort requests from form editor.
 	 * Gets passed a table name, a list of ids and a key to sort on. Will return a JSON list of the same IDs, just sorted.
+	 *
+	 * TODO: remove this
 	 */
 	public function Sort() {
 		if (!$this->getRequest()->isLoggedIn() || ((int)$this->getRequest()->user->get('userclass') !== 0)) {
@@ -2792,7 +2812,6 @@ class BaseEditorController extends ActionController {
 			}
 			$va_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
 		} else {
-		
 			$vs_table_name = $this->getRequest()->getParameter('table', pString);
 			$t_instance = Datamodel::getInstance($vs_table_name, true);
 			$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));

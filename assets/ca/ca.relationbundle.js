@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -252,57 +252,13 @@ var caUI = caUI || {};
 		};
 		
 		options.sort = function(key, label) {
-			var indexedValues = {};
-// 			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .labelInfo'), function(k, v) {
-// 				var id_string = jQuery(v).attr('id');
-// 				if (id_string) {
-// 					var matches = /_([\d]+)$/.exec(id_string);
-// 					indexedValues[parseInt(matches[1])] = v;
-// 				}
-// 				jQuery(v).detach();
-// 			});
-
-
-			console.log("w", caBundleUpdateManager);
-			if (caBundleUpdateManager) {
-				caBundleUpdateManager.reloadBundleByPlacementID(that.placementID);
-				console.log("UPDATE", that);
+			if (caBundleUpdateManager) {			
+				var sortDirection = jQuery('#' + that.fieldNamePrefix + 'RelationBundleSortDirectionControl').val();
+				caBundleUpdateManager.reloadBundleByPlacementID(that.placementID, {'sort': key, 'sortDirection': sortDirection});
+				that.loadedSort = key;
+				that.loadedSortDirection = sortDirection;
 			}
 			return;
-			
-			var sortUrl = that.sortUrl; // + '/sortKeys/' + key;
-			var sortedValues = {};
-			
-			var sortDirection = jQuery('#' + that.fieldNamePrefix + 'RelationBundleSortDirectionControl').val();
-			if (sortDirection.toLowerCase() !== 'desc') { sortDirection = 'asc'; }
-
-			// we actually have to wait for the result here ... hence, ajax() with async=false instead of getJSON()
-			jQuery.ajax({
-				url: sortUrl,
-				type: 'POST',
-				data: { 'placement_id': that.placementID, 'primary_table': that.interstitialPrimaryTable, 'primary_id': that.interstitialPrimaryID, 'sortDirection': sortDirection, 'sortKeys': key },
-				dataType: 'json',
-				async: false,
-				success: function(data) {
-					for (var i = 0; i < data.length; i++) {
-						sortedValues[that.fieldNamePrefix + 'Item_' + data[i]] = indexedValues[parseInt(data[i])];
-					}
-				}
-			});
-
-			jQuery('#' + that.fieldNamePrefix + 'caCurrentSortLabel').html(label);
-			
-			var whatsLeft = jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html();
-			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html('');
-			jQuery.each(sortedValues, function(k, v) {
-				jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).append(v);
-				var id_string = jQuery(v).attr('id');
-				that.setDeleteButton(id_string);
-			});
-			
-			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).append(whatsLeft);
-			
-			that._updateSortOrderListIDFormElement();
 		};
 	
 		options.setDeleteButton = function(rowID) {

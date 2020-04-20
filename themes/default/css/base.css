@@ -1185,6 +1185,7 @@ div.hint {
     margin-bottom: 5px;
     font-weight: bold;
     text-align: left;
+    break-inside: avoid;
 }
 
 .formLabelPlain {
@@ -3534,37 +3535,31 @@ input.dateBg, textarea.dateBg {
     background-image: url('../graphics/icons/formBgDate.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:30px;
 }
 input.currencyBg, textarea.currencyBg {
     background-image: url('../graphics/icons/formBgCurrency.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:15px;
 }
 input.weightBg, textarea.weightBg {
     background-image: url('../graphics/icons/formBgWeight.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:25px;
 }
 input.timecodeBg, textarea.timecodeBg {
     background-image: url('../graphics/icons/formBgTimecode.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:65px;
 }
 input.urlBg, textarea.urlBg {
     background-image: url('../graphics/icons/formBgUrl.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:30px;
 }
 input.lookupBg, textarea.lookupBg {
     background-image: url('../graphics/icons/formBgLookup.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:15px;
 }
 
 /*** HIERARCHY BROWSER ***/
@@ -3980,7 +3975,13 @@ div.directoryBrowserLevelVertical {
     font-weight: normal;
 }
 
-a.directoryBrowserLevelSelected {
+.directoryBrowserLevel a i {
+    text-decoration: none;
+    font-weight: normal;
+    color: #ccc;
+}
+
+a.directoryBrowserLevelSelected, a.directoryBrowserLevelSelected i {
     color: #000000;
     text-decoration: none;
     font-weight: bold;
@@ -7583,10 +7584,7 @@ span.statisticsDashboardSelectedsite {
     font-weight: bold;
 }
 
-.dashboardWidgetContentContainer a.link {
-    text-decoration: underline;
-    color: #1ab3c8;
-
+/* Current set highlighting */
 a.currentSet {
     font-weight: bold;
     color: #333;
@@ -7595,4 +7593,113 @@ a.currentSet {
 .dashboardWidgetContentContainer a.link {
     text-decoration: underline;
     color: #1ab3c8;
+}
+
+/* "New" ca_object_representations_bundle */
+.mediaUploadContainer {
+	width:700px;
+}
+
+.mediaUploadInfoArea {
+	float: right; 
+	width: 460px;
+}
+
+.mediaUploadEditArea {
+	float: right; 
+	width: 570px;
+}
+
+.mediaUploadStatus {
+    font-size:16px;
+    color: #828282;
+    text-align: left;
+    padding: 10px;
+    line-height:1.3em;
+    overflow: hidden;
+    height: 2.4em;
+}
+
+.mediaUploadArea {
+	border: 1px dashed #ccc; 
+	text-align: center; 
+	padding: 0px; 
+	display: block;
+	width: 120px;
+	height: 120px;
+	margin-top: 14px;
+}
+
+.mediaUploadAreaMessage {
+	font-size: 16px; 
+	color: #333;
+	margin-top: 40px;
+}
+
+.mediaUploadAreaMessage:hover {
+	cursor: pointer;
+}
+
+.mediaUploadAreaMessageCount {
+	font-size: 9px;
+}
+
+div.objectRepresentationListImage {
+    width: 120px;
+}
+
+div.objectRepresentationListImageContainer {
+	float: left; 
+	width: 120px;
+}
+
+div.objectRepresentationMetadataEditorContainer {
+    display: none;
+	font-size: 10px;
+	overflow: auto;
+	line-height: 14px;
+	font-weight: normal;
+	color: #000000;
+}
+
+div.objectRepresentationNewMetadataEditorContainer {
+    display: none;
+    padding: 10px;
+}
+
+div.objectRepresentationMetadataEditorDoneButton {
+    float: none;
+    clear: both;
+    width: 100%;
+    text-align: center;
+}
+
+.objectRepresentationMetadataEditorMediaRightCol {
+	float: right; 
+	width: 110px;
+}
+
+.objectRepresentationMetadataEditorMediaRightCol .fa {
+	font-size:18px;
+	padding-right:5px;
+}
+
+.mediaMetadataDisplay {
+	font-weight: normal;
+	font-size: 12px;
+}
+
+div.mediaMetadataActionButton {
+    margin: 10px 0 0 0;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+div.mediaMetadataActionButton img{
+	margin-right:5px;
+}
+
+div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
+    text-decoration: none;
+    color: #000;
 }

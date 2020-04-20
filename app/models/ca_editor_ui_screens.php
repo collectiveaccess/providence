@@ -1118,6 +1118,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                         unset($va_additional_settings['colorFirstItem']);
                         unset($va_additional_settings['colorLastItem']);
                         unset($va_additional_settings['colorItem']);
+                        unset($va_additional_settings['list_format']);
                         
 						$va_additional_settings['dontShowPreferredLabel'] = array(
 							'formatType' => FT_NUMBER,
@@ -1125,8 +1126,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => 0,
 							'multiple' => false,
-							'label' => _t('Do not show representation preferred label?'),
-							'description' => _t('Do not show representation preferred label.')
+							'label' => _t('Do not show representation preferred label? (Classic only)'),
+							'description' => _t('Do not show representation preferred label. (Classic only)')
 						);
 						$va_additional_settings['dontShowIdno'] = array(
 							'formatType' => FT_NUMBER,
@@ -1134,8 +1135,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => 0,
 							'multiple' => false,
-							'label' => _t('Do not show representation identifier?'),
-							'description' => _t('Do not show representation identifier.')
+							'label' => _t('Do not show representation identifier? (Classic only)'),
+							'description' => _t('Do not show representation identifier. (Classic only)')
 						);
                         $va_additional_settings['dontShowStatus'] = array(
 							'formatType' => FT_NUMBER,
@@ -1143,8 +1144,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => 0,
 							'multiple' => false,
-							'label' => _t('Do not show status?'),
-							'description' => _t('Do not show status drop-down.')
+							'label' => _t('Do not show status? (Classic only)'),
+							'description' => _t('Do not show status drop-down. (Classic only)')
 						);
 						$va_additional_settings['dontShowAccess'] = array(
 							'formatType' => FT_NUMBER,
@@ -1152,8 +1153,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => 0,
 							'multiple' => false,
-							'label' => _t('Do not show access?'),
-							'description' => _t('Do not show access drop-down.')
+							'label' => _t('Do not show access? (Classic only)'),
+							'description' => _t('Do not show access drop-down. (Classic only)')
 						);
 						
 						if($this->getAppConfig()->get('allow_transcription')) {
@@ -1163,10 +1164,60 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => 0,
 								'multiple' => false,
-								'label' => _t('Do not show transcription control?'),
-								'description' => _t('Do not show transcription drop-down.')
+								'label' => _t('Do not show transcription control? (Classic only)'),
+								'description' => _t('Do not show transcription drop-down. (Classic only)')
 							);
 						}
+						
+						$va_additional_settings['uiStyle'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "275px", 'height' => "1",
+							'takesLocale' => false,
+							'options' => [
+								_t('Classic') => 'CLASSIC',
+								_t('New UI with batch uploading') => 'NEW_UI'
+							],
+							'default' => '',
+							'multiple' => true,
+							'label' => _t('User interface style'),
+							'description' => _t('')
+						];
+						
+						$va_additional_settings['showBundlesForEditing'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "275px", 'height' => "100px",
+							'takesLocale' => false,
+							'showMetadataElementsWithDataType' => [__CA_ATTRIBUTE_VALUE_TEXT__,__CA_ATTRIBUTE_VALUE_DATERANGE__,__CA_ATTRIBUTE_VALUE_TIMECODE__,__CA_ATTRIBUTE_VALUE_URL__,__CA_ATTRIBUTE_VALUE_CURRENCY__,__CA_ATTRIBUTE_VALUE_LENGTH__,__CA_ATTRIBUTE_VALUE_WEIGHT__,__CA_ATTRIBUTE_VALUE_LIST__,__CA_ATTRIBUTE_VALUE_INTEGER__,__CA_ATTRIBUTE_VALUE_NUMERIC__],
+							'includePreferredLabels' => true,
+							'table' => 'ca_object_representations',
+							'includeIntrinsics' => ['type_id', 'access', 'status', 'idno', 'media', 'original_filename', 'is_transcribable'],
+							'default' => ['idno', 'access'],
+							'multiple' => true,
+							'label' => _t('Show for editing'),
+							'description' => _t('Selected metadata elements to allow editing on.')
+						];
+						
+						$va_additional_settings['showBundlesForEditingOrder'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'width' => "275px", 'height' => "100px",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Metadata element editing order'),
+							'description' => _t('List metadata element codes separated by commas, semicolons or returns in the order in which they should appear. If omitted the default sort order is used.')
+						];
+						
+						$va_additional_settings['numPerPage'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'width' => "50px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => 10,
+							'label' => _t('Number of representations per load'),
+							'description' => _t('Maximum number of representation to fetch in a single load.')
+						];
                     }
 
 					if($vs_bundle == 'ca_sets') {

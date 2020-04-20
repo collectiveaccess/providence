@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -219,7 +219,7 @@ var caUI = caUI || {};
 							setTimeout(function() {
 									jQuery("#" + that.uploadProgressID).hide(250);
 								}, 3000);
-							that.setUpHierarchyLevel(level, item_id, is_init, selected_item_id, true);	// reload file list
+							that.setUpHierarchyLevel(level, item_id, false, selected_item_id, true);	// reload file list
 						}
 					},
 					progressall: function (e, data) {
@@ -435,11 +435,11 @@ var caUI = caUI || {};
 						that.selectedItemIDs[level-1] = item_id;
 						var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/g, '_');
 						jQuery('#directoryBrowser_' + that.name + '_' + (level - 1) + ' a').removeClass(that.classNameSelected).addClass(that.className);
-						jQuery('#directoryBrowser_' + that.name + '_level_' + (level - 1) + '_item_' + item_id_for_css).addClass(that.classNameSelected);
+						jQuery('#directoryBrowser_' + that.name + '_level_' + (level - 1) + '_item_' + item_id_for_css).addClass(that.classNameSelected).parent().find('div a').addClass(that.classNameSelected);
 					} else {
 						if ((that.selectedItemIDs[level] !== undefined) && !dontDoSelectAndScroll) {
 							var item_id_for_css = that.selectedItemIDs[level].replace(/[^A-Za-z0-9_\-]+/g, '_');
-							jQuery('#directoryBrowser_' + that.name + '_level_' + (level) + '_item_' + item_id_for_css).addClass(that.classNameSelected);
+							jQuery('#directoryBrowser_' + that.name + '_level_' + (level) + '_item_' + item_id_for_css).addClass(that.classNameSelected).parent().find('div a').addClass(that.classNameSelected);
 							jQuery('#directoryBrowser_' + that.name + '_' + level).scrollTo('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id_for_css);
 						}
 					}
@@ -508,7 +508,7 @@ var caUI = caUI || {};
 			
 			var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/g, '_');
 			jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
-			jQuery('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id_for_css).addClass(that.classNameSelected);
+			jQuery('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id_for_css).addClass(that.classNameSelected).parent().find('div a').addClass(that.classNameSelected);
 		
 			if (that.onSelection) {
 				that.onSelection(item_id, that.selectedItemIDs.join("/"), item.name, item.type);

@@ -2547,6 +2547,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * 		skipIfExpression = skip the elements in $pa_row_ids for which the given expression does not evaluate true
 	 *		includeBlankValuesInArray = include blank template values in primary template and all <unit>s in returned array when returnAsArray is set. If you need the returned array of values to line up with the row_ids in $pa_row_ids this should be set. [Default is false]
 	 *		includeBlankValuesInTopLevelForPrefetch = include blank template values in *primary template* (not <unit>s) in returned array when returnAsArray is set. Used by template prefetcher to ensure returned values align with id indices. [Default is false]
+	 * 		indexWithIDs = Return array with indexes set to row_ids. [Default is false; use numeric indices starting with zero]
 	 *
 	 * @return mixed Output of processed templates
 	 */
@@ -3375,6 +3376,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @param string $ps_id_prefix
 	 * @param string $ps_table
 	 * @param array $pa_options
+	 *		sort = 
+	 *		sortDirection = 
 	 * 
 	 * @return string HTML implementing the control
 	 */
@@ -3384,8 +3387,12 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		if(!$ps_table) { return '???'; }
 		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default')]))) || !sizeof($va_sort_fields)) { return ''; }
+		
+		$sort = caGetOption('sort', $pa_options, null);
+		$sort_direction = caGetOption('sortDirection', $pa_options, null);
+		
 		$va_sort_fields = array_map(function($v) { return mb_strtolower($v); }, $va_sort_fields);
-		return _t('Sort using %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", array_flip($va_sort_fields), ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 'id' => "{$ps_id_prefix}_RelationBundleSortControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning']), caHTMLSelect("{$ps_id_prefix}_RelationBundleSortDirectionControl", [_t('↑') => 'ASC', _t('↓') => 'DESC'], ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val())", 'id' => "{$ps_id_prefix}_RelationBundleSortDirectionControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning']));
+		return _t('Sort using %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", array_flip($va_sort_fields), ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 'id' => "{$ps_id_prefix}_RelationBundleSortControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], ['value' => $sort]), caHTMLSelect("{$ps_id_prefix}_RelationBundleSortDirectionControl", [_t('↑') => 'ASC', _t('↓') => 'DESC'], ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val())", 'id' => "{$ps_id_prefix}_RelationBundleSortDirectionControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], ['value' => strtoupper($sort_direction)]));
 	}
 	# ---------------------------------------
 	/** 
