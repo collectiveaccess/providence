@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2019 Whirl-i-Gig
+ * Copyright 2007-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -334,11 +334,11 @@ function caFileIsIncludable($ps_file) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					if (
-						(isset($pa_option['modifiedSince']) && ($pa_option['modifiedSince'] > 0))
+						(isset($pa_options['modifiedSince']) && ($pa_options['modifiedSince'] > 0))
 						&&
 						(is_array($va_stat = @stat("{$dir}/{$item}")))
 						&&
-						($va_stat['mtime'] < $pa_option['modifiedSince'])
+						($va_stat['mtime'] < $pa_options['modifiedSince'])
 					) { continue; }
 					
 					if (
@@ -876,7 +876,8 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_url The URL to check
 	 * @param array $pa_options Options include:
 	 *		strict = only consider text a valid url if text contains only the url [Default is false]
-	 * @return boolean true if it appears to be valid URL, false if not
+	 *
+	 * @return array|boolean Return array with protocol and url keys if valid URL, false if invalid.
 	 */
 	function isURL($ps_url, $pa_options=null) {
 
@@ -2214,7 +2215,8 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pm_array The array or string to purify
 	 * @param array $pa_options Array of options:
 	 *		purifier = HTMLPurifier instance to use for processing. If null a new instance will be used. [Default is null]
-	 * @return array The purified array
+	 *
+	 * @return array
 	 */
 	function caPurifyArray($pa_array, $pa_options=null) {
 		if (!is_array($pa_array)) { return array(); }
@@ -2748,7 +2750,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caHumanFilesize($bytes, $decimals = 2) {
 		$size = array('B','KiB','MiB','GiB','TiB');
-		$factor = floor((strlen($bytes) - 1) / 3);
+		$factor = intval(floor((strlen($bytes) - 1) / 3), 10);
 
 		return sprintf("%.{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
 	}
@@ -2898,8 +2900,7 @@ function caFileIsIncludable($ps_file) {
                         $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
                         $vb_success = json_decode($va_response->getBody(), true);
                         if($vb_success){
-                            #$vs_query = 'user='.$va_api['user'].'&function=search_public_collections&param1='.rawurlencode($vs_collection_name).'&param2=name&param3=ASC&param4=0&param5=0';
-                            $vs_query = 'user='.$va_api['user'].'&function=get_user_collections';
+                            $vs_query = 'user='.$ps_user.'&function=get_user_collections';
                             $vs_hash = hash('sha256', $ps_key.$vs_query);
 
                             $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
@@ -3300,7 +3301,7 @@ function caFileIsIncludable($ps_file) {
 			$va_measurements = explode(strtolower($ps_delimiter), mb_strtolower($ps_expression));
 		} else {
 			$ps_delimiter = '';
-			$va_measurements = array($pm_value);
+			$va_measurements = array($ps_expression);
 		}
 		
 		$va_glyphs = array_keys(caGetFractionalGlyphTable());
@@ -3419,8 +3420,6 @@ function caFileIsIncludable($ps_file) {
 	        $vs_token = bin2hex(random_bytes(32));
 	    } elseif (function_exists("openssl_random_pseudo_bytes")) {     // PHP 5.x with OpenSSL
 			$vs_token = bin2hex(openssl_random_pseudo_bytes(32));
-		} elseif (function_exists('mcrypt_create_iv')) {                // PHP 5.x with mcrypt
-            $vs_token = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
         } else {
             $vs_token = md5(uniqid(rand(), TRUE));   // this is not very good, and is only used if one of the more secure options above is available (one of them should be in almost all cases)
 	    }
@@ -3934,8 +3933,6 @@ function caFileIsIncludable($ps_file) {
 				return ($pb_nullable) ? true : false;
 				break;
 			case 'in':
-				return ($pb_is_list) ? true : false;
-				break;
 			case 'not in':
 				return ($pb_is_list) ? true : false;
 				break;
@@ -4121,7 +4118,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $array1
 	 * @param array $array2
 	 *
-	 * @return array
+	 * @return array|string
 	 */
 	function caCamelToSnake($pm_text) {
 	    if(is_array($pm_text)) {

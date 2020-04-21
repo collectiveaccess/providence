@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,7 +51,7 @@
 
         if (file_exists($vs_base_path.$vs_file_path)) {
             // Graphic is present in currently configured theme
-			return caHTMLImage($vs_base_url_path.$vs_file_path, $pa_attributes, $pa_options);
+			return caHTMLImage($vs_base_url_path.$vs_file_path, array_merge($pa_attributes, $pa_options));
 		}
 
         $o_config = Configuration::load();		
@@ -61,7 +61,7 @@
             while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
                 $i++;
                 if (file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/{$vs_file_path}")) {
-                    return caHTMLImage(__CA_THEMES_URL__."/{$vs_inherit_from_theme}/{$vs_file_path}", $pa_attributes, $pa_options);
+	                return caHTMLImage(__CA_THEMES_URL__."/{$vs_inherit_from_theme}/{$vs_file_path}", array_merge($pa_attributes, $pa_options));
                 }
                 
                 if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
@@ -71,7 +71,7 @@
         }
 
         // Fall back to default theme
-		return caHTMLImage($po_request->getDefaultThemeUrlPath().$vs_file_path, $pa_attributes, $pa_options);
+		return caHTMLImage($po_request->getDefaultThemeUrlPath().$vs_file_path, array_merge($pa_attributes, $pa_options));
 	}
 	# ---------------------------------------
 	/**
@@ -426,7 +426,7 @@
 		# --- get reps as thumbnails
 		$va_reps = $pt_object->getRepresentations(array($ps_version), null, array("checkAccess" => caGetUserAccessValues($po_request), 'primaryOnly' => $pb_primary_only));
 		if(sizeof($va_reps) < 2){
-			return;
+			return null;
 		}
 		$va_links = array();
 		$vn_primary_id = "";
@@ -492,6 +492,8 @@
 				break;
 			# ---------------------------------
 		}
+		
+		return null;
 	}
 	# ---------------------------------------
 	/*
@@ -1041,11 +1043,12 @@
 		$ps_form_name = caGetOption('formName', $pa_options, 'caAdvancedSearch');
 		
 		$vs_script = null;
-		
+	
 		$pa_tags = $po_view->getTagList($ps_view);
 		if (!is_array($pa_tags) || !sizeof($pa_tags)) { return null; }
 		
-		$va_form_elements = array();
+		$va_form_elements = [];
+		$va_default_form_values = [];
 		
 		$vb_submit_or_reset_set = false;
 		foreach($pa_tags as $vs_tag) {
@@ -1055,7 +1058,7 @@
 			$vs_tag_proc = $va_parse['tag'];
 			$va_opts = $va_parse['options'];
 			$va_opts['checkAccess'] = $po_request ? caGetUserAccessValues($po_request) : null;
-			
+
 			if (($vs_default_value = caGetOption('default', $va_opts, null)) || ($vs_default_value = caGetOption($vs_tag_proc, $va_default_form_values, null))) { 
 				$va_default_form_values[$vs_tag_proc] = $vs_default_value;
 				unset($va_opts['default']);
@@ -1085,7 +1088,7 @@
 					break;
 				default:
 					if (preg_match("!^(.*):label$!", $vs_tag_proc, $va_matches)) {
-						$po_view->setVar($vs_tag, $vs_tag_val = $t_subject->getDisplayLabel($va_matches[1]));
+						$po_view->setVar($vs_tag, $vs_tag_val = $pt_subject->getDisplayLabel($va_matches[1]));
 					} elseif (preg_match("!^(.*):boolean$!", $vs_tag_proc, $va_matches)) {
 						$po_view->setVar($vs_tag, caHTMLSelect($vs_tag_proc.'[]', array(_t('AND') => 'AND', _t('OR') => 'OR', 'AND NOT' => 'AND NOT'), array('class' => 'caAdvancedSearchBoolean')));
 					} elseif (preg_match("!^(.*):relationshipTypes$!", $vs_tag_proc, $va_matches)) {
@@ -1290,7 +1293,7 @@ jQuery(document).ready(function() {
 		# --- get collections configuration
 		$o_collections_config = caGetCollectionsConfig();
 		if($o_collections_config->get("export_max_levels") && ($vn_level > $o_collections_config->get("export_max_levels"))){
-			return;
+			return null;
 		}
 		$t_list = new ca_lists();
 		$va_exclude_collection_type_ids = array();

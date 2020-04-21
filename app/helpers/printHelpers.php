@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,7 +44,7 @@
 	/**
 	 *
 	 *
-	 * @return string
+	 * @return array|string
 	 */
 	function caGetPrintTemplateDirectoryPath($ps_type) {
 		$va_paths = [];
@@ -341,10 +341,12 @@
 	 * the units specified by the $ps_units parameter. Units are limited to inches, centimeters, millimeters, pixels and points as
 	 * this function is primarily used to switch between units used when generating PDFs.
 	 *
+	 * If the output units are omitted or otherwise not valid, pixels are assumed.
+	 *
 	 * @param $ps_value string The value to convert. Valid units are in, cm, mm, px and p. If units are invalid or omitted points are assumed.
 	 * @param $ps_units string A valid measurement unit: in, cm, mm, px, p (inches, centimeters, millimeters, pixels, points) respectively.
 	 *
-	 * @return int Converted measurement. If the output units are omitted or otherwise not valid, pixels are assumed.
+	 * @return array Converted measurement as array with two keys: value and units. 
 	 */
 	function caParseMeasurement($ps_value, $pa_options=null) {
 		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
@@ -540,10 +542,6 @@
 		$vs_pk = $pt_related->primaryKey();
 		
 		$va_ids = [];
-		
-		// foreach($pa_initial_values as $vn_relation_id => $va_info) {
-// 			$va_ids[$vn_relation_id] = $va_info[$vs_pk];
-// 		}
 		
 		$va_options = [];
 		if (sizeof($va_formats) > 0) {

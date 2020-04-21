@@ -723,7 +723,7 @@
 
 		if($vs_representation_export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
 			$vs_export_filename = caGetTempFileName('mediaMetadataRepExport','xml');
-			if(@file_put_contents($vs_export_filename, $vs_representation_Export) === false) { return false; }
+			if(@file_put_contents($vs_export_filename, $vs_representation_export) === false) { return false; }
 			caExec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
 			@unlink($vs_export_filename);
 			@unlink("{$vs_tmp_filepath}_original");
@@ -931,7 +931,6 @@
 			    if (!$t_val->isLoaded()) { return null; }
 			    $t_attr = new ca_attributes($t_val->get('attribute_id'));
 			    $vs_table_name  = Datamodel::getTableName($t_attr->get('table_num'));
-			    Datamodel::getInstance($vs_table_name, true);
 			    $vn_subject_id = (int)$t_attr->get('row_id');
 			    if (!($t_subject = $vs_table_name::find($vn_subject_id, $pa_options))) { return null; } // table::find() performs checkAccess
 			    

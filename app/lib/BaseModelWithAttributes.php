@@ -2315,7 +2315,7 @@
 		 * Returns associative array, keyed by primary key value with values being
 		 * the preferred label of the row from a suitable locale, ready for display 
 		 * 
-		 * @param $pa_ids indexed array of primary key values to fetch attribute for
+		 * @param $pa_ids array indexed array of primary key values to fetch attribute for
 		 */
 		public function getAttributeForIDs($pm_element_code_or_id, $pa_ids, $pa_options=null) {
 			if (!($vn_element_id = ca_metadata_elements::getElementID($pm_element_code_or_id))) { return null; }
