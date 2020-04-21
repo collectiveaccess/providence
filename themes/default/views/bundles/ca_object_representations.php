@@ -92,7 +92,20 @@
  	}
  	
 	$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
- ?>
+ 
+	$count = $this->getVar('relationship_count');
+	
+	if (!RequestHTTP::isAjax()) {
+		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	
+		if ($vb_batch) {
+			print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
+		} else {		
+			print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $this->getVar('initialValues')));
+		}
+		print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
+	} 
+?>
  <div id="<?= $id_prefix; ?>">
  	<div class="bundleContainer"> </div>
  	
@@ -360,7 +373,7 @@
 			loadedSortDirection: <?= json_encode($loaded_sort_direction); ?>,
 			
 			totalValueCount: <?= (int)$rep_count; ?>,
-			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundles', [$t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations']); ?>',
+			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', [$t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations']); ?>',
 			loadSize: <?= $num_per_page; ?>,
 			partialLoadMessage: '<?= addslashes(_t('Load next %num of %total')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
