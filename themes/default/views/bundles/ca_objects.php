@@ -85,7 +85,7 @@
 <?php
 	print "<div class='bundleSubLabel'>";
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 		
 		if(caGetOption('showReturnToHomeLocations', $va_settings, false)) {
 			print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'), $this->getVar('history_tracking_policy'));
@@ -353,7 +353,7 @@
 			lastItemColor: '<?php print $vs_last_color; ?>',
 			
 			totalValueCount: <?php print (int)$count; ?>,
-			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $va_settings['placement_id'], 'bundle' => 'ca_objects')); ?>',
+			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_objects')); ?>',
 			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			loadSize: <?php print $num_per_page; ?>,
 

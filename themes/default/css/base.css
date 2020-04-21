@@ -5757,6 +5757,7 @@ select.caItemListSortControlTrigger {
 }
 
 div.caItemLoadNextBundles {
+	clear: both;
 	padding: 10px;
 }
 

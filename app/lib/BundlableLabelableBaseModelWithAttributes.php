@@ -2905,7 +2905,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_is_many_many = false;
 		
 		$start = caGetOption('start', $pa_options, 0);
-		$limit = caGetOption('limit', $pa_options, caGetOption('numItemsPerPage', $pa_bundle_settings, null));
+		$limit = caGetOption('limit', $pa_options, caGetOption('numPerPage', $pa_bundle_settings, null));
 		$sort = caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null));	
 		$sort_direction = caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null));
 		

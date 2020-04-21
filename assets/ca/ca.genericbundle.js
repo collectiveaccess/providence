@@ -156,21 +156,25 @@ var caUI = caUI || {};
 		that.addNextValuesLink = function() {
 			var end = (that.loadFrom + that.loadSize)
 			if (end > that.totalValueCount) { end = that.totalValueCount % that.loadSize; } else { end = that.loadSize; }
-
+			
+			var p = that.container + " ." + that.itemListClassName;
 			var msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
-			jQuery(that.container + " ." + that.itemListClassName).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
-			jQuery(that.container + " ." + that.itemListClassName).off('click').off('scroll').on('click', '.caItemLoadNextBundles', function(e) {
-				jQuery(that.container + " ." + that.itemListClassName).off('click'); // remove handler to prevent repeated calls
-				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').show(); // show loading indicator
+			jQuery(p).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
+			jQuery(p).off('click').off('scroll').on('click', '.caItemLoadNextBundles', function(e) {
+				jQuery(p).off('click'); // remove handler to prevent repeated calls
+				jQuery(p + ' #' + that.fieldNamePrefix + '__busy').show(); // show loading indicator
 				that.loadNextValues();
 				e.preventDefault();
 				return false;
 			}).on('scroll', null, function(e) {
 				// Trigger load of next page when bottom of current result set is reached.
 				if ((jQuery(this).scrollTop() + jQuery(this).height()) >= jQuery(this)[0].scrollHeight) {
-					jQuery(that.container + " ." + that.itemListClassName + " .caItemLoadNextBundles").click();	
+					jQuery(p + " .caItemLoadNextBundles").click();	
 				}
 			});
+			if ((jQuery(p).scrollTop() + jQuery(p).height()) >= jQuery(p)[0].scrollHeight) {
+				jQuery(p + " .caItemLoadNextBundles").click();	
+			}
 		}
 
 		that.addToBundle = function(id, initialValues, dontUpdateBundleFormState) {
