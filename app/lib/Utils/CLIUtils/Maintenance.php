@@ -707,79 +707,32 @@
 			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
 			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rule_violations.php');
 
-			$t_violation = new ca_metadata_dictionary_rule_violations();
+			$rules = ca_metadata_dictionary_rules::getRules();
+			$tables = array_unique(array_map(function($v) { return $v['table_num']; }, $rules));
+			print CLIProgressBar::start(sizeof($tables), _t('Evaluating'));
 
-			$va_rules = ca_metadata_dictionary_rules::getRules();
-
-			print CLIProgressBar::start(sizeof($va_rules), _t('Evaluating'));
-
-			$vn_total_rows = $vn_rule_num = 0;
-			$vn_num_rules = sizeof($va_rules);
-			foreach($va_rules as $va_rule) {
-				$vn_rule_num++;
-				$va_expression_tags = caGetTemplateTags($va_rule['expression']);
-
-				if (!($t_instance = Datamodel::getInstanceByTableNum($va_rule['table_num']))) {
-					CLIUtils::addError(_t("Table for bundle %1 is not valid", $va_rule['table_num']));
+			$total_rows = 0;
+			foreach($tables as $table_num) {
+				if (!($t_instance = Datamodel::getInstanceByTableNum($table_num))) {
+					CLIUtils::addError(_t("Table %1 is not valid", $table_num));
 					continue;
 				}
 
-				$vn_table_num = $t_instance->tableNum();
-
-				$qr_records = call_user_func_array(($vs_table_name = $t_instance->tableName())."::find", array(
-					array('deleted' => 0),
+				$qr_records = call_user_func_array(($table_name = $t_instance->tableName())."::find", array(
+					'*',
 					array('returnAs' => 'searchResult')
 				));
 				if (!$qr_records) { continue; }
-				$vn_total_rows += $qr_records->numHits();
+				$total_rows += $qr_records->numHits();
 
-				CLIProgressBar::setTotal($vn_total_rows);
+				CLIProgressBar::setTotal($total_rows);
 
-				$vn_count = 0;
 				while($qr_records->nextHit()) {
-					$vn_count++;
 
-                    if(!is_array($va_rule['rule_settings'])) { $va_rule['rule_settings'] = []; }
-					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", caExtractSettingsValueByUserLocale('label', $va_rule['rule_settings']), $vn_rule_num, $vn_num_rules, $vn_count));
-					$t_violation->clear();
-					$vn_id = $qr_records->getPrimaryKey();
-
-					$vb_skip = !$t_instance->hasBundle($va_rule['bundle_name'], $qr_records->get('type_id'));
-
-					if (!$vb_skip) {
-						// create array of values present in rule
-						$va_row = array($va_rule['bundle_name'] => $vs_val = $qr_records->get($va_rule['bundle_name']));
-						foreach($va_expression_tags as $vs_tag) {
-							$va_row[$vs_tag] = $qr_records->get($vs_tag);
-						}
-					}
-
-					// is there a violation recorded for this rule and row?
-					if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $vn_id, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance'))) {
-						$t_violation = $t_found;
-					}
-
-                    try {
-                        if (!$vb_skip && ExpressionParser::evaluate(html_entity_decode($va_rule['expression']), $va_row)) {
-                            // violation
-                            if ($t_violation->getPrimaryKey()) {
-                                $t_violation->setMode(ACCESS_WRITE);
-                                $t_violation->update();
-                            } else {
-                                $t_violation->setMode(ACCESS_WRITE);
-                                $t_violation->set('rule_id', $va_rule['rule_id']);
-                                $t_violation->set('table_num', $t_instance->tableNum());
-                                $t_violation->set('row_id', $qr_records->getPrimaryKey());
-                                $t_violation->insert();
-                            }
-                        } else {
-                            if ($t_violation->getPrimaryKey()) {
-                                $t_violation->delete(true);		// remove violation
-                            }
-                        }
-                    } catch (Exception $e) {
-                        // pass
-                    }
+					print CLIProgressBar::next(1, _t("Validating records in %1", $table_name));
+					
+					$t_instance = $qr_records->getInstance();
+					$t_instance->validateUsingMetadataDictionaryRules();
 				}
 			}
 			print CLIProgressBar::finish();
