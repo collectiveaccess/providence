@@ -1097,13 +1097,13 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Default effective date'),
 								'description' => _t('Default effective date value for newly added relationships. Leave blank if you do not wish to set an effective date.')
 							),
-							'numItemsPerPage' => array(
+							'numPerPage' => array(
 								'formatType' => FT_NUMBER,
 								'displayType' => DT_FIELD,
 								'default' => 100,
 								'width' => "275px", 'height' => 1,
 								'label' => _t('Number of items to load per page'),
-								'description' => _t('Maximum number of relationships to render on initial load.')
+								'description' => _t('Maximum number of items to render on initial load.')
 							)
 						);
 					}
@@ -1207,16 +1207,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '',
 							'label' => _t('Metadata element editing order'),
 							'description' => _t('List metadata element codes separated by commas, semicolons or returns in the order in which they should appear. If omitted the default sort order is used.')
-						];
-						
-						$va_additional_settings['numPerPage'] = [
-							'formatType' => FT_TEXT,
-							'displayType' => DT_FIELD,
-							'width' => "50px", 'height' => "1",
-							'takesLocale' => false,
-							'default' => 10,
-							'label' => _t('Number of representations per load'),
-							'description' => _t('Maximum number of representation to fetch in a single load.')
 						];
                     }
 

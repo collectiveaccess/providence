@@ -2872,6 +2872,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		inlineCreateQuery =
 	 *		inlineCreateMessageDoesNotExist =
 	 *		template =
+	 *		relatedItems = 
+	 *		sortOrder = 
 	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
 	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
 	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
@@ -3003,6 +3005,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			}
 			$va_items = $va_tmp;
 			unset($va_tmp);
+		}
+		
+		if(is_array($pa_options['sortOrder'])) {
+			$va_items_sorted = [];
+			foreach($pa_options['sortOrder'] as $id) {
+				$va_items_sorted[$id] = $va_items[$id];
+			}
+			$va_items = $va_items_sorted;
 		}
 
 		foreach ($va_items as $va_item) {

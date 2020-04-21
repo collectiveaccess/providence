@@ -1609,15 +1609,15 @@ class BaseEditorController extends ActionController {
 					return;
 				}
 
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, 'P'.$pn_placement_id, array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
+				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
 				break;
 		}
 	}
 	# ------------------------------------------------------------------
 	/**
-	 *
+	 * Return partial list of values for bundle. Used for incremental loading of relationship lists.
 	 */
-	public function loadBundles() {
+	public function loadBundleValues() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
