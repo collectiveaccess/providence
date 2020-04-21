@@ -72,7 +72,8 @@
 		'noInline' => (!$vb_quick_add_enabled || (bool)  preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
 	);
 
-	if(caGetOption('showCount', $va_settings, false)) { print ($count = $this->getVar('relationship_count')) ? "({$count})" : ''; }
+	$count = $this->getVar('relationship_count');
+	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
 	
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);

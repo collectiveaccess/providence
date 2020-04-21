@@ -3091,7 +3091,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('t_subject', $this);
 		$va_initial_values = $this->getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
 
-		$c = (caGetOption('limit', $pa_options, caGetOption('numPerPage', $pa_bundle_settings, null)) > 0) ? $this->getRelatedItems($ps_related_table, ['returnAs' => 'count']) : sizeof($va_initial_values);
+		$c = (caGetOption('limit', $pa_options, caGetOption('numPerPage', $pa_bundle_settings, null)) > 0) ? $this->getRelatedItems($ps_related_table, array_merge($pa_bundle_settings,['returnAs' => 'count'])) : sizeof($va_initial_values);
 		$o_view->setVar('relationship_count', $c);
 		
 		$va_force_new_values = array();
