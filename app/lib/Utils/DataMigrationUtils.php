@@ -1191,7 +1191,6 @@
 				}
 
 				$t_instance->insert();
-				if ($o_log) { $o_log->logDebug(_t("%3Could not create %1 record: %2", $ps_table, join("; ", $t_instance->getErrors()), $log_reference_str)); }
 
 				if ($t_instance->numErrors()) {
 					if($pb_output_errors) {
