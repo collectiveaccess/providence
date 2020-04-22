@@ -2524,29 +2524,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="lifespan" datatype="DateRange">
-      <labels>
-        <label locale="en_US">
-          <name>Life dates</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Dates</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_entities</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="address" datatype="Container">
       <labels>
         <label locale="en_US">
