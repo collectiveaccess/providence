@@ -335,6 +335,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Ignore record type when looking for existing records as specified by the existing records policy.'),
 			'description' => _t('.')
 		);
+		$va_settings['mergeOnly'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('If set data will only be merged with existing records using the existing records policy. No new records will be created.'),
+			'description' => _t('.')
+		);
 		$va_settings['dontDoImport'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -343,19 +352,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'default' => 0,
 			'label' => _t('Do not do import'),
 			'description' => _t('If set then the mapping will be evaluated but no rows actually imported. This can be useful when you want to run a refinery over the rows of a data set but not actually perform the primary import.')
-		);
-		$va_settings['archiveMapping'] = array(
-			'formatType' => FT_NUMBER,
-			'displayType' => DT_FIELD,
-			'width' => 40, 'height' => 1,
-			'takesLocale' => false,
-			'default' => '',
-			'options' => array(
-				_t('yes') => 1,
-				_t('no') => 0
-			),
-			'label' => _t('Archive mapping?'),
-			'description' => _t('Set to yes to save the mapping spreadsheet; no to delete it from the server after import.  Pending implementation.')
 		);
 		$va_settings['archiveDataSets'] = array(
 			'formatType' => FT_NUMBER,
@@ -1342,6 +1338,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
+		$merge_only = (bool)$t_mapping->getSetting('mergeOnly');	// If set we only merge; no new records will be created.
+		
 		$vb_import_all_datasets = caGetOption('importAllDatasets', $pa_options, false);
 		
 		$o_progress->start(_t('Reading %1', $ps_source));
@@ -1838,6 +1836,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							break;
 					}
+				}
+				
+				if ($merge_only && !$t_subject->getPrimaryKey()) { 
+					if ($log_erp) { $o_log->logInfo(_t('[%1] Skipping because mergeOnly option is set and could not match existing record by policy %2.', $vs_idno, $vs_existing_record_policy)); }
+					continue;
 				}
 				
 				$o_progress->next(_t("Importing %1", $vs_idno));
