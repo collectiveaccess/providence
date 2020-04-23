@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -146,9 +146,11 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			
 			$vb_is_relationship_rule = Datamodel::tableExists($vs_target);
             if (!$vb_is_relationship_rule) {
+            	$vs_source = caGetOption('source', $va_rule, null);
+                
                 // check template
                 $vs_template = caGetOption('template', $va_rule, null);
-                if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
+                if((strlen($vs_template) < 1) && (strlen($vs_source = caGetOption('source', $va_rule, null)) < 1)) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
             }
             
             $vs_context = caGetOption('context', $va_rule, null);
@@ -285,37 +287,83 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 					}
 // attribute/element
 				} elseif($t_instance->hasElement($va_parts[1])) {
+					$datatype = ca_metadata_elements::getElementDatatype($va_parts[1]);
 
 					$va_attributes = $t_instance->getAttributesByElement($va_parts[1]);
-					if(sizeof($va_attributes)>1) {
-						Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
-						continue;
-					}
-
-					switch($vs_mode) {
-						case 'overwrite': // always replace first value we find
-							$t_instance->replaceAttribute(array(
-								$va_parts[1] => $vs_value,
-								'locale_id' => $g_ui_locale_id
-							), $va_parts[1]);
-							break;
-						case 'overwriteifset': 
-						    if(strlen($vs_value) > 0) {
-                                $t_instance->replaceAttribute(array(
-                                    $va_parts[1] => $vs_value,
-                                    'locale_id' => $g_ui_locale_id
-                                ), $va_parts[1]);
-                            }
-							break;
-						default:
-						case 'addifempty': // only add value if none exists
-							if(!$t_instance->get($vs_target)) {
+					
+					$va_source_map = caGetOption('sourceMap', $va_rule, null);
+					
+					if (($datatype == 0) && $vs_source) { // full container clone using "source" rather than template
+						if (is_array($source_values = $t_instance->get($vs_source, ['returnWithStructure' => true]))) {
+						
+							$isset = false;
+							foreach($va_attributes as $attr) {
+								foreach($attr->getValues() as $v) {
+									if(is_array($va_source_map) && sizeof($va_source_map) && !array_key_exists($v->getElementCode(), $va_source_map)) { continue; }
+									
+									if (strlen($v->getDisplayValue()) > 0) { $isset = true; break(2); }
+								}
+							}
+							if (($vs_mode == 'addifempty') && $isset) { continue; }
+							if (($vs_mode == 'overwriteifset') && !$isset) { continue; }
+							
+							$i = 0;
+							$t_instance->removeAttributes($va_parts[1]);
+							$t_instance->update(['force' => true]);
+							
+							if($t_instance->numErrors()) { 
+								Debug::msg(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
+							}
+		
+							foreach(array_shift($source_values) as $attr_id => $attr) {
+								if(is_array($va_source_map) && sizeof($va_source_map)) {
+									$map_attr = [];
+									foreach($va_source_map as $sk => $sv) {
+										$map_attr[$sv] = $attr[$sk];
+									}
+									$attr = $map_attr;
+								}
+								if ($i == 0) {
+									$t_instance->replaceAttribute($attr, $va_parts[1]);
+								} else {
+									$t_instance->addAttribute($attr, $va_parts[1]);
+								}
+								if($t_instance->numErrors()) { 
+									Debug::msg(_t("[prepopulateFields()] error during copy of containers: %1", join("; ", $t_instance->getErrors())));
+								}
+								$i++;
+							}
+						}
+					} else {
+						if(sizeof($va_attributes)>1) {
+							Debug::msg("[prepopulateFields()] partial containers with multiple values are not supported");
+							continue;
+						}
+						switch($vs_mode) {
+							case 'overwrite': // always replace first value we find
 								$t_instance->replaceAttribute(array(
 									$va_parts[1] => $vs_value,
 									'locale_id' => $g_ui_locale_id
 								), $va_parts[1]);
-							}
-							break;
+								break;
+							case 'overwriteifset': 
+								if(strlen($vs_value) > 0) {
+									$t_instance->replaceAttribute(array(
+										$va_parts[1] => $vs_value,
+										'locale_id' => $g_ui_locale_id
+									), $va_parts[1]);
+								}
+								break;
+							default:
+							case 'addifempty': // only add value if none exists
+								if(!$t_instance->get($vs_target)) {
+									$t_instance->replaceAttribute(array(
+										$va_parts[1] => $vs_value,
+										'locale_id' => $g_ui_locale_id
+									), $va_parts[1]);
+								}
+								break;
+						}
 					}
 				}
 // "container"
@@ -456,10 +504,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
 
 		if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
-		$vn_old_mode = $t_instance->getMode();
-		$t_instance->setMode(ACCESS_WRITE);
-		$t_instance->update();
-		$t_instance->setMode($vn_old_mode);
+		$t_instance->update(['force' => true]);
 
 		if($t_instance->numErrors() > 0) {
 			foreach($t_instance->getErrors() as $vs_error) {
