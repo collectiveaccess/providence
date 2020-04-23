@@ -620,6 +620,7 @@ class BaseEditorController extends ActionController {
 				}
 			}
 		}
+		
 		$this->view->setVar('confirmed', $vb_confirm);
 		if ($t_subject->numErrors()) {
 			foreach($t_subject->errors() as $o_e) {
@@ -634,9 +635,6 @@ class BaseEditorController extends ActionController {
 				$this->opo_result_context->invalidateCache();
 				$this->opo_result_context->saveContext();
 
-
-				// clear subject_id - it's no longer valid
-				$t_subject->clear();
 				$this->view->setVar($t_subject->primaryKey(), null);
 				$this->request->setParameter($t_subject->primaryKey(), null, 'PATH');
 
@@ -650,7 +648,8 @@ class BaseEditorController extends ActionController {
 				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $subject_table, 'instance' => $t_subject));
 
 				# redirect
-				$this->redirectAfterDelete($t_subject->tableName());
+				$this->redirectAfterDelete($t_subject);
+				return;
 			}
 		}
 
@@ -665,9 +664,14 @@ class BaseEditorController extends ActionController {
 	 * overridden in subclasses/implementations.
 	 * @param string $ps_table table name
 	 */
-	protected function redirectAfterDelete($ps_table) {
+	protected function redirectAfterDelete($t_subject) {
 		$this->getRequest()->close();
-		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
+		
+		if ($parent_id = $t_subject->get('parent_id')) {
+			caSetRedirect(caEditorUrl($this->request, $t_subject->tableName(), $parent_id, false, [], []));
+		} else {
+			caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName()));
+		}
 	}
 	# -------------------------------------------------------
 	/**
