@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -134,6 +134,7 @@ class ExternalExportManager {
 		if ($table && is_array($restrict_to_types)) {
 			$restrict_to_types = caMakeTypeList($table, $restrict_to_types);
 		}
+		if (!is_array($config->get('targets'))) { return []; }
 		$targets = array_filter($config->get('targets'), function($v) use ($table, $restrict_to_types) { 
 			if(($table && $v['table'] !== $table)) { return false; }
 			if (is_array($restrict_to_types) && sizeof($restrict_to_types) && 
