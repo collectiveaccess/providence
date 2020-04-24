@@ -538,7 +538,7 @@
 		 *
 		 * @return int Display_id of ca_bundle_displays row to use
 		 */
-		public function getCurrentBundleDisplay($pn_type_id=null) {
+		public function getCurrentBundleDisplay($pn_type_id=null, $ps_show_in=null) {
 			if (!strlen($pn_display_id = htmlspecialchars($this->opo_request->getParameter('display_id', pString, ['forcePurify' => true])))) { 
  				if ($va_context = $this->getContext()) {
 					$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"];
@@ -547,8 +547,23 @@
  					// Try to guess
  					require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
  					$t_display = new ca_bundle_displays();
- 					if (is_array($displays = $t_display->getBundleDisplays(['restrictToTypes' => $pn_type_id ? [$pn_type_id] : null]))) {
- 						$pn_display_id = array_shift(array_keys($displays));
+ 					if (is_array($displays = $t_display->getBundleDisplays(['table' => $this->tableName(), 'restrictToTypes' => $pn_type_id ? [$pn_type_id] : null]))) {
+ 						if ($ps_show_in) {
+ 							foreach($displays as $id => $d) {
+ 								$d = array_shift($d);
+ 								if ($show_in_setting = caGetOption('show_only_in', $d['settings'], null)) {
+ 									if(preg_match("!{$ps_show_in}!", $show_in_setting)) {
+ 										$pn_display_id = $id;
+ 										break;
+ 									}
+ 								} else {
+ 									$pn_display_id = $id;
+ 									break;
+ 								}
+ 							}
+ 						} else {
+ 							$pn_display_id = array_shift(array_keys($displays));
+ 						}
  					}
  					if (!$pn_display_id) { $pn_display_id = null; }
  				}
