@@ -62,6 +62,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 *                            phrase => send a lucene phrase search instead of keywords
 	 *                            raw => return raw, unprocessed results from getty service
 	 *                            short = return short label (term only) [Default is false]
+	 *                            start =>
+	 *                            limit =>
 	 *
 	 * @return array
 	 */
