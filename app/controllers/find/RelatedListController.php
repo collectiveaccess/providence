@@ -81,8 +81,7 @@ class RelatedListController extends BaseSearchController {
 		AssetLoadManager::register('panel');
 		AssetLoadManager::register('sortableUI');
 
-		// get request data
-		$va_relation_ids = json_decode($this->getRequest()->getParameter('ids', pString), true);
+		
 		// related table, e.g. ca_entities
 		$vs_related_table = $this->getRequest()->getParameter('relatedTable', pString);
 		// relationship table between subject and related, i.e. ca_objects_x_entities --
@@ -91,6 +90,28 @@ class RelatedListController extends BaseSearchController {
 		$vs_interstitial_prefix = $this->getRequest()->getParameter('interstitialPrefix', pString);
 		$vs_primary_table = $this->getRequest()->getParameter('primaryTable', pString);
 		$vn_primary_id = $this->getRequest()->getParameter('primaryID', pInteger);
+		
+		// get request data
+		if ($placement_id = $this->getRequest()->getParameter('placement_id', pInteger)) {
+			// Generate list of related items from editor UI placement when defined	...
+			//
+			// TODO: convert the entire related list UI mess to use passed placement_id's rather than giant lists of related IDs
+			// For now support both placement_ids and passed ID lists
+			$placement = new ca_editor_ui_bundle_placements($placement_id);
+			if (!$placement->isLoaded()) {
+				throw new ApplicationException(_('Invalid placement_id'));
+			}
+			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
+			
+			if (!($t_instance->load($vn_primary_id))) { 
+				throw new ApplicationException(_('Invalid id'));
+			}
+			$va_relation_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+		} else {
+			// ... otherwise use old-style giant list of related ID's passed in form
+			$va_relation_ids = json_decode($this->getRequest()->getParameter('ids', pString), true);
+		}
+
 
 		//
 		// set some instance properties that are normally (i.e. in other BaseSearchControllers) set in constructor

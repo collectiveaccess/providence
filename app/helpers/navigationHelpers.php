@@ -104,6 +104,9 @@
  	define('__CA_NAV_ICON_FULL_RESULTS__', 63);
  	define('__CA_NAV_ICON_EXPORT_SMALL__', 64);
  	define('__CA_NAV_ICON_HOME__', 65);
+ 	define('__CA_NAV_ICON_EDIT_TEXT__', 66);
+ 	define('__CA_NAV_ICON_IS_PRIMARY__', 67);
+ 	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
  	
  	/**
  	 * Icon position constants
@@ -292,9 +295,8 @@
 		} else {
 			$vs_alt = $vs_title = '';
 		}
-		
-		
-		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
+
+		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), []);
 		if (!$pb_dont_show_content) {
 			$vs_tag .= $ps_content;
 		}
@@ -349,9 +351,8 @@
 			'align' => 'absmiddle'
 		);
 		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
-			
-		
-		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes)) {
+
+		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), [])) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
 			switch($ps_icon_pos) {
@@ -510,9 +511,8 @@
 			'class' => 'form-button-left',
 			'style' => "padding-right: {$vn_padding}px"
 		);
-		
-		
-		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes);
+
+		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), []);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -583,8 +583,7 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		
-		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
+		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), []);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -694,6 +693,10 @@
 			case __CA_NAV_ICON_EDIT__:
 				$vs_fa_class = 'fa-file';
 				$vs_ca_class = 'editIcon'; 
+				break;		
+			case __CA_NAV_ICON_EDIT_TEXT__:
+				$vs_fa_class = 'fa-edit';
+				$vs_ca_class = 'editTextIcon'; 
 				break;
 			case __CA_NAV_ICON_BATCH_EDIT__:
 				$vs_fa_class = 'fa-magic';
@@ -713,7 +716,10 @@
 				$vs_fa_class = 'fa-download';
 				break;
 			case __CA_NAV_ICON_MAKE_PRIMARY__:
-				$vs_fa_class = 'fa-check';
+				$vs_fa_class = 'fa-check-circle-o';
+				break;
+			case __CA_NAV_ICON_IS_PRIMARY__:
+				$vs_fa_class = 'fa-check-square';
 				break;
 			case __CA_NAV_ICON_APPROVE__:
 				$vs_fa_class = 'fa-thumbs-o-up';
@@ -877,12 +883,15 @@
 			case __CA_NAV_ICON_FULL_RESULTS__:
 				$vs_fa_class = 'fa-bars';
 				break;
-			case __CA_NAV_ICON_EXPORT_SMALL__: 
+			case __CA_NAV_ICON_EXPORT_SMALL__:
 				$vs_fa_class = 'fa-external-link-square';
-				break;	
+				break;
 			case __CA_NAV_ICON_HOME__:
 				$vs_fa_class = 'fa-home';
-				break;																						
+				break;	
+			case __CA_NAV_ICON_CROSSHAIRS__:
+				$vs_fa_class = 'fa-crosshairs';
+				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
@@ -972,7 +981,8 @@
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
 	 *		action - if set, action of returned link will be set to the supplied value
 	 *      quick_add - if set to true, returned link will point to the QuickAdd controller instead
-	 * @return string
+	 *
+	 * @return array|string
 	 */
 	function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
 		if (is_numeric($ps_table)) {
@@ -1172,7 +1182,9 @@
 		}
 		
 		$vn_id_for_idno = null;
-		if(((int)$pn_id > 0) && ($vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls($ps_table)) && is_array($attr_list = $t_table->getAttributeForIDs($vs_use_alt_identifier_in_urls, [$pn_id]))) {
+		if ( ( (int) $pn_id > 0 ) && ( $vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls( $ps_table ) )
+		     && is_array( $attr_list = $t_table->getAttributeForIDs( $vs_use_alt_identifier_in_urls, [ $pn_id ] ) )
+		) {
 		    $va_attr = array_values($attr_list);
 		    if (is_array($va_attr[0]) && ($vn_id_for_idno = array_shift($va_attr[0]))) {
 				$vb_id_exists = true;

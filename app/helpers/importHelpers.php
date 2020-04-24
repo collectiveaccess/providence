@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -362,7 +362,7 @@
 							foreach($va_vals as $vn_x => $va_v) {
 								if (!$va_v || (!is_array($va_v) && !trim($va_v))) { continue; }
 								if ($vs_prefix && is_array($va_v)) {
-									$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; });
+									$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; }, $va_v);
 									
 									foreach($va_v as $vn_y => $vm_val_to_import) {
 										if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
@@ -492,7 +492,7 @@
 			if (!is_array($va_type = BaseRefinery::parsePlaceholder($pa_related_options['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_type = [$va_type]; }
 			if (!is_array($va_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_parent_id = [$va_parent_id]; }
 
-			if ($vb_ignore_parent = caGetOptions('ignoreParent', $pa_related_options, false)) {
+			if ($vb_ignore_parent = caGetOption('ignoreParent', $pa_related_options, false)) {
 				$pa_options['ignoreParent'] = $vb_ignore_parent;
 			}
 
@@ -569,7 +569,7 @@
             
                 if ($ps_related_table != 'ca_object_lots') {
                     $va_attributes['idno'] = $vs_idno;
-                    $va_attributes['parent_id'] = $vn_parent_id;
+                    $va_attributes['parent_id'] = $vs_parent_id;
                 } else {
                     $vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));	
                 }	
@@ -581,13 +581,15 @@
                     foreach($va_non_preferred_labels as $va_label) {
                         foreach($va_label as $vs_k => $vs_v) {
                             if (!$vb_is_set && strlen(trim($vs_v))) { $vb_is_set = true; }
-                            $va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
+                            $va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $i, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
                         }
                         if ($vb_is_set) { $pa_options['nonPreferredLabels'][] = $va_label; }
                     }
                 } elseif($vs_non_preferred_label = trim($pa_related_options["nonPreferredLabels"])) {
                     if ($ps_refinery_name == 'entitySplitter') {
-                        if ($vs_npl = trim(DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null)), $pa_options))) { $pa_options['nonPreferredLabels'][] = $vs_npl; };
+                        if (is_array($va_npl = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null)), $pa_options))) { 
+                        	$pa_options['nonPreferredLabels'][] = $va_npl; 
+                        }
                     } else {
                         if ($vs_npl = trim(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null)))) {
                             $pa_options['nonPreferredLabels'][] = [
@@ -851,7 +853,7 @@
 										case 'listItemSplitter':
 										    $vals = ['idno' => $vs_parent];
 										    if(!is_null($vn_hier_item_id)) { $vals['parent_id'] = $vn_hier_item_id; }
-											$vn_hier_item_id = DataMigrationUtils::getListItemID($pa_items['settings']['listItemSplitter_list'], $vs_parent, $vs_type, $g_ui_locale_id, $vals, array_merge($pa_options, ['ignoreType' => true, 'ignoreParent' => is_null($vn_hier_item_id)]));
+											$vn_hier_item_id = DataMigrationUtils::getListItemID($pa_item['settings']['listItemSplitter_list'], $vs_parent, $vs_type, $g_ui_locale_id, $vals, array_merge($pa_options, ['ignoreType' => true, 'ignoreParent' => is_null($vn_hier_item_id)]));
 											break;
 									}
 								}
@@ -1077,7 +1079,7 @@
 								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'], null), 'log' => $o_log]);
 
 									foreach($va_files as $vs_file) {
-										if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { return true; } // skip Synology res files
+										if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
 										
 									    $va_media_val = $va_val;
 							            if(!isset($va_media_val['idno'])) { $va_media_val['idno'] = pathinfo($vs_file, PATHINFO_FILENAME); }
@@ -1127,10 +1129,8 @@
 							case 'ca_occurrences':
 							case 'ca_places':
 							case 'ca_objects':
-								$va_val = array('name' => $vs_item);
-								break;
 							case 'ca_object_lots':
-								$va_val = array('name' => $vs_item);
+								$va_val = ['name' => $vs_item];
 								break;
 							case 'ca_object_representations':
 								if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Cannot map preferred labels to object representations. Only media paths can be mapped.')); }

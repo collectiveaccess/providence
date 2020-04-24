@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,509 +25,295 @@
  *
  * ----------------------------------------------------------------------
  */
+	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
+	
+	$settings 				= $this->getVar('settings');
+	
+	$use_classic_interface 	= (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+	if ($use_classic_interface) {
+		print $this->render('ca_object_representations_classic.php');
+		return;
+	}
+	
+ 	$id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');
 	$t_item 			= $this->getVar('t_item');			// object representation
-	$t_item_label		= $t_item->getLabelTableInstance();
+	$table_num 			= $t_item->tableNum();
+	
 	$t_item_rel 		= $this->getVar('t_item_rel');
 	$t_subject 			= $this->getVar('t_subject');		// object
-	$vs_add_label 		= $this->getVar('add_label');
-	$va_settings 		= $this->getVar('settings');
-
-	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
-	$vb_batch			=	$this->getVar('batch');
+	$add_label 			= $this->getVar('add_label');
 	
-	$dont_show_preferred_label = caGetOption('dontShowPreferredLabel', $va_settings, false);
-	$dont_show_idno = caGetOption('dontShowIdno', $va_settings, false);
-	$dont_show_access = caGetOption('dontShowAccess', $va_settings, false);
-	$dont_show_status = caGetOption('dontShowStatus', $va_settings, false);
-	$dont_show_transcribe = $this->request->getAppConfig()->get('allow_transcription') ? caGetOption('dontShowTranscribe', $va_settings, false) : true;
+	$rel_dir         	= ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
+	$left_sub_type_id 	= ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+	$right_sub_type_id 	= ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+	$rel_types          = $t_item_rel->getRelationshipTypes($left_sub_type_id, $right_sub_type_id);
 	
+	$read_only			= (isset($settings['readonly']) && $settings['readonly']);
+	$is_batch			= $this->getVar('batch');
 	
-	$vs_rel_dir         = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
-	$vn_left_sub_type_id = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-	$vn_right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-	$rel_types          = $t_item_rel->getRelationshipTypes($vn_left_sub_type_id, $vn_right_sub_type_id);
+	$num_per_page 		= caGetOption('numPerPage', $settings, 10);
+	$initial_values 	= caSanitizeArray($this->getVar('initialValues'), ['removeNonCharacterData' => false]);
 	
+	// Dyamically loaded sort ordering
+	$loaded_sort 			= $this->getVar('sort');
+	$loaded_sort_direction 	= $this->getVar('sortDirection');
+	
+	$rep_count = $t_subject->getRepresentationCount($settings);
+	
+	$errors = $failed_inserts = [];
+	
+	$primary_id = null;
+	foreach($initial_values as $representation_id => $rep) {
+		if(is_array($action_errors = $this->request->getActionErrors('ca_object_representations', $representation_id))) {
+			foreach($action_errors as $o_error) {
+				$errors[$representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
+			}
+		}
+		if ($rep['is_primary']) { $primary_id = (int)$rep['representation_id']; }
+	}
+	
+	$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, [], ['castTo' => 'array']);
+	$bundles_to_edit_order = preg_split("![;,\n\r]+!", caGetOption('showBundlesForEditingOrder', $settings, '', ['castTo' => 'string']));
+ 	$bundles_to_edit_proc = array_map(function($v) { $f = explode('.', $v); return join('.', (sizeof($f) > 1) ? array_slice($f,  1) : $f); }, $bundles_to_edit);
+ 
+ 	if (is_array($bundles_to_edit_order) && sizeof($bundles_to_edit_order)) {
+ 		$bundles_to_edit_sorted = [];
+ 		foreach($bundles_to_edit_order as $o) {
+ 			if (!($t = array_pop(explode('.', $o)))) { continue; }
+ 			if (in_array($t, $bundles_to_edit_proc)) { $bundles_to_edit_sorted[] = $t; }
+ 		}
+ 		foreach($bundles_to_edit_proc as $t) {
+ 			if (!in_array($t, $bundles_to_edit_sorted)) { $bundles_to_edit_sorted[] = $t; }
+ 		}
+ 		$bundles_to_edit_proc = $bundles_to_edit_sorted;
+ 	}
+ 	
 	$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
-
-	// don't allow editing if user doesn't have access to any of the representation types
-	if(sizeof(caGetTypeListForUser('ca_object_representations', array('access' => __CA_BUNDLE_ACCESS_EDIT__)))  < 1) {
-		$vb_read_only = true;
-	}
+ 
+	$count = $this->getVar('relationship_count');
 	
-	if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
-		$vs_default_upload_type = 'upload';
-	}
+	if (!RequestHTTP::isAjax()) {
+		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
 	
-	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
-	
-	// Paging
-	$vn_start = 0;
-	$vn_num_per_page = 20;
-	$vn_primary_id = 0;
-	
-	// generate list of inital form values; the bundle Javascript call will
-	// use the template to generate the initial form
-	$va_rep_type_list = $t_item->getTypeList();
-	$va_errors = array();
-	
-	$vn_rep_count = $t_subject->getRepresentationCount($va_settings);
-	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $va_settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
-
-	foreach($va_initial_values as $vn_representation_id => $va_rep) {
-		if(is_array($va_action_errors = $this->request->getActionErrors('ca_object_representations', $vn_representation_id))) {
-			foreach($va_action_errors as $o_error) {
-				$va_errors[$vn_representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
-			}
+		if ($vb_batch) {
+			print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
+		} else {		
+			print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $this->getVar('initialValues')));
 		}
-		if ($va_rep['is_primary']) {
-			$vn_primary_id = $va_rep['representation_id'];
-		}
-	}
-	
-	$va_failed_inserts = array();
-	foreach($this->request->getActionErrorSubSources('ca_object_representations') as $vs_error_subsource) {
-		if (substr($vs_error_subsource, 0, 4) === 'new_') {
-			$va_action_errors = $this->request->getActionErrors('ca_object_representations', $vs_error_subsource);
-			foreach($va_action_errors as $o_error) {
-				$va_failed_inserts[] = array('icon' => '', '_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber())));
-			}
-		}
-	}
-	
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, (sizeof($va_initial_values) > 0), _t("Number of representations: %1", sizeof($va_initial_values)));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
-
+		print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
+	} 
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
-<?php
+ <div id="<?= $id_prefix; ?>">
+ 	<div class="bundleContainer"> </div>
+ 	
+	<input type="hidden" id="<?= $id_prefix; ?>_ObjectRepresentationBundleList" name="<?= $id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
+ <?php
 	//
 	// Template to generate display for existing items
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
-
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
-<?php 
-	if (!$vb_read_only) {
-?>
+<?php if (!$read_only) { ?>
 			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
-<?php
-	}
-?>	
-			<div style="width: 680px;">
-				<div style="float: left;">
-					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{representation_id}'))); ?>'); return false;">{icon}</a></div>
-				</div>
-				<div style="float: right; width: 550px;">
-					<div style="float: left; width: 80%;">
-						<div id='{fieldNamePrefix}rep_info_ro{n}'>
-							<div class='caObjectRepresentationListInfo'>
-<?php
-    if(!$dont_show_preferred_label) {
-?>
-								<a title="{filename}">{rep_label}</a>
-<?php
-    }
-	if (!$vb_read_only) {
-?>
-								<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' class='updateIcon' onclick="caOpenRepresentationDetailEditor('{n}'); return false;"><?php print caNavIcon(__CA_NAV_ICON_UPDATE__, 1).'</a>'; ?></span>
-<?php
-	}
-?>
-								<span class='caObjectRepresentationPrimaryDisplay'>{is_primary_display}</span>
-							</div>
-											
-							<div class='caObjectRepresentationListInfoSubDisplay'>
-								{_display}
-<?php
-    if(!$dont_show_idno) {
-?>
-								<em>{idno}</em><br/>
-<?php
-    }
-?>
-								<h3><?php print _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span>
-<?php
-	TooltipManager::add("#{$vs_id_prefix}_filename_display_{n}", _t('File name: %1', "{{filename}}"), 'bundle_ca_object_representations');
-?>
-								</div>
-								<div class='caObjectRepresentationListInfoSubDisplay'>
-									<h3><?php print _t('Format'); ?></h3> {type};
-									<h3><?php print _t('Dimensions'); ?></h3> {dimensions}; {num_multifiles}
-								</div>
-						
-								<div class='caObjectRepresentationListInfoSubDisplay'>
-									<h3><?php print _t('Type'); ?></h3> {rep_type};
-<?php
-    if(!$dont_show_access) {
-?>
-									<h3><?php print _t('Access'); ?></h3> {access_display};
-<?php
-    }
-    if(!$dont_show_status) {
-?>
-									<h3><?php print _t('Status'); ?></h3> {status_display}
-<?php
-    }
-    if(!$dont_show_transcribe) {
-?>
-									<h3><?php print _t('Transcribable?'); ?></h3> {is_transcribable_display}
-									<h3><?php print _t('Transcriptions'); ?></h3> {num_transcriptions}
-<?php
-    }
-?>
-								</div>
-						
-								<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator'><?php print _t('Will be primary after save'); ?></div>
-								<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?php print _t('Changes will be applied when you save'); ?></div>
-								<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
-							</div>		
-<?php
-	if (!$vb_read_only) {
-?>
-							<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationDetailEditorContainer">
-<?php
-    if(!$dont_show_preferred_label) {
-?>
-								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item_label->htmlFormElement('name', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_label_{n}", 'name' => "{fieldNamePrefix}rep_label_{n}", "value" => "{rep_label}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'textAreaTagName' => 'textentry', 'width' => 60)); ?></div>
-<?php
-    } 
-    if(!$dont_show_idno) {
-?>
-								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('idno', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}idno_{n}", 'name' => "{fieldNamePrefix}idno_{n}", "value" => "{idno}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'width' => 60)); ?></div>
-<?php
-    }
-    if (!$dont_show_preferred_label || !$dont_show_idno) {
-?>
-								<br class="clear"/>
-<?php
-    }
-    if (!$dont_show_access) {
-?>
-								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-    if (!$dont_show_status) {
-?>
-								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('status', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "{status}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-    if (!$dont_show_transcribe) {
-?>
-								<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('is_transcribable', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}is_transcribable_{n}", 'name' => "{fieldNamePrefix}is_transcribable_{n}", "value" => "{is_transcribable}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-?>					
-								<br class="clear"/>
-<?php
-	if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
-?>
-	<div class="caObjectRepresentationDetailEditorElement">
-		<div class="formLabel">
-<?php
-			print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
-?>
-		</div>
-	</div>
-	<br class="clear"/>
-<?php
-	}
-?>
-							
-								<div class="caObjectRepresentationDetailEditorHeading"><?php print _t('Update media'); ?></div>
-								<table id="{fieldNamePrefix}upload_options{n}">
-									<tr>
-										<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using upload'); ?></td>
-										<td class='formLabel'><?php print $t_item->htmlFormElement('media', '^ELEMENT', array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'class' => 'uploadInput')); ?></td>
-									</tr>
-<?php
-							if ($vb_allow_fetching_from_urls) {
-?>
-									<tr>
-										<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($vs_default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
-										<td class='formLabel'><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '235px')); ?></td>
-									</tr>
-<?php
-							}
-?>
-								</table>
-							
-								<div class='caObjectRepresentationDetailEditorDoneButton'>
-<?php 
-									print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Done'), '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
-?>
-								</div>	
-							
-								<script type="text/javascript">
-									jQuery(document).ready(function() {
-										jQuery("#{fieldNamePrefix}upload_options{n} tr td .uploadInput").prop('disabled', true);
-										jQuery("#{fieldNamePrefix}upload_type_upload{n}").click(function() {
-											jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', false);
-											jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', true);
-											jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', true);
-										});
-										jQuery("#{fieldNamePrefix}upload_type_url{n}").click(function() {
-											jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', true);
-											jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', false);
-											jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', true);
-										});
+<?php } ?>	
+			<div class="mediaUploadContainer">
+				<div class="objectRepresentationListImageContainer">
+					<div class="objectRepresentationListImage"><a href="#" onclick="caMediaPanel.showPanel('<?= urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{representation_id}'))); ?>'); return false;">{icon}</a></div>
 					
-										jQuery("input.{fieldNamePrefix}upload_type{n}:checked").click();
-									});
-								</script>
-							</div>
-<?php
-	}
-?>
-						</div>
-					
-						<div class="mediaRight">						
-							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}primary_{n}"><a href='#' onclick='caSetRepresentationAsPrimary("{n}"); return false;'><?php print caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span>
-							</div>
-							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1).' '._t('Edit full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{representation_id}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span>
-							</div>
-<?php
-							if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
-?>
-							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1).' '._t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => "{representation_id}", $t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
-							</div>
-<?php
-							}
-?>
-							<div class="caAnnoEditorLaunchButton annotationTypeClip{annotation_type} caObjectRepresentationListActionButton">
-								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnoEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{representation_id}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><?php print caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?php print _t('Annotations'); ?></a></span>
-							</div>
-							<div class="caSetImageCenterLaunchButton annotationTypeSetCenter{annotation_type} caObjectRepresentationListActionButton">
-								<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" onclick="caImageCenterEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetImageCenterEditor', array('representation_id' => '{representation_id}'))); ?>', caSetImageCenterForSave<?php print $vs_id_prefix; ?>, true, {}, {'id': '{n}'}); return false;" id="{fieldNamePrefix}edit_image_center_{n}"><?php print caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?php print _t('Set center'); ?></a></span>
-							</div>
-						</div>	
-					</div>
-				</div>
-			
-				<br class="clear"/>
+					<div id='{fieldNamePrefix}change_{n}' class='mediaMetadataActionButton'><a href='#' id='{fieldNamePrefix}MediaMetadataEditButton{n}'><?= caNavIcon(__CA_NAV_ICON_EDIT_TEXT__, 1).' '._t('Edit').'</a> '; ?></div>
 				
-				<div id="{fieldNamePrefix}media_metadata_container_{n}">	
-					<div class="caObjectRepresentationMetadataButton">
-						<a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}" onclick="caToggleDisplayObjectRepresentationMetadata('{fieldNamePrefix}media_metadata_{n}', '{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}'); return false;" class="caObjectRepresentationMetadataButton"><?php print caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '15px').' '._t('Media metadata'); ?></a>
+					<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator'><?= _t('Will be primary after save'); ?></div>
+					<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?= _t('Changes will be applied on save'); ?></div>
+					
+					<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
+				</div>
+				
+				<div class='objectRepresentationMetadataEditorMediaRightCol' id='{fieldNamePrefix}objectRepresentationMetadataEditorMediaRightCol{n}'>
+					<div id="{fieldNamePrefix}primary_{n}" class='mediaMetadataActionButton'>
+						<span id="{fieldNamePrefix}primary_{n}"><a href='#' id='{fieldNamePrefix}SetAsPrimaryButton{n}'><?= caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span>
 					</div>
-					<div>
-						<div id="{fieldNamePrefix}media_metadata_{n}" class="caObjectRepresentationMetadata">
-							<div class='caObjectRepresentationSourceDisplay'>{fetched}</div>
-							<div class='caObjectRepresentationMD5Display'>{md5}</div>
-							<div class='caObjectRepresentationMetadataDisplay'>{metadata}</div>
+					
+					<div id="{fieldNamePrefix}edit_{n}" class='mediaMetadataActionButton'>
+						<span id="{fieldNamePrefix}edit_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1).' '._t('Full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{representation_id}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span>
+					</div>
+					
+					<div class="caAnnoEditorLaunchButton mediaMetadataActionButton annotationTypeClip{annotation_type}">
+						<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" id="{fieldNamePrefix}edit_annotations_button_{n}"><?= caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?= _t('Annotations'); ?></a></span>
+					</div>
+					<div class="caSetImageCenterLaunchButton mediaMetadataActionButton annotationTypeSetCenter{annotation_type}">
+						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}edit_image_center_{n}"><?= caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?= _t('Set center'); ?></a></span>
+					</div>
+					<div class="mediaMetadataActionButton">
+						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}"><?php print caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '1').' '._t('Metadata'); ?></a></a></span>
+					</div>
+<?php
+	if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
+?>
+					<div class='mediaMetadataActionButton'>
+						<span id="{fieldNamePrefix}download_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1).' '._t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => "{representation_id}", $t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
+					</div>
+<?php
+	}
+?>
+				</div>
+				
+				<div class="mediaUploadInfoArea">
+					<div style="float: left; width: 100%;">
+						<div id='{fieldNamePrefix}rep_info_ro{n}' class='mediaMetadataDisplay'>
+							{_display}
+						</div>
+						<div id='{fieldNamePrefix}detail_editor_{n}' class="objectRepresentationMetadataEditorContainer">
+ <?php
+    if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
+?>
+						<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('id' => '{fieldNamePrefix}rel_type_id_{n}', 'name' => '{fieldNamePrefix}rel_type_id_{n}', 'value' => '{rel_type_id}'), $settings)); ?></div>
+<?php
+	} 
+						foreach($bundles_to_edit_proc as $f) {
+							if($t_item->hasField($f)) { // intrinsic
+								print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+							} elseif($t_item->hasElement($f)) {
+								$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'value' => '{{'.$f.'}}', 'textAreaTagName' => 'textentry']);
+								print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
+							} elseif($f === 'preferred_labels.name') {
+								print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".caHTMLTextInput("{$id_prefix}_rep_label_{n}", ['width' => '500px', 'name' => "{$id_prefix}_rep_label_{n}", 'id' => "{$id_prefix}_rep_label_{n}", 'value' => '{{rep_label}}'])."</div>\n"; 
+							}
+						}
+
+	if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
+?>
+							<div class="formLabel">
+<?php
+								print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
+?>
+							</div>
+<?php
+	}
+?>
+							<div class='objectRepresentationMetadataEditorDoneButton'>
+<?php 
+								print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Done'), '{fieldNamePrefix}MediaMetadataSaveButton{n}'); 
+?>
+							</div>	
 						</div>
 					</div>
 				</div>
-	
-				<br class="clear"/>
 			</div>
-<?php
-			print TooltipManager::getLoadHTML('bundle_ca_object_representations');
-?>
-			<!-- image center coordinates -->
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_center_x_{n}" id="<?php print $vs_id_prefix; ?>_center_x_{n}" value="{center_x}"/>
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_center_y_{n}" id="<?php print $vs_id_prefix; ?>_center_y_{n}" value="{center_y}"/>
-		</textarea>
-<?php
-	//
-	// Template to generate controls for creating new relationship
-	//
-?>
-	<textarea class='caNewItemTemplate' style='display: none;'>	
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
-<?php
-    if ($vb_batch) {
-?>
-			<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationBatchDetailEditorContainer">
-<?php
-    if(!$dont_show_preferred_label) {
-?>
-				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}rep_label_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item_label->htmlFormElement('name', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_label_{n}", 'name' => "{fieldNamePrefix}rep_label_{n}", "value" => "{rep_label}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'textAreaTagName' => 'textentry', 'width' => "75")); ?></div>
-				<br class="clear"/>
-<?php
-    }
-?>
-				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}rep_type_id_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('type_id', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'restrictToTypes' => caGetOption('restrict_to_types', $va_settings, null))); ?></div>
-<?php
-    if(!$dont_show_access) {
-?>
-				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}access_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('access', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-    if(!$dont_show_status) {
-?>
-				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}status_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('status', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-    if(!$dont_show_transcribe) {
-?>
-				<br/><div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?php print caHTMLCheckboxInput('{fieldNamePrefix}is_transcribable_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?php print $t_item->htmlFormElement('is_transcribable', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}is_transcribable_{n}", 'name' => "{fieldNamePrefix}is_transcribable_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-?>		
-				<br class="clear"/>
+			<div id="{fieldNamePrefix}media_metadata_container_{n}">	
+				<div id="{fieldNamePrefix}media_metadata_{n}" class="caObjectRepresentationMetadata">
+					<div class='caObjectRepresentationSourceDisplay'>{fetched}</div>
+					<div class='caObjectRepresentationMD5Display'>{md5}</div>
+					<div class='caObjectRepresentationMetadataDisplay'>{metadata}</div>
+				</div>
 			</div>
-			<script type='text/javascript'>
-			    jQuery(document).ready(function() {
-			        jQuery('input.caObjectRepresentationDetailEditorElement, select.caObjectRepresentationDetailEditorElement, textarea.caObjectRepresentationDetailEditorElement').prop('disabled', true);
-			        jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').on('click', '.caObjectRepresentationBatchDetailEditorElementEnable', function(e) {
-			            var n = jQuery(this).attr('name').replace("_enabled", "");
-			            jQuery('#' + n).attr('disabled', !jQuery(this).prop('checked'));
-			        }); 
-			    });
-			</script>
-<?php
-    } else {
-        if(sizeof($rel_types) > 1) {
-?>
-			<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}type_id_{n}'), $va_settings)) : _t('Add representation'); ?></h2>
-<?php
-    } else {
-        // Embed type when only a single type is available
-        print caHTMLHiddenInput('{fieldNamePrefix}type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
-    }
-?>
-			<span class="formLabelError">{error}</span>
-			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
-			</div>
-			
-			<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationNewDetailEditorContainer">
-<?php
-    if(!$dont_show_preferred_label) {
-?>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item_label->htmlFormElement('name', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_label_{n}", 'name' => "{fieldNamePrefix}rep_label_{n}", "value" => "{rep_label}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'textAreaTagName' => 'textentry', 'width' => "75")); ?></div>
-				<br class="clear"/>
-<?php
-    }
-?>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('type_id', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'restrictToTypes' => caGetOption('restrict_to_types', $va_settings, null))); ?></div>
-<?php
-    if (!$dont_show_access) {
-?>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-    if (!$dont_show_status) {
-?>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('status', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-    if (!$dont_show_transcribe) {
-?>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('is_transcribable', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}is_transcribable_{n}", 'name' => "{fieldNamePrefix}is_transcribable_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
-<?php
-    }
-?>		
-				<br class="clear"/>
-<?php
-	if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
-?>
-	<div class="caObjectRepresentationDetailEditorElement">
-		<div class="formLabel">
-<?php
-			print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
-?>
+			<br class="clear"/>
 		</div>
-	</div>
-	<br class="clear"/>
-<?php
-	}
-?>
-			</div>
-			
-			<table id="{fieldNamePrefix}upload_options{n}">
-				<tr>
-					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using upload'); ?></td>
-					<td class='formLabel'><?php print $t_item->htmlFormElement('media', '^ELEMENT', array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'class' => 'uploadInput')); ?></td>
-				</tr>
-<?php
-		if ($vb_allow_fetching_from_urls) {
-?>
-				<tr>
-					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($vs_default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
-					<td class='formLabel'><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '410px')); ?></td>
-				</tr>
-<?php
-		}
+		<script type="text/javascript">
+			var <?= $id_prefix; ?>MUM{n}; 
+			jQuery(document).ready(function() {
+				<?= $id_prefix; ?>MUM{n} = caUI.initMediaUploadManager({
+					fieldNamePrefix: '<?= $id_prefix; ?>',
+					uploadURL:  <?= json_encode(caNavUrl($this->request, '*', '*', 'UploadFiles')); ?>,
+					setCenterURL: <?= json_encode(urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetImageCenterEditor', ['representation_id' => '{representation_id}']))); ?>,
+					annotationEditorURL: <?= json_encode(urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', ['representation_id' => '{representation_id}']))); ?>,
+					index: '{n}',
+					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
+					representationID: {representation_id},
+					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
+					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
+					isPrimaryLabel: <?= json_encode(caNavIcon(__CA_NAV_ICON_IS_PRIMARY__, 1).' '._t('Is primary')); ?>
+				});	
+			});
+		</script>
 		
-		if ((bool)$this->request->getAppConfig()->get($t_subject->tableName().'_allow_relationships_to_existing_representations')) {
-?>
-				<tr>
-					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_search{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'search'), array('checked' => ($vs_default_upload_type == 'search') ? 1 : 0)).' '._t('using existing'); ?></td>
-					<td class='formLabel'>
-						<?php print caHTMLTextInput('{fieldNamePrefix}autocomplete{n}', array('value' => '{{label}}', 'id' => '{fieldNamePrefix}autocomplete{n}', 'class' => 'lookupBg uploadInput'), array('width' => '425px')); ?>
+		<!-- image center coordinates -->
+		<input type="hidden" name="{fieldNamePrefix}center_x_{n}" id="{fieldNamePrefix}center_x_{n}" value="{center_x}"/>
+		<input type="hidden" name="{fieldNamePrefix}center_y_{n}" id="{fieldNamePrefix}center_y_{n}" value="{center_y}"/>
+	</textarea>
+		
+	<textarea class='caNewItemTemplate' style='display: none;'>
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
+			<span class="formLabelError">{error}</span>
+<?php if (!$read_only) { ?>
+			<div style="float: right;">
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+			</div>
+<?php } ?>	
+			<div class="mediaUploadContainer">
+				<div style="float: left;">
+					<div id="<?= $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
+						<input type="file" style="display: none;" id="<?= $id_prefix; ?>UploadFileControl{n}" multiple/>
+						<div id="<?= $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
+					</div>
+				</div>
+				<div class="mediaUploadEditArea">
 <?php
-	if ($t_item_rel && $t_item_rel->hasField('type_id')) {
+    if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
 ?>
-						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none; width: 72px;"></select>
+				<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)); ?></div>
+<?php
+	} else {
+				// Embed type when only a single type is available
+				print caHTMLHiddenInput('{fieldNamePrefix}rel_type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
+	}
+    
+				foreach($bundles_to_edit_proc as $f) {
+					if(in_array($f, ['media'])) { continue; }
+					if($t_item->hasField($f)) { // intrinsic
+						print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+					} elseif($t_item->hasElement($f)) {
+						$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'textAreaTagName' => 'textentry']);
+						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
+					} elseif($f === 'preferred_labels.name') {
+						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".caHTMLTextInput("{$id_prefix}_rep_label_{n}", ['width' => '500px', 'id' => "{$id_prefix}_rep_label_{n}", 'value' => ''])."</div>\n"; 
+					}
+				}
+				
+				if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
+?>
+					<div class="formLabel">
+<?php
+					print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
+?>
+					</div>
 <?php
 	}
 ?>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
-					</td>
-				</tr>
-<?php
-		}
-?>
-			</table>
-			
-			<script type="text/javascript">
-				jQuery(document).ready(function() {
-					jQuery("#{fieldNamePrefix}upload_options{n} tr td .uploadInput").prop('disabled', true);
-					jQuery("#{fieldNamePrefix}upload_type_upload{n}").click(function() {
-						jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', false);
-						jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', true);
-						jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', true);
-						jQuery('#{fieldNamePrefix}detail_editor_{n}').slideDown(250);
-					});
-					jQuery("#{fieldNamePrefix}upload_type_url{n}").click(function() {
-						jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', true);
-						jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', false);
-						jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', true);
-						jQuery('#{fieldNamePrefix}detail_editor_{n}').slideDown(250);
-					});
-					jQuery("#{fieldNamePrefix}upload_type_search{n}").click(function() {
-						jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', true);
-						jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', true);
-						jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', false);
-						jQuery('#{fieldNamePrefix}detail_editor_{n}').slideUp(250);
-					});
-					
-					jQuery("input.{fieldNamePrefix}upload_type{n}:checked").click();
-				});
-			</script>
-	</div>
-<?php
-    } 
-?>	
-</div>
-<?php
-	print TooltipManager::getLoadHTML('bundle_ca_object_representations');
-?>
+				</div>
+			</div>
+			<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
+			<br class="clear"/>
+		</div>
+		
+		<script type="text/javascript">
+			var <?= $id_prefix; ?>MUM{n}; 
+			jQuery(document).ready(function() {
+				<?= $id_prefix; ?>MUM{n} = caUI.initMediaUploadManager({
+					fieldNamePrefix: '<?= $id_prefix; ?>',
+					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
+					index: '{n}',
+					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
+					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
+					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
+				});	
+			});
+		</script>
 	</textarea>
 	
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($va_settings, ['includeInterstitialSortsFor' => $t_subject->tableName()]));
+            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName(), 'sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
-		    if (($vn_rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
-			    print "<div style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
+		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
+			    print "<div class='mediaMetadataActionButton' style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
             }
 ?>
 		</div>
@@ -536,91 +322,61 @@
 			
 		</div>
 <?php 
-	if (!$vb_read_only) {
+	if (!$read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
 <?php
 	}
 ?>
 	</div>
 </div>
 
-<input type="hidden" id="<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList" name="<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
-<?php
-	// order element
-	TooltipManager::add('.updateIcon', _t("Update Media"));
-?>		
-<script type="text/javascript">
-	function caToggleDisplayObjectRepresentationMetadata(media_metadata_id, media_metadata_button_id) {
-		var m = jQuery('#' + media_metadata_id).is(':hidden');
-		jQuery('#' + media_metadata_id).slideToggle(300);
-		jQuery('#' + media_metadata_button_id + ' img').rotate({ duration:500, angle: m ? 0 : 180, animateTo: m ? 180 : 0 });
-	}
-	
-	function caOpenRepresentationDetailEditor(id) {
-		jQuery('#<?php print $vs_id_prefix; ?>_detail_editor_' + id).slideDown(250);
-		jQuery('#<?php print $vs_id_prefix; ?>_rep_info_ro' + id).slideUp(250);
-	}
-	
-	function caCloseRepresentationDetailEditor(id) {
-		jQuery('#<?php print $vs_id_prefix; ?>_detail_editor_' + id).slideUp(250);
-		jQuery('#<?php print $vs_id_prefix; ?>_rep_info_ro' + id).slideDown(250);
-		jQuery('#<?php print $vs_id_prefix; ?>_change_indicator_' + id).show();
-	}
-	
-	function caSetRepresentationAsPrimary(id) {
-		jQuery('.<?php print $vs_id_prefix; ?>_is_primary').val('');
-		jQuery('#<?php print $vs_id_prefix; ?>_is_primary_' + id).val('1');
-		jQuery('.caObjectRepresentationPrimaryIndicator').hide();
-		if (id != <?php print (int)$vn_primary_id; ?>) {
-			jQuery('#<?php print $vs_id_prefix; ?>_is_primary_indicator_' + id).show();
-		}
-	}
-	
-	var caAnnoEditor<?php print $vs_id_prefix; ?>;
-	var caImageCenterEditor<?php print $vs_id_prefix; ?>;
-	var caRelationBundle<?php print $vs_id_prefix; ?>;
-	
-	jQuery(document).ready(function() {
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
-			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'num_transcriptions', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
-			initialValues: <?php print json_encode($va_initial_values); ?>,
-			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
-			errors: <?php print json_encode($va_errors); ?>,
-			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
-			itemID: '<?php print $vs_id_prefix; ?>Item_',
+ <script type="text/javascript">
+	var caRelationBundle<?= $id_prefix; ?>;
+ 	jQuery(document).ready(function() {
+		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= "{$id_prefix}"; ?>', {
+			fieldNamePrefix: '<?= $id_prefix; ?>_',
+			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
+			initialValues: <?= json_encode($initial_values); ?>,
+			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
+			errors: <?= json_encode($errors); ?>,
+			forceNewValues: <?= json_encode($failed_inserts); ?>,
+			itemID: '<?= $id_prefix; ?>Item_',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			itemClassName: 'labelInfo',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
-			showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_'],
-			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_', '<?php print $vs_id_prefix; ?>_edit_annotations_', '<?php print $vs_id_prefix; ?>_edit_image_center_'],
+			showOnNewIDList: ['<?= $id_prefix; ?>_media_'],
+			hideOnNewIDList: ['<?= $id_prefix; ?>_edit_','<?= $id_prefix; ?>_download_', '<?= $id_prefix; ?>_media_metadata_container_', '<?= $id_prefix; ?>_edit_annotations_', '<?= $id_prefix; ?>_edit_image_center_'],
 			enableOnNewIDList: [],
+			placementID: <?= json_encode($settings['placement_id']); ?>,
 			showEmptyFormsOnLoad: 1,
-			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
-			isSortable: <?php print !$vb_read_only &&!$vb_batch ? "true" : "false"; ?>,
-			listSortOrderID: '<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList',
-			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+			readonly: <?= $read_only ? "true" : "false"; ?>,
+			isSortable: <?= !$read_only && !$batch ? "true" : "false"; ?>,
+			listSortOrderID: '<?= $id_prefix; ?>_ObjectRepresentationBundleList',
+			defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
 			
-			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', $va_lookup_params); ?>',
-			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', []); ?>',
+			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
 			
 			extraParams: { exact: 1 },
 			
-			minRepeats: <?php print $vb_batch ? 1 : caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?php print $vb_batch ? 1 : caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			minRepeats: <?= $batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= $batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
-			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
+			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
-			totalValueCount: <?php print (int)$vn_rep_count; ?>,
-			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $va_settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>',
-			loadSize: <?php print $vn_num_per_page; ?>,
-			partialLoadMessage: '<?php print addslashes(_t('Load next %num of %total')); ?>',
-			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			loadedSort: <?= json_encode($loaded_sort); ?>,
+			loadedSortDirection: <?= json_encode($loaded_sort_direction); ?>,
+			
+			totalValueCount: <?= (int)$rep_count; ?>,
+			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', [$t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations']); ?>',
+			loadSize: <?= $num_per_page; ?>,
+			partialLoadMessage: '<?= addslashes(_t('Load next %num of %total')); ?>',
+			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			onPartialLoad: function(d) {				
 				// Hide annotation editor links for non-timebased media
 				jQuery(".caAnnoEditorLaunchButton").hide();
@@ -628,59 +384,5 @@
 			}
 		
 		});
-		if (caUI.initPanel) {
-			caAnnoEditor<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caAnnoEditor<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caAnnoEditor<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
-				exposeBackgroundColor: "#000000",				
-				exposeBackgroundOpacity: 0.7,					
-				panelTransitionSpeed: 400,						
-				closeButtonSelector: ".close",
-				centerHorizontal: true,
-				onOpenCallback: function() {
-					jQuery("#topNavContainer").hide(250);
-				},
-				onCloseCallback: function() {
-					jQuery("#topNavContainer").show(250);
-				}
-			});
-			
-			caImageCenterEditor<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caImageCenterEditor<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caImageCenterEditor<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
-				exposeBackgroundColor: "#000000",				
-				exposeBackgroundOpacity: 0.7,					
-				panelTransitionSpeed: 400,						
-				closeButtonSelector: ".close",
-				centerHorizontal: true,
-				onOpenCallback: function() {
-					jQuery("#topNavContainer").hide(250);
-				},
-				onCloseCallback: function() {
-					jQuery("#topNavContainer").show(250);
-				}
-			});
-		}
-		
-		jQuery("body").append('<div id="caAnnoEditor<?php print $vs_id_prefix; ?>" class="caAnnoEditorPanel"><div id="caAnnoEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
-		jQuery("body").append('<div id="caImageCenterEditor<?php print $vs_id_prefix; ?>" class="caAnnoEditorPanel"><div id="caImageCenterEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
-	
-		// Hide annotation editor links for non-timebased media
-		jQuery(".caAnnoEditorLaunchButton").hide();
-		jQuery(".annotationTypeClipTimeBasedVideo, .annotationTypeClipTimeBasedAudio").show();
-		
-		jQuery(".caSetImageCenterLaunchButton").hide();
-		jQuery(".annotationTypeSetCenterImage, .annotationTypeSetCenterDocument").show();
 	});
-	
-	function caSetImageCenterForSave<?php print $vs_id_prefix; ?>(data) {
-		var id = data['id'];
-		jQuery("#topNavContainer").show(250);
-		jQuery('#<?php print $vs_id_prefix; ?>_change_indicator_' + id).show();
-		
-		var center_x = parseInt(jQuery('#caObjectRepresentationSetCenterMarker').css('left'))/parseInt(jQuery('#caImageCenterEditorImage').width());
-		var center_y = parseInt(jQuery('#caObjectRepresentationSetCenterMarker').css('top'))/parseInt(jQuery('#caImageCenterEditorImage').height());
-		jQuery('#<?php print $vs_id_prefix; ?>_center_x_' + id).val(center_x);
-		jQuery('#<?php print $vs_id_prefix; ?>_center_y_' + id).val(center_y);
-	}
 </script>

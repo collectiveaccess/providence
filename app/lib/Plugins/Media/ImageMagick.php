@@ -285,13 +285,12 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function divineFileFormat($filepath) {
 		if(!strpos($filepath, ':') || (caGetOSFamily() == OS_WIN32)) {
 			// ImageMagick bails when a colon is in the file name... catch it here
-			$vs_mimetype = $this->_imageMagickIdentify($filepath);
-			return ($vs_mimetype) ? $vs_mimetype : '';
+			if ($vs_mimetype = $this->_imageMagickIdentify($filepath)) { return $vs_mimetype; }
 		} else {
 			$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugImageMagick->divineFileFormat()");
 			return false;
 		}
-			
+
 		# is it a tilepic?
 		$tp = new TilepicParser();
 		if ($tp->isTilepic($filepath)) {
@@ -480,10 +479,8 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugImageMagick->transform()");
 			return false;
 		}
-		
+
 		# get parameters for this operation
-		$sparams = $this->info["TRANSFORMATIONS"][$operation];
-		
 		$w = $parameters["width"];
 		$h = $parameters["height"];
 		
@@ -494,8 +491,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$w = min($cw, round($w)); 
 			$h = min($ch, round($h));
 		}
-		
-		$do_crop = 0;
+
 		switch($operation) {
 			# -----------------------
 			case 'ANNOTATE':
@@ -763,7 +759,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->handle['ops'][] = array(
 				'op' => 'crop',
 				'x' => $x,
-				'y' => $x,
+				'y' => $y,
 				'width' => $w,
 				'height' => $h
 			);
