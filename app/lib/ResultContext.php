@@ -551,8 +551,8 @@
  						if ($ps_show_in) {
  							foreach($displays as $id => $d) {
  								$d = array_shift($d);
- 								if ($show_in_setting = caGetOption('show_only_in', $d['settings'], null)) {
- 									if(preg_match("!{$ps_show_in}!", $show_in_setting)) {
+ 								if (($show_in_setting = caGetOption('show_only_in', $d['settings'], null, ['castTo' => 'array'])) && (sizeof($show_in_setting) > 0)) {
+ 									if(sizeof(array_filter($show_in_setting, function($v) use($ps_show_in) { return preg_match("!{$ps_show_in}!", $v); })) > 0) {
  										$pn_display_id = $id;
  										break;
  									}
