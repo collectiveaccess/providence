@@ -68,7 +68,44 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
-	/** 
+
+	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
+		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?Bio {
+    ?ID a skos:Concept; '.$pa_params['search_field'].' "'.$ps_search.'"; skos:inScheme ulan: ;
+    gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
+    {?ID foaf:focus/gvp:biographyPreferred/schema:description ?Bio}
+    {?ID gvp:parentStringAbbrev ?Parents}
+} OFFSET '.$pa_params['start'].' LIMIT '.$pa_params['limit']);
+		return $vs_query;
+
+	}
+
+	public function _cleanResults( $pa_results, $pa_options, $pa_params ) {
+		if(!is_array($pa_results)) { return false; }
+
+		if($pa_params['isRaw']) { return $pa_results; }
+
+		$va_return = array();
+		foreach($pa_results as $va_values) {
+			$vs_id = '';
+			if(preg_match("/\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
+				$vs_id = str_replace('/', '', $va_matches[0]);
+			}
+
+			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) !== 'short') ? '['. str_replace('ulan:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].") - " . $va_values['Bio']['value'] : $va_values['TermPrefLabel']['value'];
+
+			$va_return['results'][] = array(
+				'label' => htmlentities($vs_label),
+				'url' => $va_values['ID']['value'],
+				'idno' => $vs_id,
+			);
+		}
+
+		$va_return['count'] = is_array($va_return['results']) ? sizeof($va_return['results']) : 0;
+
+		return $va_return;
+	}
+	/**
 	 * Perform lookup on ULAN-based data service
 	 *
 	 * @param array $pa_settings Plugin settings values
@@ -81,7 +118,7 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 	 *			short = return short label (term only) [Default is false]
 	 * @return array
 	 */
-	public function lookup($pa_settings, $ps_search, $pa_options=null) {
+	public function lookupOLD($pa_settings, $ps_search, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
 		$vn_start = (int) caGetOption('start', $pa_options, 0);

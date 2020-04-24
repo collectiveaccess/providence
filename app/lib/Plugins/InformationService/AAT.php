@@ -40,6 +40,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	# ------------------------------------------------
 	static $s_settings;
 	# ------------------------------------------------
+
 	/**
 	 *
 	 */
@@ -52,11 +53,13 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 
 		$this->description = _t( 'Provides access to Getty Linked Open Data AAT service' );
 	}
+
 	# ------------------------------------------------
 	protected function getConfigName() {
 		return 'aat';
 	}
 	# ------------------------------------------------
+
 	/**
 	 * Get all settings settings defined by this plugin as an array
 	 *
@@ -65,29 +68,86 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	public function getAvailableSettings() {
 		return WLPlugInformationServiceAAT::$s_settings;
 	}
-	# ------------------------------------------------
-	# Data
-	# ------------------------------------------------
+
+	/**
+	 * Clean results
+	 *
+	 * @param $pa_results
+	 * @param $pa_options
+	 * @param $pa_params
+	 *
+	 * @return array|bool
+	 */
+	public function _cleanResults( $pa_results, $pa_options, $pa_params ) {
+		if ( ! is_array( $pa_results ) ) {
+			return false;
+		}
+
+		if ( $pa_params['isRaw'] ) {
+			return $pa_results;
+		}
+
+		$va_return = array();
+
+		foreach ( $pa_results as $va_values ) {
+			$vs_id = '';
+			if ( preg_match( "/[a-z]{3,4}\/[0-9]+$/", $va_values['ID']['value'], $va_matches ) ) {
+				$vs_id = str_replace( '/', ':', $va_matches[0] );
+			}
+
+			$vs_label = ( caGetOption( 'format', $pa_options, null, [ 'forceToLowercase' => true ] ) !== 'short' )
+				? $va_values['TermPrefLabel']['value']
+				: '[' . str_replace( 'aat:', '', $vs_id ) . '] ' . $va_values['TermPrefLabel']['value'] . " ["
+				  . $va_values['Parents']['value'] . "]";
+			$vs_label = preg_replace( '/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label );
+			$vs_label = preg_replace( '/[\<\>]/', '', $vs_label );
+
+			$va_return['results'][] = array(
+				'label' => htmlentities( $vs_label ),
+				'url'   => $va_values['ID']['value'],
+				'idno'  => $vs_id,
+			);
+		}
+
+		return $va_return;
+	}
+
+	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
+		$vs_query = urlencode( 'SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull {
+	?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme aat: ;
+	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
+	{?ID gvp:parentStringAbbrev ?Parents}
+	{?ID gvp:parentString ?ParentsFull}
+	{?ID gvp:displayOrder ?Order}
+} LIMIT ' . $pa_params['limit'] );
+		return $vs_query;
+	}
+
 	/**
 	 * Perform lookup on AAT-based data service
 	 *
-	 * @param array $pa_settings  Plugin settings values
+	 * @param array  $pa_settings Plugin settings values
 	 * @param string $ps_search   The expression with which to query the remote data service
-	 * @param array $pa_options   Lookup options
+	 * @param array  $pa_options  Lookup options
 	 *                            phrase => send a lucene phrase search instead of keywords
 	 *                            raw => return raw, unprocessed results from getty service
 	 *                            short = return short label (term only) [Default is false]
+	 *
 	 * @return array
 	 */
-	public function lookup( $pa_settings, $ps_search, $pa_options = null ) {
-		if(!is_array($pa_options)) { $pa_options = array(); }
+	public function lookupOLD( $pa_settings, $ps_search, $pa_options = null ) {
+		if ( ! is_array( $pa_options ) ) {
+			$pa_options = array();
+		}
 
 		$va_service_conf = $this->opo_linked_data_conf->get( 'aat' );
-		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
+		$vs_search_field = ( isset( $va_service_conf['search_text'] ) && $va_service_conf['search_text'] ) ? 'luc:text'
+			: 'luc:term';
 
 		$pb_phrase = (bool) caGetOption( 'phrase', $pa_options, false );
 		$pb_raw    = (bool) caGetOption( 'raw', $pa_options, false );
-		$pn_limit = (int) caGetOption('limit', $pa_options, ($va_service_conf['result_limit']) ? $va_service_conf['result_limit'] : 50);
+		$pn_limit  = (int) caGetOption( 'limit', $pa_options,
+			( $va_service_conf['result_limit'] ) ? $va_service_conf['result_limit'] : 50 );
 
 		/**
 		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
@@ -119,7 +179,9 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 			return false;
 		}
 
-		if($pb_raw) { return $va_results; }
+		if ( $pb_raw ) {
+			return $va_results;
+		}
 
 		$va_return = array();
 		foreach ( $va_results as $va_values ) {
@@ -128,7 +190,10 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 				$vs_id = str_replace( '/', ':', $va_matches[0] );
 			}
 
-			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) !== 'short') ? $va_values['TermPrefLabel']['value'] : '['. str_replace('aat:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " [" . $va_values['Parents']['value'] . "]";
+			$vs_label = ( caGetOption( 'format', $pa_options, null, [ 'forceToLowercase' => true ] ) !== 'short' )
+				? $va_values['TermPrefLabel']['value']
+				: '[' . str_replace( 'aat:', '', $vs_id ) . '] ' . $va_values['TermPrefLabel']['value'] . " ["
+				  . $va_values['Parents']['value'] . "]";
 			$vs_label = preg_replace( '/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label );
 			$vs_label = preg_replace( '/[\<\>]/', '', $vs_label );
 
@@ -141,19 +206,24 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 
 		return $va_return;
 	}
-	# ------------------------------------------------
+
 	/**
 	 * Get display value
+	 *
 	 * @param string $ps_text
+	 *
 	 * @return string
 	 */
 	public function getDisplayValueFromLookupText( $ps_text ) {
-		if(!$ps_text) { return ''; }
+		if ( ! $ps_text ) {
+			return '';
+		}
 		$va_matches = array();
 
 		if ( preg_match( "/^\[[0-9]+\]\s+([\p{L}\p{P}\p{Z}]+)\s+\[/", $ps_text, $va_matches ) ) {
 			return $va_matches[1];
 		}
+
 		return $ps_text;
 	}
 	# ------------------------------------------------
