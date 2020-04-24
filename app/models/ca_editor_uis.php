@@ -1569,4 +1569,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		];
 	}
 	# ----------------------------------------
+
+	public function invalidateScreenCache($po_screen, $pa_options=null){
+		if (!($vn_id = $this->getPrimaryKey())) { return false; }
+		$pn_type_id = $po_screen->getTypeID();
+		$vs_cache_key = caMakeCacheKeyFromOptions(null, "{$vn_id}/{$pn_type_id}");
+
+		unset(ca_editor_uis::$s_screen_cache[$vs_cache_key]);
+	}
 }
