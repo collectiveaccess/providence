@@ -46,10 +46,7 @@
 	
 	$va_a_to_z = range('A', 'Z');
 	
-	$workbook = new PHPExcel();
-
-	// more accurate (but slower) automatic cell size calculation
-	PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
+	$workbook = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 	$o_sheet = $workbook->getActiveSheet();
 	// mise en forme
@@ -59,28 +56,28 @@
 					'size' => 12,
 					'bold' => true),
 			'alignment'=>array(
-					'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-					'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+					'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+					'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 					'wrap' => true,
 					'shrinkToFit'=> true),
 			'borders' => array(
 					'allborders'=>array(
-							'style' => PHPExcel_Style_Border::BORDER_THICK)));
+							'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK)));
 	$cellstyle = array(
 			'font'=>array(
 					'name' => 'Arial',
 					'size' => 11,
 					'bold' => false),
 			'alignment'=>array(
-					'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
-					'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+					'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+					'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 					'wrap' => true,
 					'shrinkToFit'=> true),
 			'borders' => array(
 					'allborders'=>array(
-							'style' => PHPExcel_Style_Border::BORDER_THIN)));
+							'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)));
 
-	$o_sheet->getDefaultStyle()->applyFromArray($cellstyle);
+	$o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
 	$o_sheet->setTitle("CollectiveAccess");
 	
 	$vn_line = 1;
@@ -150,7 +147,7 @@
 				
 					if (is_file($vs_path = $vo_result->getMediaPath('ca_object_representations.media',$vs_version))) {
 						$image = "image".$vs_supercol.$vs_column.$vn_line;
-						$drawing = new PHPExcel_Worksheet_Drawing();
+						$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
 						$drawing->setName($image);
 						$drawing->setDescription($image);
 						$drawing->setPath($vs_path);
@@ -204,7 +201,7 @@
 	}
 	
 	if($this->request->config->get('excel_report_header_enabled') || $this->request->config->get('excel_report_footer_enabled')){
-		$o_sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
+		$o_sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
 		$o_sheet->getPageMargins()->setTop(1);
 		$o_sheet->getPageMargins()->setRight(0.75);
 		$o_sheet->getPageMargins()->setLeft(0.75);
@@ -215,11 +212,11 @@
 			if(file_exists($this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img'))){
 				$vs_logo_path = $this->request->getThemeDirectoryPath().'/graphics/logos/'.$this->request->config->get('report_img');
 			}
-			$objDrawing = new PHPExcel_Worksheet_HeaderFooterDrawing();
+			$objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooterDrawing();
 			$objDrawing->setName('Image');
 			$objDrawing->setPath($vs_logo_path);
 			$objDrawing->setHeight(36);
-			$o_sheet->getHeaderFooter()->addImage($objDrawing, PHPExcel_Worksheet_HeaderFooter::IMAGE_HEADER_LEFT);
+			$o_sheet->getHeaderFooter()->addImage($objDrawing, \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooter::IMAGE_HEADER_LEFT);
 			$vs_criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($vs_criteria_summary)));
 			$vs_criteria_summary = (strlen($vs_criteria_summary) > 90) ? mb_substr($vs_criteria_summary, 0, 90)."..." : $vs_criteria_summary;
 			$vs_criteria_summary = wordwrap($vs_criteria_summary, 50, "\n", true);
@@ -232,7 +229,7 @@
 		}
 	}
 	
- 	$o_writer = new PHPExcel_Writer_Excel2007($workbook);
+ 	$o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
 
  	@header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
  	@header('Content-Disposition:inline;filename=Export.xlsx ');

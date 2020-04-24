@@ -53,12 +53,12 @@
 		private $ops_text_marker = '"';
 		
 		/**
-		 * @mixed Parsed file input. For text files, a PHP file resource; for Excel files a PHPExcel row iterator instance.
+		 * @mixed Parsed file input. For text files, a PHP file resource; for Excel files a \PhpOffice\PhpSpreadsheet\Spreadsheet row iterator instance.
 		 */ 
 		private $opr_file;
 		
 		/**
-		 * @mixed PHPExcel instance.
+		 * @mixed \PhpOffice\PhpSpreadsheet\Spreadsheet instance.
 		 */ 
 		private $opo_excel;
 		
@@ -127,7 +127,7 @@
 				$vb_valid = false;
 				$va_excel_types = ['Excel2007', 'Excel5', 'Excel2003XML'];
 				foreach ($va_excel_types as $vs_type) {
-					$o_reader = PHPExcel_IOFactory::createReader($vs_type);
+					$o_reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($vs_type);
 					if ($o_reader->canRead($ps_filepath)) {
 						$vb_valid = true;
 						break;
@@ -135,7 +135,7 @@
 				}
 				
 				if(!$vb_valid) { throw new Exception("Not an Excel file"); }
-				$this->opo_excel = PHPExcel_IOFactory::load($ps_filepath);
+				$this->opo_excel = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_filepath);
 				$this->opo_excel->setActiveSheetIndex(caGetOption('worksheet', $pa_options, 0));
 				
 				$o_sheet = $this->opo_excel->getActiveSheet();
@@ -181,9 +181,9 @@
 					$vn_col = 0;
 					$vn_last_col_set = null;
 					foreach ($o_cells as $o_cell) {
-						if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
-							if (!($vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue()))))) {
-								if (!($vs_val = trim(PHPExcel_Style_NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
+						if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_cell)) {
+							if (!($vs_val = caGetLocalizedDate(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_cell->getValue()))))) {
+								if (!($vs_val = trim(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
 									$vs_val = trim((string)$o_cell->getValue());
 								}
 							}

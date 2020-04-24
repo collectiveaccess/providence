@@ -856,7 +856,7 @@
 			$is_update = (bool)$po_opts->getOption('update'); 	// "update" parameter; we only allow updating of a list if this is explicitly set
 			
 			try {
-				$o_file = PHPExcel_IOFactory::load($source);
+				$o_file = \PhpOffice\PhpSpreadsheet\IOFactory::load($source);
 			} catch (Exception $e) {
 				CLIUtils::addError(_t("You must specify a valid Excel .xls or .xlsx file: %1", $e->getMessage()));
 				return false;

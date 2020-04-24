@@ -1253,9 +1253,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	}
 	# ---------------------------------------
 	/**
-	 * Loads the given file into a PHPExcel object using common settings for preserving memory and performance
+	 * Loads the given file into a \PhpOffice\PhpSpreadsheet\Spreadsheet object using common settings for preserving memory and performance
 	 * @param string $ps_xlsx file name
-	 * @return PHPExcel
+	 * @return \PhpOffice\PhpSpreadsheet\Spreadsheet
 	 */
 	function caPhpExcelLoadFile($ps_xlsx){
 		if(MemoryCache::contains($ps_xlsx, 'CAPHPExcel')) {
@@ -1279,9 +1279,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			}
 
 			/**  Identify the type  **/
-			$vs_input_filetype = PHPExcel_IOFactory::identify($ps_xlsx);
+			$vs_input_filetype = \PhpOffice\PhpSpreadsheet\IOFactory::identify($ps_xlsx);
 			/**  Create a new Reader of that very type  **/
-			$o_reader = PHPExcel_IOFactory::createReader($vs_input_filetype);
+			$o_reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($vs_input_filetype);
 			$o_reader->setReadDataOnly(true);
 			$o_excel = $o_reader->load($ps_xlsx);
 
@@ -1291,7 +1291,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	}
 	# ---------------------------------------------------------------------
 	/**
-	 * Counts non-empty rows in PHPExcel spreadsheet
+	 * Counts non-empty rows in \PhpOffice\PhpSpreadsheet\Spreadsheet spreadsheet
 	 *
 	 * @param string $ps_xlsx absolute path to spreadsheet
 	 * @param null|string $ps_sheet optional sheet name to use for counting
@@ -1316,15 +1316,15 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	# ---------------------------------------------------------------------
 	/**
 	 * Get content from cell as trimmed string
-	 * @param PHPExcel_Worksheet $po_sheet
+	 * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $po_sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
-	 * @throws PHPExcel_Exception
+	 * @throws \PhpOffice\PhpSpreadsheet\Exception
 	 * @return string the trimmed cell content
 	 */
 	function caPhpExcelGetCellContentAsString($po_sheet, $pn_row_num, $pm_col) {
 		if(!is_numeric($pm_col)) {
-			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col)-1;
 		}
 
 		$vs_cache_key = spl_object_hash($po_sheet)."/{$pm_col}/{$pn_row_num}";
@@ -1340,7 +1340,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	# ---------------------------------------------------------------------
 	/**
 	 * Get date from Excel sheet for given column and row. Convert Excel date to format acceptable by TimeExpressionParser if necessary.
-	 * @param PHPExcel_Worksheet $po_sheet The work sheet
+	 * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $po_sheet The work sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
 	 * @param int $pn_offset Offset to adf to the timestamp (can be used to fix timezone issues or simple to move dates around a little bit)
@@ -1350,14 +1350,14 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		if(!is_int($pn_offset)) { $pn_offset = 0; }
 
 		if(!is_numeric($pm_col)) {
-			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col)-1;
 		}
 
 		$o_val = $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
 		$vs_val = trim((string)$o_val);
 
 		if(strlen($vs_val)>0) {
-			$vn_timestamp = PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_val->getValue())) + $pn_offset;
+			$vn_timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_val->getValue())) + $pn_offset;
 			if (!($vs_return = caGetLocalizedDate($vn_timestamp, array('dateFormat' => 'iso8601', 'timeOmit' => false)))) {
 				$vs_return = $vs_val;
 			}
@@ -1370,14 +1370,14 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	# ---------------------------------------------------------------------
 	/**
 	 * Get raw cell from Excel sheet for given column and row
-	 * @param PHPExcel_Worksheet $po_sheet The work sheet
+	 * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $po_sheet The work sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
-	 * @return PHPExcel_Cell|null the cell, if a value exists
+	 * @return \PhpOffice\PhpSpreadsheet\Cell\Cell|null the cell, if a value exists
 	 */
 	function caPhpExcelGetRawCell($po_sheet, $pn_row_num, $pm_col) {
 		if(!is_numeric($pm_col)) {
-			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col)-1;
 		}
 
 		return $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
