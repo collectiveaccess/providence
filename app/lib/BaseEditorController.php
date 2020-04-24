@@ -2627,31 +2627,14 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 
-		// use configured directory to dump media with fallback to standard tmp directory
-		if (!is_writeable($vs_tmp_directory = $this->request->config->get('ajax_media_upload_tmp_directory'))) {
-			$vs_tmp_directory = caGetTempDirPath();
-		}
-
-		$vn_user_id = $this->request->getUserID();
-		$vs_user_dir = $vs_tmp_directory."/userMedia{$vn_user_id}";
-		if(!file_exists($vs_user_dir)) {
-			@mkdir($vs_user_dir);
-		}
-		if (!($vn_timeout = (int)$this->request->config->get('ajax_media_upload_tmp_directory_timeout'))) {
-			$vn_timeout = 24 * 60 * 60;
-		}
-
-		// Cleanup any old files here
-		$va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, ['modifiedSince' => time() - $vn_timeout]);
-		foreach($va_files_to_delete as $vs_file_to_delete) {
-			@unlink($vs_file_to_delete);
-		}
+		if (!($user_id = $this->request->getUserID())) { return null; }
+		caCleanUserMediaDirectory($user_id);
 
 		$stored_files = [];
 		
-		$user_dir = "{$vs_tmp_directory}/userMedia{$vn_user_id}";
+		$user_dir = caGetUserMediaDirectoryPath($user_id);
 		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
-	
+
 		if(is_array($_FILES['files'])) {
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
@@ -2670,7 +2653,7 @@ class BaseEditorController extends ActionController {
 					'size' => filesize($dest_path)
 				]));
 				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
-				$stored_files[$md5] = "userMedia{$vn_user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
+				$stored_files[$md5] = "userMedia{$user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
 		}
 

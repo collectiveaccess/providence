@@ -333,20 +333,21 @@ function caFileIsIncludable($ps_file) {
 		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					$va_stat = @stat("{$dir}/{$item}");
 					if (
 						(isset($pa_options['modifiedSince']) && ($pa_options['modifiedSince'] > 0))
 						&&
-						(is_array($va_stat = @stat("{$dir}/{$item}")))
+						is_array($va_stat)
 						&&
 						($va_stat['mtime'] < $pa_options['modifiedSince'])
 					) { continue; }
 					
 					if (
-						(isset($pa_option['notModifiedSince']) && ($pa_option['notModifiedSince'] > 0))
+						(isset($pa_options['notModifiedSince']) && ($pa_options['notModifiedSince'] > 0))
 						&&
-						(is_array($va_stat = @stat("{$dir}/{$item}")))
+						is_array($va_stat)
 						&&
-						($va_stat['mtime'] >= $pa_option['notModifiedSince'])
+						($va_stat['mtime'] >= $pa_options['notModifiedSince'])
 					) { continue; }
 
 					$vb_is_dir = is_dir("{$dir}/{$item}");
@@ -699,6 +700,90 @@ function caFileIsIncludable($ps_file) {
 	function caIsTempFile($ps_file) {
 	    if (preg_match("!^".caGetTempDirPath()."/!", $ps_file)) { return true; }
 	    return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Return path to user media directory (used to temporary storage of user-uploaded media)
+	 * Will create directory if it doesn't not yet exist, unless dontCreateDirectory option is set.
+	 *
+	 * @param int $user_id
+	 * @param array $options Options include:
+	 *		dontCreateDirectory = don't create user directory if it does not exist. [Default is false]
+	 * @return string pa 
+	 */
+	function caGetUserMediaDirectoryPath(int $user_id, array $options=null) {
+	    $config = Configuration::load();
+		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
+			$tmp_directory = caGetTempDirPath();
+		}
+		
+		$user_dir =  "{$tmp_directory}/userMedia{$user_id}";
+		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
+			@mkdir($user_dir);
+		}
+		return $user_dir;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caCleanUserMediaDirectory(int $user_id) {
+	    // use configured directory to dump media with fallback to standard tmp directory
+	    $config = Configuration::load();
+		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
+			$tmp_directory = caGetTempDirPath();
+		}
+
+		$user_dir = caGetUserMediaDirectoryPath($user_id);
+		
+		if (!($timeout = (int)$config->get('ajax_media_upload_tmp_directory_timeout'))) {
+			$timeout = 24 * 60 * 60;
+		}
+		
+		// Cleanup any old files here
+		$files_to_delete = caGetDirectoryContentsAsList($user_dir, true, false, false, true, ['notModifiedSince' => time() - $timeout]);
+		$count = 0;
+		foreach($files_to_delete as $file_to_delete) {
+			if(@unlink($file_to_delete)) { $count++; }
+		}
+		
+		// Cleanup orphan metadata files
+		$files = array_flip(caGetDirectoryContentsAsList($user_dir));
+	
+		foreach($files as $f => $i) {
+			$b = pathinfo($f, PATHINFO_BASENAME);
+			if (preg_match("!^([^_]+)_metadata!", $b, $m) && !isset($files[$user_dir."/".$m[1]])) {
+				@unlink($f);
+				continue;
+			}
+			if (preg_match("!^md5_(.*)$!", $b, $m)) {
+				$r = @file_get_contents($f);
+				if (!isset($files[$user_dir."/".$r])) { @unlink($f); }
+			}
+		}
+		return $count;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caCleanUserMediaDirectories() {
+	    // use configured directory to dump media with fallback to standard tmp directory
+	    $config = Configuration::load();
+		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
+			$tmp_directory = caGetTempDirPath();
+		}
+
+		$count = 0;
+		if(is_array($dirs = scandir($tmp_directory))) {
+			foreach($dirs as $dir) {
+				if (preg_match("!^userMedia([\d]+)$!", $dir, $m)) {
+					caCleanUserMediaDirectory($m[1]);
+					$count++;
+				}
+			}
+		}
+		return $count;
 	}
 	# ----------------------------------------
 	/**
