@@ -42,6 +42,8 @@ require_once(__CA_LIB_DIR__.'/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
 use GuzzleHttp\Client;
+use PHPUnit\Framework\Exception;
+use PHPUnit\Framework\SelfDescribing;
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -3019,6 +3021,16 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 * @throws \Exception
  	 */
+	class WebServiceError extends Exception
+	{
+		/**
+		 * Wrapper for getMessage() which is declared as final.
+		 */
+		public function toString(): string
+		{
+			return $this->getMessage();
+		}
+	}
 	function caQueryExternalWebservice($ps_url) {
 		if(!isURL($ps_url)) { return false; }
 		$o_conf = Configuration::load();
@@ -3043,9 +3055,8 @@ function caFileIsIncludable($ps_file) {
 		$vs_content = curl_exec($vo_curl);
 
 		if(curl_getinfo($vo_curl, CURLINFO_HTTP_CODE) !== 200) {
-			throw new \Exception(_t('An error occurred while querying an external webservice'));
+			throw new WebServiceError(_t('An error occurred while querying an external webservice'). _t(" at %1", $ps_url). " ". print_r(curl_getinfo($vo_curl), true));
 		}
-
 		curl_close($vo_curl);
 		return $vs_content;
 	}
