@@ -43,6 +43,7 @@ class ExcelDataReader extends BaseDataReader {
 	private $opo_rows = null;
 	private $opa_row_buf = array();
 	private $opn_current_row = 0;
+	private $opn_max_columns = 512;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -54,7 +55,9 @@ class ExcelDataReader extends BaseDataReader {
 		$this->ops_display_name = _t('Excel XLS/XLSX');
 		$this->ops_description = _t('Reads Microsoft Excel XLSX files');
 		
-		$this->opa_formats = array('xlsx');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats     = array('xlsx');	// must be all lowercase to allow for case-insensitive matching
+		$config                = Configuration::load();
+		$this->opn_max_columns = $config->get('ca_max_columns_delimited_files')?: 512;
 	}
 	# -------------------------------------------------------
 	/**
@@ -104,10 +107,7 @@ class ExcelDataReader extends BaseDataReader {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
 			
-				$va_row = array();
-				$vb_val_was_set = false;
-				$vn_col = 0;
-				$vn_last_col_set = null;
+				$vn_col = 1;
 				foreach ($o_cells as $o_cell) {
 					if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_cell)) {
 						if (!($vs_val = caGetLocalizedDate(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_cell->getValue()))))) {
@@ -119,18 +119,12 @@ class ExcelDataReader extends BaseDataReader {
 					} else {
 						$this->opa_row_buf[] = $vs_val = trim((string)self::getCellAsHTML($o_cell));
 					}
-					if (strlen($vs_val) > 0) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
-				
+
 					$vn_col++;
-				
-					if ($vn_col > 512) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
+					// max columns; some Excel files have *thousands* of "phantom" columns
+					if ($vn_col > $this->opn_max_columns) { break; }
 				}
-				
-				//if (!$vb_val_was_set) { 
-					//return $this->nextRow(); 
-				//	continue;
-				//}	// skip completely blank rows
-			
+
 				return $o_row;
 			}
 		}
@@ -138,10 +132,12 @@ class ExcelDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
-	 * 
+	 * Point current row to a new position into the file.
+	 * Row numbers are 1-based.
 	 * 
 	 * @param int $pn_row_num
 	 * @param array $pa_options
+	 *
 	 * @return bool
 	 */
 	public function seek($pn_row_num) {
