@@ -45,6 +45,8 @@
 	 * @return string
 	 */
 	function caGetThemeGraphic($po_request, $ps_file_path, $pa_attributes=null, $pa_options=null) {
+		if(!is_array($pa_attributes)) { $pa_attributes = []; }
+		if(!is_array($pa_options)) { $pa_options = []; }
 		$vs_base_url_path = $po_request->getThemeUrlPath();
 		$vs_base_path = $po_request->getThemeDirectoryPath();
 		$vs_file_path = "/assets/pawtucket/graphics/{$ps_file_path}";
@@ -556,7 +558,7 @@
 		if(!$vb_write_access){
 			$vs_set_display .= "<div class='pull-right caption'>Read Only</div>";
 		}
-		$vs_set_display .= "<H5>".caNavLink($po_request, $t_set->getLabelForDisplay(), "", "", "Lightbox", "setDetail", array("set_id" => $vn_set_id), array('id' => "lbSetName{$vn_set_id}"))."</H5>";
+		$vs_set_display .= "<H2>".caNavLink($po_request, $t_set->getLabelForDisplay(), "", "", "Lightbox", "setDetail", array("set_id" => $vn_set_id), array('id' => "lbSetName{$vn_set_id}"))."</H2>";
 
         $va_lightboxDisplayName = caGetLightboxDisplayName();
 		$vs_lightbox_displayname = $va_lightboxDisplayName["singular"];
@@ -584,13 +586,13 @@
 					if($va_set_item["representation_tag_icon"]){
 						$vs_secondary_image_block .= "<div class='col-xs-3 col-sm-6 lbSetThumbCols'><div class='lbSetThumb'>".caNavLink($po_request, $va_set_item["representation_tag_icon"], "", "", "Lightbox", "setDetail", array("set_id" => $vn_set_id))."</div><!-- end lbSetThumb --></div>\n";
 					}else{
-						$vs_secondary_image_block .= "<div class='col-xs-3 col-sm-6 lbSetThumbCols'>".caNavLink($po_request, "<div class='lbSetThumbPlaceholder'>".caGetThemeGraphic($po_request,'spacer.png').$vs_placeholder."</div><!-- end lbSetThumbPlaceholder -->", "", "", "Lightbox", "setDetail", array("set_id" => $vn_set_id))."</div>\n";
+						$vs_secondary_image_block .= "<div class='col-xs-3 col-sm-6 lbSetThumbCols'>".caNavLink($po_request, "<div class='lbSetThumbPlaceholder'>".caGetThemeGraphic($po_request,'spacer.png', array("alt" => "spacer")).$vs_placeholder."</div><!-- end lbSetThumbPlaceholder -->", "", "", "Lightbox", "setDetail", array("set_id" => $vn_set_id))."</div>\n";
 					}
 				}
 				$vn_i++;
 			}
 			while($vn_i < 6){
-				$vs_secondary_image_block .= "<div class='col-xs-3 col-sm-6 lbSetThumbCols'>".caNavLink($po_request, "<div class='lbSetThumbPlaceholder'>".caGetThemeGraphic($po_request,'spacer.png')."</div><!-- end lbSetThumbPlaceholder -->", "", "", "Lightbox", "setDetail", array("set_id" => $vn_set_id))."</div>";
+				$vs_secondary_image_block .= "<div class='col-xs-3 col-sm-6 lbSetThumbCols'>".caNavLink($po_request, "<div class='lbSetThumbPlaceholder'>".caGetThemeGraphic($po_request,'spacer.png', array("alt" => "spacer"))."</div><!-- end lbSetThumbPlaceholder -->", "", "", "Lightbox", "setDetail", array("set_id" => $vn_set_id))."</div>";
 				$vn_i++;
 			}
 		}else{
@@ -874,6 +876,11 @@
  		$t_list = new ca_lists();
  		$vn_gallery_set_type_id = $t_list->getItemIDFromList('set_types', $o_config->get('gallery_set_type'));
  		$vs_set_list = "";
+		$vb_omit_front_page_set = $o_config->get('omit_front_page_set_from_gallery');
+		if($vb_omit_front_page_set){
+			$o_config_front = caGetFrontConfig();
+			$vs_front_page_set_code = $o_config_front->get('front_page_set_code');
+		}
 		if($vn_gallery_set_type_id){
 			$t_set = new ca_sets();
 			$va_sets = caExtractValuesByUserLocale($t_set->getSets(array('table' => 'ca_objects', 'checkAccess' => $va_access_values, 'setType' => $vn_gallery_set_type_id)));
@@ -885,6 +892,9 @@
 
 				$vn_c = 0;
 				foreach($va_sets as $vn_set_id => $va_set){
+					if($vb_omit_front_page_set && $vs_front_page_set_code && ($va_set["set_code"] == $vs_front_page_set_code)){
+						continue;
+					}
 					$vs_set_list .= "<li>".caNavLink($po_request, $va_set["name"], "", "", "Gallery", $vn_set_id)."</li>\n";
 					$vn_c++;
 
@@ -1043,7 +1053,7 @@
 		$ps_form_name = caGetOption('formName', $pa_options, 'caAdvancedSearch');
 		
 		$vs_script = null;
-	
+		
 		$pa_tags = $po_view->getTagList($ps_view);
 		if (!is_array($pa_tags) || !sizeof($pa_tags)) { return null; }
 		
@@ -1186,37 +1196,56 @@
 	 */
 	function caGetAdvancedSearchFormAutocompleteJS($po_request, $ps_field, $pt_instance, $pa_options=null) {
 		$vs_field_proc = preg_replace("![\.]+!", "_", $ps_field);
-		if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, []))) { $vs_rel_types_proc = "_{$vs_rel_types}"; $vs_rel_types = "/{$vs_rel_types}";  }
-	
-		$vs_buf = $pt_instance->htmlFormElementForSearch($po_request, $ps_field, array_merge($pa_options, ['class'=> 'lookupBg', 'name' => "{$ps_field}", 'id' => "{$vs_field_proc}{$vs_rel_types_proc}", 'autocomplete' => 1, 'nojs' => 1]));
-		$vs_buf .= "<input type=\"hidden\" name=\"{$ps_field}{$vs_rel_types}\" id=\"{$vs_field_proc}{$vs_rel_types_proc}\" value=\"\" class=\"lookupBg\"/>";
+		if ($vs_rel_types = join("_", caGetOption(['restrictToRelationshipTypes', 'relationshipType'], $pa_options, []))) { $vs_rel_types_proc = "_{$vs_rel_types}"; $vs_rel_types = "/{$vs_rel_types}";  }
+
+		//$vs_buf = $pt_instance->htmlFormElementForSearch($po_request, $ps_field, array_merge($pa_options, ['class'=> 'lookupBg', 'name' => "{$ps_field}", 'id' => "{$vs_field_proc}{$vs_rel_types_proc}", 'autocomplete' => 1, 'nojs' => 1]));
+		
+		if (!is_array($pa_options)) { $pa_options = array(); }
+        if (!isset($pa_options['width'])) { $pa_options['width'] = 30; }
+        if (!isset($pa_options['values'])) { $pa_options['values'] = array(); }
+        if (!isset($pa_options['values'][$ps_field])) { $pa_options['values'][$ps_field] = ''; }
+        $index = caGetOption('index', $pa_options, null);
+        
+        $array_suffix = caGetOption('asArrayElement', $pa_options, false) ? "[]" : "";
+        
+        $vs_buf = caHTMLTextInput("{$vs_field_proc}_autocomplete{$index}", array('value' => (isset($pa_options['value']) ? $pa_options['value'] : $pa_options['values'][$ps_field]), 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => "{$vs_field_proc}_autocomplete{$index}"));
+		
+		$vs_buf .= "<input type=\"hidden\" name=\"{$ps_field}{$array_suffix}\" id=\"{$vs_field_proc}{$index}\" value=\"".(isset($pa_options['id_value']) ? (int)$pa_options['id_value'] : '')."\" class=\"lookupBg\"/>";
 									
 		if (!is_array($va_json_lookup_info = caJSONLookupServiceUrl($po_request, $pt_instance->tableName()))) { return null; }
 		$vs_buf .= "<script type=\"text/javascript\">
-jQuery(document).ready(function() {
-	jQuery('#{$vs_field_proc}{$vs_rel_types_proc}_autocomplete').autocomplete({ minLength: 3, delay: 800, html: true,
-					source: function( request, response ) {
-						$.ajax({
-							url: '".$va_json_lookup_info['search']."',
-							dataType: \"json\",
-							data: { term: '{$ps_field}:' + request.term },
-							success: function( data ) {
-								response(data);
-							}
-						});
-					},
-					select: function( event, ui ) {
-						if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
-							jQuery('#{$vs_field_proc}{$vs_rel_types_proc}').val('');  // no matches so clear text input
-							event.preventDefault();
-							return;
-						}
-						jQuery('#{$vs_field_proc}{$vs_rel_types_proc}_autocomplete').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
-						jQuery('#{$vs_field_proc}{$vs_rel_types_proc}').val(ui.item.id);
-						event.preventDefault();
-					}
-			})});
-										
+    jQuery(document).ready(function() {
+        jQuery('#{$vs_field_proc}_autocomplete{$index}').autocomplete({ minLength: 3, delay: 800, html: true,
+                source: function( request, response ) {
+                    $.ajax({
+                        url: '{$va_json_lookup_info['search']}',
+                        dataType: \"json\",
+                        data: { term: '{$ps_field}:' + request.term },
+                        success: function( data ) {
+                            response(data);
+                        }
+                    });
+                },
+                response: function ( event, ui ) {
+                    if (ui && ui.content && ui.content.length == 1 && (ui.content[0].id == -1)) {
+                        jQuery('#{$vs_field_proc}{$index}').val(jQuery('#{$vs_field_proc}_autocomplete{$index}').val());
+                    }
+                },
+                select: function( event, ui ) {
+                    if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
+                        jQuery('#{$vs_field_proc}_autocomplete{$index}').val('');  // no matches so clear text input
+                        jQuery('#{$vs_field_proc}{$index}').val('xx');
+                        event.preventDefault();
+                        return;
+                    }
+                    jQuery('#{$vs_field_proc}_autocomplete{$index}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+                    jQuery('#{$vs_field_proc}{$index}').val(ui.item.id);
+                    event.preventDefault();
+                }
+        }).autocomplete('instance')._renderItem = function(ul, item) {
+                return $('<li>').append(item.label).appendTo(ul);
+        };
+    });								
 </script>";
 
 		return $vs_buf;
