@@ -38,4 +38,4 @@ if (!defined('__CA_CACHE_BACKEND__')) {
 }
 
 // Use remaining settings from main config.
-require_once(__CA_BASE_DIR__ . '/setup.php');
+require_once(__CA_BASE_DIR__ . '/setup.php-dist');
