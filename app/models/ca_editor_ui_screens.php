@@ -2323,4 +2323,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray), ['includeSubtypes' => $po_request->getParameter('type_restriction_include_subtypes', pInteger)]);
 	}
 	# ----------------------------------------
+
+	/**
+	 * Override parent method.
+	 *
+	 * @param bool $pb_delete_related
+	 * @param null $pa_options
+	 * @param null $pa_fields
+	 * @param null $pa_table_list
+	 *
+	 * @return bool
+	 */
+	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		// Get UI object and make sure to delete the cache content.
+		$vo_ui = $this->getUI();
+		$vo_ui->invalidateScreenCache($this, $pa_options);
+		$vn_result = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+		return $vn_result;
+	}
 }
