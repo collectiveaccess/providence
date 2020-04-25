@@ -2300,8 +2300,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pm_array The array or string to purify
 	 * @param array $pa_options Array of options:
 	 *		purifier = HTMLPurifier instance to use for processing. If null a new instance will be used. [Default is null]
-	 *
-	 * @return array
+	 * @return array The purified array
 	 */
 	function caPurifyArray($pa_array, $pa_options=null) {
 		if (!is_array($pa_array)) { return array(); }

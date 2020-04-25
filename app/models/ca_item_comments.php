@@ -36,7 +36,6 @@
 
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
-require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(

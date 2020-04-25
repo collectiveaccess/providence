@@ -853,4 +853,3 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 }
-?>
