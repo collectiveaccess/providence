@@ -39,7 +39,11 @@ class LCSHQueryTest extends TestCase {
 		$vs_voc_query = '&q='.rawurlencode('cs:http://id.loc.gov/authorities/subjects');
 		$vs_url = 'http://id.loc.gov/search/?q='.urlencode('"bowl"').$vs_voc_query.'&format=atom&count=150';
 
-		$vs_data = caQueryExternalWebservice($vs_url);
+		try {
+			$vs_data = caQueryExternalWebservice($vs_url);
+		} catch ( WebServiceError $e ) {
+			$this->markTestIncomplete($e->getMessage());
+		}
 		$this->assertIsString($vs_data);
 		$this->assertGreaterThan(0, strlen($vs_data));
 
