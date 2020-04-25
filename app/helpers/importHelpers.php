@@ -1324,7 +1324,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 */
 	function caPhpExcelGetCellContentAsString($po_sheet, $pn_row_num, $pm_col) {
 		if(!is_numeric($pm_col)) {
-			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col);
 		}
 
 		$vs_cache_key = spl_object_hash($po_sheet)."/{$pm_col}/{$pn_row_num}";
@@ -1346,11 +1346,11 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 * @param int $pn_offset Offset to adf to the timestamp (can be used to fix timezone issues or simple to move dates around a little bit)
 	 * @return string|null the date, if a value exists
 	 */
-	function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col, $pn_offset=0) {
-		if(!is_int($pn_offset)) { $pn_offset = 0; }
+	function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col, $pn_offset=1) {
+		if(!is_int($pn_offset)) { $pn_offset = 1; }
 
 		if(!is_numeric($pm_col)) {
-			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col);
 		}
 
 		$o_val = $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
@@ -1377,7 +1377,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 */
 	function caPhpExcelGetRawCell($po_sheet, $pn_row_num, $pm_col) {
 		if(!is_numeric($pm_col)) {
-			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col);
 		}
 
 		return $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
