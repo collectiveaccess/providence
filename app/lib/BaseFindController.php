@@ -874,7 +874,7 @@
 									case 'original_name':
 									default:
 										if (strpos($mode, "^") !== false) { // template
-											$vs_filename = caProcessTemplateForIDs($mode, 'ca_object_representations', [$vn_representation_id]);
+											$vs_filename = pathinfo(caProcessTemplateForIDs($mode, 'ca_object_representations', [$pn_representation_id]), PATHINFO_FILENAME);
 										} elseif ($vs_original_name) {
 											$va_tmp = explode('.', $vs_original_name);
 											if (sizeof($va_tmp) > 1) { 

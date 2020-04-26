@@ -2430,20 +2430,20 @@ class BaseEditorController extends ActionController {
 				$va_rep_info = $va_rep['info'][$ps_version];
 				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 				
-				switch($vs_mode = $this->request->config->get('downloaded_file_naming')) {
+				switch($mode = $this->request->user->getPreference([$this->ops_tablename.'_downloaded_file_naming', 'downloaded_file_naming'])) {
 					case 'idno':
-						$vs_file_name = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
+						$vs_filename = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						break;
 					case 'idno_and_version':
-						$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
+						$vs_filename = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						break;
 					case 'idno_and_rep_id_and_version':
-						$vs_file_name = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION'];
+						$vs_filename = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION'];
 						break;
 					case 'original_name':
 					default:
-					    if (strpos($vs_mode, "^") !== false) { // template
-							$vs_file_name = pathinfo(caProcessTemplateForIDs($vs_mode, 'ca_object_representations', [$pn_representation_id]), PATHINFO_FILENAME);
+					    if (strpos($mode, "^") !== false) { // template
+							$vs_filename = pathinfo(caProcessTemplateForIDs($mode, 'ca_object_representations', [$vn_representation_id]), PATHINFO_FILENAME);
 						} elseif (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
 							$va_tmp = explode('.', $va_rep['info']['original_filename']);
 							if (sizeof($va_tmp) > 1) {
@@ -2451,20 +2451,20 @@ class BaseEditorController extends ActionController {
 									$va_tmp[] = $vs_ext;
 								}
 							}
-							$vs_file_name = join('_', $va_tmp);
+							$vs_filename = join('_', $va_tmp);
 						} else {
-							$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
+							$vs_filename = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
 						}
 
-						if (isset($va_file_names[$vs_file_name.'.'.$va_rep_info['EXTENSION']])) {
-							$vs_file_name.= "_{$vn_c}";
+						if (isset($va_file_names[$vs_filename.'.'.$va_rep_info['EXTENSION']])) {
+							$vs_filename.= "_{$vn_c}";
 						}
-						$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
+						$vs_filename .= '.'.$va_rep_info['EXTENSION'];
 						break;
 				}
 				
-				$va_file_names[$vs_file_name] = true;
-				$o_view->setVar('version_download_name', $vs_file_name);
+				$va_file_names[$vs_filename] = true;
+				$o_view->setVar('version_download_name', $vs_filename);
 				
 				//
 				// Perform metadata embedding
@@ -2480,7 +2480,7 @@ class BaseEditorController extends ActionController {
                     $vs_path = $va_rep['paths'][$ps_version];
                 }
 
-				$va_file_paths[$vs_path] = $vs_file_name;
+				$va_file_paths[$vs_path] = $vs_filename;
 
 				$vn_c++;
 			}
@@ -2572,8 +2572,8 @@ class BaseEditorController extends ActionController {
 				$vs_path = $t_attr_val->getMediaPath('value_blob', $ps_version);
 				$vs_path_ext = pathinfo($vs_path, PATHINFO_EXTENSION);
 				if ($vs_name = trim($t_attr_val->get('value_longtext2'))) {
-					$vs_file_name = pathinfo($vs_name, PATHINFO_FILENAME);
-					$vs_name = "{$vs_file_name}.{$vs_path_ext}";
+					$vs_filename = pathinfo($vs_name, PATHINFO_FILENAME);
+					$vs_name = "{$vs_filename}.{$vs_path_ext}";
 				} else {
 					$vs_name = _t("downloaded_file.%1", $vs_path_ext);
 				}
