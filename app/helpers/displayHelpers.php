@@ -4824,3 +4824,59 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		return _t($default);
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Generate name for downloaded representation media file based upon app.conf 
+	 * downloaded_file_naming directive.
+	 *
+	 * @param string $table Table name of primary record (Eg. ca_objects when downloaded representations related to an object).
+	 * @param array $data Media download data. Keys include:
+	 *		idno = identifer of primary record.
+	 *		index = index of download when multiple names are present. May be omitted if not applicable.
+	 *		version = version of media being downloaded.
+	 *		extension = file extension of media being downloaded.
+	 *		original_filename = original filename of media being downloaded.
+	 *		representation_id = Representation_id of media being fownloaded.
+	 *
+	 * @return string File name
+	 */
+	function caGetRepresentationDownloadFileName($table, $data, $options=null) {
+		$config = Configuration::load();
+		switch($mode = $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+			case 'idno':
+				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
+				break;
+			case 'idno_and_version':
+				$filename = $data['idno'].'_'.$data['version'].'_'.(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
+				break;
+			case 'idno_and_rep_id_and_version':
+				$filename = $data['idno'].'_representation_'.$data['representation_id'].'_'.$data['version'].'.'.$data['extension'];
+				break;
+			case 'original_name':
+			default:
+				if (strpos($mode, "^") !== false) { // template
+				   $filename = caProcessTemplateForIDs($mode, 'ca_object_representations', [$data['representation_id']]);
+				} elseif ($data['original_filename']) {
+					$tmp = explode('.', $data['original_filename']);
+					if (sizeof($tmp) > 1) { 
+						if (strlen($ext = array_pop($tmp)) < 3) {
+							$tmp[] = $ext;
+						}
+					}
+					$filename = join('_', $tmp); 					
+				} else {
+					$filename = $data['idno'].'_representation_'.$data['representation_id'].'_'.$data['version'];
+				}
+			
+				if (isset($va_file_names[$filename.'.'.$data['extension']])) {
+					$filename.= "_".$data['index'];
+				}
+				
+				if(!preg_match("!{$data['extension']}$!i", $filename)) {
+					$filename .= '.'.$data['extension'];
+				}
+				break;
+		} 
+		
+		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+	}
+	# ------------------------------------------------------------------

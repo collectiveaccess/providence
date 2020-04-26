@@ -2428,41 +2428,8 @@ class BaseEditorController extends ActionController {
 				if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
 				$vb_download_for_record = true;
 				$va_rep_info = $va_rep['info'][$ps_version];
-				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 				
-				switch($mode = $this->request->user->getPreference([$this->ops_tablename.'_downloaded_file_naming', 'downloaded_file_naming'])) {
-					case 'idno':
-						$vs_filename = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
-						break;
-					case 'idno_and_version':
-						$vs_filename = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
-						break;
-					case 'idno_and_rep_id_and_version':
-						$vs_filename = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION'];
-						break;
-					case 'original_name':
-					default:
-					    if (strpos($mode, "^") !== false) { // template
-							$vs_filename = pathinfo(caProcessTemplateForIDs($mode, 'ca_object_representations', [$vn_representation_id]), PATHINFO_FILENAME);
-						} elseif (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
-							$va_tmp = explode('.', $va_rep['info']['original_filename']);
-							if (sizeof($va_tmp) > 1) {
-								if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
-									$va_tmp[] = $vs_ext;
-								}
-							}
-							$vs_filename = join('_', $va_tmp);
-						} else {
-							$vs_filename = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
-						}
-
-						if (isset($va_file_names[$vs_filename.'.'.$va_rep_info['EXTENSION']])) {
-							$vs_filename.= "_{$vn_c}";
-						}
-						$vs_filename .= '.'.$va_rep_info['EXTENSION'];
-						break;
-				}
-				
+				$vs_filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $vs_idno, 'index' => $vn_c, 'version' => $ps_version, 'extension' => $va_rep_info['EXTENSION'], 'original_filename' => $va_rep['info']['original_filename'], 'representation_id' => $vn_representation_id]);				
 				$va_file_names[$vs_filename] = true;
 				$o_view->setVar('version_download_name', $vs_filename);
 				

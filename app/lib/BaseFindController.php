@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -852,45 +852,16 @@
 							
 							foreach($va_paths as $vn_i => $vs_path) {
 								$vs_ext = array_pop(explode(".", $vs_path));
-								$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $qr_res->get($t_subject->tableName().'.idno'));
+								$vs_idno = $qr_res->get($t_subject->tableName().'.idno');
 								$vs_original_name = $va_infos[$vn_i]['ORIGINAL_FILENAME'];
-								$vn_index = (sizeof($va_paths) > 1) ? "_".($vn_i + 1) : '';
+								$vn_index = (sizeof($va_paths) > 1) ? ($vn_i + 1) : '';
 								$vn_representation_id = $va_representation_ids[$vn_i];
 								$vs_representation_type = caGetListItemIdno($va_representation_types[$vn_i]);
 
 								// make sure we don't download representations the user isn't allowed to read
 								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $vn_representation_id)){ continue; }
-								
-								switch($mode = $this->request->user->getPreference([$this->ops_tablename.'_downloaded_file_naming', 'downloaded_file_naming'])) {
-									case 'idno':
-										$vs_filename = "{$vs_idno_proc}{$vn_index}.{$vs_ext}";
-										break;
-									case 'idno_and_version':
-										$vs_filename = "{$vs_idno_proc}_{$vs_version}{$vn_index}.{$vs_ext}";
-										break;
-									case 'idno_and_rep_id_and_version':
-										$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}.{$vs_ext}";
-										break;
-									case 'original_name':
-									default:
-										if (strpos($mode, "^") !== false) { // template
-											$vs_filename = pathinfo(caProcessTemplateForIDs($mode, 'ca_object_representations', [$pn_representation_id]), PATHINFO_FILENAME);
-										} elseif ($vs_original_name) {
-											$va_tmp = explode('.', $vs_original_name);
-											if (sizeof($va_tmp) > 1) { 
-												if (strlen($vs_filename_ext = array_pop($va_tmp)) < 3) {
-													$va_tmp[] = $vs_filename_ext;
-												}
-											}
-											$vs_filename = join('_', $va_tmp)."{$vn_index}";
-										} else {
-											$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}";
-										}
-										if (!preg_match("!\.{$vs_ext}!", $vs_filename)) {
-											$vs_filename .= ".{$vs_ext}";
-										}
-										break;
-								}
+										
+								$vs_filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $vs_idno, 'index' => $vn_index, 'version' => $vs_version, 'extension' => $vs_ext, 'original_filename' => $vs_original_name, 'representation_id' => $vn_representation_id]);				
 
 								if($o_media_metadata_conf->get('do_metadata_embedding_for_search_result_media_download')) {
 									if ($vs_path_with_embedding = caEmbedMediaMetadataIntoFile($vs_path,
