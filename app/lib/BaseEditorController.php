@@ -2443,14 +2443,7 @@ class BaseEditorController extends ActionController {
 					case 'original_name':
 					default:
 					    if (strpos($vs_mode, "^") !== false) { // template
-					        $vals = [];
-					        foreach(array_merge($va_rep['info'], $va_rep_info) as $k => $v) {
-					            if(is_array($v)) { continue; }
-					            if ($k == 'original_filename') { $v = pathinfo($v, PATHINFO_FILENAME); }
-					            $vals[strtolower($k)] = preg_replace('![^A-Za-z0-9_\-]+!', '_', $v);
-					        }
-					        $vals['idno'] = $vs_idno_proc;
-				            $vs_file_name = caProcessTemplate($vs_mode, $vals);
+							$vs_file_name = pathinfo(caProcessTemplateForIDs($vs_mode, 'ca_object_representations', [$pn_representation_id]), PATHINFO_FILENAME);
 						} elseif (isset($va_rep['info']['original_filename']) && $va_rep['info']['original_filename']) {
 							$va_tmp = explode('.', $va_rep['info']['original_filename']);
 							if (sizeof($va_tmp) > 1) {
