@@ -3,7 +3,7 @@
     <profileName>collectiveaccess</profileName>
     <profileDescription/>
     <locales>
-        <locale lang="en" country="AU">English (Australian)</locale>
+        <locale lang="en" country="AU" dontUseForCataloguing="0">English (Australian)</locale>
     </locales>
     <lists/>
     <elementSets/>

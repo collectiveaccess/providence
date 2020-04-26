@@ -590,6 +590,7 @@ class Installer {
 			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting list %1', $vs_list_code));
 				$t_list->delete(true);
+				$o_trans->commit();
 				continue;
 			}
 
