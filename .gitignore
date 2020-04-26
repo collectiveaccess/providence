@@ -8,6 +8,7 @@ setup.php
 .DS_Store
 .settings
 .project
+build
 .idea/
 *.un~
 *.sublime-*
