@@ -3574,8 +3574,9 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Simple helper to figure out if there is a value in the initial values array
+	 * Figure out if there is a value in the initial values array
 	 * (the one that we feed to the initialize bundle javascript)
+	 *
 	 * @param string $ps_id_prefix the id prefix for the field in question, used to figure out what format the array has
 	 * @param array|string $pa_initial_values
 	 * @return bool
@@ -3598,13 +3599,10 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 			}
-		} elseif (preg_match("/Labels$/", $ps_id_prefix)) { // labels
-			return (is_array($pa_initial_values) && (sizeof($pa_initial_values) > 0));
-		} elseif (preg_match("/\_rel$/", $ps_id_prefix)) {
+		} else {
+			// Any elements means a value
 			return (is_array($pa_initial_values) && (sizeof($pa_initial_values) > 0));
 		}
-
-		return false;
 	}
 	# ----------------------------------------
 	/**
