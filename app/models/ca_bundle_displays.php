@@ -2294,7 +2294,10 @@ if (!$pb_omit_editing_info) {
 		
 		if ($vb_return_info) {
 			if (!$t_instance) { $t_instance = Datamodel::getInstanceByTableName($va_bundle_bits[0], true); }
-			$va_info_data = array_shift($va_tmp = $po_result->get(join(".", $va_bundle_bits), array_merge($pa_options, ['returnWithStructure' => true])));
+			
+			if(is_array($va_tmp = $po_result->get(join(".", $va_bundle_bits), array_merge($pa_options, ['returnWithStructure' => true])))) {
+				$va_info_data = array_shift($va_tmp);
+			}
 			if(!is_array($va_info_data)) { $va_info_data = []; }
 			
 			$vs_inline_editing_type = $va_inline_editing_list_values = $vn_inline_editing_list_id = null;
