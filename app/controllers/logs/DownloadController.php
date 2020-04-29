@@ -84,12 +84,12 @@
 							}
 						}
 						$this->view->setVar('download_list', $va_download_list_by_record);
-					break;
+						break;
 					# ----------------------------
 					case "download":
 					default:
 						$this->view->setVar('download_list', $va_download_list);
-					break;
+						break;
 					# ----------------------------
 				}
 			}

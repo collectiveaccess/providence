@@ -137,6 +137,7 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testDeleteList() {
+		// TODO: This test is not idempotent, it depends on testAddNewList
 		$t_list = new ca_lists();
 		$t_list->load(array('list_code' => 'diff_test_list'));
 		$this->assertGreaterThan(0, $t_list->getPrimaryKey());
@@ -222,8 +223,8 @@ class ConfigurationUpdateTest extends TestCase {
 		$this->assertEquals(5, sizeof($va_elements_in_set));
 
 		// check a few of the changed properties (labels, whatever)
-		$this->assertEquals('URI', $va_elements_in_set[3]['display_label']);
-		$this->assertEquals('500px', $va_elements_in_set[1]['settings']['fieldWidth']);
+		$this->assertEquals('URI', $va_elements_in_set[4]['display_label']);
+		$this->assertEquals('500px', $va_elements_in_set[2]['settings']['fieldWidth']);
 
 		// try to find the restriction we added (storage locations), which should now be the only restriction (we nuked all the others)
 		$va_restrictions = $t_instance->getTypeRestrictions();
