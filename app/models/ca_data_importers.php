@@ -3375,7 +3375,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 				
-				if($regex_info['replaceWith']) {
+				if(!is_null($regex_info['replaceWith'])) {
 					$val = preg_replace($regex , $regex_info['replaceWith'], $val);
 				}
 			}
