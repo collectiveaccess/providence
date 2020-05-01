@@ -567,6 +567,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Display name format'),
 			'description' => _t('Transform label using options for formatting entity display names. Default is to use value as is. Other options are surnameCommaForename, forenameCommaSurname, forenameSurname. See DataMigrationUtils::splitEntityName().')
 		);
+		$va_settings['useRawValuesWhenTestingExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Use raw data values when testing expression'),
+			'description' => _t('When evaluating conditions to skip a mapping, row or group via an expression using a setting such as skipIfExpression, use raw un-transformed data rather than data that has been transformed with applyRegularExpressions and replacement values.')
+		);
 		$va_settings['mediaPrefix'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
