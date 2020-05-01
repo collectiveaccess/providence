@@ -332,7 +332,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,
 			'default' => 0,
-			'label' => _t('If set record type will be ignored when looking for existing records as specified by the existing records policy.'),
+			'label' => _t('Ignore record type when looking for existing records as specified by the existing records policy.'),
 			'description' => _t('.')
 		);
 		$va_settings['mergeOnly'] = array(
@@ -341,7 +341,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,
 			'default' => 0,
-			'label' => _t('If set data will only be merged with existing records using the existing records policy and no new records will be created.'),
+			'label' => _t('If set data will only be merged with existing records using the existing records policy. No new records will be created.'),
 			'description' => _t('.')
 		);
 		$va_settings['dontDoImport'] = array(
