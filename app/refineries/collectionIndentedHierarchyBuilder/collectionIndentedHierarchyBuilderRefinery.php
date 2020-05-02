@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -141,7 +141,6 @@
 						}
 						
 						if(is_array($va_relationships)) {
-							//$rel_data = caProcessRefineryRelated('ca_collections', $va_relationships, $pa_source_data, $pa_item, 0, []);
 							$rels = [];
 							caProcessRefineryRelatedMultiple($this, $pa_item, $pa_source_data, null, $o_log, $o_reader, $rels, $attr_values, []);
 				

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,7 +247,7 @@
 						    
 						    $items[] = $item;
 						}
-						$rel_data = caProcessRefineryRelated($rel['relatedTable'], $items, $refinery_data['source_data'], $refinery_data['item'], 0, array_merge($refinery_data['options'], ['reader' => $reader]));
+						$rel_data = caProcessRefineryRelated($this, $rel['relatedTable'], $items, $refinery_data['source_data'], $refinery_data['item'], 0, array_merge($refinery_data['options'], ['reader' => $reader]));
 
 				        foreach($rel_data as $k1 => $v1) {
 				            foreach($v1 as $k2 => $v2) {
