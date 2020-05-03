@@ -45,9 +45,9 @@
 	 * @return string Path to application as defined in external_applications.conf
 	 */
 	function caGetExternalApplicationPath($ps_application_name) {
-		$o_config = Configuration::load();
-		if (!($o_ext_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf'))) { return null; }
-
+        if (!($o_ext_app_config = Configuration::load(__CA_CONF_DIR__ . '/external_applications.conf'))) {
+            return null;
+        }
 		return $o_ext_app_config->get($ps_application_name.'_app');
 	}
 	# ------------------------------------------------------------------------------------------------
