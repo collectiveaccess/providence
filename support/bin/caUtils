@@ -31,6 +31,20 @@
  * ----------------------------------------------------------------------
  */
 
+    /**
+     * Format a command line option.
+     *
+     * @param $vs_opt_format
+     * @param $vs_opt_desc
+     */
+    function _formatCmdOptions($vs_opt_format, $vs_opt_desc): string {
+        $va_tmp = explode("|", $vs_opt_format);
+        $va_abbr = preg_split("![=\-]+!", $va_tmp[1]);
+
+        return "\t" . CLIUtils::textWithColor(str_pad("--" . $va_tmp[0] . " " . ($va_abbr[0] ? "(-{$va_abbr[0]})":""), 20), "red") . \
+                        wordwrap($vs_opt_desc, 75, "\n\t" . str_repeat(" ", 20)) . "\n\n";
+    }
+
 	if (!_caUtilsLoadSetupPHP()) {
 		die("Could not find your CollectiveAccess setup.php file! Please set the COLLECTIVEACCESS_HOME environment variable to the location of your CollectiveAccess installation, or run this command from a sub-directory of your CollectiveAccess installation.\n");
 	}
@@ -83,8 +97,7 @@
 
 	$va_available_cli_opts = array_merge(array(
 			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
-			"setup-s" => 'Specify the path to an alternate setup.php.',
-			"help" => "Displays available commands with descriptions."
+			"setup|s" => 'Specify the path to an alternate setup.php.',
 		), $va_command_opts);
 
 	try {
@@ -134,14 +147,16 @@
 				if (is_array($va_opts) && sizeof($va_opts)) {
 					print CLIUtils::textWithColor("Options for {$vs_cmd} are:", "bold_green")."\n\n";
 					foreach($va_opts as $vs_opt_format => $vs_opt_desc) {
-						$va_tmp = explode("|", $vs_opt_format);
-						$va_abbr = preg_split("![=\-]+!", $va_tmp[1]);
-
-						print "\t".CLIUtils::textWithColor(str_pad("--".$va_tmp[0]." ".($va_abbr[0] ? "(-{$va_abbr[0]})" : ""), 20), "red").wordwrap($vs_opt_desc, 75, "\n\t".str_repeat(" ", 20))."\n\n";
-					}
+                        $output = _formatCmdOptions($vs_opt_format, $vs_opt_desc);
+                        print $output;
+                    }
 				}
 			} else {
-				print CLIUtils::textWithColor("No help is available for \"{$vs_subcmd}\"\n", "bold_red");
+				print CLIUtils::textWithColor("No help is available for \"{$vs_cmd_proc}\"\n\n", "bold_red");
+                foreach($va_available_cli_opts as $vs_opt_format => $vs_opt_desc) {
+                    $output = _formatCmdOptions($vs_opt_format, $vs_opt_desc);
+                    print $output;
+                }
 			}
 			print "\nFor more information visit http://www.collectiveaccess.org\n\n";
 		} else {
@@ -183,11 +198,15 @@
 		// List available commands
 		//
 
+        print CLIUtils::textWithColor("Global options\n\n", "bold_green");
+
+        foreach($va_available_cli_opts as $vs_opt_format => $vs_opt_desc) {
+            $output = _formatCmdOptions($vs_opt_format, $vs_opt_desc);
+            print $output;
+        }
 		$va_methods = get_class_methods("CLIUtils");
 
-		if ($vs_cmd) {
-			print CLIUtils::textWithColor("\"{$vs_cmd}\" is an invalid command. Valid commands are:", "bold_green")."\n\n";
-		} else {
+		if (!$vs_cmd) {
 			print CLIUtils::textWithColor("You must specify a valid command. Valid commands are:", "bold_red")."\n\n";
 		}
 
