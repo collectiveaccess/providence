@@ -142,3 +142,24 @@ function caSetupCLIScript($pa_additional_parameters) {
 	return $o_opts;
 }
 # ---------------------------------------------------------------------
+
+/**
+ * Format a command line option for display
+ *
+ * @param $vs_opt_format
+ * @param $vs_opt_desc
+ */
+function caFormatCmdOptionsForDisplay($vs_opt_format, $vs_opt_desc): string {
+    if (in_array(substr($vs_opt_format, -2, 1), ['-', '='])) {
+        $flagList  = substr($vs_opt_format, 0, -2);
+    } else {
+        $flagList = $vs_opt_format;
+    }
+
+    $va_tmp = explode("|", $flagList);
+    $vs_alias = sizeof($va_tmp)>1 ? $va_tmp[1]: "";
+
+    $vn_padding = 25;
+    return "\t" . CLIUtils::textWithColor(str_pad("--" . $va_tmp[0] . " " . ($vs_alias ? "(-{$vs_alias})":""), $vn_padding), "red") . \
+                    wordwrap($vs_opt_desc, 75, "\n\t" . str_repeat(" ", $vn_padding)) . "\n\n";
+}
