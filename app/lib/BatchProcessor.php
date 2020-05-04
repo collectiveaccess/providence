@@ -79,12 +79,15 @@
  			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
 
  			$vb_we_set_transaction = false;
+ 			
+ 			// TODO: How to handle transactions? These can be large transactions and at least some versions
+ 			// of MySQL seem to choke on large transactions
+ 			//
  			//$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
-            // TODO: Undefined variable $o_trans
- 			if (!$o_trans) {
- 				$vb_we_set_transaction = true;
+ 			//if (!$o_trans) {
+ 			//	$vb_we_set_transaction = true;
  				//$o_trans = new Transaction($t_subject->getDb());
- 			}
+ 			//}
 
  			$o_log = new Batchlog(array(
  				'user_id' => $po_request->getUserID(),
@@ -177,13 +180,14 @@
 			}
 			$o_log->close();
 
-			if ($vb_we_set_transaction) {
-				if (sizeof($va_errors) > 0) {
-					//$o_trans->rollback();
-				} else {
-					//$o_trans->commit();
-				}
-			}
+			// TODO: How to handle transactions? 
+			// if ($vb_we_set_transaction) {
+// 				if (sizeof($va_errors) > 0) {
+// 					$o_trans->rollback();
+// 				} else {
+// 					$o_trans->commit();
+// 				}
+// 			}
 
 			$vs_set_name = $t_set->getLabelForDisplay();
 			$vs_started_on = caGetLocalizedDate($vn_start_time);
@@ -326,11 +330,6 @@
 				}
 			}
 
-			// TODO: Remove unused variable $vs_set_name
-			$vs_set_name = $t_set->getLabelForDisplay();
-			// TODO: Remove unused variable $vs_started_on
-			$vs_started_on = caGetLocalizedDate($vn_start_time);
-
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
 		# ----------------------------------------
@@ -456,11 +455,6 @@
 					$o_tx->commit();
 				}
 			}
-
-            // TODO: Remove unused variable $vs_set_name
-			$vs_set_name = $t_set->getLabelForDisplay();
-            // TODO: Remove unused variable $vs_started_on
-			$vs_started_on = caGetLocalizedDate($vn_start_time);
 
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
@@ -732,8 +726,7 @@
 
  			$vn_c = 0;
  			$vn_start_time = time();
- 			// TODO: Remove unused variable $va_report
- 			$va_report = array();
+ 			
  			foreach($va_files_to_process as $vs_file) {
  				$va_tmp = explode("/", $vs_file);
  				$f = array_pop($va_tmp);
@@ -1169,7 +1162,7 @@
 						foreach($va_extracted_idnos_from_filename as $vs_idno) {
 							foreach($va_create_relationship_for as $vs_rel_table) {
 								if (!isset($va_relationship_type_id_for[$vs_rel_table]) || !$va_relationship_type_id_for[$vs_rel_table]) { continue; }
-								// TODO: Non-static method 'getInstanceByTableName' should not be called statically
+								
 								$t_rel = Datamodel::getInstanceByTableName($vs_rel_table);
 								if ($t_rel->load(array($t_rel->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
 									$t_instance->addRelationship($vs_rel_table, $t_rel->getPrimaryKey(), $va_relationship_type_id_for[$vs_rel_table]);
