@@ -79,12 +79,15 @@
  			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
 
  			$vb_we_set_transaction = false;
+ 			
+ 			// TODO: How to handle transactions? These can be large transactions and at least some versions
+ 			// of MySQL seem to choke on large transactions
+ 			//
  			//$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
-            // TODO: Undefined variable $o_trans
- 			if (!$o_trans) {
- 				$vb_we_set_transaction = true;
+ 			//if (!$o_trans) {
+ 			//	$vb_we_set_transaction = true;
  				//$o_trans = new Transaction($t_subject->getDb());
- 			}
+ 			//}
 
  			$o_log = new Batchlog(array(
  				'user_id' => $po_request->getUserID(),
@@ -177,13 +180,14 @@
 			}
 			$o_log->close();
 
-			if ($vb_we_set_transaction) {
-				if (sizeof($va_errors) > 0) {
-					//$o_trans->rollback();
-				} else {
-					//$o_trans->commit();
-				}
-			}
+			// TODO: How to handle transactions? 
+			// if ($vb_we_set_transaction) {
+// 				if (sizeof($va_errors) > 0) {
+// 					$o_trans->rollback();
+// 				} else {
+// 					$o_trans->commit();
+// 				}
+// 			}
 
 			$vs_set_name = $t_set->getLabelForDisplay();
 			$vs_started_on = caGetLocalizedDate($vn_start_time);
@@ -326,9 +330,6 @@
 				}
 			}
 
-			$vs_set_name = $t_set->getLabelForDisplay();
-			$vs_started_on = caGetLocalizedDate($vn_start_time);
-
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
 		# ----------------------------------------
@@ -455,9 +456,6 @@
 				}
 			}
 
-			$vs_set_name = $t_set->getLabelForDisplay();
-			$vs_started_on = caGetLocalizedDate($vn_start_time);
-
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
 		# ----------------------------------------
@@ -512,6 +510,7 @@
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 			$o_log = new KLogger($vs_log_dir, $vn_log_level);
 
+			$o_log->logDebug("[importMediaFromDirectory]: Args\n".json_encode($pa_options));
 			$vs_import_target = caGetOption('importTarget', $pa_options, 'ca_objects');
 			
 			$t_instance = Datamodel::getInstance($vs_import_target);
@@ -605,7 +604,6 @@
  			$vn_set_id	 						= $pa_options['set_id'];
 
  			$vn_locale_id						= $pa_options['locale_id'];
- 			$vs_skip_file_list					= $pa_options['skipFileList'];
 
  			$vs_skip_file_list					= $pa_options['skipFileList'];
  			$vb_allow_duplicate_media			= $pa_options['allowDuplicateMedia'];
@@ -728,7 +726,7 @@
 
  			$vn_c = 0;
  			$vn_start_time = time();
- 			$va_report = array();
+ 			
  			foreach($va_files_to_process as $vs_file) {
  				$va_tmp = explode("/", $vs_file);
  				$f = array_pop($va_tmp);
@@ -741,7 +739,19 @@
  				$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
 
  				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-					$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%3)", caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30), $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
+					$ps_callback($po_request,
+                            $vn_c,
+                            $vn_num_items,
+                            _t("[%3/%4] Processing %1 (%3)",
+                                    caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30),
+                                    $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
+                                    $vn_c,
+                                    $vn_num_items),
+                            null,
+                            time() - $vn_start_time,
+                            memory_get_usage(true),
+                            $vn_c,
+                            sizeof($va_errors));
 				}
 				
 				
@@ -913,7 +923,7 @@
 						// use the filename as identifier
 						$vs_rep_idno = $f;
 						break;
-					case 'filename_no_ext';
+                    case 'filename_no_ext':
 						// use filename without extension as identifier
 						$vs_rep_idno = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
 						break;
@@ -986,7 +996,7 @@
 								// use the filename as identifier
                                 $vs_idno_value = $f;
 								break;
-							case 'filename_no_ext';
+                            case 'filename_no_ext':
 								// use filename without extension as identifier
 								$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
 								$vs_idno_value = $f_no_ext;
@@ -1152,6 +1162,7 @@
 						foreach($va_extracted_idnos_from_filename as $vs_idno) {
 							foreach($va_create_relationship_for as $vs_rel_table) {
 								if (!isset($va_relationship_type_id_for[$vs_rel_table]) || !$va_relationship_type_id_for[$vs_rel_table]) { continue; }
+								
 								$t_rel = Datamodel::getInstanceByTableName($vs_rel_table);
 								if ($t_rel->load(array($t_rel->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
 									$t_instance->addRelationship($vs_rel_table, $t_rel->getPrimaryKey(), $va_relationship_type_id_for[$vs_rel_table]);
