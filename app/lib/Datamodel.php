@@ -313,7 +313,7 @@ class Datamodel {
 	 * @param bool $pb_use_cache Use a cached instance. Default is false.
 	 * @return null|BaseModel
 	 */
-	public function getInstanceByTableName($ps_table, $pb_use_cache=false) {
+	static public function getInstanceByTableName($ps_table, $pb_use_cache=false) {
 		if(!$ps_table) { return null; }
 		if($pb_use_cache && isset(Datamodel::$s_instance_cache[$ps_table])) { return Datamodel::$s_instance_cache[$ps_table]; }		// keep instances in statics for speed
 		
@@ -337,7 +337,7 @@ class Datamodel {
 	 * @param bool $pb_use_cache Use a cached instance. Default is false.
 	 * @return null|BaseModel
 	 */
-	public function getInstanceByTableNum($pn_tablenum, $pb_use_cache=false) {
+	static public function getInstanceByTableNum($pn_tablenum, $pb_use_cache=false) {
 		if($pb_use_cache && isset(Datamodel::$s_instance_cache[$pn_tablenum])) { return Datamodel::$s_instance_cache[$pn_tablenum]; }		// keep instances in statics for speed
 		if($vs_class_name = Datamodel::getTableName($pn_tablenum)) {
 			if($pb_use_cache && MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
