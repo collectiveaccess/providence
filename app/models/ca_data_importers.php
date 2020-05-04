@@ -1659,10 +1659,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				// Apply prefix/suffix *AFTER* setting default
 				if ($vs_idno && isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix'])) {
-					$vs_idno = $va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix'].$vs_idno;
+					$vs_idno = DisplayTemplateParser::processTemplate($va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix'], $va_row_with_replacements, ['getFrom' => $o_reader]).$vs_idno;
 				}
 				if ($vs_idno && isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'])) {
-					$vs_idno .= $va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'];
+					$vs_idno .= DisplayTemplateParser::processTemplate($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'], $va_row_with_replacements, ['getFrom' => $o_reader]);
 				}
 										
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions']) && is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
@@ -1900,7 +1900,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 						// Do value conversions
 						foreach($va_vals as $vn_i => $vm_val) {
-							// Evaluate skip-if-empty options before setting default value, addings prefix/suffix or formatting with templates
+							// Evaluate skip-if-empty options before setting default value, adding prefix/suffix or formatting with templates
 							// because "empty" refers to the source value before this sort of additive processing.
 							if (isset($va_item['settings']['skipRowIfEmpty']) && (bool)$va_item['settings']['skipRowIfEmpty'] && !strlen($vm_val)) {
 								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is empty', $vs_idno, $vn_row, $va_item['destination'], $vn_group_id)); }
@@ -1952,10 +1952,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							// Apply prefix/suffix *AFTER* setting default
 							if ($vm_val && isset($va_item['settings']['prefix']) && strlen($va_item['settings']['prefix'])) {
-								$vm_val = $va_item['settings']['prefix'].$vm_val;
+								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['prefix'], array_replace($va_row_with_replacements, [(string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logReference' => $vs_idno])]), ['getFrom' => $o_reader]).$vm_val;
 							}
 							if ($vm_val && isset($va_item['settings']['suffix']) && strlen($va_item['settings']['suffix'])) {
-								$vm_val .= $va_item['settings']['suffix'];
+								$vm_val .= DisplayTemplateParser::processTemplate($va_item['settings']['suffix'], array_replace($va_row_with_replacements, [(string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logReference' => $vs_idno])]), ['getFrom' => $o_reader]);
 							}
 						
 							if (!is_array($vm_val) && ($vm_val[0] == '^') && preg_match("!^\^[^ ]+$!", $vm_val)) {
@@ -1984,6 +1984,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$vm_val = self::_processAppliedRegexes($o_reader, $va_item, $vn_i, $va_item['settings']['applyRegularExpressions'], $vm_val, $va_row, $va_row_with_replacements);
 							}
 							
+							// Re-run format with template to reflect regex changes
 							if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
 								$vm_val = DisplayTemplateParser::processTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row_with_replacements, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item, ['log' => $o_log, 'logReference' => $vs_idno]))), array('getFrom' => $o_reader));
 							}
