@@ -50,7 +50,8 @@
 
 	class BatchProcessor {
 		# ----------------------------------------
-		/**
+        const REGEXP_FILENAME_NO_EXT = '/\\.[^.\\s]+$/';
+        /**
 		 *
 		 */
 		 
@@ -79,6 +80,7 @@
 
  			$vb_we_set_transaction = false;
  			//$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
+            // TODO: Undefined variable $o_trans
  			if (!$o_trans) {
  				$vb_we_set_transaction = true;
  				//$o_trans = new Transaction($t_subject->getDb());
@@ -739,7 +741,7 @@
  				$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
 
  				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-					$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%3)", caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30), $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), $t_new_rep, time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
+					$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%3)", caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30), $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
 				}
 				
 				
@@ -906,14 +908,14 @@
 					}
 				}
 
-				switch($vs_representation_idno_mode) {
+				switch(strtolower($vs_representation_idno_mode)) {
 					case 'filename':
 						// use the filename as identifier
 						$vs_rep_idno = $f;
 						break;
 					case 'filename_no_ext';
 						// use filename without extension as identifier
-						$vs_rep_idno = preg_replace('/\\.[^.\\s]{3,4}$/', '', $f);
+						$vs_rep_idno = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
 						break;
 					case 'directory_and_filename':
 						// use the directory + filename as identifier
@@ -978,30 +980,33 @@
 							$t_instance->set('hierarchy_id', $vn_hierarchy_id);
 						}
 
+						$vs_idno_value = null;
 						switch(strtolower($vs_idno_mode)) {
 							case 'filename':
 								// use the filename as identifier
-								$t_instance->set('idno', $f);
+                                $vs_idno_value = $f;
 								break;
 							case 'filename_no_ext';
 								// use filename without extension as identifier
-								$f_no_ext = preg_replace('/\\.[^.\\s]{3,4}$/', '', $f);
-								$t_instance->set('idno', $f_no_ext);
+								$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
+								$vs_idno_value = $f_no_ext;
 								break;
 							case 'directory_and_filename':
 								// use the directory + filename as identifier
-								$t_instance->set('idno', $d.'/'.$f);
+								$vs_idno_value = $d.'/'.$f;
 								break;
 							default:
 								// Calculate identifier using numbering plugin
 								$o_numbering_plugin = $t_instance->getIDNoPlugInInstance();
 								if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
 								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', null, false, false, true))) { $va_idno_values = array(); }
-								$t_instance->set('idno', join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
+                                // true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
+								$vs_idno_value = join($vs_sep, $va_idno_values);
 								break;
 						}
+                        $t_instance->set('idno', $vs_idno_value);
 
-						$t_instance->insert();
+                        $t_instance->insert();
 
 						if ($t_instance->numErrors()) {
 							$o_eventlog->log(array(

@@ -643,6 +643,32 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Return text suitable for a regexp with escaped delimiter
+	 *
+	 * @param string $ps_text
+	 * @return string
+	 */
+	function caEscapeForDelimitedRegexp($ps_text, $ps_delimiter='!') {
+	    $vs_regex_delimiter = $ps_delimiter != '#' ? '#': '/';
+		return preg_replace($vs_regex_delimiter.'(?<!\\\\)'.$ps_delimiter.$vs_regex_delimiter, '\\'.$ps_delimiter, $ps_text);
+	}
+	# ----------------------------------------
+	/**
+	 * Return regexp delimited making sure delimiter is escaped on the regexp.
+	 *
+	 * @param string $ps_text
+	 * @return string
+	 */
+	function caMakeDelimitedRegexp($ps_text, $ps_delimiter='!') {
+        if ($ps_delimiter=='#') {
+            $vs_regex_delimiter = '/';
+        } else {
+            $vs_regex_delimiter = '#';
+        }
+		return $ps_delimiter.preg_replace($vs_regex_delimiter.'(?<!\\\\)'.$ps_delimiter.$vs_regex_delimiter, '\\'.$ps_delimiter, $ps_text).$ps_delimiter;
+	}
+	# ----------------------------------------
+	/**
 	 * 
 	 *
 	 * @param array $options Options include:
@@ -2927,7 +2953,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 * @throws \Exception
  	 */
-	class WebServiceError extends Exception
+	class WebServiceError extends \Exception
 	{
 		/**
 		 * Wrapper for getMessage() which is declared as final.
