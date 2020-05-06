@@ -1300,22 +1300,31 @@ class TilepicParser {
 			return false;
 		}
 
+		$image_dimensions = $h->getimagegeometry();
+		
+		$rotation = null;
 		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
 					switch($vn_orientation) {
 						case 3:
-							$h->rotateimage("#FFFFFF", 180);
+							$h->rotateimage("#FFFFFF", $rotation = 180);
 							break;
 						case 6:
-							$h->rotateimage("#FFFFFF", 90);
+							$h->rotateimage("#FFFFFF", $rotation = 90);
 							break;
 						case 8:
-							$h->rotateimage("#FFFFFF", -90);
+							$h->rotateimage("#FFFFFF", $rotation = -90);
 							break;
 					}
 				}
+			}
+			
+			if(abs($rotation) === 90) {	// flip dimensions due to EXIF rotation (Gmagick doesn't update dimensions properly)
+				$d = $image_dimensions;
+				$image_dimensions['width'] = $d['height'];
+				$image_dimensions['height'] = $d['width'];
 			}
 		}
         
@@ -1326,9 +1335,8 @@ class TilepicParser {
 			return false;
 		}
 		
-		$va_tmp = $h->getimagegeometry();
-		$image_width = 	$va_tmp['width'];
-		$image_height = $va_tmp['height'];
+		$image_width = 	$image_dimensions['width'];
+		$image_height = $image_dimensions['height'];
 		if (($image_width < 10) || ($image_height < 10)) {
 			$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
 				return false;
@@ -1338,10 +1346,10 @@ class TilepicParser {
 			$image_width *= $pa_options["scale_factor"];
 			$image_height *= $pa_options["scale_factor"];
 
-				if (!$h->resizeimage($image_width, $image_height, Gmagick::FILTER_CUBIC, $pa_options["antialiasing"])) {
-					$this->error = "Couldn't scale image";
-					return false;
-				}
+			if (!$h->resizeimage($image_width, $image_height, Gmagick::FILTER_CUBIC, $pa_options["antialiasing"])) {
+				$this->error = "Couldn't scale image";
+				return false;
+			}
 		}
         
 		#
@@ -1390,7 +1398,6 @@ class TilepicParser {
 				$slice = clone $h;
 				try {
 					$slice->cropimage($wx, $wy, $x, $y);
-					$slice->setcompressionquality($pa_options["quality"]);
 				} catch (Exception $e){
 					$this->error = "Couldn't create tile";
 					return false;
@@ -1401,7 +1408,24 @@ class TilepicParser {
 					return false;
 				}
 				
-				# --- remove color profile (saves lots of space)
+				if (!$slice->setcompressionquality($pa_options["quality"])) {
+					$this->error = "Tile quality set failed: $reason; $description";
+					return false;
+				}
+				
+				$radius = 2;
+				if (($wx < 100) || ($wy < 100))  {
+					$radius = 1;
+				}
+				$sigma = 0.5;
+				if ( !$slice->sharpenImage( $radius, $sigma) ) {
+					$this->error = "Sharpen failed";
+					return false;
+				}
+				
+				if(abs($rotation) === 90) {	// flip rotation due to EXIF rotation (Gmagick doesn't set EXIF rotation properly)
+					$slice->rotateimage("#FFFFFF", -1 * $rotation);
+				}
 				$layer_list[sizeof($layer_list)-1][] = $slice->getImageBlob();
 				$slice->destroy();
 				$x += $pa_options["tile_width"];
