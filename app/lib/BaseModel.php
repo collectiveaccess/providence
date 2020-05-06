@@ -1953,10 +1953,12 @@ class BaseModel extends BaseObject {
 			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";
 		}
 
-		$qr_res = $o_db->query($vs_sql);
-		if ($o_db->numErrors()) {
-			$this->postError(250, _t('Basemodel::load SQL had an error: %1; SQL was %2', join("; ", $o_db->getErrors()), $vs_sql), 'BaseModel->load()');
+		try {
+			$qr_res = $o_db->query($vs_sql);
+		} catch (DatabaseException $e) {
+			$this->_processDatabaseException($e, $o_db);
 			return false;
+			
 		}
 		if ($qr_res->nextRow()) {
 			foreach($this->FIELDS as $vs_field => $va_attr) {
@@ -2150,6 +2152,54 @@ class BaseModel extends BaseObject {
 	 	return true;
 	 }
 	 
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _processDatabaseException($e, $o_db) {
+		switch($e->getNumber()) {
+			case 251: // Duplicate key error
+				$indices = $o_db->getIndices($this->tableName());	// try to get key info
+
+				if (preg_match("/for key [']{0,1}([\w]+)[']{0,1}$/", $o_e->getErrorDescription(), $matches)) {
+					$field_labels = array();
+					foreach($indices[$matches[1]]['fields'] as $col_name) {
+						$tmp = $this->getFieldInfo($col_name);
+						$field_labels[] = $tmp['LABEL'];
+					}
+
+					$last_name = array_pop($field_labels);
+					if (sizeof($field_labels) > 0) {
+						$msg = _t("The combination of %1 and %2 must be unique", join(', ', $field_labels), $last_name);
+					} else {
+						$msg = _t("The value of %1 must be unique", $last_name);
+					}
+				} else {
+					$msg = $o_e->getErrorDescription();
+				}
+				$this->postError($e->getNumber(), $msg, $e->getContext());
+				$o_db->postError($e->getNumber(), $msg, $e->getContext());
+				break;
+			case 250: // Invalid foreign key error
+				$msg = $e->getMessage();
+				if (preg_match("!FOREIGN KEY \([`]*([A-Za-z0-9_]+)!", $msg, $m)) {
+					if ($m[1] === 'type_id') {
+						$msg = _t('Invalid relationship type');
+					} else {
+						$msg = _t('Invalid relationship reference for %1', $m[1]);
+					}
+				}
+				$this->postError($e->getNumber(), $msg, $e->getContext());
+				$o_db->postError($e->getNumber(), $msg, $e->getContext());
+				break;
+			default:
+				$this->postError($e->getNumber(), $e->getMessage(), $e->getContext());
+				$o_db->postError($e->getNumber(), $e->getMessage(), $e->getContext());
+				break;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
 	/**
 	 * Use this method to insert new record using supplied values
 	 * (assuming that you've constructed your BaseModel object as empty record)
@@ -2528,18 +2578,10 @@ class BaseModel extends BaseObject {
 			try {
 				$o_db->query($vs_sql);
 			} catch (DatabaseException $e) {
-				switch($e->getNumber()) {
-					case 251: 	// duplicate key
-						// noop - recoverable
-						$o_db->postError($e->getNumber(), $e->getMessage(), $e->getContext);
-						break;
-					default:
-						throw $e;
-						break;
-				}
+				$this->_processDatabaseException($e, $o_db);
 			}
 			
-			if ($o_db->numErrors() == 0) {
+			if ($this->numErrors() == 0) {
 				if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
 					$this->_FIELD_VALUES[$vs_pk] = $vn_new_id = $o_db->getLastInsertID();
 					if (sizeof($va_need_to_set_rank_for)) {
@@ -2634,9 +2676,6 @@ class BaseModel extends BaseObject {
 				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES;
 				return $vn_id;
 			} else {
-				foreach($o_db->errors() as $o_e) {
-					$this->postError($o_e->getErrorNumber(), $o_e->getErrorDescription().' ['.$o_e->getErrorNumber().']', "BaseModel->insert()", $this->tableName().'.'.$vs_field);
-				}
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 				if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				return false;
@@ -3118,38 +3157,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 				$vs_sql .= " WHERE ".$this->PRIMARY_KEY." = ".$this->getPrimaryKey(1);
 				if ($this->debug) echo $vs_sql;
-				$o_db->query($vs_sql);
-
-				if ($o_db->numErrors()) {
-					foreach($o_db->errors() as $o_e) {
-						switch($vn_err_num = $o_e->getErrorNumber()) {
-							case 251:	// violation of unique key (duplicate record)
-								// try to get key info
-								$va_indices = $o_db->getIndices($this->tableName());
-
-								if (preg_match("/for key [']{0,1}([\w]+)[']{0,1}$/", $o_e->getErrorDescription(), $va_matches)) {
-									$va_field_labels = array();
-									foreach($va_indices[$va_matches[1]]['fields'] as $vs_col_name) {
-										$va_tmp = $this->getFieldInfo($vs_col_name);
-										$va_field_labels[] = $va_tmp['LABEL'];
-										$this->postError($vn_err_num, $o_e->getErrorDescription(), "BaseModel->insert()", $this->tableName().'.'.$vs_col_name);
-									}
-
-									$vs_last_name = array_pop($va_field_labels);
-									if (sizeof($va_field_labels) > 0) {
-										$vs_err_desc = "The combination of ".join(', ', $va_field_labels).' and '.$vs_last_name." must be unique";
-									} else {
-										$vs_err_desc = "The value of {$vs_last_name} must be unique";
-									}
-								} else {
-									$vs_err_desc = $o_e->getErrorDescription();
-								}
-								break;
-							default:
-								$this->postError($vn_err_num, $o_e->getErrorDescription().' ['.$vn_err_num.']', "BaseModel->update()");
-								break;
-						}
-					}
+				
+				try {
+					$o_db->query($vs_sql);
+				} catch(DatabaseException $e) {
+					$this->_processDatabaseException($e, $o_db);
+				}
+				
+				if ($this->numErrors()) {
 					if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 					if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 					return false;
@@ -3447,9 +3462,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		
 		# --- do deletion
 		if ($this->debug) echo $vs_sql;
-		$o_db->query($vs_sql);
-		if ($o_db->numErrors() > 0) {
-			$this->errors = $o_db->errors();
+		
+		try {
+			$o_db->query($vs_sql);
+		} catch(DatabaseException $e) {
+			$this->_processDatabaseException($e, $o_db);
+		}
+		
+		if ($this->numErrors() > 0) {
 			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return false;
@@ -9882,7 +9902,7 @@ $pa_options["display_form_field_tips"] = true;
 					# do any records exist?
 					$vs_rel_pk = Datamodel::primaryKey($vs_many_table);
 					
-					$qr_record_check = $o_db->query($x="
+					$qr_record_check = $o_db->query("
 						SELECT {$vs_rel_pk}
 						FROM {$vs_many_table}
 						WHERE
@@ -10849,7 +10869,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 	
 		$o_db = $this->getDb();
-		$qr_comments = $o_db->query($x="
+		$qr_comments = $o_db->query("
 			SELECT ca_item_comments.row_id
 			FROM ca_item_comments
 			{$vs_access_join}

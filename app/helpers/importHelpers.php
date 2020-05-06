@@ -36,7 +36,7 @@
 	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/TGN.php');
 	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/AAT.php');
 	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/ULAN.php');
-
+	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
 	# ---------------------------------------
 	/**
 	 * 
@@ -292,11 +292,12 @@
 			foreach($pa_attributes as $vs_element_code => $va_attrs) {
 				$vs_prefix = '';
 				$va_prefix_file_list = [];
+
+				// Add details for file and media types.
 				if (in_array(ca_metadata_elements::getElementDatatype($vs_element_code), [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__]) && $vs_batch_media_directory && isset($pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) && $pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) {
 					 $vs_prefix = preg_replace("![/]+!", "/", "{$vs_batch_media_directory}/".$pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]."/");
 					 $va_prefix_file_list = caGetDirectoryContentsAsList($vs_prefix, true); 
 				}
-			
 			
 				$vb_is_repeating = false;
 				$vn_num_repeats = null;
@@ -473,7 +474,7 @@
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		
 		$t_rel_instance = Datamodel::getInstanceByTableName($ps_related_table, true);
-		
+
 		$refinery_name = $po_refinery_instance->getName();
 		
 		global $g_ui_locale_id;
@@ -604,7 +605,7 @@
                 $pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label')), $pa_options);
 
                 switch($ps_related_table) {
-	                case 'ca_objects':
+                    case 'ca_objects':
                         $vn_id = DataMigrationUtils::getObjectID($vs_name, $vs_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
                         break;
                     case 'ca_object_lots':
@@ -1221,17 +1222,19 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 				if (is_array($pm_value)) {
 					foreach($pm_value as $vn_i => $vs_value) {
 						foreach($pa_item_settings['applyRegularExpressions'] as $vn_c => $va_regex) {
-							if (!strlen($va_regex['match'])) { continue; }
-							$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
-							$vs_value = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
+                            if (!strlen($va_regex['match'])) {
+                                continue;
+                            }
+							$vs_value = preg_replace(caMakeDelimitedRegexp($va_regex['match'],'!').((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
 						}
 						$pm_value[$vn_i] = $vs_value;
 					}
 				} else {
 					foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
-						if (!strlen($va_regex['match'])) { continue; }
-						$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
-						$pm_value = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $pm_value);
+                        if (!strlen($va_regex['match'])) {
+                            continue;
+                        }
+						$pm_value = preg_replace(caMakeDelimitedRegexp($va_regex['match'],'!').((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $pm_value);
 					}
 				}
 			}

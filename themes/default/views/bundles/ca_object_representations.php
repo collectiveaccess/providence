@@ -28,8 +28,9 @@
 	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
 	
-	$settings 				= $this->getVar('settings');
+	$settings 			= $this->getVar('settings');
 	
+	$is_batch			= $this->getVar('batch');
 	$use_classic_interface 	= (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
 
 	if ($use_classic_interface) {
@@ -52,7 +53,6 @@
 	$rel_types          = $t_item_rel->getRelationshipTypes($left_sub_type_id, $right_sub_type_id);
 	
 	$read_only			= (isset($settings['readonly']) && $settings['readonly']);
-	$is_batch			= $this->getVar('batch');
 	
 	$num_per_page 		= caGetOption('numPerPage', $settings, 10);
 	$initial_values 	= caSanitizeArray($this->getVar('initialValues'), ['removeNonCharacterData' => false]);

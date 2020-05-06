@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2019 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -220,29 +220,23 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	/**
 	 *
 	 */
-	public function insert($pa_options=null) {
-		if (!caGetOption('dontAutomaticallySetEffectiveDate', $pa_options, false) && !$this->get('effective_date', array('getDirectDate' => true))) {  $this->set('effective_date', _t('now')); }
-		
-		try { 
-			return parent::insert($pa_options);
-		} catch (Exception $e) {
-			// Dupes will throw exception
-			return false;
+	public function insert($options=null) {
+		if (!caGetOption('dontAutomaticallySetEffectiveDate', $options, false) && !$this->get('effective_date', array('getDirectDate' => true))) {  
+			$this->set('effective_date', _t('now')); 
 		}
+		
+		return parent::insert($options);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function update($pa_options=null) {
-		if (!caGetOption('dontAutomaticallySetEffectiveDate', $pa_options, false) && !$this->get('effective_date', array('getDirectDate' => true))) { $this->set('effective_date', _t('now')); }
-		
-		try {
-			return parent::update($pa_options);
-		} catch(Exception $e) {
-			// Dupes will throw exception
-			return false;
+	public function update($options=null) {
+		if (!caGetOption('dontAutomaticallySetEffectiveDate', $options, false) && !$this->get('effective_date', array('getDirectDate' => true))) { 
+			$this->set('effective_date', _t('now')); 
 		}
+		
+		return parent::update($options);
 	}	
 	# ------------------------------------------------------
 }

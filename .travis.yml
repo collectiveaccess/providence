@@ -5,9 +5,9 @@ dist: bionic
 addons:
   apt:
     packages:
-    - mysql-server-5.7
-    - mysql-client-core-5.7
-    - mysql-client-5.7
+      - mysql-server-5.7
+      - mysql-client-core-5.7
+      - mysql-client-5.7
 
 git:
   depth: 5
@@ -21,15 +21,18 @@ cache:
   - directories:
       # Cache vendor folder will speed up environment setup
       - vendor
+      - tests/mysql_profile
 
 services:
   - mysql
 
 env:
-  # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
-  - PROFILE=testing
+# Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
+#- PROFILE=default
 
 before_install:
+  # execute all of the commands which need to be executed
+  # before installing dependencies
   # Remove xdebug to increase speed
   - phpenv config-rm xdebug.ini
   # Set up database
@@ -37,14 +40,24 @@ before_install:
 
 install:
   # Create setup.php
+  - export PROFILE=${PROFILE:-testing}
   - ln -s .travis.setup.php setup.php
-  - composer update --prefer-dist
+  - if test -e vendor/composer.lock ; then echo "Restoring previous composer lock file"; cp vendor/composer.lock composer.lock; fi
+  - composer install --prefer-dist
+  - cp composer.lock vendor
   # Install the testing profile
   - tests/profile_setup.sh "$PROFILE"
 
 before_script:
+# execute all of the commands which need to be executed
+# before running actual tests
+
+script:
+  # execute all of the commands which
+  # should make the build pass or fail
   # Go into the tests directory to run the tests
   - cd tests/
+  - ../vendor/phpunit/phpunit/phpunit
 
 branches:
   only:
