@@ -2698,7 +2698,7 @@ var methods = {
                         if(img == null) {
                             view.loader_request(url);
                         } else {
-                            if(img.loaded) {
+                            if(img.xloaded) {
                                 img.timestamp = new Date().getTime();
                                 dodraw(); //good.. we have the image.. dodraw
                                 return;
@@ -2726,7 +2726,7 @@ var methods = {
                             var subtileid = Math.floor(x/factor) + Math.floor(y/factor)*xtilenum_up;
                         	var url = options.src + methods.getTilepicTileNum(layer.level+down, subtileid, layer);
                             var img = layer.tiles[url];
-                            if(img && img.loaded) {
+                            if(img && img.xloaded) {
                                 //crop the source section
                                 var half_tilesize = layer.info.tilesize/factor;
                                 var sx = (x%factor)*half_tilesize;
@@ -2751,14 +2751,14 @@ var methods = {
 
                     loader_request: function(url) {
                         var img = new Image();
-                        img.loaded = false;
-                        img.loading = false;
+                        img.xloaded = false;
+                        img.xloading = false;
                         img.level_loaded_for = layer.level;
                         img.request_src = url;
                         img.timestamp = new Date().getTime();
                         img.onload = function() {
-                            this.loaded = true;
-                            this.loading = false;
+                            this.xloaded = true;
+                            this.xloading = false;
                             if(this.level_loaded_for == layer.level) {
                                 view.needdraw = true;
                             }
@@ -2778,7 +2778,7 @@ var methods = {
                                 var latest_img = null;
                                 for (var url in layer.tiles) {
                                     img = layer.tiles[url];
-                                    if(img.loaded == false && ((img.loading == false) || (img.loading == 'auto')) && (latest_img == null || img.timestamp > latest_img.timestamp)) {
+                                    if(img.xloaded == false && (img.xloading == false) && (latest_img == null || img.timestamp > latest_img.timestamp)) {
                                         latest_img = img;
                                     }
                                 }
@@ -2788,7 +2788,7 @@ var methods = {
                                 //start loading!
                                 img.src = img.request_src;
                                 layer.loader.loading++;
-                                img.loading = true;
+                                img.xloading = true;
                                 view.loader_load(); //recurse to see if we can load more image
                             }
                         }
@@ -2799,7 +2799,7 @@ var methods = {
                             var oldest_img = null;
                             for (var url in layer.tiles) {
                                 img = layer.tiles[url];
-                                if(img.loaded == true && (oldest_img == null || img.timestamp < oldest_img.timestamp)) {
+                                if(img.xloaded == true && (oldest_img == null || img.timestamp < oldest_img.timestamp)) {
                                     oldest_img = img;
                                 }
                             }
