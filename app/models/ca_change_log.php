@@ -654,7 +654,7 @@ class ca_change_log extends BaseModel {
 			}
 		}
 
-		return $va_ret;
+		return caSanitizeArray($va_ret, ['removeNonCharacterData' => true]);
 	}
 	# ------------------------------------------------------
 	/**

@@ -124,4 +124,50 @@ JSON;
 		$this->assertEquals("5.0 in", $vm_ret[1]);
 	}
 	# -------------------------------------------------------
+
+    public function testCaEscapeForDelimitedRegexpWithEmptyExpression(){
+        $regexp = '';
+        $result = caEscapeForDelimitedRegexp($regexp, '!');
+        $this->assertEquals('', $result);
+    }
+
+    public function testCaEscapeForDelimitedRegexpWithSharp(){
+        $regexp = '#';
+        $result = caEscapeForDelimitedRegexp($regexp, '#');
+        $this->assertEquals('\#', $result);
+    }
+
+    public function testCaEscapeForDelimitedRegexpWithSlash(){
+        $regexp = '/';
+        $result = caEscapeForDelimitedRegexp($regexp, '/');
+        $this->assertEquals('\/', $result);
+    }
+
+    public function testCaEscapeForDelimitedRegexpWithExclamation(){
+        $regexp = '!';
+        $result = caEscapeForDelimitedRegexp($regexp, '!');
+        $this->assertEquals('\\!', $result);
+    }
+
+    public function testCaEscapeForDelimitedRegexpEscapedDelimiter(){
+        $regexp = '\!';
+        $result = caEscapeForDelimitedRegexp($regexp, '!');
+        $this->assertEquals('\!', $result);
+    }
+
+    public function testCaMakeDelimitedRegexp(){
+        $regexp = '([0-9]+)!([0-9]+)';
+        $result = caMakeDelimitedRegexp($regexp, '!');
+        $this->assertEquals('!([0-9]+)\\!([0-9]+)!', $result);
+    }
+    public function testCaMakeDelimitedRegexpWithSharp(){
+        $regexp = '([0-9]+)!([0-9]+)';
+        $result = caMakeDelimitedRegexp($regexp, '#');
+        $this->assertEquals('#([0-9]+)!([0-9]+)#', $result);
+    }
+    public function testCaMakeDelimitedRegexpWithSlash(){
+        $regexp = '([0-9]+)!([0-9]+)';
+        $result = caMakeDelimitedRegexp($regexp, '/');
+        $this->assertEquals('/([0-9]+)!([0-9]+)/', $result);
+    }
 }
