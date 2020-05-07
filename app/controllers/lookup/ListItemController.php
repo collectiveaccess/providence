@@ -132,11 +132,11 @@
 							unset($va_item['description']);
 							unset($va_item['icon']);
 						
-							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
-							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
+							if (!trim($va_item[$vs_label_display_field_name])) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
+							if (!trim($va_item[$vs_label_display_field_name])) { $va_item[$vs_label_display_field_name] = '???'; }
 						
 							$va_item['name'] = $va_display_values[$vn_c];
-							if (!$va_item['name']) { $va_item['name'] = '??? '.$vn_item_id; }
+							if (!trim($va_item['name'])) { $va_item['name'] = '??? '.$vn_item_id; }
 							$va_item['table'] = 'ca_list_items';
 						
 							// Child count is only valid if has_children is not null
