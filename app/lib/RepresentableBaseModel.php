@@ -1223,7 +1223,7 @@
             
             // Fetch additional bundles for display and in-bundle editing
             $bundle_data = [];
-            if(is_array($bundles_to_save) && sizeof($va_reps)) {
+            if(is_array($bundles_to_save) && is_array($va_reps) && sizeof($va_reps)) {
             	$representation_ids = array_map(function($v) { return $v['representation_id']; }, $va_reps);
             	$qr_reps = caMakeSearchResult('ca_object_representations', $representation_ids);
             	while($qr_reps->nextHit()) {
