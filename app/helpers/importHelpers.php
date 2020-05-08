@@ -882,6 +882,17 @@
 						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
+						
+						// Allow setting of preferred labels in attributes block
+						if ($l = caGetOption(['preferred_labels', 'preferredLabels'], $va_val, null)) {
+							if(is_array($vs_item) && ($ps_table !== 'ca_entities')) {
+								if (isset($vs_label_fld[$vs_label_fld]) && $vs_label_fld[$vs_label_fld]) {
+									$vs_item = $vs_item[$vs_label_fld];
+								}
+							} else {
+								$vs_item = $l;
+							}
+						}
 			
 						// Set interstitials
 						//      $va_interstitial_attr_vals = interstitial attributes for item
@@ -938,7 +949,7 @@
 								$vn_item_id = DataMigrationUtils::getObjectLotID($vs_item, $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
 								break;
 							case 'ca_entities':
-								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+								$vn_item_id = DataMigrationUtils::getEntityID(is_array($vs_item) ? $vs_item : DataMigrationUtils::splitEntityName($vs_item, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_places':
 								$vn_item_id = DataMigrationUtils::getPlaceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $vn_hierarchy_id, $va_attr_vals_with_parent, $pa_options);
