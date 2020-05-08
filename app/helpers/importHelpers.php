@@ -37,6 +37,8 @@
 	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/AAT.php');
 	require_once(__CA_LIB_DIR__.'/Plugins/InformationService/ULAN.php');
 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+	
+	
 	# ---------------------------------------
 	/**
 	 * 
@@ -391,7 +393,12 @@
 						if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
 							$vs_path = array_shift($va_candidates);
 						}
-						$va_attr_vals[$vs_element_code][$vs_element_code] = $vs_path;
+						
+						if (in_array($vs_element_code, array_merge(caGetPreferredLabelNameKeyList(), caGetIdnoNameKeyList()))) {
+							$va_attr_vals[$vs_element_code] = $vs_path;
+						} else {
+							$va_attr_vals[$vs_element_code][$vs_element_code] = $vs_path;
+						}
 					}
 				}
 			}
@@ -492,7 +499,7 @@
 			$va_name = null;
 			$vs_delimiter = caGetOption('delimiter', $pa_related_options, null);
 	
-			if (!is_array($va_name = BaseRefinery::parsePlaceholder(caGetOption(['name', 'preferredLabel', 'preferredLabels'], $pa_related_options, null), $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_name = [$va_name]; }
+			if (!is_array($va_name = BaseRefinery::parsePlaceholder(caGetOption(caGetPreferredLabelNameKeyList(), $pa_related_options, null), $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_name = [$va_name]; }
 			if (!is_array($va_idno = BaseRefinery::parsePlaceholder($pa_related_options['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_idno = [$va_idno]; }
 			if (!is_array($va_type = BaseRefinery::parsePlaceholder($pa_related_options['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_type = [$va_type]; }
 			if (!is_array($va_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_parent_id = [$va_parent_id]; }
@@ -886,10 +893,10 @@
 						}
 						
 						// Allow setting of preferred labels in attributes block
-						if ($l = caGetOption(['preferred_labels', 'preferredLabels'], $va_val, null)) {
-							if(is_array($vs_item) && ($ps_table !== 'ca_entities')) {
-								if (isset($vs_label_fld[$vs_label_fld]) && $vs_label_fld[$vs_label_fld]) {
-									$vs_item = $vs_item[$vs_label_fld];
+						if ($l = caGetOption(caGetPreferredLabelNameKeyList(), $va_val, null)) {
+							if(is_array($l) && ($ps_table !== 'ca_entities')) {
+								if (isset($l[$vs_label_fld]) && $l[$vs_label_fld]) {
+									$vs_item = $l[$vs_label_fld];
 								}
 							} else {
 								$vs_item = $l;
@@ -1494,5 +1501,19 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			return null;
 		}
 		return $transformed_url;
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Return list of key values to try when looking for "preferred labels" option in splitter opts.
+	 */
+	function caGetPreferredLabelNameKeyList() { 
+		return ['preferredLabels','preferred_labels', 'preferredLabels', 'name'];
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Return list of key values to try when looking for "identifier" option in splitter opts.
+	 */
+	function caGetIdnoNameKeyList() { 
+		return ['idno','idno_stub'];
 	}
 	# ---------------------------------------------------------------------
