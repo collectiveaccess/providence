@@ -1041,7 +1041,7 @@ if (!$pb_omit_editing_info) {
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
 				"#bundleDisplayEditorBundle_".str_replace('.', '_', $vs_bundle),
-				$this->_formatBundleTooltip($vs_label, $vs_bundle, _t('Use this generic %1 bundle to display %1 templates not specific to a single metadata element.', $t_instance->getProperty('NAME_SINGULAR'), $t_instance->getProperty('NAME_SINGULAR')))
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, _t('Use this generic %1 bundle to display %1 templates not specific to a single metadata element.', $t_instance->getProperty('NAME_SINGULAR')))
 			);
 		}
 		
