@@ -1715,7 +1715,8 @@
 	function caSearchIsForSets($ps_search, $pa_options=null) {
 		$o_config = Configuration::load();
 		$o_query_parser = new LuceneSyntaxParser();
-		$o_query_parser->setEncoding($o_config->get('character_set'));
+        $vs_char_set = $o_config->get('character_set');
+        $o_query_parser->setEncoding($vs_char_set);
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 		
 		$ps_search = preg_replace('![\']+!', '', $ps_search);
@@ -1781,6 +1782,7 @@
 					break;	
 				case 'Zend_Search_Lucene_Search_Query_Range':
 				case 'Zend_Search_Lucene_Search_Query_Wildcard':
+				case 'Zend_Search_Lucene_Search_Query_Fuzzy':
 					// noop
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
