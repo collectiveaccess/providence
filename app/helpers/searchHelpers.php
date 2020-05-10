@@ -1792,7 +1792,11 @@
 						}
 					}
 					break;
-				default:
+                default:
+				    /*
+				        TODO: probably remove, all cases are covered on previous cases. In
+                        addition, keeping it is a door to infinite recursion.
+				    */
 					if (is_array($va_sub_sets = caSearchIsForSets($subquery))) {
 						$va_sets = array_merge($va_sets, $va_sub_sets);
 					}
