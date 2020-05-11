@@ -54,7 +54,7 @@ abstract class BaseTestWithData extends TestCase {
 	 */
 	private $opb_care_about_side_effects = true;
 
-	static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
+	static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments', 'ca_sets');
 	# -------------------------------------------------------
 	/**
 	 * Inserts test data set by implementation
