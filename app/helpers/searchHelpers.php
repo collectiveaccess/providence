@@ -1753,7 +1753,6 @@
 		foreach ($va_items as $id => $subquery) {
 			switch(get_class($subquery)) {
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
-				
 					foreach($subquery->getQueryTerms() as $o_term) {
 						$vs_field = $o_term->field;
 						$vs_value = $o_term->text;
@@ -1783,6 +1782,8 @@
 				case 'Zend_Search_Lucene_Search_Query_Range':
 				case 'Zend_Search_Lucene_Search_Query_Wildcard':
 				case 'Zend_Search_Lucene_Search_Query_Fuzzy':
+				case 'Zend_Search_Lucene_Search_Query_Insignificant':
+				case 'Zend_Search_Lucene_Search_Query_Empty':
 					// noop
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
@@ -1792,18 +1793,15 @@
 						}
 					}
 					break;
-                default:
-				    /*
-				        TODO: probably remove, all cases are covered on previous cases. In
-                        addition, keeping it is a door to infinite recursion.
-				    */
-					if (is_array($va_sub_sets = caSearchIsForSets($subquery))) {
-						$va_sets = array_merge($va_sets, $va_sub_sets);
+				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+					foreach($subquery->getTerms() as $o_term) {
+						if (is_array($va_sub_sets = caSearchIsForSets($o_term))) {
+							$va_sets = array_merge($va_sets, $va_sub_sets);
+						}
 					}
 					break;
 			}
 		}
-		
 		if(sizeof($va_sets) == 0) { return false; }
 		$t_set = new ca_sets();
 		return $t_set->getPreferredDisplayLabelsForIDs(array_keys($va_sets));
