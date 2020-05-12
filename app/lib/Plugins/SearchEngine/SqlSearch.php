@@ -378,6 +378,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				foreach($va_filters as $va_filter) {
 					$va_tmp = explode('.', $va_filter['field']);
 					$va_path = array();
+					// TODO: Undefined variable $vs_table_name
 					if ($va_tmp[0] != $vs_table_name) {
 						$va_path = Datamodel::getPath($vs_table_name, $va_tmp[0]);
 					} 
@@ -504,6 +505,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			
 			return array(
 				'access_point' => "{$vs_table}.{$vs_field}",
+                // TODO: Variable '$vn_rel_type' is probably undefined
 				'relationship_type' => (int)$vn_rel_type,
 				'table_num' => $vs_table_num,
 				'element_id' => null,
@@ -523,6 +525,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		    }
 		    return array(
 				'access_point' => $va_tmp[0],
+				// TODO: Undefined variable '$vn_rel_type'
 				'relationship_type' => (int)$vn_rel_type,
 				'table_num' => $vs_table_num,
 				'element_id' => null,
@@ -845,6 +848,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							}
 							
 							if (!$vs_direct_sql_query) {
+                                // TODO: Variable '$vn_lower_val' is probably undefined
+							    // TODO: Variable '$vn_upper_val' is probably undefined
 								$vs_direct_sql_query = "
 									SELECT ca.row_id, 1, ca.attribute_id
 									FROM ca_attribute_values cav
@@ -901,6 +906,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vn_w++;
 								$vs_temp_table = 'ca_sql_search_phrase_'.md5($pn_subject_tablenum."/".$vs_word."/".$vn_w);
 								$this->_createTempTable($vs_temp_table);
+								// TODO: Variable '{$vs_fld_limit_sql}' is probably undefined
 								$vs_sql = "
 									INSERT INTO {$vs_temp_table}
 									SELECT swi.index_id + 1, 1, null
@@ -1204,7 +1210,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
 																	if (((int)$va_dates[0] === -2000000000) && $this->opo_search_config->get('treat_before_dates_as_circa')) {
-                                                                        $va_dates[0] = $va_dates['start'] = (int)$vn_end + 0.1231235959;
+                                                                        $va_dates[0] = $va_dates['start'] = (int)$va_dates['end'] + 0.1231235959;
                                                                     }
                                                                     if (((int)$va_dates[1] === 2000000000) && $this->opo_search_config->get('treat_after_dates_as_circa')) {
                                                                         $va_dates[1] = $va_dates['end'] = (int)$va_dates['start'];
@@ -1417,7 +1423,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								}
 								if (($vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num)) && (($vn_intrinsic_type = $t_table->getFieldInfo($vs_intrinsic_field_name, 'FIELD_TYPE')) == FT_BIT)) {
 									$vb_ft_bit_optimization = true;
-								} elseif($vn_intrinsic_type == FT_HISTORIC_DATERANGE) {
+								}
+								// TODO: Variable '$vn_intrinsic_type' is probably undefined
+								elseif($vn_intrinsic_type == FT_HISTORIC_DATERANGE) {
 									$vb_all_numbers = true;
 									foreach($va_raw_terms as $vs_term) {
 										if (!is_numeric($vs_term)) {
@@ -1451,6 +1459,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											}
 											break;
 										case '<':
+                                            $vs_eq = '';
 											$vs_raw_term = substr($vs_raw_term, 1);
 											if ($vs_raw_term{0} == '=') {
 												$vs_raw_term = substr($vs_raw_term, 1);
@@ -1472,6 +1481,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											}
 											break;
 										case '>':
+                                            $vs_eq = '';
 											$vs_raw_term = substr($vs_raw_term, 1);
 											if ($vs_raw_term{0} == '=') {
 												$vs_raw_term = substr($vs_raw_term, 1);
@@ -1554,6 +1564,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											}
 											break;
 										case '<':
+                                            $vs_eq = '';
 											$vs_raw_term = substr($vs_raw_term, 1);
 											if ($vs_raw_term{0} == '=') {
 												$vs_raw_term = substr($vs_raw_term, 1);
@@ -1575,6 +1586,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											}
 											break;
 										case '>':
+                                            $vs_eq = '';
 											$vs_raw_term = substr($vs_raw_term, 1);
 											if ($vs_raw_term{0} == '=') {
 												$vs_raw_term = substr($vs_raw_term, 1);
@@ -1636,6 +1648,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						if (sizeof($va_ft_terms)) {
 							if (($t_table) && (strlen($vs_fld_num) > 1)) {
 								$o_search = new SearchEngine();
+								// TODO: Variable '$vs_field' is probably undefined
 								if (!is_array($va_field_info = $o_search->getFieldOptions($pn_subject_tablenum, $vs_table_num, $vs_field))) { $va_field_info = array(); }
 								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (sw.word IN (".((in_array('DONT_TOKENIZE', $va_field_info, true) || in_array('INDEX_AS_IDNO', $va_field_info, true)) ? join(',', $va_raw_terms_escaped) : join(',', $va_ft_terms)).")))";
 							} else {
@@ -1678,6 +1691,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					}
 					
 					$vs_rel_type_id_sql = null;
+					// TODO: Variable '$va_access_point_info' is probably undefined
 					if((is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids']))) {
 						$vs_rel_type_id_sql = " AND (swi.rel_type_id IN (".join(",", $va_access_point_info['relationship_type_ids'])."))";
 					}
@@ -1686,13 +1700,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						foreach($va_restrict_to_fields as $va_restrict) {
 							$va_field_restrict_sql[] = "((swi.field_table_num = ".intval($va_restrict['table_num']).") AND (swi.field_num = '".$va_restrict['field_num']."'))";
 						}
-						$vs_sql_where .= " AND (".join(" OR ", $va_field_restrict_sql).")";
+						// TODO: Variable '$vs_sql_where' is probably undefined
+                        $vs_sql_where .= " AND (".join(" OR ", $va_field_restrict_sql).")";
 					}
 					if (!$vs_fld_num && is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $pa_options, null)) && sizeof($va_exclude_fields_from_search)) {
 						$va_field_restrict_sql = [];
 						foreach($va_exclude_fields_from_search as $va_restrict) {
 							$va_field_restrict_sql[] = "'".(int)$va_restrict['table_num']."/".$va_restrict['field_num']."'";
 						}
+						// TODO: Variable '$vs_sql_where' is probably undefined
 						$vs_sql_where .= " AND (CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (".join(",", $va_field_restrict_sql)."))";
 					}
 					
@@ -1737,6 +1753,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 							}
 						} else {
+                            // TODO: Variable '$vs_sql_where' is probably undefined
 							$vs_sql = "
 								INSERT IGNORE INTO {$ps_dest_table}
 								SELECT swi.row_id, SUM(swi.boost), swi.field_container_id
@@ -1772,7 +1789,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if ($vs_direct_sql_query) {
 									if ($vn_direct_sql_target_table_num != $pn_subject_tablenum) {
 										array_push($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ".Datamodel::primaryKey($pn_subject_tablenum, true));
-									} elseif($vn_intrinsic_type) {
+									}
+									// TODO: Variable '$vn_intrinsic_type' is probably undefined
+                                    elseif($vn_intrinsic_type) {
 										array_unshift($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ".Datamodel::primaryKey($pn_subject_tablenum, true));
 									} else {
 										array_unshift($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id");
@@ -1783,6 +1802,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 									}
 								}
+								// TODO: Variable '{$vs_sql_where}' is probably undefined
 								$vs_sql = ($vs_direct_sql_query) ? "{$vs_direct_sql_query}" : "
 									SELECT swi.row_id, swi.field_container_id
 									FROM ca_sql_search_word_index swi
@@ -1830,7 +1850,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
 									$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 								}
-								
+
+								// TODO: Variable '$vs_sql_where' is probably undefined
 								$vs_sql = "
 									SELECT swi.row_id, swi.field_container_id
 									FROM ca_sql_search_word_index swi
@@ -1872,6 +1893,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
 									$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 								}
+								// TODO: Variable '$vs_sql_where' is probably undefined
 								$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
 									INSERT IGNORE INTO {$ps_dest_table}
 									SELECT swi.row_id, SUM(swi.boost),swi.field_container_id
@@ -2200,12 +2222,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$va_row_insert_sql = array();
 		
 		$pn_subject_tablenum = (int)$pn_subject_tablenum;
-		$vn_row_id = (int)$vn_row_id;
 		$pn_content_tablenum = (int)$pn_content_tablenum;
 		$pn_content_row_id = (int)$pn_content_row_id;
 		$vn_boost = (int)$vn_boost;
-		$vn_access = (int)$vn_access;
-		
+
 		
 		foreach($pa_subject_row_ids as $vn_row_id) {
 			if (!$vn_row_id) { 
@@ -2397,6 +2417,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				if (strpos($vs_word, $vs_token) === false) { 
 					if (($vn_score = levenshtein($vs_word, $vs_token)) > 3) { continue; }
 				} else {
+				    // TODO: Variable '$vn_score' is probably undefined
 					$vn_score -= 150;
 				}
 				
@@ -2431,7 +2452,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$vn_w++;
 				$vs_temp_table = 'ca_sql_search_suggest_'.md5("/".$vn_i."/".print_R($va_word_list, true));
 				$this->_createTempTable($vs_temp_table);
-			
+
+				// TODO: Variable '{$vs_table_sql}' is probably undefined
 				$vs_sql = "
 					INSERT INTO {$vs_temp_table}
 					SELECT swi.index_id + 1, 1
@@ -2524,7 +2546,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	
 		$qr_words = $this->opo_db->query("
 			SELECT word, word_id FROM ca_sql_search_words WHERE word_id IN (?)
-		", array($va_word_ids));
+		", array($pa_word_ids));
 		
 		$va_words = array();
 		while($qr_words->nextRow()) {
