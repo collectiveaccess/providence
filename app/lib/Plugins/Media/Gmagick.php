@@ -473,6 +473,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_tmp = $this->handle->getimagegeometry();
 				$this->properties["width"] = $va_tmp['width'];
 				$this->properties["height"] = $va_tmp['height'];
+				
 				$this->properties["quality"] = "";
 				$this->properties["filesize"] = filesize($ps_filepath);
 				$this->properties["bitdepth"] = $this->handle->getimagedepth();
@@ -489,7 +490,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 				$this->properties["typename"] = $this->handle->getimageformat();
-				
+
+				$this->_gmagickOrient();
 				$this->ohandle = is_object($this->handle) ? clone $this->handle : null;
 				return 1;
 			}
@@ -1103,13 +1105,18 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function reset() {
 		if ($this->ohandle) {
 			$this->handle = is_object($this->ohandle) ? clone $this->ohandle : null;
+
 			# load image properties
 			$va_tmp = $this->handle->getimagegeometry();
 			$this->properties["width"] = $va_tmp['width'];
 			$this->properties["height"] = $va_tmp['height'];
+			
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 			$this->properties["typename"] = $this->handle->getimageformat();
+			
+			
+			$this->_gmagickOrient();
 			return 1;
 		}
 		return false;
@@ -1217,27 +1224,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$va_metadata['EXIF']['FILE']['FileName'] = $f;
 				}
 
-				// Rotate incoming image as needed
-
-				if (isset($va_metadata['EXIF']['IFD0']['Orientation'])) {
-					$vn_orientation = $va_metadata['EXIF']['IFD0']['Orientation'];
-
-					switch ($vn_orientation) {
-						case 3:
-							$this->handle->rotateimage("#FFFFFF", 180);
-							unset($va_metadata['EXIF']['IFD0']['Orientation']);
-							break;
-						case 6:
-							$this->handle->rotateimage("#FFFFFF", 90);
-							unset($va_metadata['EXIF']['IFD0']['Orientation']);
-							break;
-						case 8:
-							$this->handle->rotateimage("#FFFFFF", -90);
-							unset($va_metadata['EXIF']['IFD0']['Orientation']);
-							break;
-					}
-				}
-
 				// get XMP
 				$o_xmp = new XMPParser();
 				if ($o_xmp->parse($ps_filepath)) {
@@ -1316,5 +1302,40 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return false; // gmagick couldn't read file, presumably
 		}
 	}
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _gmagickOrient() {
+		// Rotate incoming image as needed
+		
+		if (isset($this->metadata['EXIF']['IFD0']['Orientation'])) {
+			$orientation = $this->metadata['EXIF']['IFD0']['Orientation'];
+
+			$rotation = null;
+			switch ($orientation) {
+				case 3:
+					$rotation = 180;
+					break;
+				case 6:
+					$rotation = 90;
+					break;
+				case 8:
+					$rotation = -90;
+					break;
+			}
+						
+			if (($rotation) && (abs($rotation) === 90)) {
+				$w = $this->properties["width"]; $h = $this->properties["height"];
+				
+				$this->properties["width"] = $h;
+				$this->properties["height"] = $w;
+					
+				//unset($this->metadata['EXIF']['IFD0']['Orientation']);
+			}
+			return true;
+		}
+		return false;
+	}
+	# ----------------------------------------------------------------------
 }
-# ----------------------------------------------------------------------

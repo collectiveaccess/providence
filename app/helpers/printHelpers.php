@@ -96,6 +96,8 @@
             if (!is_array($restrict_to_types)) { $restrict_to_types = []; }
             $restrict_to_types = caMakeTypeList($vs_tablename, $restrict_to_types);
 		}
+		if(!is_array($restrict_to_types)) { $restrict_to_types = []; }
+		
 		$vs_type = caGetOption('type', $pa_options, 'page');
 		$vs_element_code = caGetOption('elementCode', $pa_options, null);
 		$vb_for_html_select = caGetOption('forHTMLSelect', $pa_options, false);    

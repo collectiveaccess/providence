@@ -218,7 +218,7 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'default' => 0,
 		'width' => 1, 'height' => 1,
 		'label' => _t('Minimize existing values?'),
-		'description' => _t('Check this option if existing values should displayed in a minimized, non-editable format.)')
+		'description' => _t('Check this option if existing values should displayed in a minimized, non-editable format.')
 	)
 );
 
