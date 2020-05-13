@@ -951,10 +951,11 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$output_file_prefix = tempnam($tmp_dir, 'caMultipagePreview');
 
 		$files = [];
-		$i = 0;
+		$i = 1;
 		
+		$this->handle->setimageindex(0);
 		do {
-			if ($i > 0) { $this->handle->nextImage(); }
+			if ($i > 1) { $this->handle->nextImage(); }
 			
 			$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
 			$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
