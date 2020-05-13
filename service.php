@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,16 @@
 
 	$req = $app->getRequest();
 	$resp = $app->getResponse();
+	
+	// TODO: move this into a library so $_, $g_ui_locale_id and $g_ui_locale gets set up automatically
+	$g_ui_locale_id = $req->user->getPreferredUILocaleID();			// get current UI locale as locale_id	 			(available as global)
+	$g_ui_locale = $req->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
+	$g_ui_units_pref = $req->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
+	
+	if((!isset($_locale)) || ($g_ui_locale != $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
+		if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+		$req->reloadAppConfig();
+	}
 
 	// Prevent caching
 	$resp->addHeader('Access-Control-Allow-Origin', '*');
@@ -54,4 +64,3 @@
 	$resp->sendResponse();
 
 	$req->close();
-?>
