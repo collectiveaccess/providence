@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2174,26 +2174,34 @@
 										}
 									}
 
+									$dont_expand_hierarchically = caGetOption('dontExpandHierarchically', $va_facet_info, false);
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
+										
+										$ids = [];
+										if (!$dont_expand_hierarchically) {
+											if (!($t_list_item = ca_list_items::find($vn_row_id, ['returnAs' => 'firstModelInstance', 'checkAccess' => $pa_options['checkAccess']]))) { break; }
+											$ids = $t_list_item->get('ca_list_items.children.item_id', ['returnAsArray' => true]);
+										}
+										$ids[] = $vn_row_id;
 										if ($vn_i == 0) {
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												{$vs_relative_to_join}
 												WHERE
-													({$vs_table_name}.{$vs_field_name} = ?)";
+													({$vs_table_name}.{$vs_field_name} IN (?))";
 
-											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+											$qr_res = $this->opo_db->query($vs_sql, [$ids]);
 										} else {
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												{$vs_relative_to_join}
 												WHERE
-													({$vs_table_name}.{$vs_field_name} = ?)";
+													({$vs_table_name}.{$vs_field_name} IN (?))";
 
-											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+											$qr_res = $this->opo_db->query($vs_sql, [$ids]);
 
 										}
 										
@@ -3213,7 +3221,6 @@
 							if (is_array($va_wheres) && sizeof($va_wheres) > 0) {
 								$vs_where_sql = ' WHERE '.join(' AND ', $va_wheres);
 							}
-							
 
 							if ($vb_check_availability_only) {
 								$vs_sql = "
