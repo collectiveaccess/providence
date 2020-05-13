@@ -524,8 +524,8 @@
 			}
 			
 			$o_conf = caGetSearchConfig();
-			if (!($max_hits_for_in_memory_search = $o_conf->get('max_hits_for_in_memory_search'))) { $max_hits_for_in_memory_search = 1000000; }
-			if (sizeof($hits) < $max_hits_for_in_memory_search) {
+			if (!($max_hits_for_in_memory_sort = $o_conf->get('max_hits_for_in_memory_sort'))) { $max_hits_for_in_memory_sort = 1000000; }
+			if (sizeof($hits) < $max_hits_for_in_memory_sort) {
 				$sort_mode = SORT_FLAG_CASE;
 				if (!$o_conf->get('dont_use_natural_sort')) { $sort_mode |= SORT_NATURAL; } else { $sort_mode |= SORT_STRING; }
 				
