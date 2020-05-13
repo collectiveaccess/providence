@@ -1488,10 +1488,33 @@ if (!$for_current_value_reindex) {
 				
 				// index components of complex multi-value attributes
 				if ($vn_count = sizeof($va_attributes)) {
-					foreach($va_attributes as $vo_attribute) {
+					
+					// Create value map to support conditional privacy in containers
+					$map = [];
+					if ($private_when = caGetOption('PRIVATE_WHEN', $pa_data, null)) {
+						foreach($va_attributes as $i => $vo_attribute) {
+							foreach($vo_attribute->getValues() as $vo_value) {
+								$map[$i][ca_metadata_elements::getElementCodeForId($vo_value->getElementID())] = $vo_value->getDisplayValue(['returnIdno' => true]);
+							}
+						}
+					}
+					foreach($va_attributes as $i => $vo_attribute) {
 						/* index each element of the container */
 						$va_sub_element_ids = $this->opo_metadata_element->getElementsInSet($vn_element_id, true, array('idsOnly' => true));
 						if (is_array($va_sub_element_ids) && sizeof($va_sub_element_ids)) {
+							
+							// Enforce "PRIVATE_WHEN" setting – allows for conditional privacy of values in container based upon any container value
+							if(is_array($private_when)) {
+								foreach($private_when as $pf => $pv) {
+									if (!isset($map[$i][$pf])) { continue; }
+									if(!is_array($pv)) { $pv = [$pv]; }
+									$pv = array_filter($pv, "strlen");
+									if(!sizeof($pv)) { continue; }
+									
+									if(in_array($map[$i][$pf], $pv, true)) { $pa_data['PRIVATE'] = 1; break; }
+								}
+							}
+						
 							$va_sub_element_ids = array_flip($va_sub_element_ids);
 							
 							$va_values_to_index = [];
@@ -1528,6 +1551,7 @@ if (!$for_current_value_reindex) {
 								}
 								$va_sub_data = array_filter($va_sub_data, function($v) { return !is_array($v) && (strlen($v) > 0); });
 								
+								//print_r($va_values_to_index);
 								$this->opo_engine->indexField($pn_subject_table_num, "{$field_num_prefix}{$vn_sub_element_id}", $pn_row_id, $va_values_to_index, $va_sub_data);
 								$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, "{$field_num_prefix}{$vn_sub_element_id}", $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, $va_values_to_index, $va_sub_data, $pa_options);
 								
