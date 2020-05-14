@@ -1133,9 +1133,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														$vs_raw_term = join(' ', $va_raw_terms);
 														
 														$vs_eq = '';
-														switch($vs_raw_term{0}) {
-															case '#':
-																$vs_raw_term = substr($vs_raw_term, 1);
+														switch(substr($vs_raw_term, 0, 4)) {
+															case '#eq#':
+																$vs_raw_term = substr($vs_raw_term, 4);
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
 																	$vs_direct_sql_query = "
@@ -1156,12 +1156,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	$vn_direct_sql_target_table_num = $vs_table_num; 
 																}
 																break;
-															case '<':
-																$vs_raw_term = substr($vs_raw_term, 1);
-																if ($vs_raw_term{0} == '=') {
-																	$vs_raw_term = substr($vs_raw_term, 1);
+															case '#lt=':
+															case '#lt#':
+																if ($vs_raw_term{3} == '=') {
 																	$vs_eq = '=';
 																}
+																$vs_raw_term = substr($vs_raw_term, 4);
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
 																	$vs_direct_sql_query = "
@@ -1179,12 +1179,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	$vn_direct_sql_target_table_num = $vs_table_num; 
 																}
 																break;
-															case '>':
-																$vs_raw_term = substr($vs_raw_term, 1);
-																if ($vs_raw_term{0} == '=') {
-																	$vs_raw_term = substr($vs_raw_term, 1);
+															case '#gt=':
+															case '#gt#':
+																if ($vs_raw_term{3} == '=') {
 																	$vs_eq = '=';
 																}
+																$vs_raw_term = substr($vs_raw_term, 4);
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
 																	$vs_direct_sql_query = "
@@ -1436,8 +1436,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_raw_term = join(' ', $va_raw_terms);
 									
 									switch($vs_raw_term{0}) {
-										case '#':
-											$vs_raw_term = substr($vs_raw_term, 1);
+										case '#eq#':
+											$vs_raw_term = substr($vs_raw_term, 4);
 											if ($this->opo_tep->parse($vs_raw_term)) {
 												$va_dates = $this->opo_tep->getHistoricTimestamps();
 												$vs_direct_sql_query = "
@@ -1454,13 +1454,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												";
 											}
 											break;
-										case '<':
+										case '#lt=':
+										case '#lt#':
                                             $vs_eq = '';
-											$vs_raw_term = substr($vs_raw_term, 1);
-											if ($vs_raw_term{0} == '=') {
-												$vs_raw_term = substr($vs_raw_term, 1);
+											if ($vs_raw_term{3} == '=') {
 												$vs_eq = '=';
 											}
+											$vs_raw_term = substr($vs_raw_term, 4);
 											if ($this->opo_tep->parse($vs_raw_term)) {
 												$va_dates = $this->opo_tep->getHistoricTimestamps();
 												
@@ -1476,13 +1476,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												";
 											}
 											break;
-										case '>':
+										case '#gt=':
+										case '#gt#':
                                             $vs_eq = '';
-											$vs_raw_term = substr($vs_raw_term, 1);
-											if ($vs_raw_term{0} == '=') {
-												$vs_raw_term = substr($vs_raw_term, 1);
+											if ($vs_raw_term{3} == '=') {
 												$vs_eq = '=';
 											}
+											$vs_raw_term = substr($vs_raw_term, 4);
 											if ($this->opo_tep->parse($vs_raw_term)) {
 												$va_dates = $this->opo_tep->getHistoricTimestamps();
 												
