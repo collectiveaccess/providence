@@ -1944,10 +1944,17 @@ class BaseEditorController extends ActionController {
 				throw new ApplicationException(_t('Invalid viewer'));
 			}
 
+			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
+			if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+				$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
+				unset($va_display_info['use_mirador_for_image_list_length_at_least']);
+				unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
+			}
+
 			$this->response->addContent($vs_viewer_name::getViewerHTML(
 				$this->request, 
 				"attribute:{$pn_value_id}", 
-				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
+				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => $va_display_info])
 			);
 		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {		
 			if (!$t_subject->isReadable($this->request)) { 
@@ -2102,13 +2109,20 @@ class BaseEditorController extends ActionController {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
 				
+				$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
+				if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+					$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
+					unset($va_display_info['use_mirador_for_image_list_length_at_least']);
+					unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
+				}
+				
 				$t_instance = new ca_attribute_values($va_identifier['id']);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 				$t_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$t_subject->load($t_attr->get('row_id'));
 				
-				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)]));
+				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
 				return;
 				break;
 		}
