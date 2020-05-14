@@ -34,23 +34,35 @@ use PHPUnit\Framework\TestCase;
 require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
-class SearchHelpersTest extends TestCase {
-	# -------------------------------------------------------
-	public function testESDateRewrite() {
-		// day-less
-		$this->assertEquals('2014-04-01T00:00:00Z', caRewriteDateForElasticSearch('2014-04-00T00:00:00Z', true));
-		$this->assertEquals('2014-04-30T00:00:00Z', caRewriteDateForElasticSearch('2014-04-00T00:00:00Z', false));
 
-		// month- and day-less
-		$this->assertEquals('2014-01-01T00:00:00Z', caRewriteDateForElasticSearch('2014-00-00T00:00:00Z', true));
-		$this->assertEquals('2014-12-31T00:00:00Z', caRewriteDateForElasticSearch('2014-00-00T00:00:00Z', false));
+class SetSearchHelpersTest extends BaseTestWithData {
 
+    protected $opt_set;
+    protected $ops_set_code = 'TEST';
+
+    protected function setUp(): void {
+        parent::setUp();
+        $vn_set_id = $this->addTestRecord('ca_sets', array(
+                'intrinsic_fields' => array(
+                        'type_id' => 'user',
+                        'set_code' => $this->ops_set_code
+                ),
+                'preferred_labels' => array(
+                        array(
+                                "locale" => "en_US",
+                                "name" => "Test set",
+                        )
+                )
+        ));
+        $this->assertGreaterThan(0, $vn_set_id);
+        $this->opt_set = new ca_sets($vn_set_id);
+    }
+
+    public function testCaSearchIsForSetsFuzzySearchWithSet() {
+        $result = caSearchIsForSets("centro~ +set:{$this->ops_set_code}");
+        $key = array_key_first($result);
+        $this->assertEquals('Test set', $result[$key]);
 	}
 	# -------------------------------------------------------
 
-	public function testCaSearchIsForSetsFuzzySearchNoSet() {
-        $result = caSearchIsForSets('centro~');
-        $this->assertEmpty($result);
-	}
-	# -------------------------------------------------------
 }

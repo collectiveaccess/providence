@@ -6539,10 +6539,11 @@ if (!$vb_batch) {
 			foreach($va_rels as $vn_i => $va_rel) {
 				if(is_array($va_rel)) {
 					$va_ids[$vn_i] = $va_rel[$vs_rel_pk];
+					$va_ids_to_rel_ids[$va_rel[$vs_rel_pk]][] = $vn_i;
 				} else {
 					$va_ids[$vn_i] = $va_rel;
+					$va_ids_to_rel_ids[$va_rel][] = $vn_i;
 				}
-				$va_ids_to_rel_ids[$va_rel[$vs_rel_pk]][] = $vn_i;
 			}
 			if (sizeof($va_ids) > 0) {
 				$qr_sort = caMakeSearchResult($vs_related_table_name, array_values($va_ids), array('sort' => $pa_sort_fields, 'sortDirection' => $ps_sort_direction));

@@ -92,6 +92,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			"quality"			=> 'W',
 			"pages"				=> 'R',
 			"page"				=> 'W', # page to output as JPEG or TIFF
+			"colorspace"		=> 'W',
 			"resolution"		=> 'W', # resolution of graphic in pixels per inch
 			"filesize" 			=> 'R',
 			"antialiasing"		=> 'W', # amount of antialiasing to apply to final output; 0 means none, 1 means lots; a good value is 0.5

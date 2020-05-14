@@ -4874,7 +4874,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		version = version of media being downloaded.
 	 *		extension = file extension of media being downloaded.
 	 *		original_filename = original filename of media being downloaded.
-	 *		representation_id = Representation_id of media being fownloaded.
+	 *		representation_id = Representation_id of media being downloaded.
 	 *
 	 * @return string File name
 	 */
@@ -4912,6 +4912,39 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				
 				if(!preg_match("!{$data['extension']}$!i", $filename)) {
 					$filename .= '.'.$data['extension'];
+				}
+				break;
+		} 
+		
+		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Generate name for downloaded ZIP file containing multiple representation media files based upon app.conf 
+	 * downloaded_file_naming directive.
+	 *
+	 * @param string $table Table name of primary record (Eg. ca_objects when downloaded representations related to an object).
+	 * @param int $id
+	 * @param array $options Options include:
+	 *		extension = 
+	 *
+	 * @return string File name
+	 */
+	function caGetMediaDownloadArchiveName($table, $id, $options=null) {
+		$config = Configuration::load();
+		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", "downloaded_media_archive_file_naming","{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+			case 'idno':
+				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
+				break;
+			default:
+				if (strpos($mode, "^") == false) { // use default templte
+					$mode = "^{$table}.idno";
+				}
+				$filename = caProcessTemplateForIDs($mode, $table, [$id]);
+				$ext = caGetOption('extension', $options, 'zip');
+				
+				if(!preg_match("!\.{$ext}$!i", $filename)) {
+					$filename .= ".{$ext}";
 				}
 				break;
 		} 

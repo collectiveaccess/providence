@@ -68,9 +68,9 @@
 		jQuery(document).ready(function() {
 			jQuery('#".$ps_id_prefix.$t_item->tableNum()."_rel_batch_mode_select').change(function() {
 				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
-					jQuery('#".$ps_id_prefix.$t_item->tableNum()."_rel').slideUp(250);
+					jQuery('#{$ps_id_prefix}').slideUp(250);
 				} else {
-					jQuery('#".$ps_id_prefix.$t_item->tableNum()."_rel').slideDown(250);
+					jQuery('#{$ps_id_prefix}').slideDown(250);
 				}
 			});
 		});

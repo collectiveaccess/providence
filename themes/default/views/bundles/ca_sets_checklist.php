@@ -47,11 +47,11 @@
 	if ($vb_batch) {
 		print caBatchEditorSetsModeControl($vn_table_num, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$vn_table_num.'_sets', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
-<div id="<?php print $vs_id_prefix; ?>_sets" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -95,7 +95,7 @@
 </div>
 			
 <script type="text/javascript">
-	caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>_sets', {
+	caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>', {
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['set_id'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,

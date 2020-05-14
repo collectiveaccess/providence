@@ -56,6 +56,8 @@ if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 	if (!initializeLocale($g_ui_locale)) { $g_ui_locale = null; }
 }
 
+setlocale(LC_CTYPE, $g_ui_locale ? "{$g_ui_locale}.UTF-8" : "en_US.UTF-9");
+
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
 require_once(__CA_APP_DIR__.'/helpers/navigationHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
@@ -76,7 +78,7 @@ require_once(__CA_LIB_DIR__.'/Controller/ActionController.php');
 require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
 require_once(__CA_APP_DIR__.'/lib/GarbageCollection.php');
-require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
+#require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
 
 
 require_once(__CA_LIB_DIR__."/Datamodel.php");

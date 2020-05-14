@@ -1133,24 +1133,6 @@ class SearchEngine extends SearchBase {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Return list of suggested searches that will find something, based upon the specified search expression
-	 *
-	 * @param string $ps_text The search expression
-	 * @param array $pa_options Options are:
-	 *		returnAsLink = return suggestions as links to full-text searces. [Default is no]
-	 *		request = the current request; required if links are to be generated using returnAsLink. [Default is null]
-	 *		table = the name or number of the table to restrict searches to. If you pass, for example, "ca_objects" search expressions specifically for object searches will be returned. [Default is null]
-	 * @return array List of suggested searches
-	 */
-	public function suggest($ps_text, $pa_options=null) {
-		if ($this->opo_engine && method_exists($this->opo_engine, "suggest")) {
-			$pa_options['table'] = $this->opn_tablenum;
-			return  $this->opo_engine->suggest($ps_text, $pa_options);
-		}
-		return null;
-	}
-	# ------------------------------------------------------------------
-	/**
 	 * Returns search expression as string for display with field qualifiers translated into display labels
 	 * 
 	 * @param string $ps_search
