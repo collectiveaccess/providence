@@ -61,6 +61,8 @@
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		$o_refinery_instance = caGetOption('refinery', $pa_options, null);
+		
+		$va_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
 
 		
 		$vn_list_id = caGetOption('list_id', $pa_options, null);
@@ -82,37 +84,13 @@
 			if (!$vs_name && !$vs_idno) { continue; }
 			if (!$vs_name && isset($va_parent['name'])) { continue; }
 			
-			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
-		
-			foreach($va_attributes as $vs_element_code => $va_attrs) {
-				if(is_array($va_attrs)) {
-				    $vs_attr_delimiter = null;
-				    if (isset($va_attrs['delimiter'])) {
-				        $vs_attr_delimiter = $va_attrs['delimiter'];
-				        unset($va_attrs['delimiter']);
-				    }
-				    $acc = [];
-					foreach($va_attrs as $vs_k => $vs_v) {
-						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-						// DataMigrationUtils::getCollectionID(), which ca_data_importers::importDataFromSource() uses to create related collections
-						// only supports non-repeating attribute values, so we join any values here and call it a day.
-						$va_attr_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, null, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_attr_delimiter));
-					    
-					    if(!is_array($va_attr_vals)) { $va_attr_vals = [$va_attr_vals]; }
-					    
-					    foreach($va_attr_vals as $i => $vs_attr_val) {
-					        $acc[$i][$vs_k] = $vs_attr_val;
-					    }
-					}
-					$va_attributes[$vs_element_code] = $acc;
-				} else {
-					$va_attributes[$vs_element_code] = array($vs_element_code => BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null)));
-				}
-			}
+			$va_attributes_spec = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : [];
 			
-			$va_attributes['idno'] = $vs_idno;
-			$va_attributes['parent_id'] = $vn_id;
-			$va_attributes['_treatNumericValueAsID'] = true;
+			// Process "attributes" block
+			$va_attributes = array_merge(
+				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)),
+				['idno' => $vs_idno, 'parent_id' => $vn_id, '_treatNumericValueAsID' => true]
+			);
 			
 			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) {
 				foreach($va_parent['rules'] as $va_rule) {
