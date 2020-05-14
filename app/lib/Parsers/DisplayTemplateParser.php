@@ -646,6 +646,7 @@ class DisplayTemplateParser {
 									$va_tags = DisplayTemplateParser::_getTags($o_node->children);
 									foreach(array_keys($va_tags) as $vs_tag) {
 										$va_tag = explode('.', $vs_tag);
+										if ($va_tag[0] !== $ps_tablename) { continue; }
 										if(sizeof($va_tag) >= 2) {
 											if ($t_rel_instance->isValidMetadataElement($va_tag[1], true) && (ca_metadata_elements::getElementDatatype($va_tag[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__)) {
 												$vs_relative_to_container = join(".", array_slice($va_tag, 0, 2));
@@ -1119,7 +1120,8 @@ class DisplayTemplateParser {
                     switch(strtolower($vs_get_spec)) {
                         case 'relationship_typename':
                             $va_val_list = array();
-                            if (is_array($va_relationship_type_ids) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
+                            
+                            if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
                                 $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
                                 if ($qr_rels->nextHit()) {
                                     $va_val_list = $qr_rels->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
@@ -1130,7 +1132,7 @@ class DisplayTemplateParser {
                             $vb_rel_type_is_set = true;
                             break;
                         case 'relationship_type_id':
-                            if (is_array($va_relationship_type_ids) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
+                            if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) &&($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
                                 $va_val_list = [$va_relationship_type_ids[$pr_res->currentIndex()]];
                             } else {
                                 $va_val_list = $pr_res->get('ca_relationship_types.type_id', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
@@ -1140,7 +1142,7 @@ class DisplayTemplateParser {
                         case 'relationship_typecode':
                         case 'relationship_type_code':
                             $va_val_list = array();
-                            if (is_array($va_relationship_type_ids) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
+                            if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) &&($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
                                 $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
                                 if ($qr_rels->nextHit()) {
                                     $va_val_list = $qr_rels->get('ca_relationship_types.type_code', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
