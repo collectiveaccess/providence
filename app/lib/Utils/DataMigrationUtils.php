@@ -1041,7 +1041,6 @@
 									&& 
 									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true))))
 								) {
-									print "GOT ID=$vn_id";
 									break(3);
 								}
 								break;
