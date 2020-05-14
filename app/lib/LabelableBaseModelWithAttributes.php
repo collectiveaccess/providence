@@ -253,7 +253,7 @@
 				$this->setAsChanged($pb_is_preferred ? 'preferred_labels' : 'nonpreferred_labels');
 				return $t_label->getPrimaryKey();
 			} catch (DatabaseException $e) {
-				$this->postError($e->getNumber(), $e->getMessage());
+				$this->postError($e->getNumber(), $e->getMessage(), $t_label->tableName().'.'.$pb_is_preferred ? 'preferred_labels' : 'nonpreferred_labels');
 				return false;
 			}
 			
