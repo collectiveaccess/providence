@@ -810,7 +810,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$o_notes = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
 					
 					if (!($vs_group = trim((string)$o_group->getValue()))) {
-						$vs_group = substr('_group_'.(string)$o_source->getValue()."_{$vn_row}", 0, 100);
+						$vs_group = '_group_'.md5((string)$o_source->getValue()."_{$vn_row}");
 					}
 					
 					$vs_source = trim((string)$o_source->getValue());
