@@ -486,7 +486,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		list($vs_table, $vs_field, $vs_subfield, $vs_subsubfield, $vs_subsubsubfield) = explode('.', $va_tmp[0]);
 		
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
-		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : null;
+		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : [];
 		
 		if (!($t_table = Datamodel::getInstanceByTableName($vs_table, true))) { 
 			return array('access_point' => $va_tmp[0]);
@@ -495,10 +495,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		// counts for relationship
 		$vn_rel_type = null;
+		
 		if (is_array($va_rel_type_ids) && (sizeof($va_rel_type_ids) > 0)) {
 			$vn_rel_type = (int)$va_rel_type_ids[0];
-		} else {
-			$va_rel_type_ids = [0];
 		}
 		
 		if (strtolower($vs_field) == 'count') {
