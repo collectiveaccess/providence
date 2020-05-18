@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -272,6 +272,30 @@ class ReplicationService {
 	 * @return array
 	 * @throws Exception
 	 */
+	public static function setLastLogID($po_request) {
+		$vs_source_system_guid = trim($po_request->getParameter('system_guid', pString));
+		if(!strlen($vs_source_system_guid)) { throw new Exception('Must provide a system guid'); }
+		$log_id = $po_request->getParameter('log_id', pInteger);
+		if($log_id > 0) {
+			$t_replication_log = new ca_replication_log();
+			$t_replication_log->set('source_system_guid', $vs_source_system_guid);
+			$t_replication_log->set('status', 'C');
+			$t_replication_log->set('log_id', $log_id);
+			$t_replication_log->insert();
+			if ($t_replication_log->numErrors()) {
+				throw new Exception(_t('Could not set last log_id: %1', join("; ", $t_replication_log->getErrors())));
+			}
+		} else {
+			throw new Exception(_t('Log_id is not valid'));
+		}
+		return ['log_id' => $log_id];
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
 	public static function applyLog($po_request) {
 		$vs_source_system_guid = trim($po_request->getParameter('system_guid', pString));
 		if(!strlen($vs_source_system_guid)) { throw new Exception('must provide a system guid'); }
@@ -283,76 +307,70 @@ class ReplicationService {
 		}
 
 		$vn_last_applied_log_id = null;
-		//$vn_force_last_applied_log_id = $po_request->getParameter('last_applied_log_id', pInteger);
 		
-		//if ($vn_force_last_applied_log_id) {
-		//    $vn_last_applied_log_id = $vn_force_last_applied_log_id;
-		//} else {
-            $va_log = json_decode($po_request->getRawPostData(), true);
-            if(!is_array($va_log)) { throw new \Exception('log must be array'); }
-            $o_db = new Db();
+		$va_log = json_decode($po_request->getRawPostData(), true);
+		if(!is_array($va_log)) { throw new \Exception('log must be array'); }
+		$o_db = new Db();
 
-            // run
-            $va_sanity_check_errors = array();
-            $va_return = array(); $vs_error = null;
+		// run
+		$va_sanity_check_errors = array();
+		$va_return = array(); $vs_error = null;
 
-            foreach($va_log as $vn_log_id => $va_log_entry) {
-                $o_tx = new \Transaction($o_db);
-                try {
-                    if ($va_log_entry['SKIP']) { throw new CA\Sync\LogEntry\IrrelevantLogEntry(_t('Skip log entry')); }
-                
-                    $o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
-                    $o_log_entry->sanityCheck();
-                } catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
-                    // skip log entry (still counts as "applied")
-                    $o_tx->rollback();
-                    $vn_last_applied_log_id = $vn_log_id;
-                    ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
-                    continue;
-                } catch (CA\Sync\LogEntry\InvalidLogEntryException $e) {
-                    // skip log entry (still counts as "applied")
-                    $o_tx->rollback();
-                    $vn_last_applied_log_id = $vn_log_id;
-                    ReplicationService::$s_logger->log("[InvalidLogEntryException] Sanity check error: ".$e->getMessage());
-                    continue;
-                } catch (\Exception $e) {
-                    // append log entry to message for easier debugging
-                    $va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
-                    ReplicationService::$s_logger->log("[ERROR] Sanity check error: ".$e->getMessage());
-                }
+		foreach($va_log as $vn_log_id => $va_log_entry) {
+			$o_tx = new \Transaction($o_db);
+			try {
+				if ($va_log_entry['SKIP']) { throw new CA\Sync\LogEntry\IrrelevantLogEntry(_t('Skip log entry')); }
+			
+				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
+				$o_log_entry->sanityCheck();
+			} catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
+				// skip log entry (still counts as "applied")
+				$o_tx->rollback();
+				$vn_last_applied_log_id = $vn_log_id;
+				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
+				continue;
+			} catch (CA\Sync\LogEntry\InvalidLogEntryException $e) {
+				// skip log entry (still counts as "applied")
+				$o_tx->rollback();
+				$vn_last_applied_log_id = $vn_log_id;
+				ReplicationService::$s_logger->log("[InvalidLogEntryException] Sanity check error: ".$e->getMessage());
+				continue;
+			} catch (\Exception $e) {
+				// append log entry to message for easier debugging
+				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
+				ReplicationService::$s_logger->log("[ERROR] Sanity check error: ".$e->getMessage());
+			}
 
-                // if there were sanity check errors, return them here
-                if(sizeof($va_sanity_check_errors)>0) {
-                    $o_tx->rollback();
-                    throw new \Exception(join("\n", $va_sanity_check_errors));
-                }
+			// if there were sanity check errors, return them here
+			if(sizeof($va_sanity_check_errors)>0) {
+				$o_tx->rollback();
+				throw new \Exception(join("\n", $va_sanity_check_errors));
+			}
 
-                $o_tx = new \Transaction($o_db);
-                try {
-                    $o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
-                    $o_log_entry->apply($pa_entry_options);
+			$o_tx = new \Transaction($o_db);
+			try {
+				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
+				$o_log_entry->apply($pa_entry_options);
 
-                    $vn_last_applied_log_id = $vn_log_id;
-                } catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
-                    $o_tx->rollback();
-                    $vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
-                
-                    ReplicationService::$s_logger->log("[IrrelevantLogEntry] Apply error: ".$e->getMessage());
-                } catch(\Exception $e) {
-                    $vs_error = get_class($e) . ': ' . $e->getMessage() . $e->getTraceAsString() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
-                    $o_tx->rollback();
-                    ReplicationService::$s_logger->log("[ERROR] Apply error: ".$e->getMessage());
-                    break;
-                }
-                $o_tx->commit();
-           // }
+				$vn_last_applied_log_id = $vn_log_id;
+			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
+				$o_tx->rollback();
+				$vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
+			
+				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Apply error: ".$e->getMessage());
+			} catch(\Exception $e) {
+				$vs_error = get_class($e) . ': ' . $e->getMessage() . $e->getTraceAsString() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
+				$o_tx->rollback();
+				ReplicationService::$s_logger->log("[ERROR] Apply error: ".$e->getMessage());
+				break;
+			}
+			$o_tx->commit();
         }
 
 		if($vn_last_applied_log_id) {
 			$va_return['replicated_log_id'] = $vn_last_applied_log_id;
 
 			$t_replication_log = new ca_replication_log();
-			$t_replication_log->setMode(ACCESS_WRITE);
 			$t_replication_log->set('source_system_guid', $vs_source_system_guid);
 			$t_replication_log->set('status', 'C');
 			$t_replication_log->set('log_id', $vn_last_applied_log_id);
