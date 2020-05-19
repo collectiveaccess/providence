@@ -502,6 +502,7 @@ class BaseEditorController extends ActionController {
 	        	$this->Edit();
 	        	return;
 	        }
+	        
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
 				$t_subject->setTransaction($o_t = new Transaction());
@@ -650,7 +651,7 @@ class BaseEditorController extends ActionController {
 				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $subject_table, 'instance' => $t_subject));
 
 				# redirect
-				$this->redirectAfterDelete($t_subject->tableName());
+				$this->redirectAfterDelete($t_subject);
 			}
 		}
 
@@ -665,9 +666,17 @@ class BaseEditorController extends ActionController {
 	 * overridden in subclasses/implementations.
 	 * @param string $ps_table table name
 	 */
-	protected function redirectAfterDelete($ps_table) {
+	protected function redirectAfterDelete($t_subject) {
 		$this->getRequest()->close();
-		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
+		
+		$redirect_url = $this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName());
+		if (($parent_id = $t_subject->get('parent_id')) > 0) {
+			$redirect_url = caEditorUrl($this->request, $t_subject->tableName(), $parent_id);
+		} elseif(!$redirect_url) {
+			$redirect_url = ResultContext::getResultsUrl($this->request, $t_subject->tableName(), 'basic_search');
+		}
+		
+		caSetRedirect($redirect_url);
 	}
 	# -------------------------------------------------------
 	/**

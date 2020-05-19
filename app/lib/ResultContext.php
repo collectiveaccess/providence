@@ -723,6 +723,26 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns a URL to the results screen of a given type for a table
+		 *
+		 * @param $request = the current request
+		 * @param $table_name_or_num = the name or number of the table 
+		 * @param $find_type = type of find interface to return results for, as defined in find_navigation.conf
+		 * @param $options = no options are currently supported
+		 *
+		 * @return string - a URL that will link back to results for the specified find type
+		 */
+		static public function getResultsUrl($request, $table_name_or_num, $find_type, $options=null) {
+			if (!($table_name = Datamodel::getTableName($table_name_or_num))) { return null; }
+			$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && (__CA_APP_TYPE__ == 'PAWTUCKET')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
+			$find_nav = $o_find_navigation->getAssoc($table_name);
+			print_R($find_nav);
+			if(is_null($nav = caGetOption($find_type, $find_nav, null))) { return null; }
+			
+			return caNavUrl($request, trim($nav['module_path']), trim($nav['controller']), trim($nav['action']), []);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns a URL to the results screen for the last find
 		 *
 		 * @param $po_request - the current request
@@ -737,7 +757,7 @@
 			$vs_last_find = ResultContext::getLastFind($po_request, $pm_table_name_or_num);
 			$va_tmp = explode('/', $vs_last_find);
 			
-			$o_find_navigation = Configuration::load((defined('__CA_THEME_DIR__') ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
+			$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && (__CA_APP_TYPE__ == 'PAWTUCKET')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 			$va_find_nav = $o_find_navigation->getAssoc($vs_table_name);
 			$va_nav = $va_find_nav[$va_tmp[0]];
 			if (!$va_nav) { return false; }
