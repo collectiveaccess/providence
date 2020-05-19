@@ -502,6 +502,7 @@ class BaseEditorController extends ActionController {
 	        	$this->Edit();
 	        	return;
 	        }
+	        
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
 				$t_subject->setTransaction($o_t = new Transaction());
@@ -667,11 +668,14 @@ class BaseEditorController extends ActionController {
 	protected function redirectAfterDelete($t_subject) {
 		$this->getRequest()->close();
 		
-		if ($parent_id = $t_subject->get('parent_id')) {
-			caSetRedirect(caEditorUrl($this->request, $t_subject->tableName(), $parent_id, false, [], []));
-		} else {
-			caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName()));
+		$redirect_url = $this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName());
+		if (($parent_id = $t_subject->get('parent_id')) > 0) {
+			$redirect_url = caEditorUrl($this->request, $t_subject->tableName(), $parent_id);
+		} elseif(!$redirect_url) {
+			$redirect_url = ResultContext::getResultsUrl($this->request, $t_subject->tableName(), 'basic_search');
 		}
+		
+		caSetRedirect($redirect_url);
 	}
 	# -------------------------------------------------------
 	/**
