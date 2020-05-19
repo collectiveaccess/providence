@@ -50,8 +50,8 @@
 	$rel_dir         	= ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
 	$left_sub_type_id 	= ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
 	$right_sub_type_id 	= ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-	$rel_types          = $t_item_rel->getRelationshipTypes($left_sub_type_id, $right_sub_type_id);
-	
+	$rel_types          = $t_item_rel->getRelationshipTypes($left_sub_type_id, $right_sub_type_id, ['restrict_to_relationship_types' => caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $settings, null)]);
+
 	$read_only			= (isset($settings['readonly']) && $settings['readonly']);
 	
 	$num_per_page 		= caGetOption('numPerPage', $settings, 10);
@@ -177,7 +177,9 @@
 <?php
 	} 
 						foreach($bundles_to_edit_proc as $f) {
-							if($t_item->hasField($f)) { // intrinsic
+							if($f === 'type_id') { // type
+								print $t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+							} elseif($t_item->hasField($f)) { // intrinsic
 								print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 							} elseif($t_item->hasElement($f)) {
 								$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'value' => '{{'.$f.'}}', 'textAreaTagName' => 'textentry']);
@@ -266,7 +268,10 @@
     
 				foreach($bundles_to_edit_proc as $f) {
 					if(in_array($f, ['media'])) { continue; }
-					if($t_item->hasField($f)) { // intrinsic
+					
+					if($f === 'type_id') { // type
+						print $t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+					} elseif($t_item->hasField($f)) { // intrinsic
 						print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 					} elseif($t_item->hasElement($f)) {
 						$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'textAreaTagName' => 'textentry']);
