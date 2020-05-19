@@ -1564,7 +1564,7 @@ create table ca_task_queue
    priority                       smallint unsigned              not null default 0,
    handler                        varchar(20)                    not null,
    parameters                     text                           not null,
-   notes                          text                           not null,
+   notes                          longtext                       null,
    error_code                     smallint unsigned              not null default 0,
    primary key (task_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -7268,4 +7268,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (162, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (163, unix_timestamp());
