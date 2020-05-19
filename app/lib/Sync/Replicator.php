@@ -841,7 +841,6 @@ class Replicator {
 						$this->log(_t("[%1] Skipped %2 because it has already been pushed.", $this->source_key, $vn_mlog_id), Zend_Log::DEBUG);
 						continue; 
 					}
-					//$va_seen[$vn_mlog_id] = $vs_missing_guid;
 			   
 					if (!$vn_first_missing_log_id) { $vn_first_missing_log_id = $vn_mlog_id; }
 				
@@ -864,8 +863,8 @@ class Replicator {
 								->addGetParameter('pushMediaTo', $this->get_log_service_params['pushMediaTo'])
 								->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 								->request()->getRawData();
-								
-							$va_attr_log = array_filter($va_attr_log, function($v) { return !$v['SKIP']; });
+							
+							$va_attr_log = is_array($va_attr_log) ? array_filter($va_attr_log, function($v) { return !$v['SKIP']; }) : null;
 							if (is_array($va_attr_log) && sizeof($va_attr_log)) {
 								$acc = [];
 								foreach($va_attr_log as $x) {
