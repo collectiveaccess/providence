@@ -346,7 +346,7 @@ class Replicator {
 						
 						foreach($va_source_log_entries as $vn_log_id => $va_source_log_entry) {
 						    $this->last_log_id = $vn_log_id;
-						    $this->log(_t("[%1] Begin processing source log entry at %2.", $vs_source_key, $vn_log_id), Zend_Log::DEBUG);
+						    //$this->log(_t("[%1] Begin processing source log entry at %2.", $vs_source_key, $vn_log_id), Zend_Log::DEBUG);
 							$vb_logged_exists_on_target = is_array($va_guid_already_exists[$va_source_log_entry['guid']]);
 						    if ($pa_filter_on_access_settings && ($va_access_by_guid[$va_source_log_entry['guid']] !== '?') && !in_array($va_access_by_guid[$va_source_log_entry['guid']], $pa_filter_on_access_settings) && !$vb_logged_exists_on_target) {
 						        // skip rows for which we have no access
@@ -407,7 +407,7 @@ class Replicator {
                                             } 
                                             
                                             // Pull log for "missing" guid we need to replicate on target
-                                            $this->log(_t("[%1] Getting log for missing guid %2.", $vs_source_key, $vs_missing_guid), Zend_Log::DEBUG);
+                                            $this->log(_t("[%1] Fetching log for missing guid %2.", $vs_source_key, $vs_missing_guid), Zend_Log::DEBUG);
                                             $va_log_for_missing_guid = $o_source->setEndpoint('getlog')
                                                 ->clearGetParameters()
                                                 ->addGetParameter('forGUID', $vs_missing_guid)
@@ -766,7 +766,7 @@ class Replicator {
 								if ($entry['guid'] === $snv) { continue; }										// don't make item dependency of itself
 								
 								if (!isset($source_log_entries_for_missing_guids[$snv])) { continue; }
-								$this->log(_t("[%1] Added  %2 [%3] as dep from snapshot for %4.", $vs_source_key, $snk, $snv, $entry['guid']),Zend_Log::DEBUG);
+								$this->log(_t("[%1] Added %2 [%3] as dep from snapshot for %4.", $this->source_key, $snk, $snv, $entry['guid']),Zend_Log::DEBUG);
 								$va_dependency_list[$entry['guid']][$snv] = true;
 							}
 						}

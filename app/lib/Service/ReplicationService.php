@@ -84,6 +84,9 @@ class ReplicationService {
 			case 'hasaccess':
 				$va_return = self::hasAccess($po_request);
 				break;
+			case 'setlastlogid':	
+				$va_return = self::setLastLogID($po_request);
+				break;
 			default:
 				throw new Exception('Unknown endpoint');
 
