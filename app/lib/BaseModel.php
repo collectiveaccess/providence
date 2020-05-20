@@ -9012,7 +9012,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && !$this->getAppConfig()->get('allow_duplicate_relationships') && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction)) {
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
-				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship', $t_rel_item->tableName());
+				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship', $va_rel_info['related_table_name']);
 			}
 			return false;
 		}
