@@ -1873,7 +1873,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					foreach($va_items as $vn_item_id => $va_item) {
 						if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 							// Force repeating values to be imported as a single value
-							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'hierarchicalDelimiter' => caGetOption('hierarchicalDelimiter', $va_item['settings'], null), 'log' => $o_log, 'logReference' => $vs_idno)));
+							$va_vals = [ca_data_importers::getValueFromSource($va_item, $o_reader, [
+								'otherValues' => $va_rule_set_values, 'delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 
+								'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 
+								'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 
+								'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 
+								'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 
+								'hierarchicalDelimiter' => caGetOption('hierarchicalDelimiter', $va_item['settings'], null), 
+								'log' => $o_log, 'logReference' => $vs_idno])
+							];
 						} else {
 							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('otherValues' => $va_rule_set_values, 'returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'filterToTypes' => caGetOption('filterToTypes', $va_item['settings'], null), 'filterToRelationshipTypes' => caGetOption('filterToRelationshipTypes', $va_item['settings'], null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null), 'hierarchicalDelimiter' => caGetOption('hierarchicalDelimiter', $va_item['settings'], null), 'log' => $o_log, 'logReference' => $vs_idno));
 						}
@@ -1944,6 +1952,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (isset($va_item['settings']['skipGroupIfNotValue']) && is_array($va_item['settings']['skipGroupIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipGroupIfNotValue'])) {
 								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal)); }
 								continue(3);
+							}
+							
+							if (isset($va_item['settings']['skipIfNoReplacementValue']) && (bool)$va_item['settings']['skipIfNoReplacementValue'] && !self::hasReplacementValue($vm_val, $va_item)) {
+								if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping %2 because there is no replacement value for value %3', $vs_idno, $va_item['destination'], $vm_val)); }
+								continue(2);
 							}
 						
 							if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
@@ -3313,6 +3326,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return $pm_value;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if value has a replacement value defined
+	 */
+	static public function hasReplacementValue($pm_value, $pa_item, $pa_options=null) {
+		if (strlen($pm_value) && is_array($pa_item['settings']['original_values'])) {
+			if (($vn_index = array_search(trim(mb_strtolower($pm_value)), $pa_item['settings']['original_values'])) !== false) {
+				return true;
+			}
+		}
+		return false;
 	}
 	# ------------------------------------------------------
 	/**
