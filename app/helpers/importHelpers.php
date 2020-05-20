@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -476,11 +476,16 @@
 		
 			$va_name = null;
 			$vs_delimiter = caGetOption('delimiter', $pa_related_options, null);
+			
+			$vs_name_spec = caGetOption(caGetPreferredLabelNameKeyList(), $pa_related_options, caGetOption(caGetPreferredLabelNameKeyList(), $pa_related_options['attributes'], null));
+			$vs_idno_spec = caGetOption(caGetIdnoNameKeyList(), $pa_related_options, caGetOption(caGetIdnoNameKeyList(), $pa_related_options['attributes'], null));
+			$vs_type_spec = caGetOption(['type', 'type_id'], $pa_related_options, caGetOption(['type', 'type_id'], $pa_related_options['attributes'], null));
+			$vs_parent_id_spec = caGetOption('parent_id', $pa_related_options, caGetOption('parent_id', $pa_related_options['attributes'], null));
 	
-			if (!is_array($va_name = BaseRefinery::parsePlaceholder(caGetOption(caGetPreferredLabelNameKeyList(), $pa_related_options, null), $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_name = [$va_name]; }
-			if (!is_array($va_idno = BaseRefinery::parsePlaceholder($pa_related_options['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_idno = [$va_idno]; }
-			if (!is_array($va_type = BaseRefinery::parsePlaceholder($pa_related_options['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_type = [$va_type]; }
-			if (!is_array($va_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_parent_id = [$va_parent_id]; }
+			if (!is_array($va_name = BaseRefinery::parsePlaceholder($vs_name_spec, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_name = [$va_name]; }
+			if (!is_array($va_idno = BaseRefinery::parsePlaceholder($vs_idno_spec, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_idno = [$va_idno]; }
+			if (!is_array($va_type = BaseRefinery::parsePlaceholder($vs_type_spec, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_type = [$va_type]; }
+			if (!is_array($va_parent_id = BaseRefinery::parsePlaceholder($vs_parent_id_spec, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_parent_id = [$va_parent_id]; }
 
 			if ($vb_ignore_parent = caGetOptions('ignoreParent', $pa_related_options, false)) {
 				$pa_options['ignoreParent'] = $vb_ignore_parent;
@@ -636,7 +641,7 @@
                         'id' => $vn_id,
                         '_relationship_type' => $vs_rel_type ? $vs_rel_type : $pa_related_options['relationshipType']
                     );
-                }
+                } 
             }
 		}
 		return $va_attr_vals;
@@ -1485,7 +1490,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 * Return list of key values to try when looking for "preferred labels" option in splitter opts.
 	 */
 	function caGetPreferredLabelNameKeyList() { 
-		return ['preferredLabels','preferred_labels', 'preferredLabels', 'name'];
+		return ['preferredLabels','preferred_labels', 'name'];
 	}
 	# ---------------------------------------------------------------------
 	/**
