@@ -215,7 +215,9 @@
 				//
 				$this->opn_current_row++;
 				// Use fgetcsv to read file, it will handle delimiter, marker and escaping.
-				$this->opa_current_row = array_slice(fgetcsv($this->opr_file, 0, $this->getDelimiter(), $this->getTextMarker()), 0, $this->opn_max_columns);
+				$buf = fgetcsv($this->opr_file, 0, $this->getDelimiter(), $this->getTextMarker());
+				if(!$buf) { return false; }
+				$this->opa_current_row = array_slice($buf, 0, $this->opn_max_columns);
 				return $this->opa_current_row;
 			}
 			return false;
