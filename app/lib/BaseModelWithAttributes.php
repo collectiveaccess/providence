@@ -145,15 +145,21 @@
 				}	// # attributes is at upper limit
 			}
 			
-			if (caGetOption('skipExistingValues', $pa_options, false)) {
-			    // filter out any values that already exist on this row
+			if (caGetOption('skipExistingValues', $pa_options, false) || !caGetOption('allowDuplicateValues', $element_info, false)) {
+				 // filter out any values that already exist on this row
 			    if(is_array($va_attrs = $this->getAttributesByElement($pm_element_code_or_id))) {
 			        $vb_already_exists = false;
 			        foreach($va_attrs as $o_attr) {
 			            foreach($o_attr->getValues() as $o_value) {
 			                $vn_element_id = $o_value->getElementID();
 			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
-			                if ($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $o_value->getDisplayValue())) {
+			                
+			                $pv = $o_value->getDisplayValue();
+			                if (
+			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
+			            		||
+			            		(strlen($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $pv)))
+			            	) {
 			                    continue(2);
 			                }
 			            }
@@ -202,11 +208,43 @@
 			if (!$t_attr->getPrimaryKey()) { return false; }
 			$vn_attr_element_id = $t_attr->get('element_id');
 			
+			$element_info = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
+			
 			$va_attr_values = $t_attr->getAttributeValues();
 			$element = null;
 			
+			
 			$num_values = sizeof($pa_values);
 			if(array_key_exists('locale_id', $pa_values)) { $num_values--; }
+			
+			if (caGetOption('skipExistingValues', $pa_options, false) || !caGetOption('allowDuplicateValues', $element_info, false)) {
+			    // filter out any values that already exist on this row
+			    if(is_array($va_attrs = $this->getAttributesByElement($pm_element_code_or_id))) {
+			        $vb_already_exists = false;
+			        
+			        foreach($va_attrs as $o_attr) {
+			            if ($o_attr->getAttributeID() == $pn_attribute_id) { continue; }
+			            foreach($o_attr->getValues() as $o_value) {
+			                $vn_element_id = $o_value->getElementID();
+			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
+			                
+			                $pv = $o_value->getDisplayValue();
+			                if (
+			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
+			            		||
+			            		(strlen($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $pv)))
+			            	) {
+			                    continue(2);
+			                }
+			            }
+			            $vb_already_exists = true;
+			            break;
+			        }
+			        if ($vb_already_exists) {
+			            return null;
+			        }
+			    }
+			}
 			
 			if (
 			    // this may return a false positive if the attribute is a container with media or file attributes, 

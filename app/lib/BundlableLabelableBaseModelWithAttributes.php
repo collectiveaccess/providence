@@ -3657,11 +3657,14 @@ if (!$vb_batch) {
 						// the configuration for the element set and see if there are any elements in the set that we didn't get values for.
 						//
 						$va_sub_elements = $t_element->getElementsInSet($vn_element_set_id);
+						$isset = false;
 						foreach($va_sub_elements as $vn_i => $va_element_info) {
 							if ($va_element_info['datatype'] == 0) { continue; }
 							$vn_element_id = $va_element_info['element_id'];
 							
 							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
+							if(!$po_request->parameterExists($vs_k)) { continue; }
+							$vs_attr_val = $po_request->getParameter($vs_k, pString);
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
 									$va_val['_uploaded_file'] = true;
@@ -3669,9 +3672,10 @@ if (!$vb_batch) {
 									continue;
 								}
 							} 
-							$vs_attr_val = $po_request->getParameter($vs_k, pString);
 							$va_attr_update[$vn_element_id] = $vs_attr_val;
+							$isset = true;
 						}
+						if (!$isset) { continue; }
 						
 						$this->clearErrors();
 						$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, $vs_f, ['batch' => $vb_batch]);
