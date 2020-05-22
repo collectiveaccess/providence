@@ -235,8 +235,7 @@
 	 *
 	 *
 	 * @param array $pa_options Options are:
-	 *		icon_position =
-	 *		no_background = 
+	 *		no_background =
 	 *		dont_show_content = 
 	 *		graphicsPath =
 	 *		size =
@@ -250,7 +249,6 @@
 			$vs_url = '';
 		}
 		
-		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
@@ -282,19 +280,16 @@
 			$vn_padding = ($ps_content) ? 10 : 0;
 			$va_img_attr['class'] = 'form-button-left';
 			$va_img_attr['style'] = "padding-right: {$vn_padding}px;";
-		} else {
-			$vn_padding = 0;
-			$vs_img_tag_stuff = '';
 		}
 		
 		if (preg_match("/^[A-Za-z\.\-0-9 ]+$/", $ps_content)) {
-			$vs_alt = $vs_title = htmlspecialchars($ps_content, ENT_QUOTES, 'UTF-8');
+			$vs_title = htmlspecialchars($ps_content, ENT_QUOTES, 'UTF-8');
 		} else {
-			$vs_alt = $vs_title = '';
+			$vs_title = '';
 		}
+        $va_img_attr['title'] = $vs_title;
 		
-		
-		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
+		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_img_attr);
 		if (!$pb_dont_show_content) {
 			$vs_tag .= $ps_content;
 		}
@@ -351,7 +346,7 @@
 		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
 			
 		
-		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes)) {
+		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_img_attr)) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
 			switch($ps_icon_pos) {
@@ -475,7 +470,6 @@
 	 *		size = 
 	 */
 	function caFormSubmitButton($po_request, $pn_type, $ps_content, $ps_id, $pa_options=null) {
-		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
 		$ps_use_classname = isset($pa_options['class']) ? $pa_options['class'] : '';
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
@@ -512,7 +506,7 @@
 		);
 		
 		
-		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes);
+		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_img_attr);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -584,7 +578,7 @@
 		);
 		
 		
-		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
+		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_img_attr);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -1376,3 +1370,24 @@
 		return $g_use_clean_urls = (defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__) && caModRewriteIsAvailable());
 	}
 	# ------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------
+    /**
+     * @param $vs_controller
+     * @param $vs_action
+     *
+     * @return bool
+     */
+    function caIsGzipDisabled($vs_controller, $vs_action){
+        $conf = Configuration::load();
+        $va_disable_gzip = $conf->getAssoc('disable_gzip_on_controllers');
+        if (($va_acl = caGetOption($vs_controller, $va_disable_gzip, null)) !== null){
+            if (caGetOption('action', $va_acl, null) === $vs_action){
+                return true;
+            } else {
+                return sizeof(array_keys($va_acl))==0;
+            }
+        }
+        return false;
+    }
+
+

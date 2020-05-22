@@ -1790,7 +1790,7 @@ class Installer {
 					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
 					
 					if ($t_display->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_display->getErrors()));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for display with code %3', $vs_restriction_code, $vs_type, $vs_display_code));
@@ -1997,9 +1997,9 @@ class Installer {
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
 					
 					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
-					
-					if ($t_restriction->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in form {$vs_form_code}: ".join("; ",$t_restriction->getErrors()));
+
+					if ($t_form->numErrors()) {
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in form {$vs_form_code}: ".join("; ",$t_form->getErrors()));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for form with code %3', $vs_restriction_code, $vs_type, $vs_form_code));
@@ -2365,7 +2365,7 @@ class Installer {
 					$t_md_alert->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
 					
 					if ($t_md_alert->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in metadata alert {$vs_alert_code}: ".join("; ",$t_restriction->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in metadata alert {$vs_alert_code}: ".join("; ",$t_md_alert->getErrors()));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for metadata alert with code %3', $vs_restriction_code, $vs_type, $vs_alert_code));

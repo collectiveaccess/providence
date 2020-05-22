@@ -31,5 +31,9 @@
     "scholarslab/bagit": "~0.2",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "tedivm/stash": "0.14.*"
+  },
+  "require": {
+    "ext-iconv": "*",
+    "ext-simplexml": "*"
   }
 }
