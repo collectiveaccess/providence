@@ -347,22 +347,18 @@ class CLIProgressBar
         $return = array();
 
         if ($days) {
-            $return[] = "$days days";
+            $return[] = "{$days}d";
         }
         if ($hours) {
-            $return[] = "$hours hrs";
+            $return[] = sprintf("%02dh", $hours);
         }
-        if ($minutes) {
-            $return[] = "$minutes mins";
-        }
-        if ($seconds) {
-            $return[] = "$seconds secs";
-        }
+        $return[] = sprintf("%02d", $minutes);
+        $return[] = sprintf("%02d", $seconds);
 
         if (!$return) {
             return $nowText;
         }
-        return $prefix . implode(array_slice($return, 0, 2), ', ');
+        return $prefix . implode($return, ':');
     }
 
     /**
