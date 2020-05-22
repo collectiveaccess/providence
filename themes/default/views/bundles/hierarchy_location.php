@@ -381,9 +381,7 @@
 				<div id='<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowseTypeMenu' style="margin-top: 15px;">
 					<div style="float: left; width: 700px">
 <?php
-							$vs_type_selector 	= $this->getVar('objectTypeList'); //trim($t_object->getTypeListAsHTMLFormElement("{$vs_id_prefix}object_type_id", array('id' => "{$vs_id_prefix}objectTypeList"), array('childrenOfCurrentTypeOnly' => $vb_strict_type_hierarchy, 'includeSelf' => !$vb_strict_type_hierarchy, 'directChildrenOnly' => $vb_strict_type_hierarchy)));
-							
-							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 under <em>%2</em>", $vs_type_selector, $vs_subject_label);
+							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 under <em>%2</em>", $this->getVar('objectTypeList'), $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
 							print " <a href='#' onclick='_navigateToNewObjectForm(jQuery(\"#{$vs_id_prefix}objectTypeList\").val(), ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";				
