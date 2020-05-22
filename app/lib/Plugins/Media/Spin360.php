@@ -123,7 +123,6 @@ class WLPlugMediaSpin360 extends BaseMediaPlugin implements IWLPlugMedia {
 		$this->description = _t('Accepts ZIP archives containing 360 spinnable images in SpinCar format (http://SpinCar.com)');
 
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
 	}
 	# ------------------------------------------------
 	public function checkStatus() {

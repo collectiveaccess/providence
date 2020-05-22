@@ -59,7 +59,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $metadata = array();
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	
 	var $filepath;
 	var $tmpfiles_to_delete = [];
@@ -233,7 +232,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 	private $ops_dcraw_path;
 	private $ops_graphicsmagick_path;
-	private $ops_imagemagick_path;
 	private $opa_raw_list = [];
 	
 	/**
@@ -249,11 +247,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
-		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
-		
-		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
+		$this->caMediaPluginGraphicsMagickInstalled = caMediaPluginGraphicsMagickInstalled('');
+		$this->ops_dcraw_path = caMediaPluginDcrawInstalled();
 		
 		if (!caMediaPluginGmagickInstalled()) {
 			return null;	// don't use if Gmagick functions are unavailable
@@ -274,7 +269,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			} 
 		}
 		
-		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+		if (!caMediaPluginDcrawInstalled()) {
 			$va_status['warnings'][] = _t("RAW image support is not enabled because DCRAW cannot be found");
 		}
 		
@@ -283,7 +278,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function divineFileFormat($ps_filepath) {
 		# is it a camera raw image?
-		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+		if ($this->ops_dcraw_path) {
 			caExec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 			if ($vn_return == 0) {
 				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
@@ -1167,7 +1162,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}	
 	# ------------------------------------------------
 	private function _dcrawConvertToTiff($ps_filepath) {
-		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+		if (!$this->ops_dcraw_path) {
 			$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugGmagick->read()");
 			return false;
 		}
@@ -1239,7 +1234,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 
 				// try to get IPTC and DPX with GraphicsMagick, if available
-				 if(caMediaPluginGraphicsMagickInstalled()) {
+				 if($this->ops_graphicsmagick_path) {
 					/* IPTC metadata */
 					$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
 					@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want

@@ -54,7 +54,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $properties;
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_libreoffice_path;
 	
 	var $opa_metadata;
@@ -153,8 +152,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	var $opa_transformations = array();
 	
-	var $opb_libre_office_installed = false;
-	
 	# ------------------------------------------------
 	public function __construct() {
 		$this->description = _t('Accepts and processes Microsoft Word, Excel and PowerPoint format documents');
@@ -167,9 +164,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_libreoffice_path = $this->opo_external_app_config->get('libreoffice_app');
-		$this->opb_libre_office_installed = caMediaPluginLibreOfficeInstalled($this->ops_libreoffice_path);
+		$this->ops_libreoffice_path = caMediaPluginLibreOfficeInstalled();
 		
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -182,7 +177,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$va_status['available'] = true;
 		}
 		
-		if (!($this->opb_libre_office_installed)) { 
+		if (!($this->ops_libreoffice_path)) { 
 			$va_status['warnings'][] = _t("LibreOffice cannot be found: conversion to PDF and generation of page previews will not be performed; you can obtain LibreOffice at http://www.libreoffice.org/");
 		}
 		
@@ -526,7 +521,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 				return false;
 			}
 		} else {
-			if (!isset(WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) && $this->opb_libre_office_installed) {
+			if (!isset(WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) && $this->ops_libreoffice_path) {
 				$vs_tmp_dir_path = caGetTempDirPath();
 				$va_tmp = explode("/", $this->filepath);
 				$vs_out_file = array_pop($va_tmp);

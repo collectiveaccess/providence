@@ -20,11 +20,6 @@
                     "description": "Path to ffmpeg binary (http://ffmpeg.mplayerhq.hu/). ffmpeg is used to convert audio and video files, and to generate preview audio clips and image thumbnails.",
                     "default": "/usr/bin/ffmpeg"
                 },
-                "qt-faststart_app": {
-                    "type": "string",
-                    "description": "Path to qt-faststart binary [part of ffmpeg] (http://ffmpeg.mplayerhq.hu/). qt-faststart is used to optimize video files for in-browser playback.",
-                    "default": "/usr/local/bin/qt-faststart"
-                },
                 "dcraw_app": {
                     "type": "string",
                     "description": "Path to dcraw binary (http://cybercom.net/~dcoffin/dcraw/). dcraw is used to convert a range of manufacturer-specific RAW image file formats into standard formats such as TIFF. It allows CollectiveAccess to accept RAW image files as if they were standard JPEG or TIFF files.",

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2019 Whirl-i-Gig
+ * Copyright 2004-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,7 +103,6 @@ class TilepicParser {
 	var $backend;
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_imagemagick_path;
 	var $ops_graphicsmagick_path;
 	
@@ -111,9 +110,9 @@ class TilepicParser {
 	function TilepicParser($filename="") {
 		$this->opo_config = Configuration::load();
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
-		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
-		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
+		
+		$this->ops_imagemagick_path = caMediaPluginImageMagickInstalled();
+		$this->ops_graphicsmagick_path = caMediaPluginGraphicsMagickInstalled();
 		
 		// edit ranking of preferred backends for tilepic processing here
 
@@ -123,8 +122,8 @@ class TilepicParser {
 		$va_backend_ranking = array(
 			LIBRARY_GMAGICK => caMediaPluginGmagickInstalled(),
 			LIBRARY_IMAGICK => caMediaPluginImagickInstalled(),
-			LIBRARY_GRAPHICSMAGICK => caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path),
-			LIBRARY_IMAGEMAGICK => caMediaPluginImageMagickInstalled($this->ops_imagemagick_path),
+			LIBRARY_GRAPHICSMAGICK => (bool)$this->ops_graphicsmagick_path,
+			LIBRARY_IMAGEMAGICK => (bool)$this->ops_imagemagick_path,
 			LIBRARY_GD => true, // one available back-end has to be assumed
 		);
 		
@@ -342,7 +341,7 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _imageMagickRead($ps_filepath) {
-		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+		if ($this->ops_imagemagick_path) {
 			caExec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			
 			$va_tmp = explode(';', $va_output[0]);
@@ -363,7 +362,7 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _graphicsMagickRead($ps_filepath) {
-		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+		if ($this->ops_graphicsmagick_path) {
 			caExec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			$va_tmp = explode(';', $va_output[0]);
 			if (sizeof($va_tmp) != 3) {

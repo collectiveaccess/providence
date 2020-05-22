@@ -64,12 +64,9 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $input_sample_frequency;
 
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_path_to_ffmpeg;
-	var $opb_ffmpeg_available;
 
 	var $ops_mediainfo_path;
-	var $opb_mediainfo_available;
 
 	var $info = array(
 		"IMPORT" => array(
@@ -160,13 +157,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_path_to_ffmpeg = $this->opo_external_app_config->get('ffmpeg_app');
-
-		$this->ops_mediainfo_path = caGetExternalApplicationPath('mediainfo');
-		$this->opb_mediainfo_available = caMediaInfoInstalled();
-
-		$this->opb_ffmpeg_available = caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg);
+		$this->ops_path_to_ffmpeg = caMediaPluginFFmpegInstalled();
+		$this->ops_mediainfo_path = caMediaInfoInstalled();
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -177,11 +169,11 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		$this->register();
 		$va_status['available'] = true;
-		if (!$this->opb_ffmpeg_available) { 
+		if (!$this->ops_path_to_ffmpeg) { 
 			$va_status['errors'][] = _t("Incoming audio files will not be transcoded because ffmpeg is not installed.");
 		}
 		
-		if ($this->opb_mediainfo_available) { 
+		if ($this->ops_mediainfo_path) { 
 			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from audio files.");
 		}
 		return $va_status;
@@ -296,7 +288,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 			$this->handle = $this->ohandle = $info;
 			
-			if($this->opb_mediainfo_available){
+			if($this->ops_mediainfo_path){
 				$this->metadata = caExtractMetadataWithMediaInfo($filepath);
 			} else {
 				$this->metadata = $this->handle;
@@ -562,7 +554,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 		} else {
 
-			if (($mimetype != "image/png") && ($mimetype != "image/jpeg") && ($this->opb_ffmpeg_available)) {
+			if (($mimetype != "image/png") && ($mimetype != "image/jpeg") && ($this->ops_path_to_ffmpeg)) {
 				#
 				# Do conversion
 				#

@@ -55,7 +55,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	var $metadata = array();
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_graphicsmagick_path;
 	
 	var $info = array(
@@ -232,8 +231,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	public function register() {
 		// get config for external apps
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
 		
 		if (caMediaPluginImagickInstalled()) {	
 			return null;	// don't use if Imagick is available
@@ -243,7 +240,8 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			return null;	// don't use if Gmagick is available
 		}
 		
-		if (!caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+		$this->ops_graphicsmagick_path = caMediaPluginGraphicsMagickInstalled();
+		if (!$this->ops_graphicsmagick_path) {
 			return null;	// don't use if GraphicsMagick executables are unavailable
 		}
 		$this->info["INSTANCE"] = $this;
@@ -264,7 +262,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
 			}
-			if (!caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+			if (!$this->ops_graphicsmagick_path) {
 				$va_status['errors'][] = _t("Didn't load because GraphicsMagick executables cannot be found");
 			}	
 		}	
@@ -865,7 +863,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	 * This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	 */
 	public function &writePreviews($ps_filepath, $pa_options) {
-		if(!caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) { return false; }
+		if(!$this->ops_graphicsmagick_path) { return false; }
 
 		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
 			if (!($vs_tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
@@ -902,7 +900,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
 		if(!is_array($pa_files)) { return false; }
 
-		if (!caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) { return false; }
+		if (!$this->ops_graphicsmagick_path) { return false; }
 
 		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
 		@rename($vs_archive_original, $vs_archive_original.".tif");
@@ -1007,7 +1005,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	# Command line wrappers
 	# ------------------------------------------------
 	private function _graphicsMagickIdentify($ps_filepath) {
-		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+		if ($this->ops_graphicsmagick_path) {
 			caExec($this->ops_graphicsmagick_path.' identify -format "%m;" '.caEscapeShellArg($ps_filepath.'[0]').(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			$va_types = explode(";", $va_output[0]);
 			return $this->magickToMimeType($va_types[0]);	// force use of first image in multi-page TIFF
@@ -1117,7 +1115,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	}
 	# ------------------------------------------------
 	private function _graphicsMagickRead($ps_filepath) {
-		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+		if ($this->ops_graphicsmagick_path) {
 		
 			caExec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h;%q;%x;%y\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			
@@ -1167,7 +1165,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	}
 	# ------------------------------------------------
 	private function _graphicsMagickWrite($pa_handle, $ps_filepath, $ps_mimetype, $pn_quality=null) {
-		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+		if ($this->ops_graphicsmagick_path) {
 			if (($this->properties["colorspace"]) && ($this->properties["colorspace"] != "default")){ 
 				$vn_colorspace = null;
 				switch($this->properties["colorspace"]) {

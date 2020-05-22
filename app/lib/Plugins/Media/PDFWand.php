@@ -53,7 +53,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	var $properties;
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	var $opo_search_config;
 	var $ops_ghostscript_path;
 	var $ops_pdftotext_path;
@@ -157,13 +156,12 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		$this->opo_config = Configuration::load();
 		
 		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf');
 		
-		$this->ops_ghostscript_path = $this->opo_external_app_config->get('ghostscript_app');
-		$this->ops_pdftotext_path = $this->opo_external_app_config->get('pdftotext_app');
-		$this->ops_pdfminer_path = $this->opo_external_app_config->get('pdfminer_app');
-		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
-		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
+		$this->ops_ghostscript_path = caMediaPluginGhostscriptInstalled();
+		$this->ops_pdftotext_path = caMediaPluginPdftotextInstalled();
+		$this->ops_pdfminer_path = caPDFMinerInstalled();
+		$this->ops_imagemagick_path = caMediaPluginImageMagickInstalled();
+		$this->ops_graphicsmagick_path = caMediaPluginGraphicsMagickInstalled();
 
 		
 		$this->info["INSTANCE"] = $this;
@@ -177,19 +175,19 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			$va_status['available'] = true;
 		}
 
-		if (!caMediaPluginGhostscriptInstalled($this->ops_ghostscript_path)) {
+		if (!$this->ops_ghostscript_path) {
 			$va_status['warnings'][] = _t("Ghostscript cannot be found: image previews will not be created");
 		}
 		else{
 			$va_status['notices'][] = _t("Found Ghostscript");
 		}
-		if (!caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
+		if (!$this->ops_pdftotext_path) {
 			$va_status['warnings'][] = _t("PDFToText cannot be found: indexing of text in PDF files will not be performed; you can obtain PDFToText at http://www.foolabs.com/xpdf/download.html");
 		}
 		else{
 			$va_status['notices'][] = _t("Found PDFToText");
 		}
-		if (!caPDFMinerInstalled($this->ops_pdfminer_path)) {
+		if (!$this->ops_pdfminer_path) {
 			$va_status['warnings'][] = _t("PDFMiner cannot be found: indexing of text locations in PDF files will not be performed; you can obtain PDFMiner at http://www.unixuser.org/~euske/python/pdfminer/index.html");
 		}
 		else{
@@ -456,7 +454,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			@unlink($vs_tmp_filename);	
 		} else {			
 			// Try to extract text
-			if (caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
+			if ($this->ops_pdftotext_path) {
 				$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
 				caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
 				$vs_extracted_text = file_get_contents($vs_tmp_filename);
@@ -583,7 +581,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				return false;
 			}
 		} else {
-			if (caMediaPluginGhostscriptInstalled($this->ops_ghostscript_path)) {
+			if ($this->ops_ghostscript_path) {
 				$vn_scaling_correction = (float)$this->get("scaling_correction");
 				if ($vn_scaling_correction == 1) { $vn_scaling_correction = 0; }
 				$vs_res = "72x72";

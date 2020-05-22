@@ -57,7 +57,6 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $metadata = array();
 
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_path_to_ffmpeg;
 
 	var $info = array(
@@ -120,10 +119,9 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf');
-		$this->ops_path_to_ffmpeg = $this->opo_external_app_config->get('ffmpeg_app');
+		$this->ops_path_to_ffmpeg = caMediaPluginFFmpegInstalled();
 
-		if (!caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg)) { return null; }
+		if (!$this->ops_path_to_ffmpeg) { return null; }
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -135,7 +133,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($this->register()) {
 			$va_status['available'] = true;
 		} else {
-			if (!caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg)) {
+			if (!$this->ops_path_to_ffmpeg) {
 				$va_status['errors'][] = _t("Didn't load because ffmpeg is not installed");
 			}
 		}
@@ -367,7 +365,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_preview_width = $this->properties["width"];
 				$vn_preview_height = $this->properties["height"];
 
-				if (caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg)) {
+				if ($this->ops_path_to_ffmpeg) {
 					if (($vn_start_secs = $this->properties["duration"]/8) > 120) { 
 						$vn_start_secs = 120;		// always take a frame from the first two minutes to ensure performance (ffmpeg gets slow if it has to seek far into a movie to extract a frame)
 					}

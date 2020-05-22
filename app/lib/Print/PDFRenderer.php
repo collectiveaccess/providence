@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -173,8 +173,8 @@
  			if (is_array($append = caGetOption('append', $pa_options, null)) && (sizeof($append) > 0) && caMediaPluginGhostscriptInstalled()) {
  			  
  			   if ($content = $this->renderer->render($ps_content, array_merge($pa_options, ['stream' => false]))) {
-                    $external_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf');
-                    $ghostscript_path = $external_app_config->get('ghostscript_app');
+                    $ghostscript_path = caGetExternalApplicationPath('ghostscript');
+                    
                     file_put_contents($basefile = caGetTempFileName("caPDF"), $content);
                     $outfile = caGetTempFileName("caPDF");
                     caExec("{$ghostscript_path} -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile={$outfile} {$basefile} ".join(" ", array_map(function($v) { return caEscapeShellArg($v); }, $append)).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);

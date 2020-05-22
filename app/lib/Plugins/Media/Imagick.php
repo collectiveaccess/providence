@@ -55,7 +55,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $metadata = array();
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	
 	var $info = array(
 		"IMPORT" => array(
@@ -235,10 +234,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
-		
-		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
+		$this->ops_dcraw_path = caMediaPluginDcrawInstalled();
 		
 		if (caMediaPluginGmagickInstalled()) {
 			return null;	// don't use if Gmagick extension is available
@@ -267,7 +263,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			} 
 		}
 		
-		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+		if (!$this->ops_dcraw_path) {
 			$va_status['warnings'][] = _t("RAW image support is not enabled because DCRAW cannot be found");
 		}
 		
@@ -276,7 +272,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function divineFileFormat($ps_filepath) {
 		# is it a camera raw image?
-		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+		if ($this->ops_dcraw_path) {
 			caExec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			if ($vn_return == 0) {
 				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
@@ -460,7 +456,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				
 				if ($mimetype == 'image/x-dcraw') {
 					if($this->filepath_conv) { @unlink($this->filepath_conv); }
-					if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+					if (!$this->ops_dcraw_path) {
 						$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugImagick->read()");
 						return false;
 					}

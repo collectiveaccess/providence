@@ -69,7 +69,7 @@ trait CommandConfiguration {
 		if ( self::$opo_external_app_config_static == null ) {
 			self::$opo_external_app_config_static = Configuration::load( __CA_CONF_DIR__ . "/external_applications.conf" );
 		}
-		$this->ops_base_path = self::$opo_external_app_config_static->get( $ps_basepath_setting );
+		//$this->ops_base_path = caGetExternalApplicationPath('imagemagick'); //self::$opo_external_app_config_static->get( $ps_basepath_setting );
 	}
 
 	/**
@@ -293,8 +293,11 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	# ------------------------------------------------
 	public function __construct() {
+		$this->ops_imagemagick_path = caMediaPluginImageMagickInstalled();
+		
 		$this->description = _t('Provides image processing and conversion services using ImageMagick via exec() calls to ImageMagick binaries');
 		$this->init();
+		
 		$this->initCommandConfiguration('imagemagick', 'imagemagick_path');
 	}
 	# ------------------------------------------------
@@ -303,8 +306,6 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function register() {
 		// get config for external apps
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_imagemagick_path = $this->ops_base_path;
 
 		if (caMediaPluginImagickInstalled()) {	
 			return null;	// don't use if Imagick is available
@@ -317,8 +318,8 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (caMediaPluginGraphicsMagickInstalled()){
 			return null;	// don't use if GraphicsMagick is available
 		}
-		
-		if (!caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+	
+		if (!$this->ops_imagemagick_path) {
 			return null;	// don't use if Imagemagick executables are unavailable
 		}
 		$this->info["INSTANCE"] = $this;
@@ -343,7 +344,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
 			}
-			if (!caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+			if (!$this->ops_imagemagick_path) {
 				$va_status['errors'][] = _t("Didn't load because ImageMagick executables cannot be found");
 			}
 			

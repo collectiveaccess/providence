@@ -55,6 +55,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	
 	var $opo_config;
 	
+	var $ops_path_to_openctm = null;
+	var $ops_path_to_meshlab = null;
+	
 	var $info = array(
 		"IMPORT" => array(
 			"application/ply" 					=> "ply",
@@ -131,6 +134,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
+		
+		$this->ops_path_to_openctm = caOpenCTMInstalled();
+		$this->ops_path_to_meshlab = caMeshlabServerInstalled();
 		
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -336,8 +342,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 
 		switch($ps_mimetype) {
 			case 'application/ctm':
-				if(file_exists($this->filepath) && caOpenCTMInstalled()){
-					caExec(caGetExternalApplicationPath('openctm').' '.caEscapeShellArg($this->filepath)." ".caEscapeShellArg($ps_filepath).".ctm --method MG2 --level 9 2>&1", $va_output);
+				if(file_exists($this->filepath) && $this->ops_path_to_openctm){
+					caExec($this->ops_path_to_openctm.' '.caEscapeShellArg($this->filepath)." ".caEscapeShellArg($ps_filepath).".ctm --method MG2 --level 9 2>&1", $va_output);
 					return "{$ps_filepath}.ctm";	
 				} else {
 					@unlink("{$ps_filepath}.ctm");
@@ -349,10 +355,10 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 				# pretty restricted, but we can convert ply to stl!
 				if(($this->properties['mimetype'] == 'application/ply') && ($ps_mimetype == 'application/stl')){
 					if(file_exists($this->filepath)){
-						if (caMeshlabServerInstalled()) {
+						if ($this->ops_path_to_meshlab) {
 							putenv("DISPLAY=:0");
 							chdir('/usr/local/bin');
-							caExec(caGetExternalApplicationPath('meshlabserver')." -i ".caEscapeShellArg($this->filepath)." -o ".caEscapeShellArg($ps_filepath).".stl 2>&1", $va_output);
+							caExec($this->ops_path_to_meshlab." -i ".caEscapeShellArg($this->filepath)." -o ".caEscapeShellArg($ps_filepath).".stl 2>&1", $va_output);
 							return "{$ps_filepath}.stl";	
 						} elseif(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
 							return "{$ps_filepath}.stl";	

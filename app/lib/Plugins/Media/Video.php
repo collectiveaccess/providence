@@ -56,6 +56,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $properties = array();
 	var $oproperties = array();
 	var $opa_media_metadata = array();
+	
+	var $ops_path_to_ffmeg = null;
 
 	var $info = array(
 		"IMPORT" => array(
@@ -166,6 +168,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function __construct() {
 		parent::__construct();
 		$this->description = _t('Provides ffmpeg-based video processing');
+		
+		$this->ops_path_to_ffmeg = caMediaPluginFFmpegInstalled();
+		$this->ops_path_to_mediainfo = caMediaInfoInstalled();
 	}
 	# ------------------------------------------------
 	/**
@@ -185,11 +190,11 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->register();
 		$va_status['available'] = true;
 		
-		if(!caMediaPluginFFmpegInstalled()){
+		if(!$this->ops_path_to_ffmeg){
 			$va_status['errors'][] = _t("Incoming video files will not be transcoded because ffmpeg is not installed.");
 		}
 		
-		if (caMediaInfoInstalled()) {
+		if ($this->ops_path_to_mediainfo) {
 			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from video files.");
 		}
 		return $va_status;
@@ -275,7 +280,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function getExtractedMetadata() {
 		// $this->opa_media_metadata might be extracted by mediainfo at this point or it might not
 		// so we do it again. all calls are cached anyway so this should be too bad as far as performance
-		if(caMediaInfoInstalled()) {
+		if($this->ops_path_to_mediainfo) {
 			return caExtractMetadataWithMediaInfo($this->filepath);
 		} else {
 			return $this->opa_media_metadata;
@@ -800,12 +805,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1] (command was %2)", $vn_return, $vs_cmd), "WLPlugVideo->write()");
 						}
 						return false;
-					}
-					
-					// try to hint for streaming
-					if (file_exists($this->ops_path_to_qt_faststart)) {
-						caExec($this->ops_path_to_qt_faststart." ".caEscapeShellArg($filepath.".".$ext)." ".caEscapeShellArg($filepath."_tmp.".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-						rename("{$filepath}_tmp.{$ext}", "{$filepath}.{$ext}");
 					}
 					# ------------------------------------
 					$this->properties["mimetype"] = $mimetype;
