@@ -42,6 +42,21 @@
  	global $_ca_attribute_settings;
  	
  	$_ca_attribute_settings['DateRangeAttributeValue'] = array(		// global
+ 		'dateFormat' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => '',
+			'width' => 50, 'height' => 1,
+			'label' => _t('Date display format'),
+			'options' => array(
+				_t('System default') => '',
+				_t('Formatted as text (ex. July 20, 1969)') => 'text',
+				_t('Formatted as delimited (ex. 7/20/1969)') => 'delimited',
+				_t('ISO-8601 (ex. 1969-07-20)') => 'iso8601',
+				_t('As entered by user') => 'original'
+			),
+			'description' => _t('Format to use for display of dates, if different from system default.')
+		),
 		'dateRangeBoundaries' => array(
 			'formatType' => FT_DATERANGE,
 			'displayType' => DT_FIELD,
@@ -267,9 +282,17 @@
 				return $this->opn_start_date.'/'.$this->opn_end_date;
 			}
 			
+			if (!is_array($va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID()))) {
+				$va_settings = [];
+			}
 			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 
-			$vs_date_format = $o_date_config->get('dateFormat');
+			if (!($vs_date_format = caGetOption('dateFormat', $pa_options, null))) {
+				if (!($vs_date_format = caGetOption('dateFormat', $va_settings, null))) {
+					$vs_date_format = $o_date_config->get('dateFormat');
+				}
+			}
+			
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $vs_date_format.$this->opn_start_date.$this->opn_end_date);
 
 			// pull from cache
@@ -285,11 +308,8 @@
 			if ($vs_date_format == 'original') {
 				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
 			} else {
-				if (!is_array($va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID()))) {
-					$va_settings = [];
-				}
 				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
-				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('dateFormat' => $vs_date_format, 'isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
 			}
 		}
  		# ------------------------------------------------------------------
