@@ -2450,7 +2450,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						continue;
 					}
-					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not insert new record for %1: ", $t_subject->getProperty('NAME_SINGULAR')), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not insert new record for %2: ", $vs_idno, $t_subject->getProperty('NAME_SINGULAR')), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 					
 						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 						if ($vs_import_error_policy == 'stop') {
@@ -2479,7 +2479,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				
 					$t_subject->update(['queueIndexing' => true]);
-					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not update matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not update matched record", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 						if ($vs_import_error_policy == 'stop') {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
@@ -2501,7 +2501,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 						if ($vb_remove_labels) {
 							$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__, ['locales' => [$vn_locale_id]]);
-							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove preferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not remove preferred labels from matched record", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 								if ($vs_import_error_policy == 'stop') {
 									$o_log->logAlert(_t('Import stopped due to import error policy'));
@@ -2524,7 +2524,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							if ($vb_remove_labels) {
 								$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__, ['locales' => [$vn_locale_id]]);
-								if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+								if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not remove nonpreferred labels from matched record", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 									ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 									if ($vs_import_error_policy == 'stop') {
 										$o_log->logAlert(_t('Import stopped due to import error policy'));
@@ -2551,7 +2551,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$t_subject->set($vs_idno_fld, $vs_proc_idno);
 							$t_subject->update(['queueIndexing' => true]);
 						
-							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could update idno"), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could update idno", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 								ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 								if ($vs_import_error_policy == 'stop') {
 									$o_log->logAlert(_t('Import stopped due to import error policy'));
