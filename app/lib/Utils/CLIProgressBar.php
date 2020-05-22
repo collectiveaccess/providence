@@ -352,13 +352,16 @@ class CLIProgressBar
         if ($hours) {
             $return[] = sprintf("%02dh", $hours);
         }
-        $return[] = sprintf("%02d", $minutes);
-        $return[] = sprintf("%02d", $seconds);
-
+        if ($minutes){
+            $return[] = sprintf("%02dm", $minutes);
+        }
+        if ($seconds){
+            $return[] = sprintf("%02ds", $seconds);
+        }
         if (!$return) {
             return $nowText;
         }
-        return $prefix . implode($return, ':');
+        return $prefix . implode(array_slice($return, 0, 2), ':');
     }
 
     /**
