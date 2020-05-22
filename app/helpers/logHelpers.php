@@ -63,6 +63,7 @@
 	 * @param array $options Options include:
 	 *
 	 *                       logDirectory = Directory containing logs. [Default is to use app.conf $ps_opt_name value]
+	 *						 logName = Optional log name. [Default is to use a generic log name]
 	 *
 	 *                       logLevel = KLogger numeric constant of string code for log level. Valid string codes
 	 *                       are DEBUG, NOTICE, WARN, ERR, CRIT, ALERT and INFO. [Default is INFO]
@@ -92,7 +93,7 @@
 			}
 		}
 		
-		$log = new KLogger($log_dir, caLogLevelStringToNumber(caGetOption('logLevel', $options, 'INFO')));
+		$log = new KLogger($log_dir, caLogLevelStringToNumber(caGetOption('logLevel', $options, 'INFO')), caGetOption('logName', $options, null));
 		if ($log_dir !== $orig_log_dir) {
 			$log->logInfo(_t('Logging to temporary directory %1 because configured log directory %2 is not writeable', $log_dir, $orig_log_dir));
 		}
