@@ -45,6 +45,19 @@ use GuzzleHttp\Client;
 use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\SelfDescribing;
 
+/**
+ * array_key_first polyfill for PHP < 7.3
+ * @see https://www.php.net/manual/en/function.array-key-first.php
+ */
+if (!function_exists('array_key_first')) {
+    function array_key_first(array $arr) {
+        foreach($arr as $key => $unused) {
+            return $key;
+        }
+        return NULL;
+    }
+}
+
 # ----------------------------------------------------------------------
 # String localization functions (getText)
 # ----------------------------------------------------------------------

@@ -32,6 +32,7 @@
 use PHPUnit\Framework\TestCase;
 
 require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 
