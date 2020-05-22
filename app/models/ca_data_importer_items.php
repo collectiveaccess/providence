@@ -364,6 +364,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip row if data already present'),
 			'description' => _t('Skip row if data is already present in CollectiveAccess.')
 		);
+		$va_settings['skipIfNoReplacementValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip mapping if no replacement value'),
+			'description' => _t('Skip mapping if the value does not have a replacement value defined.')
+		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

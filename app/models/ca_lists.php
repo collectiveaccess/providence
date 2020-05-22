@@ -1740,7 +1740,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
  				caHTMLTextInput(
  					$ps_name.'_autocomplete', 
 					array(
-						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: 300, 
+						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: "300px", 
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1, 
 						'value' => $vs_value, 
 						'maxlength' => 512,
