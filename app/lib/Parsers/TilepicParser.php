@@ -1418,9 +1418,11 @@ class TilepicParser {
 					$radius = 1;
 				}
 				$sigma = 0.5;
-				if ( !$slice->sharpenImage( $radius, $sigma) ) {
-					$this->error = "Sharpen failed";
-					return false;
+				
+				try {
+					$slice->sharpenImage($radius, $sigma);
+				} catch(Exception $e) {
+					// noop
 				}
 				
 				if(abs($rotation) === 90) {	// flip rotation due to EXIF rotation (Gmagick doesn't set EXIF rotation properly)
