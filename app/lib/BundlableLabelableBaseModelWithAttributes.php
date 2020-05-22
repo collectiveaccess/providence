@@ -2823,8 +2823,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_object = new ca_objects();
 		$t_rel = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $vs_object_collection_rel_type]);
 	
-		$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$ps_form_name}object_type_id", 
-			['id' => "{$ps_form_name}objectTypeList"], 
+		$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$ps_placement_code}{$ps_form_name}object_type_id", 
+			['id' => "{$ps_placement_code}{$ps_form_name}objectTypeList"], 
 			[	'childrenOfCurrentTypeOnly' => $vb_strict_type_hierarchy, 
 				'includeSelf' => !$vb_strict_type_hierarchy, 
 				'directChildrenOnly' => $vb_strict_type_hierarchy,
