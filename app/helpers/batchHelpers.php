@@ -351,6 +351,8 @@
         }
         if(!is_array($va_files = $g_batch_helpers_media_directory_contents_cache[$ps_directory])) { return null; }
         
+        if ($o_log) $o_log->logDebug(_t("Matching on files in directory %1", $ps_directory));
+        
         // Get list of regex packages that user can use to extract object idno's from filenames
         $va_regex_list = caBatchGetMediaFilenameToIdnoRegexList(['log' => $o_log]);
 
@@ -423,7 +425,7 @@
                         if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
                             if (!$va_matches[1]) { if (!($va_matches[1] = $va_matches[0])) { continue; } }	// skip blank matches
 
-                            if ($o_log) $o_log->logDebug(_t("Matched name %1 on regex %2",$vs_match_name,$vs_regex));
+                            if ($o_log) $o_log->logDebug(_t("Extracted value from name %1 using regex %2",$vs_match_name,$vs_regex));
                             
                             $vb_match = false;
                             
@@ -431,20 +433,26 @@
                             switch(strtoupper($ps_match_type)) {
                                 case 'STARTS':
                                     $vb_match = preg_match('!^'.$ps_value.'!i', $va_matches[1], $va_matches);
+                                    if ($o_log) $o_log->logDebug(_t("STARTS match on %1 to value %2", $va_matches[1], $ps_value));
                                     break;
                                 case 'ENDS':
                                     $vb_match = preg_match('!'.$ps_value.'$!i', $va_matches[1], $va_matches);
+                                    if ($o_log) $o_log->logDebug(_t("ENDS match on %1 to value %2", $va_matches[1], $ps_value));
                                     break;
                                 case 'CONTAINS':
                                     $vb_match = preg_match('!'.$ps_value.'!i', $va_matches[1], $va_matches);
+                                    if ($o_log) $o_log->logDebug(_t("CONTAINS match on %1 to value %2", $va_matches[1], $ps_value));
                                     break;
                                 case 'EXACT':
                                     // match the name exactly
                                     $vb_match = (strtolower($va_matches[1]) === strtolower($ps_value));
+                                    if ($o_log) $o_log->logDebug(_t("EXACT match on %1 to value %2", $va_matches[1], $ps_value));
                                     break;  
                                 // Default is to match exact name or name without extension
                                 default:
                                     $vb_match = ((strtolower($va_matches[1]) === strtolower($ps_value)) || (strtolower($va_matches[1]) === strtolower(pathinfo($ps_value, PATHINFO_FILENAME))));
+                                    
+                                    if ($o_log) $o_log->logDebug(_t("Case-insensitive match on %1 to value %2", $va_matches[1], $ps_value));
                                     break;
                             }
                             if ($vb_match) {  $va_matched_files[] = $vs_file; }
