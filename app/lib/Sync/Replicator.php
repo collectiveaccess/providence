@@ -393,6 +393,7 @@ class Replicator {
                                         $missing_guids[] = $va_source_log_subject['guid'];   // add subject to list of guids to replicate
                 
                                         // find dependencies for rows to replicate that are not already present on the target
+                                        $missing_guids = array_unique($missing_guids);
                                         while((sizeof($missing_guids) > 0)) { 
                                             $vs_missing_guid = array_shift($missing_guids);
                                             if ($source_log_entries_for_missing_guids_seen_guids[$vs_missing_guid]) { 
@@ -434,8 +435,7 @@ class Replicator {
                                                 
                                                 $va_filtered_log_for_missing_guid = [];  
                                                 foreach($va_log_for_missing_guid as $va_missing_entry) {
-                                                    //if ($va_missing_entry['log_id'] >= $pn_start_replicated_id) { 
-                                                    if ($va_missing_entry['log_id'] > $this->last_log_id) { 
+                                                    if ($va_missing_entry['log_id'] >= $replicated_log_id) { 
                                                         // Skip rows in the future - the regular sync process will take care of those. 
                                                         // All we do here is bring the target "up to date"
                                                         continue; 
@@ -467,6 +467,8 @@ class Replicator {
                                                         }, ARRAY_FILTER_USE_BOTH))));
                                                     }
                                                 }
+                                                
+                                                if (sizeof($va_filtered_log_for_missing_guid) == 0) { continue; }
                                                 
                                                 // Check for presence and access of dependencies on target
                                                 // We will only replicate rows meeting access requirements and not already on the target
@@ -520,7 +522,10 @@ class Replicator {
                                                         while(sizeof($va_filtered_log_for_missing_guid) > 0) {
                                                             $va_log_entry = array_shift($va_filtered_log_for_missing_guid);
                                                             
-                                                            if ($vn_log_id == $va_log_entry['log_id']) { continue; } // don't pull in current log entry
+                                                            if ($vn_log_id == $va_log_entry['log_id']) { 
+                                                            	$this->log(_t("[%1] Skipped missing entry because it is the current id.", $vs_source_key), Zend_Log::DEBUG);
+                                                            	continue; 
+                                                            } // don't pull in current log entry
                                                             $vn_mlog_id = $va_log_entry['log_id'];
                                                             if (!$vn_mlog_id) { 
                                                                 $this->log(_t("[%1] Skipped entry because it lacks a log_id.", $vs_source_key), Zend_Log::WARN);
