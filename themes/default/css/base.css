@@ -149,7 +149,7 @@ h5 {
 
 #mainContent{
     background-color: #FFFFFF;
-    padding: 10px 20px 0px 20px;
+    padding: 10px 20px 60px 20px;
     width:744px;	/* .width 1000 - #leftNav (width + borders) 216 - 40px padding in mainContent = 744px */
     margin-left: 215px;
     border-right: 2px solid #ddd;

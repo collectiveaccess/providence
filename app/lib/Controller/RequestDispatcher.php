@@ -270,6 +270,9 @@ class RequestDispatcher extends BaseObject {
 							$this->postError(2310, _t("Not dispatchable"), "RequestDispatcher->dispatch()");
 							return false;
 						}
+						if (caIsGzipDisabled($this->ops_controller, $this->ops_action)){
+                            $this->opo_response->addHeader("Content-Encoding", "none");
+                        }
 						$o_action_controller->{$this->ops_action}($va_params);
 						if ($o_action_controller->numErrors()) {
 							$this->errors = $o_action_controller->errors();
