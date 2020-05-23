@@ -2818,16 +2818,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		$vs_object_collection_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type');
-		$vb_strict_type_hierarchy = (bool)$po_request->config->get($this->tableName().'_enforce_strict_type_hierarchy');
+		$vb_strict_type_hierarchy = $po_request->config->get($this->tableName().'_enforce_strict_type_hierarchy');
 	
 		$t_object = new ca_objects();
 		$t_rel = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $vs_object_collection_rel_type]);
 	
 		$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$ps_placement_code}{$ps_form_name}object_type_id", 
 			['id' => "{$ps_placement_code}{$ps_form_name}objectTypeList"], 
-			[	'childrenOfCurrentTypeOnly' => $vb_strict_type_hierarchy, 
-				'includeSelf' => !$vb_strict_type_hierarchy, 
-				'directChildrenOnly' => $vb_strict_type_hierarchy,
+			[	'childrenOfCurrentTypeOnly' => (bool)$vb_strict_type_hierarchy, 
+				'includeSelf' => !(bool)$vb_strict_type_hierarchy, 
+				'directChildrenOnly' => $vb_strict_type_hierarchy && ($vb_strict_type_hierarchy !== '~'),
 				'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
 				'dontIncludeSubtypesInTypeRestriction' => !$t_rel->get('ca_relationship_types.include_subtypes_left')
 			])));
