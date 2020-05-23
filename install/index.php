@@ -27,8 +27,14 @@
  *
  * ----------------------------------------------------------------------
  */
+    //
+    // Send headers before any other content.
+    // Disable gzip or any compression to allow showing progressbar.
+    //
+    header('Content-Encoding: none');
 	define('__CollectiveAccess_Installer__', 1);
-	error_reporting(E_ALL ^ E_NOTICE);
+
+    error_reporting(E_ALL ^ E_NOTICE);
 	set_time_limit(7200);
 	ini_set("memory_limit", "512M");	
 	
