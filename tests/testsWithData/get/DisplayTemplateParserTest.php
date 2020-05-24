@@ -109,10 +109,12 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 				// text in a container
 				'external_link' => array(
 					array(
-						'url_source' => 'My URL source'
+						'url_source' => 'My URL source',
+						'url_entry' => 'http://foo.com'
 					),
 					array(
-						'url_source' => 'Another URL source'
+						'url_source' => 'Another URL source',
+						'url_entry' => 'http://meow.com'
 					),
 				),
 
@@ -512,6 +514,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithPlaceholderPrefixOption() {
+		$t = new ca_objects($this->opn_object_id);
 		$vm_ret = DisplayTemplateParser::evaluate("URL: <b>^url_source</b> (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('placeholderPrefix' => 'ca_objects.external_link', 'returnAsArray' => true));
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
