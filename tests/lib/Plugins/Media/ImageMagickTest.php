@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,8 +51,9 @@ class ImageMagickTest extends TestCase {
 	protected function setUp(): void {
 		$this->im_plugin = new WLPlugMediaImageMagick();
 		$this->im_plugin->register();
+		$this->im_plugin->setBasePath('/usr/bin');
 	}
-
+	
 	# -------------------------------------------------------
 	public function testConvertCmd() {
 		$command = $this->im_plugin->command( 'convert' );

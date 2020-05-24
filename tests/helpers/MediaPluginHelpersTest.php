@@ -39,7 +39,15 @@ class MediaPluginHelpersTest extends TestCase {
     }
 
     public function testCaGetExternalApplicationPath() {
-        $this->assertSame("/usr/bin/gs", caGetExternalApplicationPath("ghostscript"));
+    	$paths = caGetExternalApplicationPath("ghostscript_app", ['returnAsArray' => true]);
+        $this->assertSame("/usr/bin/gs", $paths[0]);
+        
+    	$paths = caGetExternalApplicationPath("ffmpeg_app", ['returnAsArray' => true]);
+        $this->assertSame("/usr/bin/ffmpeg", $paths[0]);
+        $this->assertSame("/usr/local/bin/ffmpeg", $paths[1]);
+        
+    	$paths = caGetExternalApplicationPath("imagemagick_path", ['returnAsArray' => true]);
+        $this->assertSame("/usr/bin", $paths[0]);
     }
 
     public function testCaGetExternalApplicationPathReturnsNullsForMissingApplication() {
@@ -50,4 +58,3 @@ class MediaPluginHelpersTest extends TestCase {
         $this->assertFalse(caMediaPluginImageMagickInstalled());
     }
 }
-
