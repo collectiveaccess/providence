@@ -2161,7 +2161,7 @@ class BaseModel extends BaseObject {
 			case 251: // Duplicate key error
 				$indices = $o_db->getIndices($this->tableName());	// try to get key info
 
-				if (preg_match("/for key [']{0,1}([\w]+)[']{0,1}$/", $o_e->getErrorDescription(), $matches)) {
+				if (preg_match("/for key [']{0,1}([\w]+)[']{0,1}$/", $e->getMessage(), $matches)) {
 					$field_labels = array();
 					foreach($indices[$matches[1]]['fields'] as $col_name) {
 						$tmp = $this->getFieldInfo($col_name);
@@ -2175,7 +2175,7 @@ class BaseModel extends BaseObject {
 						$msg = _t("The value of %1 must be unique", $last_name);
 					}
 				} else {
-					$msg = $o_e->getErrorDescription();
+					$msg = $e->getMessage();
 				}
 				$this->postError($e->getNumber(), $msg, $e->getContext());
 				$o_db->postError($e->getNumber(), $msg, $e->getContext());
