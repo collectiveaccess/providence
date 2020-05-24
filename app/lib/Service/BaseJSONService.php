@@ -61,7 +61,7 @@ class BaseJSONService {
 		$this->ops_method = $this->opo_request->getRequestMethod();
 		
 		if(!in_array($this->ops_method, array("PUT","DELETE","GET","POST","OPTIONS"))){
-			$this->addError(("Invalid HTTP request method"));
+			$this->addError(("Invalid HTTP request method: ".$this->ops_method));
 		}
 		
 		$this->opn_id = $this->opo_request->getParameter("id",pString);	// we allow for a string to support fetching by idno; typically it's a numeric id
