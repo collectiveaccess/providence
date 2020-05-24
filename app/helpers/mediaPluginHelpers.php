@@ -39,19 +39,24 @@
 
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Get path in external_applications.conf for specified application
+	 * Get path in external_applications.conf for specified application. A path is only returned if it exists on the system.
+	 * If none of the configured paths for an application exist on the system, null is returned.
 	 *
 	 * @param string $ps_application_name The name of the application. This is the same as the relevant entry in external_applications.conf without the trailing "_app" (Ex. pdfminer, dcraw, ffmpeg)
-	 * @param string $executable_name Name of executable to test for when app path is a directory (Ex. for ImageMagick)
-	 * @return string Path to application as defined in external_applications.conf
+	 * @param array $options Options inclide:
+	 * 		executalbleName = Name of executable to test for when app path is a directory (Ex. for ImageMagick)
+	 *		returnAsArray = Return full list of configured paths. Paths are not checked for existence.
+	 *
+	 * @return string The first path to application, as defined in external_applications.conf, that exists.
 	 */
-	function caGetExternalApplicationPath($ps_application_name, $executable_name=null) {
+	function caGetExternalApplicationPath($ps_application_name, $options=null) {
         if (!($o_ext_app_config = Configuration::load(__CA_CONF_DIR__ . '/external_applications.conf'))) {
             return null;
         }
-		$app_paths = $o_ext_app_config->get(["{$ps_application_name}_app", "{$ps_application_name}_path"]);
+		$app_paths = $o_ext_app_config->get(["{$ps_application_name}_app", "{$ps_application_name}_path", $ps_application_name]);
 		if (!$app_paths) { return null; }
 		if (!is_array($app_paths)) { $app_paths = [$app_paths]; }
+		if (caGetOption('returnAsArray', $options, false)) { return $app_paths; }
 		foreach($app_paths as $p) {
 			if ($executable_name) { $p = "/{$executable_name}"; }
 			if(file_exists($p)) { return $p; }
@@ -67,7 +72,7 @@
 	 */
 	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null) {
 		//if (CompositeCache::contains("mediahelper_imagemagick_installed")) { return CompositeCache::fetch("mediahelper_imagemagick_installed"); }
-		if(!$ps_imagemagick_path) { $ps_imagemagick_path = caGetExternalApplicationPath('imagemagick', 'identify'); }
+		if(!$ps_imagemagick_path) { $ps_imagemagick_path = caGetExternalApplicationPath('imagemagick', ['executableName' => 'identify']); }
 
 		if (!caIsValidFilePath($ps_imagemagick_path)) { 
 			CompositeCache::save("mediahelper_imagemagick_installed", false);
