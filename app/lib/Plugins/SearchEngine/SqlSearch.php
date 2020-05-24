@@ -501,6 +501,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		
 		if (strtolower($vs_field) == 'count') {
+			if (!is_array($va_rel_type_ids) || !sizeof($va_rel_type_ids)) { $va_rel_type_ids = [0]; }	// for counts must pass "0" as relationship type to pull count for all reltypes in aggregate
 			return array(
 				'access_point' => "{$vs_table}.{$vs_field}",
 				'relationship_type' => $vn_rel_type,
