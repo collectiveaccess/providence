@@ -110,7 +110,18 @@ trait CommandConfiguration {
 
 		return "{$this->ops_base_path}/$command";
 	}
-
+	
+	/**
+	 * Sets base path. Base path is set by the constructor but can be overriden here if needed.
+	 */
+	public function setBasePath($base_path) {
+		return $this->ops_base_path = $base_path;
+	}
+	
+	/**
+	 * Returns base path 
+	 */
+	abstract public function getBasePath();
 }
 
 class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
@@ -126,7 +137,6 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $metadata = array();
 	
 	var $opo_config;
-	var $ops_imagemagick_path;
 
 	var $info = array(
 		"IMPORT" => array(
@@ -293,12 +303,19 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	# ------------------------------------------------
 	public function __construct() {
-		$this->ops_imagemagick_path = caMediaPluginImageMagickInstalled();
+		$this->ops_base_path = $this->getBasePath();
 		
 		$this->description = _t('Provides image processing and conversion services using ImageMagick via exec() calls to ImageMagick binaries');
 		$this->init();
 		
 		$this->initCommandConfiguration('imagemagick', 'imagemagick_path');
+	}
+	# ------------------------------------------------
+	/**
+	 * Returns base path to ImageMagick installation
+	 */
+	public function getBasePath() {
+		return caMediaPluginImageMagickInstalled();
 	}
 	# ------------------------------------------------
 	# Tell WebLib what kinds of media this plug-in supports
@@ -319,7 +336,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return null;	// don't use if GraphicsMagick is available
 		}
 	
-		if (!$this->ops_imagemagick_path) {
+		if (!$this->ops_base_path) {
 			return null;	// don't use if Imagemagick executables are unavailable
 		}
 		$this->info["INSTANCE"] = $this;
@@ -344,7 +361,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
 			}
-			if (!$this->ops_imagemagick_path) {
+			if (!$this->ops_base_path) {
 				$va_status['errors'][] = _t("Didn't load because ImageMagick executables cannot be found");
 			}
 			
@@ -941,7 +958,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		if(!caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) { return false; }
+		if(!caMediaPluginImageMagickInstalled()) { return false; }
 
 		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
 			if (!($vs_tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
@@ -986,7 +1003,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
 		if(!is_array($pa_files)) { return false; }
 
-		if (!caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) { return false; }
+		if (!caMediaPluginImageMagickInstalled()) { return false; }
 
 		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
 		@rename($vs_archive_original, $vs_archive_original.".tif");
@@ -1095,7 +1112,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# Command line wrappers
 	# ------------------------------------------------
 	private function _imageMagickIdentify( $ps_filepath ) {
-		if ( caMediaPluginImageMagickInstalled( $this->ops_imagemagick_path ) ) {
+		if (caMediaPluginImageMagickInstalled() ) {
 			caExec( join( ' ', array(
 				$this->commandWithDefaultArgs( 'identify' ),
 				'-format "%m"',
@@ -1109,7 +1126,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	private function _imageMagickGetMetadata($ps_filepath) {
-		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+		if (caMediaPluginImageMagickInstalled()) {
 			$va_metadata = array();
 			
 			if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
@@ -1199,7 +1216,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	private function _imageMagickRead($ps_filepath, $options=null) {
-		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+		if (caMediaPluginImageMagickInstalled()) {
 
 			caExec( join( ' ', array(
 				$this->commandWithDefaultArgs( 'identify' ),
@@ -1259,7 +1276,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	private function _imageMagickWrite($pa_handle, $ps_filepath, $ps_mimetype, $pn_quality=null) {
-		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+		if (caMediaPluginImageMagickInstalled()) {
 			if (($this->properties["colorspace"]) && ($this->properties["colorspace"] != "default")){ 
 				$vn_colorspace = null;
 				switch($this->properties["colorspace"]) {
