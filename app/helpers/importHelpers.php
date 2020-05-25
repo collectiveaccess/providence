@@ -879,10 +879,10 @@
 						if ($l = caGetOption(caGetPreferredLabelNameKeyList(), $va_val, null)) {
 							if(is_array($l) && ($ps_table !== 'ca_entities')) {
 								if (isset($l[$vs_label_fld]) && $l[$vs_label_fld]) {
-									$vs_item = $l[$vs_label_fld];
+									$va_val['preferred_labels'] = $l[$vs_label_fld];
 								}
 							} else {
-								$vs_item = $l;
+								$va_val['preferred_labels'] = $l;
 							}
 						}
 			
@@ -926,7 +926,6 @@
 					) {	
 				
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
-						//if(!is_array($va_attr_vals)) { $va_attr_vals = $va_val; }
 						$va_attr_vals_with_parent = array_merge($va_val, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));						
 						
 						switch($ps_table) {
