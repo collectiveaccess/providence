@@ -90,6 +90,11 @@ class AttributeGetTest extends BaseTestWithData {
 						'dimensions_weight' => '2 lbs',
 						'measurement_notes' => 'foo',
 					),
+					array(
+						'dimensions_length' => '5 ft',
+						'dimensions_weight' => '10 gm.',
+						'measurement_notes' => 'meow',
+					),
 				),
 
 				// Date
@@ -170,10 +175,12 @@ class AttributeGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.external_link.url_source');
 		$this->assertEquals("My URL source;Another URL source", $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length');
-		$this->assertEquals("10 in", $vm_ret);
-		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight');
-		$this->assertEquals("2 lb", $vm_ret);
+		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length', ['returnAsArray' => true]);
+		$this->assertEquals("10 in", $vm_ret[0]);
+		$this->assertEquals("5 ft", $vm_ret[1]);
+		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight', ['returnAsArray' => true]);
+		$this->assertEquals("2 lb", $vm_ret[0]);
+		$this->assertEquals("10 g", $vm_ret[1]);
 
 		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
 		$this->assertEquals("23 / 1984", $vm_ret);
