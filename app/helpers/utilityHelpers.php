@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2019 Whirl-i-Gig
+ * Copyright 2007-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3215,6 +3215,8 @@ function caFileIsIncludable($ps_file) {
             case 'g.':
             case 'gram':
             case 'grams':
+            case 'gm':
+            case 'gm.':
                 return $vb_return_short ? 'g' : Zend_Measure_Weight::GRAM;
                 break;
             case 'mg':
