@@ -36,16 +36,21 @@ use PHPUnit\Framework\TestCase;
 
 class MediaPluginHelpersTest extends TestCase {
     public function setUp(): void {
+    	// noop
     }
 
-    public function testCaGetExternalApplicationPath() {
+    public function testCaGetExternalApplicationPathForAppAsString() {
     	$paths = caGetExternalApplicationPath("ghostscript_app", ['returnAsArray' => true]);
         $this->assertSame("/usr/bin/gs", $paths[0]);
-        
+    }
+    
+    public function testCaGetExternalApplicationPathForAppInList() {
     	$paths = caGetExternalApplicationPath("ffmpeg_app", ['returnAsArray' => true]);
         $this->assertSame("/usr/bin/ffmpeg", $paths[0]);
         $this->assertSame("/usr/local/bin/ffmpeg", $paths[1]);
-        
+    }
+    
+    public function testCaGetExternalApplicationPathForPathAsString() {
     	$paths = caGetExternalApplicationPath("imagemagick_path", ['returnAsArray' => true]);
         $this->assertSame("/usr/bin", $paths[0]);
     }
