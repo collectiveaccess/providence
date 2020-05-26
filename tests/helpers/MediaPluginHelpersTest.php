@@ -54,8 +54,9 @@ class MediaPluginHelpersTest extends TestCase {
         $this->assertNull(caGetExternalApplicationPath("test"));
     }
 
-	// Is ImageMagick installed on Travis-CI?
+	// TODO: How do we reliably test detection of dependencies? Is ImageMagick installed on Travis-CI?
+	// 		Not sure what the correct strategy is for testing presence of this across various platforms.
     // public function testCaMediaPluginImageMagickInstalledFails() {
-//         $this->assertFalse(caMediaPluginImageMagickInstalled());
-//     }
+	//         $this->assertFalse(caMediaPluginImageMagickInstalled());
+	// }
 }
