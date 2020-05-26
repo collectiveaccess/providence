@@ -159,6 +159,7 @@ class AttributeGetTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testGets() {
+		// TODO: break this into smaller tests, one per get()
 		$vm_ret = $this->opt_object->get('ca_objects.date.dc_dates_types', array('returnIdno' => true));
 		$this->assertEquals('created', $vm_ret);
 
