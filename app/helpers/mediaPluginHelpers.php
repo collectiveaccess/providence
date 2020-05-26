@@ -58,7 +58,7 @@
 		if (!is_array($app_paths)) { $app_paths = [$app_paths]; }
 		if (caGetOption('returnAsArray', $options, false)) { return $app_paths; }
 		foreach($app_paths as $p) {
-			if ($executable_name) { $p = "/{$executable_name}"; }
+			if ($ps_application_name) { $p = "/{$ps_application_name}"; }
 			if(file_exists($p)) { return $p; }
 		}
 		return null;
