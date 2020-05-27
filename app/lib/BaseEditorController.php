@@ -444,7 +444,7 @@ class BaseEditorController extends ActionController {
 
 		// Are there metadata dictionary alerts?
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
-		$this->getView()->setVar('show_show_notifications', (sizeof($violations_to_prompt) > 0));
+		$this->getView()->setVar('show_show_notifications', is_array($violations_to_prompt) && (sizeof($violations_to_prompt) > 0));
 		
 		$this->render('screen_html.php');
 	}
@@ -1370,6 +1370,8 @@ class BaseEditorController extends ActionController {
 			$limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
 			$exclude_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_exclude_types');
 			
+			$show_top_level_types_only = (bool)$this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_shows_top_level_types_only');
+			$enforce_strict_type_hierarchy = $this->getRequest()->config->get($this->ops_table_name.'_enforce_strict_type_hierarchy');
 			
 			foreach($va_hier as $vn_item_id => $va_item) {
 			    if(is_array($limit_to_types) && sizeof($limit_to_types) && !in_array($va_item['idno'], $limit_to_types)) { continue; }
@@ -1380,13 +1382,15 @@ class BaseEditorController extends ActionController {
 				if ($va_item['parent_id'] != $vn_root_id) { continue; }
 				// does this item have sub-items?
 				$va_subtypes = array();
+				
 				if (
-					!(bool)$this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_shows_top_level_types_only')
-					&&
-					!(bool)$this->getRequest()->config->get($this->ops_table_name.'_enforce_strict_type_hierarchy')
+					(!$show_top_level_types_only && !(bool)$enforce_strict_type_hierarchy)
+					||
+					(!$show_top_level_types_only && (bool)$enforce_strict_type_hierarchy && !(bool)$va_item['is_enabled']) 	
+						// If in strict mode and a top-level type is disabled, then show sub-types so user can select an enabled type
 				) {
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
-						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types);
+						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => true]);
 					}
 				}
 
@@ -1434,16 +1438,24 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_subtypes Array of subtypes
 	 * @param array $pa_types_by_parent_id Array of subtypes organized by parent
 	 * @param int $pn_sort_type Integer code indicating how to sort types in the menu
+	 * @param array $pa_restrict_to_types List of types to restrict returned type list to. [Default is null]
+	 * @param array $options Supported options include:
+	 *		 firstEnabled = Stop returning subtypes once an enabled item is found. [Default is false]
 	 * @return array List of subtypes ready for inclusion in a menu spec
 	 */
-	private function _getSubTypes($pa_subtypes, $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types=null) {
+	private function _getSubTypes($pa_subtypes, $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types=null, $options=null) {
 		$va_subtypes = array();
+		$first_enabled = caGetOption('firstEnabled', $options, false);
+		
 		foreach($pa_subtypes as $vn_i => $va_type) {
 			if (is_array($pa_restrict_to_types) && !in_array($va_type['item_id'], $pa_restrict_to_types)) { continue; }
-			if (isset($pa_types_by_parent_id[$va_type['item_id']]) && is_array($pa_types_by_parent_id[$va_type['item_id']])) {
-				$va_subsubtypes = $this->_getSubTypes($pa_types_by_parent_id[$va_type['item_id']], $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types);
+			
+			if ($first_enabled && $va_type['is_enabled']) {
+				$va_subsubtypes = [];	// in "first enabled" mode we don't pull subtypes when we encounter an enabled item
+			} elseif (isset($pa_types_by_parent_id[$va_type['item_id']]) && is_array($pa_types_by_parent_id[$va_type['item_id']])) {
+				$va_subsubtypes = $this->_getSubTypes($pa_types_by_parent_id[$va_type['item_id']], $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types, $options);
 			} else {
-				$va_subsubtypes = array();
+				$va_subsubtypes = [];
 			}
 
 			switch($pn_sort_type) {
