@@ -2686,7 +2686,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												}
 												
 												try {
-													if ((is_array($va_rel_info = Datamodel::getManyToOneRelations($vs_table_name, $vs_element)) && (sizeof($va_rel_info) > 0)) && is_array($va_element_data[$vs_element]['_related_related']) && sizeof($va_element_data[$vs_element]['_related_related'])) {
+													if ((is_array($va_rel_info = Datamodel::getManyToOneRelations($vs_table_name, $vs_element)) && (sizeof($va_rel_info) > 0)) && is_array($va_element_data[$vs_element]) && is_array($va_element_data[$vs_element]['_related_related']) && sizeof($va_element_data[$vs_element]['_related_related'])) {
 														foreach($va_element_data[$vs_element]['_related_related'] as $vs_rel_rel_table => $va_rel_rels) {
 															foreach($va_rel_rels as $vn_i => $va_rel_rel) {
 																if (!($t_rel_instance = Datamodel::getInstance($va_rel_info['one_table']))) { 

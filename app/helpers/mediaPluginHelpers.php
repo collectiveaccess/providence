@@ -44,7 +44,7 @@
 	 *
 	 * @param string $ps_application_name The name of the application. This is the same as the relevant entry in external_applications.conf without the trailing "_app" (Ex. pdfminer, dcraw, ffmpeg)
 	 * @param array $options Options inclide:
-	 * 		executalbleName = Name of executable to test for when app path is a directory (Ex. for ImageMagick)
+	 * 		executableName = Name of executable to test for when app path is a directory (Ex. for ImageMagick)
 	 *		returnAsArray = Return full list of configured paths. Paths are not checked for existence.
 	 *
 	 * @return string The first path to application, as defined in external_applications.conf, that exists.
@@ -58,7 +58,7 @@
 		if (!is_array($app_paths)) { $app_paths = [$app_paths]; }
 		if (caGetOption('returnAsArray', $options, false)) { return $app_paths; }
 		foreach($app_paths as $p) {
-			if ($ps_application_name) { $p = "/{$ps_application_name}"; }
+			if ($e = caGetOption('executableName', $options, false)) { $p .= "/{$e}"; }
 			if(file_exists($p)) { return $p; }
 		}
 		return null;

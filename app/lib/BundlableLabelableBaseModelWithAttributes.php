@@ -187,7 +187,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$t_parent = Datamodel::getInstanceByTableName($this->tableName());
 						if ($t_parent->load($vn_parent_id)) {
 							$vn_parent_type_id = $t_parent->getTypeID();
-							$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') == '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
+							$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') === '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
 
 							if (!isset($va_type_list[$this->getTypeID()])) {
 								$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
@@ -204,10 +204,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						// is root
 						$va_type_list = $this->getTypeList(array('directChildrenOnly' => true, 'item_id' => null));
 						if (!isset($va_type_list[$this->getTypeID()])) {
-							$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
+							// if all ancestors for type are not enabled then we can allow this type even in strict mode
+							$t = $this->getTypeInstance();
+							$ancestors = $t->getHierarchyAncestors(null, ['includeSelf' => false]);
+							if (sizeof(array_filter($ancestors, function($v) {
+								return (!is_null($v['NODE']['parent_id']) && (bool)$v['NODE']['is_enabled']);
+							})) > 0) {
+								$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 						
-							$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
-							$vb_error = true;
+								$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+								$vb_error = true;
+							}
 						}
 					}
 				}
