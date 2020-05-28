@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2019 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -493,6 +493,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return false;
 			}
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if exporter with code (and optionally table name/num exists
+	 *
+	 * @param string $exporter_code 
+	 * @param mixed $table Optional numeric table number or name
+	 * @param array $options No options are currently supported.
+	 *
+	 * @return bool
+	 */
+	static public function exporterExists($exporter_code, $table=null, $options=null) {
+		$d = ['exporter_code' => $exporter_code];
+		if (!is_null($table)) { $d['table_num'] = Datamodel::getTableName($table); }
+		return (self::find($d, ['returnAs' => 'count']) > 0);
 	}
 	# ------------------------------------------------------
 	/**

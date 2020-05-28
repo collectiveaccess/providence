@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,7 +98,7 @@ class ExternalExportManager {
             if (!($format = caGetOption('format', $target_info['output'], null))) { continue; }
             
             // get plugin
-            if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/{$format}.php")) { 
+            if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/Output/{$format}.php")) { 
                 throw ApplicationException(_t('Invalid plugin %1', $format));
             }
             $plugin_class = "WLPlug{$format}";
@@ -106,7 +106,7 @@ class ExternalExportManager {
             
             Datamodel::getInstance($table, true);
             $t_instance = $table::find($id, ['returnAs' => 'firstModelInstance']);          
-            $files[] = $plugin->process($t_instance, $target_info, []);
+            $files[] = $plugin->process($t_instance, array_merge($target_info, ['target' => $target]), []);
             
         }
     	return $files;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,17 +40,17 @@ include_once(__CA_LIB_DIR__."/Configuration.php");
 abstract class BaseExternalExportTransportPlugin Extends WLPlug {
 	# ------------------------------------------------
 	// properties for this plugin instance
-	protected $properties = array(
+	protected $properties = [
 		
-	);
+	];
 
 	// plugin info
-	protected $info = array(
+	protected $info =[
 		"NAME" => "?",
-		"PROPERTIES" => array(
+		"PROPERTIES" => [
 			'id' => 'W'
-		)
-	);
+		]
+	];
 	
 	# ------------------------------------------------
 	/**

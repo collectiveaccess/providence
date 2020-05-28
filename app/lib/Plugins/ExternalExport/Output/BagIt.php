@@ -96,9 +96,9 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
      * @return string path to generated BagIt file
      */
     public function process($t_instance, $target_info, $options=null) {
-        require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
         require_once(__CA_BASE_DIR__.'/vendor/scholarslab/bagit/lib/bagit.php');
         
+        $log = caGetLogger();
         $t_user = caGetOption('user', $options, null);
         $output_config = caGetOption('output', $target_info, null);
         $target_options = caGetOption('options', $output_config, null);
@@ -124,75 +124,25 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         foreach($content_mappings as $path => $content_spec) {
             switch($content_spec['type']) {
                 case 'export':
-                    // TODO: verify exporter exists
-                    $data = ca_data_exporters::exportRecord($content_spec['exporter'], $t_instance->getPrimaryKey(), []);
-                    $bag->createFile($data, $path);
+                	if (ca_data_exporters::exporterExists($content_spec['exporter'])) {
+						$data = ca_data_exporters::exportRecord($content_spec['exporter'], $t_instance->getPrimaryKey(), []);
+						$bag->createFile($data, $path);
+					} else {
+						$log->logError(_t('Could not generate data export using exporter %1 for external export %2: exporter does not exist', $content_spec['exporter'], $target_info['target']));
+					}
                     break;
                 case 'file':
-                    $instance_list = [$t_instance];
-                    if ($relative_to = caGetOption('relativeTo', $content_spec, null)) {
-                        // TODO: support children, parent, hierarchy
-                        $instance_list = $t_instance->getRelatedItems($relative_to, ['returnAs' => 'modelInstances']);
-                    } 
-                    $restrict_to_types = caGetOption('restrictToTypes', $content_spec, null);
-                    $restrict_to_mimetypes = caGetOption('restrictToMimeTypes', $content_spec, null);
+                    $ret = self::_processFiles($t_instance, $content_spec);
+                    $file_list = array_merge($ret['fileList']);
+                    $total_filesize += $ret['totalFileSize'];
+                    $file_mimetypes = array_unique(array_merge($file_mimetypes, $ret['fileMimeTypes']));
                     
-                    foreach($instance_list as $t) {
-                    	if (is_array($restrict_to_types) && sizeof($restrict_to_types) && !in_array($t->getTypeCode(), $restrict_to_types)) { continue; }
-                        foreach($content_spec['files'] as $get_spec => $export_filename_spec) {
-                        	$pathless_spec = preg_replace('!\.path$!', '', $get_spec);
-                            if (!preg_match("!\.path$!", $get_spec)) { $get_spec .= ".path"; }
-                            
-                            $filenames = $t->get("{$pathless_spec}.filename",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
-                            $mimetypes = $t->get("{$pathless_spec}.mimetype",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
-                            $file_mod_times = $t->get("{$pathless_spec}.fileModificationTime",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
-                           
-                            $ids = $t->get("{$pathless_spec}.id", ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
-                            $files = $t->get($get_spec, ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
-                            
-                            $seen_files = [];
-                            foreach($files as $i => $f) {
-                            	$m = $mimetypes[$i];
-                            	$t = $file_mod_times[$i];
-                            	if(is_array($restrict_to_mimetypes) && sizeof($restrict_to_mimetypes) && !sizeof(array_filter($restrict_to_mimetypes, function($v) use ($m) { return caCompareMimetypes($m, $v); }))) { continue; }
-                            
-                            	$extension = pathinfo($f, PATHINFO_EXTENSION);
-                            	$original_basename = pathinfo($filenames[$i], PATHINFO_FILENAME);
-                            	$basename = pathinfo($f, PATHINFO_FILENAME);
-                            	
-                            	$e = $export_filename = self::processExportFilename($export_filename_spec, [
-                            		'extension' => $extension,
-                            		'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : null, 'original_basename' => $original_basename,
-                            		'filename' => "{$basename}.{$extension}", "basename" => $basename, 
-                            	]);
-                            	
-                            	$file_mimetypes[$m] = true;
-                            	
-                            	// Detect and rename duplicate file names
-                            	$c = 1;
-                            	while(isset($seen_files[$e]) && $seen_files[$e]) {
-                            		$e = pathinfo($export_filename, PATHINFO_FILENAME)."-{$c}.{$extension}";
-                            		$c++;
-                            	}
-                            	$total_filesize += ($fs = filesize($f));
-                                $bag->addFile($f, $e);
-                                
-                                if ($t > 0) {
-                                	touch("{$staging_dir}/{$name}/data/{$e}", $t);
-                                }
-                                $seen_files[$export_filename] = true;
-                                
-                                if ($file_list_template && !isset($file_list[$export_filename])) {
-                                    $file_list_template_proc = caProcessTemplate($file_list_template, [
-                                       'filename' =>  $original_basename ? "{$original_basename}.{$extension}" : "{$basename}.{$extension}",
-                                       'filesize_in_bytes' => $fs,
-                                       'filesize_for_display' => caHumanFilesize($fs),
-                                       'mimetype' => $m
-                                    ], ['skipTagsWithoutValues' => true]);
-                                    $file_list[$export_filename] = $t_instance->getWithTemplate($file_list_template_proc);
-                                }
-                            }
-                        }
+                    foreach($file_list as $file_info) {
+                    	$bag->addFile($file_info['path'], "{$path}/{$file_info['name']}");
+					
+						if ($file_info['filemodtime'] > 0) {	// preserve file modification date/times
+							touch("{$staging_dir}/{$name}/data/{$path}/{$file_info['name']}", $file_info['filemodtime']);
+						}
                     }
                     break;
                 default:
@@ -200,7 +150,6 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                     break;
             }
         }
-        
         // bag info
         $creator_name = $creator_email = null;
         if (is_a($t_user, 'ca_users')) { 
@@ -211,8 +160,8 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
             'now' => date('c'), 
             'creator_name' => $creator_name, 'creator_email' => $creator_email, 
             'total_filesize_in_bytes' => $total_filesize, 'total_filesize_for_display' => caHumanFilesize($total_filesize),
-            'file_count' => is_array($seen_files) ? sizeof($seen_files) : 0, 'mimetypes' => join(", ", array_keys($file_mimetypes)),
-            'file_list' => join($file_list_delimiter, array_values($file_list))
+            'file_count' => is_array($file_list) ? sizeof($file_list) : 0, 'mimetypes' => join(", ", array_keys($file_mimetypes)),
+            'file_list' => join($file_list_delimiter, array_map(function($v) { return $v['name']; }, $file_list))
         ];
         
         foreach($bag_info as $k => $v) {
