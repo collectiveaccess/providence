@@ -259,13 +259,13 @@ class ZipFile {
         $cdrec .= pack('V', 32 );            // external file attributes - 'archive' bit set
 
         $cdrec .= pack('V', $this -> old_offset ); // relative offset of local header
-        $this -> old_offset = $new_offset;
+        $this->old_offset = $new_offset;
 
         $cdrec .= $name;
 
         // optional extra field, file comment goes here
         // save to central directory
-        $this -> ctrl_dir[] = $cdrec;
+        $this->ctrl_dir[] = $cdrec;
         
         return 1;
     } // end of the 'addFile()' method
