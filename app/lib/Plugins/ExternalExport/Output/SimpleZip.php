@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/ExternalExport/WLPlugBagIt.php : 
+ * app/lib/Plugins/ExternalExport/WLPlugSimpleZip.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,7 +37,7 @@ include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 include_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");
 
-class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExternalExportFormat {
+class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugExternalExportFormat {
 	# ------------------------------------------------------
 	
 	
@@ -47,8 +47,8 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->info['NAME'] = 'BagIt';
-		$this->description = _t('Export data in BagIt format');
+		$this->info['NAME'] = 'SimpleZip';
+		$this->description = _t('Export data as a simple Zip file');
 	}
 	# ------------------------------------------------------
     /**
@@ -76,7 +76,7 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
      *
      */
 	public function getDescription() {
-	    return _t('BagIt export');
+	    return _t('SimpleZip export');
 	}
     # ------------------------------------------------------
     /**
@@ -104,44 +104,29 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         $target_options = caGetOption('options', $output_config, null);
         $bag_info = is_array($target_options['bag-info-data']) ? $target_options['bag-info-data'] : [];
         $name = $t_instance->getWithTemplate(caGetOption('name', $output_config, null));
-        $tmp_dir = caGetTempDirPath();
-        $staging_dir = $tmp_dir."/".uniqid("ca_bagit");
-        @mkdir($staging_dir);
+                
+        $zip = new ZipFile(__CA_APP_DIR__."/tmp");
         
-        $bag = new BagIt("{$staging_dir}/{$name}", true, true, true, []);
-        $bag->setHashEncoding(caGetOption('hash', $output_config, 'md5', ['validValues' => ['md5', 'sha1']]));
-        
-        // bag data
         $content_mappings = caGetOption('content', $output_config, []);
         
-        $total_filesize = 0;
-        $file_mimetypes = $file_list = [];
-        
-        $file_list_template = caGetOption('file_list_template', $target_options, '');
-        $file_list_delimiter = caGetOption('file_list_delimiter', $target_options, '; ');
+        $file_list = [];
         
         foreach($content_mappings as $path => $content_spec) {
             switch($content_spec['type']) {
                 case 'export':
                 	if (ca_data_exporters::exporterExists($content_spec['exporter'])) {
 						$data = ca_data_exporters::exportRecord($content_spec['exporter'], $t_instance->getPrimaryKey(), []);
-						$bag->createFile($data, $path);
+						$zip->addFile($data, $path);
 					} else {
-						$log->logError(_t('[BagIt] Could not generate data export using exporter %1 for external export %2: exporter does not exist', $content_spec['exporter'], $target_info['target']));
+						$log->logError(_t('[SimpleZip] Could not generate data export using exporter %1 for external export %2: exporter does not exist', $content_spec['exporter'], $target_info['target']));
 					}
                     break;
                 case 'file':
                     $ret = self::_processFiles($t_instance, $content_spec);
                     $file_list = array_merge($file_list, $ret['fileList']);
-                    $total_filesize += $ret['totalFileSize'];
-                    $file_mimetypes = array_unique(array_merge($file_mimetypes, $ret['fileMimeTypes']));
                     
                     foreach($file_list as $file_info) {
-                    	$bag->addFile($file_info['path'], "{$path}/{$file_info['name']}");
-					
-						if ($file_info['filemodtime'] > 0) {	// preserve file modification date/times
-							touch("{$staging_dir}/{$name}/data/{$path}/{$file_info['name']}", $file_info['filemodtime']);
-						}
+                    	$zip->addFile($file_info['path'], "{$path}/{$file_info['name']}");
                     }
                     break;
                 default:
@@ -149,30 +134,12 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                     break;
             }
         }
-        // bag info
-        $creator_name = $creator_email = null;
-        if (is_a($t_user, 'ca_users')) { 
-            $creator_name = $t_user->get('fname').' '.$t_user->get('lname'); 
-            $creator_email = $t_user->get('email');
-        }
-        $special_bag_vals = [
-            'now' => date('c'), 
-            'creator_name' => $creator_name, 'creator_email' => $creator_email, 
-            'total_filesize_in_bytes' => $total_filesize, 'total_filesize_for_display' => caHumanFilesize($total_filesize),
-            'file_count' => is_array($file_list) ? sizeof($file_list) : 0, 'mimetypes' => join(", ", array_keys($file_mimetypes)),
-            'file_list' => join($file_list_delimiter, array_map(function($v) { return $v['name']; }, $file_list))
-        ];
-        
-        foreach($bag_info as $k => $v) {
-            $k = caProcessTemplate($k, $special_bag_vals, ['skipTagsWithoutValues' => true]);
-            $v = caProcessTemplate($v, $special_bag_vals, ['skipTagsWithoutValues' => true]);
-            $bag->setBagInfoData($t_instance->getWithTemplate($k), $t_instance->getWithTemplate($v));
-        }
-        
-        $bag->update();
-        $bag->package("{$tmp_dir}/{$name}");
-        
-        return "{$tmp_dir}/{$name}.tgz";
+    
+    	// copy Zip workfile to Zip file with configured name 
+    	// (ZipFile generated work file will be deleted once ZipFile object goes out of scope)
+    	copy($zip->output(ZIPFILE_FILEPATH), $f = __CA_APP_DIR__."/tmp/{$name}.zip");
+    	
+        return $f;
     }
     # ------------------------------------------------------
 }

@@ -165,6 +165,9 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 			$instance_list = [$t_instance];
 		}
 		
+		
+        $file_list_template = caGetOption('file_list_template', $target_options, '');
+        
 		$restrict_to_types = caGetOption('restrictToTypes', $content_spec, null);
 		$restrict_to_mimetypes = caGetOption('restrictToMimeTypes', $content_spec, null);
 		
