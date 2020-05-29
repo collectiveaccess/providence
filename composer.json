@@ -28,12 +28,13 @@
     "phpoffice/phppresentation": "dev-master",
     "phpoffice/phpword": "v0.15.*",
     "phpunit/phpunit": "8.5",
-    "scholarslab/bagit": "~0.2",
+    "scholarslab/bagit": "~0.3.1",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "tedivm/stash": "0.14.*"
   },
   "require": {
     "ext-iconv": "*",
-    "ext-simplexml": "*"
+    "ext-simplexml": "*",
+    "phpseclib/phpseclib": "^2.0"
   }
 }

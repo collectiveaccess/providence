@@ -33,9 +33,10 @@
   /**
     *
     */
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
-include_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
+require_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
+require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");
+require_once(__CA_BASE_DIR__.'/vendor/scholarslab/bagit/lib/bagit.php');
 
 class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExternalExportFormat {
 	# ------------------------------------------------------
@@ -62,7 +63,8 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
      *
      */
 	public function init() {
-	
+		// noop
+		return true;
 	}
     # ------------------------------------------------------
     /**
@@ -91,14 +93,25 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
      *
      * @param BaseModel $t_instance
      * @param array $target_info
-     * @param array $options
+     * @param array $options Options include:
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 *			ALERT = Alert messages (action must be taken immediately)
+	 *			CRIT = Critical conditions
+	 *			ERR = Error conditions
+	 *			WARN = Warnings
+	 *			NOTICE = Notices (normal but significant conditions)
+	 *			INFO = Informational messages
+	 *			DEBUG = Debugging messages
      *
-     * @return string path to generated BagIt file
+     * @return string Path to generated BagIt file
      */
     public function process($t_instance, $target_info, $options=null) {
-        require_once(__CA_BASE_DIR__.'/vendor/scholarslab/bagit/lib/bagit.php');
+    
+    	// TODO: convert to use https://github.com/whikloj/BagItTools as Scholars Lab 
+    	// BagItPHP lib (https://github.com/scholarslab/BagItPHP) is no longer supported as of 2020
         
-        $log = caGetLogger();
+        $log = caGetLogger(['logLevel' => caGetOption('logLevel', $options, null)], 'external_export_log_directory');
+         
         $t_user = caGetOption('user', $options, null);
         $output_config = caGetOption('output', $target_info, null);
         $target_options = caGetOption('options', $output_config, null);
@@ -175,4 +188,8 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         return "{$tmp_dir}/{$name}.tgz";
     }
     # ------------------------------------------------------
+}
+
+class WLPlugBagItException extends ApplicationException {
+
 }

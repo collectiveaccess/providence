@@ -34,8 +34,7 @@
     *
     */ 
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExport.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 
 abstract class BaseExternalExportTransportPlugin Extends WLPlug {
 	# ------------------------------------------------

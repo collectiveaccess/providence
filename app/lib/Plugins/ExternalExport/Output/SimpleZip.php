@@ -91,18 +91,24 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
      *
      * @param BaseModel $t_instance
      * @param array $target_info
-     * @param array $options
+     * @param array $options Options include:
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 *			ALERT = Alert messages (action must be taken immediately)
+	 *			CRIT = Critical conditions
+	 *			ERR = Error conditions
+	 *			WARN = Warnings
+	 *			NOTICE = Notices (normal but significant conditions)
+	 *			INFO = Informational messages
+	 *			DEBUG = Debugging messages
      *
-     * @return string path to generated BagIt file
+     * @return string Path to generated Zip file
+     * @throws WLPlugSimpleZipException
      */
     public function process($t_instance, $target_info, $options=null) {
-        require_once(__CA_BASE_DIR__.'/vendor/scholarslab/bagit/lib/bagit.php');
+        $log = caGetLogger(['logLevel' => caGetOption('logLevel', $options, null)], 'external_export_log_directory');
         
-        $log = caGetLogger();
-        $t_user = caGetOption('user', $options, null);
         $output_config = caGetOption('output', $target_info, null);
         $target_options = caGetOption('options', $output_config, null);
-        $bag_info = is_array($target_options['bag-info-data']) ? $target_options['bag-info-data'] : [];
         $name = $t_instance->getWithTemplate(caGetOption('name', $output_config, null));
                 
         $zip = new ZipFile(__CA_APP_DIR__."/tmp");
@@ -117,8 +123,9 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
                 	if (ca_data_exporters::exporterExists($content_spec['exporter'])) {
 						$data = ca_data_exporters::exportRecord($content_spec['exporter'], $t_instance->getPrimaryKey(), []);
 						$zip->addFile($data, $path);
+						$log->logDebug(_t('[ExternalExport::Output::SimpleZip] Added %1 bytes of data exporter %2 output to ZIP archive using path %3', strlen($data), $content_spec['exporter'], $path));
 					} else {
-						$log->logError(_t('[SimpleZip] Could not generate data export using exporter %1 for external export %2: exporter does not exist', $content_spec['exporter'], $target_info['target']));
+						$log->logError(_t('[ExternalExport::Output::SimpleZip] Could not generate data export using exporter %1 for external export %2: exporter does not exist', $content_spec['exporter'], $target_info['target']));
 					}
                     break;
                 case 'file':
@@ -126,7 +133,8 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
                     $file_list = array_merge($file_list, $ret['fileList']);
                     
                     foreach($file_list as $file_info) {
-                    	$zip->addFile($file_info['path'], "{$path}/{$file_info['name']}");
+                    	$zip->addFile($file_info['path'], $p = "{$path}/{$file_info['name']}");
+                    	$log->logDebug(_t('[ExternalExport::Output::SimpleZip] Added added file %1 to ZIP archive using path %2', $file_info['path'], $p));
                     }
                     break;
                 default:
@@ -137,9 +145,17 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
     
     	// copy Zip workfile to Zip file with configured name 
     	// (ZipFile generated work file will be deleted once ZipFile object goes out of scope)
-    	copy($zip->output(ZIPFILE_FILEPATH), $f = __CA_APP_DIR__."/tmp/{$name}.zip");
+    	if (copy($zip->output(ZIPFILE_FILEPATH), $f = __CA_APP_DIR__."/tmp/{$name}.zip")) {
+    		$log->logDebug(_t('[ExternalExport::Output::SimpleZip] Copied ZIP data to temporary location %1', $f));
+    	} else {
+    		throw new WLPlugSimpleZipException(_t('Could not copy ZIP data to temporary location %1', $f));
+    	}
     	
         return $f;
     }
     # ------------------------------------------------------
+}
+
+class WLPlugSimpleZipException extends ApplicationException {
+
 }

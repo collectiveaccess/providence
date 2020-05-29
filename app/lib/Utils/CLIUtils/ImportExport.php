@@ -1057,6 +1057,8 @@
 				$target = null;
 			}
 			
+			$log_level = $po_opts->getOption('log-level');
+			
 			$table = $po_opts->getOption('table');
 			if (!$table) {
 				CLIUtils::addError(_t('You must specify a table'));
@@ -1073,14 +1075,15 @@
 			}
             
             $e = new ExternalExportManager();
-            $e->process($table, $id, null, ['target' => $target]);
+            $e->process($table, $id, ['target' => $target, 'logLevel' => $log_level]);
 		}
 		# -------------------------------------------------------
 		public static function run_external_exportParamList() {
 			return [
 				"table|t=s" => _t('Table of record to export.'),
 				"id|i=s" => _t('ID of row to export.'),
-				"target|a=s" => _t('Target to export to. If omitted all valid targets will be exported to.')
+				"target|a=s" => _t('Target to export to. If omitted all valid targets will be exported to.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 			];
 		}
 		# -------------------------------------------------------
@@ -1102,6 +1105,53 @@
 		 *
 		 */
 		public static function run_external_exportHelp() {
+			return _t('To come.');
+        }
+        # -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function run_pending_external_exports($po_opts=null) {
+            require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+            
+            $target = $po_opts->getOption('target');
+			if ($target && !ExternalExportManager::isValidTarget($target)) {
+				CLIUtils::addMessage(_t('Ignoring invalid target %1', $target));
+				$target = null;
+			}
+			
+			$log_level = $po_opts->getOption('log-level');
+            
+            $e = new ExternalExportManager();
+            $e->processPending(['target' => $target, 'logLevel' => $log_level]);
+		}
+		# -------------------------------------------------------
+		public static function run_pending_external_exportsParamList() {
+			return [
+				"target|a=s" => _t('Target to export to. If omitted all valid targets will be exported to.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_pending_external_exportsUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_pending_external_exportsShortHelp() {
+			return _t('Trigger pending external exports.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_pending_external_exportsHelp() {
 			return _t('To come.');
         }
         # -------------------------------------------------------

@@ -157,14 +157,12 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 		$file_mimetypes = [];
 		$total_filesize = 0;
 		
-		
 		if ($relative_to = caGetOption('relativeTo', $content_spec, null)) {
 			// TODO: support children, parent, hierarchy
 			$instance_list = $t_instance->getRelatedItems($relative_to, ['returnAs' => 'modelInstances']);
 		} else {
 			$instance_list = [$t_instance];
 		}
-		
 		
         $file_list_template = caGetOption('file_list_template', $target_options, '');
         

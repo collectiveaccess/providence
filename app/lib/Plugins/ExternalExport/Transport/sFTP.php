@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/ExternalExport/WLPlugBagIt.php : 
+ * app/lib/Plugins/ExternalExport/WLPlugsFTP.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,13 +30,16 @@
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExport.php");
-include_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportPlugin.php");
 
-class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExport {
+use phpseclib\Net\SFTP;
+			
+/**
+ *
+ */
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
+include_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportTransportPlugin.php");
+
+class WLPlugsFTP Extends BaseExternalExportTransportPlugin Implements IWLPlugExternalExportTransport {
 	# ------------------------------------------------------
 	
 	
@@ -46,8 +49,8 @@ class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExp
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->info['NAME'] = 'BagIt';
-		$this->description = _t('Export data in BagIt format');
+		$this->info['NAME'] = 'sFTP';
+		$this->description = _t('Move exported data via sFTP to remote servers');
 	}
 	# ------------------------------------------------------
     /**
@@ -61,7 +64,8 @@ class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExp
      *
      */
 	public function init() {
-	
+		// noop
+		return true;
 	}
     # ------------------------------------------------------
     /**
@@ -75,7 +79,7 @@ class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExp
      *
      */
 	public function getDescription() {
-	    return _t('BagIt export');
+	    return _t('sFTP transport');
 	}
     # ------------------------------------------------------
     /**
@@ -86,76 +90,58 @@ class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExp
 	}
     # ------------------------------------------------------
     /**
-     * Generate BagIt archive for provided record subject to target settings
+     * Upload files to destination via sFTP
      *
-     * @param BaseModel $t_instance
-     * @param array $target_info
-     * @param array $options
-     *
-     * @return string path to generated BagIt file
+     * @param array $destination_info
+     * @param array $files
+     * @param array $options Options include:
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 *			ALERT = Alert messages (action must be taken immediately)
+	 *			CRIT = Critical conditions
+	 *			ERR = Error conditions
+	 *			WARN = Warnings
+	 *			NOTICE = Notices (normal but significant conditions)
+	 *			INFO = Informational messages
+	 *			DEBUG = Debugging messages
+	 *
+	 * @return int Number of files uploaded
+	 * @throws WLPlugsFTPException
      */
-    public function process($t_instance, $target_info, $options=null) {
-        require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
-        require_once(__CA_BASE_DIR__.'/vendor/scholarslab/bagit/lib/bagit.php');
-        
-        $output_config = caGetOption('output', $target_info, null);
-        $target_options = caGetOption('options', $output_config, null);
-        $bag_info = is_array($target_options['bag-info-data']) ? $target_options['bag-info-data'] : [];
-        $name = caGetOption('name', $output_config, null);
-        $tmp_dir = caGetTempDirPath();
-        $staging_dir = $tmp_dir."/".uniqid("ca_bagit");
-        @mkdir($staging_dir);
-        
-        // TODO: need to generate reasonable name for bag
-        $bag = new BagIt("{$staging_dir}/{$name}", true, true, true, []);
-        
-        // bag data
-        $content_mappings = caGetOption('content', $output_config, []);
-        foreach($content_mappings as $path => $content_spec) {
-            switch($content_spec['type']) {
-                case 'export':
-                    // TODO: verify exporter exists
-                    $data = ca_data_exporters::exportRecord($content_spec['exporter'], $t_instance->getPrimaryKey(), []);
-                    $bag->createFile($data, $path);
-                    break;
-                case 'file':
-                    $instance_list = [$t_instance];
-                    if ($relative_to = caGetOption('relativeTo', $content_spec, null)) {
-                        // TODO: support children, parent, hierarchy
-                        $instance_list = $t_instance->getRelatedItems($relative_to, ['returnAs' => 'modelInstances']);
-                    } 
-                    foreach($instance_list as $t) {
-                        foreach($content_spec['files'] as $fname => $get_spec) {
-                        	$pathless_spec = preg_replace('!\.path$!', '', $get_spec);
-                            if (!preg_match("!\.path$!", $get_spec)) { $get_spec .= ".path"; }
-                            
-                            $filenames = $t->get("{$pathless_spec}.filename",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
-                            $files = $t->get($get_spec, ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
-                            
-                            foreach($files as $i => $f) {
-                            	// TODO: detect snd rename dupe files
-                            	// TODO: option to use CA-unique file names
-                                $bag->addFile($f, $filenames[$i] ? $filenames[$i] : pathinfo($f, PATHINFO_BASENAME));
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    // noop
-                    break;
-            }
-        }
-        
-        // bag info
-        foreach($bag_info as $k => $v) {
-            // TODO: run keys and values through template processor
-            $bag->setBagInfoData($k, $t_instance->getWithTemplate($v));
-        }
-        
-        $bag->update();
-        $bag->package("{$tmp_dir}/{$name}");
-        
-        return "{$tmp_dir}/{$name}.tgz";
+    public function process($destination_info, $files, $options=null) {
+    	$log = caGetLogger(['logLevel' => caGetOption('logLevel', $options, null)], 'external_export_log_directory');
+    	
+		$sftp = new SFTP($destination_info['hostname']);
+
+		if ($sftp->login($destination_info['user'], $destination_info['password']) === false) {
+			$log->logError(_t('[ExternalExport::Transport::sFTP] Login to %1 failed', $destination_info['hostname']));
+			throw new WLPlugsFTPException(_t('Login to %1 failed', $destination_info['hostname']));
+		}
+		$log->logDebug(_t('[ExternalExport::Transport::sFTP] Connected to %1', $destination_info['hostname']));
+		
+		if ($sftp->chdir($destination_info['path']) === false) {
+			$err = error_get_last();
+			$log->logError(_t('[ExternalExport::Transport::sFTP] Could not change to directory %1 on %2: %3', $destination_info['path'], $destination_info['hostname'], $err['message']));
+			throw new WLPlugsFTPException(_t('Could not change to directory %1 on %2: %3', $destination_info['path'], $destination_info['hostname'], $err['message']));
+		}
+		$log->logDebug(_t('[ExternalExport::Transport::sFTP] Changed directory to %1 on %2', $destination_info['path'], $destination_info['hostname']));
+		
+		$count = 0;
+		foreach($files as $f) {
+			if ($sftp->put(pathinfo($f, PATHINFO_BASENAME), $f, SFTP::SOURCE_LOCAL_FILE) !== false) {
+				$log->logDebug(_t('[ExternalExport::Transport::sFTP] Uploaded file %1 to %2', $f, $destination_info['hostname']));
+				$count++;
+			} else {
+				$err = error_get_last();
+				$log->logError(_t('[ExternalExport::Transport::sFTP] Could not upload file %1 to %2: %3', $f, $destination_info['hostname'], $err['message']));
+				throw new WLPlugsFTPException(_t('Could not upload file %1 to %2: %3', $f, $destination_info['hostname'], $err['message']));
+			}
+		}
+		
+		return $count;
     }
     # ------------------------------------------------------
+}
+
+class WLPlugsFTPException extends ApplicationException {
+
 }
