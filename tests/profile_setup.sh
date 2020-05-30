@@ -24,5 +24,13 @@ else
   if test -e "$CACHE_DIR/$PROFILE.sql" -a -z "$SKIP_CACHED_PROFILE"; then
     echo "Found cached database file $CACHE_DIR/$PROFILE.sql. Importing..."
     sudo mysql -uroot "$DB_NAME" <"$CACHE_DIR/$PROFILE.sql"
+    # Update schema
+    echo "Updating schema"
+    "$PHP_BIN" "$COLLECTIVEACCESS_HOME"/support/bin/caUtils update-database-schema --hostname=localhost --setup="tests/setup-tests.php" \
+    && (
+        # Export database for later faster import
+        echo "Exporting database to cache file: $CACHE_DIR/$PROFILE.sql"
+        sudo mysqldump -uroot --hex-blob --complete-insert --extended-insert $DB_NAME >"$CACHE_DIR/$PROFILE.sql"
+    )
   fi
 fi
