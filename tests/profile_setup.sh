@@ -26,7 +26,7 @@ else
     sudo mysql -uroot "$DB_NAME" <"$CACHE_DIR/$PROFILE.sql"
     # Update schema
     echo "Updating schema"
-    "$PHP_BIN" "$COLLECTIVEACCESS_HOME"/support/bin/caUtils update-database-schema -yes --hostname=localhost \
+    "$PHP_BIN" "$COLLECTIVEACCESS_HOME"/support/bin/caUtils update-database-schema --yes --hostname=localhost \
       --setup="tests/setup-tests.php" \
     && (
         # Export database for later faster import
