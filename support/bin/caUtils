@@ -90,7 +90,8 @@
 		$o_opts = new Zend_Console_Getopt($va_available_cli_opts);
 		$o_opts->parse();
 	} catch(Exception $e) {
-		die("Invalid options specified (".$e->getMessage()."). Try 'caUtils help' to view list of valid options.\n");
+		print("Invalid options specified (".$e->getMessage()."). Try 'caUtils help' to view list of valid options.\n");
+		die(1);
 	}
 	if ($vs_hostname = $o_opts->getOption('hostname')) {
 		$_SERVER['HTTP_HOST'] = $vs_hostname;
