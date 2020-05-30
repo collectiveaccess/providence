@@ -39,11 +39,18 @@ require_once(__CA_LIB_DIR__ . '/Search/Common/StemmerFactory.php');
 
 class StemmerFactoryTests extends TestCase {
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $instance = StemmerFactory::get_instance();
+        $instance->setPluginPath(__CA_LIB_DIR__ . '/Search/Common/Stemmer');
+    }
+
     public function testStemmerFactoryAvailableClasses() {
         $instance = StemmerFactory::get_instance();
         $va_plugins = StemmerFactory::getPluginNames();
         $this->assertIsArray($va_plugins);
-        $this->assertCount(2, $va_plugins);
+        $this->assertCount(3, $va_plugins);
     }
 
     public function testStemmerFactoryCreates() {

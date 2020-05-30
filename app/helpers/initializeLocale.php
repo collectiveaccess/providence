@@ -54,13 +54,12 @@
     /**
      *
      */
-    function caGetCountryFromLocale($ps_locale) {
-        $vs_country = explode('_', $ps_locale);
-        if (sizeof($vs_country) > 0){
-            $result = $vs_country[0];
-        } else {
-            $result = Configuration::load()->get('locale_default') ? : 'en';
+    function caGetLanguageFromLocale($ps_locale) {
+        if ($ps_locale === null){
+            $ps_locale = Configuration::load()->get('locale_default');
         }
+        $vs_country = explode('_', $ps_locale);
+        $result = $vs_country[0];
         return $result;
     }
 	# ----------------------------------------
@@ -143,15 +142,6 @@
      */
 
     function caFilterLocalesByCode($va_system_locales, $va_locale_codes) {
-
         $va_result = array_intersect_key($va_system_locales, array_flip($va_locale_codes));
-        // $va_result = array();
-        // foreach ($va_system_locales as $vs_locale => $va_locale_info) {
-        //     $vs_lang = strtolower($va_locale_info['country']);
-        //     if (in_array($vs_lang, $va_locale_codes)) {
-        //         $va_result[$vs_locale] = $va_locale_info;
-        //     }
-        // }
-        // return array_unique($va_result);
         return $va_result;
     }

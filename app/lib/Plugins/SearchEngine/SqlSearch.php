@@ -2123,9 +2123,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		try {
             // insert word
             $vs_locale_code = ca_locales::IDToCode($vn_locale_id);
-            $vs_country = caGetCountryFromLocale($vs_locale_code);
+            $vs_language = caGetLanguageFromLocale($vs_locale_code);
 
-            if (!($vs_stem = trim($this->opo_stemmer->stem($ps_word, $vs_country)))) { $vs_stem = $ps_word; }
+            if (!($vs_stem = trim($this->opo_stemmer->stem($ps_word, $vs_language)))) { $vs_stem = $ps_word; }
+            # TODO: move magic 255 to a constant or configuration
             if (mb_strlen($vs_stem) > 255) { $vs_stem = mb_substr($vs_stem, 0, 255); }
 
             $this->opqr_insert_word->execute($ps_word, $vs_stem, $vn_locale_id);
@@ -2139,21 +2140,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
             }
             return null;
         }
-		
-		// create ngrams
-		// 		$va_ngrams = caNgrams($ps_word, 4);
-		// 		$vn_seq = 0;
-		// 		
-		// 		$va_ngram_buf = array();
-		// 		foreach($va_ngrams as $vs_ngram) {
-		// 			$va_ngram_buf[] = "({$vn_word_id},'{$vs_ngram}',{$vn_seq})";
-		// 			$vn_seq++;
-		// 		}
-		// 		
-		// 		if (sizeof($va_ngram_buf)) {
-		// 			$vs_sql = $this->ops_insert_ngram_sql."\n".join(",", $va_ngram_buf);
-		// 			$this->opo_db->query($vs_sql);
-		// 		}
 		
 		return WLPlugSearchEngineSqlSearch::$s_word_cache[$vs_word_key] = $vn_word_id;
 	}
