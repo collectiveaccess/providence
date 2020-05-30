@@ -398,14 +398,20 @@
 
 			$o_config_check = new ConfigurationCheck();
 			if (($vn_current_revision = ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
-				CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
-				flush();
-				ob_flush();
-				$confirmation  =  trim( fgets( STDIN ) );
-				if ( $confirmation !== 'y' ) {
-					// The user did not say 'y'.
-					return false;
-				}
+			    # Check if it has requested yes to all prompts
+                if (!$po_opts->getOption('yes')){
+                    CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
+                    flush();
+                    ob_flush();
+                    $confirmation  =  trim( fgets( STDIN ) );
+                    if ( $confirmation !== 'y' ) {
+                        // The user did not say 'y'.
+                        return false;
+                    }
+                }
+                else {
+                    CLIUtils::addMessage(_t("Proceeding without prompt..."));
+                }
 				$va_messages = ConfigurationCheck::performDatabaseSchemaUpdate();
 
 				print CLIProgressBar::start(sizeof($va_messages), _t('Updating database'));
@@ -425,7 +431,9 @@
 		 *
 		 */
 		public static function update_database_schemaParamList() {
-			return array();
+            return array(
+                "yes|y" => _t('Say yes to prompt.')
+            );
 		}
 		# -------------------------------------------------------
 		/**
