@@ -49,7 +49,20 @@
    		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }	
    		
    		return (sizeof($va_locale_paths) > 0) ? $va_locale_paths : false;
-	}	
+	}
+    # ----------------------------------------
+    /**
+     *
+     */
+    function caGetCountryFromLocale($ps_locale) {
+        $vs_country = explode('_', $ps_locale);
+        if (sizeof($vs_country) > 0){
+            $result = $vs_country[0];
+        } else {
+            $result = Configuration::load()->get('locale_default') ? : 'en';
+        }
+        return $result;
+    }
 	# ----------------------------------------
 	/**
 	 *

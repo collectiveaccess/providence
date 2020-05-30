@@ -35,7 +35,9 @@
   */
 
 // language fingerprints are stored in global var so they only need to loaded once per request
-$LANGUAGE_DETECTION_LM_DATA;	
+
+/** @var array List of available language detectors */
+$LANGUAGE_DETECTION_LM_DATA = null;
 
 class LanguageDetection {
 	# ------------------------------------------------------------------
@@ -55,7 +57,8 @@ class LanguageDetection {
 	# ------------------------------------------------------------------
 	function analyze($ps_text) {
 		if(!empty($ps_text)) {
-			return $this->compareNGrams($this->createNGrams($ps_text));
+            $va_ngrams = $this->createNGrams($ps_text);
+            return $this->compareNGrams($va_ngrams);
 		}
 		return null;
 	}
@@ -142,7 +145,7 @@ class LanguageDetection {
 			return null;
 		} else {
 			asort($va_results);
-			list($vs_language, $vn_tmp) = each($va_results);
+			$vs_language = key($va_results);
 			return $vs_language;
 		}
 	}

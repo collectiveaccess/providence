@@ -60,6 +60,15 @@ abstract class BaseTestWithData extends TestCase {
 	 * Inserts test data set by implementation
 	 */
 	protected function setUp() : void {
+		global $g_ui_locale;
+		global $g_ui_locale_id;
+
+		// Set locale if not set
+		if (!$g_ui_locale) {
+            $o_config = Configuration::load();
+            $g_ui_locale = ($_ = $o_config->get('locale_default')) ?:'en_US';
+            $g_ui_locale_id = ca_locales::codeToID($g_ui_locale);
+        }
 		global $g_request;
 		$vo_response = new ResponseHTTP();
 		$g_request = $this->opo_request = new RequestHTTP($vo_response);
