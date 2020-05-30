@@ -40,15 +40,16 @@
  require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
  require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
  require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearchResult.php'); 
- require_once(__CA_LIB_DIR__.'/Search/Common/Stemmer/SnoballStemmer.php');
  require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
  require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
  require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
  require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/BaseSearchPlugin.php');
+ require_once(__CA_LIB_DIR__.'/Search/Common/StemmerFactory.php');
 
 class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
-	private $opn_indexing_subject_tablenum=null;
+    const SNOBALL_STEMMER = 'SnoballStemmer';
+    private $opn_indexing_subject_tablenum=null;
 	private $opn_indexing_subject_row_id=null;
 	
 	private $ops_delete_sql;	// sql DELETE statement (for unindexing)
@@ -91,8 +92,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		$this->opo_tep = new TimeExpressionParser();
 		$this->opo_tep->setLanguage($g_ui_locale);
-		
-		$this->opo_stemmer = new SnoballStemmer();
+
+		// TODO: Update to use an non-English stemmer
+        $vs_stemmer = $this->opo_search_config->get('search_sql_search_stemmer');
+        if (!$vs_stemmer){
+            $vs_stemmer = self::SNOBALL_STEMMER;
+        }
+        $vo_stemmer_factory = StemmerFactory::get_instance();
+		$this->opo_stemmer = $vo_stemmer_factory->create($vs_stemmer);
 		$this->opb_do_stemming = (int)trim($this->opo_search_config->get('search_sql_search_do_stemming')) ? true : false;
 		
 		$this->initDbStatements();
@@ -1010,12 +1017,27 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										}
 										if ($vb_do_stemming) {
 											$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
-											if (!preg_match('!y$!u', $vs_to_stem) && (preg_match('!^[\d]+$!', $vs_to_stem) || preg_match('!^[\w\-]+$!', $vs_to_stem))) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
+                                            // don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
+											if (!preg_match('!y$!u', $vs_to_stem) && (preg_match('!^[\d]+$!', $vs_to_stem) || preg_match('!^[\w\-]+$!', $vs_to_stem))) {
                                                 // TODO: Allow locale on stemming
-												if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
-													$vs_stem = (string)$vs_term;
-												}
-												$va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
+
+                                                // TODO: Stem for every language allowed for cataloging:
+                                                //  in the selected field or globally.
+                                                //  In case the selected field allows different locales, use those as
+                                                //  locales for stemming.
+                                                //  If there is no selected field use all cataloging locales.
+                                                if( !$va_cataloguing_locales = ca_locales::getCataloguingLocaleList() ){
+                                                    // TODO: use default CATALOGUING locale
+                                                    global $g_ui_locale_id;
+                                                    $va_cataloguing_locales = array(ca_locales::getCataloguingLocaleList()[$g_ui_locale_id]);
+                                                }
+
+                                                foreach ($va_cataloguing_locales as $vs_locale_id => $vs_locale_info){
+                                                    if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem, $vs_locale_info['language'])))) {
+                                                        $vs_stem = (string)$vs_term;
+                                                    }
+                                                    $va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
+                                                }
 											} else {
 												$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
 											}
@@ -1431,9 +1453,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									}
 								}
 
-								// TODO: Undefined variable $vs_intrinsic_field_name
-								$vn_intrinsic_type = $t_table->getFieldInfo($vs_intrinsic_field_name, 'FIELD_TYPE');
-								if (($vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num)) && ($vn_intrinsic_type == FT_BIT)) {
+								if (($vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num))
+                                        && ($vn_intrinsic_type = $t_table->getFieldInfo($vs_intrinsic_field_name, 'FIELD_TYPE'))
+                                        && ($vn_intrinsic_type == FT_BIT)) {
 									$vb_ft_bit_optimization = true;
 								} elseif($vn_intrinsic_type == FT_HISTORIC_DATERANGE) {
 									$vb_all_numbers = true;
@@ -2250,13 +2272,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 			$vn_seq = 0;
 			foreach($va_words as $vs_word) {
+			    // TODO: Use locale
 				if (!($vn_word_id = $this->getWordID($vs_word))) { continue; }
 				$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id})";
 				$vn_seq++;
 			}
-			
+
 			if (is_array($va_literal_content)) {
 				foreach($va_literal_content as $vs_literal) {
+			        // TODO: Use locale
 					if (!($vn_word_id = $this->getWordID($vs_literal))) { continue; }
 					$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id})";
 					$vn_seq++;

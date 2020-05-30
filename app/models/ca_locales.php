@@ -331,7 +331,7 @@ class ca_locales extends BaseModel {
 	/**
 	 * 
 	 *
-	 * @return areay
+	 * @return array
 	 */
 	static public function getCataloguingLocaleList() {
 		return self::getLocaleList(['available_for_cataloguing_only' => true]);
@@ -340,7 +340,7 @@ class ca_locales extends BaseModel {
 	/**
 	 * 
 	 *
-	 * @return areay
+	 * @return array
 	 */
 	static public function getCataloguingLocaleCodes() {
 		return array_keys(self::getLocaleList(['available_for_cataloguing_only' => true, 'index_by_code' => true]));

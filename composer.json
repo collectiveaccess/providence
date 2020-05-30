@@ -30,11 +30,11 @@
     "phpunit/phpunit": "8.5",
     "scholarslab/bagit": "~0.2",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
-    "tedivm/stash": "0.14.*"
+    "tedivm/stash": "0.14.*",
+    "wamania/php-stemmer": "*"
   },
   "require": {
     "ext-iconv": "*",
-    "ext-simplexml": "*",
-    "wamania/php-stemmer": "*"
+    "ext-simplexml": "*"
   }
 }

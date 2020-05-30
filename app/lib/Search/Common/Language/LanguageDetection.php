@@ -98,11 +98,11 @@ class LanguageDetection {
 		
 		foreach($va_words as $vs_word) {
 			$vs_word = "_". $vs_word . "_";
-			$vs_word_size = strlen($vs_word);
+			$vs_word_size = mb_strlen($vs_word);
 			for ($vn_i=0; $vn_i < $vs_word_size; $vn_i++){ 							// start position within word
 				for ($vn_s=1; $vn_s<($this->opn_ngram_max_length + 1); $vn_s++) {	// length of ngram
 					if (($vn_i + $vn_s) < $vs_word_size + 1) { 						// length depends on postion
-						$va_ngrams[] = substr($vs_word, $vn_i, $vn_s);
+						$va_ngrams[] = mb_substr($vs_word, $vn_i, $vn_s);
 					}
 				}
 			}

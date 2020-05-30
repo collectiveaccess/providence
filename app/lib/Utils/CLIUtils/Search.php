@@ -29,8 +29,23 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
-	trait CLIUtilsSearch { 
+
+    require_once(__CA_APP_DIR__.'/helpers/initializeLocale.php');
+    require_once(__CA_LIB_DIR__.'/Search/Common/Language/LanguageDetection.php');
+
+    trait CLIUtilsSearch {
+
+        /**
+         * @var string[] List of available language detectors.
+         *               landrok/language-detector
+         *               patrickschur/language-detection
+         */
+        static protected $va_language_detectors = array(
+                'default' => array( 'class' => LanguageDetection::class, 'method' => 'analyze' ),
+                'landrok' => array( 'class' => LanguageDetector\LanguageDetector::class, 'method' => 'evaluate' ),
+                'patrickschur'=> array( 'class' => LanguageDetection\Language::class, 'method' => 'detect' ),
+        );
+
 		# -------------------------------------------------------
 		# -------------------------------------------------------
 		/**
@@ -230,4 +245,103 @@
 			return _t('Process search indexing queue.');
 		}
 		# -------------------------------------------------------
+
+        /**
+         * Check quality of language detection
+         */
+        public static function language_detection_quality($po_opts = null) {
+            $vo_file = STDOUT;
+
+            $vs_detector = $po_opts->getOption('detector');
+            $vo_detector = null;
+            if (in_array($vs_detector, array_keys(self::$va_language_detectors))){
+                $vo_detector = new self::$va_language_detectors[$vs_detector]['class']();
+                $vs_method = self::$va_language_detectors[$vs_detector]['method'];
+            } else {
+                $vo_detector = new LanguageDetection();
+                $vs_method = 'analyze';
+            }
+
+            $va_locales = $po_opts->getOption('locales');
+            if (isset($va_locales)) {
+                $va_locales = explode(',', $va_locales);
+            } else {
+                $va_locales = array();
+            }
+            // TODO: Allow choosing only those available for cataloguing.
+            $vb_for_cataloguing_only = false;
+
+            $va_system_locales = ca_locales::getLocaleList(array('index_by_code' => true,
+                    'available_for_cataloguing_only' => $vb_for_cataloguing_only));
+
+            // Filter locales
+            $va_locales_to_process = $va_system_locales;
+            if (sizeof($va_locales)>0){
+                $va_locales_to_process = caFilterLocalesByCode($va_system_locales, $va_locales);
+            }
+
+            $o_db = new DB();
+
+            $vs_query = "SELECT * FROM ca_sql_search_words WHERE locale_id=?";
+            $vo_query = $o_db->prepare($vs_query);
+
+            // Store header
+            $result = array('word', 'detected_language', 'stored_locale');
+            fputcsv($vo_file, $result);
+
+            foreach ($va_locales_to_process as $vs_locale => $va_locale_info){
+                // Query word index for locale
+                $vn_locale_id = $va_locale_info['locale_id'];
+                $vo_result = $vo_query->execute($vn_locale_id);
+                // for every word
+                while($vo_result->nextRow()){
+                    $va_word_info = $vo_result->getRow();
+                    $vs_word = $va_word_info['word'];
+
+                    // Run language detection for word
+                    $vs_detected_language = call_user_func(array($vo_detector, $vs_method), $vs_word);
+
+                    // Store detected language and word locale
+                    $result = array($vs_word,
+                            $vs_detected_language,
+                            $va_system_locales[ca_locales::IDToCode($va_word_info['locale_id'])]['language']);
+                    fputcsv($vo_file, $result);
+                }
+            }
+            fclose($vo_file);
+        }
+
+        public static function language_detection_qualityParamList() {
+            return array(
+                    "locales|L-s" => _t('List of comma separated locale codes. If empty, use all available locales.'),
+                    "detector|D-s" => join(" ", array(
+                            _t('Use language detector by the name. Available values:'),
+                            join(", ",array_keys(self::$va_language_detectors)))
+            ));
+        }
+        # -------------------------------------------------------
+
+        /**
+         *
+         */
+        public static function language_detection_qualityUtilityClass() {
+            return _t('Search');
+        }
+        # -------------------------------------------------------
+
+        /**
+         *
+         */
+        public static function language_detection_qualityShortHelp() {
+            return _t('Check quality of language detection of SqlSearch.');
+        }
+        # -------------------------------------------------------
+
+        /**
+         *
+         */
+        public static function language_detection_qualityHelp() {
+            return _t('Check quality of language detection, by running language detection over SqlSearch indexed words');
+        }
+        # -------------------------------------------------------
     }

@@ -209,6 +209,8 @@ class SearchIndexer extends SearchBase {
 		}
 
 		$vn_tc = 0;
+        $vn_callback_refresh_batch = caGetOption('callback_refresh_batch', $pa_options, 100);
+        $vn_batch_preload_size = caGetOption('batch_preload_size', $pa_options, 500);
 
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
@@ -223,8 +225,10 @@ class SearchIndexer extends SearchBase {
 			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM {$vs_table}");
 
 			$vn_num_rows = $qr_all->numRows();
+			$vs_prefix = "";
 			if ($pb_display_progress) {
-				print CLIProgressBar::start($vn_num_rows, _t('Indexing %1', $t_instance->getProperty('NAME_PLURAL')));
+                $vs_prefix = _t('Indexing %1', $t_instance->getProperty('NAME_PLURAL'));
+				print CLIProgressBar::start($vn_num_rows, $vs_prefix);
 			}
 
 			$vn_c = 0;
@@ -243,8 +247,9 @@ class SearchIndexer extends SearchBase {
 			$va_intrinsic_list[$vs_table_pk] = array();
 			
 			foreach($va_ids as $vn_i => $vn_id) {
-				if (!($vn_i % 500)) {	// Pre-load attribute values for next 500 items to index; improves index performance
-					$va_id_slice = array_slice($va_ids, $vn_i, 500);
+                // Pre-load attribute values for next 500 items to index; improves index performance
+                if (!($vn_i % $vn_batch_preload_size)) {
+					$va_id_slice = array_slice($va_ids, $vn_i, $vn_batch_preload_size);
 					if ($va_element_ids) {
 						ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice, $va_element_ids);
 					}
@@ -264,11 +269,11 @@ class SearchIndexer extends SearchBase {
 
 				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true);
 				if ($pb_display_progress && $pb_interactive_display) {
-					CLIProgressBar::setMessage(_t("Memory: %1", caGetMemoryUsage()));
+					CLIProgressBar::setMessage($vs_prefix . " " . _t("Mem %1", caGetMemoryUsage()));
 					print CLIProgressBar::next();
 				}
 
-				if (($ps_callback) && (!($vn_c % 100))) {
+                if (($ps_callback) && (!($vn_c % $vn_callback_refresh_batch))) {
 					$ps_callback(
 						$vn_c,
 						$vn_num_rows,
@@ -290,7 +295,9 @@ class SearchIndexer extends SearchBase {
 			
 			unset($t_instance);
 			if ($pb_display_progress && $pb_interactive_display) {
-				print CLIProgressBar::finish();
+                CLIProgressBar::setMessage($vs_prefix);
+                print CLIProgressBar::display();
+                print CLIProgressBar::finish();
 			}
 			$this->opo_engine->optimizeIndex($vn_table_num);
 

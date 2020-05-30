@@ -85,14 +85,29 @@
  *  @author Jon Abernathy <jon@chuggnutt.com>
  *  @version 2.1
  */
-class SnoballStemmer
+
+require_once(__CA_LIB_DIR__ . '/Search/Common/IStemmer.php');
+
+class SnoballStemmer implements IStemmer
 {
-	private $opa_stem_cache;
+	static private $opa_stem_cache= array();
+
+	static private $opo_stemmer = null;
 	
-	public function __construct() {
-		$this->opa_stem_cache = array();
-	}
-	
+    /**
+     * @return null
+     */
+    public static function getStemmer() {
+        return self::$opo_stemmer;
+    }
+
+    /**
+     * @param null $po_stemmer
+     */
+    public static function setStemmer($po_stemmer): void {
+        self::$opo_stemmer = $po_stemmer;
+    }
+
     /**
      *  Takes a word and returns it reduced to its stem.
      *
@@ -106,26 +121,29 @@ class SnoballStemmer
 	 *  only have "life" subject to stemming). Handles multi-hyphenated
 	 *  words, too.
      *
-     *  @param string $word Word to reduce
+     *  @param string $ps_word Word to reduce
+     *
      *  @access public
      *  @return string Stemmed word
      */
-    public function stem( $word, $lang = 'en' )
+    public static function stem($ps_word, $ps_language): string {
+        if (!isset(static::$opo_stemmer)) {
+            static::$opo_stemmer = new SnoballStemmer();
+        }
+        /** @var string $vs_stem */
+        $vs_stem = static::$opo_stemmer->_stem($ps_word);
+        return $vs_stem;
+    }
+
+    public function _stem( $word )
     {
         if ( empty($word) ) {
             return false;
         }
-        
+
         $orig_word = $word;
 
-		if (isset($this->opa_stem_cache[$word])) { return $this->opa_stem_cache[$word]; }
-		 // Use PECL function if it is installed
-        if (function_exists('stem')) {
-        	$this->opa_stem_cache[$word] = stem($word, $this->lang2code($lang));
-        	return $this->opa_stem_cache[$word];
-        }
-        
-        $result = '';
+		if (isset(static::$opa_stem_cache[$word])) { return static::$opa_stem_cache[$word]; }
 
         $word = strtolower(caRemoveAccents($word));
 		// Strip trailing ., as in Homer J. Simpson
@@ -157,7 +175,7 @@ class SnoballStemmer
 
         $result = $first . $word;
 
-		$this->opa_stem_cache[$orig_word] = $result;
+		static::$opa_stem_cache[$orig_word] = $result;
         return $result;
     }
 
@@ -181,7 +199,7 @@ class SnoballStemmer
         $results = array();
 
         if ( !is_array($words) ) {
-            $words = split("[ ,;\n\r\t]+", trim($words));
+            $words = preg_split("/[ ,;\n\r\t]+/", trim($words));
         }
 
         foreach ( $words as $word ) {
@@ -685,51 +703,5 @@ class SnoballStemmer
     }
 
 
-	#
-	# Convert language code to PECL Stem language constant
-	#
-    private function lang2code($lang) {
-    	if (!function_exists('stem')) { return null; }
-    	switch($lang) {
-    		case 'en':
-    			return STEM_ENGLISH;
-    			break;
-    		case 'da':
-    			return STEM_DANISH;
-    			break;
-    		case 'nl':
-    			return STEM_DUTCH;
-    			break;
-    		case 'fi':
-    			return STEM_FINNISH;
-    			break;
-    		case 'fr':
-    			return STEM_FRENCH;
-    			break;
-    		case 'de':
-    			return STEM_GERMAN;
-    			break;
-    		case 'it':
-    			return STEM_ITALIAN;
-    			break;
-    		case 'no':
-    			return STEM_NORWEGIAN;
-    			break;
-    		case 'pt':
-    			return STEM_PORTUGUESE;
-    			break;
-    		case 'ru':
-    			return STEM_RUSSIAN;
-    			break;
-    		case 'sp':
-    			return STEM_SPANISH;
-    			break;
-    		case 'sv':
-    			return STEM_SWEDISH;
-    			break;
-    		default:
-    			return STEM_PORTER;
-    	}
-    }
 }
 ?>

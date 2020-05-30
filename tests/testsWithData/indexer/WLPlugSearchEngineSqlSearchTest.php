@@ -39,11 +39,102 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php');
 class WLPlugSearchEngineSqlSearchTest extends BaseTestWithData {
 
     private $opn_object_id;
+    private $vs_non_existent_word = 'patata';
+    private $vs_locale_id = 1;
+    private $vo_query_word = null;
+    private $vo_delete_word = null;
 
     protected function setUp(): void {
         // don't forget to call parent so that request is set up correctly
         parent::setUp();
+        $o_db = new Db();
 
+        $this->vs_non_existent_word = 'patata';
+        $this->vs_locale_id = 1;
+
+        $vs_query_word = "select * from ca_sql_search_words where word = ? and locale_id = ?";
+        $this->vo_query_word = $o_db->prepare($vs_query_word);
+
+        $vs_delete_word = "delete from ca_sql_search_words where word = ? and locale_id = ?";
+        $this->vo_delete_word = $o_db->prepare($vs_delete_word);;
+
+        $this->indexerFixture();
+    }
+
+    protected function tearDown(): void {
+        parent::tearDown();
+
+        $this->vo_delete_word->execute($this->vs_non_existent_word, $this->vs_locale_id);
+    }
+
+    public function testIndexRow() {
+        $o = new ca_objects();
+        $o->load($this->opn_object_id);
+        $o_si = new SearchIndexer(null, 'SqlSearch');
+
+        $vn_table_num = $o->tableNum();
+        $vn_id = $o->getPrimaryKey();
+        $va_field_values = $o->getFieldValuesArray(true);
+        // Reindex it again
+        $o_si->indexRow($vn_table_num, $vn_id, $va_field_values, true);
+
+        // Check words are properly indexed on sql tables.
+        $vo_result = $this->vo_query_word->execute('radio', ca_locales::codeToID('en_US'));
+        $this->assertNotNull($vo_result);
+        $this->assertTrue($vo_result->nextRow());
+        $this->assertEqualsCanonicalizing(array('locale_id', 'stem', 'word', 'word_id'), array_keys($va_result=$vo_result->getRow()));
+        $vo_result = null;
+    }
+
+    public function testGetWordIdAllowsSameWordDifferentLocales() {
+        # TODO: Check schema version is at least 163
+        // Check words are properly indexed on sql tables.
+        $vo_sql_search = new WLPlugSearchEngineSqlSearch();
+        $vn_word_id_en = $vo_sql_search->getWordID('radio', ca_locales::codeToID('en_US'));
+        $vn_word_id_es = $vo_sql_search->getWordID('radio', ca_locales::codeToID('es_ES'));
+        $this->assertGreaterThan(0, $vn_word_id_en);
+        $this->assertGreaterThan(0, $vn_word_id_es);
+    }
+
+    public function testCreateNewWordId() {
+        # TODO: Check schema version is at least 163
+        // Check word does not exists
+        $vo_result = $this->vo_query_word->execute($this->vs_non_existent_word, $this->vs_locale_id);
+        $this->assertNotNull($vo_result);
+        $this->assertFalse($vo_result->nextRow());
+
+        // Check words are properly indexed on sql tables.
+        $vo_sql_search = new WLPlugSearchEngineSqlSearch();
+        $vn_word_id_en = $vo_sql_search->getWordID($this->vs_non_existent_word, $this->vs_locale_id);
+        $this->assertGreaterThan(0, $vn_word_id_en);
+    }
+
+
+    public function testStartRowIndexing() {
+        $this->markTestIncomplete("Pending writing a test");
+    }
+
+    public function testFlushContentBuffer() {
+        $this->markTestIncomplete("Pending writing a test");
+    }
+
+    public function testCommitRowIndexing() {
+        $this->markTestIncomplete("Pending writing a test");
+    }
+
+    public function testTruncateIndex() {
+        $this->markTestIncomplete("Pending writing a test");
+    }
+
+    public function testRemoveRowIndexing() {
+        $this->markTestIncomplete("Pending writing a test");
+    }
+
+    public function testUpdateIndexingInPlace() {
+        $this->markTestIncomplete("Pending writing a test");
+    }
+
+    protected function indexerFixture(): void {
         $this->assertGreaterThan(0, $this->opn_object_id = $this->addTestRecord('ca_objects', array(
                 'intrinsic_fields' => array(
                         'type_id' => 'image',
@@ -128,52 +219,5 @@ class WLPlugSearchEngineSqlSearchTest extends BaseTestWithData {
                         ),
                 )
         )));
-
-    }
-
-    public function testGetWordID() {
-        $o = new ca_objects();
-        $o->load($this->opn_object_id);
-        $o_si = new SearchIndexer(null, 'SqlSearch');
-
-        $vn_table_num = $o->tableNum();
-        $vn_id = $o->get($o->getPrimaryKey());
-        $va_field_values = $o->getFieldValuesArray(true);
-        $o_si->indexRow($vn_table_num, $vn_id, $va_field_values);
-
-        // Check words are properly indexed on sql tables.
-        $vo_sql_search = new WLPlugSearchEngineSqlSearch();
-        $vn_word_id_en = $vo_sql_search->getWordID('radio', ca_locales::codeToID('en_US'));
-        $vn_word_id_es = $vo_sql_search->getWordID('radio', ca_locales::codeToID('es_ES'));
-        $this->assertGreaterThan(0, $vn_word_id_en);
-        $this->assertGreaterThan(0, $vn_word_id_es);
-    }
-
-    public function testIndexField() {
-
-    }
-
-    public function testStartRowIndexing() {
-
-    }
-
-    public function testFlushContentBuffer() {
-
-    }
-
-    public function testCommitRowIndexing() {
-
-    }
-
-    public function testTruncateIndex() {
-
-    }
-
-    public function testRemoveRowIndexing() {
-
-    }
-
-    public function testUpdateIndexingInPlace() {
-
     }
 }
