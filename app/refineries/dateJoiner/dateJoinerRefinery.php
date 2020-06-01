@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2019 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -152,6 +152,8 @@
 						} else {
 							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnDate', join("/", $va_date))); }
 						}
+					} else {
+						if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not find multiColumnDate values. Is your configuration correct?')); }
 					}
 					break;
 				case 'multiColumnRange':
@@ -176,6 +178,8 @@
 						} else {
 							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
 						}
+					} else {
+						if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not find multiColumnRange value for start date. Is your configuration correct?')); }
 					}
 					
 					// Process end date
@@ -196,10 +200,14 @@
 						} else {
 							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
 						}
+					} else {
+						if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not find multiColumnRange value for end date. Is your configuration correct?')); }
 					}
 					
 					if (sizeof($va_dates) > 0) {
 						return join(" - ", $va_dates);
+					} else {
+						if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not find multiColumnRange values. Is your configuration correct?')); }
 					}
 					break;
 			}
