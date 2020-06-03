@@ -331,8 +331,7 @@ var caUI = caUI || {};
 						}
 					}
 					
-					jQuery('#' + newLevelDivID).data('level', level);
-					jQuery('#' + newLevelDivID).data('parent_id', item_id);
+					jQuery('#' + newLevelDivID).data('level', level).data('parent_id', item_id);
 					jQuery('#' + newLevelListID).change(function() {
 						var item_id = jQuery("#" + newLevelListID + " option:selected").val();
 						if (!item_id) {
@@ -341,7 +340,7 @@ var caUI = caUI || {};
 							that.setUpHierarchyLevel(level + 1, item_id, 0, undefined, true);
 							that.selectItem(level, item_id, jQuery('#' + newLevelDivID).data('parent_id'), 0, {});
 						}
-					});
+					}).attr('disabled', true);
 					that.showIndicator(newLevelDivID);
 
 					// add first "choose something" item
@@ -594,7 +593,7 @@ var caUI = caUI || {};
 								}
 							} else {
 								if (that.uiStyle == 'vertical') {
-									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item.name).text()));
+									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item.name).text())).attr('disabled', false);
 								}
 							}
 							// Pass item_id to caller if required

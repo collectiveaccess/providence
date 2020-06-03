@@ -1989,7 +1989,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										continue(2);
 									}
 								} catch (Exception $e) {
-									$o_log->logDebug("[%1] Could not evaluate expression %2: %3", $vs_idno, $va_item['settings']['skipIfExpression'], $e->getMessage());
+									$o_log->logDebug(_t("[%1] Could not evaluate expression %2: %3", $vs_idno, $va_item['settings']['skipIfExpression'], $e->getMessage()));
 								}
 							}
 						
@@ -2047,7 +2047,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										continue(4);
 									}
 								} catch (Exception $e) {
-									$o_log->logDebug("[%1] Could not evaluate skipRowIfExpression %2: %3", $vs_idno, $va_item['settings']['skipRowIfExpression'], $e->getMessage());
+									$o_log->logDebug(_t("[%1] Could not evaluate skipRowIfExpression %2: %3", $vs_idno, $va_item['settings']['skipRowIfExpression'], $e->getMessage()));
 								}
 							}
 
@@ -2070,7 +2070,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										continue(3);
 									}
 								} catch (Exception $e) {
-									$o_log->logDebug("[%1] Could not evaluate expression %2: %3", $vs_idno, $va_item['settings']['skipGroupIfExpression'], $e->getMessage());
+									$o_log->logDebug(_t("[%1] Could not evaluate expression %2: %3", $vs_idno, $va_item['settings']['skipGroupIfExpression'], $e->getMessage()));
 								}
 							}
 						
@@ -2093,7 +2093,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										continue(2);
 									}
 								} catch (Exception $e) {
-									$o_log->logDebug("[%1] Could not evaluate expression %2: %3", $vs_idno, $va_item['settings']['skipIfExpression'], $e->getMessage());
+									$o_log->logDebug(_t("[%1] Could not evaluate expression %2: %3", $vs_idno, $va_item['settings']['skipIfExpression'], $e->getMessage()));
 								}
 							}
 						
