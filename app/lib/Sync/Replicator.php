@@ -84,6 +84,12 @@ class Replicator {
 	protected $guids_to_skip;
 	
 	/**
+	 * List of log ids sent in this session for the source. Used to ensure
+	 * that log entries for missing GUIDs are only sent once to the target.
+	 */
+	protected $sent_log_ids;
+	
+	/**
 	 * Configured parameters defined by target for getlog service call
 	 */
 	protected $get_log_service_params;
@@ -286,6 +292,9 @@ class Replicator {
                 
                 $deferred_guids = [];
                 
+                // Dictionary with log_ids sent from this source in this session
+                $this->sent_log_ids = [];
+                
 				while(true) { // use chunks of 10 entries until something happens (success/err)
 				    $this->last_log_id = null;
 				
@@ -306,6 +315,8 @@ class Replicator {
                     $log_ids = array_keys($va_source_log_entries);
                     $start_log_id = array_shift($log_ids);
                     $end_log_id = array_pop($log_ids);
+                    if(!$end_log_id) { $end_log_id = $start_log_id; }
+                    
                     $this->log(_t("[%1] Found %2 source log entries starting at %3 [%4 - %5].", $vs_source_key, sizeof($va_source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), Zend_Log::DEBUG);
                     $va_filtered_log_entries = null;
 					if (
@@ -346,7 +357,8 @@ class Replicator {
 						
 						foreach($va_source_log_entries as $vn_log_id => $va_source_log_entry) {
 						    $this->last_log_id = $vn_log_id;
-						    //$this->log(_t("[%1] Begin processing source log entry at %2.", $vs_source_key, $vn_log_id), Zend_Log::DEBUG);
+						    if ($this->sent_log_ids[$vn_log_id]) { continue; }	// Don't send a source entry more than once (should never happen)
+						    
 							$vb_logged_exists_on_target = is_array($va_guid_already_exists[$va_source_log_entry['guid']]);
 						    if ($pa_filter_on_access_settings && ($va_access_by_guid[$va_source_log_entry['guid']] !== '?') && !in_array($va_access_by_guid[$va_source_log_entry['guid']], $pa_filter_on_access_settings) && !$vb_logged_exists_on_target) {
 						        // skip rows for which we have no access
@@ -397,12 +409,6 @@ class Replicator {
                                         while((sizeof($missing_guids) > 0)) { 
                                             $vs_missing_guid = array_shift($missing_guids);
                                             if ($source_log_entries_for_missing_guids_seen_guids[$vs_missing_guid]) { 
-                                                // If we've already seen this guid then move it to the end of the list
-                                                // Since the queue is pushed in reverse we're actually pushing this towards
-                                                // the *beginning*, allowing it to be in place for those rows which depend upon it
-                                               //  $va_entry_tmp = $source_log_entries_for_missing_guids[$vs_missing_guid];
-                                                //unset($source_log_entries_for_missing_guids[$vs_missing_guid]);
-                                                //$source_log_entries_for_missing_guids[$vs_missing_guid] = $va_entry_tmp;
                                                 $this->log(_t("[%1] Skipped %2 because we've seen it already.", $vs_source_key, $vs_missing_guid), Zend_Log::DEBUG);
                                                 continue; 
                                             } 
@@ -522,18 +528,28 @@ class Replicator {
                                                         while(sizeof($va_filtered_log_for_missing_guid) > 0) {
                                                             $va_log_entry = array_shift($va_filtered_log_for_missing_guid);
                                                             
-                                                            if ($vn_log_id == $va_log_entry['log_id']) { 
-                                                            	$this->log(_t("[%1] Skipped missing entry because it is the current id.", $vs_source_key), Zend_Log::DEBUG);
-                                                            	continue; 
-                                                            } // don't pull in current log entry
                                                             $vn_mlog_id = $va_log_entry['log_id'];
+                                                            
+                                                            // Don't send log entry for missing guid more than once 
+                                                            // (can happen with attributes where they can be pulled as missing on the primary record 
+                                                            //  and then as dependencies of the primary record)
+															if($this->sent_log_ids[$vn_mlog_id]) { continue; } 
+															
                                                             if (!$vn_mlog_id) { 
                                                                 $this->log(_t("[%1] Skipped entry because it lacks a log_id.", $vs_source_key), Zend_Log::WARN);
                                                                 continue; 
                                                             }
+                                                            if ($vn_log_id == $vn_mlog_id) { 
+                                                            	$this->log(_t("[%1] Skipped missing entry because it is the current id.", $vs_source_key), Zend_Log::DEBUG);
+                                                            	continue; 
+                                                            } // don't pull in current log entry
                                                             
                                                             if ($vn_mlog_id > $this->last_log_id) { 
                                                                 $this->log(_t("[%1] Skipped entry (%2) because it's in the future.", $vs_source_key, $vn_mlog_id),Zend_Log::DEBUG);
+                                                                continue; 
+                                                            }
+                                                            if ($vn_mlog_id >= $pn_start_replicated_id) { 
+                                                                $this->log(_t("[%1] Skipped entry (%2) because it's within the current sync frame (log_id >= %3).", $vs_source_key, $vn_mlog_id, $pn_start_replicated_id),Zend_Log::DEBUG);
                                                                 continue; 
                                                             }
                                                             
@@ -597,6 +613,12 @@ class Replicator {
                                                             ->setRequestBody($va_entries)
                                                             ->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
                                                             ->request();
+                                                        foreach($va_entries as $mlog_id => $entry) {                                                        	
+															// Mark log entry as sent, to ensure we don't send it again in this session
+															// (Double sending of a log entry can happen with attributes in some cases where they
+															//  are pulled as part of the primary record and then as a dependency)
+                                                        	$this->sent_log_ids[$mlog_id] = true;
+                                                        }
                                                     }
                                                 } else {
                                                     // Missing guid has dependencies 
@@ -667,6 +689,12 @@ class Replicator {
 						->setRequestBody($va_source_log_entries)
 						->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 						->request();
+					foreach($va_source_log_entries as $mlog_id => $entry) {						
+						// Mark log entry as sent, to ensure we don't send it again in this session
+						// (Double sending of a log entry can happen with attributes in some cases where they
+						//  are pulled as part of the primary record and then as a dependency)
+						$this->sent_log_ids[$mlog_id] = true;
+					}
 
                     $this->log(_t("[%1] Pushed %2 primary entries.", $vs_source_key, sizeof($va_source_log_entries)), Zend_Log::DEBUG);
 					$va_response_data = $o_resp->getRawData();
@@ -813,6 +841,11 @@ class Replicator {
 					if (isset($va_source_log_entries[$va_log_entry['log_id']])) { continue; } // don't push source log entry for a second time
 				
 					$vn_mlog_id = $va_log_entry['log_id'];
+										
+					// Don't send log entry for missing guid more than once 
+					// (can happen with attributes where they can be pulled as missing on the primary record 
+					//  and then as dependencies of the primary record)
+					if($this->sent_log_ids[$vn_mlog_id]) { continue; }
 					if (!$vn_mlog_id) { 
 						$this->log(_t("[%1] Skipped entry because it lacks a log_id %2.", $this->source_key, print_R($va_log_entry, true)), Zend_Log::DEBUG);
 						continue; 
@@ -927,11 +960,19 @@ class Replicator {
 				if ($size > 0) {
 					$this->log(_t("[%1] Pushing %4 missing log entries starting with %2 for %3.", $this->source_key, $vn_first_missing_log_id, $vs_missing_guid, $size), Zend_Log::DEBUG);
 				}
+				
+				
 				$o_backlog_resp = $this->target->setRequestMethod('POST')->setEndpoint('applylog')
 					->addGetParameter('system_guid', $this->source_guid)
 					->setRequestBody($va_entries)
 					->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 					->request();
+				foreach($va_entries as $mlog_id => $entry) {					
+					// Mark log entry as sent, to ensure we don't send it again in this session
+					// (Double sending of a log entry can happen with attributes in some cases where they
+					//  are pulled as part of the primary record and then as a dependency)
+					$this->sent_log_ids[$mlog_id] = true;
+				}
 			}
 		
 			unset($source_log_entries_for_missing_guids[$vs_missing_guid]);
