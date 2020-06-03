@@ -362,7 +362,7 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => 0,
 			'label' => _t('Skip row if data already present'),
-			'description' => _t('Skip row if data is already present in CollectiveAccess.')
+			'description' => _t('Skip mapping if data is already present in CollectiveAccess.')
 		);
 		$va_settings['skipIfNoReplacementValue'] = array(
 			'formatType' => FT_TEXT,
