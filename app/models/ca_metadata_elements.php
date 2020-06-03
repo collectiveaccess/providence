@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1097,7 +1097,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_restrictions->nextRow()) {
 			if (!($t_table = Datamodel::getInstanceByTableNum($qr_restrictions->get('table_num'), true))) { continue; }
 
-			if ($vn_type_id = $qr_restrictions->get('type_id')) {
+			if($t_table->isRelationship()) {
+				$vs_type_name = $t_table->getRelationshipTypename('ltor', $qr_restrictions->get('type_id'));
+			} elseif ($vn_type_id = $qr_restrictions->get('type_id')) {
 				$vs_type_name = $t_list->getItemForDisplayByItemID($vn_type_id);
 			} else {
 				$vs_type_name = '*';

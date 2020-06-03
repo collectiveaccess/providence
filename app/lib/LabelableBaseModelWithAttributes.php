@@ -398,7 +398,7 @@
  			
  			if (is_array($pa_table_values)) {
 				foreach($pa_table_values as $vs_fld => $vs_val) {
-					if ($t_label->hasField($vs_fld)) {
+					if ($this->hasField($vs_fld)) {
 						$va_wheres[$this->tableName().".".$vs_fld." = ?"] = $vs_val;
 					}
 				}
