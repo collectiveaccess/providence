@@ -2979,7 +2979,7 @@ class TimeExpressionParser {
 			} else {															// dates in different years
 			
 				// Try to infer qualified ranges from years (Eg. 1700 - 1720  => "early 18th century")
-				if (is_array($qualified_range_info = self::inferRangeQualifier(['start' => $va_start_pieces, 'end' => $va_end_pieces], $pa_options))) {
+				if (!$this->opo_datetime_settings->get('dontInferQualifiedRanges') && is_array($qualified_range_info = self::inferRangeQualifier(['start' => $va_start_pieces, 'end' => $va_end_pieces], $pa_options))) {
 					return $qualified_range_info['value'];
 				}
 				
