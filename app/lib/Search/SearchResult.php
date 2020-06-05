@@ -1924,6 +1924,9 @@ class SearchResult extends BaseObject {
 		$pa_restrict_to_lists = caGetOption('list', $pa_options, null, ['castTo' => 'array']);
 		if (is_array($pa_restrict_to_lists)) { $pa_restrict_to_lists = caMakeListIDList($pa_restrict_to_lists); }
 		
+		// Make sure spec has a table name, otherwise we can get caught in an infinite loop when we pull using the spec
+		if ((substr($va_spec[0], 0, 3) !== 'ca_') || !Datamodel::tableExists($va_spec[0])) { array_unshift($va_spec, $va_path_components['table_name']); }
+		
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
 			if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_rel_instance->hasField('access') && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
