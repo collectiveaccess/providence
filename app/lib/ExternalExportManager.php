@@ -35,27 +35,39 @@ require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 class ExternalExportManager {
     # ------------------------------------------------------
     /**
-     *
+     * Configuration instance for external_exports.conf
      */
     private $config;
+    
+    /**
+     * Logging instance for external export log (usually set to application log)
+     */
+    private $log;
     
     # ------------------------------------------------------
     /**
      *
      */
-    public function __construct() {
+    public function __construct($options=null) {
         $this->config = self::getConfig();
+        $this->log = caGetLogger(['logLevel' => caGetOption('logLevel', $options, null)], 'external_export_log_directory');;
     }
     # ------------------------------------------------------
     /**
+     * Return instance for external_exports.conf
      *
+     * @return Configuration
      */
     public static function getConfig() {
         return Configuration::load(__CA_CONF_DIR__.'/external_exports.conf');
     }
     # ------------------------------------------------------
     /**
+     * Return information/settings for target
      *
+     * @param string $target
+     *
+     * @return array or null if target does not exist
      */
     public static function getTargetInfo($target) {
         $config = self::getConfig();
@@ -67,7 +79,11 @@ class ExternalExportManager {
     }
     # ------------------------------------------------------
     /**
+     * Test if target exists
      *
+     * @param string $target
+     *
+     * @return bool
      */
     public static function isValidTarget($target) {
         return is_array(self::getTargetInfo($target));
@@ -106,9 +122,8 @@ class ExternalExportManager {
         }
         
     	if ($skip_transport = caGetOption('skipTransport', $options, false)) {
-    		$log->logDebug(_t('Skipping transport for %1:%2 because "skipTransport" runtime option was set', $table, $id));
+    		$this->log->logDebug(_t('Skipping transport for %1:%2 because "skipTransport" runtime option was set', $table, $id));
     	}
-        $log = caGetLogger(['logLevel' => caGetOption('logLevel', $options, null)], 'external_export_log_directory');
     
         if ($target) { $targets = [$target => $targets[$target]]; }
     
@@ -118,7 +133,7 @@ class ExternalExportManager {
             
             if ($table !== $target_table) { continue; }
             if (!($format = caGetOption('format', $target_info['output'], null))) { 
-            	$log->logError(_t('Skipping target %1 because no output format is set', $target));
+            	$this->log->logError(_t('Skipping target %1 because no output format is set', $target));
             	continue; 
             }
             
@@ -130,15 +145,15 @@ class ExternalExportManager {
             $plugin = new $plugin_class;
             
             if (!($t_instance = $table::find($id, ['returnAs' => 'firstModelInstance']))) { 
-            	$log->logError(_t('Skipping  %1:%2 for target %3 because the row does not exist', $table, $id, $target));
+            	$this->log->logError(_t('Skipping  %1:%2 for target %3 because the row does not exist', $table, $id, $target));
             	continue; 
             }   
-            $log->logDebug(_t('Processing %1:%2 for target %3', $table, $id, $target));
+            $this->log->logDebug(_t('Processing %1:%2 for target %3', $table, $id, $target));
             
        		$access = caGetOption('checkAccess', $target_info, null); 
             if (is_array($access) && sizeof($access) && $t_instance->hasField('access')) {	// Check access on record if specified in export policy
             	if (!in_array((string)$t_instance->get('access'), $access, true)) { 
-            		$log->logDebug(_t('Skipping %1:%2 for target %3 because access is denied', $table, $id, $target));
+            		$this->log->logDebug(_t('Skipping %1:%2 for target %3 because access is denied', $table, $id, $target));
             		continue; 
             	}
             }
@@ -146,32 +161,17 @@ class ExternalExportManager {
             $restrict_to_types = caGetOption('restrictToTypes', $target_info, null); 
            	if (is_array($restrict_to_types) && sizeof($restrict_to_types) && ($types = caMakeTypeList($table, [$t_instance->getTypeCode()]))) {	// Check access on record if specified in export policy
             	if (!sizeof(array_intersect($types, $restrict_to_types))) { 
-            		$log->logDebug(_t('Skipping %1:%2 for target %3 because of type restrictions', $table, $id, $target));
+            		$this->log->logDebug(_t('Skipping %1:%2 for target %3 because of type restrictions', $table, $id, $target));
             		continue; 
             	}
             }
                  
             $files[] = $f = $plugin->process($t_instance, array_merge($target_info, ['target' => $target, 'logLevel' => caGetOption('logLevel', $options, null)]), []);
-            $log->logDebug(_t('Generated file %1 for %2:%3 for target %4', $f, $table, $id, $target));
+            $this->log->logDebug(_t('Generated file %1 for %2:%3 for target %4', $f, $table, $id, $target));
          
-         	// transport
-         	$destination = caGetOption('destination', $target_info, null);
-			if(!$skip_transport && is_array($destination)) {
-				$transport = caGetOption('type', $destination, null);
-				// get transport plugin
-				if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/Transport/{$transport}.php")) { 
-					throw ExternalExportManagerException(_t('Invalid transport plugin %1', $transport));
-				}
-				$plugin_class = "WLPlug{$transport}";
-				$plugin = new $plugin_class;
-			
-				try {
-					$plugin->process($destination, $files, ['logLevel' => caGetOption('logLevel', $options, null)]);
-					$log->logDebug(_t('Sent %1 files for %2:%3 for target %4 via %5', sizeof($files), $table, $id, $target, $transport));
-				} catch (Exception $e) {
-					$log->logError(_t('Could not send %1 files for %2:%3 for target %4 via %5: %6', sizeof($files), $table, $id, $target, $transport, $e->getMessage()));	
-				}
-			}	 
+         	if(!$skip_transport) {
+         		$this->transport($target, $files, $options);
+         	} 
         }
     	return $files;
     }
@@ -187,12 +187,10 @@ class ExternalExportManager {
             throw new ExternalExportManagerException(_t('Invalid external export target %1', $target));
         }
         
-        $log = caGetLogger(['logLevel' => caGetOption('logLevel', $options, null)], 'external_export_log_directory');
-        
 		$o_app_vars = new ApplicationVars();
 		if (($last_log_id = $o_app_vars->getVar('ExternalExportManager_last_log_id'))) { 
 			$last_log_id++; 
-			$log->logDebug(_t('[ExternalExportManager] Starting from last_log_id value %1', $last_log_id));
+			$this->log->logDebug(_t('[ExternalExportManager] Starting from last_log_id value %1', $last_log_id));
 		}
         
         if ($target) { $targets = [$targets[$target]]; }
@@ -200,51 +198,53 @@ class ExternalExportManager {
         
         $latest_log_id_seen = null;
         
-		$log->logDebug(_t('[ExternalExportManager] Found %1 targets to process', sizeof($targets)));
+		$this->log->logDebug(_t('[ExternalExportManager] Found %1 targets to process', sizeof($targets)));
         foreach($targets as $target => $target_info) {
+        	$latest_log_id_seen = $last_log_id  = null;		// we reset the log counter for each target, then record the max value after we're finished.
             $target_table = caGetOption('table', $target_info, null);
             $target_table_num = (int)Datamodel::getTableNum($target_table);
         	
         	// get pending rows ...
         	$triggers = caGetOption('triggers', $target_info, null);
         	
+        	$file_list = [];
+        	
         	if(is_array($triggers)) {
         		$seen = [];
         		
         		foreach($triggers as $k => $trigger) {
-					$log->logDebug(_t('[ExternalExportManager] Processing trigger %1 for target %2', $k, $target));
+					$this->log->logDebug(_t('[ExternalExportManager] Processing trigger %1 for target %2', $k, $target));
         			$ids = [];
         			$ids_from_log = $ids_from_query = null;
         			
 					if (($get_from = is_null($last_log_id) ? caGetOption(['from_log_timestamp', 'from_log_id'], $trigger, null) : $last_log_id) > 0) {
-						if (is_array($log_entries = ca_change_log::getLog($get_from))) {
-							$last_log_id_in_list = array_pop(array_keys($log_entries));
+						if (is_array($this->log_entries = ca_change_log::getLog($get_from))) {
+							$last_log_id_in_list = array_pop(array_keys($this->log_entries));
 							if ((is_null($latest_log_id_seen) && $latest_log_id_seen) || ($last_log_id_in_list > $latest_log_id_seen)) { $latest_log_id_seen = $last_log_id_in_list; }
 							
 							$ids_from_log = array_map(function($v) {
 								return $v['logged_row_id'];
-							}, array_filter($log_entries, function($v) { return (($v['logged_table_num'] === $target_table_num) && ($v['changetype'] !== 'D')); }));
-							
+							}, array_filter($this->log_entries, function($v) use ($target_table_num) { return (((int)$v['logged_table_num'] === $target_table_num) && ($v['changetype'] !== 'D')); }));
+					
 							$ids_from_log_subjects = [];
-							foreach($log_entries as $l) {
-								$ids_from_log_subjects += array_map(function($v) {
+							foreach($this->log_entries as $l) {
+								$ids_from_log_subjects = array_merge($ids_from_log_subjects, array_map(function($v) {
 									return $v['subject_row_id'];
-								}, array_filter($l['subjects'], function($v) use ($target_table_num) { return ((int)$v['subject_table_num'] === $target_table_num); }));
+								}, array_filter($l['subjects'], function($v) use ($target_table_num) { return ((int)$v['subject_table_num'] === $target_table_num); })));
 							
 							}
-							$ids_from_log += $ids_from_log_subjects;
-							
+							$ids_from_log = array_unique(array_merge($ids_from_log, $ids_from_log_subjects));
 						} else {
-							$log_entries = [];
+							$this->log_entries = [];
 						}
-						$log->logDebug(_t('[ExternalExportManager] Found %1 new log entries with %4 unique ids for target %2 using "get from" value %3', sizeof($log_entries), $target, $get_from, sizeof($ids_from_log)));
+						$this->log->logDebug(_t('[ExternalExportManager] Found %1 new log entries with %4 unique ids for target %2 using "get from" value %3', sizeof($this->log_entries), $target, $get_from, sizeof($ids_from_log)));
 					}
 					
 					if (($query = caGetOption('query', $trigger, null)) && $search = caGetSearchInstance($target_table)) {
 						$qr = $search->search($query, ['restrictToTypes' => caGetOption('restrictToTypes', $target_info, null), 'checkAccess' => caGetOption('checkAccess', $target_info, null)]);
 						$ids_from_query = array_unique($qr->getAllFieldValues(Datamodel::primaryKey($target_table, true)));
 						
-						$log->logDebug(_t('[ExternalExportManager] Found %1 unique ids for target %2 using "query" value %3', sizeof($ids_from_query), $target, $query));
+						$this->log->logDebug(_t('[ExternalExportManager] Found %1 unique ids for target %2 using "query" value %3', sizeof($ids_from_query), $target, $query));
 					}
 					
 					if(!is_null($ids_from_log)) { $ids = $ids_from_log; }
@@ -255,33 +255,67 @@ class ExternalExportManager {
 							$ids = $ids_from_query;
 						}
 					}
-					$log->logInfo(_t('[ExternalExportManager] Processing %1 unique ids for target %2', sizeof($ids), $target));
+					
+					$ids = $target_table::find([Datamodel::primaryKey($target_table) => ['IN', $ids]], ['returnAs' => 'ids']);	// Filter out deleted records
+					$this->log->logInfo(_t('[ExternalExportManager] Processing %1 unique ids for target %2', sizeof($ids), $target));
 					
 					// ... process
-					$log_id = null;
+					$this->log_id = null;
 					foreach($ids as $id) {
 						if($seen["{$target_table}/{$id}"]) { continue; }
 						
-						$log->logDebug(_t('[ExternalExportManager] Processing %1 for target %2', "{$target_table}:{$id}", $target));
-						$files = $this->process($target_table, $id, array_merge($options, ['target' => $target]));
+						$this->log->logDebug(_t('[ExternalExportManager] Processing %1 for target %2', "{$target_table}:{$id}", $target));
+						$files = $this->process($target_table, $id, array_merge($options, ['target' => $target, 'skipTransport' => true]));
 						$seen["{$target_table}/{$id}"] = true;
 						
 						if(is_array($files)) {
-							$log->logDebug(_t('[ExternalExportManager] Generated %1 export packages for %2 for target %3', sizeof($files), "{$target_table}:{$id}", $target));
+							$this->log->logDebug(_t('[ExternalExportManager] Generated %1 export packages for %2 for target %3', sizeof($files), "{$target_table}:{$id}", $target));
 						} else {
-							$log->logError(_t('[ExternalExportManager] Could not generate export packages for %1 for target %2', "{$target_table}:{$id}", $target));
+							$this->log->logError(_t('[ExternalExportManager] Could not generate export packages for %1 for target %2', "{$target_table}:{$id}", $target));
 						}
+						
+						$file_list = array_merge($file_list, $files);
 					}
 				}
 			}
+			$this->transport($target, $file_list, $options);
         }
         
 		if ($latest_log_id_seen > 0) { 
 			$o_app_vars->setVar('ExternalExportManager_last_log_id', $latest_log_id_seen);
 			$o_app_vars->save();
 			
-			$log->logDebug(_t('[ExternalExportManager] Set last_log_id to %1', $latest_log_id_seen));
+			$this->log->logDebug(_t('[ExternalExportManager] Set last_log_id to %1', $latest_log_id_seen));
 		}
+    }
+    # ------------------------------------------------------
+	/**
+	 * Perform transport on a set of filesName
+	 */
+    public function transport($target, $files, $options=null) {
+    	if (!($target_info = self::getTargetInfo($target))) { 
+    		$this->log->logError(_t('Could not send files because target %1 is not defined', $target));	
+    		return null; 
+    	}
+		$destination = caGetOption('destination', $target_info, null);
+		if(is_array($destination)) {
+			$transport = caGetOption('type', $destination, null);
+			// get transport plugin
+			if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/Transport/{$transport}.php")) { 
+				throw ExternalExportManagerException(_t('Invalid transport plugin %1', $transport));
+			}
+			$plugin_class = "WLPlug{$transport}";
+			$plugin = new $plugin_class;
+		
+			try {
+				$plugin->process($destination, $files, ['logLevel' => caGetOption('logLevel', $options, null)]);
+				$this->log->logDebug(_t('Sent %1 files for for target %2 via %3', sizeof($files), $target, $transport));
+			} catch (Exception $e) {
+				$this->log->logError(_t('Could not send %1 files for target %2 via %3: %4', sizeof($files), $target, $transport, $e->getMessage()));	
+				return false;
+			}
+		}	
+		return true;
     }
     # ------------------------------------------------------
 	/**

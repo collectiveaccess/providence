@@ -1123,7 +1123,7 @@
 			
 			$log_level = $po_opts->getOption('log-level');
             
-            $e = new ExternalExportManager();
+            $e = new ExternalExportManager(['logLevel' => $log_level]);
             $e->processPending(['target' => $target, 'logLevel' => $log_level]);
 		}
 		# -------------------------------------------------------
