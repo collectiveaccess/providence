@@ -61,6 +61,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	var $ops_imagemagick_path;
 	var $ops_graphicsmagick_path;
 	
+	var $metadata = [];
+	
 	var $info = array(
 		"IMPORT" => array(
 			"application/pdf" 					=> "pdf"
@@ -324,7 +326,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	 * @return Array Extracted metadata
 	 */
 	public function getExtractedMetadata() {
-		return array();
+		return $this->metadata;
 	}
 	# ------------------------------------------------
 	public function read ($ps_filepath, $mimetype="", $options=null) {
@@ -346,6 +348,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		
 		$this->filepath = $ps_filepath;
+		
+		$this->metadata = caExtractMetadataWithExifTool($ps_filepath);
 		
 		
 		// Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)

@@ -656,22 +656,9 @@
 		
 			if ($t_oxor->numErrors()) {
 				$this->errors = array_merge($this->errors, $t_oxor->errors());
-				//$t_rep->delete();
-				//if ($t_rep->numErrors()) {
-				//	$this->errors = array_merge($this->errors, $t_rep->errors());
-				//}
 				return false;
 			}
 			
-			//
-			// Perform mapping of embedded metadata for newly uploaded representation with respect
-			// to ca_objects and ca_object_representation records
-			//
-			$va_metadata = $t_rep->get('media_metadata', array('binary' => true));
-			if (caExtractEmbeddedMetadata($this, $va_metadata, $pn_locale_id)) {
-				$this->update();
-			}
-		
 			if (isset($pa_options['returnRepresentation']) && (bool)$pa_options['returnRepresentation']) {
 				return $t_rep;
 			} 
