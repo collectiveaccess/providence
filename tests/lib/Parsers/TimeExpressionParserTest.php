@@ -41,6 +41,10 @@ class TimeExpressionParserTest extends TestCase {
 	}
 	
 	public function testHyphensInSortOfOddPlaces() {
+		#
+		# These tests assume the datetime.conf dontInferQualifiedRanges is set to 0
+		# (Note that the distribution default is 1)
+		#
 	 	$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
 		
