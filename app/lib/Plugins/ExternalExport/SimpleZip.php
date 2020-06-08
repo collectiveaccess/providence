@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,10 +33,11 @@
   /**
     *
     */
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExport.php");
-include_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportPlugin.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
+include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
+include_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");
 
-class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExport {
+class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugExternalExportFormat {
 	# ------------------------------------------------------
 	
 	
@@ -46,8 +47,8 @@ class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExp
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->info['NAME'] = 'BagIt';
-		$this->description = _t('Export data in BagIt format');
+		$this->info['NAME'] = 'SimpleZip';
+		$this->description = _t('Export data as simple ZIP files');
 	}
 	# ------------------------------------------------------
     /**
@@ -96,21 +97,29 @@ class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExp
      */
     public function process($t_instance, $target_info, $options=null) {
         require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
-        require_once(__CA_BASE_DIR__.'/vendor/scholarslab/bagit/lib/bagit.php');
         
+        $t_user = caGetOption('user', $options, null);
         $output_config = caGetOption('output', $target_info, null);
         $target_options = caGetOption('options', $output_config, null);
         $bag_info = is_array($target_options['bag-info-data']) ? $target_options['bag-info-data'] : [];
-        $name = caGetOption('name', $output_config, null);
+        $name = $t_instance->getWithTemplate(caGetOption('name', $output_config, null));
         $tmp_dir = caGetTempDirPath();
         $staging_dir = $tmp_dir."/".uniqid("ca_bagit");
         @mkdir($staging_dir);
         
-        // TODO: need to generate reasonable name for bag
         $bag = new BagIt("{$staging_dir}/{$name}", true, true, true, []);
+        $bag->setHashEncoding(caGetOption('hash', $output_config, 'md5', ['validValues' => ['md5', 'sha1']]));
         
         // bag data
         $content_mappings = caGetOption('content', $output_config, []);
+        
+        $total_filesize = 0;
+        $file_mimetypes = [];
+        $file_list = [];
+        
+        $file_list_template = caGetOption('file_list_template', $target_options, '');
+        $file_list_delimiter = caGetOption('file_list_delimiter', $target_options, '; ');
+        
         foreach($content_mappings as $path => $content_spec) {
             switch($content_spec['type']) {
                 case 'export':
@@ -124,18 +133,63 @@ class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExp
                         // TODO: support children, parent, hierarchy
                         $instance_list = $t_instance->getRelatedItems($relative_to, ['returnAs' => 'modelInstances']);
                     } 
+                    $restrict_to_types = caGetOption('restrictToTypes', $content_spec, null);
+                    $restrict_to_mimetypes = caGetOption('restrictToMimeTypes', $content_spec, null);
+                    
                     foreach($instance_list as $t) {
-                        foreach($content_spec['files'] as $fname => $get_spec) {
+                    	if (is_array($restrict_to_types) && sizeof($restrict_to_types) && !in_array($t->getTypeCode(), $restrict_to_types)) { continue; }
+                        foreach($content_spec['files'] as $get_spec => $export_filename_spec) {
                         	$pathless_spec = preg_replace('!\.path$!', '', $get_spec);
                             if (!preg_match("!\.path$!", $get_spec)) { $get_spec .= ".path"; }
                             
                             $filenames = $t->get("{$pathless_spec}.filename",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+                            $mimetypes = $t->get("{$pathless_spec}.mimetype",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+                            $file_mod_times = $t->get("{$pathless_spec}.fileModificationTime",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+                           
+                            $ids = $t->get("{$pathless_spec}.id", ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
                             $files = $t->get($get_spec, ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
                             
+                            $seen_files = [];
                             foreach($files as $i => $f) {
-                            	// TODO: detect snd rename dupe files
-                            	// TODO: option to use CA-unique file names
-                                $bag->addFile($f, $filenames[$i] ? $filenames[$i] : pathinfo($f, PATHINFO_BASENAME));
+                            	$m = $mimetypes[$i];
+                            	$t = $file_mod_times[$i];
+                            	if(is_array($restrict_to_mimetypes) && sizeof($restrict_to_mimetypes) && !sizeof(array_filter($restrict_to_mimetypes, function($v) use ($m) { return caCompareMimetypes($m, $v); }))) { continue; }
+                            
+                            	$extension = pathinfo($f, PATHINFO_EXTENSION);
+                            	$original_basename = pathinfo($filenames[$i], PATHINFO_FILENAME);
+                            	$basename = pathinfo($f, PATHINFO_FILENAME);
+                            	
+                            	$e = $export_filename = self::processExportFilename($export_filename_spec, [
+                            		'extension' => $extension,
+                            		'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : null, 'original_basename' => $original_basename,
+                            		'filename' => "{$basename}.{$extension}", "basename" => $basename, 
+                            	]);
+                            	
+                            	$file_mimetypes[$m] = true;
+                            	
+                            	// Detect and rename duplicate file names
+                            	$c = 1;
+                            	while(isset($seen_files[$e]) && $seen_files[$e]) {
+                            		$e = pathinfo($export_filename, PATHINFO_FILENAME)."-{$c}.{$extension}";
+                            		$c++;
+                            	}
+                            	$total_filesize += ($fs = filesize($f));
+                                $bag->addFile($f, $e);
+                                
+                                if ($t > 0) {
+                                	touch("{$staging_dir}/{$name}/data/{$e}", $t);
+                                }
+                                $seen_files[$export_filename] = true;
+                                
+                                if ($file_list_template && !isset($file_list[$export_filename])) {
+                                    $file_list_template_proc = caProcessTemplate($file_list_template, [
+                                       'filename' =>  $original_basename ? "{$original_basename}.{$extension}" : "{$basename}.{$extension}",
+                                       'filesize_in_bytes' => $fs,
+                                       'filesize_for_display' => caHumanFilesize($fs),
+                                       'mimetype' => $m
+                                    ], ['skipTagsWithoutValues' => true]);
+                                    $file_list[$export_filename] = $t_instance->getWithTemplate($file_list_template_proc);
+                                }
                             }
                         }
                     }
@@ -146,11 +200,6 @@ class WLPlugBagIt Extends BaseExternalExportPlugIn Implements IWLPlugExternalExp
             }
         }
         
-        // bag info
-        foreach($bag_info as $k => $v) {
-            // TODO: run keys and values through template processor
-            $bag->setBagInfoData($k, $t_instance->getWithTemplate($v));
-        }
         
         $bag->update();
         $bag->package("{$tmp_dir}/{$name}");

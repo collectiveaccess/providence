@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/Plugins/IWLPlugExternalExport.php : 
+ * app/lib/Plugins/IWLPlugExternalExportTransport.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 	
-interface IWLPlugExternalExport {
+interface IWLPlugExternalExportTransport {
 	# -------------------------------------------------------
 	# Initialization and state
 	# -------------------------------------------------------

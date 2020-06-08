@@ -152,6 +152,12 @@ class Configuration {
 			if (defined('__CA_DEFAULT_THEME_CONFIG_DIRECTORY__') && file_exists(__CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
 				$va_config_file_list[] = $vs_top_level_config_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
 			}
+			
+			// Appname-specific config overrides local config
+			$appname_specific_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.pathinfo($vs_config_filename, PATHINFO_FILENAME).'_'.__CA_APP_NAME__.'.'.pathinfo($vs_config_filename, PATHINFO_EXTENSION);
+			if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists($appname_specific_path)) {
+				$va_config_file_list[] = $vs_top_level_config_path = $appname_specific_path;
+			}
 		}
 		$o_config = ($vs_top_level_config_path === $this->ops_config_file_path) ? $this : Configuration::load($vs_top_level_config_path, false, false, true);
 
