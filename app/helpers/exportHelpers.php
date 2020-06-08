@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -200,10 +200,7 @@
 
 				$va_a_to_z = range('A', 'Z');
 
-				$workbook = new PHPExcel();
-
-				// more accurate (but slower) automatic cell size calculation
-				PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
+				$workbook = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 				$o_sheet = $workbook->getActiveSheet();
 				// mise en forme
@@ -213,28 +210,28 @@
 								'size' => 12,
 								'bold' => true),
 						'alignment'=>array(
-								'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-								'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+								'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+								'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 								'wrap' => true,
 								'shrinkToFit'=> true),
 						'borders' => array(
 								'allborders'=>array(
-										'style' => PHPExcel_Style_Border::BORDER_THICK)));
+										'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK)));
 				$cellstyle = array(
 						'font'=>array(
 								'name' => 'Arial',
 								'size' => 11,
 								'bold' => false),
 						'alignment'=>array(
-								'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
-								'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+								'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+								'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 								'wrap' => true,
 								'shrinkToFit'=> true),
 						'borders' => array(
 								'allborders'=>array(
-										'style' => PHPExcel_Style_Border::BORDER_THIN)));
+										'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)));
 
-				$o_sheet->getDefaultStyle()->applyFromArray($cellstyle);
+				$o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
 				$o_sheet->setTitle("CollectiveAccess");
 
 				$vn_line = 1;
@@ -280,7 +277,7 @@
 			
 								if (is_file($vs_path = $po_result->getMediaPath('ca_object_representations.media', $vs_version))) {
 									$image = "image".$vs_supercol.$vs_column.$vn_line;
-									$drawing = new PHPExcel_Worksheet_Drawing();
+									$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
 									$drawing->setName($image);
 									$drawing->setDescription($image);
 									$drawing->setPath($vs_path);
@@ -334,7 +331,7 @@
 					}
 				}
 
-				$o_writer = new PHPExcel_Writer_Excel2007($workbook);
+				$o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
 				$vs_filename = caGetOption('filename', $va_export_config[$vs_table][$ps_template], 'export_results');
 				$vs_filename = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $vs_filename);
 				header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -418,7 +415,7 @@
 				
 				$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
 				$o_writer->save('php://output');
-				return;
+				exit;
 				break;
 			case 'pdf':
 				//
@@ -427,9 +424,11 @@
 				caExportViewAsPDF($o_view, $va_template_info, (($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results')).'_'.date("Y-m-d").'.pdf', []);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
-		
-				return;
+				exit;
+				break;
 		}
+		
+		return null;
 	}
 	# ----------------------------------------
 	/**

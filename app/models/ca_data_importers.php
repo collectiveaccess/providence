@@ -771,7 +771,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_log = caGetImportLogger($pa_options);
 		
-		$o_excel = PHPExcel_IOFactory::load($ps_source);
+		$o_excel = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_source);
 		$o_sheet = $o_excel->getActiveSheet();
 		
 		$vn_row = 0;
@@ -795,7 +795,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$vn_row_num = $o_row->getRowIndex();
-			$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
+			$o_cell = $o_sheet->getCellByColumnAndRow(1, $vn_row_num);
 			$vs_mode = trim((string)$o_cell->getValue());
 			
 			switch(strtolower($vs_mode)) {
@@ -805,17 +805,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'mapping':
 				case 'constant':
-					$o_source = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
-					$o_dest = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_source = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_dest = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					
-					$o_group = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
-					$o_options = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
-					$o_refinery = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
-					$o_refinery_options = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
-					$o_orig_values = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
-					$o_replacement_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
-					$o_source_desc = $o_sheet->getCellByColumnAndRow(9, $o_row->getRowIndex());
-					$o_notes = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
+					$o_group = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
+					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
+					$o_refinery = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
+					$o_refinery_options = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
+					$o_orig_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
+					$o_replacement_values = $o_sheet->getCellByColumnAndRow(9, $o_row->getRowIndex());
+					$o_source_desc = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
+					$o_notes = $o_sheet->getCellByColumnAndRow(11, $o_row->getRowIndex());
 					
 					if (!($vs_group = trim((string)$o_group->getValue()))) {
 						$vs_group = '_group_'.md5((string)$o_source->getValue()."_{$vn_row}");
@@ -870,8 +870,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
 						if ($o_opt_sheet = $o_excel->getSheetByName($va_options['transformValuesUsingWorksheet'])) {
 							foreach ($o_opt_sheet->getRowIterator() as $o_sheet_row) {
-								if (!$vs_original_value = trim(mb_strtolower((string)$o_opt_sheet->getCellByColumnAndRow(0, $o_sheet_row->getRowIndex())))) { continue; }
-								$vs_replacement_value = trim((string)$o_opt_sheet->getCellByColumnAndRow(1, $o_sheet_row->getRowIndex()));
+								if (!$vs_original_value = trim(mb_strtolower((string)$o_opt_sheet->getCellByColumnAndRow(1, $o_sheet_row->getRowIndex())))) { continue; }
+								$vs_replacement_value = trim((string)$o_opt_sheet->getCellByColumnAndRow(2, $o_sheet_row->getRowIndex()));
 								$va_original_values[] = $vs_original_value;
 								$va_replacement_values[] = $vs_replacement_value;
 							}
@@ -913,8 +913,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					);
 					break;
 				case 'setting':
-					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
-					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_setting_name = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_setting_value = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					
 					switch($vs_setting_name = (string)$o_setting_name->getValue()) {
 						case 'inputTypes':		// older mapping worksheets use "inputTypes" instead of the preferred "inputFormats"
@@ -928,8 +928,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'rule':
-					$o_rule_trigger = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
-					$o_rule_action = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_rule_trigger = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_rule_action = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					
 					$vs_action_string = (string)$o_rule_action->getValue();
 					if (!($va_actions = json_decode($vs_action_string, true))) {
@@ -947,9 +947,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					break;
 				case 'environment':
-					$o_source = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
-					$o_env_var = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$o_options = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
+					$o_source = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_env_var = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
+					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
 					
 					$va_options = array();
 					if ($vs_options_json = (string)$o_options->getValue()) { 

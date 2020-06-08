@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,4 +80,3 @@ require_once(__CA_MODELS_DIR__.'/ca_tour_stops.php');
 		return $t_stop->load(array('tour_id' => $vn_tour_id, 'idno' => $ps_idno));
 	}
 	# ---------------------------------------
-?>

@@ -166,7 +166,7 @@ function caExtractMetadataWithGetID3($ps_filepath) {
  * @param string $ps_filepath file path
  * @param string $ps_mediainfo_path optional path to MediaInfo binary. If omitted the path configured in external_applications.conf is used.
  *
- * @return array Extracted metadata
+ * @return array|bool Array with extracted metadata or false if file cannot be read.
  */
 function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
 	if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }

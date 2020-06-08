@@ -43,6 +43,7 @@ class ExcelDataReader extends BaseDataReader {
 	private $opo_rows = null;
 	private $opa_row_buf = array();
 	private $opn_current_row = 0;
+	private $opn_max_columns = 512;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -54,7 +55,9 @@ class ExcelDataReader extends BaseDataReader {
 		$this->ops_display_name = _t('Excel XLS/XLSX');
 		$this->ops_description = _t('Reads Microsoft Excel XLSX files');
 		
-		$this->opa_formats = array('xlsx');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats     = array('xlsx');	// must be all lowercase to allow for case-insensitive matching
+		$config                = Configuration::load();
+		$this->opn_max_columns = $config->get('ca_max_columns_delimited_files')?: 512;
 	}
 	# -------------------------------------------------------
 	/**
@@ -68,7 +71,7 @@ class ExcelDataReader extends BaseDataReader {
 	public function read($ps_source, $pa_options=null) {
 		parent::read($ps_source, $pa_options);
 		try {
-			$this->opo_handle = PHPExcel_IOFactory::load($ps_source);
+			$this->opo_handle = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_source);
 			$this->opo_handle->setActiveSheetIndex(caGetOption('dataset', $pa_options, 0));
 			$o_sheet = $this->opo_handle->getActiveSheet();
 			$this->opo_rows = $o_sheet->getRowIterator();
@@ -104,14 +107,11 @@ class ExcelDataReader extends BaseDataReader {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
 			
-				$va_row = array();
-				$vb_val_was_set = false;
-				$vn_col = 0;
-				$vn_last_col_set = null;
+				$vn_col = 1;
 				foreach ($o_cells as $o_cell) {
-					if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
-						if (!($vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue()))))) {
-							if (!($vs_val = trim(PHPExcel_Style_NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
+					if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_cell)) {
+						if (!($vs_val = caGetLocalizedDate(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_cell->getValue()))))) {
+							if (!($vs_val = trim(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
 								$vs_val = trim((string)$o_cell->getValue());
 							}
 						}
@@ -119,18 +119,12 @@ class ExcelDataReader extends BaseDataReader {
 					} else {
 						$this->opa_row_buf[] = $vs_val = trim((string)self::getCellAsHTML($o_cell));
 					}
-					if (strlen($vs_val) > 0) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
-				
+
 					$vn_col++;
-				
-					if ($vn_col > 255) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
+					// max columns; some Excel files have *thousands* of "phantom" columns
+					if ($vn_col > $this->opn_max_columns) { break; }
 				}
-				
-				//if (!$vb_val_was_set) { 
-					//return $this->nextRow(); 
-				//	continue;
-				//}	// skip completely blank rows
-			
+
 				return $o_row;
 			}
 		}
@@ -138,10 +132,12 @@ class ExcelDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
-	 * 
+	 * Point current row to a new position into the file.
+	 * Row numbers are 1-based.
 	 * 
 	 * @param int $pn_row_num
 	 * @param array $pa_options
+	 *
 	 * @return bool
 	 */
 	public function seek($pn_row_num) {
@@ -162,7 +158,7 @@ class ExcelDataReader extends BaseDataReader {
 		
 		if(!is_numeric($pn_col)) {
 		    try {
-			    $pn_col = PHPExcel_Cell::columnIndexFromString($pn_col);
+			    $pn_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pn_col);
 			} catch(Exception $e) {
 			    throw new ApplicationException(_t('Invalid Excel (XLSX) column specified \'%1\'', $pn_col));
 			}
@@ -258,24 +254,24 @@ class ExcelDataReader extends BaseDataReader {
 	public static function getCellAsHTML($po_cell) {
 		$o_value = $po_cell->getValue();
 		
-		if ($o_value instanceof PHPExcel_RichText) {
+		if ($o_value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
 			$va_elements = $o_value->getRichTextElements();
 			
 			$va_values = [];
 			foreach($va_elements as $o_element) {
 				$vs_prefix = $vs_suffix = '';
-				if($o_element instanceof PHPExcel_RichText_Run) {
+				if($o_element instanceof \PhpOffice\PhpSpreadsheet\RichText\Run) {
 					$o_font = $o_element->getFont();
 					if ($o_font->getBold()) { $vs_prefix = "<b>"; $vs_suffix = "</b>"; }
 					if ($o_font->getItalic()) { $vs_prefix .= "<i>"; $vs_suffix = "</i>{$vs_suffix}"; }
 					if ($o_font->getSuperScript()) { $vs_prefix .= "<sup>"; $vs_suffix = "</sup>{$vs_suffix}"; }
 					if ($o_font->getSubScript()) { $vs_prefix .= "<sub>"; $vs_suffix = "</sub>{$vs_suffix}"; }
 					
-					// PHPExcel seems to report underline in all cases where italics are present (doh) so remove for now
+					// \PhpOffice\PhpSpreadsheet\Spreadsheet seems to report underline in all cases where italics are present (doh) so remove for now
 					//if ($o_font->getUnderline()) { $vs_prefix .= "<u>"; $vs_suffix = "</u>{$vs_suffix}"; }
 					if ($o_font->getStrikethrough()) { $vs_prefix .= "<strike>"; $vs_suffix = "</strike>{$vs_suffix}"; }
 					$va_values[] = $vs_prefix.$o_element->getText().$vs_suffix;
-				} elseif ($o_element instanceof PHPExcel_RichText_TextElement) {
+				} elseif ($o_element instanceof \PhpOffice\PhpSpreadsheet\RichText\TextElement) {
 					$va_values[] = $o_element->getText();
 				} 
 			}

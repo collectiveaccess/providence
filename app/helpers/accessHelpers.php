@@ -692,7 +692,7 @@ $g_source_access_level_cache = array();
 	 * @param mixed $pm_id A primary key value of the row, or an array of values to check. If a single integer value is provided then a boolean result will be returned; if an array of values is provided then an array will be returned with all ids that are readable
 	 * @param string $ps_bundle_name An optional bundle to check access for
 	 *
-	 * @return If $pm_id is an integer return true if user has read access, otherwise false if the user does not have access; if $pm_id is an array of ids, returns an array with all ids the are readable; returns null if one or more parameters are invalid
+	 * @return array If $pm_id is an integer return true if user has read access, otherwise false if the user does not have access; if $pm_id is an array of ids, returns an array with all ids the are readable; returns null if one or more parameters are invalid
 	 */
 	function caCanRead($pn_user_id, $pm_table, $pm_id, $ps_bundle_name=null, $pa_options=null) {
 		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);

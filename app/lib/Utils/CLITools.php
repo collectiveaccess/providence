@@ -71,7 +71,7 @@
 			
 			$vn_skip = (int)$po_opts->getOption('skip');
 			
-			$o_handle = PHPExcel_IOFactory::load($vs_filepath);
+			$o_handle = \PhpOffice\PhpSpreadsheet\IOFactory::load($vs_filepath);
 			$o_sheet = $o_handle->getActiveSheet();
 			
 			
@@ -91,9 +91,9 @@
 				$vn_col = 0;
 				foreach ($o_cells as $c => $o_cell) {
 					if($label = trim((string)$o_cell->getValue())) {
-						$item_value = (strlen($item_value_col)) ? $o_sheet->getCellByColumnAndRow($item_value_col-1, $vn_c)->getValue() : null;
-						$item_description = (strlen($item_desc_col)) ? $o_sheet->getCellByColumnAndRow($item_desc_col-1, $vn_c)->getValue() : null;
-						$np_labels = (strlen($np_label_col)) ? $o_sheet->getCellByColumnAndRow($np_label_col-1, $vn_c)->getValue() : null;
+						$item_value = (strlen($item_value_col)) ? $o_sheet->getCellByColumnAndRow($item_value_col, $vn_c)->getValue() : null;
+						$item_description = (strlen($item_desc_col)) ? $o_sheet->getCellByColumnAndRow($item_desc_col, $vn_c)->getValue() : null;
+						$np_labels = (strlen($np_label_col)) ? $o_sheet->getCellByColumnAndRow($np_label_col, $vn_c)->getValue() : null;
 							
 						if ($vn_col > $vn_last_level) {
 							$va_stack[] = &$va_stack[sizeof($va_stack)-1][sizeof($va_stack[sizeof($va_stack)-1]) - 1]['subitems'];
@@ -232,7 +232,7 @@
 			
 			$vn_skip = (int)$po_opts->getOption('skip');
 			
-			$o_handle = PHPExcel_IOFactory::load($vs_filepath);
+			$o_handle = \PhpOffice\PhpSpreadsheet\IOFactory::load($vs_filepath);
 			$o_sheet = $o_handle->getActiveSheet();
 			
 			

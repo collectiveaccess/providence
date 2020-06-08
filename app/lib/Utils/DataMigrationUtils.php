@@ -1289,6 +1289,7 @@
 		 * @param array $pa_options
 		 *		dontOutputLevel = 
 		 *		dontPrint =
+		 *		log = KLogger instance to log errors to. [Default is null]
 		 *
 		 * @return string
 		 */
@@ -1314,6 +1315,21 @@
 			
 			if (!isset($pa_options['dontPrint']) || !$pa_options['dontPrint']) {
 				print "{$vs_error}\n";
+			}
+			
+			if (isset($pa_options['log']) || ($log = $pa_options['log'])) {
+				switch($pn_level) {
+					case __CA_DATA_IMPORT_NOTICE__:
+						$log->logNotice($vs_error);
+						break;
+					case __CA_DATA_IMPORT_WARNING__:
+						$log->logWarn($vs_error);
+						break;
+					default:
+					case __CA_DATA_IMPORT_ERROR__:
+						$log->logError($vs_error);
+						break;
+				}
 			}
 			
 			return $vs_error;

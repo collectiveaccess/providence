@@ -68,9 +68,9 @@
 		jQuery(document).ready(function() {
 			jQuery('#".$ps_id_prefix.$t_item->tableNum()."_rel_batch_mode_select').change(function() {
 				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
-					jQuery('#".$ps_id_prefix.$t_item->tableNum()."_rel').slideUp(250);
+					jQuery('#{$ps_id_prefix}').slideUp(250);
 				} else {
-					jQuery('#".$ps_id_prefix.$t_item->tableNum()."_rel').slideDown(250);
+					jQuery('#{$ps_id_prefix}').slideDown(250);
 				}
 			});
 		});
@@ -239,7 +239,7 @@
 	 */
 	function caBatchGetMediaFilenameToIdnoRegexList($options=null) {
 		$o_config = Configuration::load();
-		$o_log = caGetOption('log', $pa_options, null);
+		$o_log = caGetOption('log', $options, null);
 		
 		$regex_list = $o_config->get(['media_filename_to_idno_matching', 'mediaFilenameToObjectIdnoRegexes']);
 		if (!is_array($regex_list)) { $regex_list = []; }
@@ -267,7 +267,7 @@
 	 */
 	function caBatchGetIdnoRegexList($options=null) {
 		$o_config = Configuration::load();
-		$o_log = caGetOption('log', $pa_options, null);
+		$o_log = caGetOption('log', $options, null);
 		
 		$regex_list = $o_config->get(['media_idno_rewrites', 'mediaObjectIdnoRegexes']);
 		if (!is_array($regex_list)) { $regex_list = []; }
@@ -295,7 +295,7 @@
 	 */
 	function caBatchGetMediaFilenameReplacementRegexList($options=null) {
 		$o_config = Configuration::load();
-		$o_log = caGetOption('log', $pa_options, null);
+		$o_log = caGetOption('log', $options, null);
 		
 		$regex_list = $o_config->get(['media_filename_rewrites', 'mediaFilenameReplacements']);
 		if (!is_array($regex_list)) { $regex_list = []; }

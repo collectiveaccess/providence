@@ -109,7 +109,7 @@ class MediaInfoDataReader extends BaseXMLDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {		
-		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
+		$ps_mediainfo_path = caGetExternalApplicationPath('mediainfo');
 		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
 	
 		parent::read($ps_source, $pa_options);
