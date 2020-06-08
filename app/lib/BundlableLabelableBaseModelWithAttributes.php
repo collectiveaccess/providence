@@ -1599,9 +1599,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				switch($ps_bundle_name) {
 					# -------------------------------
 					case 'ca_object_representations':
-						$pa_options['start'] = 0; $pa_options['limit'] = caGetOption('numPerPage', $pa_bundle_settings, 10);
-						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
-						break;
 					case 'ca_entities':
 					case 'ca_places':
 					case 'ca_occurrences':
@@ -1613,7 +1610,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_movements':
 					case 'ca_tour_stops':
 					case 'ca_sets':
-						if (($this->_CONFIG->get($ps_bundle_name.'_disable'))) { return ''; }		// don't display if master "disable" switch is set
+						if (($this->_CONFIG->get($ps_bundle_name.'_disable')) && ($ps_bundle_name !== 'ca_object_representations')) { return ''; }		// don't display if master "disable" switch is set
 						$pa_options['start'] = 0; $pa_options['limit'] = caGetOption('numPerPage', $pa_bundle_settings, 10);
 						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
 						break;
@@ -2827,9 +2824,25 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			);
 		}
 		
-		$o_view->setVar('object_collection_collection_ancestors', array()); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
+		$vs_object_collection_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type');
+		$vb_strict_type_hierarchy = $po_request->config->get($this->tableName().'_enforce_strict_type_hierarchy');
+	
+		$t_object = new ca_objects();
+		$t_rel = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $vs_object_collection_rel_type]);
+	
+		$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$ps_placement_code}{$ps_form_name}object_type_id", 
+			['id' => "{$ps_placement_code}{$ps_form_name}objectTypeList"], 
+			[	'childrenOfCurrentTypeOnly' => (bool)$vb_strict_type_hierarchy, 
+				'includeSelf' => !(bool)$vb_strict_type_hierarchy, 
+				'directChildrenOnly' => $vb_strict_type_hierarchy && ($vb_strict_type_hierarchy !== '~'),
+				'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
+				'dontIncludeSubtypesInTypeRestriction' => !$t_rel->get('ca_relationship_types.include_subtypes_left')
+			])));
+					
+		
+		$o_view->setVar('object_collection_collection_ancestors', []); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 		if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
-			$vs_object_collection_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type');
+				
 			// Is object part of a collection?
 			
 			$va_object_ids = array_keys($va_ancestor_list);
@@ -3667,11 +3680,14 @@ if (!$vb_batch) {
 						// the configuration for the element set and see if there are any elements in the set that we didn't get values for.
 						//
 						$va_sub_elements = $t_element->getElementsInSet($vn_element_set_id);
+						$isset = false;
 						foreach($va_sub_elements as $vn_i => $va_element_info) {
 							if ($va_element_info['datatype'] == 0) { continue; }
 							$vn_element_id = $va_element_info['element_id'];
 							
 							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
+							if(!$po_request->parameterExists($vs_k)) { continue; }
+							$vs_attr_val = $po_request->getParameter($vs_k, pString);
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
 									$va_val['_uploaded_file'] = true;
@@ -3679,9 +3695,10 @@ if (!$vb_batch) {
 									continue;
 								}
 							} 
-							$vs_attr_val = $po_request->getParameter($vs_k, pString);
 							$va_attr_update[$vn_element_id] = $vs_attr_val;
+							$isset = true;
 						}
+						if (!$isset) { continue; }
 						
 						$this->clearErrors();
 						$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, $vs_f, ['batch' => $vb_batch]);
