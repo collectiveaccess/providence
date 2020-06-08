@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,6 @@
     */ 
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
 
 abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 	# ------------------------------------------------
@@ -45,12 +44,12 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 	);
 
 	// plugin info
-	protected $info = array(
+	protected $info = [
 		"NAME" => "?",
-		"PROPERTIES" => array(
+		"PROPERTIES" => [
 			'id' => 'W'
-		)
-	);
+		]
+	];
 	
 	# ------------------------------------------------
 	/**
@@ -146,6 +145,97 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 			}
 			return caProcessTemplate($spec, $data);
 		}
+	}
+	# ------------------------------------------------
+	# Helpers
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function _processFiles($t_instance, $content_spec) {
+		$file_list = [];
+		$file_mimetypes = [];
+		$total_filesize = 0;
+		
+		if ($relative_to = caGetOption('relativeTo', $content_spec, null)) {
+			// TODO: support children, parent, hierarchy
+			$instance_list = $t_instance->getRelatedItems($relative_to, ['returnAs' => 'modelInstances']);
+		} else {
+			$instance_list = [$t_instance];
+		}
+		
+        $file_list_template = caGetOption('file_list_template', $target_options, '');
+        
+		$restrict_to_types = caGetOption('restrictToTypes', $content_spec, null);
+		$restrict_to_mimetypes = caGetOption('restrictToMimeTypes', $content_spec, null);
+		
+		foreach($instance_list as $t) {
+			if (is_array($restrict_to_types) && sizeof($restrict_to_types) && !in_array($t->getTypeCode(), $restrict_to_types)) { continue; }
+			foreach($content_spec['files'] as $get_spec => $export_filename_spec) {
+				$pathless_spec = preg_replace('!\.path$!', '', $get_spec);
+				if (!preg_match("!\.path$!", $get_spec)) { $get_spec .= ".path"; }
+				
+				$filenames = $t->get("{$pathless_spec}.filename",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+				$mimetypes = $t->get("{$pathless_spec}.mimetype",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+				$file_mod_times = $t->get("{$pathless_spec}.fileModificationTime",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+			   
+				$ids = $t->get("{$pathless_spec}.id", ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+				$files = $t->get($get_spec, ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
+				
+				$seen_files = [];
+				foreach($files as $i => $f) {
+					$m = $mimetypes[$i];
+					$t = $file_mod_times[$i];
+					if(is_array($restrict_to_mimetypes) && sizeof($restrict_to_mimetypes) && !sizeof(array_filter($restrict_to_mimetypes, function($v) use ($m) { return caCompareMimetypes($m, $v); }))) { continue; }
+				
+					$extension = pathinfo($f, PATHINFO_EXTENSION);
+					$original_basename = pathinfo($filenames[$i], PATHINFO_FILENAME);
+					$basename = pathinfo($f, PATHINFO_FILENAME);
+					
+					$e = $export_filename = self::processExportFilename($export_filename_spec, [
+						'extension' => $extension,
+						'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : null, 'original_basename' => $original_basename,
+						'filename' => "{$basename}.{$extension}", "basename" => $basename, 
+					]);
+					
+					$file_mimetypes[$m] = true;
+					
+					// Detect and rename duplicate file names
+					$c = 1;
+					while(isset($seen_files[$e]) && $seen_files[$e]) {
+						$e = pathinfo($export_filename, PATHINFO_FILENAME)."-{$c}.{$extension}";
+						$c++;
+					}
+					$total_filesize += ($fs = filesize($f));
+					
+					$seen_files[$export_filename] = true;
+					
+					$d = [
+						'path' => $f,
+						'name' => $e,
+						'filemodtime' => $t,					
+						'filename' =>  $original_basename ? "{$original_basename}.{$extension}" : "{$basename}.{$extension}",
+						'filesize_in_bytes' => $fs,
+						'filesize_for_display' => caHumanFilesize($fs),
+						'mimetype' => $m
+					];
+					if ($file_list_template && !isset($file_list[$export_filename])) {
+						$file_list_template_proc = caProcessTemplate($file_list_template, [
+						   'filename' =>  $original_basename ? "{$original_basename}.{$extension}" : "{$basename}.{$extension}",
+						   'filesize_in_bytes' => $fs,
+						   'filesize_for_display' => caHumanFilesize($fs),
+						   'mimetype' => $m
+						], ['skipTagsWithoutValues' => true]);
+						
+						$file_list[$export_filename] = $t_instance->getWithTemplate(caProcessTemplate($file_list_template, $d, ['skipTagsWithoutValues' => true]));
+					}
+					$d['file_list'] = $t_instance->getWithTemplate($file_list_template_proc);
+					
+					$file_list[$export_filename] = $d;
+				}
+			}
+		}
+		return ['fileList' => $file_list, 'totalFileSize' => $total_filesize, 'fileMimeTypes' => $file_mimetypes];
 	}
 	# ------------------------------------------------
 }

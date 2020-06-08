@@ -77,18 +77,18 @@ require_once(__CA_LIB_DIR__."/Db.php");
  	 *
  	 */
  	 public function getRecentChanges($pn_table_num, $pn_num_seconds=604800, $pn_limit=0) {	
-		return $this->_getChangeLogFromRawData($this->getRecentChangesAsRawData($pn_table_num, $pn_num_seconds, $pn_limit), $pn_table_num,  array('return_item_names' => true));
+		return $this->_getChangeLogFromRawData($this->getRecentChangesAsRawData($pn_table_num, $pn_num_seconds, $pn_limit, true), $pn_table_num,  array('return_item_names' => true));
 	}
  	# ----------------------------------------------------------------------
  	/**
  	 *
  	 */
- 	public function getRecentChangesAsRawData($pn_table_num, $pn_num_seconds=604800, $pn_limit=0) {	// 604800 = number of seconds in one week
+ 	public function getRecentChangesAsRawData($pn_table_num, $pn_num_seconds=604800, $pn_limit=0, $return_snapshot=false) {	// 604800 = number of seconds in one week
 		$o_db = new Db();
 		$qs_log = $o_db->prepare("
 			SELECT DISTINCT
 				wcl.log_id, wcl.log_datetime log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
-				 wcl.unit_id, wu.email, wu.fname, wu.lname, wcls.subject_table_num, wcls.subject_row_id /* wclsnap.snapshot, */
+				 wcl.unit_id, wu.email, wu.fname, wu.lname, wcls.subject_table_num, wcls.subject_row_id ".($return_snapshot ? " , wclsnap.snapshot" : "")."
 			FROM ".$this->ops_change_log_database."ca_change_log wcl
 			INNER JOIN ".$this->ops_change_log_database."ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
 			LEFT JOIN ".$this->ops_change_log_database."ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
