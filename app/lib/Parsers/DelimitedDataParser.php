@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,6 +56,11 @@
 		 * @mixed Parsed file input. For text files, a PHP file resource; for Excel files a \PhpOffice\PhpSpreadsheet\Spreadsheet row iterator instance.
 		 */ 
 		private $opr_file;
+		
+		/**
+		 * @string Path to the parsed file
+		 */
+		private $filepath;
 		
 		/**
 		 * @mixed \PhpOffice\PhpSpreadsheet\Spreadsheet instance.
@@ -157,6 +162,7 @@
 				if ($this->opr_file) { fclose($this->opr_file); }
 				if (!($this->opr_file = fopen($ps_filepath, "r"))) { return false; }
 			}
+			$this->filepath = $ps_filepath;
 			return true;
 		}
 		# ----------------------------------------
@@ -215,7 +221,9 @@
 				//
 				$this->opn_current_row++;
 				// Use fgetcsv to read file, it will handle delimiter, marker and escaping.
-				$this->opa_current_row = array_slice(fgetcsv($this->opr_file, 0, $this->getDelimiter(), $this->getTextMarker()), 0, $this->opn_max_columns);
+				$line = fgetcsv($this->opr_file, 0, $this->getDelimiter(), $this->getTextMarker());
+				if (!is_array($line)) { return false; }
+				$this->opa_current_row = array_slice($line, 0, $this->opn_max_columns);
 				return $this->opa_current_row;
 			}
 			return false;
@@ -241,6 +249,26 @@
 		 */
 		public function getRow() {
 			return $this->opa_current_row;
+		}
+		
+		# ----------------------------------------
+		/**
+		 * Count number of data rows in the file
+		 *
+		 * @return int
+		 */
+		public function numRows() {
+			if ($this->ops_type === 'xlsx') {
+				return $this->opo_excel->getActiveSheet()->getHighestRow();
+			} else {
+				$r = fopen($this->filepath, "r");
+				$count = 0;
+				while($line = fgetcsv($r, 0, $this->getDelimiter(), $this->getTextMarker())) {
+					$count++;
+				}
+				fclose($r);
+				return $count;
+			}
 		}
 		# ----------------------------------------
 		# Utilities
