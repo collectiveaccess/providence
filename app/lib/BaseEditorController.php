@@ -2627,6 +2627,7 @@ class BaseEditorController extends ActionController {
 
 		if(is_array($_FILES['files'])) {
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
+				if(!strlen($f)) { continue; }
 				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
 				
 				$md5 = md5_file($f);
