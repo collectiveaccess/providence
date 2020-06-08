@@ -72,7 +72,7 @@
 		 *
 		 */
 		public static function getViewerData($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
-		    $access_values = caGetUserAccessValues($this->request);
+		    $access_values = caGetUserAccessValues($po_request);
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
 				if ($t_instance = caGetOption('t_instance', $pa_data, null)) {
 				

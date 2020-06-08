@@ -78,7 +78,7 @@ require_once(__CA_LIB_DIR__.'/Controller/ActionController.php');
 require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
 require_once(__CA_APP_DIR__.'/lib/GarbageCollection.php');
-require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
+#require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
 
 
 require_once(__CA_LIB_DIR__."/Datamodel.php");
@@ -87,8 +87,6 @@ Datamodel::load();
 // initialize Tooltip manager
 TooltipManager::init();
 
-PHPExcel_Shared_Font::setTrueTypeFontPath(__CA_APP_DIR__.'/fonts/');
-PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
 
 spl_autoload_register(function ($class) {
     // Anything prefixed with "ca_" is a model

@@ -75,6 +75,14 @@ $_ca_attribute_settings['LengthAttributeValue'] = array(		// global
         'label' => _t('Require value'),
         'description' => _t('Check this option if you want an error to be thrown if this measurement is left blank.')
     ),
+    'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+	),
     'canBeUsedInSort' => array(
         'formatType' => FT_NUMBER,
         'displayType' => DT_CHECKBOXES,

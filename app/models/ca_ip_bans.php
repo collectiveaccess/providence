@@ -133,6 +133,10 @@ class ca_ip_bans extends BaseModel {
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = '';
 	
+	/**
+	 *
+	 */
+	private static $config;
 	
 	# ------------------------------------------------------
 	# Hierarchical table properties
@@ -178,7 +182,15 @@ class ca_ip_bans extends BaseModel {
 	/**
 	 *
 	 */
+	static public function init() {
+		if(!self::$config) { self::$config = Configuration::load("ban_hammer.conf"); }
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	static public function ban($request, $ttl=null, $reason=null) {
+		self::init();
 		if (!($ip = RequestHTTP::ip())) { return false; }
 		if (self::isWhitelisted()) { return false; } 
 		
@@ -195,6 +207,7 @@ class ca_ip_bans extends BaseModel {
 	 *
 	 */
 	static public function isBanned($request) {
+		self::init();
 		$ip = RequestHTTP::ip();
 		if(!($entries = self::find(['ip_addr' => $ip, 'expires_on' => null], ['returnAs' => 'count']))) {
 			$entries = self::find(['ip_addr' => $ip, 'expires_on' => ['>', time()]], ['returnAs' => 'count']);
@@ -209,6 +222,7 @@ class ca_ip_bans extends BaseModel {
 	 *
 	 */
 	static public function clean($options=null) {
+		self::init();
 		$db = new Db();
 		if (caGetOption('all', $options, false)) {
 			return $db->query("TRUNCATE TABLE ca_ip_bans");
@@ -220,6 +234,7 @@ class ca_ip_bans extends BaseModel {
 	 *
 	 */
 	static public function isWhitelisted($options=null) {
+		self::init();
 		if (!is_array($whitelist = self::$config->get('ip_whitelist')) || !sizeof($whitelist)) { return false; }
 		
 		$request_ip = RequestHTTP::ip();

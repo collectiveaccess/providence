@@ -771,7 +771,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_log = caGetImportLogger($pa_options);
 		
-		$o_excel = PHPExcel_IOFactory::load($ps_source);
+		$o_excel = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_source);
 		$o_sheet = $o_excel->getActiveSheet();
 		
 		$vn_row = 0;
@@ -795,7 +795,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$vn_row_num = $o_row->getRowIndex();
-			$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
+			$o_cell = $o_sheet->getCellByColumnAndRow(1, $vn_row_num);
 			$vs_mode = trim((string)$o_cell->getValue());
 			
 			switch(strtolower($vs_mode)) {
@@ -805,17 +805,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'mapping':
 				case 'constant':
-					$o_source = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
-					$o_dest = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_source = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_dest = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					
-					$o_group = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
-					$o_options = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
-					$o_refinery = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
-					$o_refinery_options = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
-					$o_orig_values = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
-					$o_replacement_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
-					$o_source_desc = $o_sheet->getCellByColumnAndRow(9, $o_row->getRowIndex());
-					$o_notes = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
+					$o_group = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
+					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
+					$o_refinery = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
+					$o_refinery_options = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
+					$o_orig_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
+					$o_replacement_values = $o_sheet->getCellByColumnAndRow(9, $o_row->getRowIndex());
+					$o_source_desc = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
+					$o_notes = $o_sheet->getCellByColumnAndRow(11, $o_row->getRowIndex());
 					
 					if (!($vs_group = trim((string)$o_group->getValue()))) {
 						$vs_group = '_group_'.md5((string)$o_source->getValue()."_{$vn_row}");
@@ -870,8 +870,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
 						if ($o_opt_sheet = $o_excel->getSheetByName($va_options['transformValuesUsingWorksheet'])) {
 							foreach ($o_opt_sheet->getRowIterator() as $o_sheet_row) {
-								if (!$vs_original_value = trim(mb_strtolower((string)$o_opt_sheet->getCellByColumnAndRow(0, $o_sheet_row->getRowIndex())))) { continue; }
-								$vs_replacement_value = trim((string)$o_opt_sheet->getCellByColumnAndRow(1, $o_sheet_row->getRowIndex()));
+								if (!$vs_original_value = trim(mb_strtolower((string)$o_opt_sheet->getCellByColumnAndRow(1, $o_sheet_row->getRowIndex())))) { continue; }
+								$vs_replacement_value = trim((string)$o_opt_sheet->getCellByColumnAndRow(2, $o_sheet_row->getRowIndex()));
 								$va_original_values[] = $vs_original_value;
 								$va_replacement_values[] = $vs_replacement_value;
 							}
@@ -913,8 +913,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					);
 					break;
 				case 'setting':
-					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
-					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_setting_name = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_setting_value = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					
 					switch($vs_setting_name = (string)$o_setting_name->getValue()) {
 						case 'inputTypes':		// older mapping worksheets use "inputTypes" instead of the preferred "inputFormats"
@@ -928,8 +928,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'rule':
-					$o_rule_trigger = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
-					$o_rule_action = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_rule_trigger = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_rule_action = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					
 					$vs_action_string = (string)$o_rule_action->getValue();
 					if (!($va_actions = json_decode($vs_action_string, true))) {
@@ -947,9 +947,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					break;
 				case 'environment':
-					$o_source = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
-					$o_env_var = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$o_options = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
+					$o_source = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_env_var = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
+					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
 					
 					$va_options = array();
 					if ($vs_options_json = (string)$o_options->getValue()) { 
@@ -1843,7 +1843,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					continue;
 				}
 				
-				$o_progress->next(_t("Importing %1", $vs_idno));
+				$o_progress->next(_t("Importing %1 [%2]", $vs_idno, caGetMemoryUsage()));
 			
 				if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 					$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, ca_data_importers::$s_num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, ca_data_importers::$s_num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors); 
@@ -3060,22 +3060,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				}
-			
-				// $t_subject->update(['queueIndexing' => true]);
-	// 
-	// 			if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Invalid %2; values were %3: ", $vs_idno, 'attributes', ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-	// 				ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-	// 				if ($vs_item_error_policy == 'stop') {
-	// 					$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-	// 					
-	// 					
-	// 					$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-	// 					
-	// 					if ($o_trans) { $o_trans->rollback(); }
-	// 					return false;
-	// 				}
-	// 			}
-	// 										
+									
 				$o_log->logDebug(_t('Finished inserting content tree for %1 at %2 seconds into database', $vs_idno, $t->getTime(4)));
 			
 				if(!$vb_output_subject_preferred_label && ($t_subject->getPreferredLabelCount() == 0)) {
@@ -3118,10 +3103,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	
 		if($log_general) { $o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_records_skipped, ca_data_importers::$s_num_import_errors)); }
 		
-		//if ($vb_show_cli_progress_bar) {
 		$o_progress->setDataForJobID(null, _t('Import complete'), ['numRecordsProcessed' => ca_data_importers::$s_num_records_processed, 'table' => $t_subject->tableName(), 'created' => $va_ids_created, 'updated' => $va_ids_updated]);
 		$o_progress->finish();
-		//}
+		
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, $vn_num_items, $vn_num_items, _t('Import completed'), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors);
 		}
