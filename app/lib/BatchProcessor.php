@@ -762,16 +762,21 @@
  				}
  				
  				// does representation already exist?
+ 				$use_existing_representation_id = null;
  				if (!$vb_allow_duplicate_media && ($t_dupe = ca_object_representations::mediaExists($vs_file))) {
- 					$va_notices[$vs_relative_directory.'/'.$f] = array(
-						'idno' => '',
-						'label' => $f,
-						'message' =>  $vs_msg = _t('Skipped %1 from %2 because it already exists %3', $f, $vs_relative_directory, $po_request ? caEditorLink($po_request, _t('(view)'), 'button', 'ca_object_representations', $t_dupe->getPrimaryKey()) : ''),
-						'file' => $f,
-						'status' => 'EXISTS'
-					);
-					$o_log->logInfo($vs_msg);
- 					continue;
+ 					if (!is_array($dupes_rel_ids = $t_dupe->get($t_instance->primaryKey(), ['returnAsArray' => true])) || (sizeof($dupes_rel_ids) === 0)) {
+ 						$use_existing_representation_id = $t_dupe->getPrimaryKey();
+ 					} else {
+						$va_notices[$vs_relative_directory.'/'.$f] = array(
+							'idno' => '',
+							'label' => $f,
+							'message' =>  $vs_msg = _t('Skipped %1 from %2 because it already exists %3', $f, $vs_relative_directory, $po_request ? caEditorLink($po_request, _t('(view)'), 'button', 'ca_object_representations', $t_dupe->getPrimaryKey()) : ''),
+							'file' => $f,
+							'status' => 'EXISTS'
+						);
+						$o_log->logInfo($vs_msg);
+						continue;
+					}
  				}
 
 				$t_instance = Datamodel::getInstance($vs_import_target, false);
@@ -942,12 +947,16 @@
 					// found existing object
 					$t_instance->setMode(ACCESS_WRITE);
 
-					$t_new_rep = $t_instance->addRepresentation(
-						$vs_directory.'/'.$f, $vn_rep_type_id, // path
-						$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, // locale, status, access, primary
-						array('idno' => $vs_rep_idno), // values
-						array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
-					);
+					if ($use_existing_representation_id) {
+						$t_instance->addRelationship('ca_object_representations', $use_existing_representation_id, $vn_rel_type_id);
+					} else {
+						$t_new_rep = $t_instance->addRepresentation(
+							$vs_directory.'/'.$f, $vn_rep_type_id, // path
+							$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, // locale, status, access, primary
+							array('idno' => $vs_rep_idno), // values
+							array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
+						);
+					}
 
 					if ($t_instance->numErrors()) {
 						$o_eventlog->log(array(
