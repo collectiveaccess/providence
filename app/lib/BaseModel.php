@@ -11647,7 +11647,7 @@ $pa_options["display_form_field_tips"] = true;
 						if (is_null($vm_value) && !$t_instance->getFieldInfo($vs_field, 'IS_NULL')) { $vs_op = '='; }
 					}
 					
-					if (is_null($vm_value)) {
+					if (is_null($vm_value) || ($vs_op === 'IS')) {
 						if ($vs_op !== '=') { $vs_op = 'IS'; }
 						$va_sql_wheres[] = "({$vs_field} {$vs_op} NULL)";
 					} elseif (is_array($vm_value) && sizeof($vm_value)) {

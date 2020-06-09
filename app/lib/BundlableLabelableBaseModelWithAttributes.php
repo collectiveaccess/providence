@@ -2836,7 +2836,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				'includeSelf' => !(bool)$vb_strict_type_hierarchy, 
 				'directChildrenOnly' => $vb_strict_type_hierarchy && ($vb_strict_type_hierarchy !== '~'),
 				'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
-				'dontIncludeSubtypesInTypeRestriction' => !$t_rel->get('ca_relationship_types.include_subtypes_left')
+				'dontIncludeSubtypesInTypeRestriction' => $t_rel ? !$t_rel->get('ca_relationship_types.include_subtypes_left') : null
 			])));
 					
 		
