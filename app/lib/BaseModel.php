@@ -741,18 +741,36 @@ class BaseModel extends BaseObject {
 			||
 			((sizeof($va_tmp) === 1) && in_array($va_tmp[0], array('created', 'lastModified'))) 
 		)  {
+			$va_data = (in_array('lastModified', $va_tmp, true)) ? $this->getLastChangeTimestamp() : $this->getCreationTimestamp();
+			if ($va_tmp[0] !== $this->tableName()) { array_unshift($va_tmp, $this->tableName()); }
+			$vs_subfield = (isset($va_tmp[2]) && isset($va_data[$va_tmp[2]])) ? $va_tmp[2] : null;
 			if ($vb_return_as_array) {
-				return ($va_tmp[1] == 'lastModified') ? $this->getLastChangeTimestamp() : $this->getCreationTimestamp();
-			} else {
-				$va_data = ($va_tmp[1] == 'lastModified') ? $this->getLastChangeTimestamp() : $this->getCreationTimestamp();
-				$vs_subfield = (isset($va_tmp[2]) && isset($va_data[$va_tmp[2]])) ? $va_tmp[2] : 'timestamp';
-				
-				$vm_val = $va_data[$vs_subfield];
-		
-				if ($vs_subfield == 'timestamp') {
+				if($vs_subfield) {
+					$vm_val = [$va_data[$vs_subfield]];
+				} elseif($vb_return_with_structure) {
+					$vm_val = $va_data;
+				} else {
 					$o_tep = new TimeExpressionParser();
-					$o_tep->setUnixTimestamps($vm_val, $vm_val);
-					$vm_val = $o_tep->getText($pa_options);
+					$o_tep->setUnixTimestamps($va_data['timestamp'], $va_data['timestamp']);
+					$vm_val = [$o_tep->getText($pa_options)];
+				}
+				return $vm_val;
+			} else {
+				switch($vs_subfield) {
+					case 'user':
+					case 'fname':
+					case 'lname':
+					case 'email':
+						$vm_val = $va_data[$vs_subfield];
+						break;
+					case 'timestamp':
+						// noop
+						break;
+					default:
+						$o_tep = new TimeExpressionParser();
+						$o_tep->setUnixTimestamps($va_data['timestamp'], $va_data['timestamp']);
+						$vm_val = $o_tep->getText($pa_options);
+						break;
 				}
 				return $vm_val;
 			}
@@ -6625,8 +6643,11 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
+				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
-				'timestamp' => $qr_res->get('log_datetime')
+				'timestamp' => $qr_res->get('log_datetime'),
+				'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),
+				'datetime' => caGetLocalizedDate($qr_res->get('log_datetime'))
 			);
 		}
 		
@@ -6668,8 +6689,11 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
+				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
 				'email' => $qr_res->get('email'),
-				'timestamp' => $qr_res->get('log_datetime')
+				'timestamp' => $qr_res->get('log_datetime'),
+				'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),
+				'datetime' => caGetLocalizedDate($qr_res->get('log_datetime'))
 			);
 		}
 		

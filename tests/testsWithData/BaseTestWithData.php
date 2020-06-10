@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,13 +60,15 @@ abstract class BaseTestWithData extends TestCase {
 	 * Inserts test data set by implementation
 	 */
 	protected function setUp() : void {
-		global $g_request;
+		global $g_request, $AUTH_CURRENT_USER_ID;
 		$vo_response = new ResponseHTTP();
 		$g_request = $this->opo_request = new RequestHTTP($vo_response);
-
+		
+		// Set user_id to ensure change log contains user info used by some tests
+		$AUTH_CURRENT_USER_ID = 1;	// 1=administrator
 		define('__CA_APP_TYPE__', 'PROVIDENCE');
 
-		// make sure there are no side-effects caused by lingering recods
+		// make sure there are no side-effects caused by lingering records
 		if($this->opb_care_about_side_effects) {
 			$this->checkRecordCounts();
 		}
