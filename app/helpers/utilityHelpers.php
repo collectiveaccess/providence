@@ -830,8 +830,8 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	function caMakeGetFilePath($ps_prefix=null, $ps_extension=null) {
- 		$vs_path = caGetTempDirPath();
+	function caMakeGetFilePath($ps_prefix=null, $ps_extension=null, $options=null) {
+ 		$vs_path = caGetTempDirPath($options);
 
 		do {
 			$vs_file_path = $vs_path.DIRECTORY_SEPARATOR.$ps_prefix.mt_rand().getmypid().($ps_extension ? ".{$ps_extension}" : "");
