@@ -60,12 +60,19 @@ class ExpressionParserTest extends TestCase {
 	public function testIn() {
 		$this->assertTrue(ExpressionParser::evaluate('"Seth" IN ["Julia", "Sophie", "Maria", "Seth"]'));
 		$this->assertFalse(ExpressionParser::evaluate('"Joe" IN ["Julia", "Sophie", "Maria", "Seth"]'));
+		$this->assertFalse(ExpressionParser::evaluate('"Joe" in ["Julia", "Sophie", "Maria", "Seth"]'));
 		$this->assertFalse(ExpressionParser::evaluate("'Joe' IN ['Julia', 'Sophie', 'Maria', 'Seth']"));
+		$this->assertFalse(ExpressionParser::evaluate("'Joe' in ['Julia', 'Sophie', 'Maria', 'Seth']"));
+		
+		$this->assertTrue(ExpressionParser::evaluate("'Joe' NOT IN ['Julia', 'Sophie', 'Maria', 'Seth']"));
+		$this->assertTrue(ExpressionParser::evaluate("'Joe' not in ['Julia', 'Sophie', 'Maria', 'Seth']"));
 	}
 
 	public function testAndOr() {
 		$this->assertFalse(ExpressionParser::evaluate('(5 > 10) AND ("seth" = "seth")'));
+		$this->assertFalse(ExpressionParser::evaluate('(5 > 10) and ("seth" = "seth")'));
 		$this->assertTrue(ExpressionParser::evaluate('(5 > 10) OR ("seth" = "seth")'));
+		$this->assertTrue(ExpressionParser::evaluate('(5 > 10) or ("seth" = "seth")'));
 
 		$this->assertFalse(ExpressionParser::evaluate('(5 = 10) AND ("seth" = "seth") AND (6 > 1)'));
 		$this->assertTrue(ExpressionParser::evaluate('(5 = 5) AND ("seth" = "seth") AND (6 > 1)'));
