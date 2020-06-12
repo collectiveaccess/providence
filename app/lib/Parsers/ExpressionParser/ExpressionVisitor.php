@@ -443,6 +443,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				$token = $po_element->getValueToken();
 				$out = null;
 
+				
 				switch($token) {
 					case 'id':
 						return $value;

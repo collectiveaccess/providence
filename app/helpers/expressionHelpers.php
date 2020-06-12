@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -118,7 +118,6 @@ function caCalculateDateRangeAvgInDays() {
 
 	foreach($va_date_ranges as $vs_date_range) {
 		if(!$o_tep->parse($vs_date_range)) {
-			print "no parse $vs_date_range";
 			return false;
 		}
 
@@ -140,5 +139,19 @@ function caCalculateDateRangeAvgInDays() {
 	} else {
 		return false;
 	}
+}
+# ---------------------------------------
+/**
+ * Return true if date expression is a range rather than a single date
+ * @return bool
+ */
+function caDateIsRange($date_expression) {
+	$o_tep = new TimeExpressionParser();
+	if($o_tep->parse($date_expression)) {
+		$va_arg_historic_stamps = $o_tep->getHistoricTimestamps();
+		$v = $o_tep->getText(['dateFormat' => 'iso8601']);
+		return (strpos($v, '/') !== false);
+	}
+	return false;
 }
 # ---------------------------------------
