@@ -280,7 +280,7 @@
 		$va_img_attr = array('border' => '0');
 		if (!$pb_no_background) {
 			$vs_tag .= "<span class='form-button '>";
-			$vn_padding = ($ps_content) ? 10 : 0;
+			$vn_padding = ($ps_content) ? 5 : 0;
 			$va_img_attr['class'] = 'form-button-left';
 			$va_img_attr['style'] = "padding-right: {$vn_padding}px;";
 		}
@@ -494,7 +494,7 @@
 		
 		if (!$pb_no_background) { 
 			$vs_button .= "<span class='form-button'>"; 
-			$vn_padding = ($ps_content) ? 10 : 0;
+			$vn_padding = ($ps_content) ? 5 : 0;
 		} else {
 			$vn_padding = 0;
 		}	
@@ -565,7 +565,7 @@
 		$vs_button = "<a ".join(' ', $va_attr).">";
 		if (!$pb_no_background) { 
 			$vs_button .= "<span class='form-button'>"; 
-			$vn_padding = ($ps_content) ? 10 : 0;
+			$vn_padding = ($ps_content) ? 5 : 0;
 		} else {
 			$vn_padding = 0;
 		}	

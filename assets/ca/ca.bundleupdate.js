@@ -78,14 +78,15 @@ var caBundleUpdateManager = null;
 		that._reload = function(b, options) {
 			if (b) {
 				jQuery.each(b, function(k, v) {
-					var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + v.bundle + "/placement_id/" + v.placement_id;
+					for(var i in v) {
+						var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + v[i].bundle + "/placement_id/" + v[i].placement_id;
 					
-					if (options) { 
-					    for(var k in options) {
-					        loadURL += "/" + k + "/" + options[k];
-					    }
+						if (options) { 
+							for(var k in options) {
+								loadURL += "/" + k + "/" + options[k];
+						}
+						jQuery("#" + v[i].id).load(loadURL);
 					}
-					jQuery("#" + v.id).load(loadURL);
 				});
 			}
 		}
