@@ -84,6 +84,9 @@
 %token  in_op     IN|in
 %token  notin_op  NOT\ IN|not\ in
 
+%token true true|TRUE
+%token false false|FALSE
+
 // Variables
 %token  variable  \^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|[0-9]+(?=[.,;])|[A-Za-z0-9_\.:\/]+[%]{1}[^\w\^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+\]|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)
 
@@ -152,6 +155,8 @@ scalar:
   | (<string> ( ::plus:: #stradd scalar())?)
   | (<string_single_quote> ( ::plus:: #stradd scalar())?)
   | <variable>
+  | <true>
+  | <false>
 
 primary:
     secondary() ( ::minus:: #substraction scalar() )?
