@@ -1,0 +1,28 @@
+{
+  "name": "CollectiveAccess/Providence",
+  "version": "0.7.9",
+  "description": "[![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "@uppy/core": "^1.10.5",
+    "@uppy/dashboard": "^1.9.0",
+    "@uppy/tus": "^1.5.13"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CollectiveAccess/providence.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CollectiveAccess/providence/issues"
+  },
+  "homepage": "https://github.com/CollectiveAccess/providence#readme"
+}
