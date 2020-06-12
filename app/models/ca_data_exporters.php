@@ -1976,7 +1976,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					foreach ($va_values as $vo_val) {
 					    if ($vo_val->getElementCode() !== $vs_source)  { continue; }
 					
-						$va_display_val_options = array();
+						$va_display_val_options = is_array($va_get_options) ? $va_get_options : []; 
 						switch($vo_val->getDatatype()) {
 							case __CA_ATTRIBUTE_VALUE_LIST__: //if ($vo_val instanceof ListAttributeValue) {
 								// figure out list_id -- without it we can't pull display values
