@@ -2683,7 +2683,9 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function ReturnToHomeLocations($options=null) {
-		if(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
+		if(!$this->request->user->canDoAction("can_edit_ca_objects")) {
+			$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
+		} elseif(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
 			$resp = ['ok' => 0, 'message' => _t('No policies configured'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
 		} else {
 			$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
@@ -2691,63 +2693,76 @@ class BaseEditorController extends ActionController {
 			$updated = $already_home = $errors = [];
 			$msg = '';
 			if(is_array($policies) && sizeof($policies)) {
+				$primary_table = $this->request->getParameter('table', pString);
+				$primary_id = $this->request->getParameter('id', pString);
 		
-				$object_ids = array_map(function($v) { return (int)$v; }, explode(';',$this->request->getParameter('ids', pString)));
+				if (!($primary = Datamodel::getInstance($primary_table))) {
+					throw new ApplicationException(_t('Invalid table'));
+				}
+				if (!$primary->load($primary_id)) {
+					throw new ApplicationException(_t('Invalid id'));
+				}
+				if (!$primary->isReadable($this->request)) {
+					throw new ApplicationException(_t('Access denied'));
+				}
+				$object_ids = $primary->get('ca_objects.related.object_id', ['returnAsArray' => true]);
 		
-				$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
+				if(is_array($object_ids) && sizeof($object_ids)) {
+					$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
 				
-				while($qr_objects->nextHit()) {
-					$object_id = $qr_objects->getPrimaryKey();
-					$t_object = $qr_objects->getInstance();
+					while($qr_objects->nextHit()) {
+						$object_id = $qr_objects->getPrimaryKey();
+						$t_object = $qr_objects->getInstance();
 		
-					if (!($location_id = $t_object->get('home_location_id'))) { continue; }
-					if (!$t_object->isSaveable($this->request)) { continue; }
+						if (!($location_id = $t_object->get('home_location_id'))) { continue; }
+						if (!$t_object->isSaveable($this->request)) { continue; }
 	
-					foreach($policies as $n => $p) {
-						if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
+						foreach($policies as $n => $p) {
+							if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
 						
-						$pe = $p['elements']['ca_storage_locations'];
-						$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
-						if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
+							$pe = $p['elements']['ca_storage_locations'];
+							$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
+							if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
 						
-						// Interstitials?
-						$effective_date = null;
-						$interstitial_values = [];
-						if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
-							foreach($interstitial_elements as $e) {
-								switch($e) {
-									case 'effective_date':
-										$effective_date = 'today';
-										break;
+							// Interstitials?
+							$effective_date = null;
+							$interstitial_values = [];
+							if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
+								foreach($interstitial_elements as $e) {
+									switch($e) {
+										case 'effective_date':
+											$effective_date = _t('today');
+											break;
+									}
 								}
 							}
-						}
 						
-						if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
-							$already_home[] = $object_id;
-							continue;
-						}
+							if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
+								$already_home[] = $object_id;
+								continue;
+							}
 						
-						$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
-						ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
+							$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
+							ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
 		
-						if($t_object->numErrors() > 0) {
-							$errors[] = $object_id;
-						} else {
-							$updated[] = $object_id;
+							if($t_object->numErrors() > 0) {
+								$errors[] = $object_id;
+							} else {
+								$updated[] = $object_id;
+							}
 						}
-					}
-				}	
-				$n = sizeof($updated);
-				$h = sizeof($already_home);
+					}	
+					$n = sizeof($updated);
+					$h = sizeof($already_home);
 				
-				if($h > 0) {
-					$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $h);
-				} else {
-					$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'));
-				}
-				if (sizeof($errors)) {
-					$msg .= '; '._t('%1 errors', sizeof($errors));
+					if($h > 0) {
+						$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $h);
+					} else {
+						$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'));
+					}
+					if (sizeof($errors)) {
+						$msg .= '; '._t('%1 errors', sizeof($errors));
+					}
 				}
 				$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
 			} else {

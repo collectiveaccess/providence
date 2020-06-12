@@ -3419,7 +3419,25 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$sort_direction = caGetOption('sortDirection', $pa_options, null);
 		
 		$va_sort_fields = array_map(function($v) { return mb_strtolower($v); }, $va_sort_fields);
-		return _t('Sort using %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", array_flip($va_sort_fields), ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 'id' => "{$ps_id_prefix}_RelationBundleSortControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], ['value' => $sort]), caHTMLSelect("{$ps_id_prefix}_RelationBundleSortDirectionControl", [_t('↑') => 'ASC', _t('↓') => 'DESC'], ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val())", 'id' => "{$ps_id_prefix}_RelationBundleSortDirectionControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], ['value' => strtoupper($sort_direction)]));
+		return "<div class='editorBundleSortControl'>"._t('Sort using %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", 
+				array_flip($va_sort_fields), 
+				[
+					'onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 
+					'id' => "{$ps_id_prefix}_RelationBundleSortControl", 
+					'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], 
+				['value' => $sort]
+			), 
+			caHTMLSelect(
+				"{$ps_id_prefix}_RelationBundleSortDirectionControl", 
+				[_t('↑') => 'ASC', _t('↓') => 'DESC'], 
+				[
+					'onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val())", 
+					'id' => "{$ps_id_prefix}_RelationBundleSortDirectionControl", 
+					'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'
+				], 
+				['value' => strtoupper($sort_direction)]
+			)
+		)."</div>";
 	}
 	# ---------------------------------------
 	/** 
@@ -3433,11 +3451,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$settings = ca_objects::policy2bundleconfig(['policy' => $ps_policy]);
 		$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
 		
-		$ids = array_map(function($v) { return $v['object_id']; }, $pa_initial_values);
-		
-		$vs_buf = "<div class='editorBundleReturnToHomeControl'>".
+		$vs_buf = "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_button' class='editorBundleReturnToHomeControl'>".
 			caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return to home locations"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 			"</div>";
+			
+		$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls_message' class='editorBundleReturnToHomeControlsMessage'></div>\n";
+			
+		$primary_table = $pt_primary->tableName();
+		$primary_id = $pt_primary->getPrimaryKey();
 			
 		$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls' class='editorBundleReturnToHomeControls'>".
 			ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($po_request, $ps_id_prefix, $pt_related->tableName(), $settings, ['placement_code' => $ps_id_prefix, 'noTemplate' => true]).
@@ -3450,25 +3471,31 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				}
 				function caReturnToHomeLocation{$ps_id_prefix}() {
 					var interstitials = ".json_encode($interstitials).";
-					var data = { 'ids': '".join(';', $ids)."', 'policy': '{$ps_policy}'};
+					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy': '{$ps_policy}'};
 					for(var i in interstitials) {
-						console.log('#{$ps_id_prefix}_ca_storage_locations__' + interstitials[i]);
 						data[interstitials[i]] = jQuery('#{$ps_id_prefix}_ca_storage_locations__' + interstitials[i]).val();
 					}
 					
+					jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_button').hide();
 					jQuery.post('".caNavUrl($po_request, '*', '*', 'ReturnToHomeLocations')."', data, function(data) {
-							jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_controls').slideUp(250);
-							var e = jQuery('#{$ps_id_prefix}_return_to_home_locations').parent();
+							jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_controls').hide();
+							var e = jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_controls_message');
 							if(data && (data.ok == 1)) {
-								jQuery(e).html(data.message);
+								jQuery(e).html(data.message).show();
 							} else if(data) {
-								jQuery(e).html('Error: ' + data.message);
+								jQuery(e).html('Error: ' + data.message).show(250);
+								jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_button').show();
 							}
 							
-							setTimeout(function() { jQuery(e).fadeOut(250);}, 5000);
+							setTimeout(function() { 
+								jQuery(e).fadeOut(250);
+							}, 5000);
 							if(caBundleUpdateManager) { 
-								caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
-								caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
+								setTimeout(function() { 
+									caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
+									caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
+									caBundleUpdateManager.reloadBundle('ca_objects'); 
+								}, 3000);
 							}
 					}, 'json');
 				}
