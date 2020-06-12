@@ -937,7 +937,7 @@
 									$va_attr_vals['lot_status_id'] = $va_val['_status'];
 								}
 								unset($va_val['_status']);
-								$vn_item_id = DataMigrationUtils::getObjectLotID($va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item, $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
+								$vn_item_id = DataMigrationUtils::getObjectLotID($va_val['idno_stub'] ? $va_val['idno_stub'] : $vs_item, $va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
 								break;
 							case 'ca_entities':
 								$n = $va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item;
