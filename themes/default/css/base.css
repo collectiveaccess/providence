@@ -1243,7 +1243,7 @@ div.formLabelUploadSizeNote {
 	font-size:11px;
 	line-height:1em;
 }
-.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select{
+.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
 	position:relative;
 	padding-top:0px;
 	padding-bottom:0px;
@@ -1253,13 +1253,19 @@ div.formLabelUploadSizeNote {
 	height: 17px;
 	vertical-align: top;
 }
-.bundleSubLabel .editorBundlePrintControl{
+.bundleSubLabel .editorBundlePrintControl {
 	float:right;
 	text-align:right;
 	font-size:11px;
 	line-height:1em;
 }
-.bundleSubLabel .editorBundlePrintControl a.form-button, .bundleSubLabel .editorBundleReturnToHomeControl a.form-button{
+.bundleSubLabel .editorBundleSortControl{
+	float:left;
+	text-align:left;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel .editorBundlePrintControl a.form-button, .bundleSubLabel .editorBundleReturnToHomeControl a.form-button, .bundleSubLabel .editorBundleSortControl a.form-button{
 	height:auto;
 	vertical-align:top;
 	padding:0px;
@@ -1275,8 +1281,13 @@ div.formLabelUploadSizeNote {
 	width: 692px;
 }
 
+.editorBundleReturnToHomeControlsMessage {
+	display: none;
+	padding: 5px 5px 15px 0px;
+	font-size: 12px;
+}
+
 .bundleSubLabel .editorBundleReturnToHomeControl{
-	float:left;
 	text-align:left;
 	font-size:11px;
 	line-height:1em;
@@ -3035,19 +3046,6 @@ a.editorFieldListLink {
 #editorFieldListHTML {
     display: none;
 }
-
-/*div.editorBundlePrintControl {
-    position: absolute; 
-    top: 2px; 
-    right: 27px;
-}
-
-div.editorBundlePrintControl select {
-    font-size: 9px;
-    font-weight: normal;
-    height: 17px;
-    vertical-align: top;
-}*/
 
 #caHierarchyOverviewHeader {
     font-size: 13px;
