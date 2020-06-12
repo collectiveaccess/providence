@@ -84,6 +84,7 @@ var caBundleUpdateManager = null;
 						if (options) { 
 							for(var k in options) {
 								loadURL += "/" + k + "/" + options[k];
+							}
 						}
 						jQuery("#" + v[i].id).load(loadURL);
 					}
