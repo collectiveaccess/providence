@@ -1864,8 +1864,7 @@
 			$t_attr = new ca_attributes();
 			$t_attr->purify($this->purify());
 			
-			$va_element_codes = array();
-			$va_elements_by_container = array();
+			$va_element_codes = $va_elements_by_container = [];
 			
 			if (sizeof($va_element_set) > 1) {
 				$vs_format = isset($pa_options['multivalueFormat']) ? $pa_options['multivalueFormat'] : null;
@@ -1879,6 +1878,7 @@
 			foreach($va_element_set as $va_element) {
 				$va_override_options = array();
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
+					unset($pa_options['name']);
 					continue;
 				}
 				
