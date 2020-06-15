@@ -325,7 +325,7 @@ class Datamodel {
 		if(Datamodel::$opo_graph->hasNode($ps_table)) {
 			if(!MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
 				if (file_exists(__CA_MODELS_DIR__.'/'.$ps_table.'.php')) {
-					require_once(__CA_MODELS_DIR__.'/'.\$ps_table.'.php'); # class file name has trailing '.php'
+					require_once(__CA_MODELS_DIR__.'/'.$ps_table.'.php'); # class file name has trailing '.php'
 				}
 				else {
 					$o_app_plugin_manager = new ApplicationPluginManager();
@@ -359,8 +359,8 @@ class Datamodel {
 			}
 
 			if(!MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
-				if (file_exists(__CA_MODELS_DIR__.'\/'.\$vs_class_name.'.php')) {
-					require_once(__CA_MODELS_DIR__.'\/'.\$vs_class_name.'.php'); # class file name has trailing '.php'
+				if (file_exists(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php')) {
+					require_once(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php'); # class file name has trailing '.php'
 				}
 				else {
 					$o_app_plugin_manager = new ApplicationPluginManager();
