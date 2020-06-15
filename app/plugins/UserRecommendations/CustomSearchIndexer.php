@@ -34,7 +34,7 @@
  *
  */
 
-require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
+require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
 
 class CustomSearchIndexer extends SearchIndexer {
 	# ------------------------------------------------
@@ -46,7 +46,7 @@ class CustomSearchIndexer extends SearchIndexer {
 	/**
 	 * @var null|ca_search_indexing_queue
 	 */
-    private $opo_search_indexing_queue = null;
+	private $opo_search_indexing_queue = null;
     
 	# ------------------------------------------------
 	/**
@@ -61,7 +61,7 @@ class CustomSearchIndexer extends SearchIndexer {
 
 		$this->opo_metadata_element = new ca_metadata_elements();
 		$this->opo_search_indexing_queue = new ca_search_indexing_queue();
-    }
+	}
     
 	# ------------------------------------------------
 	/**
