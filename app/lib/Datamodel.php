@@ -38,6 +38,8 @@ require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_LIB_DIR__."/Utils/Graph.php");
 
+# Custom Import
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
 class Datamodel {
 	# --------------------------------------------------------------------------------------------
@@ -83,6 +85,15 @@ class Datamodel {
 				Datamodel::$opo_graph->addAttribute("num", $vn_num, $vs_table);
 				Datamodel::$opo_graph->addNode("t#".$vn_num);
 				Datamodel::$opo_graph->addAttribute("name", $vs_table, "t#".$vn_num);
+			}
+			
+			# Add models from plugins
+			$o_app_plugin_manager = new ApplicationPluginManager();
+			if ($plugin_new_model = $o_app_plugin_manager->hookNewModel()) {
+				Datamodel::$opo_graph->addNode($plugin_new_model['table_name']);
+				Datamodel::$opo_graph->addAttribute("num", $plugin_new_model['table_num'], $plugin_new_model['table_name']);
+				Datamodel::$opo_graph->addNode("t#".$plugin_new_model['table_num']);
+				Datamodel::$opo_graph->addAttribute("name", $plugin_new_model['table_name'], $plugin_new_model['table_num']);
 			}
 			
 			# add relationships
@@ -313,8 +324,17 @@ class Datamodel {
 		
 		if(Datamodel::$opo_graph->hasNode($ps_table)) {
 			if(!MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
-				if (!file_exists(__CA_MODELS_DIR__.'/'.$ps_table.'.php')) { return null; }
-				require_once(__CA_MODELS_DIR__.'/'.$ps_table.'.php'); # class file name has trailing '.php'
+				if (file_exists(__CA_MODELS_DIR__.'/'.$ps_table.'.php')) {
+					require_once(__CA_MODELS_DIR__.'/'.\$ps_table.'.php'); # class file name has trailing '.php'
+				}
+				else {
+					$o_app_plugin_manager = new ApplicationPluginManager();
+					if ($plugin_new_model = $o_app_plugin_manager->hookNewModel()) {
+						if($ps_table == $plugin_new_model['table_name']) {
+							require_once($plugin_new_model['model_path']);
+						}
+					}
+				}
 			}
 			$t_instance = new $ps_table;
 			if($pb_use_cache) { Datamodel::$s_instance_cache[$t_instance->tableNum()] = Datamodel::$s_instance_cache[$ps_table] = $t_instance; }
@@ -339,8 +359,17 @@ class Datamodel {
 			}
 
 			if(!MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
-				if (!file_exists(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php')) { return null; }
-				require_once(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php'); # class file name has trailing '.php'
+				if (file_exists(__CA_MODELS_DIR__.'\/'.\$vs_class_name.'.php')) {
+					require_once(__CA_MODELS_DIR__.'\/'.\$vs_class_name.'.php'); # class file name has trailing '.php'
+				}
+				else {
+					$o_app_plugin_manager = new ApplicationPluginManager();
+					if ($plugin_new_model = $o_app_plugin_manager->hookNewModel()) {
+						if($vs_class_name == $plugin_new_model['table_name']) {
+							require_once($plugin_new_model['model_path']);
+						}
+					}
+				}
 			}
 			$t_instance = new $vs_class_name;
 			if($pb_use_cache) { MemoryCache::save($vs_class_name, $t_instance, 'DatamodelModelInstance'); Datamodel::$s_instance_cache[$pn_tablenum] = Datamodel::$s_instance_cache[$vs_class_name] = $t_instance; }
