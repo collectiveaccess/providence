@@ -71,17 +71,61 @@
 		if (!is_array($pa_parents)) { $pa_parents = array($pa_parents); }
 		$vn_id = null;
 		
+		$id_numberer = IDNumbering::newIDNumberer($ps_table);
+		
 		$pa_parents = array_reverse($pa_parents);
 		foreach($pa_parents as $vn_i => $va_parent) {
+			
+			$pa_source_data["LEVEL_".($vn_i + 1)] = '';
 			if (!is_array($va_parent)) {
 				$o_log->logWarn(_t('[%2] Parents options invalid. Did you forget to pass a list? Parents list passed was: %1', print_r($pa_parents, true), $ps_refinery_name));
 				break;
 			}
 			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
-			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
+			if (($vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null))) && $va_parent['idnoPrefix']) {
+				$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idnoPrefix'].$va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
+			}
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
 
-			if (!$vs_name && !$vs_idno) { continue; }
+			if (!$vs_name && !$vs_idno) { 
+				continue; 
+			}
+			
+			if ((get_class($id_numberer) === 'MultipartIDNumber') && caGetOption('normalizeIdno', $va_parent, false)) {
+				$id_numberer->setType($vs_type);
+				$id_number_elements = method_exists($id_numberer, 'getElements') ? $id_numberer->getElements($vs_type) : null;
+			
+				// Make sure multilevel multipart number conforms to configured format
+				// If we're missing a level we'll fill it with a "1"; if the last element in the format is SERIAL 
+				// we'll add a placeholder. Note that we only handle SERIAL elements at the end of a number. If it's an oddball
+				// format with a SERIAL followed by static numbers we don't touch it, on the assumption the user knows what they're doing.
+				//
+				// Eg. if the number is 2020.1.2 and the formats is YEAR.FREE.FREE.FREE.SERIAL we'll rewrite it as 2020.1.2.1.%
+				if(is_array($id_number_elements) && (sizeof($id_number_elements) > 1)) {		// don't bother normalizing single-element formats
+					$sep = $id_numberer->getSeparator();
+					$n = explode($sep, $vs_idno);
+				
+					$last = array_pop($n);
+					if ($last !== '%') { array_push($n, $last); }	// remove trailing SERIAL placeholder if present
+				
+					if (sizeof($n) < sizeof($id_number_elements)) {
+						while(sizeof($n) < (sizeof($id_number_elements) - 1)) {
+							$n[] = 1;	
+						}
+					
+						$last = array_pop($id_number_elements);
+						if ($last['type'] == 'SERIAL') {
+							$n[] = '%';
+						} else {
+							$n[] = '1';
+						}
+					}
+					$vs_idno = join($sep, $n);
+					
+				}
+			}
+			
+			
 			if (!$vs_name && isset($va_parent['name'])) { continue; }
 			
 			$va_attributes_spec = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : [];
@@ -91,6 +135,9 @@
 				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)),
 				['idno' => $vs_idno, 'parent_id' => $vn_id, '_treatNumericValueAsID' => true]
 			);
+			
+			$pa_source_data['PARENT_IDNO'] = $vs_idno;
+			$pa_source_data["LEVEL_".($vn_i + 1)] = $vs_idno;
 			
 			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) {
 				foreach($va_parent['rules'] as $va_rule) {
@@ -230,10 +277,11 @@
 			unset($va_item['settings']["{$ps_refinery_name}_parents"]);
 		
 			caProcessRefineryRelatedMultiple($o_refinery_instance, $va_item, $pa_source_data, null, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
-		
-			if (is_array($va_val['_related_related'])) {
-				$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
-				if ($t_subject->load($vn_id)) {
+			
+			$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
+			if ($t_subject->load($vn_id)) {
+				$pa_source_data['PARENT_IDNO'] = $pa_source_data["LEVEL_".($vn_i + 1)] =$t_subject->get('idno'); 
+				if (is_array($va_val['_related_related'])) {
 					foreach($va_val['_related_related'] as $vs_table => $va_rels) { 
 						foreach($va_rels as $va_rel) {
 							if (!$t_subject->addRelationship($vs_table, $va_rel['id'], $va_rel['_relationship_type'], null, null, null, null, ['setErrorOnDuplicate' => true])) {
