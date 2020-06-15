@@ -374,6 +374,12 @@
 				if (isset($va_sidebar_cache[$vs_dest])) { return $va_sidebar_cache[$vs_dest]; }
 			}
 			
+			# Plugin hookRenderSideNav support
+			$o_app_plugin_manager = new ApplicationPluginManager();
+			if ($va_revised_nav_info = $o_app_plugin_manager->hookRenderSideNav($va_nav_info)) {
+				$va_nav_info = \$va_revised_nav_info;
+			}
+			
 			$va_nav_info = $this->getNavInfo(2); // get third-level navigation (zero-indexed); first two levels are in top-level nav bar
 			$vs_buf = '';
 			if (is_array($va_nav_info)) {
