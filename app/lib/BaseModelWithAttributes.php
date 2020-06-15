@@ -273,7 +273,7 @@
 					unset($element_codes[$vs_element_code]);
 					if (
 						(
-							isset($pa_values[$vn_element_id]) && ($pa_values[$vn_element_id] !== $o_attr_value->getDisplayValue()) 
+							array_key_exists($vn_element_id, $pa_values) && ($pa_values[$vn_element_id] !== $o_attr_value->getDisplayValue()) 
 							&& 
 							!(($pa_values[$vn_element_id] == "") && (is_null($o_attr_value->getDisplayValue())))
 							&& 
@@ -281,7 +281,7 @@
 						)
 						||
 						(
-							isset($pa_values[$vs_element_code]) && ($pa_values[$vs_element_code] !== $o_attr_value->getDisplayValue()) 
+							array_key_exists($vs_element_code, $pa_values) && ($pa_values[$vs_element_code] !== $o_attr_value->getDisplayValue()) 
 							&&
 							!(($pa_values[$vs_element_code] == "") && (is_null($o_attr_value->getDisplayValue())))
 							&& 
@@ -291,14 +291,14 @@
 						(
 							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
 							&& 
-							isset($pa_values[$vs_element_code]) && is_array($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
+							array_key_exists($vs_element_code, $pa_values) && is_array($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
 							
 						)
 						||
 						(
 							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
 							&& 
-							isset($pa_values[$vn_element_id]) && is_array($pa_values[$vn_element_id]) && sizeof($pa_values[$vn_element_id])
+							array_key_exists($vn_element_id, $pa_values) && is_array($pa_values[$vn_element_id]) && sizeof($pa_values[$vn_element_id])
 							
 						)
 					) {
