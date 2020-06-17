@@ -11403,12 +11403,14 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param int $pn_id Primary key value
 	 * @param array $pa_options Options include:
 	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
 	 *
 	 * @return string idno value, null if id does not exist or false if id exists but fails checkAccess checks
 	 */
 	public static function getIdnoForID($pn_id, $pa_options=null) {
+		$o_trans = caGetOption('transaction', $pa_options, null);
 		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
-			$o_db = new Db();
+			$o_db = $o_trans ? $o_trans->getDb() : new Db();
 			$qr_res = $o_db->query("SELECT {$vs_idno_fld} FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
 			
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
@@ -11426,12 +11428,14 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param string $ps_idno Identifier value
 	 * @param array $pa_options Options include:
 	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
 	 *
 	 * @return int primary key id value, null if idno does not exist or false if id exists but fails checkAccess checks
 	 */
 	public static function getIDForIdno($ps_idno, $pa_options=null) {
+		$o_trans = caGetOption('transaction', $pa_options, null);
 		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
-			$o_db = new Db();
+			$o_db = $o_trans ? $o_trans->getDb() : new Db();
 			$vs_pk = $t_instance->primaryKey();
 			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ?", [$ps_idno]);
 			
