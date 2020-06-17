@@ -706,6 +706,7 @@
 	 */
 	function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, $po_refinery_instance, &$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options) {
 		global $g_ui_locale_id;
+		$pa_source_data['PARENT_IDNO'] = '';
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
 		
@@ -911,6 +912,8 @@
 							if (isset($pa_options['defaultParentID']) && (!isset($va_val['parent_id']) || !$va_val['parent_id'])) {
 								$va_val['parent_id'] = $va_val['_parent_id'] = $pa_options['defaultParentID'];
 							}
+							
+							$pa_source_data['PARENT_IDNO'] = $va_val['parent_id'] ? $ps_table::getIdnoForId($va_val['parent_id'], ['transaction' => $o_trans]) : 'o_trans';
 						}
 				
 						if(isset($pa_options['hierarchyID']) && $pa_options['hierarchyID'] && ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD'))) {
