@@ -114,13 +114,21 @@ class MediaInfoDataReader extends BaseXMLDataReader {
 	
 		parent::read($ps_source, $pa_options);
 		
-		if ($ps_base_path = caGetOption('basePath', $pa_options, null)) {
+		if (($ps_base_path = caGetOption('basePath', $pa_options, null)) && (!preg_match("!#XML tree#!", $ps_base_path))) {
 			$va_tmp = explode("/", $ps_base_path);
 			$this->ops_base_root_tag = array_pop($va_tmp);
 			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
 		}
 		
-		if ($ps_source) { 			
+		if (file_exists($ps_source) && (filesize($ps_source) < 1024 * 1024)) { 	
+			$d = file_get_contents($ps_source);
+			if (preg_match("!<pbcoreInstantiationDocument!", $d)) {
+				$pa_options['fromString'] = $d;
+				$ps_source = null;
+			}	
+		}
+		
+		if (file_exists($ps_source)) { 			
 			caExec($ps_mediainfo_path." --Output=PBCore2 ".caEscapeShellArg($ps_source), $va_output, $vn_return);
 			if (!is_array($va_output) || !sizeof($va_output)) { return null; }
 			$xml = join("\n", $va_output);
