@@ -140,7 +140,7 @@ class BaseXMLDataReader extends BaseDataReader {
 	public function read($ps_source, $pa_options=null) {
 		parent::read($ps_source, $pa_options);
 		
-		if ($ps_base_path = caGetOption('basePath', $pa_options, null)) {
+		if (($ps_base_path = caGetOption('basePath', $pa_options, null)) && (!preg_match("!#XML tree#!", $ps_base_path))) {
 			$va_tmp = explode("/", $ps_base_path);
 			$this->ops_base_root_tag = array_pop($va_tmp);
 			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
