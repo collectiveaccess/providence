@@ -49,8 +49,7 @@
  				return;
  			}
  			
- 			//AssetLoadManager::register('react');
- 			
+ 			AssetLoadManager::register('react');
  		}
  		# -------------------------------------------------------
  		/**
