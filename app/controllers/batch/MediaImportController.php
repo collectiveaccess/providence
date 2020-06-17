@@ -49,7 +49,6 @@
  
  	class MediaImportController extends ActionController {
  		# -------------------------------------------------------
- 		protected $opo_datamodel;
  		protected $opo_app_plugin_manager;
  		protected $opo_result_context;
 
