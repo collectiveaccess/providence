@@ -256,8 +256,12 @@
  			parent::__construct($pa_value_array);
  			if(!DateRangeAttributeValue::$o_tep) { 
  				self::$locale = __CA_DEFAULT_LOCALE__;
- 				if ($g_request && method_exists($g_request, "isLoggedIn") && $g_request->isLoggedIn()) {
- 					self::$locale = $g_request->user->getPreference('ui_locale');
+ 				if (	$g_request &&
+ 					 	method_exists($g_request, "isLoggedIn") && 
+ 						$g_request->isLoggedIn() && 
+ 						($preferred_locale = trim($g_request->user->getPreference('ui_locale'))) 
+ 				) {
+ 					self::$locale = $preferred_locale;
  				}
  				DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); 
  				DateRangeAttributeValue::$o_tep->setLanguage(self::$locale);
