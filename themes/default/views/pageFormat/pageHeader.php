@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,7 +46,7 @@
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
 <?php
-	print AssetLoadManager::getLoadHTML($this->request);
+	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header']);
 	print MetaTagManager::getHTML();
 	
 	if ($vs_local_css_url_path = $this->request->getUrlPathForThemeFile("css/local.css")) {
@@ -82,6 +82,7 @@
 			caUI.initUtils({unsavedChangesWarningMessage: '<?php _p('You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes.'); ?>'});
 
 			var caPromptManager = caUI.initPromptManager();
+			let providenceUIApps = {};
 		</script>
 		<!--[if lte IE 6]>
 			<style type="text/css">
@@ -93,5 +94,5 @@
 		<!-- super fish end menus -->	
         <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 	</head>	
-	<body>
+	<body id="providenceApp">
 		<div align="center">
