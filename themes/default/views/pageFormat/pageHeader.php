@@ -45,6 +45,9 @@
 		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
+		<link href="https://transloadit.edgly.net/releases/uppy/v1.16.0/uppy.min.css" rel="stylesheet">
+		 <script src="https://transloadit.edgly.net/releases/uppy/v1.16.0/uppy.min.js"></script>
+
 <?php
 	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header']);
 	print MetaTagManager::getHTML();

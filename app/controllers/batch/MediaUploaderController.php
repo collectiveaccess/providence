@@ -61,11 +61,27 @@
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
  			AssetLoadManager::register("directoryBrowser");
- 			
- 		
+
  			$this->render('mediauploader/index_html.php');
  		}
- 		
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * tus resume-able file upload API endpoint (see https://tus.io and https://github.com/ankitpokhrel/tus-php)
+ 		 */
+ 		public function tus(){
+ 		    // TODO: check if user has upload privs
+
+ 		    // Create user directory if it doesn't already exist
+ 		    $user_dir_path = $this->request->config->get('batch_media_import_root_directory')."/userMedia".$this->request->user->getUserID();
+ 		    if (!file_exists($user_dir_path)) { mkdir($user_dir_path); }
+
+			// Start up server
+            $server   = new \TusPhp\Tus\Server(in_array(__CA_CACHE_BACKEND__, ['redis', 'file']) ? __CA_CACHE_BACKEND__ : 'file');
+            $server->middleware()->add(MediaUploaderHandler::class);
+            $server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
+            $response = $server->serve();
+            $response->send();
+ 		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler
  		# ------------------------------------------------------------------
