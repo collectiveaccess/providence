@@ -160,7 +160,10 @@
 			} catch (Exception $e) {
 				$this->ops_type = 'txt';
 				if ($this->opr_file) { fclose($this->opr_file); }
+				$line_ending_setting = ini_get("auto_detect_line_endings");
+				ini_set("auto_detect_line_endings", true);
 				if (!($this->opr_file = fopen($ps_filepath, "r"))) { return false; }
+				ini_set("auto_detect_line_endings", $line_ending_setting);
 			}
 			$this->filepath = $ps_filepath;
 			return true;
@@ -224,6 +227,7 @@
 				$line = fgetcsv($this->opr_file, 0, $this->getDelimiter(), $this->getTextMarker());
 				if (!is_array($line)) { return false; }
 				$this->opa_current_row = array_slice($line, 0, $this->opn_max_columns);
+				
 				return $this->opa_current_row;
 			}
 			return false;
@@ -261,12 +265,16 @@
 			if ($this->ops_type === 'xlsx') {
 				return $this->opo_excel->getActiveSheet()->getHighestRow();
 			} else {
+				$line_ending_setting = ini_get("auto_detect_line_endings");
+				ini_set("auto_detect_line_endings", true);
+				
 				$r = fopen($this->filepath, "r");
 				$count = 0;
 				while($line = fgetcsv($r, 0, $this->getDelimiter(), $this->getTextMarker())) {
 					$count++;
 				}
 				fclose($r);
+				ini_set("auto_detect_line_endings", $line_ending_setting);
 				return $count;
 			}
 		}
