@@ -506,6 +506,7 @@ class Media extends BaseObject {
 	 * @return string Mimetype or null if extension is not recognized.
 	 */
 	public static function getMimetypeForExtension($ps_extension) {
+		if(!$ps_extension) { return null; }
 		if (CompositeCache::contains($ps_extension, 'Media_getMimetypeForExtension')) {
 			return CompositeCache::fetch($ps_extension, 'Media_getMimetypeForExtension');
 		}
@@ -531,6 +532,7 @@ class Media extends BaseObject {
 	 * @return string File extension or null if mimetype is not recognized.
 	 */
 	public static function getExtensionForMimetype($ps_mimetype) {
+		if(!$ps_mimetype) { return null; }
 		if (CompositeCache::contains($ps_mimetype, 'Media_getExtensionForMimetype')) {
 			return CompositeCache::fetch($ps_mimetype, 'Media_getExtensionForMimetype');
 		}
@@ -553,6 +555,7 @@ class Media extends BaseObject {
 	 * @return string Type name or null if mimetype is not recognized.
 	 */
 	public static function getTypenameForMimetype($ps_mimetype) {
+		if(!$ps_mimetype) { return null; }
 		if (CompositeCache::contains($ps_mimetype, "Media_getTypenameForMimetype")) {
 			return CompositeCache::fetch($ps_mimetype, "Media_getTypenameForMimetype");
 		}
