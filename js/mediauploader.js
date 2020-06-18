@@ -85,6 +85,13 @@ class MediaUploader extends React.Component {
                     console.log("Upload URL:", upload.url);
                 }
             });
+            upload.findPreviousUploads().then((previousUploads) => {
+              if(previousUploads.length > 0) {
+                  let resumable = previousUploads.pop();    // Grab last discontinued upload to resume
+                  console.log("Resuming download: ", resumable);
+                  upload.resumeFromPreviousUpload(resumable);
+              }
+            });
 
             // TODO: make possible to upload multiple files
             this.setState({
@@ -107,19 +114,22 @@ class MediaUploader extends React.Component {
         this.state.upload.abort();
     }
 
-
-
-
   render() {
     return (
-      <div>
-        <h1>{this.state.status}</h1>
-        <input type="file" name="file" onChange={this.selectFiles}/>
-
-        <button onClick={this.startUpload}>Start upload</button>
-          <button onClick={this.pauseUpload}>Pause upload</button>
-
-        <div>{this.state.uploadedBytes} of {this.state.totalBytes}</div>
+      <div className="row">
+          <div className="col-md-12">
+              <h1>{this.state.status}</h1>
+          </div>
+          <div className="col-md-4">
+            <input type="file" name="file" onChange={this.selectFiles} webkitdirectory="1"/>
+          </div>
+          <div className="col-md-4">
+                <button onClick={this.startUpload}>Start upload</button>
+                <button onClick={this.pauseUpload}>Pause upload</button>
+          </div>
+          <div className="col-md-4">
+              {this.state.uploadedBytes} of {this.state.totalBytes}
+          </div>
       </div>
     );
   }
