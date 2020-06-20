@@ -14,12 +14,14 @@ class MediaUploader extends React.Component {
     this.state = {
         uploadedBytes: 0,
         totalBytes: 0,
-        files: null,
         status: "No file selected",
         uploadUrl: null,
-        upload: null
+        upload: null,
+        queue: [],
+        connections: []
     };
     this.startUpload = this.startUpload.bind(this);
+    this.startUploads = this.startUploads.bind(this);
     this.pauseUpload = this.pauseUpload.bind(this);
     this.selectFiles = this.selectFiles.bind(this);
   }
@@ -42,24 +44,27 @@ class MediaUploader extends React.Component {
         console.log("XX", e.target.files);
 
         let state = this.state;
-        state['files'] = e.target.files;
+        state['queue'].push(...e.target.files);
         this.setState(state);
-
-        this.setupUpload();
     }
 
     setupUpload() {
-        const files = this.state.files;
-        if (!files) return;
+        let state = this.state;
+        let queue = state.queue;
+        if (!queue) return;
 
-        for(let i in files) {
-            if (!files.hasOwnProperty(i)){ continue; }
-            const file = files[i];
+        const maxConnections = this.props.maxConcurrentConnections;
+        if (state.connections.length >= maxConnections) return;
 
-            console.log("starting", i, file);
+        for(let i in queue) {
+            if (!queue.hasOwnProperty(i)){ continue; }
+            let file = queue.shift();
+            let extension = this.getFileExtension(file.uri);
 
-            const extension = this.getFileExtension(file.uri);
-            const upload = new tus.Upload(file, {
+            let connectionIndex = state.connections.length;
+
+            console.log("starting", connectionIndex, file);
+            let upload = new tus.Upload(file, {
                 endpoint: this.props.endpoint,
                 retryDelays: [0, 1000, 3000, 5000],
                 metadata: {
@@ -67,24 +72,25 @@ class MediaUploader extends React.Component {
                     filetype: this.getMimeType(extension)
                 },
                 onError: (error) => {
-                    this.setState({
-                        status: `upload failed ${error}`
-                    });
+                    state.connections[connectionIndex]['status']  = error;
+                    this.setState(state);
+                    console.log("error!", error);
                 },
                 onProgress: (uploadedBytes, totalBytes) => {
-                    this.setState({
-                        totalBytes: totalBytes,
-                        uploadedBytes: uploadedBytes
-                    });
+                    state.connections[connectionIndex]['totalBytes']  = totalBytes;
+                    state.connections[connectionIndex]['uploadedBytes']  = uploadedBytes;
+                    this.setState(state);
+                    console.log(connectionIndex, totalBytes, uploadedBytes);
                 },
                 onSuccess: () => {
-                    this.setState({
-                        status: "upload finished",
-                        uploadUrl: upload.url
-                    });
+                    state.connections[connectionIndex]['status']  = error;
+                    state.connections[connectionIndex]['uploadUrl']  = upload.url;
+                    this.setState(state);
                     console.log("Upload URL:", upload.url);
+                    this.connections.splice(connectionIndex, 1);
                 }
             });
+
             upload.findPreviousUploads().then((previousUploads) => {
               if(previousUploads.length > 0) {
                   let resumable = previousUploads.pop();    // Grab last discontinued upload to resume
@@ -92,26 +98,31 @@ class MediaUploader extends React.Component {
                   upload.resumeFromPreviousUpload(resumable);
               }
             });
+            this.state.connections.push({
+                upload: upload,
+                status: "starting",
+                uploadUrl: null,
+                totalBytes: 0,
+                uploadedBytes: 0
+            });
+            upload.start();
 
             // TODO: make possible to upload multiple files
-            this.setState({
-                status: "upload started",
-                uploadedBytes: 0,
-                totalBytes: 0,
-                uploadUrl: null,
-                upload: upload
-            });
+            this.setState(state);
         }
 
 
     }
 
-    startUpload() {
-        this.state.upload.start();
+    startUploads() {
+        this.setupUpload();
     }
 
-    pauseUpload() {
-        this.state.upload.abort();
+    startUpload(connectionIndex) {
+        this.state.connections[connectionIndex].upload.start();
+    }
+    pauseUpload(connectionIndex) {
+        this.state.connections[connectionIndex].upload.abort();
     }
 
   render() {
@@ -124,15 +135,17 @@ class MediaUploader extends React.Component {
             <input type="file" name="file" onChange={this.selectFiles} webkitdirectory="1"/>
           </div>
           <div className="col-md-4">
-                <button onClick={this.startUpload}>Start upload</button>
-                <button onClick={this.pauseUpload}>Pause upload</button>
+                <button onClick={this.startUploads}>Start upload</button>
           </div>
           <div className="col-md-4">
               {this.state.uploadedBytes} of {this.state.totalBytes}
+          </div>
+          <div className="col-md-4">
+              Queued files: {this.state.queue.length}
           </div>
       </div>
     );
   }
 }
 
-ReactDOM.render(<MediaUploader endpoint={endpoint}/>, document.querySelector(selector));
+ReactDOM.render(<MediaUploader maxConcurrentConnections="4" endpoint={endpoint}/>, document.querySelector(selector));
