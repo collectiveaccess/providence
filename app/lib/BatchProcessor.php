@@ -948,7 +948,7 @@
 					$t_instance->setMode(ACCESS_WRITE);
 
 					if ($use_existing_representation_id) {
-						$t_instance->addRelationship('ca_object_representations', $use_existing_representation_id, $vn_rel_type_id);
+						if (!($t_new_rep = $t_instance->addRelationship('ca_object_representations', $use_existing_representation_id, $vn_rel_type_id))) { continue; }
 					} else {
 						$t_new_rep = $t_instance->addRepresentation(
 							$vs_directory.'/'.$f, $vn_rep_type_id, // path
