@@ -5918,6 +5918,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 * @return array 
 	 */
 	public function &getSnapshot($pb_changes_only=false) {
+		$is_attr_table = in_array($this->tableName(), ['ca_attributes', 'ca_attribute_values'], true);
+		if ($is_attr_table) { $pb_changes_only = false; }
+		
 		$va_field_list = $this->getFormFields(true, true);
 		$va_snapshot = array();
 
@@ -5930,7 +5933,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		// We need to include the element_id when storing snapshots of ca_attributes and ca_attribute_values
 		// whether is has changed or not (actually, it shouldn't really be changing after insert in normal use)
 		// We need it available to assist in proper display of attributes in the change log
-		if (in_array($this->tableName(), array('ca_attributes', 'ca_attribute_values'))) {
+		if ($is_attr_table) {
 			$va_snapshot['element_id'] = $this->get('element_id');
 			$va_snapshot['attribute_id'] = $this->get('attribute_id');
 		}
