@@ -69,6 +69,7 @@
  		 * tus resume-able file upload API endpoint (see https://tus.io and https://github.com/ankitpokhrel/tus-php)
  		 */
  		public function tus(){
+            $key = $this->request->getParameter('key', pString);
  		    // TODO: check if user has upload privs
 
  		    // Create user directory if it doesn't already exist
@@ -76,12 +77,113 @@
  		    if (!file_exists($user_dir_path)) { mkdir($user_dir_path); }
 
 			// Start up server
-            $server   = new \TusPhp\Tus\Server(in_array(__CA_CACHE_BACKEND__, ['redis', 'file']) ? __CA_CACHE_BACKEND__ : 'file');
-            $server->middleware()->add(MediaUploaderHandler::class);
+            $server = new \TusPhp\Tus\Server('redis');  // TODO: make cache type configurable
+
+           // $server->middleware()->add(MediaUploaderHandler::class);
             $server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
+
+            $server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) {
+                $fileMeta = $event->getFile()->details();
+                $request  = $event->getRequest();
+                $response = $event->getResponse();
+                $key = $fileMeta['metadata']['sessionKey'];
+
+                // ...
+                if ($session = MediaUploadManager::findSession($key)) {
+                    $session->set('last_activity_on', _t('now'));
+                    $progress_data = $session->get('progress');
+                    $progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
+                    $progress_data[$fileMeta['file_path']]['progressInBytes'] = $fileMeta['offset'];
+                    $progress_data[$fileMeta['file_path']]['complete'] = false;
+                    $session->set('progress', $progress_data);
+                    $session->update();
+                }
+            });
+            $server->event()->addListener('tus-server.upload.complete', function (\TusPhp\Events\TusEvent $event) {
+                $fileMeta = $event->getFile()->details();
+                $request  = $event->getRequest();
+                $response = $event->getResponse();
+                $key = $fileMeta['metadata']['sessionKey'];
+
+                // ...
+                if ($session = MediaUploadManager::findSession($key)) {
+                    $session->set('last_activity_on', _t('now'));
+                    $session->set('progress_files', (int)$session->set('progress_files') + 1);
+                     $progress_data = $session->get('progress');
+                        $progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
+                        $progress_data[$fileMeta['file_path']]['progressInBytes'] = $fileMeta['size'];
+                        $progress_data[$fileMeta['file_path']]['complete'] = true;
+                        $session->set('progress', $progress_data);
+                        $session->update();
+                    $session->update();
+                }
+
+				// If subdirectory
+				$rel_path = $fileMeta['metadata']['relativePath'];
+                if(isset($rel_path) && strlen($rel_path) && file_exists($fileMeta['file_path'])) {
+                    $path = pathinfo($fileMeta['file_path'], PATHINFO_DIRNAME);
+                    $name = pathinfo($fileMeta['file_path'], PATHINFO_BASENAME);
+
+                    $rel_path_proc = [];
+                    foreach(preg_split('!/!', $rel_path) as $rel_path_dir) {
+                        if(strlen($rel_path_dir = preg_replace('![^A-Za-z0-9\-_]+!', '_', $rel_path_dir))) {
+                            $rel_path_proc[] = $rel_path_dir;
+                            mkdir("{$path}/".join("/", $rel_path_proc));
+                        }
+                    }
+                    @rename($fileMeta['file_path'], "{$path}/".join("/", $rel_path_proc)."/{$name}");
+                }
+
+            });
             $response = $server->serve();
             $response->send();
  		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * Create upload session
+ 		 */
+ 		public function session(){
+ 		    $user_id = $this->request->getUserID();
+ 		    $num_files = $this->request->getParameter('n', pInteger);
+ 		    $size = $this->request->getParameter('size', pInteger);
+
+ 		    $errors = [];
+ 		    if ($num_files < 1) {
+ 		        $errors[] = _t('Invalid file count');
+ 		    }
+ 		    if ($size < 1) {
+                $errors[] = _t('Invalid size');
+            }
+            if(sizeof($errors) === 0) {
+				$session = MediaUploadManager::newSession($user_id, $num_files, $size);
+				$this->view->setVar('response', ['ok' => 1, 'key' => $session->get('session_key')]);
+			} else {
+				$this->view->setVar('response', ['ok' => 0, 'errors' => $errors]);
+			}
+			$this->render('mediauploader/response_json.php');
+ 		}
+ 		# -------------------------------------------------------
+        /**
+         * Mark upload session as complete
+         */
+        public function complete(){
+            $user_id = $this->request->getUserID();
+            $key = $this->request->getParameter('key', pString);
+
+            $errors = [];
+
+			if (!($session = MediaUploadManager::findSession($key, $user_id))) {
+				 $errors[] = _t('Invalid key');
+			}
+            if(sizeof($errors) === 0) {
+                $session->set('completed_on', _t('now'));
+                $session->update();
+                $this->view->setVar('response', ['ok' => 1, 'key' => $session->get('session_key'), 'completed_on' => $session->get('completed_on')]);
+            } else {
+                $this->view->setVar('response', ['ok' => 0, 'errors' => $errors]);
+            }
+            $this->render('mediauploader/response_json.php');
+        }
 		# ------------------------------------------------------------------
  		# Sidebar info handler
  		# ------------------------------------------------------------------

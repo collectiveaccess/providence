@@ -9,9 +9,9 @@
 <script type="text/javascript">	
 	providenceUIApps['mediauploader'] = {
         'selector': '#mediaUploaderUI',
-        'endpoint': '<?= caNavUrl($this->request, 'batch', 'MediaUploader', 'tus'); ?>',
+        'endpoint': '<?= caNavUrl($this->request, 'batch', 'MediaUploader', ''); ?>',
         'data': {
-            'message': 'Wow, it works!'
+
         }
     };
 </script>

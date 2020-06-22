@@ -11813,6 +11813,30 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		return null;
 	}
+	# ------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. Returns a model instance for the first record found.
+	 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+	 * options offered by that method.
+	 *
+	 * @see LabelableBaseModelWithAttributes::find()
+	 */
+	public static function findAsInstance($pa_values, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
+	}	
+	# ------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. Returns a the primary key (id) of the first record found.
+	 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+	 * options offered by that method.
+	 *
+	 * @see LabelableBaseModelWithAttributes::find()
+	 */
+	public static function findAsID($pa_values, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstid']));
+	}
 	# ------------------------------------------------------
 	/**
 	 * Check if record with primary key id or idno exists. Will check box, giving preference to primary key id unless the 'idOnly' option is set

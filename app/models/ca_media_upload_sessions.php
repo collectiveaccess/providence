@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_media_uploads.php
+ * app/models/ca_media_upload_sessions.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,11 +34,11 @@
    *
    */
 
-BaseModel::$s_ca_models_definitions['ca_media_uploads'] = array(
+BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
  	'NAME_SINGULAR' 	=> _t('Media upload'),
  	'NAME_PLURAL' 		=> _t('Media uploads'),
  	'FIELDS' 			=> array(
- 		'upload_id' => array(
+ 		'session_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
@@ -80,13 +80,13 @@ BaseModel::$s_ca_models_definitions['ca_media_uploads'] = array(
 				'DEFAULT' => null,
 				'LABEL' => _t('Date of last upload activity'), 'DESCRIPTION' => _t('The date and time activity was last recorded on the upload.')
 		),
-		'upload_key' => array(
+		'session_key' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Upload key'), 'DESCRIPTION' => _t('Unique key for the upload.'),
-				'BOUNDS_LENGTH' => array(1,32)
+				'BOUNDS_LENGTH' => array(1,36)
 		),
 		'num_files' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -102,25 +102,17 @@ BaseModel::$s_ca_models_definitions['ca_media_uploads'] = array(
 				'DEFAULT' => 0,
 				'LABEL' => _t('Total upload size'), 'DESCRIPTION' => _t('The total size of the upload for all files, in bytes.')
 		),
-		'progress_files' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+		'progress' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => 0,
-				'LABEL' => _t('Upload progress (files)'), 'DESCRIPTION' => _t('The number of files currently received for the upload.')
-		),
-		'progress_bytes' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Upload progress (bytes)'), 'DESCRIPTION' => _t('The size currently received data for the upload for all files, in bytes.')
-		),
-		
+				'LABEL' => _t('Upload progress'), 'DESCRIPTION' => _t('Data regarding upload process of individual files.')
+		)
  	)
 );
 
-class ca_media_uploads extends BaseModel {
+class ca_media_upload_sessions extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -132,10 +124,10 @@ class ca_media_uploads extends BaseModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_media_uploads';
+	protected $TABLE = 'ca_media_upload_sessions';
 	      
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'upload_id';
+	protected $PRIMARY_KEY = 'session_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
@@ -146,7 +138,7 @@ class ca_media_uploads extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('upload_key');
+	protected $LIST_FIELDS = array('session_key');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.

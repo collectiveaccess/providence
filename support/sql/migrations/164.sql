@@ -1,15 +1,16 @@
 /*
 	Date: 16 June 2020
 	Migration: 164
-	Description:    Add media upload manager log table
+	Description:    Add media upload manager session table
 */
 
 /*==========================================================================*/
 
-create table if not exists ca_media_uploads (
-   upload_id                 int unsigned                   not null AUTO_INCREMENT,
+drop table ca_media_upload_sessions;
+create table if not exists ca_media_upload_sessions (
+   session_id                int unsigned                   not null AUTO_INCREMENT,
    user_id                   int unsigned                   not null references ca_users(user_id),
-   upload_key                char(32)                       not null,
+   session_key               char(36)                       not null,
    created_on                int unsigned                   not null,
    completed_on              int unsigned                   null,
    last_activity_on          int unsigned                   null,
@@ -17,17 +18,16 @@ create table if not exists ca_media_uploads (
    
    num_files		         int unsigned                   not null,
    total_bytes		         int unsigned                   not null,
-   progress_files		     int unsigned                   not null default 0,
-   progress_bytes		     int unsigned                   not null default 0,
+   progress		             longtext                       null,
    
-   primary key (upload_id),
+   primary key (session_id),
 
-   index i_user_id                  (user_id),
+   index i_session_id               (session_id),
    index i_created_on			    (created_on),
    index i_completed_on			    (completed_on),
    index i_last_activity_on			(last_activity_on),
    index i_cancelled      	        (cancelled),
-   unique index i_upload_key      	(upload_key)
+   unique index i_session_key      	(session_key)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
