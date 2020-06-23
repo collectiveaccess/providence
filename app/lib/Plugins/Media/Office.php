@@ -406,6 +406,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 		}
 		$this->filepath = $ps_filepath;
+		$this->opa_metadata = caExtractMetadataWithExifTool($ps_filepath);
 		
 		// Hardcode width/height since we haven't any way of calculating these short of generating a PDF
 		$this->set('width', 612);

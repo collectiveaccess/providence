@@ -2022,6 +2022,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
 								if ($vo_val->getElementCode() == $vs_source) {
 									$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+									$vs_display_value_raw = $vo_val->getDisplayValue();
 									$o_log->logDebug(_t("Found value %1.", $vs_display_value));
 
 								}
@@ -2030,6 +2031,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 						$va_item_info[] = array(
 							'text' => $vs_display_value,
+							'text_raw' => $vs_display_value_raw,
 							'element' => $vs_element,
 						);
 					}
@@ -2070,11 +2072,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					$va_item_info[] = array(
 						'text' => $vs_get,
+						'text_raw' => $t_instance->get($vs_source),
 						'element' => $vs_element,
 					);
 				} else { // user wants current element repeated in case of multiple returned values
 					
 					$va_values = $t_instance->get($vs_source, array_merge($va_get_options, ['returnAsArray' => true]));
+					$va_values_raw = $t_instance->get($vs_source, ['returnAsArray' => true]);
 					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $vs_values));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
@@ -2082,7 +2086,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						// handle skipIfExpression setting
 						if($vs_skip_if_expr) {
 							// Add current value as variable "value", accessible in expressions as ^value
-							$va_vars = array_merge(array('value' => $vs_text), ca_data_exporters::$s_variables);
+							$va_vars = array_merge(array('value' => $vs_text, 'value_raw' => $va_values_raw[$vn_i]), ca_data_exporters::$s_variables);
 				
 							if(is_array($va_expr_tags)) {
 								foreach($va_expr_tags as $vs_expr_tag) {
@@ -2097,6 +2101,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$va_item_info[] = array(
 							'element' => $vs_element,
 							'text' => $vs_text,
+							'text_raw' => $va_values_raw[$vn_i]
 						);
 					}
 				}
@@ -2161,6 +2166,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				// Add current value as variable "value", accessible in expressions as ^value
 				$va_vars = ca_data_exporters::$s_variables;
 				$va_vars['value'] = $va_item['text'];
+				$va_vars['value_raw'] = $va_item['text_raw'];
 				
 				if(is_array($va_expr_tags)) {
 					foreach($va_expr_tags as $vs_expr_tag) {
