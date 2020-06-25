@@ -76,6 +76,14 @@
 	 * @throws ApplicationException
 	 */
 	function caGetLogger($options=null, $opt_name=null) {
+		$log_dir = caGetLogPath($options, $opt_name);
+		return new KLogger($log_dir, caLogLevelStringToNumber(caGetOption('logLevel', $options, 'INFO')), caGetOption('logName', $options, null));
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetLogPath($options=null, $opt_name=null) {
 		$config = Configuration::load();
 		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $config->get($opt_name)))) {
 			$log_dir = '.';
@@ -91,12 +99,7 @@
 				throw new ApplicationException(_t("Cannot write log to %1 or temporary directory %2. Please check directory permissions and retry.", $log_dir, $tmp_dir));
 			}
 		}
-		
-		$log = new KLogger($log_dir, caLogLevelStringToNumber(caGetOption('logLevel', $options, 'INFO')), caGetOption('logName', $options, null));
-		if ($log_dir !== $orig_log_dir) {
-			$log->logInfo(_t('Logging to temporary directory %1 because configured log directory %2 is not writeable', $log_dir, $orig_log_dir));
-		}
-		return $log;
+		return $log_dir;
 	}
 	# ---------------------------------------
 	/**
