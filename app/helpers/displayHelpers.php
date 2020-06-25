@@ -2141,13 +2141,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 		$vs_buf .= "<strong>"._t("Batch import media")."</strong>\n";
 
-		$vs_batch_media_import_root_directory = $po_view->request->config->get('batch_media_import_root_directory');
-		$vs_buf .= "<p>"._t('<strong>Server directory:</strong> %1', $vs_batch_media_import_root_directory)."</p>\n";
-
-		// Show the counts here is nice but can bog the server down when the import directory is an NFS or SAMBA mount
-		//$va_counts = caGetDirectoryContentsCount($vs_batch_media_import_root_directory, true, false, false); 
-		//$vs_buf .= "<p>"._t('<strong>Directories on server:</strong> %1', $va_counts['directories'])."<br/>\n";
-		//$vs_buf .= _t('<strong>Files on server:</strong> %1', $va_counts['files'])."<p>\n";
+		$global_batch_media_import_root_directory = $po_view->request->config->get('batch_media_import_root_directory');
+		$user_batch_media_import_root_directory = MediaUploadManager::getMediaPathForUser($po_view->request->getUserID());
+		$vs_buf .= "<p>"._t('<strong>Directory (all users):</strong> %1', $global_batch_media_import_root_directory)."</p>\n";
+		$vs_buf .= "<p>"._t('<strong>Directory (user):</strong> %1', $user_batch_media_import_root_directory)."</p>\n";
 
 		$vs_buf .= "</div></h4>\n";
 

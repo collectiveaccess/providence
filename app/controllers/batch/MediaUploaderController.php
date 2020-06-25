@@ -73,7 +73,7 @@
  		    // TODO: check if user has upload privs
 
  		    // Create user directory if it doesn't already exist
- 		    $user_dir_path = $this->request->config->get('batch_media_import_root_directory')."/userMedia".$this->request->user->getUserID();
+ 		    $user_dir_path = MediaUploadManager::getMediaPathForUser($this->request->user->getUserID());
  		    if (!file_exists($user_dir_path)) { mkdir($user_dir_path); }
 
 			// Start up server
@@ -162,6 +162,17 @@
 			}
 			$this->render('mediauploader/response_json.php');
  		}
+ 		# -------------------------------------------------------
+        /**
+         * Get recent uploads
+         */
+        public function recent(){
+ 		    $user_id = $this->request->getUserID();
+
+ 		    $recent = MediaUploadManager::getRecent(['user' => $user_id]);
+ 		    $this->view->setVar('response', ['ok' => 0, 'recent' => $recent]);
+ 		    $this->render('mediauploader/response_json.php');
+        }
  		# -------------------------------------------------------
         /**
          * Mark upload session as complete

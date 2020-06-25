@@ -754,11 +754,10 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caGetUserMediaDirectoryPath(int $user_id, array $options=null) {
 	    $config = Configuration::load();
-		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
-			$tmp_directory = caGetTempDirPath();
+		if (!is_writeable($user_dir = MediaUploadManager::getMediaPathForUser($user_id))) {
+			$user_dir = caGetTempDirPath()."/userMedia{$user_id}";
 		}
 		
-		$user_dir =  "{$tmp_directory}/userMedia{$user_id}";
 		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
 			@mkdir($user_dir);
 		}

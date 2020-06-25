@@ -305,54 +305,58 @@
 		/**
 		 * Returns a list of files for the directory $dir 
 		 *
-		 * @param string $dir The path to the directory you wish to get the contents list for
+		 * @param string|array $dirs The path to the directory you wish to get the contents list for
 		 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
 		 * @param int $pn_max_length_of_name Maximum length in characters of returned file names. Note that the full name is always returned in the 'fullname' value. Only 'name' is truncated.
 		 * @return array An array of file names.
 		 */
-		private function _getDirectoryListing($dir, $pb_include_hidden_files=false, $pn_max_length_of_name=25, $pn_start_at=0, $pn_max_items_to_return=25) {
-			if (!is_dir($dir)) { return array(); }
-			$va_file_list = array();
-			if(substr($dir, -1, 1) == "/"){
-				$dir = substr($dir, 0, strlen($dir) - 1);
-			}
-			
-			if($va_paths = @scandir($dir, 0)) {
-				$vn_i = $vn_c = 0;
-				foreach($va_paths as $item) {
-					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
-						$vb_is_dir = is_dir("{$dir}/{$item}");
-						$vs_k = preg_replace('![@@]+!', '|', $item);
-						if ($vb_is_dir) { 
-							$vn_i++;
-							if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
-							$va_child_counts = caGetDirectoryContentsCount("{$dir}/{$item}", false, false);
-							$va_file_list[$vs_k] = array(
-								'item_id' => $vs_k, 
-								'name' => caTruncateStringWithEllipsis($item, $pn_max_length_of_name),
-								'fullname' => $item,
-								'type' => 'DIR',
-								'children' => (int)$va_child_counts['files'] + (int)$va_child_counts['directories'],
-								'files' => (int)$va_child_counts['files'],
-								'subdirectories' => (int)$va_child_counts['directories']
-							);
-							$vn_c++;
-						} else { 
-							if (!$vb_is_dir) { 
+		private function _getDirectoryListing($dirs, $pb_include_hidden_files=false, $pn_max_length_of_name=25, $pn_start_at=0, $pn_max_items_to_return=25) {
+			if (!is_array($dirs)) { $dirs = [$dirs]; }
+
+			$va_file_list = [];
+			foreach($dirs as $dir) {
+				if (!is_dir($dir)) { continue; }
+				if(substr($dir, -1, 1) == "/"){
+					$dir = substr($dir, 0, strlen($dir) - 1);
+				}
+
+				if($va_paths = @scandir($dir, 0)) {
+					$vn_i = $vn_c = 0;
+					foreach($va_paths as $item) {
+						if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+							$vb_is_dir = is_dir("{$dir}/{$item}");
+							$vs_k = preg_replace('![@@]+!', '|', $item);
+							if ($vb_is_dir) {
 								$vn_i++;
 								if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
+								$va_child_counts = caGetDirectoryContentsCount("{$dir}/{$item}", false, false);
 								$va_file_list[$vs_k] = array(
 									'item_id' => $vs_k,
 									'name' => caTruncateStringWithEllipsis($item, $pn_max_length_of_name),
 									'fullname' => $item,
-									'type' => 'FILE'
+									'type' => 'DIR',
+									'children' => (int)$va_child_counts['files'] + (int)$va_child_counts['directories'],
+									'files' => (int)$va_child_counts['files'],
+									'subdirectories' => (int)$va_child_counts['directories']
 								);
 								$vn_c++;
+							} else {
+								if (!$vb_is_dir) {
+									$vn_i++;
+									if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
+									$va_file_list[$vs_k] = array(
+										'item_id' => $vs_k,
+										'name' => caTruncateStringWithEllipsis($item, $pn_max_length_of_name),
+										'fullname' => $item,
+										'type' => 'FILE'
+									);
+									$vn_c++;
+								}
 							}
 						}
+
+						if ($vn_c >= $pn_max_items_to_return) { break; }
 					}
-					
-					if ($vn_c >= $pn_max_items_to_return) { break; }
 				}
 			}
 		
@@ -406,7 +410,8 @@
  		public function GetDirectoryLevel() {
  			$ps_id = $this->request->getParameter('id', pString);
  			$pn_max = $this->request->getParameter('max', pString);
- 			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
+ 			$vs_root_directory = MediaUploadManager::getMediaPathForUser($this->request->getUserID());
+ 			$global_import_root_directory = $this->request->config->get('batch_media_import_root_directory');
  			
  			$va_level_data = array();
  			
@@ -418,15 +423,17 @@
  				
  				$va_acc = array();
  				$vn_i = 0;
+
  				foreach($va_tmp as $vs_tmp) {
  					list($vs_directory, $vn_start) = explode("@@", $vs_tmp);
  					if (!$vs_directory) { continue; }
  					
  					$va_tmp = explode('/', $vs_directory);
+ 					if ($va_tmp)
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
 					
-					$va_level_data["{$vs_k}|{$vn_i}"] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_directory, false, 20, (int)$vn_start, (int)$pn_max);
+					$va_level_data["{$vs_k}|{$vn_i}"] = $va_file_list = $this->_getDirectoryListing([$vs_root_directory.'/'.$vs_directory, $global_import_root_directory.'/'.$vs_directory], false, 20, (int)$vn_start, (int)$pn_max);
 					$va_level_data["{$vs_k}|{$vn_i}"]['_primaryKey'] = 'name';
 					
 					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$vs_directory, false, false);
@@ -435,7 +442,7 @@
  				}
  			} else {
  				list($ps_directory, $pn_start) = explode("@@", $ps_id);
- 				
+
 				$va_tmp = explode('/', $ps_directory);
 				$vn_level = sizeof($va_tmp);
 				if ($ps_directory[0] == '/') { $vn_level--; }
@@ -455,8 +462,9 @@
 					$va_tmp = explode('/', $ps_directory);
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
-					
-					$va_level_data["{$vs_k}|{$vn_level}"] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_directory, false, 20, (int)$pn_start, (int)$pn_max);
+
+					$va_file_list = $this->_getDirectoryListing([$vs_root_directory.'/'.$ps_directory, $global_import_root_directory.'/'.$ps_directory], false, 20, (int)$pn_start, (int)$pn_max);
+					$va_level_data["{$vs_k}|{$vn_level}"] = $va_file_list;
 					$va_level_data["{$vs_k}|{$vn_level}"]['_primaryKey'] = 'name';
 					
 					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_directory, false, false);

@@ -551,6 +551,7 @@
  			}
 
  			$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
+ 			$batch_media_import_root_directories = [];
  			if (!preg_match("!^{$vs_batch_media_import_root_directory}!", $pa_options['importFromDirectory'])) {
  				$o_eventlog->log(array(
 					"CODE" => 'ERR',
