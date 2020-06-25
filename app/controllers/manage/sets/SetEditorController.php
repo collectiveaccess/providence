@@ -78,6 +78,8 @@
 				return;
 			}
 			
+			Session::setVar('last_set_id', $t_subject->getPrimaryKey());
+			
       		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
  			parent::Edit($pa_values, $pa_options);
  		}
@@ -86,15 +88,17 @@
 		 *
 		 */
  		public function Delete($pa_options=null) {
- 			list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
+			list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
 
- 			if (!$vn_subject_id) { return; }
-			  if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
+			if (!$vn_subject_id) { return; }
+			if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
 				$this->postError(2320, _t("Access denied"), "SetsEditorController->Delete()");
-			  }
-			  else {
+			} else {
 				parent::Delete($pa_options);
-			  }
+				if((bool)$this->request->getParameter('confirm', pInteger)) {
+					$this->response->setRedirect(caNavUrl($this->request, 'manage', 'Set', 'ListSets', []));
+				}
+			}
 		}
 		# -------------------------------------------------------
 		/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2005-2017 Whirl-i-Gig
+ * Copyright 2005-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -292,13 +292,19 @@ class Datamodel {
 	 *
 	 * @param mixed $pm_table_name_or_num
 	 * @param bool $pb_use_cache Use a cached instance. [Default is false]
+	 * @param int $pn_id Row_id to load. [Default is null]
 	 * @return null|BaseModel
 	 */
-	static public function getInstance($pm_table_name_or_num, $pb_use_cache=false) {
+	static public function getInstance($pm_table_name_or_num, $pb_use_cache=false, $pn_id=null) {
 		if (is_numeric($pm_table_name_or_num)) {
-			return Datamodel::getInstanceByTableNum($pm_table_name_or_num, $pb_use_cache);
+			if($t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, $pb_use_cache)) {
+				return $t_instance;
+			}
 		}
-		return Datamodel::getInstanceByTableName($pm_table_name_or_num, $pb_use_cache);
+		$t_instance = Datamodel::getInstanceByTableName($pm_table_name_or_num, $pb_use_cache);
+		
+		if ($pn_id) { $t_instance->load($pn_id); }
+		return $t_instance;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -307,7 +313,7 @@ class Datamodel {
 	 * @param bool $pb_use_cache Use a cached instance. Default is false.
 	 * @return null|BaseModel
 	 */
-	public function getInstanceByTableName($ps_table, $pb_use_cache=false) {
+	static public function getInstanceByTableName($ps_table, $pb_use_cache=false) {
 		if(!$ps_table) { return null; }
 		if($pb_use_cache && isset(Datamodel::$s_instance_cache[$ps_table])) { return Datamodel::$s_instance_cache[$ps_table]; }		// keep instances in statics for speed
 		
@@ -331,7 +337,7 @@ class Datamodel {
 	 * @param bool $pb_use_cache Use a cached instance. Default is false.
 	 * @return null|BaseModel
 	 */
-	public function getInstanceByTableNum($pn_tablenum, $pb_use_cache=false) {
+	static public function getInstanceByTableNum($pn_tablenum, $pb_use_cache=false) {
 		if($pb_use_cache && isset(Datamodel::$s_instance_cache[$pn_tablenum])) { return Datamodel::$s_instance_cache[$pn_tablenum]; }		// keep instances in statics for speed
 		if($vs_class_name = Datamodel::getTableName($pn_tablenum)) {
 			if($pb_use_cache && MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
@@ -595,6 +601,21 @@ class Datamodel {
  		
 		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $va_path, 'DatamodelPaths', 3600 * 24 * 30);
  		return $va_path;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return many-many table linking two tables
+	 *
+	 * @param string $ps_left_table 
+	 * @param string $ps_right_table
+	 *
+	 * @return string Name of linking table, or null if no linking table is defined.
+	 */
+	static public function getLinkingTableName($ps_left_table, $ps_right_table) {
+		if(is_array($path = Datamodel::getPath($ps_left_table, $ps_right_table)) && (sizeof($path) == 3) && ($path = array_keys($path))) {
+			return $path[1];
+		}
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

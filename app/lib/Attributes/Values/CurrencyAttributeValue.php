@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,6 +87,14 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your currency values to be locale-specific. (The default is to not be.)')
+		),
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -197,7 +205,7 @@
  			// we also replace the weird multibyte nonsense Zend uses as placeholder with something more reasonable so that
  			// whatever we output here isn't rejected if thrown into parseValue() again
  			if(substr($vs_decimal_with_placeholder,0,2)=="¤") { // '¤' has length 2
- 				$vs_decimal_with_placeholder = str_replace("¤", '% ', $vs_decimal_with_placeholder);
+ 				$vs_decimal_with_placeholder = preg_replace("!¤[^\d]*!u", '% ', $vs_decimal_with_placeholder);
  			} elseif(substr($vs_decimal_with_placeholder, -2)=="¤") { // placeholder at the end
  				$vs_decimal_with_placeholder = preg_replace("![^\d\,\.]!", "", $vs_decimal_with_placeholder)." %";
  			}
@@ -354,4 +362,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

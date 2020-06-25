@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -27,22 +27,23 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_APP_DIR__."/plugins/prepopulate/lib/applyPrepopulateRulesTool.php");
 
 class prepopulatePlugin extends BaseApplicationPlugin {
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	/**
 	 * Plugin config
 	 * @var Configuration
 	 */
 	var $opo_plugin_config = null;
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	public function __construct($ps_plugin_path) {
 		$this->description = _t('This plugin allows prepopulating field values based on display templates. See http://docs.collectiveaccess.org/wiki/Prepopulate for more info.');
 		parent::__construct();
 
 		$this->opo_plugin_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'prepopulate.conf');
 	}
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	/**
 	 * 
 	 */
@@ -54,20 +55,48 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			'available' => (bool) $this->opo_plugin_config->get('enabled')
 		);
 	}
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	public function hookSaveItem(&$pa_params) {
 		if($this->opo_plugin_config->get('prepopulate_fields_on_save')) {
 			$this->prepopulateFields($pa_params['instance']);
 		}
 		return true;
 	}
-	# -------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
 	public function hookEditItem(&$pa_params) {
 		if($this->opo_plugin_config->get('prepopulate_fields_on_edit')) {
 			$this->prepopulateFields($pa_params['instance']);
 		}
 		return true;
 	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function hookCLICaUtilsGetCommands() {
+	    return [
+	        'Maintenance' => [
+	            'apply_prepopulate_rules' => [
+	                'Command' => 'apply-prepopulate-rules',
+	                'Options' => [],
+	                'Help' => _t('Help to come'),
+	                'ShortHelp' => _t('Short help to come'),
+	            ]
+	        ]
+	    ];
+	}
+	# -------------------------------------------------------
+    /**
+     * Run commands from CLI caUtils
+     */
+    public function hookCLICaUtilsGetToolWithSettings(&$pa_params) {
+        $tool = new applyPrepopulateRulesTool(['prepopulateInstance' => $this]);
+        $tool->setSettings($pa_params[1]);
+        $tool->setMode($pa_params[2]);
+        
+        $pa_params['tool'] = $tool;
+        return $pa_params;
+    }
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Prepopulate record fields according to rules in prepopulate.conf
@@ -83,7 +112,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$this->opo_plugin_config = Configuration::load($vs_prepopulate_cfg);
 		}
 
-		if(!($this->opo_plugin_config->get('prepopulate_fields_on_save') || $this->opo_plugin_config->get('prepopulate_fields_on_load'))) {
+		if(!(bool)$this->opo_plugin_config->get('prepopulate_fields_on_save') && !(bool)$this->opo_plugin_config->get('prepopulate_fields_on_load')) {
 			return false;
 		}
 
@@ -108,7 +137,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		foreach($va_rules as $vs_rule_key => $va_rule) {
 			if($t_instance->tableName() != $va_rule['table']) { continue; }
 
-			$vs_mode = caGetOption('mode', $va_rule, 'merge');
+			$vs_mode = strtolower(caGetOption('mode', $va_rule, 'merge'));
 			
 			// check target
 			$vs_target = caGetOption('target', $va_rule, null);
@@ -117,9 +146,11 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			
 			$vb_is_relationship_rule = Datamodel::tableExists($vs_target);
             if (!$vb_is_relationship_rule) {
+            	$vs_source = caGetOption('source', $va_rule, null);
+                
                 // check template
                 $vs_template = caGetOption('template', $va_rule, null);
-                if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
+                if((strlen($vs_template) < 1) && (strlen($vs_source = caGetOption('source', $va_rule, null)) < 1)) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
             }
             
             $vs_context = caGetOption('context', $va_rule, null);
@@ -158,7 +189,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$va_parts = explode('.', $vs_target);
 			
 			if ((sizeof($va_parts) == 1) && $vb_is_relationship_rule) {    // clone relationships
-			    if (($vs_mode === 'addIfTempty') && $t_instance->hasRelationshipsWith($vs_target)) { 
+			    if (($vs_mode === 'addifempty') && $t_instance->hasRelationshipsWith($vs_target)) { 
 			        Debug::msg("[prepopulateFields()] skipped rule {$vs_rule_key} because mode is addIfEmpty and it already has {$vs_target} relationships.");
 			        continue;
 			    }
@@ -236,9 +267,14 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			} elseif(sizeof($va_parts) == 2) {
 // intrinsic
 				if($t_instance->hasField($va_parts[1])) {
-					switch(strtolower($vs_mode)) {
+					switch($vs_mode) {
 						case 'overwrite': // always set
 							$t_instance->set($va_parts[1], $vs_value);
+							break;
+						case 'overwriteifset': // set if value is not empty
+						    if(strlen($vs_value) > 0) {
+							    $t_instance->set($va_parts[1], $vs_value);
+							}
 							break;
 						case 'addifempty':
 						default:
@@ -251,29 +287,83 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 					}
 // attribute/element
 				} elseif($t_instance->hasElement($va_parts[1])) {
+					$datatype = ca_metadata_elements::getElementDatatype($va_parts[1]);
 
 					$va_attributes = $t_instance->getAttributesByElement($va_parts[1]);
-					if(sizeof($va_attributes)>1) {
-						Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
-						continue;
-					}
-
-					switch(strtolower($vs_mode)) {
-						case 'overwrite': // always replace first value we find
-							$t_instance->replaceAttribute(array(
-								$va_parts[1] => $vs_value,
-								'locale_id' => $g_ui_locale_id
-							), $va_parts[1]);
-							break;
-						default:
-						case 'addifempty': // only add value if none exists
-							if(!$t_instance->get($vs_target)) {
+					
+					$va_source_map = caGetOption('sourceMap', $va_rule, null);
+					
+					if (($datatype == 0) && $vs_source) { // full container clone using "source" rather than template
+						if (is_array($source_values = $t_instance->get($vs_source, ['returnWithStructure' => true]))) {
+						
+							$isset = false;
+							foreach($va_attributes as $attr) {
+								foreach($attr->getValues() as $v) {
+									if(is_array($va_source_map) && sizeof($va_source_map) && !array_key_exists($v->getElementCode(), $va_source_map)) { continue; }
+									
+									if (strlen($v->getDisplayValue()) > 0) { $isset = true; break(2); }
+								}
+							}
+							if (($vs_mode == 'addifempty') && $isset) { continue; }
+							if (($vs_mode == 'overwriteifset') && !$isset) { continue; }
+							
+							$i = 0;
+							$t_instance->removeAttributes($va_parts[1]);
+							$t_instance->update(['force' => true]);
+							
+							if($t_instance->numErrors()) { 
+								Debug::msg(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
+							}
+		
+							foreach(array_shift($source_values) as $attr_id => $attr) {
+								if(is_array($va_source_map) && sizeof($va_source_map)) {
+									$map_attr = [];
+									foreach($va_source_map as $sk => $sv) {
+										$map_attr[$sv] = $attr[$sk];
+									}
+									$attr = $map_attr;
+								}
+								if ($i == 0) {
+									$t_instance->replaceAttribute($attr, $va_parts[1]);
+								} else {
+									$t_instance->addAttribute($attr, $va_parts[1]);
+								}
+								if($t_instance->numErrors()) { 
+									Debug::msg(_t("[prepopulateFields()] error during copy of containers: %1", join("; ", $t_instance->getErrors())));
+								}
+								$i++;
+							}
+						}
+					} else {
+						if(sizeof($va_attributes)>1) {
+							Debug::msg("[prepopulateFields()] partial containers with multiple values are not supported");
+							continue;
+						}
+						switch($vs_mode) {
+							case 'overwrite': // always replace first value we find
 								$t_instance->replaceAttribute(array(
 									$va_parts[1] => $vs_value,
 									'locale_id' => $g_ui_locale_id
 								), $va_parts[1]);
-							}
-							break;
+								break;
+							case 'overwriteifset': 
+								if(strlen($vs_value) > 0) {
+									$t_instance->replaceAttribute(array(
+										$va_parts[1] => $vs_value,
+										'locale_id' => $g_ui_locale_id
+									), $va_parts[1]);
+								}
+								break;
+							default:
+							case 'addifempty': // only add value if none exists
+								if(!$t_instance->get($vs_target)) {
+									$t_instance->replaceAttribute(array(
+										$va_parts[1] => $vs_value,
+										'locale_id' => $g_ui_locale_id
+									), $va_parts[1]);
+								}
+								break;
+						}
 					}
 				}
 // "container"
@@ -283,18 +373,38 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 					$va_attr = $t_instance->getAttributesByElement($va_parts[1]);
 					switch (sizeof($va_attr)) {
 						case 1:
-							switch (strtolower($vs_mode)) {
+							switch ($vs_mode) {
 								case 'overwrite':
 									$vo_attr = array_pop($va_attr);
 									$va_value = array($va_parts[2] => $vs_value);
 
+                                    $vb_is_set = false;
 									foreach ($vo_attr->getValues() as $o_val) {
 										if ($o_val->getElementCode() != $va_parts[2]) {
-											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue(['idsOnly' => true]);
+											$va_value[$o_val->getElementCode()] = $v = $o_val->getDisplayValue(['idsOnly' => true]);
+											$vb_is_set = true; 
 										}
 									}
+                                    if (($vs_mode === 'overwrite') || $vb_is_set) {
+									    $t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
+									}
+									break;
+								case 'overwriteifset':
+									$vo_attr = array_pop($va_attr);
+									$va_value = array($va_parts[2] => $vs_value);
 
-									$t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
+                                    $vb_is_set = false;
+									foreach ($vo_attr->getValues() as $o_val) {
+										if ($o_val->getElementCode() != $va_parts[2]) {
+											if (strlen($v) > 0) { 
+												$va_value[$o_val->getElementCode()] = $v = $o_val->getDisplayValue(['idsOnly' => true]);
+												$vb_is_set = true; 
+											}
+										}
+									}
+                                    if (($vs_mode === 'overwrite') || $vb_is_set) {
+									    $t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
+									}
 									break;
 								case 'addifempty':
 									$vo_attr = array_pop($va_attr);
@@ -340,22 +450,29 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							), $g_ui_locale_id, null, $vb_preferred);
 							break;
 						case 1:
-							switch (strtolower($vs_mode)) {
+							switch ($vs_mode) {
 								case 'overwrite':
+								case 'overwriteifset':
 								case 'addifempty':
-									$va_labels = $t_instance->getLabels(null, $vb_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
+								    $va_labels = caExtractValuesByUserLocale($t_instance->getLabels(null, $vb_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__));
+									
 									if (sizeof($va_labels)) {
 										$va_labels = caExtractValuesByUserLocale($va_labels);
 										$va_label = array_shift($va_labels);
-										$va_label = $va_label[0];
-										$va_label[$va_parts[2]] = $vs_value;
-
+										
+										$label_fld = $t_instance->getLabelDisplayField();
+							            $is_blank = (isset($va_label[$label_fld]) && ($va_label[$label_fld] == '['._t('BLANK').']'));
+										
 										$vb_update = false;
-										if(strtolower($vs_mode) == 'overwrite') {
+										if($vs_mode == 'overwrite') {
 											$va_label[$va_parts[2]] = $vs_value;
 											$vb_update = true;
+										} elseif(($vs_mode == 'overwriteifset') && (strlen($vs_value) > 0))  {
+                                            $va_label[$va_parts[2]] = $vs_value;
+                                            $vb_update = true;
 										} else {
-											if(strlen(trim($va_label[$va_parts[2]])) == 0) { // in addifempty mode only edit label when field is not set
+										    $l = trim($va_label[$va_parts[2]]);
+											if((strlen($l) == 0) || ($is_blank)) { // in addifempty mode only edit label when field is not set
 												$va_label[$va_parts[2]] = $vs_value;
 												$vb_update = true;
 											}
@@ -366,7 +483,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 												$va_label['label_id'], $va_label, $g_ui_locale_id, null, $vb_preferred
 											);
 										}
-									} else {
+									} elseif (($vs_mode !== 'overwriteifset') || (strlen($vs_value) > 0)) {
 										$t_instance->addLabel(array(
 											$va_parts[2] => $vs_value,
 										), $g_ui_locale_id, null, $vb_preferred);
@@ -387,10 +504,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
 
 		if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
-		$vn_old_mode = $t_instance->getMode();
-		$t_instance->setMode(ACCESS_WRITE);
-		$t_instance->update();
-		$t_instance->setMode($vn_old_mode);
+		$t_instance->update(['force' => true]);
 
 		if($t_instance->numErrors() > 0) {
 			foreach($t_instance->getErrors() as $vs_error) {

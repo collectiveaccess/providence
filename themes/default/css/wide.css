@@ -1906,7 +1906,7 @@ div.browseCriterion {
 	border: 1px solid #999999; 
 	padding: 5px; 
 	height: 90px; 
-	overflow: hide;
+	overflow: hidden;
 }
 
 .browseCriterionLabel {
@@ -1981,7 +1981,7 @@ div.searchFormElementEditorAddGroupButton {
 	border-top: 1px dotted #aaaaaa;
 }
 
-/ * SEARCH FORMS */
+/* SEARCH FORMS */
 
 div.searchFormSelector {
 	float: right;

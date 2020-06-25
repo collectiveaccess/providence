@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	var $properties;
 	
 	var $opo_config;
+	
+	var $ops_path_to_openctm = null;
+	var $ops_path_to_meshlab = null;
 	
 	var $info = array(
 		"IMPORT" => array(
@@ -132,6 +135,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	public function register() {
 		$this->opo_config = Configuration::load();
 		
+		$this->ops_path_to_openctm = caOpenCTMInstalled();
+		$this->ops_path_to_meshlab = caMeshlabServerInstalled();
+		
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
 	}
@@ -142,7 +148,12 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		if ($this->register()) {
 			$va_status['available'] = true;
 		}
-		
+		if (!caMeshlabServerInstalled()) {
+			$va_status['warnings'][] = _t("MeshLab cannot be found: you will not be able to process 3D files; you can obtain MeshLab at http://www.meshlab.net/");
+		} else {
+			$va_status['notices'][] = _t("Found MeshLab");
+		}
+
 		return $va_status;
 	}
 	# ------------------------------------------------
@@ -268,7 +279,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		return array();
 	}
 	# ------------------------------------------------
-	public function read ($ps_filepath) {
+	public function read ($ps_filepath, $mimetype="", $options=null) {
 		if (is_array($this->handle) && ($this->filepath == $ps_filepath)) {
 			# noop
 		} else {
@@ -331,8 +342,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 
 		switch($ps_mimetype) {
 			case 'application/ctm':
-				if(file_exists($this->filepath) && caOpenCTMInstalled()){
-					exec(caGetExternalApplicationPath('openctm').' '.caEscapeShellArg($this->filepath)." ".caEscapeShellArg($ps_filepath).".ctm --method MG2 --level 9 2>&1", $va_output);
+				if(file_exists($this->filepath) && $this->ops_path_to_openctm){
+					caExec($this->ops_path_to_openctm.' '.caEscapeShellArg($this->filepath)." ".caEscapeShellArg($ps_filepath).".ctm --method MG2 --level 9 2>&1", $va_output);
 					return "{$ps_filepath}.ctm";	
 				} else {
 					@unlink("{$ps_filepath}.ctm");
@@ -344,10 +355,10 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 				# pretty restricted, but we can convert ply to stl!
 				if(($this->properties['mimetype'] == 'application/ply') && ($ps_mimetype == 'application/stl')){
 					if(file_exists($this->filepath)){
-						if (caMeshlabServerInstalled()) {
+						if ($this->ops_path_to_meshlab) {
 							putenv("DISPLAY=:0");
 							chdir('/usr/local/bin');
-							exec(caGetExternalApplicationPath('meshlabserver')." -i ".caEscapeShellArg($this->filepath)." -o ".caEscapeShellArg($ps_filepath).".stl 2>&1", $va_output);
+							caExec($this->ops_path_to_meshlab." -i ".caEscapeShellArg($this->filepath)." -o ".caEscapeShellArg($ps_filepath).".stl 2>&1", $va_output);
 							return "{$ps_filepath}.stl";	
 						} elseif(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
 							return "{$ps_filepath}.stl";	

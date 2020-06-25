@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,6 +32,9 @@
 	$vs_current_sort 	= $this->getVar('current_sort');
 	$vs_current_sort_direction 	= $this->getVar('current_sort_direction');
 	$vs_type_name_singular		= $this->getVar('type_name_singular');
+	
+	$user_id = $this->request->getUserID();
+	
 if (!$this->request->isAjax()) {
 	$vs_set_type_menu = '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
 							'<div class="caNavHeaderIcon">'.
@@ -91,7 +94,10 @@ if (!$this->request->isAjax()) {
 ?>
 	<?php print caFormTag($this->request, 'Algebra', 'algebraSetForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noCSRFToken' => true, 'submitOnReturn' => false]); ?>
 		<div id="algebraSetControls">
-			<?php print _t("Create new set %1 from the %2 of %3 selected sets", "<input type='text' size='10' name='algebra_set_name' id='algebraSetName'/>", caHTMLSelect("algebra_set_operation", [_t("combination") => "UNION", _t("intersection") => "INTERSECTION", _t("difference") => "DIFFERENCE"]), '<span id="selectedSetCount"></span>');?>  <?php print caFormSubmitButton($this->request, __CA_NAV_ICON_ADD__, '', 'algebraSetForm', ['size' => 1]); ?>
+			<?php print _t("%1 <span id='algebraCreateText'>new set %2 from the %3 of </span>%4 selected sets", caHTMLSelect("algebra_set_mode", [_t("Create") => "CREATE", _t("Delete") => "DELETE"], ['id' => 'algebraModeSelect']), "<input type='text' size='10' name='algebra_set_name' id='algebraSetName'/>", caHTMLSelect("algebra_set_operation", [_t("combination") => "UNION", _t("intersection") => "INTERSECTION", _t("difference") => "DIFFERENCE"]), '<span id="selectedSetCount"></span>');?>  
+			
+			<?php print caFormSubmitButton($this->request, __CA_NAV_ICON_ADD__, '', 'algebraSetForm', ['size' => '18px', 'id' => 'algebraAddButton']); ?>
+			<?php print caFormSubmitButton($this->request, __CA_NAV_ICON_DELETE__, '', 'algebraSetForm', ['size' => '18px', 'id' => 'algebraDeleteButton']); ?>
 		</div>
 	
 	<table id="caItemList" class="listtable">
@@ -175,7 +181,7 @@ if (!$this->request->isAjax()) {
 				</td>
 				<td class="listtableEditDelete">
 					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php ($va_set['can_delete'] == true) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
+					<?php ($t_set->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__, $va_set['set_id'])) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
 				</td>
 			</tr>
 <?php
@@ -216,7 +222,7 @@ if (!$this->request->isAjax()) {
 	
 	var caAlgebraSetTableNum = null;
 	jQuery(document).ready(function() {
-		jQuery('#algebraSetControls').hide();
+		jQuery('#algebraSetControls, #algebraDeleteButton').hide();
 		jQuery('#selectedSetCount').html(0);
 		
 		jQuery('#setListBody').on('click', '.algebraSetSelector', function(e) {
@@ -234,6 +240,16 @@ if (!$this->request->isAjax()) {
 					jQuery(".algebraSetSelector").show();
 				}
 				jQuery('#algebraSetControls').hide(100);
+			}
+		});
+		
+		jQuery('#algebraModeSelect').on('change', function(e) {
+			if (jQuery(this).val() == 'DELETE') {
+				jQuery('#algebraCreateText, #algebraAddButton').hide();
+				jQuery('#algebraDeleteButton').show();
+			} else {
+				jQuery('#algebraDeleteButton').hide();
+				jQuery('#algebraCreateText, #algebraAddButton').show();
 			}
 		});
 	});

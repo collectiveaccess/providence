@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -96,6 +96,14 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your text to be locale-specific. (The default is to be.)')
+		),
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -375,7 +383,8 @@
  			}
  			$vs_element .= caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
- 				$va_opts
+ 				$va_opts,
+ 				['textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null)]
  			);
 
 			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
@@ -397,6 +406,7 @@
  				
  				$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
  				$va_parser_opts = [];
+ 				
  				foreach([
                         'inch_decimal_precision', 'feet_decimal_precision', 'mile_decimal_precision', 
                         'millimeter_decimal_precision', 'centimeter_decimal_precision', 'meter_decimal_precision', 
@@ -404,7 +414,9 @@
                         'use_unicode_fraction_glyphs_for', 'display_fractions_for', 
                         'add_period_after_units', 
                         'use_inches_for_display_up_to', 'use_feet_for_display_up_to', 'use_millimeters_for_display_up_to', 
-                        'use_centimeters_for_display_up_to', 'use_meters_for_display_up_to'
+                        'use_centimeters_for_display_up_to', 'use_meters_for_display_up_to',
+                        'force_meters_for_all_when_dimension_exceeds', 'force_centimeters_for_all_when_dimension_exceeds', 'force_millimeters_for_all_when_dimension_exceeds',
+                        'force_feet_for_all_when_dimension_exceeds', 'force_inches_for_all_when_dimension_exceeds'
  			        ] as $vs_key) {
  				    $vs_proc_key = caSnakeToCamel($vs_key);
  				    $va_parser_opts[$vs_proc_key] = $o_dimensions_config->get($vs_key);
@@ -414,7 +426,7 @@
  				    caDisplayTemplateParser.setOptions(".json_encode($va_parser_opts).");
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				";
- 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').on('keyup', function(e) { 
+ 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').on('keyup change', function(e) { 
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				});";
  				

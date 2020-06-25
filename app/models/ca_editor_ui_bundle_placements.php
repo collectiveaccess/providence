@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,7 +41,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 	'label' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 30, 'height' => 1,
+		'width' => "475px", 'height' => 1,
 		'takesLocale' => true,
 		'label' => _t('Alternate label to place on bundle'),
 		'description' => _t('Custom label text to use for this placement of this bundle.')
@@ -49,7 +49,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 	'add_label' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 30, 'height' => 1,
+		'width' => "475px", 'height' => 1,
 		'takesLocale' => true,
 		'label' => _t('Alternate label to place on bundle add button'),
 		'description' => _t('Custom text to use for the add button for this placement of this bundle.')
@@ -57,7 +57,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 	'description' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 30, 'height' => 5,
+		'width' => "475px", 'height' => "50px",
 		'takesLocale' => true,
 		'label' => _t('Descriptive text for bundle.'),
 		'description' => _t('Descriptive text to use for help for bundle. Will override descriptive text set for underlying metadata element, if set.')
@@ -85,7 +85,7 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 		'displayType' => DT_CHECKBOXES,
 		'width' => 30, 'height' => 1,
 		'takesLocale' => false,
-		'default' => '0',
+		'default' => 0,
 		'label' => _t('Read only?'),
 		'description' => _t('If checked, field will not be editable.')
 	),

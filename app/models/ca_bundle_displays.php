@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,6 +43,7 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php');
 require_once(__CA_MODELS_DIR__.'/ca_bundle_display_type_restrictions.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
 define('__CA_BUNDLE_DISPLAY_NO_ACCESS__', 0);
 define('__CA_BUNDLE_DISPLAY_READ_ACCESS__', 1);
@@ -514,7 +515,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_bundle_display_placements
 			WHERE
 				display_id = ?
-			ORDER BY rank
+			ORDER BY `rank`
 		", (int)$vn_display_id);
 		
 		$va_available_bundles = ($pb_settings_only) ? [] : $this->getAvailableBundles(null, $pa_options);
@@ -528,9 +529,15 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			
 			$t_user = new ca_users($pn_user_id);
 			while($qr_res->nextRow()) {
-				$vs_bundle_name = $qr_res->get('bundle_name');
+				$vs_bundle_name = $vs_bundle_name_proc = $qr_res->get('bundle_name');
 				$va_bundle_name = explode(".", $vs_bundle_name);
-				
+				if (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) > 2)) {
+					array_pop($va_bundle_name);
+					$vs_bundle_name_proc = join('.', $va_bundle_name);
+				} elseif (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) === 1)) {
+					$va_bundle_name[] = 'related';
+					$vs_bundle_name_proc = $vs_bundle_name = join('.', $va_bundle_name);
+				}
 				$vb_user_can_edit = $t_subject->isSaveable(caGetOption('request', $pa_options, null), $vs_bundle_name);
 				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
@@ -538,9 +545,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_placements[$vn_placement_id]['allowEditing'] = $vb_user_can_edit;
 							
 				if (!$pb_settings_only) {
-					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
+					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name_proc]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
-					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings));
+					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings, 'table' => $vs_subject_table));
 				} else {
 					$t_instance = Datamodel::getInstanceByTableName($va_bundle_name[0], true);
 					$va_placements[$vn_placement_id]['display'] = ($t_instance ? $t_instance->getDisplayLabel($vs_bundle_name) : "???");
@@ -1034,7 +1041,7 @@ if (!$pb_omit_editing_info) {
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
 				"#bundleDisplayEditorBundle_".str_replace('.', '_', $vs_bundle),
-				$this->_formatBundleTooltip($vs_label, $vs_bundle, _t('Use this generic %1 bundle to display %1 templates not specific to a single metadata element.', $t_instance->getProperty('NAME_SINGULAR'), $t_instance->getProperty('NAME_SINGULAR')))
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, _t('Use this generic %1 bundle to display %1 templates not specific to a single metadata element.', $t_instance->getProperty('NAME_SINGULAR')))
 			);
 		}
 		
@@ -1159,6 +1166,19 @@ if (!$pb_omit_editing_info) {
 							'description' => _t('Determines if value used is singular or plural version.')
 						)		
 					);
+					break;
+				case __CA_ATTRIBUTE_VALUE_MEDIA__:
+					$va_even_more_settings = [
+					    'appendMultiPagePDFToPDFOutput' => [
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'width' => 10, 'height' => 1,
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Append multipage PDF to output?'),
+							'description' => _t('Check this option if you want PDF media in display appended to the end of PDF display output.')
+						    ]
+						];
 					break;
 				case __CA_ATTRIBUTE_VALUE_CONTAINER__:	// (allows sub-elements to be summarized)
 				case __CA_ATTRIBUTE_VALUE_CURRENCY__: 
@@ -1371,6 +1391,183 @@ if (!$pb_omit_editing_info) {
 
 		}
 		
+		if (method_exists($t_instance, 'tablesTakeHistoryTracking') && in_array($vs_table, $vs_table::tablesTakeHistoryTracking())) {
+			$va_additional_settings = array(
+				'format' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				),
+				'policy' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'default' => '__default__',
+					'width' => "275px", 'height' => 1,
+					'useHistoryTrackingPolicyList' => true,
+					'label' => _t('Use history tracking policy'),
+					'description' => ''
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.history_tracking_current_value';
+			$vs_label = _t('History tracking current value');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_history_tracking_current_value'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('History tracking current value')."</div>";
+			$vs_description = _t('Current value for history tracking policy');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_history_tracking_current_value",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+			
+			$vs_bundle = $vs_table.'.history_tracking_current_date';
+			$vs_label = _t('History tracking current value date');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_history_tracking_current_date'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('History tracking current value date')."</div>";
+			$vs_description = _t('Current value date for history tracking policy');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_history_tracking_current_date",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+			
+			$va_additional_settings = array(
+				'format' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				),
+				'policy' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'default' => '__default__',
+					'width' => "275px", 'height' => 1,
+					'useHistoryTrackingReferringPolicyList' => true,
+					'label' => _t('Use history tracking policy'),
+					'description' => ''
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.history_tracking_current_contents';
+			$vs_label = _t('History tracking current contents');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_history_tracking_current_contents'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('History tracking contents')."</div>";
+			$vs_description = _t('Current value date for history tracking policy');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_history_tracking_current_contents",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+		
+		
+		    $va_additional_settings = array(
+				'display_template' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.submitted_by_user';
+			$vs_label = _t('Submitted by user');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_submitted_by_user'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Submitted by user')."</div>";
+			$vs_description = _t('Name and email address user that submitted item');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_submitted_by_user",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+			
+			$va_additional_settings = array(
+				'display_template' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				)
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.submission_group';
+			$vs_label = _t('Submitted by group');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_submission_group'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Submission group')."</div>";
+			$vs_description = _t('Group item was submitted under');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0', 'table' => $vs_table)),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_submission_group",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+		}
+		
 		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {
 			// get object representations (objects only, of course)
 			if ($vs_table == 'ca_objects') {
@@ -1387,7 +1584,29 @@ if (!$pb_omit_editing_info) {
 						),
 						'label' => _t('Output mode'),
 						'description' => _t('Determines if value used is URL of media or the media itself.')
-					)		
+					),
+					'show_nonprimary' => array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'width' => 35, 'height' => 1,
+						'takesLocale' => false,
+						'default' => 0,
+						'options' => array(
+							_t('Yes') => 1,
+							_t('No') => 0
+						),
+						'label' => _t('Include non-primary media'),
+						'description' => _t('Includes non-primary media in display.')
+					),					
+                    'delimiter' => array(
+                        'formatType' => FT_TEXT,
+                        'displayType' => DT_FIELD,
+                        'width' => 35, 'height' => 1,
+                        'takesLocale' => false,
+                        'default' => '',
+                        'label' => _t('Delimiter'),
+                        'description' => _t('Text to place in-between repeating values.')
+                    )
 				);
 			
 				$o_media_settings = new MediaProcessingSettings('ca_object_representations', 'media');
@@ -1503,6 +1722,14 @@ if (!$pb_omit_editing_info) {
 					'label' => _t('Sort using'),
 					'description' => _t('Override sort option for this field. Use this if you want result lists to sort on a different field when clicking on this bundle.')
 				),
+				'numPerPage' => array(
+					'formatType' => FT_NUMBER,
+					'displayType' => DT_FIELD,
+					'default' => 100,
+					'width' => "5", 'height' => 1,
+					'label' => _t('Number of items to load per page'),
+					'description' => _t('Maximum number of items to render on initial load.')
+				)
 			);
 			
 			
@@ -1939,6 +2166,7 @@ if (!$pb_omit_editing_info) {
 		$o_request = 		caGetOption('request', $pa_options, null);
 		
 		$vb_return_info =	caGetOption('returnInfo', $pa_options, false);
+		$vb_include_nonprimary_media = caGetOption('show_nonprimary', $pa_options, false);
 		
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		if (!isset($pa_options['forReport'])) { $pa_options['forReport'] = false; }
@@ -2023,7 +2251,8 @@ if (!$pb_omit_editing_info) {
 						if ($vs_sort_attr = ($vs_sort) ? "sort=\"{$rel_table}.{$vs_sort}\"" : "") {
 						    $vs_sort_dir_attr = ($vs_sort_dir) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
 						}
-						$vs_unit_tag = "<unit relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
+						$max_items = (int)caGetOption('numPerPage', $va_settings, 0);
+						$vs_unit_tag = "<unit ".(($max_items > 0) ? "length=\"{$max_items}\"" : '')." relativeTo=\"".$va_path[1]."\" delimiter=\"".$pa_options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
 
 						switch(sizeof($va_path)) {
 							case 3:
@@ -2049,7 +2278,12 @@ if (!$pb_omit_editing_info) {
 					}
 				} else {
 					// resolve template relative to current record
-					$vs_val = $po_result->getWithTemplate($vs_template, ['relativeToContainer' => (ca_metadata_elements::getElementDatatype($va_bundle_bits[sizeof($va_bundle_bits)-1]) === 0) ? $vs_bundle_name : null, 'filters'=> $pa_options['filters'], 'delimiter' => $pa_options['delimiter']]);
+					$vs_val = $po_result->getWithTemplate($vs_template, [
+						'relativeToContainer' => (ca_metadata_elements::getElementDatatype($va_bundle_bits[sizeof($va_bundle_bits)-1]) === 0) ? $vs_bundle_name : null, 
+						'filters'=> $pa_options['filters'], 
+						'delimiter' => $pa_options['delimiter'], 
+						'policy' => $va_settings['policy']]		// passed for history tracking current value
+					);
 				}
 			}
 		} else {
@@ -2057,7 +2291,10 @@ if (!$pb_omit_editing_info) {
 			if($pb_show_hierarchy && (sizeof($va_bundle_bits) == 1)) {
 				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
 			}
-			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $pa_options));
+			
+			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(false); }
+			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], array_merge($pa_options, ['policy' => $va_settings['policy']])));	// policy passed for history tracking current value
+			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(true); }
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {
@@ -2066,7 +2303,10 @@ if (!$pb_omit_editing_info) {
 		
 		if ($vb_return_info) {
 			if (!$t_instance) { $t_instance = Datamodel::getInstanceByTableName($va_bundle_bits[0], true); }
-			$va_info_data = array_shift($va_tmp = $po_result->get(join(".", $va_bundle_bits), array_merge($pa_options, ['returnWithStructure' => true])));
+			
+			if(is_array($va_tmp = $po_result->get(join(".", $va_bundle_bits), array_merge($pa_options, ['returnWithStructure' => true])))) {
+				$va_info_data = array_shift($va_tmp);
+			}
 			if(!is_array($va_info_data)) { $va_info_data = []; }
 			
 			$vs_inline_editing_type = $va_inline_editing_list_values = $vn_inline_editing_list_id = null;
@@ -2385,12 +2625,12 @@ if (!$pb_omit_editing_info) {
 		$va_params = ['display_id' => $vn_display_id];
 		if ((int)$pn_type_id > 0) { $va_params['type_id'] = (int)$pn_type_id; }
 
-		if (is_array($va_uis = ca_bundle_display_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
+		if (is_array($va_displays = ca_bundle_display_type_restrictions::find($va_params, ['returnAs' => 'modelInstances']))) {
 			foreach($va_displays as $t_display) {
 				$t_display->setMode(ACCESS_WRITE);
 				$t_display->delete(true);
 				if ($t_display->numErrors()) {
-					$this->errors = $t_t_displayui->errors();
+					$this->errors = $t_display->errors();
 					return false;
 				}
 			}
@@ -2454,7 +2694,7 @@ if (!$pb_omit_editing_info) {
 		$vs_subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
 			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])
 		]);
-		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
+		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('forceEnabled' => true, 'value' => 0, 'values' => $va_restriction_type_ids)).$vs_subtype_element);
 	
 		return $o_view->render('ca_bundle_display_type_restrictions.php');
 	}
@@ -2631,7 +2871,6 @@ if (!$pb_omit_editing_info) {
 	 * @return array Array of placements. Each value is an array with information about a column in the inline editor.
 	 */
 	static public function makeBundlesForResultsEditor($pa_bundles, $pa_settings=null) {		
-		
 		$va_placements = [];
 
 		$vn_i = 1;
@@ -2646,6 +2885,7 @@ if (!$pb_omit_editing_info) {
 				}
 			}
 			
+			$vs_bundle = preg_replace("!\.related$!", "", $vs_bundle);  // Remove .related specifier as editor form generator doesn't need or recognize itQ
 			$va_placements[] = array(
 				'placement_id' => 'X'.$vn_i,
 				'screen_id' => -1,
@@ -3011,7 +3251,7 @@ if (!$pb_omit_editing_info) {
 		$vn_id = $t_subject->getPrimaryKey();
 		
 		return [
-			'status' => sizeof($va_error_list) ? 10 : 0,
+			'status' => (is_array($va_error_list) && sizeof($va_error_list)) ? 10 : 0,
 			'id' => $vn_id,
 			'row' => $pn_row, 'col' => $pn_col,
 			'table' => $t_subject->tableName(),

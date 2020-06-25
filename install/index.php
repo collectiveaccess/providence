@@ -27,8 +27,14 @@
  *
  * ----------------------------------------------------------------------
  */
+    //
+    // Send headers before any other content.
+    // Disable gzip or any compression to allow showing progressbar.
+    //
+    header('Content-Encoding: none');
 	define('__CollectiveAccess_Installer__', 1);
-	error_reporting(E_ALL ^ E_NOTICE);
+
+    error_reporting(E_ALL ^ E_NOTICE);
 	set_time_limit(7200);
 	ini_set("memory_limit", "512M");	
 	
@@ -102,7 +108,7 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 	// get current theme
 	$theme = 'default';
 	
-	$_ = new Zend_Translate('gettext', __CA_APP_DIR__.'/locale/'.$locale.'/messages.mo', $locale);
+	$_ = new Zend_Translate('gettext', __CA_APP_DIR__.'/locale/'.$locale.'/messages.mo', $locale, ['disableNotices' => true]);
 	
 	require_once(__CA_LIB_DIR__.'/Configuration.php');
 	require_once(__CA_LIB_DIR__.'/Db.php');

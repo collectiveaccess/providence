@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,7 +48,8 @@ var caUI = caUI || {};
 			displayBundleListID: null,											/* ID of hidden form element to contain list of selected bundles */
 			
 			allowSettings: true,
-			settingsIcon: null
+			settingsIcon: null,
+			saveSettingsIcon: null
 		}, options);
 
 		// ------------------------------------------------------------------------------------
@@ -73,6 +74,8 @@ var caUI = caUI || {};
 			
 			that._makeDisplayListsSortable();
 			that._updateBundleListFormElement();
+			
+			if (!that.saveSettingsIcon) { that.saveSettingsIcon = that.settingsIcon; }
 		}
 		// ------------------------------------------------------------------------------------
 		// sortable lists
@@ -98,6 +101,9 @@ var caUI = caUI || {};
 		// ------------------------------------------------------------------------------------
 		that._formatForDisplay = function(placement_info) {
 			var label = placement_info.display;
+			
+			if(!label) { return ''; }
+			
 			var bundle = placement_info.bundle;
 			var placementID = placement_info.placement_id;
 			var settingsForm = '';
@@ -124,7 +130,7 @@ var caUI = caUI || {};
 			output += "</div>\n";	
 			
 			if (that.allowSettings) {		
-				output += "<div id='displayElementSettings_" + id +"' class='elementSettingsUI' style='display: none;'>" + label + "<div class='settingsFormContainer'></div><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeOut(250); return false; '>" + that.settingsIcon + "</a></div>";
+				output += "<div id='displayElementSettings_" + id +"' class='elementSettingsUI' style='display: none;'>" + label + "<div class='settingsFormContainer'></div><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeOut(250); return false; '>" + that.saveSettingsIcon + "</a></div>";
 			}
 			return output;
 		}
@@ -154,7 +160,7 @@ var caUI = caUI || {};
 	// Lazily insert popup settings form HTML from map.
 	caUI.bundlelisteditor.initSettingsForm = function (id) {
 		if (caUI.bundlelisteditor.settingsForms[id]) {
-			$('#displayElementSettings_' + id.replace('.', '\\.') + ' .settingsFormContainer')		// don't forget to escape periods in DOM ids
+			$('#displayElementSettings_' + id.replace(/\./g, '\\.') + ' .settingsFormContainer')		// don't forget to escape periods in DOM ids
 				.html(caUI.bundlelisteditor
 				.settingsForms[id])					
 				.find("input:checked").change();	// trigger change handler to hide anything affected by hideOnSelect option for checkboxes

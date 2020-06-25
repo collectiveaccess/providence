@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -205,7 +205,7 @@
 		# -------------------------------------------------------
 		# Elements
 		# -------------------------------------------------------
-		private function getElements() {
+		public function getElements() {
 			if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
 				if (is_array($this->opa_formats[$vs_format][$vs_type]['elements'])) {
 					$vb_is_child = $this->isChild();
@@ -220,7 +220,7 @@
 			return null;
 		}
 		# -------------------------------------------------------
-		private function getElementInfo($ps_element_name) {
+		public function getElementInfo($ps_element_name) {
 			if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
 				return $this->opa_formats[$vs_format][$vs_type]['elements'][$ps_element_name];
 			}

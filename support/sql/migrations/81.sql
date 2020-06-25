@@ -26,7 +26,7 @@ create table ca_data_exporter_items (
 	hier_item_id			int unsigned			not null,
 	hier_left				decimal(30,20) unsigned	not null,
 	hier_right				decimal(30,20) unsigned	not null,
-	rank					int unsigned			not null default 0,
+	`rank`					int unsigned			not null default 0,
 
 	primary key (item_id),
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2018 Whirl-i-Gig
+ * Copyright 2006-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,9 +55,6 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $metadata = array();
 	
 	var $opo_config;
-	var $opo_external_app_config;
-	var $ops_imagemagick_path;
-	var $ops_graphicsmagick_path;
 	
 	var $info = array(
 		"IMPORT" => array(
@@ -131,9 +128,6 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
-		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
 		
 		if (caMediaPluginImagickInstalled()) {	
 			return null;	// don't use GD if Imagick is available
@@ -141,10 +135,10 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (caMediaPluginGmagickInstalled()) {	
 			return null;	// don't use GD if Gmagick is available
 		} 
-		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+		if (caMediaPluginImageMagickInstalled()) {
 			return null;	// don't use if ImageMagick executables are available
 		}
-		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
+		if (caMediaPluginGraphicsMagickInstalled()){
 			return null;	// don't use if GraphicsMagick is available
 		}
 		if (!caMediaPluginGDInstalled()) {
@@ -165,7 +159,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Imagick/ImageMagick is available and preferred");
 			} 
-			if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+			if (caMediaPluginImageMagickInstalled()) {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because ImageMagick (command-line) is available and preferred");
 			}
@@ -173,7 +167,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
 			}
-			if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+			if (caMediaPluginGraphicsMagickInstalled()) {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because GraphicsMagick is available and preferred");
 			}
@@ -325,7 +319,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->metadata;
 	}
 	# ----------------------------------------------------------
-	public function read($filepath, $mimetype="") {
+	public function read($filepath, $mimetype="", $options=null) {
 		if ($mimetype == 'image/tilepic') {
 			#
 			# Read in Tilepic format image
@@ -362,6 +356,10 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						$this->metadata["EXIF"] = $va_exif = caSanitizeArray(@exif_read_data($filepath, 'EXIF', true, false));
 						
+						// rewrite file name to use originally uploaded name
+						if(array_key_exists("FILE", $this->metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+							$this->metadata["EXIF"]['FILE']['FileName'] = $f;
+						}
 						
 						//
 						// Rotate incoming image as needed

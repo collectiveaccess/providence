@@ -59,6 +59,14 @@
         </metadataElement>
       </elements>
       <typeRestrictions>
+      	<restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1000</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
         <restriction code="ca_storage_locations">
           <table>ca_storage_locations</table>
           <settings>

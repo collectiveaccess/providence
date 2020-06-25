@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2018 Whirl-i-Gig
+ * Copyright 2006-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,12 +64,9 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $input_sample_frequency;
 
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_path_to_ffmpeg;
-	var $opb_ffmpeg_available;
 
 	var $ops_mediainfo_path;
-	var $opb_mediainfo_available;
 
 	var $info = array(
 		"IMPORT" => array(
@@ -160,13 +157,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_path_to_ffmpeg = $this->opo_external_app_config->get('ffmpeg_app');
-
-		$this->ops_mediainfo_path = caGetExternalApplicationPath('mediainfo');
-		$this->opb_mediainfo_available = caMediaInfoInstalled();
-
-		$this->opb_ffmpeg_available = caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg);
+		$this->ops_path_to_ffmpeg = caMediaPluginFFmpegInstalled();
+		$this->ops_mediainfo_path = caMediaInfoInstalled();
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -177,11 +169,11 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		$this->register();
 		$va_status['available'] = true;
-		if (!$this->opb_ffmpeg_available) { 
+		if (!$this->ops_path_to_ffmpeg) { 
 			$va_status['errors'][] = _t("Incoming audio files will not be transcoded because ffmpeg is not installed.");
 		}
 		
-		if ($this->opb_mediainfo_available) { 
+		if ($this->ops_mediainfo_path) { 
 			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from audio files.");
 		}
 		return $va_status;
@@ -270,7 +262,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->metadata;
 	}
 	# ------------------------------------------------
-	public function read ($filepath) {
+	public function read ($filepath, $mimetype="", $options=null) {
 		if (!file_exists($filepath)) {
 			$this->postError(1650, _t("File %1 does not exist", $filepath), "WLPlugAudio->read()");
 			$this->handle = "";
@@ -296,7 +288,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 			$this->handle = $this->ohandle = $info;
 			
-			if($this->opb_mediainfo_available){
+			if($this->ops_mediainfo_path){
 				$this->metadata = caExtractMetadataWithMediaInfo($filepath);
 			} else {
 				$this->metadata = $this->handle;
@@ -562,14 +554,14 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 		} else {
 
-			if (($mimetype != "image/png") && ($mimetype != "image/jpeg") && ($this->opb_ffmpeg_available)) {
+			if (($mimetype != "image/png") && ($mimetype != "image/jpeg") && ($this->ops_path_to_ffmpeg)) {
 				#
 				# Do conversion
 				#
 				if ($mimetype == 'audio/ogg') {
-					exec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -acodec libvorbis -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+					caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -acodec libvorbis -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 				} else {
-					exec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+					caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 				}
 				if ($vn_return != 0) {
 					@unlink($filepath.".".$ext);
@@ -582,7 +574,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						// add intro
 						$vs_tmp_filename = tempnam(caGetTempDirPath(), "audio");
 						if ($vs_intro_filepath) {
-							exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_intro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+							caExec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_intro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 							if ($vn_return != 0) {
 								@unlink($filepath.".".$ext);
 								$this->postError(1610, _t("Error converting intro to %1 [%2]: %3", $this->typenames[$mimetype], $mimetype, join("; ", $va_output)), "WLPlugAudio->write()");
@@ -598,7 +590,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						fclose($r_mp3fp);
 						if ($vs_outro_filepath) {
 							$vs_tmp_outro_filename = tempnam(caGetTempDirPath(), "audio");
-							exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_outro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_outro_filename).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+							caExec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_outro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_outro_filename).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 							if ($vn_return != 0) {
 								@unlink($filepath.".".$ext);
 								$this->postError(1610, _t("Error converting outro to %1 [%2]: %3", $this->typenames[$mimetype], $mimetype, join("; ", $va_output)), "WLPlugAudio->write()");
@@ -694,7 +686,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($vn_start >= $vn_end) { return null; }
 		$vn_duration = $vn_end - $vn_start;
 		
-		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+		caExec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			@unlink($ps_filepath);
 			$this->postError(1610, _t("Error extracting clip from %1 to %2: %3", $ps_start, $ps_end, join("; ", $va_output)), "WLPlugAudio->writeClip()");
@@ -784,8 +776,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 				ob_start();
 ?>
-			<div class="<?php print (isset($pa_options["class"])) ? $pa_options["class"] : "caAudioPlayer"; ?>">
-				<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" <?php print ($vs_poster_url = caGetOption('posterURL', $pa_options, null)) ? "poster='{$vs_poster_url}'" : ''; ?> type="audio/mp3" controls="controls"></audio>
+			<div class="<?php print (isset($pa_options["class"]) ? $pa_options["class"] : "caAudioPlayer"); ?>">
+				<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" <?php print ($vs_poster_url = caGetOption('posterURL', $pa_options, null) ? "poster='{$vs_poster_url}'" : ''); ?> type="audio/mp3" controls="controls"></audio>
 			</div>	
 			<script type="text/javascript">
 				jQuery(document).ready(function() {

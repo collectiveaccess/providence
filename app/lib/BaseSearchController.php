@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -155,7 +155,8 @@
  					$this->opo_result_context->setParameter('show_type_id', null);
  				}
  				if ($this->opn_type_restriction_id > 0) {
- 					$po_search->setTypeRestrictions(array($this->opn_type_restriction_id), array('includeSubtypes' => false));
+ 					$exclude_type_ids = caMakeTypeIDList($this->ops_tablename, $this->request->config->getList($this->ops_tablename.'_find_dont_expand_hierarchically'), ['dontIncludeSubtypesInTypeRestriction' => true]);
+ 					$po_search->setTypeRestrictions([$this->opn_type_restriction_id], ['dontExpandHierarchically' => in_array($this->opn_type_restriction_id, $exclude_type_ids)]);
  				}
  				
  				$vb_criteria_have_changed = false;
@@ -333,6 +334,10 @@
  			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
  				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__));
  			}
+ 			
+			$limit_to_types = $this->getRequest()->config->getList($this->ops_tablename.'_navigation_find_menu_limit_types_to');
+			$exclude_types = $this->getRequest()->config->getList($z=$this->ops_tablename.'_navigation_find_menu_exclude_types');
+ 	
  			$va_types = array();
  			if (is_array($va_hier)) {
  				
@@ -348,10 +353,16 @@
 				foreach($va_hier as $vn_item_id => $va_item) {
 					if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 					if ($va_item['parent_id'] != $vn_root_id) { continue; }
-					//if (!$va_item['is_enabled']) { continue; }
+					
+					if(is_array($limit_to_types) && sizeof($limit_to_types) && !in_array($va_item['idno'], $limit_to_types)) { continue; }
+					if(is_array($exclude_types) && sizeof($exclude_types) && in_array($va_item['idno'], $exclude_types)) { continue; }
 					
 					// does this item have sub-items?
-					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
+					if (
+						!$this->getRequest()->config->get($this->ops_tablename.'_navigation_find_menu_shows_top_level_types_only')
+						&&
+						(isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']]))
+					) {
 						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $va_restrict_to_types);
 					} else {
 						$va_subtypes = method_exists($this, "_getSubTypeActionNav") ? $this->_getSubTypeActionNav($va_item) : [];
@@ -373,6 +384,10 @@
  		# ------------------------------------------------------------------
 		private function _getSubTypes($pa_subtypes, $pa_types_by_parent_id, $pa_restrict_to_types=null) {
 			$va_subtypes = array();
+			
+			$limit_to_types = $this->getRequest()->config->getList($this->ops_tablename.'_navigation_find_menu_limit_types_to');
+			$exclude_types = $this->getRequest()->config->getList($z=$this->ops_tablename.'_navigation_find_menu_exclude_types');
+			
 			foreach($pa_subtypes as $vn_i => $va_type) {
 				if (is_array($pa_restrict_to_types) && !in_array($va_type['item_id'], $pa_restrict_to_types)) { continue; }
 				if (isset($pa_types_by_parent_id[$va_type['item_id']]) && is_array($pa_types_by_parent_id[$va_type['item_id']])) {
@@ -380,6 +395,10 @@
 				} else {
 					$va_subsubtypes = array();
 				}
+				
+				if(is_array($limit_to_types) && sizeof($limit_to_types) && !in_array($va_type['idno'], $limit_to_types)) { continue; }
+				if(is_array($exclude_types) && sizeof($exclude_types) && in_array($va_type['idno'], $exclude_types)) { continue; }
+				
 				$va_subtypes[$va_type['item_id']] = array(
 					'displayName' => $va_type['name_singular'],
 					'parameters' => array(

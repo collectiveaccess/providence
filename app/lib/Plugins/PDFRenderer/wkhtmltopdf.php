@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -100,6 +100,10 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	 * @seealso wkhtmltopdf::renderFile()
 	 */
 	public function render($ps_content, $pa_options=null) {
+	    // Force backtrack limit high to allow regex on very large strings
+	    // If we don't do this preg_replace will fail silently on large PDFs
+	    ini_set('pcre.backtrack_limit', '100000000');
+	    
 		// Extract header and footer
 		$vs_header = preg_match("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", $ps_content, $va_matches) ? $va_matches[1] : '';
 		$vs_footer = preg_match("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", $ps_content, $va_matches) ? $va_matches[1] : '';
@@ -110,9 +114,9 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 		file_put_contents($vs_content_path = caMakeGetFilePath("wkhtmltopdf", "html"), $ps_content); 
 		file_put_contents($vs_header_path = caMakeGetFilePath("wkhtmltopdf", "html"), $vs_header); 
 		file_put_contents($vs_footer_path = caMakeGetFilePath("wkhtmltopdf", "html"), $vs_footer); 
-		$vs_output_path = caMakeGetFilePath("wkhtmltopdf", "pdf");
+		$vs_output_path = caMakeGetFilePath("wkhtmltopdf", "pdf", ['useAppTmpDir' => true]);
 		
-		exec($this->ops_wkhtmltopdf_path." --disable-smart-shrinking --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} --page-size {$this->ops_page_size} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);	
+		caExec($this->ops_wkhtmltopdf_path." --enable-local-file-access  --disable-smart-shrinking --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} --page-size {$this->ops_page_size} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);	
 		
 		$vs_pdf_content = file_get_contents($vs_output_path);
 		if (caGetOption('stream', $pa_options, false)) {

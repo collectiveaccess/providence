@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'width' => 1, 'height' => 1,
 		'label' => _t('Require value'),
 		'description' => _t('Check this option if you want to require that a list item be selected.')
+	),
+	'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
 	),
 	'implicitNullOption' => array(
 		'formatType' => FT_NUMBER,
@@ -202,6 +210,23 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'default' => '',
 		'label' => _t('Restrict to types'),
 		'description' => _t('Restricts display to items of the specified type(s). Leave all unchecked for no restriction.')
+	),
+	'currentSelectionDisplayFormat' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => '',
+		'width' => 90, 'height' => 4,
+		'label' => _t('Current selection template'),
+		'validForRootOnly' => 1,
+		'description' => _t('Template formatting current selection text. You may use the following tags: ^current (the currently selected list item), ^parent (the parent of the currently selected list item), ^hierarchy (the full hierarchal path to the list item).')
+	),
+	'minimizeExistingValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Minimize existing values?'),
+		'description' => _t('Check this option if existing values should displayed in a minimized, non-editable format.')
 	)
 );
 
@@ -402,7 +427,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null)) && (strlen($ps_value) > 0)) {
-			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logIdno', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logReference', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
 		}
 		
 		if (!$vb_require_value && !$vn_id) {
@@ -450,8 +475,12 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
 
-		$vs_render = caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
+        $for_search = caGetOption('forSearch', $pa_options, false);
+
+		$vs_render = $for_search ? "" : caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
 		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
+		
+		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
 
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
 		if (!$vb_require_value) { $vn_max_columns++; }
@@ -469,7 +498,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			),
 			array_merge(
 				$pa_options,
-				array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink)
+				['render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 'currentSelectionDisplayFormat' => $current_selection_display_format]
 			)
 		);
 
@@ -542,7 +571,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 									$vs_condition = "{$vs_select}.val() === '" . $va_item['item_id'] . "'";
 									break;
 								default:
-									continue;
+									continue(2);
 							}
 						
 							if (sizeof($ids) > 0) {
@@ -676,15 +705,16 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
 			$t_list = new ca_lists();
 			$va_list_items = $t_list->getItemsForList($pa_element_info['list_id']);
-			if(is_array($va_list_items) && sizeof($va_list_items)) {
+			if(is_array($va_list_items) && (sizeof($va_list_items) > 0)) {
 				foreach($va_list_items as $va_items_by_locale) {
 					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => false, 'multiple' => true];
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => true, 'multiple' => true];
 					}
 				}
+				$va_element_settings['hideIfSelected___null__'] = ['deferred' => true, 'multiple' => true];
 			}
 		}
-
+		
 		return $va_element_settings;
 	}
 	# ------------------------------------------------------------------

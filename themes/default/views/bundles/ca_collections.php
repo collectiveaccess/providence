@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,6 +47,11 @@
 	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
 	
 	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+
+	// Dyamically loaded sort ordering
+	$loaded_sort 			= $this->getVar('sort');
+	$loaded_sort_direction 	= $this->getVar('sortDirection');
+	
 	
 	// params to pass during collection lookup
 	$va_lookup_params = array(
@@ -54,24 +59,28 @@
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
 		'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
 	);
-
+	
+	$count = $this->getVar('relationship_count');
+	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
+	
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 		
 	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";	
 	if(sizeof($this->getVar('initialValues'))) {
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 	}
 	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
 		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge(['includeInterstitialSortsFor' => $t_subject->tableName()], $va_settings));
@@ -168,6 +177,7 @@
 ?>
 
 		</div>
+		<div class="caNewItemList"></div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
@@ -245,7 +255,7 @@
 			}
 		});
 		
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: ['label', 'type_id', 'id'],
 			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
@@ -255,6 +265,7 @@
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			newItemListClassName: 'caNewItemList',
 			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
@@ -277,6 +288,9 @@
 <?php } ?>
 			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
+			loadedSort: <?= json_encode($loaded_sort); ?>,
+			loadedSortDirection: <?= json_encode($loaded_sort_direction); ?>,
+			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
@@ -286,6 +300,11 @@
 			itemColor: '<?php print $vs_color; ?>',
 			firstItemColor: '<?php print $vs_first_color; ?>',
 			lastItemColor: '<?php print $vs_last_color; ?>',
+			
+			totalValueCount: <?php print (int)$count; ?>,
+			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_collections')); ?>',
+			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			loadSize: <?php print $num_per_page; ?>,
 			
 			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>

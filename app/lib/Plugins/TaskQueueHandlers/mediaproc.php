@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2016 Whirl-i-Gig
+ * Copyright 2006-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,7 +89,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 			if (file_exists($va_parameters["FILENAME"])) {
 				$va_params['input_file_size'] = array(
 					'label' => _t('Input file size'),
-					'value' => sprintf("%4.2dM", filesize($va_parameters["FILENAME"])/(1024 * 1024))
+					'value' => sprintf("%s", caFormatFileSize(filesize($va_parameters["FILENAME"])))
 				);
 			}
 			$va_params['table'] = array(
@@ -218,14 +218,15 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
                 $o_media->cleanup();
                 return false;
             }
-            if (!$o_media->read($vs_input_file)) {
-                $this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
-                $o_media->cleanup();
-                return false;
-            }
             
 			foreach($va_versions as $v => $va_version_settings) {
 				$vs_use_icon = null;
+								
+                if (!$o_media->read($vs_input_file)) {
+                    $this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
+                    $o_media->cleanup();
+                    return false;
+                }
 				
 				$vs_rule 			= isset($va_version_info[$v]['RULE']) ? $va_version_info[$v]['RULE'] : '';
 				$va_rules 			= $o_media_proc_settings->getMediaTransformationRule($vs_rule);
@@ -311,7 +312,8 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 						"HASH" => $vs_dirhash,
 						"MAGIC" => $vs_magic,
 						"EXTENSION" => $vs_ext,
-						"MD5" => md5_file($vs_filepath)
+						"MD5" => md5_file($vs_filepath),
+						"FILE_LAST_MODIFIED" => filemtime($vs_filepath)
 					);
 				} else {
 					$o_media->set('version', $v);
@@ -348,7 +350,8 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 					}
 					$vs_magic = rand(0,99999);
 					$vs_filepath = $va_volume_info["absolutePath"]."/".$vs_dirhash."/".$vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v;
-												
+							
+					$o_media->set('colorspace', 'RGB');					
 					if (!($vs_output_file = $o_media->write($vs_filepath, $vs_output_mimetype, $va_options))) {
 						$this->error = $o_media->errors[0];
 						$o_media->cleanup();
@@ -428,7 +431,8 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 							"HASH" => $vs_dirhash,
 							"MAGIC" => $vs_magic,
 							"EXTENSION" => $vs_ext,
-							"MD5" => md5_file($vs_filepath.".".$vs_ext)
+							"MD5" => md5_file($vs_filepath.".".$vs_ext),
+							"FILE_LAST_MODIFIED" => filemtime($vs_filepath.".".$vs_ext)
 						);
 					}
 				}

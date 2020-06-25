@@ -122,7 +122,7 @@ var caUI = caUI || {};
 								// Show notes and due date if item is available
 								if ((data.status == 0) || (data.status == 3)) {
 									// add note field
-									_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">' + data.notes_display_label + '</div><textarea name="note" id="note_' + object_id + '" rows="2" cols="90"></textarea></div>';
+									_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">' + data.notes_display_label + '</div><textarea name="note" id="note_' + object_id + '" rows="2" cols="80"></textarea></div>';
 								
 									if (((data.status == 0) || (data.status == 3)) && (data.config.allow_override_of_due_dates == 1)) {	// item available so allow setting of due date
 										_disp += '<div class="caLibraryTransactionListItemDueDateContainer"><div class="caLibraryTransactionListItemDueDateLabel">' + data.due_on_display_label + '</div><input type="text" name="due_date" id="dueDate_' + object_id + '" value="' + data.config.default_checkout_date + '" size="10"/></div>';

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_APP_DIR__."/helpers/errorHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/systemHelpers.php");
 require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer
 
 require_once(__CA_LIB_DIR__."/Zend/Translate.php");
@@ -46,6 +47,7 @@ require_once(__CA_LIB_DIR__."/Zend/Registry.php");
 
 require_once(__CA_LIB_DIR__."/Utils/Debug.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/logHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/requestHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/initializeLocale.php");
 
@@ -53,6 +55,8 @@ if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 	$g_ui_locale = $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'];
 	if (!initializeLocale($g_ui_locale)) { $g_ui_locale = null; }
 }
+
+setlocale(LC_CTYPE, $g_ui_locale ? "{$g_ui_locale}.UTF-8" : "en_US.UTF-8");
 
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
 require_once(__CA_APP_DIR__.'/helpers/navigationHelpers.php');
@@ -74,7 +78,7 @@ require_once(__CA_LIB_DIR__.'/Controller/ActionController.php');
 require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
 require_once(__CA_APP_DIR__.'/lib/GarbageCollection.php');
-require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
+#require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
 
 
 require_once(__CA_LIB_DIR__."/Datamodel.php");
@@ -83,5 +87,21 @@ Datamodel::load();
 // initialize Tooltip manager
 TooltipManager::init();
 
-PHPExcel_Shared_Font::setTrueTypeFontPath(__CA_APP_DIR__.'/fonts/');
-PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
+
+spl_autoload_register(function ($class) {
+    // Anything prefixed with "ca_" is a model
+    if (substr($class, 0, 3) === 'ca_') {
+        if(require(__CA_MODELS_DIR__."/{$class}.php")) { return true; }
+    }
+    
+    // search common locations for class
+    $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers'];
+    foreach($paths as $path) {
+        if(file_exists("{$path}/{$class}.php")) {
+            if(require("{$path}/{$class}.php")) { return true; }   
+        }
+    }
+    
+    //
+    return false;
+});

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -367,7 +367,7 @@ class SearchEngine extends SearchBase {
 				'search_expression' => $ps_search, 
 				'num_hits' => sizeof($va_hits),
 				'form_id' => $vn_search_form_id, 
-				'ip_addr' => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null,
+				'ip_addr' => RequestHTTP::ip(),
 				'details' => $vs_log_details,
 				'search_source' => __CA_APP_TYPE__.($vs_search_source ? ":{$vs_search_source}" : ""),
 				'execution_time' => $vn_execution_time
@@ -543,9 +543,9 @@ class SearchEngine extends SearchBase {
 	 */
 	private function _rewriteTerm($po_term, $pb_sign) {
 		$vs_fld = $po_term->getTerm()->field;
-		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
+		if (is_array($va_access_points = $this->getAccessPoints($this->opn_tablenum)) && sizeof($va_access_points)) {
 			// if field is access point then do rewrite
-			$va_fld_tmp = explode("/", mb_strtolower($vs_fld));
+			$va_fld_tmp = preg_split("![/\|]+!", mb_strtolower($vs_fld));
 			$vs_fld_lc = $va_fld_tmp[0];
 			$vs_rel_types = isset($va_fld_tmp[1]) ? $va_fld_tmp[1] : null;
 			
@@ -615,7 +615,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a label? Rewrite the field for that.
-		$va_tmp = explode('/', $vs_fld);
+		$va_tmp = preg_split('![/\|]+!', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
@@ -677,7 +677,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a labels? Rewrite the field for that.
-		$va_tmp = explode('/', $vs_fld);
+		$va_tmp = preg_split('![/\|]+!', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
@@ -1133,24 +1133,6 @@ class SearchEngine extends SearchBase {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Return list of suggested searches that will find something, based upon the specified search expression
-	 *
-	 * @param string $ps_text The search expression
-	 * @param array $pa_options Options are:
-	 *		returnAsLink = return suggestions as links to full-text searces. [Default is no]
-	 *		request = the current request; required if links are to be generated using returnAsLink. [Default is null]
-	 *		table = the name or number of the table to restrict searches to. If you pass, for example, "ca_objects" search expressions specifically for object searches will be returned. [Default is null]
-	 * @return array List of suggested searches
-	 */
-	public function suggest($ps_text, $pa_options=null) {
-		if ($this->opo_engine && method_exists($this->opo_engine, "suggest")) {
-			$pa_options['table'] = $this->opn_tablenum;
-			return  $this->opo_engine->suggest($ps_text, $pa_options);
-		}
-		return null;
-	}
-	# ------------------------------------------------------------------
-	/**
 	 * Returns search expression as string for display with field qualifiers translated into display labels
 	 * 
 	 * @param string $ps_search
@@ -1182,7 +1164,7 @@ class SearchEngine extends SearchBase {
 			$va_field_list = SearchEngine::_getFieldList($o_parsed_query);
 			
 			foreach($va_field_list as $vs_field) {
-				$va_tmp = explode('/', $vs_field);
+				$va_tmp = preg_split('![/\|]+!', $vs_field);
 				
 				if (sizeof($va_tmp) > 1) {
 					$vs_rel_type = $va_tmp[1];

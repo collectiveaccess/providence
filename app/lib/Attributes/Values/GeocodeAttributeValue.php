@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,6 +79,14 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your georeferences to be locale-specific. (The default is to not be.)')
+		),
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -277,7 +285,7 @@
  					$this->postError(1970, _t('Address or georeference was blank.'), 'GeocodeAttributeValue->parseValue()');
  					return false;
  				} else {
-					return null;
+					return ['value_longtext1' => '', 'value_longtxt2' => '', 'value_decimal1' => null, 'value_decimal2' => null];
 				}
  			}
  			
@@ -348,7 +356,7 @@
 					'value_decimal2' => $vs_first_long		// longitude
 				);	
  			} elseif($ps_value = preg_replace("!\[[\d,\-\.]+\]!", "", $ps_value)) {
-				$vs_google_response = @file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($ps_value).'&sensor=false');
+				$vs_google_response = @file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($ps_value).'&sensor=false'.((defined("__CA_GOOGLE_MAPS_KEY__") && __CA_GOOGLE_MAPS_KEY__) ? "&key=".__CA_GOOGLE_MAPS_KEY__ : ""));
 				if(!($va_google_response = json_decode($vs_google_response,true)) || !isset($va_google_response['status'])){
 					$this->postError(1970, _t('Could not connect to Google for geocoding'), 'GeocodeAttributeValue->parseValue()');
 					return false;

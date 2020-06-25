@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,7 +54,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $properties;
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_libreoffice_path;
 	
 	var $opa_metadata;
@@ -153,8 +152,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	var $opa_transformations = array();
 	
-	var $opb_libre_office_installed = false;
-	
 	# ------------------------------------------------
 	public function __construct() {
 		$this->description = _t('Accepts and processes Microsoft Word, Excel and PowerPoint format documents');
@@ -167,9 +164,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_libreoffice_path = $this->opo_external_app_config->get('libreoffice_app');
-		$this->opb_libre_office_installed = caMediaPluginLibreOfficeInstalled($this->ops_libreoffice_path);
+		$this->ops_libreoffice_path = caMediaPluginLibreOfficeInstalled();
 		
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -182,7 +177,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$va_status['available'] = true;
 		}
 		
-		if (!($this->opb_libre_office_installed)) { 
+		if (!($this->ops_libreoffice_path)) { 
 			$va_status['warnings'][] = _t("LibreOffice cannot be found: conversion to PDF and generation of page previews will not be performed; you can obtain LibreOffice at http://www.libreoffice.org/");
 		}
 		
@@ -308,7 +303,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 		
 		// 2007+ .docx files
-		if (in_array(pathinfo(strtolower($ps_filepath), PATHINFO_EXTENSION), ['doc', 'docx'])) {	// PhpWord often will identify Excel docs as Word (and PHPExcel will identify Word docs as Excel...) so we test file extensions here			
+		if (in_array(pathinfo(strtolower($ps_filepath), PATHINFO_EXTENSION), ['doc', 'docx'])) {	// PhpWord often will identify Excel docs as Word (and \PhpOffice\PhpSpreadsheet\Spreadsheet will identify Word docs as Excel...) so we test file extensions here			
 			// Check Word
 			if ($this->isWord972000doc($ps_filepath)) {		// old-style .doc files
 				return 'application/msword';
@@ -329,7 +324,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (in_array(pathinfo(strtolower($ps_filepath), PATHINFO_EXTENSION), ['xls', 'xlsx'])) {
 			$va_excel_types = ['Excel2007' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Excel5' => 'application/vnd.ms-excel', 'Excel2003XML' => 'application/vnd.ms-excel'];
 			foreach ($va_excel_types as $vs_type => $vs_mimetype) {
-				$o_reader = PHPExcel_IOFactory::createReader($vs_type);
+				$o_reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($vs_type);
 				if ($o_reader->canRead($ps_filepath)) {
 					return $vs_mimetype;
 				}
@@ -393,7 +388,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->opa_metadata;
 	}
 	# ------------------------------------------------
-	public function read ($ps_filepath) {
+	public function read ($ps_filepath, $mimetype="", $options=null) {
 		if (is_array($this->handle) && ($this->handle["filepath"] == $ps_filepath)) {
 			# noop
 		} else {
@@ -411,6 +406,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 		}
 		$this->filepath = $ps_filepath;
+		$this->opa_metadata = caExtractMetadataWithExifTool($ps_filepath);
 		
 		// Hardcode width/height since we haven't any way of calculating these short of generating a PDF
 		$this->set('width', 612);
@@ -526,14 +522,14 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 				return false;
 			}
 		} else {
-			if (!isset(WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) && $this->opb_libre_office_installed) {
+			if (!isset(WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) && $this->ops_libreoffice_path) {
 				$vs_tmp_dir_path = caGetTempDirPath();
 				$va_tmp = explode("/", $this->filepath);
 				$vs_out_file = array_pop($va_tmp);
 				
 				putenv("HOME={$vs_tmp_dir_path}");		// libreoffice will fail silently if you don't set this environment variable to a directory it can write to. Nice way to waste a day debugging. Yay!
-				exec($this->ops_libreoffice_path." --headless --convert-to pdf:writer_pdf_Export \"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}\" ".caEscapeShellArg($this->filepath)."  --outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
-				exec($this->ops_libreoffice_path." --headless --convert-to html:HTML \"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}\" ".caEscapeShellArg($this->filepath)."  --outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+				caExec($this->ops_libreoffice_path." --headless --convert-to pdf:writer_pdf_Export \"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}\" ".caEscapeShellArg($this->filepath)."  --outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+				caExec($this->ops_libreoffice_path." --headless --convert-to html:HTML \"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}\" ".caEscapeShellArg($this->filepath)."  --outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 			
 				$va_out_file = explode(".", $vs_out_file);
 				if (sizeof($va_out_file) > 1) { array_pop($va_out_file); }

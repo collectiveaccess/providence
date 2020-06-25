@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -163,11 +163,34 @@
  		 * @param array $pa_options Options include:
  		 *		stream = Send PDF output directly to browser [default=false]
  		 *		filename = If streaming, set filename of PDF [default=output.pdf]
+ 		 *      append = List of absolute PDF file paths to append to end of output. [Default is null]
  		 *
  		 * @return string PDF content
  		 */
  		public function render($ps_content, $pa_options=null) {
  			if (!$this->renderer) { return null; }
+ 			
+ 			if (is_array($append = caGetOption('append', $pa_options, null)) && (sizeof($append) > 0) && caMediaPluginGhostscriptInstalled()) {
+ 			  
+ 			   if ($content = $this->renderer->render($ps_content, array_merge($pa_options, ['stream' => false]))) {
+                    $ghostscript_path = caGetExternalApplicationPath('ghostscript');
+                    
+                    file_put_contents($basefile = caGetTempFileName("caPDF"), $content);
+                    $outfile = caGetTempFileName("caPDF");
+                    caExec("{$ghostscript_path} -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile={$outfile} {$basefile} ".join(" ", array_map(function($v) { return caEscapeShellArg($v); }, $append)).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+                    $content = file_get_contents($outfile);
+                    @unlink($outfile);
+                    @unlink($basefile);
+ 			   }
+ 			   if(caGetOption('stream', $pa_options, false)) {
+                    header("Cache-Control: private");
+                    header("Content-type: application/pdf");
+                    header("Content-Disposition: attachment; filename=".caGetOption('filename', $pa_options, 'output.pdf'));
+                    print $content;
+ 			   }
+ 			   return $content;
+ 			}
+ 			
  			return $this->renderer->render($ps_content, $pa_options);
  		}
  		# --------------------------------------------------------------------------------
@@ -178,6 +201,7 @@
  		 * @param array $pa_options Options include:
  		 *		stream = Send PDF output directly to browser [default=false]
  		 *		filename = If streaming, set filename of PDF [default=output.pdf]
+ 		 *      append = List of absolute PDF file paths to append to end of output. [Default is null]
  		 *
  		 * @return string PDF content
  		 */

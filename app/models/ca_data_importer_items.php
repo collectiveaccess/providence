@@ -362,7 +362,16 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => 0,
 			'label' => _t('Skip row if data already present'),
-			'description' => _t('Skip row if data is already present in CollectiveAccess.')
+			'description' => _t('Skip mapping if data is already present in CollectiveAccess.')
+		);
+		$va_settings['skipIfNoReplacementValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip mapping if no replacement value'),
+			'description' => _t('Skip mapping if the value does not have a replacement value defined.')
 		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
@@ -409,6 +418,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Filter to relationship types'),
 			'description' => _t('Restricts the mapping to pull only records related with the designated relationship types from the source. This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
+		);
+		$va_settings['hierarchicalDelimiter'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Hierarchical delimiter for input data'),
+			'description' => _t('This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
 		);
 		$va_settings['prefix'] = array(
 			'formatType' => FT_TEXT,
@@ -557,6 +575,42 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Display name format'),
 			'description' => _t('Transform label using options for formatting entity display names. Default is to use value as is. Other options are surnameCommaForename, forenameCommaSurname, forenameSurname. See DataMigrationUtils::splitEntityName().')
+		);
+		$va_settings['useRawValuesWhenTestingExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Use raw data values when testing expression'),
+			'description' => _t('When evaluating conditions to skip a mapping, row or group via an expression using a setting such as skipIfExpression, use raw un-transformed data rather than data that has been transformed with applyRegularExpressions and replacement values.')
+		);
+		$va_settings['mediaPrefix'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media prefix'),
+			'description' => _t('Path to import directory containing files references for media or file metadata attributes.')
+		);
+		$va_settings['matchType'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media match type'),
+			'description' => _t('Determines how file names are compared to the match value. Valid values are STARTS, ENDS, CONTAINS and EXACT. (Default is EXACT)')
+		);
+		$va_settings['matchMode'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Media match mode'),
+			'description' => _t('Determines whether to search on file names, enclosing directory names or both. Valid values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES and FILE_NAME. (Default is FILE_NAME).')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,9 +36,8 @@
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
 if (!defined("__CA_BASE_DIR__")) {
-	define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps|/tests|support/bin/!", "", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__), PATHINFO_DIRNAME));
+	define("__CA_BASE_DIR__", ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3)));
 }
-
 
 #
 # __CA_URL_ROOT__ = the root-relative URL path to your CollectiveAccess installation
@@ -145,14 +144,14 @@ if (!defined('__CA_APP_CONFIG__')) {
 # Now that we have __CA_APP_DIR__ set we can load our request helpers - very basic functions we need to set up request handling
 require_once(__CA_APP_DIR__.'/helpers/requestHelpers.php');
 
-# Name of theme to use for this request
-if (!defined("__CA_THEME__")) {
-	define("__CA_THEME__", $g_configuration_cache_suffix = caGetPreferredThemeForCurrentDevice($_CA_THEMES_BY_DEVICE));
-}
-
 # Path to CollectiveAccess 'themes' directory containing visual presentation elements
 if (!defined("__CA_THEMES_DIR__")) {
 	define("__CA_THEMES_DIR__", __CA_BASE_DIR__."/themes");
+}
+
+# Name of theme to use for this request
+if (!defined("__CA_THEME__")) {
+	define("__CA_THEME__", $g_configuration_cache_suffix = caGetPreferredThemeForCurrentDevice($_CA_THEMES_BY_DEVICE));
 }
 
 # Now that we have __CA_APP_DIR__ set we can load our request helpers - very basic functions we need to set up request handling

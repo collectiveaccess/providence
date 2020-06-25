@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,6 @@
 	// 1 cm = 1440/2.54 = 566.93 twips
 	$cmToTwips = 567;
 
-
 	$phpWord = new \PhpOffice\PhpWord\PhpWord();
 
 	// Every element you want to append to the word document is placed in a section.
@@ -51,6 +50,9 @@
 	    'headerHeight' => 1 * $cmToTwips,
 	    'footerHeight' => 1 * $cmToTwips,
 	    'colsNum' => 1,
+	    'pageSizeW' => 8.5 * 1440,
+	    'pageSizeH' => 11 * 1440
+	    
 	);
 	$section = $phpWord->addSection($sectionStyle);
 
@@ -88,7 +90,7 @@
 	
 // Define table style arrays
 $styleTable = array('borderSize'=>0, 'borderColor'=>'ffffff', 'cellMargin'=>80);
-$styleFirstRow = array('borderBottomSize'=>18, 'borderBottomColor'=>'0000FF');
+$styleFirstRow = array('borderBottomSize'=>18, 'borderBottomColor'=>'CCCCCC');
 
 // Define cell style arrays
 $styleCell = array('valign'=>'center');
@@ -110,9 +112,23 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 		$mediaCell = $table->addCell( 5 * $cmToTwips);
 
 		$va_info = $vo_result->getMediaInfo('ca_object_representations.media',"medium");
+		$vs_path = $vo_result->getMediaPath('ca_object_representations.media',"medium");
 		
-		if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-			$vs_path = $vo_result->getMediaPath('ca_object_representations.media',"medium");
+		if ((!$va_info || !$vs_path) && ($vo_result->tableName() !== 'ca_objects')) {
+		    // For non-objects, try to grab media from related object(s)
+		    if($qr_objects = $vo_result->get('ca_objects.object_id', ['returnAsSearchResult' => true])) {
+		        $va_info = [];
+		        while($qr_objects->nextHit()) {
+		            if ($reps = $qr_objects->getMediaInfo('ca_object_representations.media',"medium")) {
+		                if($reps['MIMETYPE'] !== 'image/jpeg') { continue; }
+		                $va_info = $reps;
+			            $vs_path = $qr_objects->getMediaPath('ca_object_representations.media',"medium");
+		                break;
+		            }
+		        }
+		    }
+		}
+		if(($va_info['MIMETYPE'] === 'image/jpeg') && $vs_path) { // don't try to insert anything non-jpeg into an Excel file
 			if (is_file($vs_path)) {
 				$mediaCell->addImage(
 					$vs_path,
@@ -160,6 +176,10 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
 
                 $textrun = $contentCell->createTextRun();
+                
+                if ($this->request->config->get('report_include_labels_in_docx_output')) {
+                	$textrun->addText(caEscapeForXML($va_info['display']).': ', $styleBundleNameFont);
+                }
 		        $textrun->addText(
 					preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5))),
 					$styleContentFont

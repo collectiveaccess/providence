@@ -247,7 +247,7 @@ class ca_items_x_tags extends BaseModel {
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
-		$this->set('ip_addr', $_SERVER['REMOTE_ADDR']);
+		$this->set('ip_addr', RequestHTTP::ip());
 		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------

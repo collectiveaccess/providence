@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,10 +46,10 @@
 			$vs_class = "";
 			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
 				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-				$vs_display_value = "&lt;"._t('not defined')."&gt;";
+				$vs_display_value = "<"._t('not defined').">";
 				$vs_class = " notDefined";
 			}
-			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".$va_info['display'].":</span> ".$vs_display_value."</div>\n";
+			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".$va_info['display']."</span><span class='summaryData'> ".$vs_display_value."</span></div>\n";
 		}
 
 
@@ -58,9 +58,9 @@
 			print "<div class='heading' style='margin-bottom:10px;'>"._t("%1 contents", $t_item->get('ca_collections.type_id', array('convertCodesToDisplayText' => true)))."</div>";
 			//
 			if (
-				(!is_array($va_sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_summary_sort_values')) && !sizeof($va_sort_fields))
+				(!is_array($va_sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_summary_sort_values')) || !sizeof($va_sort_fields))
 				&&
-				(!is_array($va_sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_browser_sort_values')) && !sizeof($va_sort_fields))
+				(!is_array($va_sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_browser_sort_values')) || !sizeof($va_sort_fields))
 			) {
 				$va_sort_fields = ['ca_collections.preferred_labels.name'];
 			}

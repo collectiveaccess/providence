@@ -657,6 +657,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			if ($vb_we_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
+			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
 		}
 		return $vn_rc;
 	}
@@ -685,6 +686,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			if ($vb_we_set_transaction) { $this->getTransaction()->commit(); }
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
+			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
 		}
 		return $vn_rc;
 	}
@@ -704,6 +706,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$vn_id = $this->getPrimaryKey();
 		if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			ExternalCache::flush('listItems');
+			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
 			// Delete any associated attribute values that use this list item
 			if (!($qr_res = $this->getDb()->query("
 				DELETE FROM ca_attribute_values 

@@ -107,7 +107,7 @@
 					$o_view->setVar('page', $vn_rep_index);		
 				}
 			}
-			if ($t_subject && $t_instance && $po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations')) {
+			if ($t_subject && $t_instance && ($po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations'))) {
 					if (is_array($va_versions = $po_request->config->getList('ca_object_representation_download_versions'))) {
 					    $va_editor_url = caEditorUrl($po_request, $t_media->tableName(), $t_media->getPrimaryKey(), true);
 					    $vs_download_path = $va_editor_url['module'].'/'.$va_editor_url['controller'];

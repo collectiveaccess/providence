@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -173,6 +173,9 @@
 
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			
+			$log_reference 					= caGetOption('logReference', $pa_options, null);
+			$log_reference_str = 			($log_reference ? _t('[%1] ', $log_reference) : '');
+			
 			// Create cache key
 			$vs_cache_key = md5($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
 			
@@ -195,7 +198,7 @@
 					$o_event->beginItem($ps_event_source, 'ca_list_items', 'U');
 					$o_event->endItem(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key], __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 				}
-				if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno", $ps_item_idno, $pm_list_code_or_id)); }
+				if ($o_log) { $o_log->logDebug(_t("%3Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno", $ps_item_idno, $pm_list_code_or_id, $log_reference_str)); }
 
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key];
 			}
@@ -204,7 +207,7 @@
 				if($pb_output_errors) {
 					print "[Error] "._t("Could not find list with list code %1", $pm_list_code_or_id)."\n";
 				}
-				if ($o_log) { $o_log->logError(_t("Could not find list with list code %1", $pm_list_code_or_id)); }
+				if ($o_log) { $o_log->logError(_t("%2Could not find list with list code %1", $pm_list_code_or_id, $log_reference_str)); }
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = null;
 			}
 			if (!$vn_parent_id && ($vn_parent_id !== false)) { $vn_parent_id = caGetListRootID($pm_list_code_or_id); }
@@ -230,12 +233,12 @@
 							$va_criteria = array($vs_label_spec => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
 							if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
 							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
+								if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label, $log_reference_str)); }
 								break(2);
 							} else {
 								$va_criteria[$vs_label_spec] = array('name_plural' => $vs_plural_label);
 								if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-									if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label)); }
+									if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label, $log_reference_str)); }
 									break(2);
 								}
 							}
@@ -246,7 +249,7 @@
 						$va_criteria = array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id);
 						if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
 						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno)); }
+							if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno, $log_reference_str)); }
 							break(2);
 						}
 						break;
@@ -310,11 +313,18 @@
 			}
 
 			if (!$t_list->load($vn_list_id)) {
-				if ($o_log) { $o_log->logError(_t("Could not find list with list id %1", $vn_list_id)); }
+				if ($o_log) { $o_log->logError(_t("%2Could not find list with list id %1", $vn_list_id, $log_reference_str)); }
 				return null;
 			}
 			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) {
-				if ($o_log) { $o_log->logNotice(_t("Not adding \"%1\" to list %2 as dontCreate option is set", $ps_item_idno, $pm_list_code_or_id)); }
+				if ($o_log) { 
+					$o_config = Configuration::load();
+					if((bool)$o_config->get('log_import_dont_create_events_as_errors')) {
+						$o_log->logError(_t("%3Not adding \"%1\" to list %2 because dontCreate option is set", $ps_item_idno, $pm_list_code_or_id, $log_reference_str)); 
+					} else {
+						$o_log->logNotice(_t("%3Not adding \"%1\" to list %2 because dontCreate option is set", $ps_item_idno, $pm_list_code_or_id, $log_reference_str)); 
+					}
+				}
 				return false;
 			}
 			//
@@ -334,7 +344,7 @@
 					if($pb_output_errors) {
 						print "[Error] "._t("Could not set preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))."\n";
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))); }
+					if ($o_log) { $o_log->logError(_t("%3Could not set preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()), $log_reference_str)); }
 
 					$vb_label_errors = true;
 				}
@@ -358,14 +368,14 @@
 					}
 				}
 
-				if ($o_log) { $o_log->logInfo(_t("Created new list item %1 in list %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", $pm_list_code_or_id)); }
+				if ($o_log) { $o_log->logInfo(_t("%3Created new list item %1 in list %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", $pm_list_code_or_id, $log_reference_str)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return $t_item;
 				}
 				return $vn_item_id;
 			} else {
-				if ($o_log) { $o_log->logError(_t("Could not find add item to list: %1", join("; ", $t_list->getErrors()))); }
+				if ($o_log) { $o_log->logError(_t("%2Could not find add item to list: %1", join("; ", $t_list->getErrors()), $log_reference_str)); }
 			}
 			return null;
 		}
@@ -602,7 +612,14 @@
 				$va_name['surname'] = $va_tmp[0];
 				
 				if(sizeof($va_tmp) > 1) {
-					$va_name['forename'] = $va_tmp[1];
+					$va_tmp2 = array_filter(preg_split("![ ]+!", $va_tmp[1]), function($v) { return (bool)strlen(trim($v)); });
+					
+					if (sizeof($va_tmp2) > 1) {
+						$va_name['middlename'] = array_pop($va_tmp2);
+						$va_name['forename'] = join(" ", $va_tmp2);
+					} else {
+						$va_name['forename'] = $va_tmp[1];
+					}
 				}
 			} elseif (strpos($ps_text, '_') !== false) {
 				// is underscore delimited
@@ -696,7 +713,20 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * Set attributes on instance from values array
 		 *
+		 * @param BundleableLabelableBaseModel $pt_instance
+		 * @param int $pn_locale_id
+		 * @param array $pa_values
+		 * @param array Options include:
+		 *		skipExistingValues = Skip add of value if it already exists for this instance. [Default is true]
+		 *		log = If KLogger instance is passed then actions will be logged. [Default is null]
+		 *		separateUpdatesForAttributes = Perform a separate update() for each attribute. This will ensure that an error triggered by any value will not affect setting on others, but is detrimental to performance. [Default is false]
+		 *		delimiter = Delimiter to split values on. [Default is null]
+		 *		matchOn = Optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
+		 *		outputErrors = Print errors to console. [Default is false]
+		 *
+		 * @return bool True on success, false on error 		
 		 */
 		private static function _setAttributes($pt_instance, $pn_locale_id, $pa_values, $pa_options=null) {
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
@@ -734,7 +764,11 @@
                                 $pt_instance->addAttribute(
                                     array_merge($va_v, array(
                                         'locale_id' => $pn_locale_id
-                                    )), $vs_element, null, ['skipExistingValues' => (caGetOption('skipExistingValues', $pa_options, false) || caGetOption('skipExistingValues', $va_values, false)), 'matchOn' => caGetOption('matchOn', $va_values, null)]);
+                                    )), $vs_element, null, [
+                                    	'skipExistingValues' => (caGetOption('skipExistingValues', $pa_options, true) 
+                                    		|| 
+                                    		caGetOption('skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
+                                    	'matchOn' => caGetOption('matchOn', $va_values, null)]);
                             }
 						} else {
 							// scalar value (simple single value attribute)
@@ -855,6 +889,9 @@
 		 *				  ignoreParent = Don't take into account parent_id value when looking for matching rows [Default is false]
 		 *				  ignoreType = Don't take into account type_id value when looking for matching rows [Default is false]
 		 *				  separateUpdatesForAttributes = Perform a separate update() for each attribute. This will ensure that an error triggered by any value will not affect setting on others, but is detrimental to performance. [Default is false]
+		 *				  skipExistingValues = Skip add of value if it already exists for this instance. [Default is true]
+		 *				  logReference = String to add to logged errors identifing the context in which the error occurred. The data importer uses this to tag failed related record inserts against the primary record. [Default is null]
+		 *
 		 * @return bool|BaseModel|mixed|null
 		 */
 		static function getIDFor($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -882,6 +919,10 @@
 			
 			if(!is_array($pa_label)) { $pa_label[$vs_label_display_fld] = $pa_label; }
 			$vs_label 						= $pa_label[$vs_label_display_fld];
+			
+			$log_reference 					= caGetOption('logReference', $pa_options, null);
+			$log_reference_str = 			($log_reference ? _t('[%1] ', $log_reference) : '');
+			
 			
 			$pb_output_errors 				= caGetOption('outputErrors', $pa_options, false);
 			$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $pa_options, false);
@@ -994,11 +1035,11 @@
 									$vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label)
 								);
 								if (!$pb_ignore_parent && $vn_parent_id) { $va_find_vals['parent_id'] = $vn_parent_id; }
-							
+								
 								if (
 									($vs_idno || trim($pa_label['_originalText'] || $vs_label)) 
 									&& 
-									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types))))
+									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true))))
 								) {
 									break(3);
 								}
@@ -1015,17 +1056,17 @@
 							// entities only
 							$va_params = array($vs_label_spec => array('displayname' => $pa_label['displayname']));
 							if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
-							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 						} elseif($vs_table_class == 'ca_entities') {
 							// entities only
 							$va_params = array($vs_label_spec => array('forename' => $pa_label['forename'], 'middlename' => $pa_label['middlename'], 'surname' => $pa_label['surname']));
 							if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
-							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 						} else {
 							$va_params = array($vs_label_spec => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]));
 							if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 							
-							$vn_id = ($vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)));
+							$vn_id = ($vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true)));
 						}
 						if ($vn_id) { break(2); }
 						break;
@@ -1037,7 +1078,7 @@
 						$va_params = array('preferred_labels' => array('surname' => $pa_label['surname']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 						if ($vn_id) { break(2); }
 						break;
 					case 'forename':
@@ -1045,7 +1086,7 @@
 						$va_params = array('preferred_labels' => array('forename' => $pa_label['forename']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 						if ($vn_id) { break(2); }
 						break;
 					case 'displayname':
@@ -1053,7 +1094,7 @@
 						$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 						if ($vn_id) { break(2); }
 						break;
 					case 'none':
@@ -1066,7 +1107,7 @@
 						$vs_element = array_pop($va_tmp);
 						if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
 							$va_params = array($vs_element => $pa_label[$vs_label_display_fld]);
-							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 							if ($vn_id) { break(2); }
 						}
 						break;
@@ -1077,7 +1118,17 @@
 				//
 				// Create new row
 				//
-				if (caGetOption('dontCreate', $pa_options, false)) { return false; }
+				if (caGetOption('dontCreate', $pa_options, false)) { 
+					if ($o_log) { 
+						$o_config = Configuration::load();
+						if((bool)$o_config->get('log_import_dont_create_events_as_errors')) {
+							$o_log->logError(_t("%4Not adding \"%1\" (%2) as %3 because dontCreate option is set", $vs_label, $vs_idno, $ps_table, $log_reference_str)); 
+						} else {
+							$o_log->logNotice(_t("%4Not adding \"%1\" (%2) as %3 because dontCreate option is set", $vs_label, $vs_idno, $ps_table, $log_reference_str)); 
+						}
+					}
+					return false; 
+				}
 				if ($o_event) { $o_event->beginItem($ps_event_source, $vs_table_class, 'I'); }
 
 				// If we're creating a new item, it's probably a good idea to *NOT* use a
@@ -1127,26 +1178,25 @@
 						
 						$va_files_in_dir = caGetDirectoryContentsAsList(($vb_allow_any_directory && $vs_dirname) ? $vs_dirname : $vs_import_dir, true, false, false, false);	
 						foreach($va_files_in_dir as $vs_filepath) {
-							if ($o_log) { $o_log->logDebug(_t("Trying media %1 in place of %2/%3", $vs_filepath, $vs_original_path, $vs_filename)); }
+							if ($o_log) { $o_log->logDebug(_t("%4Trying media %1 in place of %2/%3", $vs_filepath, $vs_original_path, $vs_filename, $log_reference_str)); }
 							if (pathinfo($vs_filepath, PATHINFO_FILENAME) == $vs_filename) {
-								if ($o_log) { $o_log->logNotice(_t("Found media %1 for %2/%3", $vs_filepath, $vs_original_path, $vs_filename)); }
+								if ($o_log) { $o_log->logNotice(_t("%4Found media %1 for %2/%3", $vs_filepath, $vs_original_path, $vs_filename, $log_reference_str)); }
 								$pa_values['media'] = $vs_filepath;
 								break;
 							}
 						}
 					}
-					$t_instance->set('media', $pa_values['media']);
+					$t_instance->set('media', $pa_values['media'], ['original_filename' => basename($pa_values['media'])]);
 				}
 
 				$t_instance->insert();
-				if ($o_log) { $o_log->logDebug(_t("Could not create %1 record: %2", $ps_table, join("; ", $t_instance->getErrors()))); }
 
 				if ($t_instance->numErrors()) {
 					if($pb_output_errors) {
 						print "[Error] "._t("Could not insert %1 %2: %3", $vs_table_display_name, $pa_label[$vs_label_display_fld], join('; ', $t_instance->getErrors()))."\n";
 					}
 
-					if ($o_log) { $o_log->logError(_t("Could not insert %1 %2: %3", $vs_table_display_name, $pa_label[$vs_label_display_fld], join('; ', $t_instance->getErrors()))); }
+					if ($o_log) { $o_log->logError(_t("%4Could not insert %1 %2: %3", $vs_table_display_name, $pa_label[$vs_label_display_fld], join('; ', $t_instance->getErrors()), $log_reference_str)); }
 					return null;
 				}
 
@@ -1157,7 +1207,7 @@
 					if($pb_output_errors) {
 						print "[Error] "._t("Could not set preferred label for %1 %2: %3", $vs_table_display_name, $pa_label[$vs_label_display_fld], join('; ', $t_instance->getErrors()))."\n";
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set preferred label for %1 %2: %3", $vs_table_display_name, $pa_label[$vs_label_display_fld], join('; ', $t_instance->getErrors()))); }
+					if ($o_log) { $o_log->logError(_t("%4Could not set preferred label for %1 %2: %3", $vs_table_display_name, $pa_label[$vs_label_display_fld], join('; ', $t_instance->getErrors()), $log_reference_str)); }
 
 					$vb_label_errors = true;
 				}
@@ -1175,14 +1225,14 @@
 						$o_event->endItem($vn_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 					}
 				}
-				if ($o_log) { $o_log->logInfo(_t("Created new %1 %2", $vs_table_display_name, $pa_label[$vs_label_display_fld])); }
+				if ($o_log) { $o_log->logInfo(_t("%3Created new %1 %2", $vs_table_display_name, $pa_label[$vs_label_display_fld], $log_reference_str)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return $t_instance;
 				}
 			} else {
 				if ($o_event) { $o_event->beginItem($ps_event_source, $vs_table_class, 'U'); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing %1 %2 in DataMigrationUtils::_getID()", $vs_table_display_name, $pa_label[$vs_label_display_fld])); }
+				if ($o_log) { $o_log->logDebug(_t("%3Found existing %1 %2 in DataMigrationUtils::_getID()", $vs_table_display_name, $pa_label[$vs_label_display_fld], $log_reference_str)); }
 
 				$vb_attr_errors = false;
 				if (($vb_force_update = caGetOption('forceUpdate', $pa_options, false)) || ($vb_return_instance = caGetOption('returnInstance', $pa_options, false))) {
@@ -1203,12 +1253,12 @@
 					}
 					
 					if (!$vn_rc) {
-						if ($o_log) { $o_log->logError(_t("Could not load existing %1 with id %2 (%3) in DataMigrationUtils::_getID() [THIS SHOULD NOT HAPPEN]", $vs_table_display_name, $vn_id, $pa_label[$vs_label_display_fld])); }
+						if ($o_log) { $o_log->logError(_t("%4Could not load existing %1 with id %2 (%3) in DataMigrationUtils::_getID() [THIS SHOULD NOT HAPPEN]", $vs_table_display_name, $vn_id, $pa_label[$vs_label_display_fld], $log_reference_str)); }
 						return null;
 					} else {
 						if ($vb_force_update && $vb_has_attr) { 
 							if ($vb_attr_errors = !DataMigrationUtils::_setAttributes($t_instance, $pn_locale_id, $pa_values, $pa_options)) {
-								if ($o_log) { $o_log->logError(_t("Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::_getID(): %4", $vs_table_display_name, $vn_id, $pa_label[$vs_label_display_fld], join("; ", $t_instance->getErrors()))); }
+								if ($o_log) { $o_log->logError(_t("%5Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::_getID(): %4", $vs_table_display_name, $vn_id, $pa_label[$vs_label_display_fld], join("; ", $t_instance->getErrors()), $log_reference_str)); }
 							}
 						}
 					
@@ -1239,12 +1289,14 @@
 		 * @param array $pa_options
 		 *		dontOutputLevel = 
 		 *		dontPrint =
+		 *		log = KLogger instance to log errors to. [Default is null]
 		 *
 		 * @return string
 		 */
 		static function postError($po_object, $ps_message, $pn_level=__CA_DATA_IMPORT_ERROR__, $pa_options=null) {
 			if (!$po_object->numErrors()) { return null; }
 			$vs_error = '';
+			$log = caGetOption('log', $pa_options, null);
 			
 			if (!isset($pa_options['dontOutputLevel']) || !$pa_options['dontOutputLevel']) {
 				switch($pn_level) {
@@ -1264,6 +1316,21 @@
 			
 			if (!isset($pa_options['dontPrint']) || !$pa_options['dontPrint']) {
 				print "{$vs_error}\n";
+			}
+			
+			if (isset($pa_options['log']) || ($log = $pa_options['log'])) {
+				switch($pn_level) {
+					case __CA_DATA_IMPORT_NOTICE__:
+						if ($log) { $log->logNotice($vs_error); }
+						break;
+					case __CA_DATA_IMPORT_WARNING__:
+						if ($log) { $log->logWarn($vs_error); }
+						break;
+					default:
+					case __CA_DATA_IMPORT_ERROR__:
+						if ($log) { $log->logError($vs_error); }
+						break;
+				}
 			}
 			
 			return $vs_error;

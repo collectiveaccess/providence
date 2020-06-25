@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/install/inc/Installer.php');
 
-class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
+class ConfigurationUpdateTest extends TestCase {
 
-	public function tearDown() {
+	protected function tearDown() : void {
 		parent::tearDown(); // TODO: Actually tearDown correctly instead of delete()-ing things in the tests
 	}
 
@@ -96,10 +97,12 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(0, $t_item->get('is_enabled'));
 		$this->assertEquals(1, $t_item->get('is_default'));
 
-		$t_item->set('enabled', 1);
+		// restore values changes, in case we want to re-run tests without reloading the profile
+		$t_item->set('is_enabled', 1);
 		$t_item->set('default', 0);
 		$t_item->setMode(ACCESS_WRITE);
 		$t_item->update();
+		$t_item->replaceLabel(['name_singular' => 'Image', 'name_plural' => 'Images'], 1, null, true);
 	}
 
 	public function testAddNewList() {
@@ -136,6 +139,7 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testDeleteList() {
+		// TODO: This test is not idempotent, it depends on testAddNewList
 		$t_list = new ca_lists();
 		$t_list->load(array('list_code' => 'diff_test_list'));
 		$this->assertGreaterThan(0, $t_list->getPrimaryKey());
@@ -221,12 +225,12 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(5, sizeof($va_elements_in_set));
 
 		// check a few of the changed properties (labels, whatever)
-		$this->assertEquals('URI', $va_elements_in_set[3]['display_label']);
-		$this->assertEquals('500px', $va_elements_in_set[1]['settings']['fieldWidth']);
+		$this->assertEquals('URI', $va_elements_in_set[4]['display_label']);
+		$this->assertEquals('500px', $va_elements_in_set[2]['settings']['fieldWidth']);
 
-		// try to find the restriction we added (storage locations), which should now be the only restriction (we nuked all the others)
+		// try to find the restriction we added (storage locations), which should now be one of two restrictions (we nuked all the others except for ca_objects)
 		$va_restrictions = $t_instance->getTypeRestrictions();
-		$this->assertEquals(1, sizeof($va_restrictions));
+		$this->assertEquals(2, sizeof($va_restrictions));
 		$va_newest_restriction = array_pop($va_restrictions);
 		$this->assertEquals($va_newest_restriction['table_num'], Datamodel::getTableNum('ca_storage_locations'));
 	}
@@ -323,6 +327,17 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 
 		// there are 3 types in the profile (see assertion above, only two should be left:
 		$this->assertEquals(2, sizeof($t_oxo->getRelationshipTypes()));
+		
+		// restore missing type
+		$tn = Datamodel::getTableNum('ca_objects_x_occurrences');
+		$t_rt = new ca_relationship_types();
+		$t_rt->set([
+			'parent_id' => ca_relationship_types::find(['parent_id' => null, 'table_num' => $tn], ['returnAs' => 'firstId']),
+			'type_code' => 'describes',
+			'table_num' => $tn
+		]);
+		$t_rt->insert();
+		$t_rt->addLabel(['typename' => 'describes', 'typename_reverse' => 'describes'], 1, null, true);
 	}
 
 }

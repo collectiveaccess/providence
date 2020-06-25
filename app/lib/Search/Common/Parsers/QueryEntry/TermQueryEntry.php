@@ -103,7 +103,7 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 			}
 		}
 
-		$term  = new Zend_Search_Lucene_Index_Term(strtolower($pattern), $this->_field);
+		$term  = new Zend_Search_Lucene_Index_Term(mb_strtolower($pattern), $this->_field);
 		$query = new Zend_Search_Lucene_Search_Query_Wildcard($term);
 		$query->setBoost($this->_boost);
 
@@ -117,7 +117,7 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    }
 
 	    if (count($tokens) == 1  && !$this->_fuzzyQuery) {
-		$term  = new Zend_Search_Lucene_Index_Term(strtolower($tokens[0]), $this->_field);
+		$term  = new Zend_Search_Lucene_Index_Term(mb_strtolower($tokens[0]), $this->_field);
 		$query = new Zend_Search_Lucene_Search_Query_Term($term);
 		$query->setBoost($this->_boost);
 
@@ -125,7 +125,7 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    }
 
 	    if (count($tokens) == 1  && $this->_fuzzyQuery) {
-		$term  = new Zend_Search_Lucene_Index_Term(strtolower($tokens[0]), $this->_field);
+		$term  = new Zend_Search_Lucene_Index_Term(mb_strtolower($tokens[0]), $this->_field);
 		$query = new Zend_Search_Lucene_Search_Query_Fuzzy($term, $this->_similarity);
 		$query->setBoost($this->_boost);
 
@@ -141,8 +141,8 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    $query = new Zend_Search_Lucene_Search_Query_MultiTerm();
 
 	    foreach ($tokens as $token) {
-		$term = new Zend_Search_Lucene_Index_Term(strtolower($token), $this->_field);
-		$query->addTerm($term, true);
+			$term = new Zend_Search_Lucene_Index_Term(mb_strtolower($token), $this->_field);
+			$query->addTerm($term, true);
 	    }
 
 	    $query->setBoost($this->_boost);

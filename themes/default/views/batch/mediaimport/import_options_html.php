@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -292,7 +292,7 @@
 		</div>
 
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print (($this->getVar('ca_object_representations_mapping_list_count') > 1) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 1)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
+			<span class="formLabelText"><?php print (($this->getVar('ca_object_representations_mapping_list_count') > 0) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 0)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList" >
 						<div style='padding:10px 0px 10px 10px;'>
@@ -304,7 +304,7 @@
 											print "<br/>";
 											print _t('Set %1 access to<br/>%2', caGetTableDisplayName($t_instance->tableName(), false), $t_instance->htmlFormElement('access', '', array('name' => $t_instance->tableName().'_access')));
 
-											if ($this->getVar($t_instance->tableName().'_mapping_list_count') > 1) {
+											if ($this->getVar($t_instance->tableName().'_mapping_list_count') > 0) {
 												print "<br/>";
 												print _t('Extract embedded metadata into %1 using mapping<br/>%2', caGetTableDisplayName($t_instance->tableName(), false), $this->getVar($t_instance->tableName().'_mapping_list'));
 											}
@@ -316,7 +316,7 @@
 											print "<br/>";
 											print _t('Set representation access to<br/>%1', $t_rep->htmlFormElement('access', '', array('name' => 'ca_object_representations_access')));
 
-											if ($this->getVar('ca_object_representations_mapping_list_count') > 1) {
+											if ($this->getVar('ca_object_representations_mapping_list_count') > 0) {
 												print "<br/>";
 												print _t('Extract embedded metadata into representation using mapping<br/>%1', $this->getVar('ca_object_representations_mapping_list'));
 											}
@@ -459,13 +459,17 @@
 									<tr>
 										<td class='formLabel'>
 	<?php
-				print caHTMLCheckboxInput('create_relationship_for[]', array('value' => $vs_rel_table,  'id' => "caCreateRelationshipForMedia{$vs_rel_table}", 'onclick' => "jQuery('#caRelationshipTypeIdFor{$vs_rel_table}').prop('disabled', !jQuery('#caCreateRelationshipForMedia{$vs_rel_table}').prop('checked'))"), array('dontConvertAttributeQuotesToEntities' => true));
+				$checked = (is_array($va_last_settings['create_relationship_for']) && in_array($vs_rel_table, $va_last_settings['create_relationship_for'])) ? true : false;
+				$default_rel_type_id = isset($va_last_settings['relationship_type_id_for_'.$vs_rel_table]) ? $va_last_settings['relationship_type_id_for_'.$vs_rel_table] : null;
+				print caHTMLCheckboxInput('create_relationship_for[]', array('value' => $vs_rel_table,  'id' => "caCreateRelationshipForMedia{$vs_rel_table}", 'checked' => $checked, 'onclick' => "jQuery('#caRelationshipTypeIdFor{$vs_rel_table}').prop('disabled', !jQuery('#caCreateRelationshipForMedia{$vs_rel_table}').prop('checked'))"), ['dontConvertAttributeQuotesToEntities' => true]);
 				print ' '._t("to %1 with relationship type", $t_rel_table->getProperty('NAME_SINGULAR'));
 	?>
 										</td>
 										<td class='formLabel'>
 	<?php
-				print $t_rel->getRelationshipTypesAsHTMLSelect('ltor', null, null, array('name' => "relationship_type_id_for_{$vs_rel_table}", 'id' => "caRelationshipTypeIdFor{$vs_rel_table}", 'disabled' => 1));
+				$opts = ['name' => "relationship_type_id_for_{$vs_rel_table}", 'id' => "caRelationshipTypeIdFor{$vs_rel_table}"];
+				if(!$checked) { $opts['disabled'] = true; }
+				print $t_rel->getRelationshipTypesAsHTMLSelect('ltor', null, null, $opts, ['value' => $default_rel_type_id]);
 	?>
 										</td>
 									</tr>

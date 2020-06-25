@@ -1,0 +1,135 @@
+{
+  "$id": "https://collectiveaccess.org/app.conf.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "app.conf",
+  "type": "object",
+  
+    "definitions": {
+        "menus": {
+            "title": "Menu options",
+            "description": "Customize the \"New\" and \"Find\" menus in Providence",
+            "$id": "#menus",
+            "anyOf": [
+                { "$ref": "#no_new_submenu" },
+                { "$ref": "#breakout_find_by_type_in_submenu" }
+            ]
+        },
+        "no_new_submenu": {
+            "type": "object",
+            "$id": "#no_new_submenu",
+            
+            "title": "New submenu control",
+            "description" : "By default each of the follow record types has a sub-menu in the top-level \"New\" menu list out the configured types. When you choose a type the creation of new record of that type is initiated. If you have several types configured sub-menus make sense, but if your setup only has one or two types, or is deeply nested then you may want to push the first level of types directly onto the menu. Setting these *_no_new_submenu directives will force the first level of the sub-menu onto the \"new\" menu itself.",
+            "properties": {
+                "ca_object_lots_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force object lot types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_objects_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force object types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_entities_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force entity types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_places_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force place types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_occurrences_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force occurrence types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_collections_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force collection types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_loans_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force loan types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_movements_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force movement types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_tours_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force tour types onto the first level of the \"new\" menu.",
+                    "default": 0
+                },
+                "ca_object_representations_no_new_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force object representation types onto the first level of the \"new\" menu.",
+                    "default": 0
+                }
+            }
+        },
+        "breakout_find_by_type_in_submenu":  {
+            "type": "object",
+            "$id": "#breakout_find_by_type_in_submenu",
+            
+            "title": "New submenu control",
+            "description" : "By default only the top-level item classes (\"objects\", \"entities\", \"collections\") appear in the find menu. Set these options to a non-zero value to break out each top-level item into a submenu with types. This allows you do to type-specific searches and browses.",
+            "properties": {
+                "ca_object_lots_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for object lots to be broken out by types in a sub-menu.",
+                    "default": 0
+                },
+                "ca_objects_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for objects to be broken out by types in a sub-menu.",
+                    "default": 0
+                },
+                "ca_entities_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for entities to be broken out by types in a sub-menu.",
+                    "default": 0
+                },
+                "ca_places_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for places to be broken out by types in a sub-menu.",
+                    "default": 0
+                },
+                "ca_occurrences_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for occurrences to be broken out by types in a sub-menu.",
+                    "default": 0
+                },
+                "ca_collections_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for collections to be broken out by types in a sub-menu.",
+                    "default": 0
+                },
+                "ca_loans_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for loans to be broken out by types in a sub-menu.",
+                    "default": 0
+                },
+                "ca_movements_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for movements to be broken out by types in a sub-menu.",
+                    "default": 0
+                },
+                "ca_sets_breakout_find_by_type_in_submenu": {
+                    "type": "integer",
+                    "description": "Set to a non-zero value to force the \"find\" menu  for sets to be broken out by types in a sub-menu.",
+                    "default": 1
+                }    
+            }
+        }
+    },
+  
+    "anyOf": [
+        { "$ref": "#menus" }
+    ]
+}

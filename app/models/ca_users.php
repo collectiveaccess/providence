@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -140,7 +140,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '',
+				'DEFAULT' => 1,
 				'LABEL' => _t('Account is activated?'), "DESCRIPTION" => "If checked, indicates user account is active. Only active users are allowed to log into the system.",
 				'BOUNDS_VALUE' => array(0,1)
 		),
@@ -292,15 +292,15 @@ class ca_users extends BaseModel {
 	/**
 	 * User and group role caches
 	 */
-	static $s_user_role_cache = array();
-	static $s_user_group_cache = array();
-	static $s_group_role_cache = array();
-	static $s_user_type_access_cache = array();
-	static $s_user_source_access_cache = array();
-	static $s_user_bundle_access_cache = array();
-	static $s_user_action_access_cache = array();
-	static $s_user_type_with_access_cache = array();
-	static $s_user_source_with_access_cache = array();
+	static $s_user_role_cache = [];
+	static $s_user_group_cache = [];
+	static $s_group_role_cache = [];
+	static $s_user_type_access_cache = [];
+	static $s_user_source_access_cache = [];
+	static $s_user_bundle_access_cache = [];
+	static $s_user_action_access_cache = [];
+	static $s_user_type_with_access_cache = [];
+	static $s_user_source_with_access_cache = [];
 
 	/**
 	 * List of tables that can have bundle- or type-level access control
@@ -794,7 +794,7 @@ class ca_users extends BaseModel {
 
 		$o_db = $this->getDb();
 		
-		$va_valid_sorts = array('lname,fname', 'user_name', 'email', 'last_login', 'active');
+		$va_valid_sorts = array('lname,fname', 'user_name', 'email', 'last_login', 'active', 'registered_on');
 		if (!in_array($ps_sort_field, $va_valid_sorts)) {
 			$ps_sort_field = 'lname,fname';
 		}
@@ -1044,7 +1044,7 @@ class ca_users extends BaseModel {
 			} else {
 				$o_db = $this->getDb();
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`, wur.vars
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
@@ -1344,7 +1344,7 @@ class ca_users extends BaseModel {
 			} else {
 				$o_db = $this->getDb();
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`, wur.vars
 					FROM ca_user_roles wur
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id
@@ -1439,7 +1439,7 @@ class ca_users extends BaseModel {
 				LEFT JOIN ca_users AS wu ON wug.user_id = wu.user_id
 				INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wug.group_id
 				WHERE wuxg.user_id = ?
-				ORDER BY wug.rank
+				ORDER BY wug.`rank`
 			", array((int)$pn_user_id));
 			$va_groups = array();
 			while($qr_res->nextRow()) {
@@ -2987,9 +2987,11 @@ class ca_users extends BaseModel {
 			$vs_username = preg_replace("!".preg_quote($vs_rewrite_username_with_regex, "!")."!", $vs_rewrite_username_to_regex, $vs_username);
 		}
 		
-		 if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
-            $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
-            $vs_username = $va_info['user_name'];
+		if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
+		    if (AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
+                $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
+                $vs_username = $va_info['user_name'];
+            }
         }
 
 		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
@@ -3002,7 +3004,7 @@ class ca_users extends BaseModel {
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
 					));
-					return false;
+					throw($e);
 				}
 
 				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
@@ -3011,6 +3013,12 @@ class ca_users extends BaseModel {
 				foreach($va_values as $vs_k => $vs_v) {
 					if(in_array($vs_k, array('roles', 'groups'))) { continue; }
 					$this->set($vs_k, $vs_v);
+				}
+				
+				if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ === "PROVIDENCE")) {
+				    $this->set('userclass', 0);
+				} else {
+				    $this->set('userclass', 1);
 				}
 
 				$vn_mode = $this->getMode();
@@ -3023,7 +3031,7 @@ class ca_users extends BaseModel {
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
 					));
-					return false;
+					throw($e);
 				}
 
 				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
@@ -3050,8 +3058,27 @@ class ca_users extends BaseModel {
         if ($vs_username) {
             try {
                 if(AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-                    $this->load($vs_username);
-                    return true;
+                    if ($this->load($vs_username)) {
+                        if (
+                            defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && 
+                            $this->canDoAction('can_not_login') &&
+                            ($this->getPrimaryKey() != $this->_CONFIG->get('administrator_user_id')) &&
+                            !$this->canDoAction('is_administrator')
+                        ) {
+                            $this->opo_log->log(array(
+                                'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                                'MESSAGE' => _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username)
+                            ));
+                            return false;
+                        }
+                        return true;
+                    } else {
+                        $this->opo_log->log(array(
+                            'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                            'MESSAGE' => _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username)
+                        ));
+                        return false;
+                    }
                 }
             }  catch (Exception $e) {
                 $this->opo_log->log(array(
@@ -3243,7 +3270,17 @@ class ca_users extends BaseModel {
 		if (isset(ca_users::$s_user_action_access_cache[$vs_cache_key])) { return ca_users::$s_user_action_access_cache[$vs_cache_key]; }
 
 		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
-		if(!ca_user_roles::isValidAction($ps_action)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; }	// return false if action is not valid	
+		if(!ca_user_roles::isValidAction($ps_action)) { 
+		    // check for alternatives...
+		    if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $ps_action, $m)) {
+		        if (ca_user_roles::isValidAction("can_configure_".$m[2])) {
+		            return self::canDoAction("can_configure_".$m[2]);
+		        }
+		    }
+		    
+			// return false if action is not valid	
+		    return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; 
+		}
 		
 		// is user administrator?
 		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id

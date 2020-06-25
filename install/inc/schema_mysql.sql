@@ -133,7 +133,7 @@ create table ca_list_items
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
    item_value                     varchar(255)                   not null,
-   rank                           int unsigned              not null default 0,
+   `rank`                           int unsigned              not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    is_enabled                     tinyint unsigned               not null default 0,
@@ -221,6 +221,78 @@ create index i_type_id on ca_list_item_labels(type_id);
 
 
 /*==========================================================================*/
+create table ca_users
+(
+   user_id                        int unsigned                   not null AUTO_INCREMENT,
+   user_name                      varchar(255)                   not null,
+   userclass                      tinyint unsigned               not null,
+   password                       varchar(100)                   not null,
+   fname                          varchar(255)                   not null,
+   lname                          varchar(255)                   not null,
+   email                          varchar(255)                   not null,
+   sms_number                     varchar(30)                    not null,
+   vars                           longtext                       not null,
+   volatile_vars                  text                           not null,
+   active                         tinyint unsigned               not null,
+   confirmed_on                   int unsigned,
+   confirmation_key               char(32),
+   registered_on                  int unsigned,
+   entity_id                      int unsigned,
+   primary key (user_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create unique index u_user_name on ca_users(user_name);
+create unique index u_confirmation_key on ca_users(confirmation_key);
+create index i_userclass on ca_users(userclass);
+create index i_entity_id on ca_users(entity_id);
+
+
+/*==========================================================================*/
+create table ca_user_groups
+(
+   group_id                       int unsigned                   not null AUTO_INCREMENT,
+   parent_id                      int unsigned,
+   name                           varchar(255)                   not null,
+   code                           varchar(20)                    not null,
+   description                    text                           not null,
+   for_public_use                 tinyint unsigned               not null default 0,
+   user_id                        int unsigned                   null references ca_users(user_id),
+   `rank`                           smallint unsigned              not null default 0,
+   vars                           text                           not null,
+   hier_left                      decimal(30,20)                 not null,
+   hier_right                     decimal(30,20)                 not null,
+   primary key (group_id),
+      
+   constraint fk_ca_user_groups_parent_id foreign key (parent_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_hier_left on ca_user_groups(hier_left);
+create index i_hier_right on ca_user_groups(hier_right);
+create index i_parent_id on ca_user_groups(parent_id);
+create index i_user_id on ca_user_groups(user_id);
+create unique index u_name on ca_user_groups(name);
+create unique index u_code on ca_user_groups(code);
+
+
+/*==========================================================================*/
+create table ca_user_roles
+(
+   role_id                        smallint unsigned              not null AUTO_INCREMENT,
+   name                           varchar(255)                   not null,
+   code                           varchar(20)                    not null,
+   description                    text                           not null,
+   `rank`                           smallint unsigned              not null default 0,
+   vars                           longtext                       not null,
+   field_access                   longtext                       not null,
+   primary key (role_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create unique index u_name on ca_user_roles(name);
+create unique index u_code on ca_user_roles(code);
+
+
+/*==========================================================================*/
 create table ca_entities
 (
    entity_id                      int unsigned               not null AUTO_INCREMENT,
@@ -244,7 +316,12 @@ create table ca_entities
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
+   
    primary key (entity_id),
    constraint fk_ca_entities_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -256,7 +333,16 @@ create table ca_entities
       references ca_locales (locale_id) on delete restrict on update restrict,
       
    constraint fk_ca_entities_parent_id foreign key (parent_id)
-      references ca_entities (entity_id) on delete restrict on update restrict
+      references ca_entities (entity_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_entities_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_entities_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_entities_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_source_id on ca_entities(source_id);
@@ -272,35 +358,12 @@ create index i_life_sdatetime on ca_entities(life_sdatetime);
 create index i_life_edatetime on ca_entities(life_edatetime);
 create index i_view_count on ca_entities(view_count);
 create index i_entity_filter on ca_entities(entity_id, deleted, access);
+create index i_submission_user_id on ca_entities(submission_user_id);
+create index i_submission_group_id on ca_entities(submission_group_id);
+create index i_submission_status_id on ca_entities(submission_status_id);
+create index i_submission_via_form on ca_entities(submission_via_form);
 
-
-/*==========================================================================*/
-create table ca_users
-(
-   user_id                        int unsigned                   not null AUTO_INCREMENT,
-   user_name                      varchar(255)                   not null,
-   userclass                      tinyint unsigned               not null,
-   password                       varchar(100)                   not null,
-   fname                          varchar(255)                   not null,
-   lname                          varchar(255)                   not null,
-   email                          varchar(255)                   not null,
-   sms_number                     varchar(30)                    not null,
-   vars                           longtext                       not null,
-   volatile_vars                  text                           not null,
-   active                         tinyint unsigned               not null,
-   confirmed_on                   int unsigned,
-   confirmation_key               char(32),
-   registered_on                  int unsigned,
-   entity_id                      int unsigned,
-   primary key (user_id),
-   constraint fk_ca_entities_entity_id foreign key (entity_id)
-      references ca_entities (entity_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create unique index u_user_name on ca_users(user_name);
-create unique index u_confirmation_key on ca_users(confirmation_key);
-create index i_userclass on ca_users(userclass);
-create index i_entity_id on ca_users(entity_id);
+alter table ca_users add constraint fk_ca_users_entity_id foreign key (entity_id) references ca_entities (entity_id) on delete restrict on update restrict;
 
 
 /*==========================================================================*/
@@ -313,7 +376,7 @@ create table ca_metadata_elements
    documentation_url              varchar(255)                   not null,
    datatype                       tinyint unsigned               not null,
    settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
+   `rank`                           smallint unsigned              not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    hier_element_id                smallint unsigned              null,
@@ -367,7 +430,7 @@ create table ca_metadata_type_restrictions
    element_id                     smallint unsigned              not null,
    settings                       longtext                       not null,
    include_subtypes               tinyint unsigned               not null default 0,
-   rank                           smallint unsigned              not null default 0,
+   `rank`                           smallint unsigned              not null default 0,
    primary key (restriction_id),
    
    constraint fk_ca_metadata_type_restrictions_element_id foreign key (element_id)
@@ -412,7 +475,11 @@ create table ca_object_lots
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   `rank`                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    primary key (lot_id),
    
    constraint fk_ca_object_lots_type_id foreign key (type_id)
@@ -422,8 +489,16 @@ create table ca_object_lots
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_lots_lot_status_id foreign key (lot_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
       
+   constraint fk_ca_object_lots_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_lots_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_lots_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_admin_idno_stub on ca_object_lots(idno_stub);
@@ -433,6 +508,10 @@ create index i_admin_idno_stub_sort on ca_object_lots(idno_stub_sort);
 create index i_lot_status_id on ca_object_lots(lot_status_id);
 create index i_view_count on ca_object_lots(view_count);
 create index i_lot_filter on ca_object_lots(lot_id, deleted, access); 
+create index i_submission_user_id on ca_object_lots(submission_user_id);
+create index i_submission_group_id on ca_object_lots(submission_group_id);
+create index i_submission_status_id on ca_object_lots(submission_status_id);
+create index i_submission_via_form on ca_object_lots(submission_via_form);
 
 
 /*==========================================================================*/
@@ -457,9 +536,14 @@ create table ca_object_representations
    view_count                     int unsigned                   not null default 0,
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
+   submission_user_id             int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id           int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
+   is_transcribable               tinyint unsigned               not null default 0,
    
    primary key (representation_id),
    constraint fk_ca_object_representations_type_id foreign key (type_id)
@@ -469,7 +553,16 @@ create table ca_object_representations
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_representations_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict
+      references ca_locales (locale_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_reps_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_reps_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_reps_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -480,10 +573,15 @@ create index i_idno_sort on ca_object_representations(idno_sort);
 create index i_md5 on ca_object_representations(md5);
 create index i_mimetype on ca_object_representations(mimetype);
 create index i_original_filename on ca_object_representations(original_filename(128));
-create index i_rank on ca_object_representations(rank);
+create index i_rank on ca_object_representations(`rank`);
 create index i_source_id on ca_object_representations(source_id);
 create index i_view_count on ca_object_representations(view_count);
 create index i_rep_filter on ca_object_representations(representation_id, deleted, access); 
+create index i_submission_user_id on ca_object_representations(submission_user_id);
+create index i_submission_group_id on ca_object_representations(submission_group_id);
+create index i_submission_status_id on ca_object_representations(submission_status_id);
+create index i_submission_via_form on ca_object_representations(submission_via_form);
+create index i_is_transcribable on ca_object_representations(is_transcribable);
 
 
 /*==========================================================================*/
@@ -519,7 +617,7 @@ create table ca_object_representation_multifiles (
 	media				longblob not null,
 	media_metadata		longblob not null,
 	media_content		longtext not null,
-	rank				int unsigned not null default 0,	
+	`rank`				int unsigned not null default 0,	
 	primary key (multifile_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -578,7 +676,11 @@ create table ca_occurrences
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   `rank`                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    primary key (occurrence_id),
    
    constraint fk_ca_occurrences_type_id foreign key (type_id)
@@ -591,8 +693,16 @@ create table ca_occurrences
       references ca_locales (locale_id) on delete restrict on update restrict,
       
    constraint fk_ca_occurrences_parent_id foreign key (parent_id)
-      references ca_occurrences (occurrence_id) on delete restrict on update restrict
+      references ca_occurrences (occurrence_id) on delete restrict on update restrict,
       
+   constraint fk_ca_occurrences_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_occurrences_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_occurrences_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_occurrences(parent_id);
@@ -604,6 +714,10 @@ create index i_hier_right on ca_occurrences(hier_right);
 create index i_hier_occurrence_id on ca_occurrences(hier_occurrence_id);
 create index i_view_count on ca_occurrences(view_count);
 create index i_occ_filter on ca_occurrences(occurrence_id, deleted, access); 
+create index i_submission_user_id on ca_occurrences(submission_user_id);
+create index i_submission_group_id on ca_occurrences(submission_group_id);
+create index i_submission_status_id on ca_occurrences(submission_status_id);
+create index i_submission_via_form on ca_occurrences(submission_via_form);
 
 
 /*==========================================================================*/
@@ -661,8 +775,12 @@ create table ca_collections
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
-   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   `rank`                           int unsigned                   not null default 0,
+   acl_inherit_from_parent        tinyint unsigned               not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (collection_id),
    constraint fk_ca_collections_type_id foreign key (type_id)
@@ -675,7 +793,16 @@ create table ca_collections
       references ca_locales (locale_id) on delete restrict on update restrict,
       
    constraint fk_ca_collections_parent_id foreign key (parent_id)
-      references ca_collections (collection_id) on delete restrict on update restrict
+      references ca_collections (collection_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_collections_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_collections_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_collections_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_collections(parent_id);
@@ -690,6 +817,10 @@ create index i_hier_right on ca_collections(hier_right);
 create index i_acl_inherit_from_parent on ca_collections(acl_inherit_from_parent);
 create index i_view_count on ca_collections(view_count);
 create index i_collection_filter on ca_collections(collection_id, deleted, access); 
+create index i_submission_user_id on ca_collections(submission_user_id);
+create index i_submission_group_id on ca_collections(submission_group_id);
+create index i_submission_status_id on ca_collections(submission_status_id);
+create index i_submission_via_form on ca_collections(submission_via_form);
 
 
 /*==========================================================================*/
@@ -750,8 +881,12 @@ create table ca_places
    deleted                        tinyint unsigned               not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    floorplan                      longblob                       not null,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (place_id),
    constraint fk_ca_places_source_id foreign key (source_id)
@@ -767,7 +902,16 @@ create table ca_places
       references ca_locales (locale_id) on delete restrict on update restrict,
       
    constraint fk_ca_places_parent_id foreign key (parent_id)
-      references ca_places (place_id) on delete restrict on update restrict
+      references ca_places (place_id) on delete restrict on update restrict,
+   
+   constraint fk_ca_places_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_places_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_places_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_hierarchy_id on ca_places(hierarchy_id);
@@ -783,6 +927,10 @@ create index i_hier_left on ca_places(hier_left);
 create index i_hier_right on ca_places(hier_right);
 create index i_view_count on ca_places(view_count);
 create index i_place_filter on ca_places(place_id, deleted, access); 
+create index i_submission_user_id on ca_places(submission_user_id);
+create index i_submission_group_id on ca_places(submission_group_id);
+create index i_submission_status_id on ca_places(submission_status_id);
+create index i_submission_via_form on ca_places(submission_via_form);
 
 
 /*==========================================================================*/
@@ -838,8 +986,13 @@ create table ca_storage_locations
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_enabled                     tinyint unsigned               not null default 1,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
+   
    primary key (location_id),
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -848,7 +1001,16 @@ create table ca_storage_locations
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_storage_locations_parent_id foreign key (parent_id)
-      references ca_storage_locations (location_id) on delete restrict on update restrict
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_storage_locations(parent_id);
@@ -860,6 +1022,10 @@ create index i_hier_left on ca_storage_locations(hier_left);
 create index i_hier_right on ca_storage_locations(hier_right);
 create index i_view_count on ca_storage_locations(view_count);
 create index i_loc_filter on ca_storage_locations(location_id, deleted, access); 
+create index i_submission_user_id on ca_storage_locations(submission_user_id);
+create index i_submission_group_id on ca_storage_locations(submission_group_id);
+create index i_submission_status_id on ca_storage_locations(submission_status_id);
+create index i_submission_via_form on ca_storage_locations(submission_via_form);
 
 
 /*==========================================================================*/
@@ -914,7 +1080,11 @@ create table ca_loans (
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   `rank`                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    primary key (loan_id),
    
    constraint fk_ca_loans_type_id foreign key (type_id)
@@ -927,7 +1097,16 @@ create table ca_loans (
       references ca_loans (loan_id) on delete restrict on update restrict,
       
    constraint fk_ca_loans_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict
+      references ca_locales (locale_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_loans_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_loans_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_loans_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -942,6 +1121,10 @@ create index hier_right on ca_loans(hier_right);
 create index hier_loan_id on ca_loans(hier_loan_id);
 create index i_view_count on ca_loans(view_count);
 create index i_loan_filter on ca_loans(loan_id, deleted, access); 
+create index i_submission_user_id on ca_loans(submission_user_id);
+create index i_submission_group_id on ca_loans(submission_group_id);
+create index i_submission_status_id on ca_loans(submission_status_id);
+create index i_submission_via_form on ca_loans(submission_via_form);
 
 
 /*==========================================================================*/
@@ -988,7 +1171,11 @@ create table ca_movements (
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   `rank`                           int unsigned                   not null default 0,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    primary key (movement_id),
    
     constraint fk_ca_movements_type_id foreign key (type_id)
@@ -998,7 +1185,16 @@ create table ca_movements (
       references ca_list_items (item_id) on delete restrict on update restrict,
       
     constraint fk_ca_movements_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict
+      references ca_locales (locale_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_movements_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_movements_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_movements_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_type_id on ca_movements(type_id);
@@ -1008,6 +1204,10 @@ create index idno on ca_movements(idno);
 create index idno_sort on ca_movements(idno_sort);
 create index i_view_count on ca_movements(view_count);
 create index i_movement_filter on ca_movements(movement_id, deleted, access);
+create index i_submission_user_id on ca_movements(submission_user_id);
+create index i_submission_group_id on ca_movements(submission_group_id);
+create index i_submission_status_id on ca_movements(submission_status_id);
+create index i_submission_via_form on ca_movements(submission_via_form);
 
 
 /*==========================================================================*/
@@ -1054,7 +1254,7 @@ create table ca_relationship_types
    hier_type_id                   smallint unsigned,
    table_num                      tinyint unsigned               not null,
    type_code                      varchar(30)                    not null,
-   rank                           smallint unsigned              not null default 0,
+   `rank`                           smallint unsigned              not null default 0,
    is_default                     tinyint unsigned               not null,
    primary key (type_id),
       
@@ -1117,7 +1317,7 @@ create table ca_object_representations_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_occurrences_representation_id foreign key (representation_id)
@@ -1162,7 +1362,7 @@ create table ca_object_representations_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_places_representation_id foreign key (representation_id)
@@ -1208,7 +1408,7 @@ create table ca_object_representations_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_collections_representation_id foreign key (representation_id)
@@ -1254,7 +1454,7 @@ create table ca_object_representations_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_storage_loc_rep_id foreign key (representation_id)
@@ -1364,7 +1564,7 @@ create table ca_task_queue
    priority                       smallint unsigned              not null default 0,
    handler                        varchar(20)                    not null,
    parameters                     text                           not null,
-   notes                          text                           not null,
+   notes                          longtext                       null,
    error_code                     smallint unsigned              not null default 0,
    primary key (task_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1375,50 +1575,6 @@ create index i_completed_on on ca_task_queue(completed_on);
 create index i_entity_key on ca_task_queue(entity_key);
 create index i_row_key on ca_task_queue(row_key);
 create index i_error_code on ca_task_queue(error_code);
-
-
-/*==========================================================================*/
-create table ca_user_groups
-(
-   group_id                       int unsigned                   not null AUTO_INCREMENT,
-   parent_id                      int unsigned,
-   name                           varchar(255)                   not null,
-   code                           varchar(20)                    not null,
-   description                    text                           not null,
-   user_id                        int unsigned                   null references ca_users(user_id),
-   rank                           smallint unsigned              not null default 0,
-   vars                           text                           not null,
-   hier_left                      decimal(30,20)                 not null,
-   hier_right                     decimal(30,20)                 not null,
-   primary key (group_id),
-      
-   constraint fk_ca_user_groups_parent_id foreign key (parent_id)
-      references ca_user_groups (group_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_hier_left on ca_user_groups(hier_left);
-create index i_hier_right on ca_user_groups(hier_right);
-create index i_parent_id on ca_user_groups(parent_id);
-create index i_user_id on ca_user_groups(user_id);
-create unique index u_name on ca_user_groups(name);
-create unique index u_code on ca_user_groups(code);
-
-
-/*==========================================================================*/
-create table ca_user_roles
-(
-   role_id                        smallint unsigned              not null AUTO_INCREMENT,
-   name                           varchar(255)                   not null,
-   code                           varchar(20)                    not null,
-   description                    text                           not null,
-   rank                           smallint unsigned              not null default 0,
-   vars                           longtext                       not null,
-   field_access                   longtext                       not null,
-   primary key (role_id)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create unique index u_name on ca_user_roles(name);
-create unique index u_code on ca_user_roles(code);
 
 
 /*==========================================================================*/
@@ -1467,7 +1623,7 @@ create table ca_collections_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_collections_x_collections_collection_left_id foreign key (collection_left_id)
       references ca_collections (collection_id) on delete restrict on update restrict,
@@ -1511,7 +1667,7 @@ create table ca_collections_x_storage_locations (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_collections_x_storage_locations_location_id foreign key (location_id)
@@ -1578,11 +1734,11 @@ create table ca_objects
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
    acl_inherit_from_parent         tinyint unsigned              not null default 0,
    access_inherit_from_parent      tinyint unsigned              not null default 0,
-   home_location_id               int unsigned,
+   home_location_id               int unsigned null,
    accession_sdatetime            decimal(30,20),
    accession_edatetime            decimal(30,20),
    deaccession_sdatetime          decimal(30,20),
@@ -1596,6 +1752,10 @@ create table ca_objects
    current_loc_subclass           int unsigned                   null,
    current_loc_id                 int unsigned                   null,
    circulation_status_id          int unsigned                   null,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1626,6 +1786,15 @@ create table ca_objects
       references ca_storage_locations (location_id) on delete restrict on update restrict,
 
    constraint fk_ca_objects_circulation_status_id foreign key (circulation_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_objects_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_objects_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_objects_submission_status_id foreign key (submission_status_id)
       references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -1661,6 +1830,10 @@ create index i_current_loc_subclass on ca_objects(current_loc_subclass);
 create index i_current_loc_id on ca_objects(current_loc_id);
 create index i_view_count on ca_objects(view_count);
 create index i_obj_filter on ca_objects(object_id, deleted, access); 
+create index i_submission_user_id on ca_objects(submission_user_id);
+create index i_submission_group_id on ca_objects(submission_group_id);
+create index i_submission_status_id on ca_objects(submission_status_id);
+create index i_submission_via_form on ca_objects(submission_via_form);
 
 
 /*==========================================================================*/
@@ -1710,7 +1883,7 @@ create table ca_objects_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_collections_object_id foreign key (object_id)
       references ca_objects (object_id) on delete restrict on update restrict,
@@ -1755,7 +1928,7 @@ create table ca_objects_x_objects
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_objects_object_left_id foreign key (object_left_id)
       references ca_objects (object_id) on delete restrict on update restrict,
@@ -1795,7 +1968,7 @@ create table ca_objects_x_object_representations
    object_id                      int unsigned                   not null,
    representation_id              int unsigned                   not null,
    is_primary                     tinyint                        not null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_object_representations_object_id foreign key (object_id)
       references ca_objects (object_id) on delete restrict on update restrict,
@@ -1824,7 +1997,7 @@ create table ca_objects_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_occurrences_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -1868,7 +2041,7 @@ create table ca_objects_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_places_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -2127,7 +2300,7 @@ create table ca_data_exporter_items (
    hier_item_id      int unsigned      not null,
    hier_left         decimal(30,20)    unsigned not null,
    hier_right        decimal(30,20)    unsigned not null,
-   rank              int unsigned      not null default 0,
+   `rank`              int unsigned      not null default 0,
 
    primary key (item_id),
 
@@ -2200,7 +2373,7 @@ create table ca_object_lots_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_collections_collection_id foreign key (collection_id)
       references ca_collections (collection_id) on delete restrict on update restrict,
@@ -2245,7 +2418,7 @@ create table ca_object_lots_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_occurrences_occurrence_id foreign key (occurrence_id)
       references ca_occurrences (occurrence_id) on delete restrict on update restrict,
@@ -2290,7 +2463,7 @@ create table ca_object_lots_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_places_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -2360,7 +2533,7 @@ create table ca_occurrences_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_occurrences_x_collections_occurrence_id foreign key (occurrence_id)
       references ca_occurrences (occurrence_id) on delete restrict on update restrict,
@@ -2405,7 +2578,7 @@ create table ca_occurrences_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_occurrences_x_occurrences_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -2494,7 +2667,7 @@ create table ca_entities_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_entities_x_collections_collection_id foreign key (collection_id)
       references ca_collections (collection_id) on delete restrict on update restrict,
@@ -2539,7 +2712,7 @@ create table ca_places_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_places_x_collections_collection_id foreign key (collection_id)
       references ca_collections (collection_id) on delete restrict on update restrict,
@@ -2584,7 +2757,7 @@ create table ca_places_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_places_x_occurrences_occurrence_id foreign key (occurrence_id)
       references ca_occurrences (occurrence_id) on delete restrict on update restrict,
@@ -2629,7 +2802,7 @@ create table ca_places_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_places_x_places_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -2674,7 +2847,7 @@ create table ca_entities_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_entities_x_occurrences_entity_id foreign key (entity_id)
       references ca_entities (entity_id) on delete restrict on update restrict,
@@ -2749,7 +2922,7 @@ create table ca_entities_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_entities_x_places_entity_id foreign key (entity_id)
       references ca_entities (entity_id) on delete restrict on update restrict,
@@ -2794,7 +2967,7 @@ create table ca_object_representations_x_entities
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_entities_representation_id foreign key (representation_id)
@@ -2840,7 +3013,7 @@ create table ca_object_representations_x_object_representations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_object_reps_rep_left_id foreign key (representation_left_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -2885,7 +3058,7 @@ create table ca_entities_x_entities
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_entities_x_entities_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -2930,7 +3103,7 @@ create table ca_representation_annotations_x_entities
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_rep_annot_x_entities_annotation_id foreign key (annotation_id)
       references ca_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -2969,7 +3142,7 @@ create table ca_groups_x_roles
    relation_id                    int unsigned                   not null AUTO_INCREMENT,
    group_id                       int unsigned                   not null,
    role_id                        smallint unsigned              not null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_groups_x_roles_group_id foreign key (group_id)
       references ca_user_groups (group_id) on delete restrict on update restrict,
@@ -3025,7 +3198,7 @@ create table ca_representation_annotations_x_objects
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_rep_annot_x_objects_annotation_id foreign key (annotation_id)
       references ca_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -3070,7 +3243,7 @@ create table ca_representation_annotations_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_rep_annot_x_occurrences_annotation_id foreign key (annotation_id)
       references ca_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -3115,7 +3288,7 @@ create table ca_list_items_x_list_items
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint ca_ca_list_items_x_list_items_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -3159,7 +3332,7 @@ create table ca_objects_x_storage_locations (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_storage_locations_location_id foreign key (location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -3202,7 +3375,7 @@ create table ca_object_lots_x_storage_locations (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_storage_locations_relation_id foreign key (location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -3246,7 +3419,7 @@ create table ca_entities_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_entities_x_storage_locations_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -3290,7 +3463,7 @@ create table ca_object_lots_x_vocabulary_terms (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_vocabulary_terms_relation_id foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -3334,7 +3507,7 @@ create table ca_object_lots_x_object_lots
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_object_lots_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -3378,7 +3551,7 @@ create table ca_object_representations_x_vocabulary_terms (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_obj_rep_x_voc_terms_item_id foreign key (item_id)
@@ -3439,7 +3612,7 @@ create table ca_users_x_roles
    relation_id                    int unsigned                   not null AUTO_INCREMENT,
    user_id                        int unsigned                   not null,
    role_id                        smallint unsigned              not null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_users_x_roles_user_id foreign key (user_id)
       references ca_users (user_id) on delete restrict on update restrict,
@@ -3468,7 +3641,7 @@ create table ca_representation_annotations_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_rep_annot_x_places_annotation_id foreign key (annotation_id)
       references ca_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -3513,7 +3686,7 @@ create table ca_representation_annotations_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_rep_annot_x_vocabulary_terms_annotation_id foreign key (annotation_id)
       references ca_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -3558,7 +3731,7 @@ create table ca_objects_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_vocabulary_terms_item_id foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -3603,7 +3776,7 @@ create table ca_object_lots_x_entities
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_entities_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -3647,7 +3820,7 @@ create table ca_objects_x_entities
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_entities_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -3692,7 +3865,7 @@ create table ca_places_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_places_x_vocabulary_terms_place_id foreign key (place_id)
       references ca_places (place_id) on delete restrict on update restrict,
@@ -3736,7 +3909,7 @@ create table ca_loans_x_objects (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_loans_x_objects_loan_id foreign key (loan_id)
@@ -3781,7 +3954,7 @@ create table ca_loans_x_entities (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_loans_x_entities_loan_id foreign key (loan_id)
@@ -3826,7 +3999,7 @@ create table ca_movements_x_objects (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_movements_x_objects_movement_id foreign key (movement_id)
@@ -3871,7 +4044,7 @@ create table ca_movements_x_object_lots (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_movements_x_object_lots_movement_id foreign key (movement_id)
@@ -3916,7 +4089,7 @@ create table ca_movements_x_entities (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_movements_x_entities_movement_id foreign key (movement_id)
@@ -3961,7 +4134,7 @@ create table ca_loans_x_movements (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_loans_x_movements_loan_id foreign key (loan_id)
@@ -4044,7 +4217,7 @@ create table ca_attribute_value_multifiles (
 	media				longblob not null,
 	media_metadata		longblob not null,
 	media_content		longtext not null,
-	rank				int unsigned not null default 0,	
+	`rank`				int unsigned not null default 0,	
 	primary key (multifile_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -4064,7 +4237,7 @@ create table ca_occurrences_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_occurrences_x_vocabulary_terms_occurrence_id foreign key (occurrence_id)
       references ca_occurrences (occurrence_id) on delete restrict on update restrict,
@@ -4109,7 +4282,7 @@ create table ca_collections_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_collections_x_vocabulary_terms_collection_id foreign key (collection_id)
       references ca_collections (collection_id) on delete restrict on update restrict,
@@ -4154,7 +4327,7 @@ create table ca_entities_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_entities_x_vocabulary_terms_entity_id foreign key (entity_id)
       references ca_entities (entity_id) on delete restrict on update restrict,
@@ -4262,7 +4435,7 @@ create table ca_editor_ui_screens (
 	parent_id int unsigned null,
 	ui_id int unsigned not null references ca_editor_uis(ui_id),
 	idno varchar(255) not null,
-	rank smallint unsigned not null default 0,
+	`rank` smallint unsigned not null default 0,
 	is_default tinyint unsigned not null,
 	color char(6) null,
 	icon longblob not null,
@@ -4341,7 +4514,7 @@ create table ca_editor_ui_bundle_placements (
 	placement_code varchar(255) not null,
 	bundle_name varchar(255) not null,
 	
-	rank smallint unsigned not null default 0,
+	`rank` smallint unsigned not null default 0,
     settings longtext not null,
 	
 	primary key 				(placement_id),
@@ -4358,7 +4531,7 @@ create table ca_editor_ui_screen_type_restrictions (
    screen_id                      int unsigned                   not null,
    include_subtypes               tinyint unsigned               not null default 0,
    settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
+   `rank`                           smallint unsigned              not null default 0,
    primary key (restriction_id),
    
    index i_screen_id			(screen_id),
@@ -4376,7 +4549,7 @@ create table ca_editor_ui_type_restrictions (
    ui_id                          int unsigned                   not null,
    include_subtypes               tinyint unsigned               not null default 0,
    settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
+   `rank`                           smallint unsigned              not null default 0,
    primary key (restriction_id),
    
    index i_ui_id				(ui_id),
@@ -4403,7 +4576,7 @@ create table ca_sets (
 	hier_left	decimal(30,20) unsigned not null,
 	hier_right	decimal(30,20) unsigned not null,
     deleted     tinyint unsigned not null default 0,
-    rank        int unsigned not null default 0,
+    `rank`        int unsigned not null default 0,
 	
 	primary key (set_id),
       
@@ -4443,7 +4616,7 @@ create table ca_set_items (
 	table_num	tinyint unsigned not null,
 	row_id		int unsigned not null,
     type_id     int unsigned not null,
-	rank		int unsigned not null default 0,
+	`rank`		int unsigned not null default 0,
 	vars        longtext not null,
 	deleted     tinyint unsigned not null default 0,
 	
@@ -4565,7 +4738,7 @@ create table ca_items_x_tags (
 	
 	moderated_on int unsigned null,
 	moderated_by_user_id int unsigned null references ca_users(user_id),
-    rank int unsigned not null default 0,
+    `rank` int unsigned not null default 0,
 	
 	primary key (relation_id),
 	key i_row_id (row_id),
@@ -4575,7 +4748,7 @@ create table ca_items_x_tags (
 	key i_access (access),
 	key i_created_on (created_on),
 	key i_moderated_on (moderated_on),
-	key i_rank (rank)
+	key i_rank (`rank`)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -4619,11 +4792,11 @@ create table ca_search_form_placements (
 	form_id		int unsigned not null references ca_search_forms(form_id),
 	
 	bundle_name 	varchar(255) not null,
-	rank			int unsigned not null default 0,
+	`rank`			int unsigned not null default 0,
 	settings		longtext not null,
 	
 	KEY i_bundle_name (bundle_name),
-	KEY i_rank (rank),
+	KEY i_rank (`rank`),
 	KEY i_form_id (form_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -4636,7 +4809,7 @@ create table ca_search_form_type_restrictions (
    form_id                        int unsigned                   not null,
    include_subtypes               tinyint unsigned               not null default 0,
    settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
+   `rank`                           smallint unsigned              not null default 0,
    primary key (restriction_id),
    
    index i_form_id				(form_id),
@@ -4768,11 +4941,11 @@ create table ca_bundle_display_placements (
 	display_id		int unsigned not null references ca_bundle_displays(display_id),
 	
 	bundle_name 	varchar(255) not null,
-	rank			int unsigned not null default 0,
+	`rank`			int unsigned not null default 0,
 	settings		longtext not null,
 	
 	KEY i_bundle_name (bundle_name),
-	KEY i_rank (rank),
+	KEY i_rank (`rank`),
 	KEY i_display_id (display_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -4811,7 +4984,7 @@ create table ca_bundle_display_type_restrictions (
    display_id                     int unsigned                   not null,
    include_subtypes               tinyint unsigned               not null default 0,
    settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
+   `rank`                           smallint unsigned              not null default 0,
    primary key (restriction_id),
    
    index i_display_id			(display_id),
@@ -4829,7 +5002,7 @@ create table ca_tours
    tour_id                        int unsigned                  not null AUTO_INCREMENT,
    tour_code                      varchar(100)                  not null,
    type_id                        int unsigned                  null,
-   rank                           int unsigned                  not null default 0,
+   `rank`                           int unsigned                  not null default 0,
    color                          char(6)                       null,
    icon                           longblob                      not null,
    access                         tinyint unsigned              not null default 0,
@@ -4888,7 +5061,7 @@ create table ca_tour_stops
    type_id                        int unsigned              null,
    idno                           varchar(255)              not null,
    idno_sort                      varchar(255)              not null,
-   rank                           int unsigned              not null default 0,
+   `rank`                           int unsigned              not null default 0,
    view_count                     int unsigned              not null default 0,
    hier_left                      decimal(30,20)            not null,
    hier_right                     decimal(30,20)            not null,
@@ -4955,7 +5128,7 @@ create table ca_tour_stops_x_objects
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_objects_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -5000,7 +5173,7 @@ create table ca_tour_stops_x_entities
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_entities_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -5045,7 +5218,7 @@ create table ca_tour_stops_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_places_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -5090,7 +5263,7 @@ create table ca_tour_stops_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_occurrences_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -5135,7 +5308,7 @@ create table ca_tour_stops_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_collections_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -5180,7 +5353,7 @@ create table ca_tour_stops_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_vocabulary_terms_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -5225,7 +5398,7 @@ create table ca_tour_stops_x_tour_stops
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_tour_stops_stop_left_id foreign key (stop_left_id)
       references ca_tour_stops (stop_id) on delete restrict on update restrict,
@@ -5270,7 +5443,7 @@ create table ca_storage_locations_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_storage_locations_x_storage_locations_location_left_id foreign key (location_left_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -5315,7 +5488,7 @@ create table ca_storage_locations_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_storage_locations_x_vocabulary_terms_location_id foreign key (location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -5360,7 +5533,7 @@ create table ca_occurrences_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_occurrences_x_storage_locations_occurrence_id foreign key (occurrence_id)
       references ca_occurrences (occurrence_id) on delete restrict on update restrict,
@@ -5405,7 +5578,7 @@ create table ca_places_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_places_x_storage_locations_place_id foreign key (place_id)
       references ca_places (place_id) on delete restrict on update restrict,
@@ -5450,7 +5623,7 @@ create table ca_loans_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_loans_x_places_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -5495,7 +5668,7 @@ create table ca_loans_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_loans_x_occurrences_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -5540,7 +5713,7 @@ create table ca_loans_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_loans_x_collections_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -5585,7 +5758,7 @@ create table ca_loans_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_loans_x_storage_locations_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -5630,7 +5803,7 @@ create table ca_loans_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_loans_x_vocabulary_terms_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -5675,7 +5848,7 @@ create table ca_loans_x_object_lots
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_loans_x_object_lots_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -5720,7 +5893,7 @@ create table ca_loans_x_loans
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_loans_x_loans_loan_left_id foreign key (loan_left_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -5765,7 +5938,7 @@ create table ca_movements_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_movements_x_places_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -5810,7 +5983,7 @@ create table ca_movements_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_movements_x_occurrences_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -5855,7 +6028,7 @@ create table ca_movements_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_movements_x_collections_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -5900,7 +6073,7 @@ create table ca_movements_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_movements_x_storage_locations_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -5945,7 +6118,7 @@ create table ca_movements_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_movements_x_vocabulary_terms_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -5990,7 +6163,7 @@ create table ca_movements_x_movements
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_movements_x_movements_movement_left_id foreign key (movement_left_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -6035,7 +6208,7 @@ create table ca_object_lots_x_object_representations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_object_representations_representation_id foreign key (representation_id)
@@ -6081,7 +6254,7 @@ create table ca_loans_x_object_representations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_object_representations_representation_id foreign key (representation_id)
@@ -6127,7 +6300,7 @@ create table ca_movements_x_object_representations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_object_representations_representation_id foreign key (representation_id)
@@ -6208,7 +6381,7 @@ create table ca_bookmark_folders
   folder_id int(10) unsigned not null auto_increment,
   name varchar(255) not null,
   user_id int unsigned not null references ca_users(user_id),
-  rank smallint unsigned not null default 0,
+  `rank` smallint unsigned not null default 0,
   
   primary key (folder_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -6224,7 +6397,7 @@ create table ca_bookmarks
   table_num tinyint unsigned not null,
   row_id int unsigned not null,
   notes text not null,
-  rank smallint unsigned not null default 0,
+  `rank` smallint unsigned not null default 0,
   created_on int unsigned not null,
   
   primary key (bookmark_id)
@@ -6477,7 +6650,7 @@ create table ca_user_representation_annotations_x_entities
   edatetime                      decimal(30,20),
   label_left_id                  int unsigned                   null,
   label_right_id                 int unsigned                   null,
-  rank                           int unsigned                   not null default 0,
+  `rank`                           int unsigned                   not null default 0,
   primary key (relation_id),
   constraint fk_ca_urep_annot_x_entities_annotation_id foreign key (annotation_id)
   references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -6522,7 +6695,7 @@ create table ca_user_representation_annotations_x_objects
   edatetime                      decimal(30,20),
   label_left_id                  int unsigned                   null,
   label_right_id                 int unsigned                   null,
-  rank                           int unsigned                   not null default 0,
+  `rank`                           int unsigned                   not null default 0,
   primary key (relation_id),
   constraint fk_ca_urep_annot_x_objects_annotation_id foreign key (annotation_id)
   references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -6567,7 +6740,7 @@ create table ca_user_representation_annotations_x_occurrences
   edatetime                      decimal(30,20),
   label_left_id                  int unsigned                   null,
   label_right_id                 int unsigned                   null,
-  rank                           int unsigned                   not null default 0,
+  `rank`                           int unsigned                   not null default 0,
   primary key (relation_id),
   constraint fk_ca_urep_annot_x_occurrences_annotation_id foreign key (annotation_id)
   references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -6612,7 +6785,7 @@ create table ca_user_representation_annotations_x_places
   edatetime                      decimal(30,20),
   label_left_id                  int unsigned                   null,
   label_right_id                 int unsigned                   null,
-  rank                           int unsigned                   not null default 0,
+  `rank`                           int unsigned                   not null default 0,
   primary key (relation_id),
   constraint fk_ca_urep_annot_x_places_annotation_id foreign key (annotation_id)
   references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -6657,7 +6830,7 @@ create table ca_user_representation_annotations_x_vocabulary_terms
   edatetime                      decimal(30,20),
   label_left_id                  int unsigned                   null,
   label_right_id                 int unsigned                   null,
-  rank                           int unsigned                   not null default 0,
+  `rank`                           int unsigned                   not null default 0,
   primary key (relation_id),
   constraint fk_ca_urep_annot_x_vocabulary_terms_annotation_id foreign key (annotation_id)
   references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -6747,7 +6920,7 @@ create table ca_user_sorts
   name            varchar(255)      not null,
   settings        longtext          not null,
   sort_type       char(1)           null,
-  rank            smallint unsigned not null default 0,
+  `rank`            smallint unsigned not null default 0,
   deleted         tinyint unsigned  not null default 0,
 
   primary key (sort_id),
@@ -6766,7 +6939,7 @@ create table ca_user_sort_items
   item_id         int unsigned      not null AUTO_INCREMENT,
   sort_id         int unsigned      not null,
   bundle_name     varchar(255)      not null,
-  rank            smallint unsigned not null default 0,
+  `rank`            smallint unsigned not null default 0,
 
   primary key (item_id),
 
@@ -6856,7 +7029,7 @@ create table ca_metadata_alert_rule_type_restrictions (
   rule_id                        int unsigned                   not null,
   include_subtypes               tinyint unsigned               not null default 0,
   settings                       longtext                       not null,
-  rank                           smallint unsigned              not null default 0,
+  `rank`                           smallint unsigned              not null default 0,
   primary key (restriction_id),
 
   index i_rule_id			(rule_id),
@@ -6978,13 +7151,13 @@ create table ca_site_page_media (
   md5                   varchar(32)         not null,
   mimetype              varchar(255)        null,
   original_filename     varchar(1024)       not null, 
-  rank					int unsigned		not null default 0,
+  `rank`					int unsigned		not null default 0,
   access                tinyint unsigned    not null default 0,
   deleted               tinyint unsigned    not null default 0,
 
   primary key (media_id),
   key (page_id),
-  key (rank),
+  key (`rank`),
   key (md5),
   key (idno),
   key (idno_sort),
@@ -7022,7 +7195,7 @@ create table ca_history_tracking_current_values (
    index i_row_id				(row_id),
    
    /* Only one current value per subject per policy */
-   unique index u_all           (row_id, table_num, policy, type_id), 
+   unique index u_all           (row_id, table_num, policy, type_id, is_future), 
    
    index i_current              (current_row_id, current_table_num, current_type_id), 
    index i_tracked              (tracked_row_id, tracked_table_num, tracked_type_id),
@@ -7044,6 +7217,47 @@ create table ca_persistent_cache (
 
 
 /*==========================================================================*/
+create table if not exists ca_ip_bans (
+   ban_id                    int unsigned                   not null AUTO_INCREMENT,
+   reason                    varchar(255)                   not null,
+   created_on                int unsigned                   not null,
+   expires_on                int unsigned                   null,
+   
+   ip_addr		             varchar(39)                    not null,
+   
+   primary key (ban_id),
+
+   index i_created_on			    (created_on),
+   index i_expires_on			    (expires_on),
+   index i_ip_addr				    (ip_addr)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table if not exists ca_representation_transcriptions (
+   transcription_id          int unsigned                   not null AUTO_INCREMENT,
+   representation_id         int unsigned                   not null references ca_object_representations(representation_id),
+   transcription             longtext                       not null,
+   created_on                int unsigned                   not null,
+   completed_on              int unsigned                   null,
+   validated_on              int unsigned                   null,
+   is_primary                tinyint unsigned               not null default 0,
+   
+   ip_addr		             varchar(39)                    not null,
+   user_id                   int unsigned                   null references ca_users(user_id),
+   
+   primary key (transcription_id),
+
+   index i_created_on			    (created_on),
+   index i_completed_on      	    (completed_on, is_primary),
+   index i_validated_on      	    (validated_on),
+   index i_ip_addr				    (ip_addr),
+   unique index i_user_id           (user_id, representation_id),
+   index i_representation_id        (representation_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7054,4 +7268,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (158, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (163, unix_timestamp());

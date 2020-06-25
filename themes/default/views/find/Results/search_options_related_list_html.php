@@ -30,10 +30,9 @@
  	$vo_result_context 		= $this->getVar('result_context');
  	$t_subject 				= $this->getVar('t_subject');
  	$vs_table 				= $t_subject->tableName();
- ?>
- 
- 
- <?php
+ 	
+ 	$params				 	= $this->getVar('relatedListParams');
+
 if($vo_result->numHits() > 0) {
 	print $this->render('Search/search_tools_related_list_html.php');
 
@@ -117,6 +116,8 @@ if($vo_result->numHits() > 0) {
 		}
 		print "</select>\n";
 		print "</div>";		
+		
+		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 ?>		
 			<div class="clear"> </div>
 		

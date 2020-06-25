@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@
    *
    */
 require_once(__CA_LIB_DIR__.'/ObjectRelationshipBaseModel.php');
-require_once(__CA_LIB_DIR__."/CurrentLocationCriterionTrait.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
@@ -100,7 +100,7 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	/**
 	 * Update location of dependent objects when changing values
 	 */
-	use CurrentLocationCriterionTrait;
+	use HistoryTrackingCurrentValueTrait;
 	
 	# ---------------------------------
 	# --- Object attribute properties
@@ -220,37 +220,23 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	/**
 	 *
 	 */
-	public function insert($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) {  $this->set('effective_date', _t('now')); }
-		if (!$this->get('source_info')) {  $this->set('source_info', $this->_getStorageLocationInfo()); }
-		
-		return parent::insert($pa_options);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function update($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) { $this->set('effective_date', _t('now')); }
-		if (!$this->get('source_info')) {  $this->set('source_info', $this->_getStorageLocationInfo()); }
-		
-		return parent::update($pa_options);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	private function _getStorageLocationInfo() {
-	    require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
-		$t_loc = new ca_storage_locations($this->get('location_id'));
-		if ($t_loc->getPrimaryKey()) {
-			return array(
-				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
-				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
-			);
-		} else {
-			return array('path' => array('?'), 'ids' => array(0));
+	public function insert($options=null) {
+		if (!caGetOption('dontAutomaticallySetEffectiveDate', $options, false) && !$this->get('effective_date', array('getDirectDate' => true))) {  
+			$this->set('effective_date', _t('now')); 
 		}
+		
+		return parent::insert($options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($options=null) {
+		if (!caGetOption('dontAutomaticallySetEffectiveDate', $options, false) && !$this->get('effective_date', array('getDirectDate' => true))) { 
+			$this->set('effective_date', _t('now')); 
+		}
+		
+		return parent::update($options);
 	}	
 	# ------------------------------------------------------
 }

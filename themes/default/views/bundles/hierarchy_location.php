@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,11 +80,16 @@
 		$vn_init_id = $pn_id;
 	}
 	
-	$vb_strict_type_hierarchy = (bool)$this->request->config->get($t_subject->tableName().'_enforce_strict_type_hierarchy');
-	$vs_type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$vs_id_prefix}type_id", array('id' => "{$vs_id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => $vb_strict_type_hierarchy, 'includeSelf' => !$vb_strict_type_hierarchy, 'directChildrenOnly' => $vb_strict_type_hierarchy)));
+	$strict_type_hierarchy = $this->request->config->get($t_subject->tableName().'_enforce_strict_type_hierarchy');
+	$vs_type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$vs_id_prefix}type_id", array('id' => "{$vs_id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 'includeSelf' => !(bool)$strict_type_hierarchy, 'directChildrenOnly' => ((bool)$strict_type_hierarchy && ($strict_type_hierarchy !== '~')))));
 	
 	$pa_bundle_settings = $this->getVar('settings');
 	$vb_read_only		=	((isset($pa_bundle_settings['readonly']) && $pa_bundle_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'hierarchy_location') == __CA_BUNDLE_ACCESS_READONLY__));
+	
+	$show_add = (!$vb_read_only && $vb_has_privs && !$vb_batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $vs_type_selector));
+	$show_move = ((!$strict_type_hierarchy || ($strict_type_hierarchy === '~') || $vb_batch) && !$vb_read_only);
+	
+	$show_add_object = (!$vb_read_only && $vb_has_privs && !$vb_batch) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections') && (((!$strict_type_hierarchy || ($strict_type_hierarchy === '~'))) || (($strict_type_hierarchy && ($strict_type_hierarchy !== '~')) && (!sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])))));
 	
 	$hier_browser_width = ($pdim = caParseElementDimension(caGetOption('width', $pa_bundle_settings, null))) ? $pdim['expression'] : null;
 	$hier_browser_height = ($pdim = caParseElementDimension(caGetOption('height', $pa_bundle_settings, null))) ? $pdim['expression'] : null;
@@ -249,17 +254,17 @@
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser();'><span><?php print _t('Explore'); ?></span></a></li>
 <?php	
 	}
-	if ((!$vb_strict_type_hierarchy || $vb_batch) && !$vb_read_only) {
+	if ($show_move) {
 ?>
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-move" onclick='_init<?php print $vs_id_prefix; ?>MoveHierarchyBrowser();'><span><?php print _t('Move'); ?></span></a></li>
 <?php
 	}
-	if ((!$vb_read_only && $vb_has_privs && !$vb_batch) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if ($show_add) {
 ?>
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-add" onclick='_init<?php print $vs_id_prefix; ?>AddHierarchyBrowser();'><span><?php print ($vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) ? _t('Add level') : _t('Add'); ?></span></a></li>
 <?php
 	}
-	if ((!$vb_read_only && $vb_has_privs&& !$vb_batch) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
+	if ($show_add_object) {
 ?>
 					<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-addObject" onclick='_init<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser();'><span><?php print _t('Add object'); ?></span></a></li>
 <?php
@@ -283,7 +288,7 @@
 				</div>
 <?php
 	}
-	if ((!$vb_strict_type_hierarchy || $vb_batch) && !$vb_read_only) {
+	if ($show_move) {
 ?>
 				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-move" class="hierarchyBrowseTab">
 					<div class="hierarchyBrowserFind">
@@ -335,7 +340,7 @@
 <?php
 	}
 	
-	if ((!$vb_read_only && $vb_has_privs && !$vb_batch) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if ($show_add) {
 ?>
 			<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-add"  class="hierarchyBrowseTab">
 				<div class="hierarchyBrowserMessageContainer">
@@ -347,18 +352,18 @@
 <?php
 						$va_add_types = array(_t('under (child)') => 'under');
 						
-						if (!$vb_strict_type_hierarchy) { $va_add_types[_t('above (parent)')] = 'above'; }
-						if (($pn_parent_id > 0) && !$vb_strict_type_hierarchy) { $va_add_types[_t('next to (sibling)')] = 'next_to'; }
+						if (!$strict_type_hierarchy) { $va_add_types[_t('above (parent)')] = 'above'; }
+						if (($pn_parent_id > 0) && !$strict_type_hierarchy) { $va_add_types[_t('next to (sibling)')] = 'next_to'; }
 						
 						if ($vs_type_selector) {
 							// for items that take types
-							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>", $vs_type_selector, caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType")), $vs_subject_label);
+							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>", $vs_type_selector, caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType"), ['value' => Session::getVar('default_hierarchy_add_mode')]), $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
 							print " <a href='#' onclick='_navigateToNewForm(jQuery(\"#{$vs_id_prefix}typeList\").val(), jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).",".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 						} else {
 							// for items without types
-							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>",  $t_subject->getProperty('NAME_SINGULAR'), caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType")), $vs_subject_label);
+							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>",  $t_subject->getProperty('NAME_SINGULAR'), caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType"), ['value' => Session::getVar('default_hierarchy_add_mode')]), $vs_subject_label);
 							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 						}
 ?>
@@ -381,9 +386,7 @@
 				<div id='<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowseTypeMenu' style="margin-top: 15px;">
 					<div style="float: left; width: 700px">
 <?php
-							$vs_type_selector 	= trim($t_object->getTypeListAsHTMLFormElement("{$vs_id_prefix}object_type_id", array('id' => "{$vs_id_prefix}objectTypeList"), array('childrenOfCurrentTypeOnly' => $vb_strict_type_hierarchy, 'includeSelf' => !$vb_strict_type_hierarchy, 'directChildrenOnly' => $vb_strict_type_hierarchy)));
-							
-							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 under <em>%2</em>", $vs_type_selector, $vs_subject_label);
+							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 under <em>%2</em>", $this->getVar('objectTypeList'), $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
 							print " <a href='#' onclick='_navigateToNewObjectForm(jQuery(\"#{$vs_id_prefix}objectTypeList\").val(), ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";				
@@ -405,7 +408,7 @@
 <script type="text/javascript">
 	jQuery(document).ready(function() {	
 <?php
-	if (!$vb_strict_type_hierarchy || $vb_batch) {
+	if ($show_move) {
 ?>
 		// Set up "move" hierarchy browse search
 		jQuery('#<?php print $vs_id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
@@ -522,7 +525,7 @@
 
 <?php
 	}
-	if ((!$vb_strict_type_hierarchy || $vb_batch) && !$vb_read_only) {
+	if ($show_move) {
 ?>
 	// Set up "move" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>MoveHierarchyBrowser = null;
@@ -547,7 +550,7 @@
 		
 				currentSelectionIDID: '<?php print $vs_id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>HierarchyBrowserSelectionMessage',
-				currentSelectionDisplayFormat: '<?php print addslashes(_t('Will be moved under <em>%1</em> after next save.')); ?>',
+				currentSelectionDisplayFormat: '<?php print addslashes(_t('Will be moved under <em>^current</em> after next save.')); ?>',
 				
 				allowExtractionFromHierarchy: <?php print ($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) ? 'true' : 'false'; ?>,
 				extractFromHierarchyButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
@@ -579,7 +582,7 @@
 <?php
 	}
 	
-	if (!$vb_batch && (!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if (!$vb_batch && (!$vb_read_only && $vb_has_privs) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $vs_type_selector))) {
 ?>
 	// Set up "add" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>AddHierarchyBrowser = null;

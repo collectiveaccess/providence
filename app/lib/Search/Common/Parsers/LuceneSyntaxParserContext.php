@@ -295,7 +295,7 @@ class LuceneSyntaxParserContext {
                             break;
 
                         default:
-                            throw new Zend_Search_Lucene('Boolean expression error. Unknown operator type.');
+                            throw new Zend_Search_Lucene_Search_QueryParserException('Boolean expression error. Unknown operator type.');
                     }
                 }
             }

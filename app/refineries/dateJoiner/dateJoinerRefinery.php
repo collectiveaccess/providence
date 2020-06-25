@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2017 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,13 +82,18 @@
 							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
 						}
 					}
-			
+					
 					$va_date = array();
 					if ($vs_date_start = BaseRefinery::parsePlaceholder($vs_date_start, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) { 
+						if ($pa_item['settings']['dateJoiner_ignorePresentDayStartDates'] && (caDateToUnixTimestamp($vs_date_start) === caDateToUnixTimestamp(_t('today')))) {
+						    $vs_date_start = '';
+						}
 						if (
-							!($vs_skip_start_exp = $pa_item['settings']['dateJoiner_skipStartIfExpression'])
+							(!($vs_skip_start_exp = $pa_item['settings']['dateJoiner_skipStartIfExpression'])
 							||
-							!ExpressionParser::evaluate($vs_skip_start_exp, array_merge($pa_source_data, array('start' => $vs_date_start, 'end' => $vs_date_end, 'expression' => $ps_expression)))
+							!ExpressionParser::evaluate($vs_skip_start_exp, array_merge($pa_source_data, array('start' => $vs_date_start, 'end' => $vs_date_end, 'expression' => $ps_expression))))
+							&&
+							!($pa_item['settings']['dateJoiner_skipStartIfEmpty'] && (strlen(trim($vs_date_start)) === 0))
 						) {
 							$va_date[] = $vs_date_start; 
 						} elseif ($vs_skip_start_replacement = $pa_item['settings']['dateJoiner_skipStartIfExpressionReplacementValue']) {
@@ -96,10 +101,16 @@
 						}
 					}
 					if ($vs_date_end = BaseRefinery::parsePlaceholder($vs_date_end, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) { 
+						if ($pa_item['settings']['dateJoiner_ignorePresentDayEndDates'] && (caDateToUnixTimestamp($vs_date_end) === caDateToUnixTimestamp(_t('today')))) {
+						    $vs_date_end = ($vs_date_start) ? _t('present') : "";
+						}
+						
 						if (
-							!($vs_skip_end_exp = $pa_item['settings']['dateJoiner_skipEndIfExpression'])
+							(!($vs_skip_end_exp = $pa_item['settings']['dateJoiner_skipEndIfExpression'])
 							||
-							!ExpressionParser::evaluate($vs_skip_end_exp, array_merge($pa_source_data, array('start' => $vs_date_start, 'end' => $vs_date_end, 'expression' => $ps_expression)))
+							!ExpressionParser::evaluate($vs_skip_end_exp, array_merge($pa_source_data, array('start' => $vs_date_start, 'end' => $vs_date_end, 'expression' => $ps_expression))))
+							&&
+							!($pa_item['settings']['dateJoiner_skipEndIfEmpty'] && (strlen(trim($vs_date_end)) === 0))
 						) {
 							$va_date[] = $vs_date_end; 
 						} elseif ($vs_skip_end_replacement = $pa_item['settings']['dateJoiner_skipEndIfExpressionReplacementValue']) {
@@ -141,6 +152,8 @@
 						} else {
 							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnDate', join("/", $va_date))); }
 						}
+					} else {
+						if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not find multiColumnDate values. Is your configuration correct?')); }
 					}
 					break;
 				case 'multiColumnRange':
@@ -165,6 +178,8 @@
 						} else {
 							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
 						}
+					} else {
+						if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not find multiColumnRange value for start date. Is your configuration correct?')); }
 					}
 					
 					// Process end date
@@ -185,10 +200,14 @@
 						} else {
 							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
 						}
+					} else {
+						if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not find multiColumnRange value for end date. Is your configuration correct?')); }
 					}
 					
 					if (sizeof($va_dates) > 0) {
 						return join(" - ", $va_dates);
+					} else {
+						if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not find multiColumnRange values. Is your configuration correct?')); }
 					}
 					break;
 			}
@@ -240,6 +259,15 @@
 				'label' => _t('Date start'),
 				'description' => _t('Maps the date from the data source that is the beginning of the conjoined date range. (For Two-column range).')
 			),
+			'dateJoiner_ignorePresentDayStartDates' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => 1,
+				'label' => _t('Ignore start dates if they are today\'s date.'),
+				'description' => _t('Excel will sometimes return the present date for blank dates. Set this option to treat them as blanks. (For Two-column range).')
+			),
 			'dateJoiner_skipStartIfExpression' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
@@ -249,7 +277,15 @@
 				'label' => _t('Skip start date if expression'),
 				'description' => _t('Omits start date from range if specified expression is true. (For Two-column range).')
 			),
-			
+			'dateJoiner_skipStartIfEmpty' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Skip start date if empty'),
+				'description' => _t('Omits start date from range if empty. (For Two-column range).')
+			),
 			'dateJoiner_skipStartIfExpressionReplacementValue' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
@@ -268,6 +304,15 @@
 				'label' => _t('Date end'),
 				'description' => _t('Maps the date from the data source that is the end of the conjoined date range. (For Two-column range)')
 			),
+			'dateJoiner_ignorePresentDayEndDates' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => 1,
+				'label' => _t('Ignore end dates if they are today\'s date.'),
+				'description' => _t('Excel will sometimes return the present date for blank dates. Set this option to treat them as blanks. (For Two-column range).')
+			),
 			'dateJoiner_skipEndIfExpression' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
@@ -276,6 +321,15 @@
 				'default' => '',
 				'label' => _t('Skip end date if expression'),
 				'description' => _t('Omits end date from range if specified expression is true. (For Two-column range).')
+			),
+			'dateJoiner_skipEndIfEmpty' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Skip end date if empty'),
+				'description' => _t('Omits end date from range if it is empty. (For Two-column range).')
 			),
 			'dateJoiner_skipEndIfExpressionReplacementValue' => array(
 				'formatType' => FT_TEXT,

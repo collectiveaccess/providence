@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,14 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 			<tr>
 				<td><?php print _t('Last change log ID'); ?></td>
 				<td><?php print $this->getVar('last_change_log_id'); ?></td>
+			</tr>
+			<tr>
+				<td><?php print _t('PHP version'); ?></td>
+				<td><?php print caGetPHPVersion()['version']; ?></td>
+			</tr>
+			<tr>
+				<td><?php print _t('Operating system'); ?></td>
+				<td><?php print php_uname(); ?></td>
 			</tr>
 		</tbody>
 	</table>
@@ -339,6 +347,58 @@ foreach($va_barcode_components as $vs_component_name => $va_component_info){
 		<tbody>
 <?php
 $va_plugins = $this->getVar('application_config_plugin_list');
+foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
+?>
+			<tr>
+				<td><?php print $vs_plugin_name; ?></td>
+				<td><?php 
+					print $va_plugin_info['description']; 
+					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
+					}
+					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
+					}
+				?></td>
+				<td>
+<?php
+	if((boolean)$va_plugin_info['available']){
+		print "<span style=\"color:green\">"._t("Available")."</span>";
+	} else {
+		if((boolean)$va_plugin_info['unused']){
+			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
+		} else {
+			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";
+		}
+	}
+?>
+				</td>
+			</tr>
+<?php
+}
+?>
+		</tbody>
+	</table>
+	
+		<div class="control-box rounded">
+		<div class="control-box-middle-content"><?php print _t('Metadata Extraction Tools'); ?></div>
+	</div><div class="clear"></div>
+	
+	<table id="caMediaConfigPluginList" class="listtable">
+		<thead>
+			<tr>
+				<th class="list-header-unsorted">
+					<?php print _t('Tool'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('Info'); ?>
+				</th>
+				<th class="{sorter: false} list-header-nosort"><?php print _t('Status'); ?></th>
+			</tr>
+		</thead>
+		<tbody>
+<?php
+$va_plugins = $this->getVar('metadata_extraction_config_component_list');
 foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 ?>
 			<tr>

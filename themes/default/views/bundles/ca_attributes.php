@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,6 +38,8 @@
 	$va_element_info 			= 	$this->getVar('element_info');
 	$va_root_element 			= 	current($va_element_info);
 	
+	$root_element_id = $t_element->getPrimaryKey();
+	
 	
 	$vs_element_set_label 		= 	$this->getVar('element_set_label');
 	
@@ -54,6 +56,10 @@
 	$va_element_settings 		=	$t_element->getSettings();
 
 	$vb_is_read_only_for_existing_vals = false;
+	
+	// If set render existing values in "bubbles" rather than full editing UI
+	$minimize_existing_values = $t_element->getSetting('minimizeExistingValues');
+	
 	if(($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) && isset($va_element_settings['readonlyTemplate']) && (strlen($va_element_settings['readonlyTemplate']) > 0)) {
 		$vb_is_read_only_for_existing_vals = true;
 
@@ -94,6 +100,8 @@
 				$vn_attr_id = $o_attr->getAttributeID();
 				$vn_element_id = $o_value->getElementID();
 				
+				$attr_table = method_exists($o_value, 'tableName') ? $o_value->tableName() : null;
+				
 				if ($va_failed_updates[$vn_attr_id] && !in_array($o_value->getDatatype(), array(
 					__CA_ATTRIBUTE_VALUE_LCSH__, 
 					__CA_ATTRIBUTE_VALUE_OBJECTS__,
@@ -117,10 +125,10 @@
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
 				
-				if (isset($va_element_info[$vn_element_id]) && isset($va_element_info[$vn_element_id]['settings']['render']) && ($va_element_info[$vn_element_id]['settings']['render'] == 'lookup')) {		// autocompleter-based mode for list attributes
+				if ($attr_table && isset($va_element_info[$vn_element_id]) && ((isset($va_element_info[$vn_element_id]['settings']['render']) && ($va_element_info[$vn_element_id]['settings']['render'] == 'lookup')) || $minimize_existing_values)) {		// autocompleter-based mode for list attributes
 					$va_template_tags[] = "{$vn_element_id}_label";
 					$va_initial_values[$vn_attr_id]["{$vn_element_id}_label"] = '';
-					$va_item_ids[] = (int)$vs_display_val;
+					$va_item_ids[$attr_table][] = (int)$vs_display_val;
 				}
 				
 			}
@@ -134,12 +142,17 @@
 			}
 		}		
 				
-		if(sizeof($va_item_ids)) {
-			$t_list_item = new ca_list_items();
-			$va_labels = $t_list_item->getPreferredDisplayLabelsForIDs($va_item_ids);
-			foreach($va_initial_values as $vn_attr_id => $va_values) {
-				foreach($va_values as $vn_element_id => $vs_value) {
-					$va_initial_values[$vn_attr_id][$vn_element_id.'_label'] = $va_labels[$va_initial_values[$vn_attr_id][$vn_element_id]];
+		if(is_array($va_item_ids) && sizeof($va_item_ids)) {
+			foreach($va_item_ids as $attr_table => $item_ids_for_table) {
+				if ($element_template = $t_element->getSetting('displayTemplate')) {
+					$va_labels = caProcessTemplateForIDs($element_template, $attr_table, $item_ids_for_table, ['returnAsArray' => true, 'indexWithIDs' => true]);
+				} elseif($t_attr_table = Datamodel::getInstance($attr_table, true)) {
+					$va_labels = $t_attr_table->getPreferredDisplayLabelsForIDs($item_ids_for_table);
+				}
+				foreach($va_initial_values as $vn_attr_id => $va_values) {
+					foreach($va_values as $vn_element_id => $vs_value) {
+						$va_initial_values[$vn_attr_id][$vn_element_id.'_label'] = $va_labels[$va_initial_values[$vn_attr_id][$vn_element_id]];
+					}
 				}
 			}
 		}
@@ -166,8 +179,8 @@
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	
 	
-if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
-	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], false)) {
+	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 	if (sizeof($va_template_list) > 0) {
 ?>
 	<div class='iconButton'>
@@ -185,11 +198,11 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
-	// The bundle template - used to generate each bundle in the form
+	// The bundle template - used to generate each editing bundle in the form
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo repeatingItem">	
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo repeatingItem" style="clear: both;">	
 			<span class="formLabelError">{error}</span>
 <?php
 	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {		// static (non-repeating) checkbox list for list attributes
@@ -204,8 +217,8 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 		print "<div class='iconButton'>{$vs_presets}</div>\n";
 	}
 	
-	if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
-		$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+	if (caGetOption('canMakePDFForValue', $va_element_info[$root_element_id]['settings'], false)) {
+		$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 		if (sizeof($va_template_list) > 0) {
 ?>
 		<div class='editorBundleValuePrintControl iconButton' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>
@@ -240,7 +253,28 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 ?>
 		</div>
 	</textarea>
-	
+<?php
+	if($minimize_existing_values) {
+		//
+		// Minimized bundle template - used to generate small non-editable "minimized" bundles in the form if configured to do so
+		//
+?>
+	<textarea class='caExistingItemTemplate' style='display: none;'>
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
+		
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>{<?php print "{$root_element_id}_label"; ?>}</span>
+			<?php print caHTMLHiddenInput($vs_id_prefix.'_'.$root_element_id.'_{n}', ['value' => '{'.$root_element_id.'}']); ?>	
+<?php
+			if (!$vb_read_only && !$vb_dont_show_del) {
+?><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
+	}
+?>
+		</div>
+	</textarea>
+<?php
+	}
+?>
+
 	<div class="bundleContainer">
 		<div class="caItemList">
 <?php
@@ -338,6 +372,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 			errors: <?php print json_encode($va_errors); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',
+			initialValueTemplateClassName: '<?php print $minimize_existing_values ?  'caExistingItemTemplate' : 'caItemTemplate'; ?>',
 			itemListClassName: 'caItemList',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -167,21 +167,24 @@
 				$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), 'ca_object_representations');
 				$this->getView()->setVar($vs_import_target.'_representation_relationship_type', $t_rel->getRelationshipTypesAsHTMLSelect('ltor',null,null, array('name' => $vs_import_target.'_representation_relationship_type'), array('value' => $va_last_settings[$vs_import_target.'_representation_relationship_type'])));
 			}
- 		
- 			$va_importer_list = ca_data_importers::getImporters(null, array('formats' => array('exif')));
- 			$va_object_importer_options = $va_object_representation_importer_options = array("-" => '');
- 			foreach($va_importer_list as $vn_importer_id => $va_importer_info) {
- 				if ($va_importer_info['table_num'] == $t_instance->tableNum()) { // target table
- 					$va_object_importer_options[$va_importer_info['label']] = $vn_importer_id;
- 				} elseif($va_importer_info['table_num'] == Datamodel::getTableNum('ca_object_representations')) {
- 					$va_object_representation_importer_options[$va_importer_info['label']] = $vn_importer_id;
- 				}
- 			}
-
- 			$this->view->setVar($vs_import_target.'_mapping_list', caHTMLSelect($vs_import_target.'_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings[$vs_import_target.'_mapping_id'])));
- 			$this->view->setVar($vs_import_target.'_mapping_list_count', sizeof($va_object_importer_options));
- 			$this->view->setVar('ca_object_representations_mapping_list', caHTMLSelect('ca_object_representations_mapping_id', $va_object_representation_importer_options, array(), array('value' => $va_last_settings['ca_object_representations_mapping_id'])));
- 			$this->view->setVar('ca_object_representations_mapping_list_count', sizeof($va_object_representation_importer_options));
+ 			if((bool)$this->request->config->get('allow_user_selection_of_embedded_metadata_extraction_mapping')) {
+ 				$add_null_opt = (bool)$this->request->config->get('allow_user_embedded_metadata_extraction_mapping_null_option');
+ 				$va_object_importer_options = ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName()], 'nullOption' => $add_null_opt ? '-' : null]);
+ 				$va_object_representation_importer_options = ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => ['ca_object_representations'], 'nullOption' => $add_null_opt ? '-' : null]);
+				
+				$this->view->setVar($vs_import_target.'_mapping_list', caHTMLSelect($vs_import_target.'_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings[$vs_import_target.'_mapping_id'])));
+				
+				$c = sizeof($va_object_importer_options);
+				if ($add_null_opt) { $c--;}
+				$this->view->setVar($vs_import_target.'_mapping_list_count', $c);
+				$this->view->setVar('ca_object_representations_mapping_list', caHTMLSelect('ca_object_representations_mapping_id', $va_object_representation_importer_options, array(), array('value' => $va_last_settings['ca_object_representations_mapping_id'])));
+				
+				$c = sizeof($va_object_representation_importer_options);
+				if ($add_null_opt) { $c--;}
+				$this->view->setVar('ca_object_representations_mapping_list_count', $c);
+			} else {
+				$va_object_importer_options = $va_object_representation_importer_options = null;
+			}
  			
  			//
  			// Available sets
@@ -289,8 +292,7 @@
 					$va_options,
 					array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
 				{
-					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
-					
+					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");	
 				}
 				$this->render('mediaimport/batch_queued_html.php');
 			} else { 
@@ -321,7 +323,7 @@
 				foreach($va_paths as $item) {
 					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 						$vb_is_dir = is_dir("{$dir}/{$item}");
-						$vs_k = preg_replace('![\:]+!', '|', $item);
+						$vs_k = preg_replace('![@@]+!', '|', $item);
 						if ($vb_is_dir) { 
 							$vn_i++;
 							if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
@@ -418,7 +420,7 @@
  				$va_acc = array();
  				$vn_i = 0;
  				foreach($va_tmp as $vs_tmp) {
- 					list($vs_directory, $vn_start) = explode(":", $vs_tmp);
+ 					list($vs_directory, $vn_start) = explode("@@", $vs_tmp);
  					if (!$vs_directory) { continue; }
  					
  					$va_tmp = explode('/', $vs_directory);
@@ -433,7 +435,7 @@
 					$vn_i++;
  				}
  			} else {
- 				list($ps_directory, $pn_start) = explode(":", $ps_id);
+ 				list($ps_directory, $pn_start) = explode("@@", $ps_id);
  				
 				$va_tmp = explode('/', $ps_directory);
 				$vn_level = sizeof($va_tmp);
@@ -471,7 +473,7 @@
  		# ------------------------------------------------------------------
  		public function GetDirectoryAncestorList() {
  			$ps_id = $this->request->getParameter('id', pString);
- 			list($ps_directory, $pn_start) = explode(":", $ps_id);
+ 			list($ps_directory, $pn_start) = explode("@@", $ps_id);
  			
  			$va_ancestors = array();	
  			if ($ps_directory) {
@@ -537,6 +539,24 @@
  			$this->view->setVar('response', $va_response);
  			$this->render('mediaimport/file_upload_response_json.php');
  		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function DownloadLog() {
+ 			$tmp_dir = caGetTempDirPath(['useAppTmpDir' => true]);
+ 			$file = preg_replace("![^A-Za-z0-9_]+!", "", $this->request->getParameter('file', pString));
+ 			if(file_exists($path = "{$tmp_dir}/{$file}.csv")) {
+ 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
+ 				$o_view->setVar('archive_path', $path);
+ 				$o_view->setVar('archive_name', (strpos($path, "SkipLog") !== false) ? "skipped_files_log.csv" : "error_log.csv");
+ 				$this->response->addContent($o_view->render('download_file_binary.php'));
+ 				return;
+ 			} else {
+ 				$this->notification->addNotification(_t('Invalid log'), __NOTIFICATION_TYPE_ERROR__);
+ 				$this->Index();
+ 			}
+ 		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler
  		# ------------------------------------------------------------------
@@ -554,4 +574,3 @@
  		}
 		# ------------------------------------------------------------------
  	}
- ?>

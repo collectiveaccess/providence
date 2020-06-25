@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,6 +42,21 @@
  	global $_ca_attribute_settings;
  	
  	$_ca_attribute_settings['DateRangeAttributeValue'] = array(		// global
+ 		'dateFormat' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => '',
+			'width' => 50, 'height' => 1,
+			'label' => _t('Date display format'),
+			'options' => array(
+				_t('System default') => '',
+				_t('Formatted as text (ex. July 20, 1969)') => 'text',
+				_t('Formatted as delimited (ex. 7/20/1969)') => 'delimited',
+				_t('ISO-8601 (ex. 1969-07-20)') => 'iso8601',
+				_t('As entered by user') => 'original'
+			),
+			'description' => _t('Format to use for display of dates, if different from system default.')
+		),
 		'dateRangeBoundaries' => array(
 			'formatType' => FT_DATERANGE,
 			'displayType' => DT_FIELD,
@@ -66,6 +81,14 @@
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your date ranges to be locale-specific. (The default is to not be.)')
 		),
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -89,14 +112,14 @@
 			'width' => 50, 'height' => 1,
 			'label' => _t('Date picker date format'),
 			'options' => array(
-				_t('ISO-8601 (ex. 2012-07-03)') => 'yy-mm-dd',
-				_t('US Delimited (ex. 07/03/2012)') => 'mm/dd/yy',
-				_t('European Delimited (ex. 03/07/2012)') => 'dd/mm/yy',
-				_t('Month Day, Year (ex. July 3, 2012)') => 'MM d, yy',
-				_t('Month Day Year (ex. July 3 2012)') => 'MM d yy',
-				_t('Day Month Year (ex. 3 July 2012)') => 'd MM yy',
-				_t('Short month Day Year (ex. Jul 3 2012)') => 'M d yy',
-				_t('Day Short month Year (ex. 3 July 2012)') => 'd M yy'
+				_t('ISO-8601 (ex. 2012-07-16)') => 'yy-mm-dd',
+				_t('US Delimited (ex. 07/16/2012)') => 'mm/dd/yy',
+				_t('European Delimited (ex. 16/07/2012)') => 'dd/mm/yy',
+				_t('Month Day, Year (ex. July 16, 2012)') => 'MM d, yy',
+				_t('Month Day Year (ex. July 16 2012)') => 'MM d yy',
+				_t('Day Month Year (ex. 16 July 2012)') => 'd MM yy',
+				_t('Short month Day Year (ex. Jul 16 2012)') => 'M d yy',
+				_t('Day Short month Year (ex. 16 July 2012)') => 'd M yy'
 			),
 			'description' => _t('Format to use for dates selected from the date picker. (The default is YY-MM-DD format.)')
 		),
@@ -216,6 +239,11 @@
 		 * 
 		 */
  		static private $o_lang;
+
+		/**
+		 * 
+		 */
+ 		static private $locale;
  		
 		/**
 		 * @var array
@@ -223,8 +251,21 @@
  		static private $s_date_cache = array();
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
+ 			global $g_request;
+
  			parent::__construct($pa_value_array);
- 			if(!DateRangeAttributeValue::$o_tep) { DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); }
+ 			if(!DateRangeAttributeValue::$o_tep) { 
+ 				self::$locale = __CA_DEFAULT_LOCALE__;
+ 				if (	$g_request &&
+ 					 	method_exists($g_request, "isLoggedIn") && 
+ 						$g_request->isLoggedIn() && 
+ 						($preferred_locale = trim($g_request->user->getPreference('ui_locale'))) 
+ 				) {
+ 					self::$locale = $preferred_locale;
+ 				}
+ 				DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); 
+ 				DateRangeAttributeValue::$o_tep->setLanguage(self::$locale);
+ 			}
  		}
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
@@ -262,9 +303,17 @@
 				return $this->opn_start_date.'/'.$this->opn_end_date;
 			}
 			
+			if (!is_array($va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID()))) {
+				$va_settings = [];
+			}
 			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 
-			$vs_date_format = $o_date_config->get('dateFormat');
+			if (!($vs_date_format = caGetOption('dateFormat', $pa_options, null))) {
+				if (!($vs_date_format = caGetOption('dateFormat', $va_settings, null))) {
+					$vs_date_format = $o_date_config->get('dateFormat');
+				}
+			}
+			
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $vs_date_format.$this->opn_start_date.$this->opn_end_date);
 
 			// pull from cache
@@ -280,11 +329,8 @@
 			if ($vs_date_format == 'original') {
 				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
 			} else {
-				if (!is_array($va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID()))) {
-					$va_settings = [];
-				}
 				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
-				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('dateFormat' => $vs_date_format, 'isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
 			}
 		}
  		# ------------------------------------------------------------------
@@ -303,6 +349,8 @@
  			);
  			
 			if ($ps_value) {
+				$locale = caGetOption('locale', $pa_options, self::$locale);
+				DateRangeAttributeValue::$o_tep->setLanguage($locale);
 				if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) { 
 					// invalid date
 					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
@@ -406,11 +454,10 @@
  			}
  			
  			if ((bool)$va_settings['useDatePicker']) {
- 				global $g_ui_locale;
 
  				// nothing terrible happens if this fails. If no package is registered for the current 
  				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
- 				AssetLoadManager::register("datepicker_i18n_{$g_ui_locale}"); 
+ 				AssetLoadManager::register("datepicker_i18n_{self::$locale}"); 
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
@@ -420,7 +467,7 @@
 
 				// load localization for datepicker. we can't use the asset manager here
 				// because that doesn't get the script out in time for quickadd forms
-				$vs_i18n_relative_path = '/assets/jquery/jquery-ui/i18n/jquery.ui.datepicker-'.$g_ui_locale.'.js';
+				$vs_i18n_relative_path = '/assets/jquery/jquery-ui/i18n/jquery.ui.datepicker-'.self::$locale.'.js';
 				if(file_exists(__CA_BASE_DIR__.$vs_i18n_relative_path)) {
 					$vs_element .= "<script src='".__CA_URL_ROOT__.$vs_i18n_relative_path."' type='text/javascript'></script>\n";
 				}
@@ -463,7 +510,7 @@
          */
         public function getDataForSearchIndexing() {
             if (!self::$o_search_config) { self::$o_search_config = caGetSearchConfig(); };
-            if (!self::$o_lang) { self::$o_lang = TimeExpressionParser::getSettingsForLanguage(__CA_DEFAULT_LOCALE__); }
+            if (!self::$o_lang) { self::$o_lang = TimeExpressionParser::getSettingsForLanguage(self::$locale); }
             $circa_indicators = self::$o_lang->get('dateCircaIndicator');
             $p = explode(' ', $this->ops_text_value);
             

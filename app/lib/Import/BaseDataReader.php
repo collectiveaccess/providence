@@ -133,6 +133,9 @@ abstract class BaseDataReader {
 		//
 		$vs_val = null;
 		switch($ps_field) {
+			case '__now__':
+				$vs_val = date("Y-m-d H:i:s");
+				break;
 			case '__row__':
 				$vs_val = $this->currentRow();
 				break;

@@ -337,11 +337,13 @@ class TaskQueue extends BaseObject {
 					
 					
 				} else {
-					$this->opo_eventlog->log(array(
-						"CODE" => "ERR", 
-						"SOURCE" => "TaskQueue->processQueue()", 
-						"MESSAGE" => "Queue processing failed using handler $proc_handler: ".($h->error ? $h->error->getErrorDescription() : '')." [".$h->error->getErrorNumber()."]; queue was <b>NOT</b> halted")
-					);
+					$errorDescription = $h->error ? $h->error->getErrorDescription() : '';
+					$errorNumber      = $h->error->getErrorNumber();
+					$this->opo_eventlog->log( array(
+						"CODE"    => "ERR",
+						"SOURCE"  => "TaskQueue->processQueue()",
+						"MESSAGE" => "Queue processing failed using handler $proc_handler: $errorDescription [$errorNumber]; queue was NOT halted"
+					) );
 					$this->errors[] = $h->error;
 					
 					// Got error, so mark task as failed (non-zero error_code value)
@@ -349,7 +351,7 @@ class TaskQueue extends BaseObject {
 						UPDATE ca_task_queue 
 						SET completed_on = ?, error_code = ? 
 						WHERE task_id = ?", 
-						time(), (int)$h->error->getErrorNumber(), (int)$qr_tasks->get("task_id"));
+						time(), (int) $errorNumber, (int)$qr_tasks->get("task_id"));
 				}
 				if ($o_db->numErrors()) {
 					$this->opo_eventlog->log(array(
@@ -708,5 +710,3 @@ class TaskQueue extends BaseObject {
 	# ---------------------------------------------------------------------------
 }
 # --------------------------------------------------------------------------------------------
-
-?>

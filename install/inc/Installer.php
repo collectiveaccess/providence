@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2018 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -590,6 +590,7 @@ class Installer {
 			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting list %1', $vs_list_code));
 				$t_list->delete(true);
+				$o_trans->commit();
 				continue;
 			}
 
@@ -875,9 +876,14 @@ class Installer {
 
 		foreach($this->opo_profile->metadataDictionary->children() as $vo_entry) {
 			$vs_field = self::getAttribute($vo_entry, "bundle");
-
+			$vs_table = self::getAttribute($vo_entry, "table");
 			if(strlen($vs_field)<1) {
 				$this->addError("No bundle specified in a metadata dictionary entry. Skipping row.");
+				continue;
+			}
+			
+			if(!($vn_table_num = Datamodel::getTableNum($vs_table))) {
+				$this->addError("Table {$vs_table} is invalid for metadata dictionary entry. Skipping row.");
 				continue;
 			}
 
@@ -885,6 +891,7 @@ class Installer {
 			$t_entry = new ca_metadata_dictionary_entries();
 			$t_entry->setMode(ACCESS_WRITE);
 			$t_entry->set('bundle_name', $vs_field);
+			$t_entry->set('table_num', $vn_table_num);
 			$this->_processSettings($t_entry, $vo_entry->settings);
 
 			$t_entry->insert();
@@ -1113,6 +1120,70 @@ class Installer {
 
 				$this->logStatus(_t('Successfully nuked all bundle placements for screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
 
+                // set user and group access
+                if($vo_screen->userAccess) {
+                    $t_user = new ca_users();
+                    $va_ui_screen_users = [];
+                    foreach($vo_screen->userAccess->children() as $vo_permission) {
+                        $vs_user = trim((string)self::getAttribute($vo_permission, "user"));
+                        $vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+                        if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
+                        if($vn_access) {
+                            $va_ui_screen_users[$t_user->getUserID()] = $vn_access;
+                        } else {
+                            $this->addError("User name or access value invalid for UI screen {$vs_screen_idno} (permission item with user name '{$vs_user}')");
+                        }
+                    }
+
+                    if(sizeof($va_ui_screen_users)>0) {
+                        $t_ui_screens->addUsers($va_ui_screen_users);
+                    }
+                }
+
+                if($vo_screen->groupAccess) {
+                    $t_group = new ca_user_groups();
+                    $va_ui_screen_groups = [];
+                    foreach($vo_screen->groupAccess->children() as $vo_permission) {
+                        $vs_group = trim((string)self::getAttribute($vo_permission, "group"));
+                        $vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+                        if(!$t_group->load(array('code' => $vs_group))) { continue; }
+                        if($vn_access) {
+                            $va_ui_screen_groups[$t_group->getPrimaryKey()] = $vn_access;
+                        } else {
+                            $this->addError("Group code or access value invalid for UI screen {$vs_screen_idno} (permission item with group code '{$vs_group}')");
+                        }
+                    }
+
+                    if(sizeof($va_ui_screen_groups)>0) {
+                        $t_ui_screens->addUserGroups($va_ui_screen_groups);
+                    }
+                }
+                
+                if($vo_screen->roleAccess) {
+                    $t_role = new ca_user_roles();
+                    $va_ui_screen_roles = [];
+                    foreach($vo_screen->roleAccess->children() as $vo_permission) {
+                        $vs_role = trim((string)self::getAttribute($vo_permission, "role"));
+                        $vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+                        if(!$t_role->load(array('code' => $vs_role))) { continue; }
+                        if(!is_null($vn_access)) {
+                            $va_ui_screen_roles[$t_role->getPrimaryKey()] = $vn_access;
+                        } else {
+                            $this->addError("Role code or access value invalid for UI screen {$vs_screen_idno} (permission item with role code '{$vs_role}')");
+                        }
+                    }
+                    if(sizeof($va_ui_screen_roles)>0) {   
+						$all_roles = $t_role->getRoleList();
+						foreach($all_roles as $role_id => $role_info) {
+							if (!isset($va_ui_screen_roles[$role_id])) { $va_ui_screen_roles[$role_id] = 0; }
+						}
+                        $t_ui_screens->addUserRoles($va_ui_screen_roles);
+                    }
+                }
+
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
@@ -1151,7 +1222,9 @@ class Installer {
 					$va_settings = $this->_processSettings(null, $vo_placement->settings, ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($va_available_bundles[$vs_bundle]['settings']) ? $va_available_bundles[$vs_bundle]['settings'] : [])]);
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $vs_bundle, $vs_placement_code, $vs_screen_idno, $vs_ui_code));
 
-					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					if (!$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']))) {
+						$this->logStatus(join("; ", $t_ui_screens->getErrors()));
+					}
 				}
 
 				// create ui screen type restrictions
@@ -1248,6 +1321,30 @@ class Installer {
 
 				if(sizeof($va_ui_groups)>0) {
 					$t_ui->addUserGroups($va_ui_groups);
+				}
+			}
+			
+			if($vo_ui->roleAccess) {
+				$t_role = new ca_user_roles();
+				$va_ui_roles = [];
+				foreach($vo_ui->roleAccess->children() as $vo_permission) {
+					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->load(array('code' => $vs_role))) { continue; }
+					if(!is_null($vn_access)) {
+						$va_ui_roles[$t_role->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Role code or access value invalid for UI {$vs_ui_code} (permission item with role code '{$vs_role}')");
+					}
+				}
+
+				if(sizeof($va_ui_roles)>0) {
+					$all_roles = $t_role->getRoleList();
+					foreach($all_roles as $role_id => $role_info) {
+						if (!isset($va_ui_roles[$role_id])) { $va_ui_roles[$role_id] = 0; }
+					}
+					$t_ui->addUserRoles($va_ui_roles);
 				}
 			}
 		}
@@ -1693,7 +1790,7 @@ class Installer {
 					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
 					
 					if ($t_display->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_display->getErrors()));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for display with code %3', $vs_restriction_code, $vs_type, $vs_display_code));
@@ -1746,6 +1843,30 @@ class Installer {
 
 				if(sizeof($va_display_groups)>0) {
 					$t_display->addUserGroups($va_display_groups);
+				}
+			}
+			
+			if($vo_display->roleAccess) {
+				$t_role = new ca_user_roles();
+				$va_display_roles = [];
+				foreach($vo_display->roleAccess->children() as $vo_permission) {
+					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->load(array('code' => $vs_role))) { continue; }
+					if(!is_null($vn_access)) {
+						$va_display_roles[$t_role->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Role code or access value invalid for display {$vs_display_code} (permission item with role code '{$vs_role}')");
+					}
+				}
+
+				if(sizeof($va_display_roles)>0) {
+					$all_roles = $t_role->getRoleList();
+					foreach($all_roles as $role_id => $role_info) {
+						if (!isset($va_display_roles[$role_id])) { $va_display_roles[$role_id] = 0; }
+					}
+					$t_display->addUserRoles($va_display_roles);
 				}
 			}
 
@@ -1876,9 +1997,9 @@ class Installer {
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
 					
 					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
-					
-					if ($t_restriction->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in form {$vs_form_code}: ".join("; ",$t_restriction->getErrors()));
+
+					if ($t_form->numErrors()) {
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in form {$vs_form_code}: ".join("; ",$t_form->getErrors()));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for form with code %3', $vs_restriction_code, $vs_type, $vs_form_code));
@@ -1932,6 +2053,30 @@ class Installer {
 
 				if(sizeof($va_form_groups)>0) {
 					$t_form->addUserGroups($va_form_groups);
+				}
+			}
+			
+			if($vo_form->roleAccess) {
+				$t_role = new ca_user_roles();
+				$va_form_roles = [];
+				foreach($vo_form->roleAccess->children() as $vo_permission) {
+					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->load(array('code' => $vs_role))) { continue; }
+					if(!is_null($vn_access)) {
+						$va_form_roles[$t_role->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Role code or access value invalid for form {$vs_form_code} (permission item with role code '{$vs_role}')");
+					}
+				}
+
+				if(sizeof($va_form_roles)>0) {
+					$all_roles = $t_role->getRoleList();
+					foreach($all_roles as $role_id => $role_info) {
+						if (!isset($va_form_roles[$role_id])) { $va_form_roles[$role_id] = 0; }
+					}
+					$t_form->addUserRoles($va_form_roles);
 				}
 			}
 		}
@@ -2220,7 +2365,7 @@ class Installer {
 					$t_md_alert->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
 					
 					if ($t_md_alert->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in metadata alert {$vs_alert_code}: ".join("; ",$t_restriction->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in metadata alert {$vs_alert_code}: ".join("; ",$t_md_alert->getErrors()));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for metadata alert with code %3', $vs_restriction_code, $vs_type, $vs_alert_code));
@@ -2272,6 +2417,30 @@ class Installer {
 
 				if(sizeof($va_form_groups)>0) {
 					$t_md_alert->addUserGroups($va_form_groups);
+				}
+			}
+			
+			if($vo_md_alert->roleAccess) {
+				$t_role = new ca_user_roles();
+				$va_form_roles = [];
+				foreach($vo_md_alert->roleAccess->children() as $vo_permission) {
+					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->load(array('code' => $vs_role))) { continue; }
+					if(!is_null($vn_access)) {
+						$va_form_roles[$t_role->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Role code or access value invalid for metadata alert {$vs_alert_code} (permission item with role code '{$vs_role}')");
+					}
+				}
+
+				if(sizeof($va_form_roles)>0) {
+					$all_roles = $t_role->getRoleList();
+					foreach($all_roles as $role_id => $role_info) {
+						if (!isset($va_form_roles[$role_id])) { $va_form_roles[$role_id] = 0; }
+					}
+					$t_md_alert->addUserRoles($va_form_roles);
 				}
 			}
 		}
@@ -2464,7 +2633,7 @@ class Installer {
 			case 'edit':
 				return 2;
 			default:
-				return null;
+				return 0;
 		}
 	}
 	# --------------------------------------------------

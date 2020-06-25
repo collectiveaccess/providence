@@ -48,7 +48,7 @@
 </div>
 	
 <div class="caObjectRepresentationSetCenterContainer" style="width: <?php print $vn_image_width; ?>px; height: <?php print $vn_image_height; ?>px;">
-<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/blu-pointer.png" id="caObjectRepresentationSetCenterMarker"/>
+<div id="caObjectRepresentationSetCenterMarker"><?= caNavIcon(__CA_NAV_ICON_CROSSHAIRS__, 3); ?></div>
 <?php
 	print $this->getVar('image');
 ?>

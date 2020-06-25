@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,10 +95,11 @@
                         $this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
                     }
 				}	
-                if ($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id)) {
+				
+                if ($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr())) {
                     $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null));
 			    } else {
-			        $this->opa_sorts = [];
+			        $this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request));
 			    }
 			} else {
 			    $this->opa_sorts = [];
@@ -133,7 +134,7 @@
  			
  			
 			$t_display 					= Datamodel::getInstanceByTableName('ca_bundle_displays', true);  	
- 			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
+ 			$vn_display_id 				= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr());
  			
  			
  			$va_displays = []; 
@@ -141,7 +142,8 @@
 
 			// Set display options
 			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
-			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
+			
+			if(($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) && ($t_instance::typeCodeForID($vn_type_id))) { // occurrence searches are inherently type-restricted
 				$va_display_options['restrictToTypes'] = array($vn_type_id);
 			}
 
@@ -150,16 +152,23 @@
  				$va_displays[$va_display['display_id']] = $va_display['name'];
  				
  				$va_show_only_in = [];
- 				foreach(is_array($va_display['settings']['show_only_in']) ? $va_display['settings']['show_only_in'] : [] as $k => $v) {
+ 				
+ 				$show_only_settings = [];
+ 				if(is_array($va_display['settings']['show_only_in'])) {
+ 					 $show_only_settings = $va_display['settings']['show_only_in'];
+ 				} elseif($va_display['settings']['show_only_in']) {
+ 					$show_only_settings = [$va_display['settings']['show_only_in']];
+ 				}
+ 				foreach($show_only_settings as $k => $v) {
  				    $v = str_replace('search_browse_', '', $v);
- 				    if (!in_array($v, ['list', 'full', 'thumbnail'])) { continue; }
+ 				    //if (!in_array($v, ['list', 'full', 'thumbnail'])) { continue; }
  				    $va_show_only_in[] = $v;
  				}
  				$va_display_show_only_for_views[$va_display['display_id']] = $va_show_only_in;
  			}
  			if(!sizeof($va_displays)) { $va_displays = ['0' => _t('Default')]; } // force default display if none are configured
  			if(!isset($va_displays[$vn_display_id])) { $vn_display_id = array_shift(array_keys($va_displays)); }
- 			
+ 		
  			$this->view->setVar('display_lists', $va_displays);	
  			$this->view->setVar('display_show_only_for_views', $va_display_show_only_for_views);	
 			
@@ -200,8 +209,16 @@
 						continue;
 					}
 
-					// can't sort on related tables!?
-					if ($va_tmp[0] != $this->ops_tablename) { continue; }
+					if ($va_tmp[0] != $this->ops_tablename) { 
+					    // Sort on related tables
+						if (($t_rel = Datamodel::getInstance($va_tmp[0], true)) && method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
+                            $va_display_list[$vn_i]['is_sortable'] = true; 
+                            $types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
+                            
+                            $va_display_list[$vn_i]['bundle_sort'] = "{$va_tmp[0]}.preferred_labels.".$t_rel->getLabelSortField().((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
+                        }
+						continue; 
+					}
 					
 					if ($t_instance->hasField($va_tmp[1])) {
 						if($t_instance->getFieldInfo($va_tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
@@ -218,8 +235,26 @@
 					}
 					
 					if (isset($va_attribute_list[$va_tmp[1]]) && $va_sortable_elements[$va_attribute_list[$va_tmp[1]]]) {
-						$va_display_list[$vn_i]['is_sortable'] = true;
-						$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+                        $va_display_list[$vn_i]['is_sortable'] = true;
+                        $va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+					    if(ca_metadata_elements::getElementDatatype($va_tmp[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+					        // If container includes a field type this is typically "preferred" for sorting use that in place of the container aggregate
+					        $elements = ca_metadata_elements::getElementsForSet($va_tmp[1]);
+					        foreach($elements as $e) {
+					            switch($e['datatype']) {
+					                case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+					                case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+					                case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+					                case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+					                case __CA_ATTRIBUTE_VALUE_INTEGER__:
+					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+					                case __CA_ATTRIBUTE_VALUE_LENGTH__:
+					                    $va_display_list[$vn_i]['bundle_sort'] = "{$va_display_item['bundle_name']}.{$e['element_code']}";
+					                    break(2);
+					            }
+					        }
+					    }
 						continue;
 					}
 				}
@@ -228,33 +263,25 @@
  			$this->view->setVar('display_list', $va_display_list);
  			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
- 			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
+ 			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label', 'restrictToTypes' => $this->opn_type_restriction_id)));
  			
  			# --- export options used to export search results - in tools show hide under page bar
  			$vn_table_num = Datamodel::getTableNum($this->ops_tablename);
 
 			//default export formats, not configurable
-			$va_export_options = array(
-				array(
-					'name' => _t('Tab delimited'),
-					'code' => '_tab'
-				),
-				array(
-					'name' => _t('Comma delimited (CSV)'),
-					'code' => '_csv'
-				),
-				array(
-					'name' => _t('Spreadsheet with media icons (XLSX)'),
-					'code' => '_xlsx'
-				),
-                array(
-                    'name' => _t('Word processing (DOCX)'),
-                    'code' => '_docx'
-                )				
-			);
+			$va_export_options = [];
+			
+			$include_export_options = $this->request->config->getList($this->ops_tablename.'_standard_results_export_formats');
+			foreach(
+			    ['tab' => _t('Tab delimited'), 'csv' => _t('Comma delimited (CSV)'), 
+			    'xlsx' => _t('Spreadsheet (XLSX)'), 'docx' => _t('Word processing (DOCX)')] as $ext => $name) {
+			    if (!is_array($include_export_options) || in_array($ext, $include_export_options)) {
+			        $va_export_options[] = ['name' => $name, 'code' => "_{$ext}"];
+			    }
+			}
 			
 			// merge default formats with drop-in print templates
-			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('showOnlyIn' => ['search_browse_'.$this->opo_result_context->getCurrentView()], 'table' => $this->ops_tablename)));
+			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('showOnlyIn' => ['search_browse_'.$this->opo_result_context->getCurrentView()], 'table' => $this->ops_tablename, 'restrictToTypes' => $this->opn_type_restriction_id)));
 			
 			$this->view->setVar('export_formats', $va_export_options);
 			$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));
@@ -422,9 +449,8 @@
 						$vn_left = $vn_left_margin;
 							
 						switch($vs_renderer) {
-							case 'PhantomJS':
 							case 'wkhtmltopdf':
-								// WebKit based renderers (PhantomJS, wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
+								// WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
 								$vn_page_count++;
 								$vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
 								break;
@@ -476,6 +502,18 @@
 			$this->opo_result_context->setParameter('last_export_type', $ps_output_type);
 			$this->opo_result_context->saveContext();
 			
+			$primary_table = $this->request->getParameter('primaryTable', pString);
+			$primary_id = $this->request->getParameter('primaryID', pInteger);
+			
+			
+			// Pass prmary record, if defined into view
+			if ($t_primary = Datamodel::getInstance($primary_table, true)) {
+				$t_primary->load($primary_id);
+				$this->view->setVar('primary', $t_primary);
+			} else {
+				$this->view->setVar('primary', null);
+			}
+			
 			if(substr($ps_output_type, 0, 4) !== '_pdf') {
 				switch($ps_output_type) {
 					case '_xlsx':
@@ -496,6 +534,15 @@
 						$vs_file_extension = 'txt';
 						$vs_mimetype = "text/plain";
 					default:
+					    if(substr($ps_output_type, 0, 5) === '_docx') {
+					        $va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 6));
+                            if (!is_array($va_template_info)) {
+                                $this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->PrintSummary()");
+                                return;
+                            }
+                            $this->render($va_template_info['path']);
+                            return;	
+					    }
 						break;
 				}
 
@@ -806,40 +853,16 @@
 							
 							foreach($va_paths as $vn_i => $vs_path) {
 								$vs_ext = array_pop(explode(".", $vs_path));
-								$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $qr_res->get($t_subject->tableName().'.idno'));
+								$vs_idno = $qr_res->get($t_subject->tableName().'.idno');
 								$vs_original_name = $va_infos[$vn_i]['ORIGINAL_FILENAME'];
-								$vn_index = (sizeof($va_paths) > 1) ? "_".($vn_i + 1) : '';
+								$vn_index = (sizeof($va_paths) > 1) ? ($vn_i + 1) : '';
 								$vn_representation_id = $va_representation_ids[$vn_i];
 								$vs_representation_type = caGetListItemIdno($va_representation_types[$vn_i]);
 
 								// make sure we don't download representations the user isn't allowed to read
 								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $vn_representation_id)){ continue; }
-								
-								switch($this->request->user->getPreference('downloaded_file_naming')) {
-									case 'idno':
-										$vs_filename = "{$vs_idno_proc}{$vn_index}.{$vs_ext}";
-										break;
-									case 'idno_and_version':
-										$vs_filename = "{$vs_idno_proc}_{$vs_version}{$vn_index}.{$vs_ext}";
-										break;
-									case 'idno_and_rep_id_and_version':
-										$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}.{$vs_ext}";
-										break;
-									case 'original_name':
-									default:
-										if ($vs_original_name) {
-											$va_tmp = explode('.', $vs_original_name);
-											if (sizeof($va_tmp) > 1) { 
-												if (strlen($vs_filename_ext = array_pop($va_tmp)) < 3) {
-													$va_tmp[] = $vs_filename_ext;
-												}
-											}
-											$vs_filename = join('_', $va_tmp)."{$vn_index}.{$vs_ext}";
-										} else {
-											$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}.{$vs_ext}";
-										}
-										break;
-								}
+										
+								$vs_filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $vs_idno, 'index' => $vn_index, 'version' => $vs_version, 'extension' => $vs_ext, 'original_filename' => $vs_original_name, 'representation_id' => $vn_representation_id]);				
 
 								if($o_media_metadata_conf->get('do_metadata_embedding_for_search_result_media_download')) {
 									if ($vs_path_with_embedding = caEmbedMediaMetadataIntoFile($vs_path,
@@ -903,7 +926,7 @@
  			$this->view->setVar('current_view', $vs_view);
  			
  			
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr());
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
 			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest(), 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $vn_display_id : null)));
  			
@@ -968,7 +991,7 @@
  			AssetLoadManager::register("tableview");
  			
  			$va_ids 				= $this->opo_result_context->getResultList();
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr());
  			$va_display_list 		= $this->_getDisplayList($vn_display_id);
  			
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
@@ -1001,7 +1024,7 @@
  			if (($pn_s = (int)$this->request->getParameter('s', pInteger)) < 0) { $pn_s = 0; }
  			if (($pn_c = (int)$this->request->getParameter('c', pInteger)) < 1) { $pn_c = 10; }
  			
- 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
+ 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr());
  			$t_display = new ca_bundle_displays($vn_display_id);
  			$va_ids = $this->opo_result_context->getResultList();
  			$qr_res = caMakeSearchResult($this->ops_tablename, $va_ids);
@@ -1040,7 +1063,7 @@
  		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
  		 */
  		public function saveResultsEditorData() {
- 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id));
+ 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr()));
  			$va_response = $t_display->saveResultsEditorData($this->ops_tablename, ['request' => $this->request, 'user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			
 			$this->view->setVar('response', $va_response);
@@ -1054,7 +1077,7 @@
  		 */ 
  		public function resultsComplexDataEditor() {
  			$t_instance 			= Datamodel::getInstanceByTableName($this->ops_tablename, true);
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id);
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr());
  			
  			$pn_placement_id = (int)$this->request->getParameter('pl', pString);
  			$ps_bundle = $this->request->getParameter('bundle', pString);
@@ -1128,5 +1151,13 @@
 				return mb_strtolower(($ps_mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
 			}
  		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		private function _getShowInStr() {
+			$view = $this->opo_result_context->getCurrentView();
+			return $view ? "search_browse_{$view}" : '';
+		}
  		# ------------------------------------------------------------------
 	}

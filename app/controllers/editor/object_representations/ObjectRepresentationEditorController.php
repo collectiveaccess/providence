@@ -141,26 +141,8 @@
  			$this->view->setVar('file_path', $t_caption->getFilePath('caption_file'));
  			$va_info = $t_caption->getFileInfo("caption_file");
  			
- 			switch($this->request->user->getPreference('downloaded_file_naming')) {
- 				case 'idno':
- 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
- 					break;
- 				case 'idno_and_version':
- 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
- 					break;
- 				case 'idno_and_rep_id_and_version':
- 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
- 					break;
- 				case 'original_name':
- 				default:
- 					if ($va_info['ORIGINAL_FILENAME']) {
- 						$this->view->setVar('download_name', $va_info['ORIGINAL_FILENAME']."_captions_{$vs_locale}.vtt");
- 					} else {
- 						$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
- 					}
- 					break;
- 			} 
- 			
+ 			$this->view->setVar('download_name', caGetRepresentationDownloadFileName('ca_object_representations', ['idno' => $t_rep->get('idno'), 'index' => null, 'version' => 'captions', 'extension' => 'vtt', 'original_filename' => $va_info['ORIGINAL_FILENAME'], 'representation_id' => $pn_representation_id]));				
+			
  			return $this->render('caption_download_binary.php');
  		}
  		# -------------------------------------------------------

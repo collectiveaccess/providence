@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@ class SimpleService {
 
 		$vs_cache_key = $po_request->getHash();
 
-		if(!$po_request->getParameter('noCache', pInteger)) {
+		if(!$po_request->getParameter('noCache', pInteger) && ($po_request->getParameter('sort', pString) !== '_random_')) {
 			if(ExternalCache::contains($vs_cache_key, "SimpleAPI_{$ps_endpoint}")) {
 				return ExternalCache::fetch($vs_cache_key, "SimpleAPI_{$ps_endpoint}");
 			}
@@ -204,7 +204,7 @@ class SimpleService {
 
 		/** @var SearchResult $o_res */
 		$o_res = $o_search->search($ps_q, array(
-			'sort' => ($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort'],
+			'sort' => $sort = (($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort']),
 			'sortDirection' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'],
 			'checkAccess' => $pa_config['checkAccess'],
 		));
@@ -227,6 +227,7 @@ class SimpleService {
 			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
 		}
 
+		if ($sort === '_random_') { $o_res->seek(rand(0, $o_res->numHits() - 1)); }
 		while($o_res->nextHit()) {
 			$va_hit = [];
 

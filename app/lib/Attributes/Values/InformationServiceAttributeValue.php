@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2018 Whirl-i-Gig
+ * Copyright 2011-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,6 +78,14 @@ $_ca_attribute_settings['InformationServiceAttributeValue'] = array(		// global
 		'label' => _t('Does not use locale setting'),
 		'description' => _t('Check this option if you don\'t want your values to be locale-specific. (The default is to not be.)')
 	),
+	'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+	),
 	'canBeUsedInSort' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -135,6 +143,14 @@ $_ca_attribute_settings['InformationServiceAttributeValue'] = array(		// global
 		'label' => _t('Value delimiter'),
 		'validForRootOnly' => 1,
 		'description' => _t('Delimiter to use between multiple values when used in a display.')
+	),
+	'sortUsingList' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'showLists' => true, 'allowNull' => true,
+		'width' => 40, 'height' => 1,
+		'label' => _t('Sort using list'),
+		'description' => _t('List code for list to sort information service values on. Each item in the referenced list should have an identifier that matches the information service item uri or id and a rank that reflects the desired sort order. Leave empty to sort information service items by their value.')
 	)
 );
 

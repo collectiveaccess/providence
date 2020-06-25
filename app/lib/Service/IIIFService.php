@@ -211,7 +211,7 @@ class IIIFService {
 				(
 					(($va_dimensions['width'] == $vn_tile_width) && ($va_dimensions['height'] == $vn_tile_height))
 					||
-					((($va_dimensions['width'] <= $vn_tile_width) || ($va_dimensions['height'] <= $vn_tile_height)) && ($va_dimensions['mode'] == 'incomplete'))
+					((($va_dimensions['width'] <= $vn_tile_width) || ($va_dimensions['height'] <= $vn_tile_height))) // && ($va_dimensions['mode'] == 'incomplete'))
 				)
 			) {
 				$vn_scale_factor = ceil($va_region['width']/$va_dimensions['width']);						// magnification = width of region requested/width of returned tile

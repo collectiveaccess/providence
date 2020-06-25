@@ -55,8 +55,7 @@ class CSVDelimitedDataReader extends BaseDelimitedDataReader {
 		$this->ops_display_name = _t('Comma Delimited (CSV)');
 		$this->ops_description = _t('Reads comma delimited (CSV) text files');
 		
-		$this->opa_formats = array('csvdelimited');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = array('csvdelimited', 'csv');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }
-?>

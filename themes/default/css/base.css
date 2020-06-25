@@ -1,7 +1,11 @@
 @font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
 
 /*  dark gray #4b4a4a - teal #134959 - turquoise #1FAA99 - med gray #DDDDDD - light gray #EEEEEE */
-html, body {
+html {
+    font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
+}
+
+body {
     font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
     background-color: #fff;
     margin:0px;
@@ -145,7 +149,7 @@ h5 {
 
 #mainContent{
     background-color: #FFFFFF;
-    padding: 10px 20px 0px 20px;
+    padding: 10px 20px 60px 20px;
     width:744px;	/* .width 1000 - #leftNav (width + borders) 216 - 40px padding in mainContent = 744px */
     margin-left: 215px;
     border-right: 2px solid #ddd;
@@ -344,11 +348,17 @@ div.clear {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
+
+#leftNav .inspectorActionButton   {
 	float: left;
-	margin-right: 10px;
+	margin-right: 5px;
 	width: 28px;
 	text-align: center;
+}
+
+#leftNav .infoIcon {
+	padding-left: unset !important;
+	line-height: unset !important;
 }
 
 #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
@@ -1175,6 +1185,7 @@ div.hint {
     margin-bottom: 5px;
     font-weight: bold;
     text-align: left;
+    break-inside: avoid;
 }
 
 .formLabelPlain {
@@ -1196,6 +1207,12 @@ div.hint {
     padding-left:5px;
     font-weight: normal;
     font-size: 9px;
+}
+
+div.formLabelUploadSizeNote {
+	font-weight: normal;
+	font-size: 10px;
+	font-style: italic;
 }
 
 .bundleLabel {
@@ -1226,7 +1243,7 @@ div.hint {
 	font-size:11px;
 	line-height:1em;
 }
-.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select{
+.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
 	position:relative;
 	padding-top:0px;
 	padding-bottom:0px;
@@ -1236,18 +1253,46 @@ div.hint {
 	height: 17px;
 	vertical-align: top;
 }
-.bundleSubLabel .editorBundlePrintControl{
+.bundleSubLabel .editorBundlePrintControl {
 	float:right;
 	text-align:right;
 	font-size:11px;
 	line-height:1em;
 }
-.bundleSubLabel .editorBundlePrintControl a.form-button{
+.bundleSubLabel .editorBundleSortControl{
+	float:left;
+	text-align:left;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel .editorBundlePrintControl a.form-button, .bundleSubLabel .editorBundleReturnToHomeControl a.form-button, .bundleSubLabel .editorBundleSortControl a.form-button{
 	height:auto;
 	vertical-align:top;
 	padding:0px;
 	margin:-6px 0px 0px 0px;
 }
+
+.editorBundleReturnToHomeControls {
+	display: none;
+	clear: both;
+	border: 1px dotted #cccccc;
+	background: #fff;
+	padding: 5px 5px 5px 10px;
+	width: 692px;
+}
+
+.editorBundleReturnToHomeControlsMessage {
+	display: none;
+	padding: 5px 5px 15px 0px;
+	font-size: 12px;
+}
+
+.bundleSubLabel .editorBundleReturnToHomeControl{
+	text-align:left;
+	font-size:11px;
+	line-height:1em;
+}
+
 .bundleLabel .iconButton{
 	float:right;
 	text-align:right;
@@ -1277,6 +1322,7 @@ div.hint {
 }
 .settingsBundle {
     padding: 10px;
+    max-height: 700px;
 }
 
 .caDupeLabelMessageBox {
@@ -1947,8 +1993,8 @@ div.control-box-left-content {
 
 div.control-box-middle-content {
     text-align: center;
-    margin: 10px;
-    float: left;
+    margin: 3px;
+    float: right;
     font-size:12px;
     font-weight: bold;
 }
@@ -2687,6 +2733,7 @@ table.representationAnnotationListItem {
 #caMediaPanelContentArea {
     width: 100%;
     height: 100%;
+    background-color: #fff;
 }
 
 #caMediaOverlayTileViewer {
@@ -2999,19 +3046,6 @@ a.editorFieldListLink {
 #editorFieldListHTML {
     display: none;
 }
-
-/*div.editorBundlePrintControl {
-    position: absolute; 
-    top: 2px; 
-    right: 27px;
-}
-
-div.editorBundlePrintControl select {
-    font-size: 9px;
-    font-weight: normal;
-    height: 17px;
-    vertical-align: top;
-}*/
 
 #caHierarchyOverviewHeader {
     font-size: 13px;
@@ -3499,37 +3533,31 @@ input.dateBg, textarea.dateBg {
     background-image: url('../graphics/icons/formBgDate.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:30px;
 }
 input.currencyBg, textarea.currencyBg {
     background-image: url('../graphics/icons/formBgCurrency.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:15px;
 }
 input.weightBg, textarea.weightBg {
     background-image: url('../graphics/icons/formBgWeight.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:25px;
 }
 input.timecodeBg, textarea.timecodeBg {
     background-image: url('../graphics/icons/formBgTimecode.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:65px;
 }
 input.urlBg, textarea.urlBg {
     background-image: url('../graphics/icons/formBgUrl.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:30px;
 }
 input.lookupBg, textarea.lookupBg {
     background-image: url('../graphics/icons/formBgLookup.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:15px;
 }
 
 /*** HIERARCHY BROWSER ***/
@@ -3555,6 +3583,7 @@ div.hierarchyBrowserVertical {
 }
 
 div.hierarchyBrowserSmall {
+    position: relative;
     border: 1px solid #ccc;
     width: 98%;
     height: 180px;
@@ -3562,6 +3591,7 @@ div.hierarchyBrowserSmall {
 }
 
 div.hierarchyBrowserLarge {
+    position: relative;
     border: 1px solid #000000;
     width: 100%;
     height: 400px;
@@ -3575,6 +3605,20 @@ div.hierarchyBrowserContainer {
     height: 100%;
     margin: 0px;
     padding: 0px;
+}
+
+div.hierarchyBrowserContainerReadOnly {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    top: 0px;
+    left: 0px;
+    z-index: 1000;
+    background-color: #ccc;
+    display: none;
+    opacity: 0.5;
 }
 
 div.hierarchyBrowserContainerVertical {
@@ -3777,7 +3821,7 @@ a.exploreSelected {
     color:#666666;
     font-weight:normal;
     float:right;
-    margin-right:8px;
+    
     padding-left:5px;
 }
 .hierarchyBrowserMessageContainer{    /*** message above browser on editor pages ***/
@@ -3929,7 +3973,13 @@ div.directoryBrowserLevelVertical {
     font-weight: normal;
 }
 
-a.directoryBrowserLevelSelected {
+.directoryBrowserLevel a i {
+    text-decoration: none;
+    font-weight: normal;
+    color: #ccc;
+}
+
+a.directoryBrowserLevelSelected, a.directoryBrowserLevelSelected i {
     color: #000000;
     text-decoration: none;
     font-weight: bold;
@@ -5189,12 +5239,12 @@ a.dashboardRemoveWidget {
 
 .dashboardWidgetScrollMedium {
     height: 300px;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 .dashboardWidgetScrollLarge {
     height: 400px;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 .dashboardWidgetTable{
@@ -5645,6 +5695,12 @@ select.listRelRelationshipTypeEdit {
     overflow-y: auto;
 }
 
+
+.settingsBundle {
+    padding: 10px;
+    max-height: 700px;
+}
+
 div.caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
@@ -5699,6 +5755,7 @@ select.caItemListSortControlTrigger {
 }
 
 div.caItemLoadNextBundles {
+	clear: both;
 	padding: 10px;
 }
 
@@ -6227,24 +6284,24 @@ table.caConfirmBatchExecutionPanelAlertControls {
     -webkit-border-radius:4px;
 }
 
-#caTypeChangePanel .close a, #caCreateChildPanel .close a{
+#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a{
     text-decoration:none;
     font-size:16px;
 }
 
-#caTypeChangePanelContentArea, #caCreateChildPanelContentArea {
+#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table {
     width: 100%;
 }
-#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left {
+#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
 	margin-top:-10px;
 }
 .addChild {
@@ -6264,10 +6321,24 @@ div.dialogHeader {
     padding: 7px 5px 5px 5px;
     margin: 0px;
     font-family: "DIN-Regular";
+}
+
+/* Set home location */
+#caSetHomeLocationPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
 }
+
 
 /* Editor summary download options */
 #caSummaryDownloadOptionsPanel {
@@ -6322,7 +6393,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
 }
 
 /* Quick add */
-.caRelationQuickAddPanel {
+.caRelationQuickAddPanel, .caRelationInterstitialEditPanel {
     position: fixed;
     top: 0px;
     left: 0px;
@@ -6337,16 +6408,16 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     background-color: #FFFFFF;
 }
 
-#caRelationQuickAddPanel .close a{
+#caRelationQuickAddPanel .close a, #caRelationInterstitialEditPanel .close a{
     text-decoration:none;
     font-size:16px;
 }
 
-#caRelationQuickAddPanelContentArea {
+#caRelationQuickAddPanelContentArea, #caRelationInterstitialEditPanelContentArea {
     padding:10px;
 }
 
-#caRelationQuickAddPanelControlButtons {
+#caRelationQuickAddPanelControlButtons, #caRelationInterstitialEditPanelControlButtons {
     width: 100%;
     text-align: center;
 }
@@ -6374,6 +6445,7 @@ div.quickAddErrorContainer {
     width: 890px;
     display: none;
     z-index:33000;
+    margin-top: 40px;
 }
 
 div.quickAddTypeList {
@@ -6734,50 +6806,56 @@ div.caRepresentationMediaReplicationControls {
 }
 
 /** Object location tracking **/
-.caCurrentLocation {
+.caHistoryTrackingCurrent {
+    position: relative;
 	padding: 10px;
-	margin-right: 12px;
+	min-height: 60px;
 }
 
-div.caLocationHistory {
+div.caHistoryTracking {
+    position: relative;
 	border-top: 1px dotted #e6e6e6;
 	padding: 10px;
-	margin-right: 12px;
+	min-height: 60px;
 }
 
-div.caLocationHistoryTab {
+div.caHistoryTrackingTab {
 	max-height: 400px;
 	overflow: auto;
 }
 
 /** Object use history **/
-div.caUseHistoryEntry {
+div.caHistoryTrackingEntry {
 	position: relative;
 	display: table; 
 	overflow: hidden;
 	font-weight: normal;
 	font-size: 11px;
 	
-	width: 730px;
+	width: 700px;
 	
-	margin: 5px 0 0 5px;
-	padding: 5px 0 5px 0;
+	margin: 1px 0 0 5px;
+	padding: 10px;
 	border-top: 1px dotted #e6e6e6;
 }
 
-div.caUseHistoryEntryFirst {
+div.caHistoryTrackingEntryFirst {
 	border: none;
 }
 
-div.caUseHistoryButtonBar {
+div.caHistoryTrackingButtonBar {
 	padding: 10px;
 }
 
-.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caSetChildViewButton {
+div.caHistoryTrackingButtonBarDelete {
+	float: right;
+}
+
+.caChangeLocationButton, .caReturnToHomeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caAddCollectionButton, .caSetChildViewButton, .caAddObjectButton, .caAddEntityButton, .caAddMovementButton, .caAddLoanButton {
 	margin-top: 5px;
 }
 
-div.caUseHistoryIconContainer {
+div.caHistoryTrackingIconContainer {
 	float: left;
 	display: table; 
 	width: 60px;
@@ -6790,18 +6868,18 @@ div.caUseHistoryIconContainer {
 	margin: 0 10px 0 0;
 }
 
-div.caUseHistoryIcon {
+div.caHistoryTrackingIcon {
 	display: table-cell; 
 	vertical-align: middle;
 }
 
-div.caUseHistoryIconText {
+div.caHistoryTrackingIconText {
 	text-align: center;
 	font-size: 11px;
 	font-style: italic;
 }
 
-div.caUseHistoryDate {
+div.caHistoryTrackingEntryDate {
 	position: absolute;
 	bottom: 3px;
 	right: 3px;
@@ -6810,15 +6888,27 @@ div.caUseHistoryDate {
 	font-size: 9px;
 }
 
-h2.caUseHistorySetLocationHeading {
+div.caHistoryTrackingEntryDelete {
+	position: absolute;
+	top: 8px;
+	right: 3px;
+}
+
+div.caHistoryTrackingEntryInterstitialEdit {
+    position: absolute;
+	top: 8px;
+	right: 27px;
+}
+
+h2.caHistoryTrackingSetLocationHeading {
 	float: left;
 }
 
-div.caUseHistoryHierarchyBrowser {
+div.caHistoryTrackingHierarchyBrowser {
 	border-top: 2px;
 }
 
-table.caUseHistoryUpdateLocationMetadata tr td {
+table.caHistoryTrackingUpdateLocationMetadata tr td {
 	vertical-align: middle;
 }
 
@@ -6887,18 +6977,26 @@ div.caMetadataDictionaryViolationsListHeading {
 	color: #333;
 }
 
+.caMetadataDictionaryViolationInCurrentTab {
+	color: #ffffff;
+}
+
+.caMetadataDictionaryViolationNotInCurrentTab {
+	color: #999999;
+}
+
 /** Metadata importer **/
 table.caFileSourceControls {
 	width: 700px
 }
 
 td.caFileSourceControls {
-	vertical-align: top;
+	vertical-align: middle;
 	padding-top: 4px;
 }
 
 td.caSourceFileControlRadio {
-	vertical-align: top;
+	vertical-align: middle;
 	width: 30px;
 	height: 35px;
 }
@@ -7446,4 +7544,161 @@ li.mediaItem-selected {
 /* Force CKEditor full screen overlay to top of window */
 .cke_maximized {
     top: 0px !important;
+}
+
+div.changeLogSearchResultsPagination {
+	float: right;
+	padding: 5px;
+}
+
+div.checklist {
+    font-weight: normal;
+    line-height: 2em;
+}
+
+/* Statistics dashboard */
+div.statisticsDashboardPanel {
+    width: 268px;
+    height: 300px;
+    overflow: auto;
+    float: left;
+    padding: 0 15px 15px 15px;
+    margin: 0 10px 10px 10px;
+    border: 1px dotted #a0a0a0;
+}
+
+div.statisticsDashboardGroupList {
+    margin: 0 0 10px 0;
+}
+
+div.statisticsDashboardsiteList {
+    margin: 0 0 10px 0;
+}
+
+span.statisticsDashboardSelectedGroup {
+    font-weight: bold;
+}
+
+span.statisticsDashboardSelectedsite {
+    font-weight: bold;
+}
+
+/* Current set highlighting */
+a.currentSet {
+    font-weight: bold;
+    color: #333;
+}
+
+.dashboardWidgetContentContainer a.link {
+    text-decoration: underline;
+    color: #1ab3c8;
+}
+
+/* "New" ca_object_representations_bundle */
+.mediaUploadContainer {
+	width:700px;
+}
+
+.mediaUploadInfoArea {
+	float: right; 
+	width: 460px;
+}
+
+.mediaUploadEditArea {
+	float: right; 
+	width: 570px;
+}
+
+.mediaUploadStatus {
+    font-size:16px;
+    color: #828282;
+    text-align: left;
+    padding: 10px;
+    line-height:1.3em;
+    overflow: hidden;
+    height: 2.4em;
+}
+
+.mediaUploadArea {
+	border: 1px dashed #ccc; 
+	text-align: center; 
+	padding: 0px; 
+	display: block;
+	width: 120px;
+	height: 120px;
+	margin-top: 14px;
+}
+
+.mediaUploadAreaMessage {
+	font-size: 16px; 
+	color: #333;
+	margin-top: 40px;
+}
+
+.mediaUploadAreaMessage:hover {
+	cursor: pointer;
+}
+
+.mediaUploadAreaMessageCount {
+	font-size: 9px;
+}
+
+div.objectRepresentationListImage {
+    width: 120px;
+}
+
+div.objectRepresentationListImageContainer {
+	float: left; 
+	width: 120px;
+}
+
+div.objectRepresentationMetadataEditorContainer {
+    display: none;
+	font-size: 10px;
+	overflow: auto;
+	line-height: 14px;
+	font-weight: normal;
+	color: #000000;
+}
+
+div.objectRepresentationNewMetadataEditorContainer {
+    display: none;
+    padding: 10px;
+}
+
+div.objectRepresentationMetadataEditorDoneButton {
+    float: none;
+    clear: both;
+    width: 100%;
+    text-align: center;
+}
+
+.objectRepresentationMetadataEditorMediaRightCol {
+	float: right; 
+	width: 110px;
+}
+
+.objectRepresentationMetadataEditorMediaRightCol .fa {
+	font-size:18px;
+	padding-right:5px;
+}
+
+.mediaMetadataDisplay {
+	font-weight: normal;
+	font-size: 12px;
+}
+
+div.mediaMetadataActionButton {
+    margin: 10px 0 0 0;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+div.mediaMetadataActionButton img{
+	margin-right:5px;
+}
+
+div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
+    text-decoration: none;
+    color: #000;
 }

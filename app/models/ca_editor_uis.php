@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,7 +104,8 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('site pages') => 235,
 					_t('user interfaces') => 101,
 					_t('user interface screens') => 100,
-					_t('metadata alert rules') => 238
+					_t('metadata alert rules') => 238,
+					_t('data dictionary entries') => 214
 				)
 		),
 		'color' => array(
@@ -427,7 +428,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_user_groups
 						WHERE
-							group_id IN (?)
+							group_id IN (?) AND (access > 0)
 					)
 				)";
 				$va_params[] = array_keys($va_groups);
@@ -440,7 +441,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						SELECT screen_id 
 						FROM ca_editor_ui_screens_x_roles
 						WHERE
-							role_id IN (?)
+							role_id IN (?) AND (access > 0)
 					)
 				)";
 				$va_params[] = array_keys($va_roles);
@@ -471,7 +472,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			WHERE
 				 ".join(" AND ", $va_wheres)."
 			ORDER BY 
-				ceus.rank, ceus.screen_id
+				ceus.`rank`, ceus.screen_id
 		", $va_params);
 		
 		$va_screens = [];
@@ -613,6 +614,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if ($vn_user_id = $po_request->getUserID()) {
 			$t_user = $po_request->getUser();
 			
+			$acc = null;
 			// Check for user access
 			$qr_users = $t_user->getDb()->query("
 				SELECT screen_id, user_id, access 
@@ -620,8 +622,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 				WHERE
 					user_id = ? AND screen_id = ?", array($vn_user_id, $vn_screen_id));
 					
-			if ($qr_users->nextRow()) {
-				return (int)$qr_users->get('access');
+			while ($qr_users->nextRow()) {
+				$uacc = (int)$qr_users->get('access');
+				if(($uacc > $acc) || is_null($acc)) { $acc = $uacc; }
 			}
 			
 			// Check for group access
@@ -633,8 +636,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					WHERE
 						group_id IN (?) AND screen_id = ?", array(array_keys($va_groups), $vn_screen_id));
 						
-				if ($qr_groups->nextRow()) {
-					return (int)$qr_groups->get('access');
+				while ($qr_groups->nextRow()) {
+					$uacc = (int)$qr_groups->get('access');
+					if(($uacc > $acc) || is_null($acc)) { $acc = $uacc; }
 				}
 			}		
 			
@@ -647,10 +651,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					WHERE
 						role_id IN (?) AND screen_id = ?", array(array_keys($va_roles), $vn_screen_id));
 						
-				if ($qr_roles->nextRow()) {
-					return (int)$qr_roles->get('access');
+				while ($qr_roles->nextRow()) {
+					$uacc = (int)$qr_roles->get('access');
+					if(($uacc > $acc) || is_null($acc)) { $acc = $uacc; }
 				}
-			}			
+			}	
+			if(!is_null($acc)) { return $acc; }	
 		}
 		
 		$qr_all = $t_user->getDb()->query("
@@ -743,7 +749,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		    }
 		}
 		
-		
 		$va_bundles = [];
 		$qr_res = $o_db->query("
 			SELECT *
@@ -752,10 +757,11 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			WHERE
 				(ceus.ui_id = ?) AND (ceuibp.screen_id = ?) {$vs_bundle_list_sql}
 			ORDER BY 
-				ceuibp.rank
+				ceuibp.`rank`
 		", $va_params);
 		
 		$va_placements = [];
+		$screen_ids = [];
 		while ($qr_res->nextRow()) {
 			$va_tmp = $qr_res->getRow();
 			$va_tmp['settings'] = $qr_res->getVars('settings');
@@ -773,10 +779,14 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 				$pn_type_id && is_array($va_types) && sizeof($va_types) &&
 				!in_array($pn_type_id, $va_types)
 			) { continue; }
-				
+			$screen_ids[$va_tmp['screen_id']] = true;
 			$va_placements[] = $va_tmp;
 		}
-		
+		if(sizeof($screen_ids) > 0) {
+		    $t_screen = Datamodel::getInstance('ca_editor_ui_screens', true);
+		    $labels = $t_screen->getPreferredDisplayLabelsForIDs(array_keys($screen_ids));
+		    $va_placements = array_map(function($v) use ($labels) { $v['screen_label'] = $labels[$v['screen_id']]; return $v; }, $va_placements);
+		}
 		return self::$s_screen_bundle_cache[$vs_cache_key] = $va_placements;
 	}
 	# ----------------------------------------
@@ -799,6 +809,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			
 			foreach($va_placements as $va_placement) {
 				if ($va_placement['bundle_name'] === $ps_bundle_name) {
+					return 'Screen'.$vn_screen_id;
+				} elseif(str_replace("ca_attribute_", "", $va_placement['bundle_name']) === $ps_bundle_name) {
 					return 'Screen'.$vn_screen_id;
 				}
 			}
@@ -912,6 +924,65 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		return array('fragment' => $va_nav, 'defaultScreen' => 'Screen'.$vn_default_screen_id);
 	}
 	# ----------------------------------------
+	/**
+	 * Add bundle placement to screen in currently loaded user interface
+	 *
+	 * @param mixed $pm_screen screen_id, idno or preferred label of screen to add bundle to.
+	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name)
+	 * @param array $pa_settings Placement settings array; keys should be valid setting names
+	 * @param int $pn_rank Optional value that determines sort order of bundles in the screen. If omitted, placement is added to the end of the screen.
+	 * @param array $pa_options Optional array of options. Supports the following options:
+	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
+	 * @return int Returns placement_id of newly created placement on success, false on error
+	 */
+	public function addPlacementToScreen($pm_screen, $ps_bundle_name, $ps_placement_code, $pa_settings, $pn_rank=null, $pa_options=null) {
+	    if(!$this->getPrimaryKey()) { return null; }
+	    if ($t_screen = ca_editor_ui_screens::loadScreen($this->getPrimaryKey(), $pm_screen, $pa_options)) {
+	        return $t_screen->addPlacement($ps_bundle_name, $ps_placement_code, $pa_settings, $pn_rank, $pa_options);
+	    }
+	    return null;
+	}
+	# ----------------------------------------
+	/**
+	 * Add bundle placement to currently loaded screen before a specified bundle
+	 *
+	 * @param mixed $pm_screen screen_id, idno or preferred label of screen to add bundle to.
+	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name)
+	 * @param string $ps_placement_code Placement code
+	 * @param array $pa_settings Placement settings array; keys should be valid setting names
+	 * @param string $ps_relative_to_bundle_name_or_placement_code Bundle name or placement code of placement to insert new placement before.
+	 * @param array $pa_options Optional array of options. Supports the following options:
+	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
+	 * @return int Returns placement_id of newly created placement on success, false on error
+	 */
+	public function addPlacementToScreenBefore($pm_screen, $ps_bundle_name, $ps_placement_code, $pa_settings, $ps_relative_to_bundle_name_or_placement_code, $pa_options=null) {
+	    if(!$this->getPrimaryKey()) { return null; }
+	    if ($t_screen = ca_editor_ui_screens::loadScreen($this->getPrimaryKey(), $pm_screen, $pa_options)) {
+	        return $t_screen->addPlacementBefore($ps_bundle_name, $ps_placement_code, $pa_settings, $ps_relative_to_bundle_name_or_placement_code, $pa_options);
+	    }
+	    return null;
+	}
+	# ----------------------------------------
+	/**
+	 * Add bundle placement to currently loaded screen after a specified bundle
+	 *
+	 * @param mixed $pm_screen screen_id, idno or preferred label of screen to add bundle to.
+	 * @param string $ps_bundle_name Name of bundle to add (eg. ca_objects.idno, ca_objects.preferred_labels.name)
+	 * @param string $ps_placement_code Placement code
+	 * @param array $pa_settings Placement settings array; keys should be valid setting names
+	 * @param string $ps_relative_to_bundle_name_or_placement_code Bundle name or placement code of placement to insert new placement after.
+	 * @param array $pa_options Optional array of options. Supports the following options:
+	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
+	 * @return int Returns placement_id of newly created placement on success, false on error
+	 */
+	public function addPlacementToScreenAfter($pm_screen, $ps_bundle_name, $ps_placement_code, $pa_settings, $ps_relative_to_bundle_name_or_placement_code, $pa_options=null) {
+	    if(!$this->getPrimaryKey()) { return null; }
+	    if ($t_screen = ca_editor_ui_screens::loadScreen($this->getPrimaryKey(), $pm_screen, $pa_options)) {
+	        return $t_screen->addPlacementAfter($ps_bundle_name, $ps_placement_code, $pa_settings, $ps_relative_to_bundle_name_or_placement_code, $pa_options);
+	    }
+	    return null;
+	}
+	# ----------------------------------------
 	# Static
 	# ----------------------------------------
 	/**
@@ -1014,12 +1085,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
-			SELECT cauis.screen_id, cauis.rank
+			SELECT cauis.screen_id, cauis.`rank`
 			FROM ca_editor_ui_screens cauis
 			WHERE
 				cauis.ui_id = ? AND cauis.parent_id IS NOT NULL
 			ORDER BY 
-				cauis.rank ASC
+				cauis.`rank` ASC
 		", (int)$vn_ui_id);
 		$va_screens = [];
 		
@@ -1498,4 +1569,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		];
 	}
 	# ----------------------------------------
+
+	public function invalidateScreenCache($po_screen, $pa_options=null){
+		if (!($vn_id = $this->getPrimaryKey())) { return false; }
+		$pn_type_id = $po_screen->getTypeID();
+		$vs_cache_key = caMakeCacheKeyFromOptions(null, "{$vn_id}/{$pn_type_id}");
+
+		unset(ca_editor_uis::$s_screen_cache[$vs_cache_key]);
+	}
 }

@@ -3,3 +3,14 @@ In these directories are contained our (hopefully) ever-expanding array of CA un
 If you receive errors while running any of these tests it may indicate a bug in CA or a problem with your set up. If you think the error indicates the former please contact us at support@collectiveaccess.org. Don't forget to include the full text of any error messages. And please do contact us... the only way bugs get fixed is if we know about them. :-)
 
 For more information see http://wiki.collectiveaccess.org/index.php?title=Unit_Tests
+
+To create the testing database, run `tests/database_setup.sh`, it will
+create a MYSQL database with following connection settings:
+
+	* host: localhost
+	* database: ca_test
+	* user: ca_test
+	* password: password
+
+To install a profile, run `tests/profile.setup.sh <PROFILE>`. It will use the `testing`
+profile as a default if no profile is provided.

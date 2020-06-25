@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2012 Whirl-i-Gig
+ * Copyright 2004-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -126,8 +126,8 @@ class ZipFile {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
-		$this->_tmp_data_path = tempnam(caGetTempDirPath(), "ZIP");
+	public function __construct($tmp_dir=null) {
+		$this->_tmp_data_path = tempnam($tmp_dir ? $tmp_dir : caGetTempDirPath(), "ZIP");
 		$this->_tmp_data = fopen($this->_tmp_data_path, "w+");
 	}
 	# ----------------------------------------------------------------------
@@ -259,13 +259,13 @@ class ZipFile {
         $cdrec .= pack('V', 32 );            // external file attributes - 'archive' bit set
 
         $cdrec .= pack('V', $this -> old_offset ); // relative offset of local header
-        $this -> old_offset = $new_offset;
+        $this->old_offset = $new_offset;
 
         $cdrec .= $name;
 
         // optional extra field, file comment goes here
         // save to central directory
-        $this -> ctrl_dir[] = $cdrec;
+        $this->ctrl_dir[] = $cdrec;
         
         return 1;
     } // end of the 'addFile()' method
@@ -344,4 +344,3 @@ class ZipFile {
 	# ----------------------------------------------------------------------
 
 } // end of the 'zipfile' class
-?>

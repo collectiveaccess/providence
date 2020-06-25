@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once __CA_APP_DIR__ . '/plugins/relationshipGenerator/relationshipGeneratorPlugin.php';
 
@@ -36,7 +37,7 @@ require_once __CA_APP_DIR__ . '/plugins/relationshipGenerator/relationshipGenera
  * Tests the configuration-checking functionality of the plugin.  Simply constructs the plugin with different (both
  * valid and invalid) configuration files, and asserts against the result of calling checkStatus().
  */
-class RelationshipGeneratorConfigurationPluginTest extends PHPUnit_Framework_TestCase {
+class RelationshipGeneratorConfigurationPluginTest extends TestCase {
 
 	public function testDefaultConfigurationIsEnabledAndValid() {
 		$vo_plugin = new relationshipGeneratorPlugin(__CA_APP_DIR__ . '/plugins/relationshipGenerator');

@@ -35,10 +35,13 @@
   */
 function caGetPreferredThemeForCurrentDevice($pa_theme_device_mappings) {
     if(isset($_GET['current_theme'])){
-        $_COOKIE['current_theme'] = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
-    }
-    if(isset($_COOKIE['current_theme']) && file_exists(__CA_THEMES_DIR__.'/'.$_COOKIE['current_theme'])){
+        $vs_theme = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
+        setcookie('current_theme', $vs_theme);
+    } elseif(isset($_COOKIE['current_theme'])) {
         $vs_theme = $_COOKIE['current_theme'];
+    }
+    
+    if(isset($vs_theme) && defined("__CA_THEMES_DIR__") && file_exists(__CA_THEMES_DIR__.'/'.$vs_theme)){
         return $vs_theme;
     }
     $vs_default_theme = 'default';
@@ -169,7 +172,12 @@ function caInstallVendorLibraries() {
 		}
 		$output = [];
 		putenv("COLLECTIVEACCESS_HOME=".__CA_BASE_DIR__);
-		exec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		
+		if(function_exists("caExec")) {
+			caExec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		} else {
+			exec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		}
 		if ($ret > 0) {
 			return ["Composer installation failed: ".join("; ", $output)];
 		}
@@ -177,7 +185,12 @@ function caInstallVendorLibraries() {
 		$output = [];
 		putenv("COMPOSER_HOME=".__CA_BASE_DIR__."/app/tmp");
 		chdir(__CA_BASE_DIR__);
-		exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		
+		if(function_exists("caExec")) {
+			caExec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		} else {
+			exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		}
 		if ($ret > 0) {
 			return ["Library installation failed: ".join("; ", $output)];
 		}

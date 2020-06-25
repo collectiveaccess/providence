@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
     <div id="summary" style="clear: both;">
 <?php
     print caEditorPrintSummaryControls($this);
+    print caEditorFieldList($this->request, $t_item, [], []);
 ?>
 	<div id="title">
 		<?php print $t_item->getLabelForDisplay(); ?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,6 +69,14 @@
 		'width' => 1, 'height' => 1,
 		'label' => _t('Does not use locale setting'),
 		'description' => _t('Check this option if you don\'t want your GeoNames values to be locale-specific. (The default is to not be.)')
+	),
+	'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
 	),
 	'canBeUsedInSort' => array(
 		'formatType' => FT_NUMBER,

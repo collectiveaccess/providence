@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018  Whirl-i-Gig
+ * Copyright 2009-2020  Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,7 +62,7 @@
  	 * 	$pa_bcc: 	Email address(es) of bcc'ed message recipients. Can be a string containing a single email address or
  	 *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  	 *				a human-readable recipient name. (optional)
- 	 * 	$pa_attachment: 	array containing file path, name and mimetype of file to attach.
+ 	 * 	$pa_attachments: 	array of arrays, each containing file path, name and mimetype of file to attach.
  	 *				keys are "path", "name", "mimetype"
  	 *
  	 *  $pa_options:	Array of options. Options include:
@@ -76,7 +76,7 @@
  	 * While both $ps_body_text and $ps_html_text are optional, at least one should be set and both can be set for a 
  	 * combination text and HTML email
  	 */
-	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null, $pa_attachment=null, $pa_options=null) {
+	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null, $pa_attachments=null, $pa_options=null) {
 		global $g_last_email_error;
 		$o_config = Configuration::load();
 		$o_log = new Eventlog();
@@ -115,7 +115,7 @@
 		
 		try {
 			if($o_config->get('smtp_use_sendmail_transport')){
-				$vo_tr = new Zend_Mail_Transport_Sendmail($o_config->get('smtp_server'), $va_smtp_config);
+				$vo_tr = new Zend_Mail_Transport_Sendmail($va_smtp_config);
 			} else {
 				$vo_tr = new Zend_Mail_Transport_Smtp($o_config->get('smtp_server'), $va_smtp_config);
 			}
@@ -154,25 +154,25 @@
 			
 			if (is_array($pa_bcc) && sizeof($pa_bcc)) {
 				foreach($pa_bcc as $vs_to_email => $vs_to_name) {
-					if (is_numeric($vs_to_email)) {
-						$o_mail->addBcc($vs_to_name, $vs_to_name);
-					} else {
-						$o_mail->addBcc($vs_to_email, $vs_to_name);
-					}
+					$o_mail->addBcc(is_numeric($vs_to_email) ? $vs_to_name : $vs_to_email);
 				}
 			}
 			
-			if(is_array($pa_attachment) && $pa_attachment["path"]){
-				$ps_attachment_url = $pa_attachment["path"];
-				# --- only attach media if it is less than 50MB
-				if(filesize($ps_attachment_url) < 419430400){
-					$vs_file_contents = file_get_contents($ps_attachment_url);
-					$o_attachment = $o_mail->createAttachment($vs_file_contents);
-					if($pa_attachment["name"]){
-						$o_attachment->filename = $pa_attachment["name"];
-					}
-					if($pa_attachment["mimetype"]){
-						$o_attachment->type = $pa_attachment["mimetype"];
+			if(is_array($pa_attachments)) {
+				if (isset($pa_attachments["path"])) { $pa_attachments = [$pa_attachments]; }
+				foreach($pa_attachments as $a) {
+					if(!isset($a['path'])) { continue; }
+					$attachment_url = $a["path"];
+					# --- only attach media if it is less than 50MB
+					if(filesize($attachment_url) < 419430400){
+						$file_contents = file_get_contents($attachment_url);
+						$o_attachment = $o_mail->createAttachment($file_contents);
+						if($a["name"]){
+							$o_attachment->filename = $a["name"];
+						}
+						if($a["mimetype"]){
+							$o_attachment->type = $a["mimetype"];
+						}
 					}
 				}
 			}
@@ -260,6 +260,6 @@
 		foreach($pa_values as $vs_key => $vm_val) {
 			$o_view->setVar($vs_key, $vm_val);
 		}
-		return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc, caGetOption('attachment', $pa_options, null), $pa_options);
+		return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc, caGetOption(['attachment', 'attachments'], $pa_options, null), $pa_options);
 	}
 	# ------------------------------------------------------------------------------------------------

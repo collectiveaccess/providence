@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,6 +75,14 @@ $_ca_attribute_settings['LengthAttributeValue'] = array(		// global
         'label' => _t('Require value'),
         'description' => _t('Check this option if you want an error to be thrown if this measurement is left blank.')
     ),
+    'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+	),
     'canBeUsedInSort' => array(
         'formatType' => FT_NUMBER,
         'displayType' => DT_CHECKBOXES,
@@ -174,12 +182,13 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
      */
     public function _getValueAsText($pa_value_array, $pa_options=null) {
         global $g_ui_locale;
+        global $g_ui_units_pref;
     
         try {
             $vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
 
             $o_config = Configuration::load();
-            $vs_units = caGetOption('unit', $pa_options, null);
+            $vs_units = caGetOption('units', $pa_options, $g_ui_units_pref);
             
             $vs_value = '';
             $vn_precision = caGetOption('precision', $pa_options, null);
@@ -192,7 +201,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
             
             if (!in_array($vs_units, ['metric', 'english','as_entered'])) {
                 $vs_as_entered_units = caParseLengthDimension($pa_value_array['value_longtext1'])->getType();
-                $vs_units = 'as_entered'; //(in_array($vs_as_entered_units, [Zend_Measure_Length::INCH, Zend_Measure_Length::FEET, Zend_Measure_Length::MILE])) ? 'english' : 'metric';
+                $vs_units = 'as_entered'; 
             }
             
             switch($vs_units) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -338,9 +338,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 		noCache = don't use cached values. Default is false (ie. use cached values)
 	 */
 	static public function getElementsForSet($pn_element_id, $pa_options=null) {
+	    if(!is_numeric($pn_element_id)) { $pn_element_id = self::getElementID($pn_element_id); }
 		$t_element = new ca_metadata_elements();
 		return $t_element->getElementsInSet($pn_element_id, !caGetOption('noCache', $pa_options, false), $pa_options);
 	}
+	# ------------------------------------------------------
 	/**
 	 * Returns array of elements in set of currently loaded row
 	 *
@@ -414,15 +416,15 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Return array of information about elements with a setting set to a given value.
 	 *
 	 * @param string $ps_setting Setting code
-	 * @param mixed $pm_value  Setting value
+	 * @param mixed $pm_value  Setting value. If set to null or omitted any element with a setting value that evaluates to true will be returned.
 	 * @param array $pa_options No options are currently supported
 	 *
 	 * @return array
 	 */
-	public static function getElementSetsWithSetting($ps_setting, $pm_value, $pa_options=null) {
+	public static function getElementSetsWithSetting($ps_setting, $pm_value=null, $pa_options=null) {
 	    return array_map(function($v) { $v['settings'] = caUnserializeForDatabase($v['settings']); return $v; }, array_filter(ca_metadata_elements::find('*', ['returnAs' => 'arrays']), function($v) use ($ps_setting, $pm_value) {
 	        $va_settings = caUnserializeForDatabase($v['settings']);
-	        if (isset($va_settings[$ps_setting]) && ($va_settings[$ps_setting] == $pm_value)) {
+	        if (isset($va_settings[$ps_setting]) && ((!is_null($pm_value) && ($va_settings[$ps_setting] == $pm_value)) || (is_null($pm_value) && (bool)$va_settings[$ps_setting]))) {
 	            return true;
 	        }
 	        return false;
@@ -569,7 +571,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				
 				
  				if($va_properties['showMediaElementBundles']) {
- 				    $va_restrictions = $this->getTypeRestrictions();
+ 				    if (!is_array($va_restrictions = $this->getTypeRestrictions())) { $va_restrictions = []; }
  				    
                     $va_select_opts = ['-' => ''];
  				    foreach($va_restrictions as $va_restriction) {
@@ -935,7 +937,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vs_key = caGetOption('indexByElementCode', $pa_options, false) ? 'element_code' : 'element_id';
 		foreach($va_elements as $vn_id => $va_element) {
 
-			if ((int)$va_element['datatype'] === 0) { continue; }
+			//if ((int)$va_element['datatype'] === 0) { continue; }
 			if (!isset($va_element['settings']['canBeUsedInSort'])) { $va_element['settings']['canBeUsedInSort'] = true; }
 			if ($va_element['settings']['canBeUsedInSort']) {
 				$va_element['typeRestrictions'] = array_shift(self::getTypeRestrictionsAsList($va_element['element_code']));
@@ -1095,7 +1097,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_restrictions->nextRow()) {
 			if (!($t_table = Datamodel::getInstanceByTableNum($qr_restrictions->get('table_num'), true))) { continue; }
 
-			if ($vn_type_id = $qr_restrictions->get('type_id')) {
+			if($t_table->isRelationship()) {
+				$vs_type_name = $t_table->getRelationshipTypename('ltor', $qr_restrictions->get('type_id'));
+			} elseif ($vn_type_id = $qr_restrictions->get('type_id')) {
 				$vs_type_name = $t_list->getItemForDisplayByItemID($vn_type_id);
 			} else {
 				$vs_type_name = '*';
@@ -1300,6 +1304,33 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		MemoryCache::save($pm_element_id, $vm_return, 'ElementSettings');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return element default value, if defined.
+	 *
+	 * @param string|int $pm_element_code_or_id
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getElementDefaultValue($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDefaultValues')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDefaultValues');
+		}
+
+		$vm_return = null;
+		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
+			//$vm_return = (int) $t_element->get('datatype');
+			$default_setting_name = Attribute::getValueDefaultSettingForDatatype(ca_metadata_elements::getDataTypeForElementCode($pm_element_code_or_id));
+		    $settings = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
+		    $vm_return = isset($settings[$default_setting_name]) ? $settings[$default_setting_name] : null;
+		}
+
+		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDefaultValues');
 		return $vm_return;
 	}
 	# ------------------------------------------------------

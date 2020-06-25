@@ -39,7 +39,7 @@ Vagrant.configure(2) do |config|
   mysql_ca_db="collectiveaccess"
   mysql_ca_user="causer"
   mysql_ca_password="c4p4ssw0rd"
-
+  
   # install required sw:
   apt-get -q -y install apache2 curl htop screen vim apachetop vnstat
   apt-get -q -y install php7.0 libapache2-mod-php7.0 php7.0-curl php7.0-mysql php7.0-xml 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -135,7 +135,7 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			
 			// Normalize field names by replacing any run of characters that is not a letter, number,
 			// underscore, -, #, ?, :, % or & with a single underscore.
-			$vs_field_name = preg_replace("![^A-Za-z0-9_\-\:\#\?\%\&]+!", "_", (string)$o_name->nodeValue);
+			$vs_field_name = preg_replace("![^A-Za-z0-9_\-\:\#\?\%\&\.]+!", "_", (string)$o_name->nodeValue);
 			
 			$this->opa_metadata[$vn_index] = $vs_field_name;
 			
@@ -162,16 +162,43 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
-		//$ps_spec = str_replace("/", "", $ps_spec);
+		$ps_spec = strtolower(str_replace("/", "", $ps_spec));
 		if ($this->opb_tag_names_as_case_insensitive) { $ps_spec = strtolower($ps_spec); }
 		if (is_array($this->opa_row_buf) && ($ps_spec) && (isset($this->opa_row_buf[$ps_spec]))) {
 			if($vb_return_as_array) {
-				return $this->opa_row_buf[$ps_spec];
+				return is_array($this->opa_row_buf[$ps_spec]) ? $this->opa_row_buf[$ps_spec] : [$this->opa_row_buf[$ps_spec]];
 			} else {
 				return join($vs_delimiter, $this->opa_row_buf[$ps_spec]);
 			}
 		}
 		return null;	
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return mixed
+	 */
+	public function nextRow() {
+		if ($rc = parent::nextRow()) {
+			$row = $this->opa_row_buf['/COL'];
+			$row_with_labels = [];
+			foreach($this->opa_metadata as $i => $l) {
+				$row_with_labels[$l] = $row[$i];
+				$row_with_labels[strtolower($l)] = $row[$i];
+			}
+			$this->opa_row_buf = $row_with_labels;
+		}
+		return $rc;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return mixed
+	 */
+	public function getRow($pa_options=null) {
+		return is_array($this->opa_row_buf) ? $this->opa_row_buf : null;
 	}
 	# -------------------------------------------------------
 	/**
