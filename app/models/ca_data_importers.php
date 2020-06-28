@@ -230,6 +230,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	public static $s_num_records_skipped = 0;
 	public static $s_import_error_list = array();
 	
+	private static $s_num_logged_detailed_errors = 0;
+	
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
@@ -1214,6 +1216,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$worksheet->setCellValue('E'.$row, caGetOption('values', $pa_options, null));
 			$worksheet->setCellValue('F'.$row, caGetOption('notes', $pa_options, null));
 			$worksheet->setCellValue('G'.$row, caGetOption('dataset', $pa_options, null));
+			
+			self::$s_num_logged_detailed_errors++;
 		}
 	}
 	# ------------------------------------------------------
@@ -1233,7 +1237,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$va_list[] = "{$vs_element} = {$va_values}";
 					}
 				} else {
-					$va_list[] = "{$vs_element} = ".ca_data_importers::formatValuesForLog($va_values);
+					$va_list[] = "{$vs_element} = ".ca_data_importers::formatValuesForLog($va_values, $vs_element);
 				}
 			}
 		} else {
@@ -1295,6 +1299,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$opa_app_plugin_manager = new ApplicationPluginManager();
 		
 		$va_notices = $va_errors = array();
+		$stopped_on_error = false;
 		
 		if($limit_logging_to = caGetOption('limitLoggingTo', $pa_options, null)) {
 			$limit_logging_to = array_map(function($v) { return strtoupper($v); }, preg_split("![;,]+!", $limit_logging_to));
@@ -1327,6 +1332,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($i > 1000){ break; }
 			} while(file_exists($detailed_log_path));
 		}
+		self::$s_num_logged_detailed_errors = 0;
 		
 		$o_event = ca_data_import_events::newEvent(isset($pa_options['user_id']) ? $pa_options['user_id'] : null, $pa_options['format'], $ps_source, isset($pa_options['description']) ? $pa_options['description'] : '');
 		
@@ -2515,9 +2521,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-							if ($o_trans) { $o_trans->rollback(); }
-							$o_detlog_writer->save($detailed_log_path);
-							return false;
+							$stopped_on_error = true;
+							goto stop_on_error;
 						}
 						continue;
 					}
@@ -2533,9 +2538,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-							if ($o_trans) { $o_trans->rollback(); }
-							$o_detlog_writer->save($detailed_log_path);
-							return false;
+							$stopped_on_error = true;
+							goto stop_on_error;
 						}
 						continue;
 					}
@@ -2566,9 +2570,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-							if ($o_trans) { $o_trans->rollback(); }
-							$o_detlog_writer->save($detailed_log_path);
-							return false;
+							$stopped_on_error = true;
+							goto stop_on_error;
 						}
 						continue;
 					}
@@ -2589,9 +2592,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							
 									$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-									if ($o_trans) { $o_trans->rollback(); }
-									$o_detlog_writer->save($detailed_log_path);
-									return false;
+									$stopped_on_error = true;
+									goto stop_on_error;
 								}
 							}
 						}
@@ -2613,9 +2615,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							
 										$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-										if ($o_trans) { $o_trans->rollback(); }
-										$o_detlog_writer->save($detailed_log_path);
-										return false;
+										$stopped_on_error = true;
+										goto stop_on_error;
 									}
 								}
 							}
@@ -2640,10 +2641,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$o_log->logAlert(_t('Import stopped due to import error policy'));
 								
 									$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-						
-									if ($o_trans) { $o_trans->rollback(); }
-									$o_detlog_writer->save($detailed_log_path);
-									return false;
+															
+									$stopped_on_error = true;
+									goto stop_on_error;
 								}
 								continue;
 							}
@@ -2709,15 +2709,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												
 														$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-														if ($o_trans) { $o_trans->rollback(); }
-														$o_detlog_writer->save($detailed_log_path);
-														return false;
+														$stopped_on_error = true;
+														goto stop_on_error;
 													}
 													if ($vs_item_error_policy == 'stop') {
 														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-														if ($o_trans) { $o_trans->rollback(); }
-														$o_detlog_writer->save($detailed_log_path);
-														return false;
+														
+														$stopped_on_error = true;
+														goto stop_on_error;
 													}
 													continue(3);
 												}
@@ -2735,10 +2734,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
 													$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 												continue(3);
 											}
@@ -2768,9 +2766,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													
 														$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 												
-														if ($o_trans) { $o_trans->rollback(); }
-														$o_detlog_writer->save($detailed_log_path);
-														return false;
+														$stopped_on_error = true;
+														goto stop_on_error;
 													}
 													continue(3);
 												}
@@ -2841,9 +2838,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												
 													$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 
@@ -2864,9 +2860,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							
 								$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 							
-								if ($o_trans) { $o_trans->rollback(); }
-								$o_detlog_writer->save($detailed_log_path);
-								return false;
+								$stopped_on_error = true;
+								goto stop_on_error;
 							}
 						}
 					} else {
@@ -2941,10 +2936,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+																										
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -2965,9 +2959,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -2983,9 +2976,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3000,9 +2992,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 											
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3016,11 +3007,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related collection with relationship %2:", $vs_idno, $vs_rel_type), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
-													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$o_log->logAlert(_t('Import stopped due to mapping error policy'));													
+													
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3035,9 +3025,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3052,9 +3041,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3072,9 +3060,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3088,9 +3075,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3105,9 +3091,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3122,9 +3107,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
-													if ($o_trans) { $o_trans->rollback(); }
-													$o_detlog_writer->save($detailed_log_path);
-													return false;
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
@@ -3181,9 +3165,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
 						
 							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-							if ($o_trans) { $o_trans->rollback(); }
-							$o_detlog_writer->save($detailed_log_path);
-							return false;
+							
+							$stopped_on_error = true;
+							goto stop_on_error;
 						}
 					}
 				}
@@ -3223,15 +3207,22 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$ps_callback($po_request, $va_general, ca_data_importers::$s_import_error_list, true);
 		}
 		
-		if ($pb_dry_run) {
-			if ($o_trans) { $o_trans->rollback(); }
-			if($log_general) { $o_log->logInfo(_t('Rollback successful import run in "dry run" mode')); }
-		} else {
-			if ($o_trans) { $o_trans->commit(); }
-		}
+		if (self::$s_num_logged_detailed_errors  > 0) { $o_detlog_writer->save($detailed_log_path); }
 		
-		$o_detlog_writer->save($detailed_log_path);
-		return true;
+	stop_on_error:
+		if ($stopped_on_error) {
+			if ($o_trans) { $o_trans->rollback(); }
+			if (self::$s_num_logged_detailed_errors  > 0) { $o_detlog_writer->save($detailed_log_path); }
+			return false;
+		} else {
+			if ($pb_dry_run) {
+				if ($o_trans) { $o_trans->rollback(); }
+				if($log_general) { $o_log->logInfo(_t('Rollback successful import run in "dry run" mode')); }
+			} else {
+				if ($o_trans) { $o_trans->commit(); }
+			}
+			return true;
+		}
 	}
 	# ------------------------------------------------------
 	/**
