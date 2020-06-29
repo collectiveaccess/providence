@@ -537,7 +537,7 @@ class RequestHTTP extends Request {
 				$vm_val = $this->opa_params[$ps_http_method][$ps_name];
 			} else {
 				foreach(array('GET', 'POST', 'PATH', 'COOKIE', 'REQUEST') as $http_method) {
-					$vm_val = (isset($this->opa_params[$http_method]) && isset($this->opa_params[$http_method][$ps_name])) ? $this->opa_params[$http_method][$ps_name] : null;
+					$vm_val = (array_key_exists($http_method, $this->opa_params) && array_key_exists($ps_name, $this->opa_params[$http_method])) ? $this->opa_params[$http_method][$ps_name] : null;
 					if (isset($vm_val)) {
 						break;
 					}
