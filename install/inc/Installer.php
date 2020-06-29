@@ -2094,13 +2094,12 @@ class Installer {
 			$this->opo_db->query('DELETE FROM ca_search_form_placements WHERE form_id=?', $t_form->getPrimaryKey());
 		}
 
-		$vn_i = 0;
+		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement) {
 			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
-
 			$t_form->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 			if ($t_form->numErrors()) {
 				$this->addError("There was an error while inserting search form placement {$vs_code}: ".join(" ",$t_form->getErrors()));
