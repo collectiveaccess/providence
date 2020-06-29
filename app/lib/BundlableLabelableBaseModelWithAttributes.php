@@ -4105,6 +4105,7 @@ if (!$vb_batch) {
 							} else {
 								$bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, [], ['castTo' => 'array']);
 							}
+							if(!in_array('is_primary', $bundles_to_save)) { $bundles_to_save[] = 'is_primary'; }
 							$bundles_on_screen_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_save);
 							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
@@ -4125,8 +4126,8 @@ if (!$vb_batch) {
                                 	if(is_array($bundles_to_save)) {
                                    		foreach($bundles_to_save as $b) {
                                    			$f = array_pop(explode('.', $b));
-                                   			if ($v = $po_request->getParameter($vs_prefix_stub.$f.'_'.$va_rep['relation_id'], pString)) {
-                                   				$vals[$f] = $v;
+                                   			if (!is_null($po_request->parameterExists($vs_prefix_stub.$f.'_'.$va_rep['relation_id']))) {
+                                   				$vals[$f] = $po_request->getParameter($vs_prefix_stub.$f.'_'.$va_rep['relation_id'], pString);
                                    			} 
                                    		}
                                 	}
