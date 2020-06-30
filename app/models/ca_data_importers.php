@@ -225,12 +225,30 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	public $SETTINGS;
 	
 	
-	public static $s_num_import_errors = 0;
-	public static $s_num_records_processed = 0;
-	public static $s_num_records_skipped = 0;
-	public static $s_import_error_list = array();
+	public $num_import_errors = 0;
+	public $num_records_processed = 0;
+	public $num_records_skipped = 0;
+	public $import_error_list = [];
 	
-	private static $s_num_logged_detailed_errors = 0;
+	/** 
+	 *
+	 */
+	private $log = null;
+	
+	/**
+	 * Array of CSV file refs to write details logs into. Key'ed by bundle name.
+	 */
+	private $detlog = [];
+	
+	/**
+	 * Path to 
+	 */
+	private $log_path;
+	
+	/**
+	 *
+	 */
+	private $detailed_log_name;
 	
 	
 	# ------------------------------------------------------
@@ -774,6 +792,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log = caGetImportLogger($pa_options);
 		
 		$o_excel = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_source);
+		$o_excel->setActiveSheetIndex(0);	// we assume the mapping is in the first sheet
 		$o_sheet = $o_excel->getActiveSheet();
 		
 		$vn_row = 0;
@@ -1153,22 +1172,27 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	static public function logImportError($ps_message, $pa_options=null) {
-		ca_data_importers::$s_num_import_errors++;
+	public function logError($ps_message, $pa_options=null) {
+		return $this->logImportError($ps_message, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function logImportError($ps_message, $pa_options=null) {
+		$this->num_import_errors++;
 		
 		if ($vb_skipped = (isset($pa_options['skip']) && ($pa_options['skip'])) ? true : false) {
-			ca_data_importers::$s_num_records_skipped++;
+			$this->num_records_skipped++;
 		}
+		if (!is_array($pa_options)) { $pa_options = []; }
 		
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		
-		$o_log = (isset($pa_options['log']) && $pa_options['log']) ? $pa_options['log'] : null;
-		$o_detlog = (isset($pa_options['detailedLog']) && $pa_options['detailedLog']) ? $pa_options['detailedLog'] : null;
+		$o_log = (isset($pa_options['log']) && $pa_options['log']) ? $pa_options['log'] : $this->log;
 		
 		$vb_dont_output = (!isset($pa_options['dontOutput']) || !$pa_options['dontOutput']) ?  true : false;
 		
 		$vs_display_message = "(".date("Y-m-d H:i:s").") {$ps_message}";
-		array_unshift(ca_data_importers::$s_import_error_list, preg_replace("![\r\n\t]+!", " ", $vs_display_message));
+		array_unshift($this->import_error_list, preg_replace("![\r\n\t]+!", " ", $vs_display_message));
 		
 		// 
 		// Output to screen as text
@@ -1180,10 +1204,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if ($po_request && isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
 			$va_general = array(
 				'elapsedTime' => time() - caGetOption('startTime', $pa_options, 0),
-				'numErrors' => ca_data_importers::$s_num_import_errors,
-				'numProcessed' => ca_data_importers::$s_num_records_processed
+				'numErrors' => $this->num_import_errors,
+				'numProcessed' => $this->num_records_processed
 			);
-			$ps_callback($po_request, $va_general, ca_data_importers::$s_import_error_list);
+			$ps_callback($po_request, $va_general, $this->import_error_list);
 		}
 		
 		//
@@ -1191,33 +1215,36 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		//
 		if ($o_log) { $o_log->logError($ps_message); }
 		
-		if ($o_detlog) {
-			$worksheet_name = 'General'; 
+		// 
+		// Detailed (bundle-level) logging
+		//
+		if ($this->log_path && $this->detailed_log_name) {
+			$detlog_path = $this->log_path.'/'.$this->detailed_log_name;
+			
+			$sheet_name = 'General'; 
 			if($bundle = caGetOption('bundle', $pa_options, null)) {
-				$worksheet_name = $bundle;
+				$sheet_name = $bundle;
 			}
-			if (!($worksheet = $o_detlog->getSheetByName($worksheet_name))) {
-				$worksheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($o_detlog, $worksheet_name);
-				$o_detlog->addSheet($worksheet);
-				$worksheet->insertNewRowBefore(1);
-				
-				foreach(['A' => 'Date/time', 'B' => 'Identifier', 'C' => 'Row',  'D' => 'Error', 'E' => 'Value', 'F' => 'Notes', 'G' => 'Dataset'] as $i => $v) {
-					$worksheet->setCellValue($i.'1', $v);
+			
+			$f = "{$detlog_path}_{$sheet_name}.csv";
+			if (isset($this->detlog[$sheet_name])) {
+				$r = $this->detlog[$sheet_name];
+			}elseif(!file_exists($f)) {
+				if($this->detlog[$sheet_name] = $r = fopen($f, 'w')) {
+					$line = [];
+					foreach(['A' => 'Date/time', 'B' => 'Identifier', 'C' => 'Row',  'D' => 'Error', 'E' => 'Value', 'F' => 'Notes', 'G' => 'Dataset'] as $i => $v) {
+						$line[] = $v;
+					}	
+					fputcsv($r, $line);
 				}
-				
+			} else {
+				$this->detlog[$sheet_name] = $r = fopen($f, 'a');
 			}
-			
-			$row = $worksheet->getHighestRow()+1;
-			$worksheet->insertNewRowBefore($row);
-			$worksheet->setCellValue('A'.$row, date('c'));
-			$worksheet->setCellValue('B'.$row, caGetOption('idno', $pa_options, null));
-			$worksheet->setCellValue('C'.$row, caGetOption('row', $pa_options, null));
-			$worksheet->setCellValue('D'.$row, $ps_message);
-			$worksheet->setCellValue('E'.$row, caGetOption('values', $pa_options, null));
-			$worksheet->setCellValue('F'.$row, caGetOption('notes', $pa_options, null));
-			$worksheet->setCellValue('G'.$row, caGetOption('dataset', $pa_options, null));
-			
-			self::$s_num_logged_detailed_errors++;
+			$line = [
+				 date('c'), caGetOption('idno', $pa_options, null), caGetOption('row', $pa_options, null),
+				 $ps_message, caGetOption('values', $pa_options, null), caGetOption('notes', $pa_options, null), caGetOption('dataset', $pa_options, null)
+			];
+			fputcsv($r, $line);
 		}
 	}
 	# ------------------------------------------------------
@@ -1282,19 +1309,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *		addToSet = identifier for set to add all imported items to. [Default is null]
 	 *		detailedLogName = [Default is null]
 	 */
-	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
-		ca_data_importers::$s_num_import_errors = 0;
-		ca_data_importers::$s_num_records_processed = 0;
-		ca_data_importers::$s_num_records_skipped = 0;
-		ca_data_importers::$s_import_error_list = array();
+	public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
+		$this->num_import_errors = 0;
+		$this->num_records_processed = 0;
+		$this->num_records_skipped = 0;
+		$this->import_error_list = [];
 		
 		$o_config = Configuration::load();
 		
-		$o_log = caGetImportLogger($pa_options);
-		$o_detlog = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-		$o_detlog->removeSheetByIndex(0);
-		$o_detlog_writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($o_detlog, "Xlsx");
-		
+		$this->log = $o_log = caGetImportLogger($pa_options);
+		$this->detlog = []; 
 		
 		$opa_app_plugin_manager = new ApplicationPluginManager();
 		
@@ -1317,22 +1341,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pa_force_import_for_primary_keys = caGetOption('forceImportForPrimaryKeys', $pa_options, null);
 
 		if (!($t_mapping = ca_data_importers::mappingExists($ps_mapping))) {
+			$o_log->logError(_t('Import of %1 failed because mapping %2 does not exist.', $ps_source, $ps_mapping));
 			return null;
 		}
 		
-		// Figure out detailed log name
-		$detailed_log_name = pathinfo(caGetOption('detailedLogName', $pa_options, "import_errors_".$t_mapping->get('importer_code')."_".date("Y-m-d")), PATHINFO_FILENAME);
-		
-		$log_path = caGetLogPath(null, 'batch_metadata_import_log_directory');
-		if(file_exists($detailed_log_path = "{$log_path}/{$detailed_log_name}.xlsx")) {
-			$i = 1;	
-			do {
-				$detailed_log_path = "{$log_path}/{$detailed_log_name}-{$i}.xlsx";
-				$i++;
-				if ($i > 1000){ break; }
-			} while(file_exists($detailed_log_path));
-		}
-		self::$s_num_logged_detailed_errors = 0;
+		// Path to use for logging
+		$this->log_path = $log_path = caGetOption('logDirectory', $pa_options, caGetLogPath(null, 'batch_metadata_import_log_directory'));
+
+		// Name to use for detailed (bundle-level) logging
+		$this->detailed_log_name = $detailed_log_name = pathinfo(caGetOption('detailedLogName', $pa_options, "import_errors_".$t_mapping->get('importer_code')."_".date("Y-m-d")), PATHINFO_FILENAME);
 		
 		$o_event = ca_data_import_events::newEvent(isset($pa_options['user_id']) ? $pa_options['user_id'] : null, $pa_options['format'], $ps_source, isset($pa_options['description']) ? $pa_options['description'] : '');
 		
@@ -1353,19 +1370,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$t = new Timer();
 		$vn_start_time = time();
 		
-		$va_log_import_error_opts = array('startTime' => $vn_start_time, 'log' => $o_log, 'detailedLog' => $o_detlog,  'logReference' => null, 'request' => $po_request, 'progressCallback' => (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) ? $ps_callback : null, 'reportCallback' => (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) ? $ps_callback : null);
+		$va_log_import_error_opts = array('startTime' => $vn_start_time, 'log' => $o_log, 'logReference' => null, 'request' => $po_request, 'progressCallback' => (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) ? $ps_callback : null, 'reportCallback' => (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) ? $ps_callback : null);
 	
 	
 		$t_add_to_set = null;
 		if ($ps_add_to_set 	= caGetOption('addToSet', $pa_options, null)) {
 			if (!($t_add_to_set = ca_sets::find(['set_code' => $ps_add_to_set], ['returnAs' => 'firstModelInstance']))) {
 				// Set doesn't exist
-				ca_data_importers::logImportError(_t("Set %1 does not exist. Create it and try the import again.", $ps_add_to_set), $va_log_import_error_opts);
+				$this->logImportError(_t("Set %1 does not exist. Create it and try the import again.", $ps_add_to_set), $va_log_import_error_opts);
 				return false;
 			}
 			if ((int)$t_mapping->get('table_num') !== (int)$t_add_to_set->get('table_num')) {
 				// Set doesn't take type of item mapping imports
-				ca_data_importers::logImportError(_t("Set %1 is not the correct type for this import.", $ps_add_to_set), $va_log_import_error_opts);
+				$this->logImportError(_t("Set %1 is not the correct type for this import.", $ps_add_to_set), $va_log_import_error_opts);
 				return false;
 			}
 			
@@ -1405,13 +1422,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_progress->start(_t('Reading %1', $ps_source));
 		
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, 100, _t('Reading %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, 100, _t('Reading %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, $this->num_import_errors);
 		}
 	
 		// Open file 
 		$ps_format = (isset($pa_options['format']) && $pa_options['format']) ? $pa_options['format'] : null;	
 		if (!($o_reader = $t_mapping->getDataReader($ps_source, $ps_format))) {
-			ca_data_importers::logImportError(_t("Could not open source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
+			$this->logImportError(_t("Could not open source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
 			if ($o_trans) { $o_trans->rollback(); }
 			return false;
 		}
@@ -1419,7 +1436,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$va_reader_opts = array('basePath' => $t_mapping->getSetting('basePath'), 'originalFilename' => caGetOption('originalFilename', $pa_options, null));
 		
 		if (!$o_reader->read($ps_source, $va_reader_opts)) {
-			ca_data_importers::logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
+			$this->logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
 			if ($o_trans) { $o_trans->rollback(); }
 			return false;
 		}
@@ -1440,7 +1457,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_progress->start(_t('Importing from %1', $ps_source));
 
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, $vn_num_items, _t('Importing from %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, $vn_num_items, _t('Importing from %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, $this->num_import_errors);
 		}
 		
 		// What are we importing?
@@ -1590,7 +1607,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Run through rows
 		//
 		$vn_row = 0;
-		ca_data_importers::$s_num_records_processed = 0;
+		$this->num_records_processed = 0;
 		while ($o_reader->nextRow()) {
 			$va_mandatory_field_values = array();
 			$vs_preferred_label_for_log = null;
@@ -1792,7 +1809,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$vn_id = array_shift($pa_force_import_for_primary_keys);
 					if (!$t_subject->load($vn_id)) { 
 						if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because forced primary key \'%1\' does not exist', $vn_id)); }
-						ca_data_importers::$s_num_records_skipped++;
+						$this->num_records_skipped++;
 						continue;	// skip because primary key does not exist
 					}
 				} elseif ($vs_existing_record_policy != 'none') {
@@ -1805,7 +1822,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 									if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy)); }
-									ca_data_importers::$s_num_records_skipped++;
+									$this->num_records_skipped++;
 									continue(2);	// skip because idno matched
 								}
 							}
@@ -1817,7 +1834,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
-								ca_data_importers::$s_num_records_skipped++;
+								$this->num_records_skipped++;
 								continue(2);	// skip because label matched
 							}
 							break;
@@ -1865,7 +1882,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$t_subject->setMode(ACCESS_WRITE);
 									$t_subject->delete(true, array('hard' => true));
 									if ($t_subject->numErrors()) {
-										ca_data_importers::logImportError(_t('[%1] Could not delete existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
+										$this->logImportError(_t('[%1] Could not delete existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
 										// Don't stop?
 									} else {
 										if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy)); }
@@ -1888,7 +1905,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$t_subject->delete(true, array('hard' => true));
 							
 								if ($t_subject->numErrors()) {
-									ca_data_importers::logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
+									$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
 									// Don't stop?
 								} else {
 									if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
@@ -1910,7 +1927,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$o_progress->next(_t("Importing %1 [%2]", $vs_idno, caGetMemoryUsage()));
 			
 				if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-					$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, ca_data_importers::$s_num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, ca_data_importers::$s_num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors); 
+					$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, $this->num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, $this->num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $this->num_records_processed, $this->num_import_errors); 
 				}
 			
 				$vb_output_subject_preferred_label = false;
@@ -2244,7 +2261,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										continue(2);
 									} else {
-										ca_data_importers::logImportError(_t('[%1] Invalid refinery %2 specified', $vs_idno, $vs_refinery), $va_log_import_error_opts);
+										$this->logImportError(_t('[%1] Invalid refinery %2 specified', $vs_idno, $vs_refinery), $va_log_import_error_opts);
 									}
 								}
 							}
@@ -2509,13 +2526,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						
 						if(!$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], $va_opts)) {
-							ca_data_importers::logImportError(join("; ", $t_subject->getErrors()), array_merge($va_log_import_error_opts, ['bundle' => $vs_mandatory_field, 'notes' => _t('While setting mandatory field')]));
+							$this->logImportError(join("; ", $t_subject->getErrors()), array_merge($va_log_import_error_opts, ['bundle' => $vs_mandatory_field, 'notes' => _t('While setting mandatory field')]));
 						}
 					}
 					try {
 						$t_subject->insert(['queueIndexing' => true]);
 					} catch (DatabaseException $e) {
-						ca_data_importers::logImportError($e->getMessage(), array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => _t('Exception while performing initial insert')]));
+						$this->logImportError($e->getMessage(), array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => _t('Exception while performing initial insert')]));
 						if ($vs_import_error_policy == 'stop') {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
 						
@@ -2532,7 +2549,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not insert new record for %2: ", $vs_idno, $t_subject->getProperty('NAME_SINGULAR')), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 					
-						ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => null]));
+						$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => null]));
 						if ($vs_import_error_policy == 'stop') {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
 						
@@ -2558,13 +2575,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						
 						if (!$ret && ($vs_error = join("; ", $t_subject->getErrors()))) {
-							ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_idno_fld, 'notes' => _t('While updating matched record')]));
+							$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_idno_fld, 'notes' => _t('While updating matched record')]));
 						}
 					}
 				
 					$t_subject->update(['queueIndexing' => true]);
 					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not update matched record", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-						ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => _t('While updating matched record')]));
+						$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => _t('While updating matched record')]));
 						if ($vs_import_error_policy == 'stop') {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
 						
@@ -2586,7 +2603,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if ($vb_remove_labels) {
 							$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__, ['locales' => [$vn_locale_id]]);
 							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not remove preferred labels from matched record", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-								ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'preferred_labels', 'notes' => _t('While setting mandatory field')]));
+								$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'preferred_labels', 'notes' => _t('While setting mandatory field')]));
 								if ($vs_import_error_policy == 'stop') {
 									$o_log->logAlert(_t('Import stopped due to import error policy'));
 							
@@ -2609,7 +2626,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if ($vb_remove_labels) {
 								$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__, ['locales' => [$vn_locale_id]]);
 								if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not remove nonpreferred labels from matched record", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-									ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'nonpreferred_labels', 'notes' => _t('While updating matched record')]));
+									$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'nonpreferred_labels', 'notes' => _t('While updating matched record')]));
 									if ($vs_import_error_policy == 'stop') {
 										$o_log->logAlert(_t('Import stopped due to import error policy'));
 							
@@ -2636,7 +2653,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$t_subject->update(['queueIndexing' => true]);
 						
 							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could update idno to %2", $vs_idno, $vs_proc_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-								ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_idno_fld, 'notes' => _t('While updating matched record')]));
+								$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_idno_fld, 'notes' => _t('While updating matched record')]));
 								if ($vs_import_error_policy == 'stop') {
 									$o_log->logAlert(_t('Import stopped due to import error policy'));
 								
@@ -2701,7 +2718,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												}
 										
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label to %2. Record was deleted because no preferred label could be applied: ", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-													ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'preferred_labels', 'notes' => null]));
+													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'preferred_labels', 'notes' => null]));
 													$t_subject->delete(true, array('hard' => false));
 											
 													if ($vs_import_error_policy == 'stop') {
@@ -2729,7 +2746,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											);
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label to %2:", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'nonpreferred_labels', 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'nonpreferred_labels', 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -2758,9 +2775,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 																	(!is_array($va_element_content) ? $va_element_content : null);
 																	
 												$t_subject->set($vs_element, $vs_content, $va_opts);
+												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not set intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
+												}
+												
 												$t_subject->update(['queueIndexing' => true]);
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-													ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
+													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
 													if ($vs_item_error_policy == 'stop') {
 														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 													
@@ -2786,7 +2807,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 																		if($log_relations) { $o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type']))); }
 																	} else {
 																		if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-																			ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_rel_rel_table, 'notes' => _t('While adding rel-rel data')]));
+																			$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_rel_rel_table, 'notes' => _t('While adding rel-rel data')]));
 																		}
 																	}
 																}
@@ -2815,7 +2836,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											} 
 											$va_elements_set_for_this_record[$vs_element] = true;
 										
-											$va_opts = array('showRepeatCountErrors' => true, 'alwaysTreatValueAsIdno' => true, 'log' => $o_log, 'logReference' => $vs_idno);
+											$va_opts = [	'showRepeatCountErrors' => true, 
+															'alwaysTreatValueAsIdno' => true, 
+															'log' => $this, 
+															'logReference' => $vs_idno, 
+															'idno' => $vs_idno, 
+															'dataset' => $vn_dataset, 
+															'row' => $vn_row
+														];
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
 												$va_opts['matchOn'] = $va_match_on;
 											}
@@ -2832,7 +2860,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->update(['queueIndexing' => true]);
 											
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, $errored_values = ca_data_importers::formatValuesForLog($va_element_content, $vs_element)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null, 'values' => $errored_values]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null, 'values' => $errored_values]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -2854,7 +2882,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$t_subject->update(['queueIndexing' => true]);
 
 						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Invalid %2; values were %3: ", $vs_idno, $vs_element, $errored_values = ca_data_importers::formatValuesForLog($va_element_content, $vs_element)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-							ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null, 'values' => $errored_values]));
+							$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null, 'values' => $errored_values]));
 							if ($vs_item_error_policy == 'stop') {
 								$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 							
@@ -2933,7 +2961,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 																										
@@ -2955,7 +2983,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object lot %2 with relationship %3:", $vs_idno, $vs_idno_stub, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -2972,7 +3000,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related entity with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -2988,7 +3016,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related place with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 											
@@ -3005,7 +3033,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, $vs_rel_type, null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related collection with relationship %2:", $vs_idno, $vs_rel_type), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));													
 													
@@ -3021,7 +3049,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, $vs_rel_type, null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related occurrence with relationship %2:", $vs_idno, $vs_rel_type), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -3037,7 +3065,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related storage location with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -3056,7 +3084,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related list item with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -3071,7 +3099,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->linkRepresentation($vn_rel_id, null, null, null, null, array('type_id' => trim($va_element_data['_relationship_type']), 'is_primary' => true));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object representation with:", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -3087,7 +3115,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related loan with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -3103,7 +3131,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related movement with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 												
@@ -3132,7 +3160,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													if($log_relations) { $o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type']))); }
 												} else {
 													if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-														ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_rel_rel_table, 'notes' => _t('While adding rel-rel data')]));
+														$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_rel_rel_table, 'notes' => _t('While adding rel-rel data')]));
 													}
 												}
 											}
@@ -3160,7 +3188,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				
 					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add default label", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-						ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'preferred_labels', 'notes' => null]));
+						$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'preferred_labels', 'notes' => null]));
 						if ($vs_import_error_policy == 'stop') {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
 						
@@ -3184,35 +3212,34 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 				
-				ca_data_importers::$s_num_records_processed++;
+				$this->num_records_processed++;
 			}
 		}
 	}
 	
-		if($log_general) { $o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_records_skipped, ca_data_importers::$s_num_import_errors)); }
+		if($log_general) { $o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), $this->num_records_processed, $this->num_records_skipped, $this->num_import_errors)); }
 		
-		$o_progress->setDataForJobID(null, _t('Import complete'), ['numRecordsProcessed' => ca_data_importers::$s_num_records_processed, 'table' => $t_subject->tableName(), 'created' => $va_ids_created, 'updated' => $va_ids_updated]);
+		$o_progress->setDataForJobID(null, _t('Import complete'), ['numRecordsProcessed' => $this->num_records_processed, 'table' => $t_subject->tableName(), 'created' => $va_ids_created, 'updated' => $va_ids_updated]);
 		$o_progress->finish();
 		
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, $vn_num_items, $vn_num_items, _t('Import completed'), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, $vn_num_items, $vn_num_items, _t('Import completed'), (time() - $vn_start_time), memory_get_usage(true), $this->num_records_processed, $this->num_import_errors);
 		}
 		
 		if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
 			$va_general = array(
 				'elapsedTime' => time() - $vn_start_time,
-				'numErrors' => ca_data_importers::$s_num_import_errors,
-				'numProcessed' => ca_data_importers::$s_num_records_processed
+				'numErrors' => $this->num_import_errors,
+				'numProcessed' => $this->num_records_processed
 			);
-			$ps_callback($po_request, $va_general, ca_data_importers::$s_import_error_list, true);
+			$ps_callback($po_request, $va_general, $this->import_error_list, true);
 		}
 		
-		if (self::$s_num_logged_detailed_errors  > 0) { $o_detlog_writer->save($detailed_log_path); }
 		
 	stop_on_error:
 		if ($stopped_on_error) {
 			if ($o_trans) { $o_trans->rollback(); }
-			if (self::$s_num_logged_detailed_errors  > 0) { $o_detlog_writer->save($detailed_log_path); }
+			$this->_closeLogs();
 			return false;
 		} else {
 			if ($pb_dry_run) {
@@ -3221,6 +3248,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 				if ($o_trans) { $o_trans->commit(); }
 			}
+			$this->_closeLogs();
 			return true;
 		}
 	}
@@ -3271,7 +3299,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if ($log) { $log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type']))); }
 								} else {
 									if ($vs_error = DataMigrationUtils::postError($t_rel_instance, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, Datamodel::getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-										ca_data_importers::logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_rel_rel_table, 'notes' => _t('While adding rel-rel data')]));
+										$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_rel_rel_table, 'notes' => _t('While adding rel-rel data')]));
 									}
 								}
 							}
@@ -3294,7 +3322,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array
 	 */
 	public static function getErrorList() {
-		return ca_data_importers::$s_import_error_list;
+		return $this->import_error_list;
 	}
 	# ------------------------------------------------------
 	/**
@@ -3489,6 +3517,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return $val;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	private function _closeLogs() {
+		if(is_array($this->detlog)) {
+			array_map(function($v) { fclose($v); }, $this->detlog);
+		}
+		$this->log = null;
+		$this->detlog = null;
 	}
 	# ------------------------------------------------------
 }

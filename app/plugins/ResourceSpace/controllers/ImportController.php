@@ -134,7 +134,8 @@
  			$o_progress->setMode('WebUI');
  			$o_progress->setTotal(sizeof($pa_resourcespace_ids));
 
- 			$vn_status = ca_data_importers::importDataFromSource($pa_resourcespace_ids, $pn_importer_id, array('progressBar' => $o_progress, 'format' => 'resourcespace', 'logLevel' => $pn_log_level));
+			$t_importer = new ca_data_importers();
+ 			$vn_status = $t_importer->importDataFromSource($pa_resourcespace_ids, $pn_importer_id, array('progressBar' => $o_progress, 'format' => 'resourcespace', 'logLevel' => $pn_log_level));
 
  			$va_job_info = $o_progress->getDataForJobID($ps_job_id);
 
