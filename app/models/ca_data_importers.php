@@ -225,13 +225,28 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	public $SETTINGS;
 	
 	
+	/**
+	 * Number of errors for current import
+	 */
 	public $num_import_errors = 0;
+	
+	/**
+	 * Number of record processed by current import
+	 */
 	public $num_records_processed = 0;
+	
+	/**
+	 * Number of records skipped in current import
+	 */
 	public $num_records_skipped = 0;
+	
+	/**
+	 * List of error message for current import
+	 */
 	public $import_error_list = [];
 	
 	/** 
-	 *
+	 * KLogger instance for import log
 	 */
 	private $log = null;
 	
@@ -241,12 +256,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	private $detlog = [];
 	
 	/**
-	 * Path to 
+	 * Path to import log
 	 */
 	private $log_path;
 	
 	/**
-	 *
+	 * Name to use for detailed log
 	 */
 	private $detailed_log_name;
 	
@@ -1170,7 +1185,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Alias for ca_data_importers::logImportError
 	 */
 	public function logError($ps_message, $pa_options=null) {
 		return $this->logImportError($ps_message, $pa_options);
@@ -3321,7 +3336,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return array
 	 */
-	public static function getErrorList() {
+	public function getErrorList() {
 		return $this->import_error_list;
 	}
 	# ------------------------------------------------------
@@ -3520,7 +3535,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Close open log files
 	 * 
+	 * return void
 	 */
 	private function _closeLogs() {
 		if(is_array($this->detlog)) {
