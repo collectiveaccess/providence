@@ -203,9 +203,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					} else {
 						// is root
 						$va_type_list = $this->getTypeList(array('directChildrenOnly' => true, 'item_id' => null));
-						if (!isset($va_type_list[$this->getTypeID()])) {
+						if (!isset($va_type_list[$this->getTypeID()]) && ($t = $this->getTypeInstance())) {
 							// if all ancestors for type are not enabled then we can allow this type even in strict mode
-							$t = $this->getTypeInstance();
 							$ancestors = $t->getHierarchyAncestors(null, ['includeSelf' => false]);
 							if (sizeof(array_filter($ancestors, function($v) {
 								return (!is_null($v['NODE']['parent_id']) && (bool)$v['NODE']['is_enabled']);
@@ -4180,7 +4179,9 @@ if (!$vb_batch) {
 											$format = $t_mapping->getSetting('inputFormats');
 											if(is_array($format)) { $format = array_shift($format); }
 											if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
-											ca_data_importers::importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
+											
+											$t_importer = new ca_data_importers();
+											$t_importer->importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
 										}
 									}
 									
@@ -4357,7 +4358,9 @@ if (!$vb_batch) {
 											$format = $t_mapping->getSetting('inputFormats');
 											if(is_array($format)) { $format = array_shift($format); }
 											if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
-											ca_data_importers::importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
+											
+											$t_importer = new ca_data_importers();
+											$t_importer->importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
 										}
                                     }
                                 }
