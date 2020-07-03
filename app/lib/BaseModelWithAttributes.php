@@ -230,9 +230,17 @@
 			                
 			                $pv = $o_value->getDisplayValue();
 			                if (
-			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
+			                	(
+			                		array_key_exists($vn_element_id, $pa_values)
+			                		&&
+			                		((strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv))) || !strlen($pa_values[$vn_element_id]))
+			                	)
 			            		||
-			            		(strlen($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $pv)))
+			            		(
+			            			array_key_exists($vs_element_code, $pa_values)
+			            			&&
+			            			((strlen($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $pv))) || !strlen($pa_values[$vs_element_code]))
+			            		)
 			            	) {
 			                    continue(2);
 			                }
