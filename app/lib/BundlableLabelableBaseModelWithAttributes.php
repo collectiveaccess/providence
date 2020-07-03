@@ -3685,7 +3685,7 @@ if (!$vb_batch) {
 							$vn_element_id = $va_element_info['element_id'];
 							
 							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
-							if(!$po_request->parameterExists($vs_k)) { continue; }
+							if(is_null($po_request->parameterExists($vs_k))) { continue; }
 							$vs_attr_val = $po_request->getParameter($vs_k, pString);
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
@@ -4105,6 +4105,7 @@ if (!$vb_batch) {
 								$bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, [], ['castTo' => 'array']);
 							}
 							if(!in_array('is_primary', $bundles_to_save)) { $bundles_to_save[] = 'is_primary'; }
+							if(!in_array('rep_type_id', $bundles_to_save)) { $bundles_to_save[] = 'rep_type_id'; }
 							$bundles_on_screen_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_save);
 							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
@@ -4119,11 +4120,9 @@ if (!$vb_batch) {
 										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_rep['relation_id']]['name'];
 									}
 									
-									$vals = [];
-									if(!in_array('is_primary', $bundles_to_save)) { $bundles_to_save[] = 'is_primary'; }
-									if(!in_array('rep_type_id', $bundles_to_save)) { $bundles_to_save[] = 'rep_type_id'; }
-                                	if(is_array($bundles_to_save)) {
-                                   		foreach($bundles_to_save as $b) {
+									$vals = ['is_primary' => $va_rep['is_primary'], 'rep_type_id' => $va_rep['type_id']];
+                                	if(is_array($bundles_on_screen_proc)) {
+                                   		foreach($bundles_on_screen_proc as $b) {
                                    			$f = array_pop(explode('.', $b));
                                    			if (!is_null($po_request->parameterExists($vs_prefix_stub.$f.'_'.$va_rep['relation_id']))) {
                                    				$vals[$f] = $po_request->getParameter($vs_prefix_stub.$f.'_'.$va_rep['relation_id'], pString);
@@ -4218,11 +4217,10 @@ if (!$vb_batch) {
 							if (($vs_batch_mode == '_replace_') && sizeof($va_reps)) { 
 							    foreach($va_reps as $va_rep) {
 									$pn_access = $po_request->getParameter("{$vs_prefix_stub}access_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}access_new_0", pInteger) : null;
-									$pn_status = $po_request->getParameter("{$vs_prefix_stub}access_status_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}status_new_0", pInteger) : null;
+									$pn_status = $po_request->getParameter("{$vs_prefix_stub}status_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}status_new_0", pInteger) : null;
 									$pn_type_id = $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0", pInteger) : null;
 									$ps_rep_label = $po_request->getParameter("{$vs_prefix_stub}rep_label_new_0_enabled", pInteger) ? trim($po_request->getParameter("{$vs_prefix_stub}rep_label_new_0", pString)) : null;
 									$pn_is_transcribable = $po_request->getParameter("{$vs_prefix_stub}is_transcribable_new_0_enabled", pInteger);
-									
 									$this->editRepresentation($va_rep['representation_id'], null, $g_ui_locale_id, $pn_status, $pn_access, null, ['is_transcribable' => $pn_is_transcribable], ['label' => $ps_rep_label, 'type_id' => $pn_type_id]);
 							    }
 							}
