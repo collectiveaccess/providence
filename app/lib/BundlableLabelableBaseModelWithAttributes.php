@@ -3685,7 +3685,7 @@ if (!$vb_batch) {
 							$vn_element_id = $va_element_info['element_id'];
 							
 							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
-							if(!$po_request->parameterExists($vs_k)) { continue; }
+							if(is_null($po_request->parameterExists($vs_k))) { continue; }
 							$vs_attr_val = $po_request->getParameter($vs_k, pString);
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
@@ -4105,6 +4105,11 @@ if (!$vb_batch) {
 								$bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, [], ['castTo' => 'array']);
 							}
 							if(!in_array('is_primary', $bundles_to_save)) { $bundles_to_save[] = 'is_primary'; }
+							if(!in_array('rep_type_id', $bundles_to_save)) { $bundles_to_save[] = 'rep_type_id'; }
+							
+							if(in_array('ca_object_representations.preferred_labels.name', $bundles_to_save)) { 
+								$bundles_to_save[] = 'rep_label'; 
+							}
 							$bundles_on_screen_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_save);
 							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
@@ -4119,11 +4124,9 @@ if (!$vb_batch) {
 										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_rep['relation_id']]['name'];
 									}
 									
-									$vals = [];
-									if(!in_array('is_primary', $bundles_to_save)) { $bundles_to_save[] = 'is_primary'; }
-									if(!in_array('rep_type_id', $bundles_to_save)) { $bundles_to_save[] = 'rep_type_id'; }
-                                	if(is_array($bundles_to_save)) {
-                                   		foreach($bundles_to_save as $b) {
+									$vals = ['is_primary' => $va_rep['is_primary'], 'rep_type_id' => $va_rep['type_id']];
+                                	if(is_array($bundles_on_screen_proc)) {
+                                   		foreach($bundles_on_screen_proc as $b) {
                                    			$f = array_pop(explode('.', $b));
                                    			if (!is_null($po_request->parameterExists($vs_prefix_stub.$f.'_'.$va_rep['relation_id']))) {
                                    				$vals[$f] = $po_request->getParameter($vs_prefix_stub.$f.'_'.$va_rep['relation_id'], pString);
@@ -4218,11 +4221,10 @@ if (!$vb_batch) {
 							if (($vs_batch_mode == '_replace_') && sizeof($va_reps)) { 
 							    foreach($va_reps as $va_rep) {
 									$pn_access = $po_request->getParameter("{$vs_prefix_stub}access_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}access_new_0", pInteger) : null;
-									$pn_status = $po_request->getParameter("{$vs_prefix_stub}access_status_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}status_new_0", pInteger) : null;
+									$pn_status = $po_request->getParameter("{$vs_prefix_stub}status_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}status_new_0", pInteger) : null;
 									$pn_type_id = $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0_enabled", pInteger) ? $po_request->getParameter("{$vs_prefix_stub}rep_type_id_new_0", pInteger) : null;
 									$ps_rep_label = $po_request->getParameter("{$vs_prefix_stub}rep_label_new_0_enabled", pInteger) ? trim($po_request->getParameter("{$vs_prefix_stub}rep_label_new_0", pString)) : null;
 									$pn_is_transcribable = $po_request->getParameter("{$vs_prefix_stub}is_transcribable_new_0_enabled", pInteger);
-									
 									$this->editRepresentation($va_rep['representation_id'], null, $g_ui_locale_id, $pn_status, $pn_access, null, ['is_transcribable' => $pn_is_transcribable], ['label' => $ps_rep_label, 'type_id' => $pn_type_id]);
 							    }
 							}
@@ -4315,21 +4317,20 @@ if (!$vb_batch) {
                                     }
                                     
                                 	$vals = [];
-                                	if(is_array($bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, null))) {
-                                		if(!in_array('type_id', $bundles_to_save)) { $bundles_to_save[] = 'type_id'; }
-                                   		foreach($bundles_to_save as $b) {
+                                	if(is_array($bundles_on_screen_proc)) {
+                                   		foreach($bundles_on_screen_proc as $b) {
                                    			$f = array_pop(explode('.', $b));
                                    			if ($v = $po_request->getParameter($vs_prefix_stub.$f.'_new_'.$va_matches[1], pString)) {
                                    				$vals[$f] = $v;
                                    			} 
                                    		}
                                 	}
-                                
+                                	
                                     // Get user-specified center point (images only)
                                     $vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
                                     $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
                         
-                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, $vals, array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
                                     
                                     if ($this->numErrors()) {
                                         $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
