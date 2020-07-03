@@ -4106,6 +4106,10 @@ if (!$vb_batch) {
 							}
 							if(!in_array('is_primary', $bundles_to_save)) { $bundles_to_save[] = 'is_primary'; }
 							if(!in_array('rep_type_id', $bundles_to_save)) { $bundles_to_save[] = 'rep_type_id'; }
+							
+							if(in_array('ca_object_representations.preferred_labels.name', $bundles_to_save)) { 
+								$bundles_to_save[] = 'rep_label'; 
+							}
 							$bundles_on_screen_proc = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_save);
 							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
@@ -4313,21 +4317,20 @@ if (!$vb_batch) {
                                     }
                                     
                                 	$vals = [];
-                                	if(is_array($bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, null))) {
-                                		if(!in_array('type_id', $bundles_to_save)) { $bundles_to_save[] = 'type_id'; }
-                                   		foreach($bundles_to_save as $b) {
+                                	if(is_array($bundles_on_screen_proc)) {
+                                   		foreach($bundles_on_screen_proc as $b) {
                                    			$f = array_pop(explode('.', $b));
                                    			if ($v = $po_request->getParameter($vs_prefix_stub.$f.'_new_'.$va_matches[1], pString)) {
                                    				$vals[$f] = $v;
                                    			} 
                                    		}
                                 	}
-                                
+                                	
                                     // Get user-specified center point (images only)
                                     $vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
                                     $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
                         
-                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, $vals, array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
                                     
                                     if ($this->numErrors()) {
                                         $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
