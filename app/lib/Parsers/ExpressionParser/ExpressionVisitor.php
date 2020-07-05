@@ -103,7 +103,8 @@ class ExpressionVisitor implements Visitor\Visit {
 			'join'			=> xcallable($implode),
 			'implode'		=> xcallable($implode),
 			'trim'			=> xcallable('trim'),
-			'idnoUseCount'	=> xcallable('caIdnoUseCount')
+			'idnoUseCount'	=> xcallable('caIdnoUseCount'),
+			'dateIsRange'	=> xcallable('caDateIsRange')
 		);
 		return;
 	}
@@ -274,7 +275,6 @@ class ExpressionVisitor implements Visitor\Visit {
 
 			case '#comp_eq':
 				$va_children[0]->accept($this, $a, $f_eldnah);
-
 				$f_acc = function ($b) use ($a, $f_acc) {
 					return $f_acc($a() == $b);
 				};
@@ -442,7 +442,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				$value = $po_element->getValueValue();
 				$token = $po_element->getValueToken();
 				$out = null;
-
+				
 				switch($token) {
 					case 'id':
 						return $value;
@@ -460,6 +460,12 @@ class ExpressionVisitor implements Visitor\Visit {
 						$vs_var = mb_substr((string) $value, 1); // get rid of caret ^
 						$out = $this->getVariable($vs_var);
 						if(is_array($out)) { $out = join("", $out); }	// we need to join multiple values
+						break;
+					case 'true':
+						$out = true;
+						break;
+					case 'false':
+						$out = false;
 						break;
 					default:
 						$out = (float) $value;

@@ -367,6 +367,10 @@ class Media extends BaseObject {
 	 * @return array List of file extensions
 	 */
 	public static function getImportFileExtensions() {
+		if (CompositeCache::contains('getImportFileExtensions', 'Media')) {
+			return CompositeCache::fetch('getImportFileExtensions', 'Media');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
@@ -377,7 +381,8 @@ class Media extends BaseObject {
 			$va_extensions = array_merge($va_extensions, $o_plugin->getImportExtensions());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getImportFileExtensions', $va_extensions = array_unique($va_extensions), 'Media');
+		return $va_extensions;
 	}
 	# ------------------------------------------------
 	/**
@@ -386,6 +391,9 @@ class Media extends BaseObject {
 	 * @return array List of file extensions
 	 */
 	public function getPluginImportFileExtensionMap() {
+		if (CompositeCache::contains('getPluginImportFileExtensionMap', 'Media')) {
+			return CompositeCache::fetch('getPluginImportFileExtensionMap', 'Media');
+		}
 		$va_plugin_names = $this->getPluginNames();
 		
 		$va_map = [];
@@ -398,6 +406,7 @@ class Media extends BaseObject {
 			
 		}
 		
+		CompositeCache::save('getPluginImportFileExtensionMap', $va_map, 'Media');
 		return $va_map;
 	}
 	# ------------------------------------------------
@@ -407,6 +416,9 @@ class Media extends BaseObject {
 	 * @return array List of mimetypes
 	 */
 	public static function getImportMimetypes() {
+		if (CompositeCache::contains('getImportMimetypes', 'Media')) {
+			return CompositeCache::fetch('getImportMimetypes', 'Media');
+		}
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
@@ -417,10 +429,14 @@ class Media extends BaseObject {
 			$va_extensions = array_replace($va_extensions, $o_plugin->getImportMimetypes());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getImportMimetypes', $va_extensions = array_unique($va_extensions), 'Media');
+		return $va_extensions;
 	}
 	# ------------------------------------------------
 	private function getPluginsForMimetypes() {
+		if (CompositeCache::contains('getPluginsForMimetypes', 'Media')) {
+			return CompositeCache::fetch('getPluginsForMimetypes', 'Media');
+		}
 		$va_plugin_names = $this->getPluginNames();
 
 		$va_return = array();
@@ -432,7 +448,7 @@ class Media extends BaseObject {
 				$va_return[$vs_mimetype][] = $vs_plugin_name;
 			}
 		}
-
+		CompositeCache::save('getPluginsForMimetypes', $va_return, 'Media');
 		return $va_return;
 	}
 	# ------------------------------------------------
@@ -442,6 +458,10 @@ class Media extends BaseObject {
 	 * @return array List of file extensions
 	 */
 	public static function getExportFileExtensions() {
+		if (CompositeCache::contains('getExportFileExtensions', 'Media')) {
+			return CompositeCache::fetch('getExportFileExtensions', 'Media');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
@@ -452,7 +472,8 @@ class Media extends BaseObject {
 			$va_extensions = array_merge($va_extensions, $o_plugin->getExportExtensions());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getExportFileExtensions', $va_extensions = array_unique($va_extensions), 'Media');
+		return $va_extensions;
 	}
 	# ------------------------------------------------
 	/**
@@ -461,17 +482,22 @@ class Media extends BaseObject {
 	 * @return array List of mimetypes
 	 */
 	public static function getExportMimetypes() {
+		if (CompositeCache::contains('getExportMimetypes', 'Media')) {
+			return CompositeCache::fetch('getExportMimetypes', 'Media');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
-		$va_extensions = array();
+		$mimetypes = array();
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
-			$va_extensions = array_merge($va_extensions, $o_plugin->getExportMimetypes());
+			$mimetypes = array_merge($mimetypes, $o_plugin->getExportMimetypes());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getExportMimetypes', $mimetypes = array_unique($mimetypes), 'Media');
+		return $mimetypes;
 	}
 	# ------------------------------------------------
 	/**
@@ -480,6 +506,11 @@ class Media extends BaseObject {
 	 * @return string Mimetype or null if extension is not recognized.
 	 */
 	public static function getMimetypeForExtension($ps_extension) {
+		if(!$ps_extension) { return null; }
+		if (CompositeCache::contains($ps_extension, 'Media_getMimetypeForExtension')) {
+			return CompositeCache::fetch($ps_extension, 'Media_getMimetypeForExtension');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
@@ -490,7 +521,9 @@ class Media extends BaseObject {
 			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
 		}
 		$va_formats = array_flip($va_formats);
-		return $va_formats[strtolower($ps_extension)];
+		
+		CompositeCache::save($ps_extension, $ret = $va_formats[strtolower($ps_extension)], 'Media_getMimetypeForExtension');
+		return $ret;
 	}
 	# ------------------------------------------------
 	/**
@@ -499,6 +532,10 @@ class Media extends BaseObject {
 	 * @return string File extension or null if mimetype is not recognized.
 	 */
 	public static function getExtensionForMimetype($ps_mimetype) {
+		if(!$ps_mimetype) { return null; }
+		if (CompositeCache::contains($ps_mimetype, 'Media_getExtensionForMimetype')) {
+			return CompositeCache::fetch($ps_mimetype, 'Media_getExtensionForMimetype');
+		}
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
@@ -508,7 +545,8 @@ class Media extends BaseObject {
 			$o_plugin = $va_plugin_info["INSTANCE"];
 			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
 		}
-		return $va_formats[strtolower($ps_mimetype)];
+		CompositeCache::save($ps_mimetype, $ret = $va_formats[strtolower($ps_mimetype)], 'Media_getExtensionForMimetype');
+		return $ret;
 	}
 	# ------------------------------------------------
 	/**
@@ -517,16 +555,22 @@ class Media extends BaseObject {
 	 * @return string Type name or null if mimetype is not recognized.
 	 */
 	public static function getTypenameForMimetype($ps_mimetype) {
+		if(!$ps_mimetype) { return null; }
+		if (CompositeCache::contains($ps_mimetype, "Media_getTypenameForMimetype")) {
+			return CompositeCache::fetch($ps_mimetype, "Media_getTypenameForMimetype");
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
-		
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
 			if ($vs_typename = $o_plugin->mimetype2typename($ps_mimetype)) {
+				CompositeCache::save($ps_mimetype, $vs_typename, "Media_getTypenameForMimetype");
 				return $vs_typename;
 			}
 		}
+		CompositeCache::save($ps_mimetype, null, "Media_getTypenameForMimetype");
 		return null;
 	}
 	# ------------------------------------------------
@@ -534,8 +578,9 @@ class Media extends BaseObject {
 	# ------------------------------------------------
 	public function htmlTag($ps_mimetype, $ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
 		if (!$ps_mimetype) { return _t('No media available'); }
-		$va_plugin_names = $this->getPluginNames();
-		foreach($va_plugin_names as $vs_plugin_name) {
+		
+		$map = $this->getPluginsForMimetypes();
+		if(is_array($map[$ps_mimetype]) && ($vs_plugin_name = $map[$ps_mimetype][0])) {
 			$p = $this->getUnregisteredPlugin($vs_plugin_name);
 			if ((isset($p->info['EXPORT'][$ps_mimetype])) || (isset($p->info['IMPORT'][$ps_mimetype]))) {
 				$pa_properties["mimetype"] = $ps_mimetype;

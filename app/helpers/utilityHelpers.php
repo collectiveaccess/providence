@@ -336,6 +336,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_include_directories. If set paths to directories are included. Default is false (only files are returned).
 	 * @param array $pa_options Additional options, including:
 	 *		modifiedSince = Only return files and directories modified after a Unix timestamp [Default=null]
+	 *		notModifiedSince = Only return files and directories not modified after a Unix timestamp [Default=null]
 	 * @return array An array of file paths.
 	 */
 	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false, $pa_options=null) {
@@ -347,12 +348,21 @@ function caFileIsIncludable($ps_file) {
 		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					$va_stat = @stat("{$dir}/{$item}");
 					if (
-						(isset($pa_option['modifiedSince']) && ($pa_option['modifiedSince'] > 0))
+						(isset($pa_options['modifiedSince']) && ($pa_options['modifiedSince'] > 0))
 						&&
-						(is_array($va_stat = @stat("{$dir}/{$item}")))
+						is_array($va_stat)
 						&&
-						($va_stat['mtime'] < $pa_option['modifiedSince'])
+						($va_stat['mtime'] < $pa_options['modifiedSince'])
+					) { continue; }
+					
+					if (
+						(isset($pa_options['notModifiedSince']) && ($pa_options['notModifiedSince'] > 0))
+						&&
+						is_array($va_stat)
+						&&
+						($va_stat['mtime'] >= $pa_options['notModifiedSince'])
 					) { continue; }
 
 					$vb_is_dir = is_dir("{$dir}/{$item}");
@@ -734,10 +744,94 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Return path to user media directory (used to temporary storage of user-uploaded media)
+	 * Will create directory if it doesn't not yet exist, unless dontCreateDirectory option is set.
+	 *
+	 * @param int $user_id
+	 * @param array $options Options include:
+	 *		dontCreateDirectory = don't create user directory if it does not exist. [Default is false]
+	 * @return string pa 
+	 */
+	function caGetUserMediaDirectoryPath(int $user_id, array $options=null) {
+	    $config = Configuration::load();
+		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
+			$tmp_directory = caGetTempDirPath();
+		}
+		
+		$user_dir =  "{$tmp_directory}/userMedia{$user_id}";
+		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
+			@mkdir($user_dir);
+		}
+		return $user_dir;
+	}
+	# ----------------------------------------
+	/**
 	 *
 	 */
-	function caMakeGetFilePath($ps_prefix=null, $ps_extension=null) {
- 		$vs_path = caGetTempDirPath();
+	function caCleanUserMediaDirectory(int $user_id) {
+	    // use configured directory to dump media with fallback to standard tmp directory
+	    $config = Configuration::load();
+		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
+			$tmp_directory = caGetTempDirPath();
+		}
+
+		$user_dir = caGetUserMediaDirectoryPath($user_id);
+		
+		if (!($timeout = (int)$config->get('ajax_media_upload_tmp_directory_timeout'))) {
+			$timeout = 24 * 60 * 60;
+		}
+		
+		// Cleanup any old files here
+		$files_to_delete = caGetDirectoryContentsAsList($user_dir, true, false, false, true, ['notModifiedSince' => time() - $timeout]);
+		$count = 0;
+		foreach($files_to_delete as $file_to_delete) {
+			if(@unlink($file_to_delete)) { $count++; }
+		}
+		
+		// Cleanup orphan metadata files
+		$files = array_flip(caGetDirectoryContentsAsList($user_dir));
+	
+		foreach($files as $f => $i) {
+			$b = pathinfo($f, PATHINFO_BASENAME);
+			if (preg_match("!^([^_]+)_metadata!", $b, $m) && !isset($files[$user_dir."/".$m[1]])) {
+				@unlink($f);
+				continue;
+			}
+			if (preg_match("!^md5_(.*)$!", $b, $m)) {
+				$r = @file_get_contents($f);
+				if (!isset($files[$user_dir."/".$r])) { @unlink($f); }
+			}
+		}
+		return $count;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caCleanUserMediaDirectories() {
+	    // use configured directory to dump media with fallback to standard tmp directory
+	    $config = Configuration::load();
+		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
+			$tmp_directory = caGetTempDirPath();
+		}
+
+		$count = 0;
+		if(is_array($dirs = scandir($tmp_directory))) {
+			foreach($dirs as $dir) {
+				if (preg_match("!^userMedia([\d]+)$!", $dir, $m)) {
+					caCleanUserMediaDirectory($m[1]);
+					$count++;
+				}
+			}
+		}
+		return $count;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caMakeGetFilePath($ps_prefix=null, $ps_extension=null, $options=null) {
+ 		$vs_path = caGetTempDirPath($options);
 
 		do {
 			$vs_file_path = $vs_path.DIRECTORY_SEPARATOR.$ps_prefix.mt_rand().getmypid().($ps_extension ? ".{$ps_extension}" : "");
@@ -908,7 +1002,8 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_url The URL to check
 	 * @param array $pa_options Options include:
 	 *		strict = only consider text a valid url if text contains only the url [Default is false]
-	 * @return boolean true if it appears to be valid URL, false if not
+	 *
+	 * @return array|boolean Return array with protocol and url keys if valid URL, false if invalid.
 	 */
 	function isURL($ps_url, $pa_options=null) {
 
@@ -2780,7 +2875,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caHumanFilesize($bytes, $decimals = 2) {
 		$size = array('B','KiB','MiB','GiB','TiB');
-		$factor = floor((strlen($bytes) - 1) / 3);
+		$factor = intval(floor((strlen($bytes) - 1) / 3), 10);
 
 		return sprintf("%.{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
 	}
@@ -2930,8 +3025,7 @@ function caFileIsIncludable($ps_file) {
                         $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
                         $vb_success = json_decode($va_response->getBody(), true);
                         if($vb_success){
-                            #$vs_query = 'user='.$va_api['user'].'&function=search_public_collections&param1='.rawurlencode($vs_collection_name).'&param2=name&param3=ASC&param4=0&param5=0';
-                            $vs_query = 'user='.$va_api['user'].'&function=get_user_collections';
+                            $vs_query = 'user='.$ps_user.'&function=get_user_collections';
                             $vs_hash = hash('sha256', $ps_key.$vs_query);
 
                             $va_response = $o_client->request('GET', '?'.$vs_query.'&sign='.$vs_hash);
@@ -3343,7 +3437,7 @@ function caFileIsIncludable($ps_file) {
 			$va_measurements = explode(strtolower($ps_delimiter), mb_strtolower($ps_expression));
 		} else {
 			$ps_delimiter = '';
-			$va_measurements = array($pm_value);
+			$va_measurements = array($ps_expression);
 		}
 		
 		$va_glyphs = array_keys(caGetFractionalGlyphTable());
@@ -3462,8 +3556,6 @@ function caFileIsIncludable($ps_file) {
 	        $vs_token = bin2hex(random_bytes(32));
 	    } elseif (function_exists("openssl_random_pseudo_bytes")) {     // PHP 5.x with OpenSSL
 			$vs_token = bin2hex(openssl_random_pseudo_bytes(32));
-		} elseif (function_exists('mcrypt_create_iv')) {                // PHP 5.x with mcrypt
-            $vs_token = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
         } else {
             $vs_token = md5(uniqid(rand(), TRUE));   // this is not very good, and is only used if one of the more secure options above is available (one of them should be in almost all cases)
 	    }
@@ -3533,8 +3625,9 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Simple helper to figure out if there is a value in the initial values array
+	 * Figure out if there is a value in the initial values array
 	 * (the one that we feed to the initialize bundle javascript)
+	 *
 	 * @param string $ps_id_prefix the id prefix for the field in question, used to figure out what format the array has
 	 * @param array|string $pa_initial_values
 	 * @return bool
@@ -3557,13 +3650,10 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 			}
-		} elseif (preg_match("/Labels$/", $ps_id_prefix)) { // labels
-			return (is_array($pa_initial_values) && (sizeof($pa_initial_values) > 0));
-		} elseif (preg_match("/\_rel$/", $ps_id_prefix)) {
+		} else {
+			// Any elements means a value
 			return (is_array($pa_initial_values) && (sizeof($pa_initial_values) > 0));
 		}
-
-		return false;
 	}
 	# ----------------------------------------
 	/**
@@ -3977,8 +4067,6 @@ function caFileIsIncludable($ps_file) {
 				return ($pb_nullable) ? true : false;
 				break;
 			case 'in':
-				return ($pb_is_list) ? true : false;
-				break;
 			case 'not in':
 				return ($pb_is_list) ? true : false;
 				break;
@@ -4066,7 +4154,12 @@ function caFileIsIncludable($ps_file) {
 						if ((!$vb_is_ca_get_ref) && preg_match("!^ca_[a-z]+\.$!", $vs_tag)) {
 							$vb_is_ca_get_ref = true;
 						}
-						if ($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char))) {
+						
+						if (
+							($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char)))
+							||
+							(($vs_char === ':') && !preg_match("!^[A-Za-z0-9]+!", mb_substr($ps_template, $i + 1)))	// colon not followed by letters of numbers is not part of tag
+						) {
 							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
 							$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_is_ca_get_ref = false;
@@ -4164,7 +4257,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $array1
 	 * @param array $array2
 	 *
-	 * @return array
+	 * @return array|string
 	 */
 	function caCamelToSnake($pm_text) {
 	    if(is_array($pm_text)) {

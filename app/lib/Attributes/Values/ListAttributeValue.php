@@ -74,6 +74,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Require value'),
 		'description' => _t('Check this option if you want to require that a list item be selected.')
 	),
+	'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+	),
 	'implicitNullOption' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -419,7 +427,14 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null)) && (strlen($ps_value) > 0)) {
-			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logReference', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logReference', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])), 
+				[	'bundle' => $pa_element_info['element_code'], 
+					'values' => $ps_value, 
+					'dataset' => caGetOption('dataset', $pa_options, null),
+					'idno' => caGetOption('idno', $pa_options, null),
+					'row' => caGetOption('row', $pa_options, null),
+					'notes' => caGetOption('notes', $pa_options, null)
+				]);
 		}
 		
 		if (!$vb_require_value && !$vn_id) {

@@ -321,7 +321,7 @@ class MultipartIDNumber extends IDNumber {
 	 *
 	 * @return array An array of element information arrays, of the same format as returned by getElementInfo(), or null if the format and type are not set
 	 */
-	private function getElements() {
+	public function getElements() {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
 			if (is_array($this->opa_formats[$vs_format][$vs_type]['elements'])) {
 				$vb_is_child = $this->isChild();
@@ -342,7 +342,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $ps_element_name The element to return information for
 	 * @return array An array of information with the same keys as in multipart_id_numbering.conf, or null if the element does not exist
 	 */
-	private function getElementInfo($ps_element_name) {
+	public function getElementInfo($ps_element_name) {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
 			return $this->opa_formats[$vs_format][$vs_type]['elements'][$ps_element_name];
 		}

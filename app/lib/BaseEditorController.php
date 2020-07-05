@@ -621,6 +621,7 @@ class BaseEditorController extends ActionController {
 				}
 			}
 		}
+		
 		$this->view->setVar('confirmed', $vb_confirm);
 		if ($t_subject->numErrors()) {
 			foreach($t_subject->errors() as $o_e) {
@@ -635,9 +636,6 @@ class BaseEditorController extends ActionController {
 				$this->opo_result_context->invalidateCache();
 				$this->opo_result_context->saveContext();
 
-
-				// clear subject_id - it's no longer valid
-				$t_subject->clear();
 				$this->view->setVar($t_subject->primaryKey(), null);
 				$this->request->setParameter($t_subject->primaryKey(), null, 'PATH');
 
@@ -652,6 +650,7 @@ class BaseEditorController extends ActionController {
 
 				# redirect
 				$this->redirectAfterDelete($t_subject);
+				return;
 			}
 		}
 
@@ -1608,6 +1607,9 @@ class BaseEditorController extends ActionController {
 
 		$ps_bundle = $this->request->getParameter("bundle", pString);
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+		
+		$ps_sort = $this->request->getParameter("sort", pString);
+		$ps_sort_direction = $this->request->getParameter("sortDirection", pString);
 
 
 		switch($ps_bundle) {
@@ -1627,15 +1629,15 @@ class BaseEditorController extends ActionController {
 					return;
 				}
 
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, 'P'.$pn_placement_id, $t_placement->get('settings'), array('request' => $this->request, 'contentOnly' => true), $vs_label));
+				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
 				break;
 		}
 	}
 	# ------------------------------------------------------------------
 	/**
-	 *
+	 * Return partial list of values for bundle. Used for incremental loading of relationship lists.
 	 */
-	public function loadBundles() {
+	public function loadBundleValues() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
@@ -1646,10 +1648,14 @@ class BaseEditorController extends ActionController {
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
 		$pn_start = (int)$this->request->getParameter("start", pInteger);
 		if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
+		$sort = $this->request->getParameter("sort", pString);
+		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
 		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+		
+		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
-		$this->response->addContent(json_encode($t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true))));
+		$this->response->addContent(json_encode(['sort' => array_keys($d), 'data' => $d]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2464,7 +2470,7 @@ class BaseEditorController extends ActionController {
 				$vb_download_for_record = true;
 				$va_rep_info = $va_rep['info'][$ps_version];
 				
-				$vs_filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $vs_idno, 'index' => $vn_c, 'version' => $ps_version, 'extension' => $va_rep_info['EXTENSION'], 'original_filename' => $va_rep['info']['original_filename'], 'representation_id' => $vn_representation_id]);				
+				$vs_filename = caGetRepresentationDownloadFileName($t_subject->tableName(), ['idno' => $vs_idno, 'index' => $vn_c, 'version' => $ps_version, 'extension' => $va_rep_info['EXTENSION'], 'original_filename' => $va_rep['info']['original_filename'], 'representation_id' => $vn_representation_id]);				
 				$va_file_names[$vs_filename] = true;
 				$o_view->setVar('version_download_name', $vs_filename);
 				
@@ -2508,7 +2514,7 @@ class BaseEditorController extends ActionController {
 				$o_zip->addFile($vs_path, $vs_name);
 			}
 			$o_view->setVar('zip_stream', $o_zip);
-			$o_view->setVar('archive_name', preg_replace('![^A-Za-z0-9\.\-]+!', '_', trim($t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), "/")).'.zip');
+			$o_view->setVar('archive_name', caGetMediaDownloadArchiveName($t_subject->tableName(), $vn_subject_id, ['extension' => 'zip'])); //preg_replace('![^A-Za-z0-9\.\-]+!', '_', trim($t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), "/")).'.zip');
 		} else {
 			foreach($va_file_paths as $vs_path => $vs_name) {
 				$o_view->setVar('archive_path', $vs_path);
@@ -2611,41 +2617,38 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 
-		// use configured directory to dump media with fallback to standard tmp directory
-		if (!is_writeable($vs_tmp_directory = $this->request->config->get('ajax_media_upload_tmp_directory'))) {
-			$vs_tmp_directory = caGetTempDirPath();
+		if (!($user_id = $this->request->getUserID())) { return null; }
+		caCleanUserMediaDirectory($user_id);
+
+		$stored_files = [];
+		
+		$user_dir = caGetUserMediaDirectoryPath($user_id);
+		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
+
+		if(is_array($_FILES['files'])) {
+			foreach($_FILES['files']['tmp_name'] as $i => $f) {
+				if(!strlen($f)) { continue; }
+				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
+				
+				$md5 = md5_file($f);
+				if (isset($user_files["{$user_dir}/md5_{$md5}"])) { 
+					$f = "{$user_dir}/".file_get_contents("{$user_dir}/md5_{$md5}");
+				}
+				
+				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
+				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
+
+				// write file metadata
+				@file_put_contents("{$dest_path}_metadata", json_encode([
+					'original_filename' => $_FILES['files']['name'][$i],
+					'size' => filesize($dest_path)
+				]));
+				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
+				$stored_files[$md5] = "userMedia{$user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
+			}
 		}
 
-		$vn_user_id = $this->request->getUserID();
-		$vs_user_dir = $vs_tmp_directory."/userMedia{$vn_user_id}";
-		if(!file_exists($vs_user_dir)) {
-			@mkdir($vs_user_dir);
-		}
-		if (!($vn_timeout = (int)$this->request->config->get('ajax_media_upload_tmp_directory_timeout'))) {
-			$vn_timeout = 24 * 60 * 60;
-		}
-
-
-		// Cleanup any old files here
-		$va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, array('modifiedSince' => time() - $vn_timeout));
-		foreach($va_files_to_delete as $vs_file_to_delete) {
-			@unlink($vs_file_to_delete);
-		}
-
-		$va_stored_files = array();
-		foreach($_FILES as $vn_i => $va_file) {
-			$vs_dest_filename = pathinfo($va_file['tmp_name'], PATHINFO_FILENAME);
-			copy($va_file['tmp_name'], $vs_dest_path = $vs_tmp_directory."/userMedia{$vn_user_id}/{$vs_dest_filename}");
-
-			// write file metadata
-			file_put_contents("{$vs_dest_path}_metadata", json_encode(array(
-				'original_filename' => $va_file['name'],
-				'size' => filesize($vs_dest_path)
-			)));
-			$va_stored_files[$vn_i] = "userMedia{$vn_user_id}/{$vs_dest_filename}"; // only return the user directory and file name, not the entire path
-		}
-
-		$this->response->addContent(json_encode($va_stored_files));
+		$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 	}
 	# -------------------------------------------------------
 	/**
@@ -2680,7 +2683,9 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function ReturnToHomeLocations($options=null) {
-		if(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
+		if(!$this->request->user->canDoAction("can_edit_ca_objects")) {
+			$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
+		} elseif(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
 			$resp = ['ok' => 0, 'message' => _t('No policies configured'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
 		} else {
 			$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
@@ -2688,63 +2693,76 @@ class BaseEditorController extends ActionController {
 			$updated = $already_home = $errors = [];
 			$msg = '';
 			if(is_array($policies) && sizeof($policies)) {
+				$primary_table = $this->request->getParameter('table', pString);
+				$primary_id = $this->request->getParameter('id', pString);
 		
-				$object_ids = array_map(function($v) { return (int)$v; }, explode(';',$this->request->getParameter('ids', pString)));
+				if (!($primary = Datamodel::getInstance($primary_table))) {
+					throw new ApplicationException(_t('Invalid table'));
+				}
+				if (!$primary->load($primary_id)) {
+					throw new ApplicationException(_t('Invalid id'));
+				}
+				if (!$primary->isReadable($this->request)) {
+					throw new ApplicationException(_t('Access denied'));
+				}
+				$object_ids = $primary->get('ca_objects.related.object_id', ['returnAsArray' => true]);
 		
-				$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
+				if(is_array($object_ids) && sizeof($object_ids)) {
+					$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
 				
-				while($qr_objects->nextHit()) {
-					$object_id = $qr_objects->getPrimaryKey();
-					$t_object = $qr_objects->getInstance();
+					while($qr_objects->nextHit()) {
+						$object_id = $qr_objects->getPrimaryKey();
+						$t_object = $qr_objects->getInstance();
 		
-					if (!($location_id = $t_object->get('home_location_id'))) { continue; }
-					if (!$t_object->isSaveable($this->request)) { continue; }
+						if (!($location_id = $t_object->get('home_location_id'))) { continue; }
+						if (!$t_object->isSaveable($this->request)) { continue; }
 	
-					foreach($policies as $n => $p) {
-						if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
+						foreach($policies as $n => $p) {
+							if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
 						
-						$pe = $p['elements']['ca_storage_locations'];
-						$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
-						if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
+							$pe = $p['elements']['ca_storage_locations'];
+							$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
+							if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
 						
-						// Interstitials?
-						$effective_date = null;
-						$interstitial_values = [];
-						if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
-							foreach($interstitial_elements as $e) {
-								switch($e) {
-									case 'effective_date':
-										$effective_date = 'today';
-										break;
+							// Interstitials?
+							$effective_date = null;
+							$interstitial_values = [];
+							if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
+								foreach($interstitial_elements as $e) {
+									switch($e) {
+										case 'effective_date':
+											$effective_date = _t('today');
+											break;
+									}
 								}
 							}
-						}
 						
-						if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
-							$already_home[] = $object_id;
-							continue;
-						}
+							if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
+								$already_home[] = $object_id;
+								continue;
+							}
 						
-						$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
-						ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
+							$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
+							ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
 		
-						if($t_object->numErrors() > 0) {
-							$errors[] = $object_id;
-						} else {
-							$updated[] = $object_id;
+							if($t_object->numErrors() > 0) {
+								$errors[] = $object_id;
+							} else {
+								$updated[] = $object_id;
+							}
 						}
-					}
-				}	
-				$n = sizeof($updated);
-				$h = sizeof($already_home);
+					}	
+					$n = sizeof($updated);
+					$h = sizeof($already_home);
 				
-				if($h > 0) {
-					$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $h);
-				} else {
-					$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'));
-				}
-				if (sizeof($errors)) {
-					$msg .= '; '._t('%1 errors', sizeof($errors));
+					if($h > 0) {
+						$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $h);
+					} else {
+						$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'));
+					}
+					if (sizeof($errors)) {
+						$msg .= '; '._t('%1 errors', sizeof($errors));
+					}
 				}
 				$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
 			} else {
@@ -2759,6 +2777,8 @@ class BaseEditorController extends ActionController {
 	/**
 	 * Handle sort requests from form editor.
 	 * Gets passed a table name, a list of ids and a key to sort on. Will return a JSON list of the same IDs, just sorted.
+	 *
+	 * TODO: remove this
 	 */
 	public function Sort() {
 		if (!$this->getRequest()->isLoggedIn() || ((int)$this->getRequest()->user->get('userclass') !== 0)) {
@@ -2766,10 +2786,29 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 
-		$vs_table_name = $this->getRequest()->getParameter('table', pString);
-		$t_instance = Datamodel::getInstance($vs_table_name, true);
-
-		$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
+		if ($placement_id = $this->getRequest()->getParameter('placement_id', pInteger)) {
+			$vn_primary_table = $this->getRequest()->getParameter('primary_table', pString);
+			$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
+			
+			// Generate list of related items from editor UI placement when defined	...
+			//
+			// TODO: convert the entire related list UI mess to use passed placement_id's rather than giant lists of related IDs
+			// For now support both placement_ids and passed ID lists
+			$placement = new ca_editor_ui_bundle_placements($placement_id);
+			if (!$placement->isLoaded()) {
+				throw new ApplicationException(_('Invalid placement_id'));
+			}
+			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
+	
+			if (!($t_instance->load($vn_primary_id))) { 
+				throw new ApplicationException(_('Invalid id'));
+			}
+			$va_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+		} else {
+			$vs_table_name = $this->getRequest()->getParameter('table', pString);
+			$t_instance = Datamodel::getInstance($vs_table_name, true);
+			$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
+		}
 		$va_sort_keys = explode(',', $this->getRequest()->getParameter('sortKeys', pString));
 
 		if(!($vs_sort_direction = strtolower($this->getRequest()->getParameter('sortDirection', pString))) || !in_array($vs_sort_direction, array('asc', 'desc'))) {

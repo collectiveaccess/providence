@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2019 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1169,7 +1169,7 @@ class Installer {
                         $vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
                         if(!$t_role->load(array('code' => $vs_role))) { continue; }
-                        if($vn_access) {
+                        if(!is_null($vn_access)) {
                             $va_ui_screen_roles[$t_role->getPrimaryKey()] = $vn_access;
                         } else {
                             $this->addError("Role code or access value invalid for UI screen {$vs_screen_idno} (permission item with role code '{$vs_role}')");
@@ -1332,7 +1332,7 @@ class Installer {
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
 					if(!$t_role->load(array('code' => $vs_role))) { continue; }
-					if($vn_access) {
+					if(!is_null($vn_access)) {
 						$va_ui_roles[$t_role->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Role code or access value invalid for UI {$vs_ui_code} (permission item with role code '{$vs_role}')");
@@ -1854,7 +1854,7 @@ class Installer {
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
 					if(!$t_role->load(array('code' => $vs_role))) { continue; }
-					if($vn_access) {
+					if(!is_null($vn_access)) {
 						$va_display_roles[$t_role->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Role code or access value invalid for display {$vs_display_code} (permission item with role code '{$vs_role}')");
@@ -2064,7 +2064,7 @@ class Installer {
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
 					if(!$t_role->load(array('code' => $vs_role))) { continue; }
-					if($vn_access) {
+					if(!is_null($vn_access)) {
 						$va_form_roles[$t_role->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Role code or access value invalid for form {$vs_form_code} (permission item with role code '{$vs_role}')");
@@ -2094,13 +2094,12 @@ class Installer {
 			$this->opo_db->query('DELETE FROM ca_search_form_placements WHERE form_id=?', $t_form->getPrimaryKey());
 		}
 
-		$vn_i = 0;
+		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement) {
 			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
-
 			$t_form->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 			if ($t_form->numErrors()) {
 				$this->addError("There was an error while inserting search form placement {$vs_code}: ".join(" ",$t_form->getErrors()));
@@ -2428,7 +2427,7 @@ class Installer {
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
 					if(!$t_role->load(array('code' => $vs_role))) { continue; }
-					if($vn_access) {
+					if(!is_null($vn_access)) {
 						$va_form_roles[$t_role->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Role code or access value invalid for metadata alert {$vs_alert_code} (permission item with role code '{$vs_role}')");
@@ -2633,7 +2632,7 @@ class Installer {
 			case 'edit':
 				return 2;
 			default:
-				return null;
+				return 0;
 		}
 	}
 	# --------------------------------------------------

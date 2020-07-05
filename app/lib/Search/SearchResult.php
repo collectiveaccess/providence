@@ -1555,7 +1555,7 @@ class SearchResult extends BaseObject {
 						    $vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id]['timestamp'];
 						    $this->opo_tep->init();
                             $this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
-                            $vm_val = $this->opo_tep->getText($pa_options);
+                            $vm_val = [$this->opo_tep->getText($pa_options)];
 						}
 						goto filter;
 					} else {
@@ -1593,8 +1593,13 @@ class SearchResult extends BaseObject {
 					if ($vb_return_as_array) {
 						if($va_path_components['subfield_name']) {
 							$vm_val = [self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$va_path_components['subfield_name']]];
-						} else {
+						} elseif($vb_return_with_structure) {
 							$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id];
+						} else {
+						    $vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id]['timestamp'];
+						    $this->opo_tep->init();
+                            $this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
+                            $vm_val = [$this->opo_tep->getText($pa_options)];
 						}
 						goto filter;
 					} else {
@@ -1923,6 +1928,9 @@ class SearchResult extends BaseObject {
 		
 		$pa_restrict_to_lists = caGetOption('list', $pa_options, null, ['castTo' => 'array']);
 		if (is_array($pa_restrict_to_lists)) { $pa_restrict_to_lists = caMakeListIDList($pa_restrict_to_lists); }
+		
+		// Make sure spec has a table name, otherwise we can get caught in an infinite loop when we pull using the spec
+		if ((substr($va_spec[0], 0, 3) !== 'ca_') || !Datamodel::tableExists($va_spec[0])) { array_unshift($va_spec, $va_path_components['table_name']); }
 		
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
@@ -2488,25 +2496,6 @@ class SearchResult extends BaseObject {
 						if ($vb_return_as_link) { $vs_prop = array_shift(caCreateLinksFromText(array($vs_prop), $vs_table_name, array($vn_id))); }
 						
 						$va_return_values[$vn_id][$vm_locale_id] = $vs_prop;
-					}
-				}
-				break;
-			case FT_VARS:
-				$va_array_path = array_slice($va_path_components['components'], 2);
-				foreach($pa_value_list as $vn_locale_id => $va_values) {
-					foreach($va_values as $id => $va_value) {
-						$vn_id = $va_value[$vs_pk];
-						$v = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
-						foreach($va_array_path as $p) {
-							if (!isset($v[$p])) { break; }
-							$v = $v[$p];
-						}
-						
-						if (is_array($v) && !$pa_options['returnAsArray']) {
-							// force arrays to strings
-							$v = join(caGetOption('delimiter', $pa_options, '; '), $v);
-						}
-						$va_return_values[$vn_id][$vn_locale_id][] = $v;
 					}
 				}
 				break;

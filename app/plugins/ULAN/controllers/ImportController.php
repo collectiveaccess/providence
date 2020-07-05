@@ -124,7 +124,8 @@ class ImportController extends ActionController {
 		$o_progress->setMode('WebUI');
 		$o_progress->setTotal(sizeof($pa_ulan_ids));
 
-		$vn_status = ca_data_importers::importDataFromSource(join(",", $pa_ulan_ids), $pn_importer_id, array('progressBar' => $o_progress, 'format' => 'ULAN', 'logLevel' => $pn_log_level));
+		$t_importer = new ca_data_importers();
+		$vn_status = $t_importer->importDataFromSource(join(",", $pa_ulan_ids), $pn_importer_id, array('progressBar' => $o_progress, 'format' => 'ULAN', 'logLevel' => $pn_log_level));
 
 		$this->view->setVar('info', array(
 			'status' => $vn_status,

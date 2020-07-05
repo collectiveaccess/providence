@@ -267,9 +267,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->postError(1650, _t("Can't set property %1", $property), "WLPlugVideo->set()");
 				return '';
 			}
-		} else {
-			return '';
-		}
+		} 
+		return '';
 	}
 	# ------------------------------------------------
 	/**
@@ -514,8 +513,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$do_crop = 0;
 		
 		# get parameters for this operation
-		$sparams = $this->info["TRANSFORMATIONS"][$operation];
-
 		$this->properties["version_width"] = $w = $parameters["width"];
 		$this->properties["version_height"] = $h = $parameters["height"];
 		$cw = $this->get("width");
@@ -900,7 +897,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vn_preview_height= (isset($pa_options['height']) && ((int)$pa_options['height'] > 0)) ? (int)$pa_options['height'] : 320;
 		
 		$vn_s = $vn_start_at;
-		$vn_e = $vn_duration - $vn_end_at;
 		$vn_num_frames = ($vn_previewed_duration)/$vn_frame_interval;
 		
 		if ($vn_num_frames < $vn_min_number_of_frames) {
@@ -1089,9 +1085,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vs_id = 				$pa_options["id"] ? $pa_options["id"] : "mp4_player";
 
 				$vs_poster_frame_url =	$pa_options["poster_frame_url"];
-				
-				$vs_flash_vars = 		$pa_options["viewer_parameters"];
-				$viewer_base_url =		$pa_options["viewer_base_url"];
 
 				$vn_width =				$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
 				$vn_height =			$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $pa_properties["height"];
@@ -1099,8 +1092,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_captions = 			caGetOption("captions", $pa_options, array(), array('castTo' => 'array'));
 				
 				ob_start();
-	
-			$vs_config = 'config={"playlist":[{"url":"'.$vs_poster_frame_url.'", "scaling": "fit"}, {"url": "'.$ps_url.'","autoPlay":false,"autoBuffering":true, "scaling": "fit"}]};';
 ?>
 			<!-- Begin VideoJS -->
 			 <video id="<?php print $vs_id; ?>" class="video-js vjs-default-skin"  
@@ -1140,7 +1131,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case "video/x-ms-asf":
 			case "video/x-ms-wmv":
 				$vs_id = 						$pa_options["id"] ? $pa_options["id"] : "mp4_player";
-				$vs_poster_frame_url =			$pa_options["poster_frame_url"];
 				$vn_width =						$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
 				$vn_height =					$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $pa_properties["height"];
 				
@@ -1155,6 +1145,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				break;
 			# ------------------------------------------------
 		}
+		return null;
 	}
 
 	# ------------------------------------------------

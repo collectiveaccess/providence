@@ -40,10 +40,10 @@
 	
 	$va_a_to_z = range('A', 'Z');
 	
-	$workbook = new PHPExcel();
+	$workbook = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 	// more accurate (but slower) automatic cell size calculation
-	PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
+	\PhpOffice\PhpSpreadsheet\Shared\Font::setAutoSizeMethod(\PhpOffice\PhpSpreadsheet\Shared\Font::AUTOSIZE_METHOD_EXACT);
 
 	$o_sheet = $workbook->getActiveSheet();
 	// mise en forme
@@ -53,28 +53,28 @@
 					'size' => 12,
 					'bold' => true),
 			'alignment'=>array(
-					'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-					'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+					'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+					'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 					'wrap' => true,
 					'shrinkToFit'=> true),
 			'borders' => array(
 					'allborders'=>array(
-							'style' => PHPExcel_Style_Border::BORDER_THICK)));
+							'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK)));
 	$cellstyle = array(
 			'font'=>array(
 					'name' => 'Arial',
 					'size' => 11,
 					'bold' => false),
 			'alignment'=>array(
-					'horizontal'=>PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
-					'vertical'=>PHPExcel_Style_Alignment::VERTICAL_CENTER,
+					'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+					'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 					'wrap' => true,
 					'shrinkToFit'=> true),
 			'borders' => array(
 					'allborders'=>array(
-							'style' => PHPExcel_Style_Border::BORDER_THIN)));
+							'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)));
 
-	$o_sheet->getDefaultStyle()->applyFromArray($cellstyle);
+	$o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
 	$o_sheet->setTitle("CollectiveAccess");
 	
 	$vn_line = 1;
@@ -124,7 +124,7 @@
 				
 					if (is_file($vs_path = $vo_result->getMediaPath('ca_object_representations.media',$vs_version))) {
 						$image = "image".$vs_supercol.$vs_column.$vn_line;
-						$drawing = new PHPExcel_Worksheet_Drawing();
+						$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
 						$drawing->setName($image);
 						$drawing->setDescription($image);
 						$drawing->setPath($vs_path);
@@ -178,7 +178,7 @@
 		}
 	}
 	
- 	$o_writer = new PHPExcel_Writer_Excel2007($workbook);
+ 	$o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
 
  	@header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
  	@header('Content-Disposition:inline;filename=Export.xlsx ');

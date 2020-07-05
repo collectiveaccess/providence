@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2019 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,11 +39,14 @@ final class GarbageCollection {
 	public static function gc() {
 		// contains() incidentally returns false when the TTL of this item is up
 		// -> time for us to run the GC
-		if(!ExternalCache::contains('last_gc')) {
+		if(!ExternalCache::contains('last_gc', 'gc')) {
 			self::removeStaleDiskCacheItems();
 
 			// refresh item with new TTL
-			ExternalCache::save('last_gc', 'meow');
+			ExternalCache::save('last_gc', time(), 'gc', 300);
+			
+			// remove old user media files
+			caCleanUserMediaDirectories();
 					
 			// Purge CSRF tokens that haven't been updated for at least a day from persistent cache
 			PersistentCache::clean(time() - 86400, 'csrf_tokens');
@@ -57,7 +60,7 @@ final class GarbageCollection {
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		$va_list = caGetDirectoryContentsAsList($vs_cache_dir);
-		$va_list = array_slice($va_list, 0, 2000);
+		$va_list = array_slice($va_list, 0, 10000);
 		foreach($va_list as $vs_file) {
 			$r = @fopen($vs_file, "r");
 

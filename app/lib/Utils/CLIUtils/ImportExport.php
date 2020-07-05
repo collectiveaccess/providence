@@ -454,6 +454,8 @@
 			$vb_direct = (bool)$po_opts->getOption('direct');
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
 			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback');
+			
+			$vs_detailed_log_name = $po_opts->getOption('detailed-log-name');
 
 			$vb_dryrun = (bool)$po_opts->getOption('dryrun');
 			$vs_format = $po_opts->getOption('format');
@@ -465,7 +467,17 @@
 				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 			}
 
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $po_opts->getOption('log-level'), 'limitLogTo' => $po_opts->getOption('limit-log-to'), 'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 'addToSet' => $vs_add_to_set, 'environment' => $env))) {
+			$t_importer = new ca_data_importers();
+			if (!$t_importer->importDataFromSource($vs_data_source, $vs_mapping, 
+				[	'dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 
+					'format' => $vs_format, 'showCLIProgressBar' => true, 
+					'logDirectory' => $vs_log_dir, 'logLevel' => $po_opts->getOption('log-level'), 
+					'limitLogTo' => $po_opts->getOption('limit-log-to'), 
+					'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 
+					'addToSet' => $vs_add_to_set, 'environment' => $env,
+					'detailedLogName' => $vs_detailed_log_name
+				]
+			)) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
@@ -490,7 +502,8 @@
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
 				"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.'),
 				"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import.'),
-				"log-to-tmp-directory-as-fallback" => _t('Use the system temporary directory for the import log if the application logging directory is not writable. Default report an error if the application log directory is not writeable.')
+				"log-to-tmp-directory-as-fallback" => _t('Use the system temporary directory for the import log if the application logging directory is not writable. Default report an error if the application log directory is not writeable.'),
+				"detailed-log-name" => _t('Name to use for detailed field-level error log. By default these log files are named with the date and code for the import mapping.')
 			);
 		}
 		# -------------------------------------------------------
@@ -853,7 +866,7 @@
 			$is_update = (bool)$po_opts->getOption('update'); 	// "update" parameter; we only allow updating of a list if this is explicitly set
 			
 			try {
-				$o_file = PHPExcel_IOFactory::load($source);
+				$o_file = \PhpOffice\PhpSpreadsheet\IOFactory::load($source);
 			} catch (Exception $e) {
 				CLIUtils::addError(_t("You must specify a valid Excel .xls or .xlsx file: %1", $e->getMessage()));
 				return false;
@@ -1057,6 +1070,8 @@
 				$target = null;
 			}
 			
+			$log_level = $po_opts->getOption('log-level');
+			
 			$table = $po_opts->getOption('table');
 			if (!$table) {
 				CLIUtils::addError(_t('You must specify a table'));
@@ -1073,14 +1088,15 @@
 			}
             
             $e = new ExternalExportManager();
-            $e->process($table, $id, null, ['target' => $target]);
+            $e->process($table, $id, ['target' => $target, 'logLevel' => $log_level]);
 		}
 		# -------------------------------------------------------
 		public static function run_external_exportParamList() {
 			return [
 				"table|t=s" => _t('Table of record to export.'),
 				"id|i=s" => _t('ID of row to export.'),
-				"target|a=s" => _t('Target to export to. If omitted all valid targets will be exported to.')
+				"target|a=s" => _t('Target to export to. If omitted all valid targets will be exported to.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 			];
 		}
 		# -------------------------------------------------------
@@ -1102,6 +1118,53 @@
 		 *
 		 */
 		public static function run_external_exportHelp() {
+			return _t('To come.');
+        }
+        # -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function run_pending_external_exports($po_opts=null) {
+            require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+            
+            $target = $po_opts->getOption('target');
+			if ($target && !ExternalExportManager::isValidTarget($target)) {
+				CLIUtils::addMessage(_t('Ignoring invalid target %1', $target));
+				$target = null;
+			}
+			
+			$log_level = $po_opts->getOption('log-level');
+            
+            $e = new ExternalExportManager(['logLevel' => $log_level]);
+            $e->processPending(['target' => $target, 'logLevel' => $log_level]);
+		}
+		# -------------------------------------------------------
+		public static function run_pending_external_exportsParamList() {
+			return [
+				"target|a=s" => _t('Target to export to. If omitted all valid targets will be exported to.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_pending_external_exportsUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_pending_external_exportsShortHelp() {
+			return _t('Trigger pending external exports.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function run_pending_external_exportsHelp() {
 			return _t('To come.');
         }
         # -------------------------------------------------------

@@ -71,17 +71,61 @@
 		if (!is_array($pa_parents)) { $pa_parents = array($pa_parents); }
 		$vn_id = null;
 		
+		$id_numberer = IDNumbering::newIDNumberer($ps_table);
+		
 		$pa_parents = array_reverse($pa_parents);
 		foreach($pa_parents as $vn_i => $va_parent) {
+			
+			$pa_source_data["LEVEL_".($vn_i + 1)] = '';
 			if (!is_array($va_parent)) {
 				$o_log->logWarn(_t('[%2] Parents options invalid. Did you forget to pass a list? Parents list passed was: %1', print_r($pa_parents, true), $ps_refinery_name));
 				break;
 			}
 			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
-			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
+			if (($vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null))) && $va_parent['idnoPrefix']) {
+				$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idnoPrefix'].$va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
+			}
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
 
-			if (!$vs_name && !$vs_idno) { continue; }
+			if (!$vs_name && !$vs_idno) { 
+				continue; 
+			}
+			
+			if ((get_class($id_numberer) === 'MultipartIDNumber') && caGetOption('normalizeIdno', $va_parent, false)) {
+				$id_numberer->setType($vs_type);
+				$id_number_elements = method_exists($id_numberer, 'getElements') ? $id_numberer->getElements($vs_type) : null;
+			
+				// Make sure multilevel multipart number conforms to configured format
+				// If we're missing a level we'll fill it with a "1"; if the last element in the format is SERIAL 
+				// we'll add a placeholder. Note that we only handle SERIAL elements at the end of a number. If it's an oddball
+				// format with a SERIAL followed by static numbers we don't touch it, on the assumption the user knows what they're doing.
+				//
+				// Eg. if the number is 2020.1.2 and the formats is YEAR.FREE.FREE.FREE.SERIAL we'll rewrite it as 2020.1.2.1.%
+				if(is_array($id_number_elements) && (sizeof($id_number_elements) > 1)) {		// don't bother normalizing single-element formats
+					$sep = $id_numberer->getSeparator();
+					$n = explode($sep, $vs_idno);
+				
+					$last = array_pop($n);
+					if ($last !== '%') { array_push($n, $last); }	// remove trailing SERIAL placeholder if present
+				
+					if (sizeof($n) < sizeof($id_number_elements)) {
+						while(sizeof($n) < (sizeof($id_number_elements) - 1)) {
+							$n[] = 1;	
+						}
+					
+						$last = array_pop($id_number_elements);
+						if ($last['type'] == 'SERIAL') {
+							$n[] = '%';
+						} else {
+							$n[] = '1';
+						}
+					}
+					$vs_idno = join($sep, $n);
+					
+				}
+			}
+			
+			
 			if (!$vs_name && isset($va_parent['name'])) { continue; }
 			
 			$va_attributes_spec = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : [];
@@ -91,6 +135,9 @@
 				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)),
 				['idno' => $vs_idno, 'parent_id' => $vn_id, '_treatNumericValueAsID' => true]
 			);
+			
+			$pa_source_data['PARENT_IDNO'] = $vs_idno;
+			$pa_source_data["LEVEL_".($vn_i + 1)] = $vs_idno;
 			
 			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) {
 				foreach($va_parent['rules'] as $va_rule) {
@@ -230,10 +277,11 @@
 			unset($va_item['settings']["{$ps_refinery_name}_parents"]);
 		
 			caProcessRefineryRelatedMultiple($o_refinery_instance, $va_item, $pa_source_data, null, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
-		
-			if (is_array($va_val['_related_related'])) {
-				$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
-				if ($t_subject->load($vn_id)) {
+			
+			$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
+			if ($t_subject->load($vn_id)) {
+				$pa_source_data['PARENT_IDNO'] = $pa_source_data["LEVEL_".($vn_i + 1)] =$t_subject->get('idno'); 
+				if (is_array($va_val['_related_related'])) {
 					foreach($va_val['_related_related'] as $vs_table => $va_rels) { 
 						foreach($va_rels as $va_rel) {
 							if (!$t_subject->addRelationship($vs_table, $va_rel['id'], $va_rel['_relationship_type'], null, null, null, null, ['setErrorOnDuplicate' => true])) {
@@ -345,7 +393,7 @@
 							foreach($va_vals as $vn_x => $va_v) {
 								if (!$va_v || (!is_array($va_v) && !trim($va_v))) { continue; }
 								if ($vs_prefix && is_array($va_v)) {
-									$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; });
+									$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; }, $va_v);
 									
 									foreach($va_v as $vn_y => $vm_val_to_import) {
 										if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
@@ -462,10 +510,8 @@
 		
 		$t_rel_instance = Datamodel::getInstanceByTableName($ps_related_table, true);
 
-		$vs_refinery_name = $po_refinery_instance->getName();
+		$refinery_name = $po_refinery_instance->getName();
 		
-		$vs_refinery_name = $po_refinery_instance->getName();
-
 		global $g_ui_locale_id;
 		$va_attr_vals = array();
 		
@@ -489,7 +535,7 @@
 			if (!is_array($va_type = BaseRefinery::parsePlaceholder($vs_type_spec, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_type = [$va_type]; }
 			if (!is_array($va_parent_id = BaseRefinery::parsePlaceholder($vs_parent_id_spec, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => false, 'delimiter' => $vs_delimiter)))) { $va_parent_id = [$va_parent_id]; }
 
-			if ($vb_ignore_parent = caGetOptions('ignoreParent', $pa_related_options, false)) {
+			if ($vb_ignore_parent = caGetOption('ignoreParent', $pa_related_options, false)) {
 				$pa_options['ignoreParent'] = $vb_ignore_parent;
 			}
 
@@ -535,7 +581,7 @@
                             $va_name[$vs_label_fld] = BaseRefinery::parsePlaceholder($pa_related_options[$vs_label_fld], $pa_source_data, $pa_item, $pn_c, array('returnAsString' => true, 'reader' => $o_reader));
                         }
                     } else {
-                        $va_name = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$vs_refinery_name}_doNotParse"]]));
+                        $va_name = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$refinery_name}_doNotParse"]]));
                     } 
             
                     if (!is_array($va_name) || !$va_name) { 
@@ -578,13 +624,15 @@
                     foreach($va_non_preferred_labels as $va_label) {
                         foreach($va_label as $vs_k => $vs_v) {
                             if (!$vb_is_set && strlen(trim($vs_v))) { $vb_is_set = true; }
-                            $va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
+                            $va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $i, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null));
                         }
                         if ($vb_is_set) { $pa_options['nonPreferredLabels'][] = $va_label; }
                     }
                 } elseif($vs_non_preferred_label = trim($pa_related_options["nonPreferredLabels"])) {
-                    if ($vs_refinery_name == 'entitySplitter') {
-                        if ($vs_npl = trim(DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null)), $pa_options))) { $pa_options['nonPreferredLabels'][] = $vs_npl; };
+                    if ($ps_refinery_name == 'entitySplitter') {
+                        if (is_array($va_npl = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null)), $pa_options))) { 
+                        	$pa_options['nonPreferredLabels'][] = $va_npl; 
+                        }
                     } else {
                         if ($vs_npl = trim(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null)))) {
                             $pa_options['nonPreferredLabels'][] = [
@@ -658,6 +706,7 @@
 	 */
 	function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, $po_refinery_instance, &$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options) {
 		global $g_ui_locale_id;
+		$pa_source_data['PARENT_IDNO'] = '';
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
 		
@@ -863,6 +912,8 @@
 							if (isset($pa_options['defaultParentID']) && (!isset($va_val['parent_id']) || !$va_val['parent_id'])) {
 								$va_val['parent_id'] = $va_val['_parent_id'] = $pa_options['defaultParentID'];
 							}
+							
+							$pa_source_data['PARENT_IDNO'] = $va_val['parent_id'] ? $ps_table::getIdnoForId($va_val['parent_id'], ['transaction' => $o_trans]) : 'o_trans';
 						}
 				
 						if(isset($pa_options['hierarchyID']) && $pa_options['hierarchyID'] && ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD'))) {
@@ -937,7 +988,7 @@
 									$va_attr_vals['lot_status_id'] = $va_val['_status'];
 								}
 								unset($va_val['_status']);
-								$vn_item_id = DataMigrationUtils::getObjectLotID($va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item, $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
+								$vn_item_id = DataMigrationUtils::getObjectLotID($va_val['idno_stub'] ? $va_val['idno_stub'] : $vs_item, $va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
 								break;
 							case 'ca_entities':
 								$n = $va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item;
@@ -1087,7 +1138,7 @@
 								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'], null), 'log' => $o_log]);
 
 									foreach($va_files as $vs_file) {
-										if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { return true; } // skip Synology res files
+										if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
 										
 									    $va_media_val = $va_val;
 							            if(!isset($va_media_val['idno'])) { $va_media_val['idno'] = pathinfo($vs_file, PATHINFO_FILENAME); }
@@ -1137,10 +1188,8 @@
 							case 'ca_occurrences':
 							case 'ca_places':
 							case 'ca_objects':
-								$va_val = array('name' => $vs_item);
-								break;
 							case 'ca_object_lots':
-								$va_val = array('name' => $vs_item);
+								$va_val = ['name' => $vs_item];
 								break;
 							case 'ca_object_representations':
 								if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Cannot map preferred labels to object representations. Only media paths can be mapped.')); }
@@ -1265,9 +1314,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	}
 	# ---------------------------------------
 	/**
-	 * Loads the given file into a PHPExcel object using common settings for preserving memory and performance
+	 * Loads the given file into a \PhpOffice\PhpSpreadsheet\Spreadsheet object using common settings for preserving memory and performance
 	 * @param string $ps_xlsx file name
-	 * @return PHPExcel
+	 * @return \PhpOffice\PhpSpreadsheet\Spreadsheet
 	 */
 	function caPhpExcelLoadFile($ps_xlsx){
 		if(MemoryCache::contains($ps_xlsx, 'CAPHPExcel')) {
@@ -1291,9 +1340,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			}
 
 			/**  Identify the type  **/
-			$vs_input_filetype = PHPExcel_IOFactory::identify($ps_xlsx);
+			$vs_input_filetype = \PhpOffice\PhpSpreadsheet\IOFactory::identify($ps_xlsx);
 			/**  Create a new Reader of that very type  **/
-			$o_reader = PHPExcel_IOFactory::createReader($vs_input_filetype);
+			$o_reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($vs_input_filetype);
 			$o_reader->setReadDataOnly(true);
 			$o_excel = $o_reader->load($ps_xlsx);
 
@@ -1303,7 +1352,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	}
 	# ---------------------------------------------------------------------
 	/**
-	 * Counts non-empty rows in PHPExcel spreadsheet
+	 * Counts non-empty rows in \PhpOffice\PhpSpreadsheet\Spreadsheet spreadsheet
 	 *
 	 * @param string $ps_xlsx absolute path to spreadsheet
 	 * @param null|string $ps_sheet optional sheet name to use for counting
@@ -1328,15 +1377,15 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	# ---------------------------------------------------------------------
 	/**
 	 * Get content from cell as trimmed string
-	 * @param PHPExcel_Worksheet $po_sheet
+	 * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $po_sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
-	 * @throws PHPExcel_Exception
+	 * @throws \PhpOffice\PhpSpreadsheet\Exception
 	 * @return string the trimmed cell content
 	 */
 	function caPhpExcelGetCellContentAsString($po_sheet, $pn_row_num, $pm_col) {
 		if(!is_numeric($pm_col)) {
-			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col);
 		}
 
 		$vs_cache_key = spl_object_hash($po_sheet)."/{$pm_col}/{$pn_row_num}";
@@ -1352,24 +1401,24 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	# ---------------------------------------------------------------------
 	/**
 	 * Get date from Excel sheet for given column and row. Convert Excel date to format acceptable by TimeExpressionParser if necessary.
-	 * @param PHPExcel_Worksheet $po_sheet The work sheet
+	 * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $po_sheet The work sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
 	 * @param int $pn_offset Offset to adf to the timestamp (can be used to fix timezone issues or simple to move dates around a little bit)
 	 * @return string|null the date, if a value exists
 	 */
-	function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col, $pn_offset=0) {
-		if(!is_int($pn_offset)) { $pn_offset = 0; }
+	function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col, $pn_offset=1) {
+		if(!is_int($pn_offset)) { $pn_offset = 1; }
 
 		if(!is_numeric($pm_col)) {
-			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col);
 		}
 
 		$o_val = $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
 		$vs_val = trim((string)$o_val);
 
 		if(strlen($vs_val)>0) {
-			$vn_timestamp = PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_val->getValue())) + $pn_offset;
+			$vn_timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_val->getValue())) + $pn_offset;
 			if (!($vs_return = caGetLocalizedDate($vn_timestamp, array('dateFormat' => 'iso8601', 'timeOmit' => false)))) {
 				$vs_return = $vs_val;
 			}
@@ -1382,14 +1431,14 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	# ---------------------------------------------------------------------
 	/**
 	 * Get raw cell from Excel sheet for given column and row
-	 * @param PHPExcel_Worksheet $po_sheet The work sheet
+	 * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $po_sheet The work sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
-	 * @return PHPExcel_Cell|null the cell, if a value exists
+	 * @return \PhpOffice\PhpSpreadsheet\Cell\Cell|null the cell, if a value exists
 	 */
 	function caPhpExcelGetRawCell($po_sheet, $pn_row_num, $pm_col) {
 		if(!is_numeric($pm_col)) {
-			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+			$pm_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pm_col);
 		}
 
 		return $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);

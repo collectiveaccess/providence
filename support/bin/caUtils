@@ -84,6 +84,7 @@
 	$va_available_cli_opts = array_merge(array(
 			"hostname-s" => 'Hostname of installation. If omitted default installation is used.',
 			"setup-s" => 'Specify the path to an alternate setup.php.',
+			"quiet" => 'Do not emit headers and copyright information.'
 		), $va_command_opts);
 
 	try {
@@ -96,10 +97,12 @@
 	if ($vs_hostname = $o_opts->getOption('hostname')) {
 		$_SERVER['HTTP_HOST'] = $vs_hostname;
 	}
+	
+	$quiet = (bool)$o_opts->getOption('quiet');
 
 	$va_args = $o_opts->getRemainingArgs();
 
-	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2020 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
+	$vs_app_heading = $quiet ? '' : CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2020 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 
 	print $vs_app_heading;
 

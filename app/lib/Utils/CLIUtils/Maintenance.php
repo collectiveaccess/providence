@@ -1467,7 +1467,8 @@
 				$va_sources[] = $vs_source;
 			}
 
-			ca_data_importers::importDataFromSource(join(',', $va_sources), $vs_mapping, array('format' => 'ULAN', 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level));
+			$t_importer = new ca_data_importers();
+			$t_importer->importDataFromSource(join(',', $va_sources), $vs_mapping, array('format' => 'ULAN', 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level));
 
 			return true;
 		}
@@ -1980,7 +1981,7 @@
 			        }
 			        
 			        while($qr_res->nextHit()) {
-			            $va_value_list = $qr_res->get("{$vs_table_name}.{$vs_root_code}", ["returnWithStructure" => true]);
+			            $va_value_list = $qr_res->get("{$vs_table_name}.{$vs_root_code}", ['returnWithStructure' => true, 'convertCodesToDisplayText' => true]);
 			            foreach($va_value_list as $vn_row_id => $va_values_by_attribute_id) {
 			                CLIUtils::addMessage(_t('Processing row %1 for %2.%3', $vn_row_id, $vs_root_code, $va_element['element_code']));
 			                foreach($va_values_by_attribute_id as $vn_attr_id => $va_values) {

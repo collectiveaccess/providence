@@ -485,9 +485,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 				$this->properties["typename"] = $this->handle->getimageformat();
-				
+
 				$this->_gmagickOrient();
-				
 				$this->ohandle = is_object($this->handle) ? clone $this->handle : null;
 				return 1;
 			}
@@ -1102,7 +1101,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function reset() {
 		if ($this->ohandle) {
 			$this->handle = is_object($this->ohandle) ? clone $this->ohandle : null;
-				
+
 			# load image properties
 			$va_tmp = $this->handle->getimagegeometry();
 			$this->properties["width"] = $va_tmp['width'];

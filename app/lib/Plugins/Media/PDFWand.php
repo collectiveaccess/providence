@@ -61,6 +61,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	var $ops_imagemagick_path;
 	var $ops_graphicsmagick_path;
 	
+	var $metadata = [];
+	
 	var $info = array(
 		"IMPORT" => array(
 			"application/pdf" 					=> "pdf"
@@ -324,7 +326,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	 * @return Array Extracted metadata
 	 */
 	public function getExtractedMetadata() {
-		return array();
+		return $this->metadata;
 	}
 	# ------------------------------------------------
 	public function read ($ps_filepath, $mimetype="", $options=null) {
@@ -346,6 +348,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		
 		$this->filepath = $ps_filepath;
+		
+		$this->metadata = caExtractMetadataWithExifTool($ps_filepath);
 		
 		
 		// Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
@@ -474,10 +478,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			$this->postError(1655, _t("Invalid transformation %1", $ps_operation), "WLPlugPDFWand->transform()");
 			return false;
 		}
-		
+
 		# get parameters for this operation
-		$sparams = $this->info["TRANSFORMATIONS"][$ps_operation];
-		
 		$this->properties["version_width"] = $w = $pa_parameters["width"];
 		$this->properties["version_height"] = $h = $pa_parameters["height"];
 		$cw = $this->get("width");
@@ -832,15 +834,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if (!isset($pa_options[$vs_k])) { $pa_options[$vs_k] = null; }
 		}
 		
-		$vn_viewer_width = intval($pa_options['viewer_width']);
-		if ($vn_viewer_width < 100) { $vn_viewer_width = 400; }
-		$vn_viewer_height = intval($pa_options['viewer_height']);
-		if ($vn_viewer_height < 100) { $vn_viewer_height = 400; }
-		
-		if (!($vs_id = isset($pa_options['id']) ? $pa_options['id'] : $pa_options['name'])) {
-			$vs_id = '_pdf';
-		}
-		
 		if(preg_match("/\.pdf\$/", $ps_url)) {
 			if ($vs_poster_frame_url =	$pa_options["poster_frame_url"]) {
 				$vs_poster_frame = "<img src='{$vs_poster_frame_url}'/ alt='"._t("Click to download document")." title='"._t("Click to download document")."''>";
@@ -848,7 +841,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				$vs_poster_frame = _t("View PDF document");
 			}
 			
-			return $vs_buf;
+			return $vs_poster_frame;
 		} else {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!is_array($pa_properties)) { $pa_properties = array(); }
@@ -863,4 +856,3 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 }
-?>

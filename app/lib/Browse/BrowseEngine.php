@@ -990,7 +990,8 @@
 			$va_facet_with_content = $this->opo_ca_browse_cache->getFacets();
 
 			$vs_facet_group = $this->getFacetGroup();
-
+	
+			unset($va_facets['_search']);
 			foreach($va_facets as $vs_facet_name => $va_facet_info) {
 				if ($vs_facet_group) {
 					if (!(isset($va_facet_info['facet_groups']) && is_array($va_facet_info['facet_groups']) && in_array($vs_facet_group, $va_facet_info['facet_groups']))) {
@@ -2781,8 +2782,6 @@
 				foreach($va_facets as $vs_facet_name) {
 					$va_facet_info = $this->getInfoForFacet($vs_facet_name);
 					if (
-						(isset($va_criteria[$vs_facet_name])) // && isset($va_facet_info['multiple']) && $va_facet_info['multiple']) // facets supporting multiple selection always have content
-						|| 
 						$this->getFacet($vs_facet_name, array_merge($pa_options, array('checkAvailabilityOnly' => true)))
 					) {
 						$va_facets_with_content[$vs_facet_name] = true;
@@ -3711,8 +3710,26 @@
 						'INNER JOIN '.(!$vb_is_relative_to_parent ? "{$vs_browse_table_name} ON {$vs_browse_table_name}." : "{$vs_browse_table_name} AS parent ON parent.").$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($vs_browse_table_num)
 					);
 
+					$class = get_class($this);
+
 					$va_wheres = array();
 					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
+						$c = $this->getCriteria();
+						$last_facet = array_pop(array_keys($c));
+						if (($ps_facet_name === $last_facet) && $va_facet_info['multiple'] && (is_array($c[$ps_facet_name]) && sizeof($c[$ps_facet_name]))) {
+							// For facets with the "multiple" option set, we must generate the facet based upon the browse _without_ any options selected
+							// (since they're all potentially valid)
+							array_pop($c);
+							$b = new $class();
+							foreach($c as $f => $x) {
+								$b->addCriteria($f, array_keys($x));
+							}
+							$b->execute();
+							$adj_results = $b->getResults()->getAllFieldValues($t_subject->primaryKey(true));
+							if(is_array($adj_results) && (sizeof($adj_results) > 0)) { 
+								$va_results = $adj_results; 
+							}
+						}
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 
@@ -3767,11 +3784,42 @@
 
 					if ($vb_check_availability_only) {
 						// exclude criteria values
+						$params = [$vn_element_id];
 						$vs_criteria_exclude_sql = '';
-						if (is_array($va_criteria) && sizeof($va_criteria)) {
-							$vs_criteria_exclude_sql = ' AND (ca_attribute_values.value_longtext1 NOT IN ('.join(", ", caQuoteList(array_keys($va_criteria))).')) ';
-						}
+						
 
+						if(is_array($va_suppress_values = caGetOption(['suppress', 'exclude_values'], $va_facet_info, null))) {
+							$suppress_null = (sizeof(array_filter($va_suppress_values, function($v) { return trim(strtolower($v)) === 'null'; })) > 0);
+							$va_suppress_values = array_filter($va_suppress_values, function($v) { return trim(strtolower($v)) !== 'null'; }); // remove 
+							
+							if ((int)$vn_element_type === 3) { 
+								if (is_array($va_criteria) && sizeof($va_criteria)) {
+									$params[] = array_keys($va_criteria);
+									$vs_criteria_exclude_sql .= ' AND (ca_attribute_values.item_id NOT IN (?)) ';
+								}
+								// list
+								$item_ids = caMakeItemIDList($t_element->get('list_id'), $va_suppress_values);
+								if (sizeof($item_ids) > 0){ 
+									$params[] = $item_ids;
+									$vs_criteria_exclude_sql .= " AND ca_attribute_values.item_id IN (?)";
+								}
+								if($suppress_null) {
+									$vs_criteria_exclude_sql .= " AND ca_attribute_values.item_id IS NOT NULL";
+								}
+							} else {
+								if (is_array($va_criteria) && sizeof($va_criteria)) {
+									$params[] = array_keys($va_criteria);
+									$vs_criteria_exclude_sql .= ' AND (ca_attribute_values.value_longtext1 NOT IN (?)) ';
+								}
+								if (sizeof($va_suppress_values) > 0){ 
+									$params[] = $va_suppress_values;
+									$vs_criteria_exclude_sql .= " AND ca_attribute_values.value_longtext1 IN (?)";
+								}
+								if($suppress_null) {
+									$vs_criteria_exclude_sql .= " AND ca_attribute_values.value_longtext1 IS NOT NULL";
+								}
+							}
+						}
 						$vs_sql = "
 							SELECT 1
 							FROM ca_attributes
@@ -3780,8 +3828,7 @@
 							WHERE
 								(ca_attribute_values.element_id = ?) {$vs_criteria_exclude_sql} {$vs_where_sql}
 							LIMIT 2";
-						//print $vs_sql;
-						$qr_res = $this->opo_db->query($vs_sql,$vn_element_id);
+						$qr_res = $this->opo_db->query($vs_sql,$params);
 
 						return ((int)$qr_res->numRows() > 1) ? true : false;
 					} else {

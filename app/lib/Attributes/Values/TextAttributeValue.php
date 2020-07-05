@@ -97,6 +97,14 @@
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your text to be locale-specific. (The default is to be.)')
 		),
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -375,7 +383,8 @@
  			}
  			$vs_element .= caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
- 				$va_opts
+ 				$va_opts,
+ 				['textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null)]
  			);
 
 			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {

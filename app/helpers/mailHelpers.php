@@ -115,7 +115,7 @@
 		
 		try {
 			if($o_config->get('smtp_use_sendmail_transport')){
-				$vo_tr = new Zend_Mail_Transport_Sendmail($o_config->get('smtp_server'), $va_smtp_config);
+				$vo_tr = new Zend_Mail_Transport_Sendmail($va_smtp_config);
 			} else {
 				$vo_tr = new Zend_Mail_Transport_Smtp($o_config->get('smtp_server'), $va_smtp_config);
 			}
@@ -154,11 +154,7 @@
 			
 			if (is_array($pa_bcc) && sizeof($pa_bcc)) {
 				foreach($pa_bcc as $vs_to_email => $vs_to_name) {
-					if (is_numeric($vs_to_email)) {
-						$o_mail->addBcc($vs_to_name, $vs_to_name);
-					} else {
-						$o_mail->addBcc($vs_to_email, $vs_to_name);
-					}
+					$o_mail->addBcc(is_numeric($vs_to_email) ? $vs_to_name : $vs_to_email);
 				}
 			}
 			

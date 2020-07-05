@@ -2,7 +2,7 @@
   "require-dev": {
     "caseyamcl/phpoaipmh": "^3.0",
     "collectiveaccess/service-wrapper": "v1.1.3",
-    "dompdf/dompdf": "~0.8",
+    "dompdf/dompdf": "~0.8.5",
     "easyrdf/easyrdf": "0.9.*",
     "elasticsearch/elasticsearch": "~5.0",
     "ezyang/htmlpurifier": "~4.9",
@@ -24,17 +24,18 @@
     "opis/json-schema": "^1.0",
     "pear/file_marc": "~1.2",
     "php-http/guzzle6-adapter": "~1.1.1",
-    "phpoffice/phpexcel": "v1.8.1",
+    "phpoffice/phpspreadsheet": "v1.10",
     "phpoffice/phppresentation": "dev-master",
     "phpoffice/phpword": "v0.15.*",
     "phpunit/phpunit": "8.5",
-    "scholarslab/bagit": "~0.2",
+    "scholarslab/bagit": "~0.3.1",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "tedivm/stash": "0.14.*",
     "wamania/php-stemmer": "*"
   },
   "require": {
     "ext-iconv": "*",
-    "ext-simplexml": "*"
+    "ext-simplexml": "*",
+    "phpseclib/phpseclib": "^2.0"
   }
 }

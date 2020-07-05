@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2019 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1289,12 +1289,14 @@
 		 * @param array $pa_options
 		 *		dontOutputLevel = 
 		 *		dontPrint =
+		 *		log = KLogger instance to log errors to. [Default is null]
 		 *
 		 * @return string
 		 */
 		static function postError($po_object, $ps_message, $pn_level=__CA_DATA_IMPORT_ERROR__, $pa_options=null) {
 			if (!$po_object->numErrors()) { return null; }
 			$vs_error = '';
+			$log = caGetOption('log', $pa_options, null);
 			
 			if (!isset($pa_options['dontOutputLevel']) || !$pa_options['dontOutputLevel']) {
 				switch($pn_level) {
@@ -1314,6 +1316,21 @@
 			
 			if (!isset($pa_options['dontPrint']) || !$pa_options['dontPrint']) {
 				print "{$vs_error}\n";
+			}
+			
+			if (isset($pa_options['log']) || ($log = $pa_options['log'])) {
+				switch($pn_level) {
+					case __CA_DATA_IMPORT_NOTICE__:
+						if ($log) { $log->logNotice($vs_error); }
+						break;
+					case __CA_DATA_IMPORT_WARNING__:
+						if ($log) { $log->logWarn($vs_error); }
+						break;
+					default:
+					case __CA_DATA_IMPORT_ERROR__:
+						if ($log) { $log->logError($vs_error); }
+						break;
+				}
 			}
 			
 			return $vs_error;

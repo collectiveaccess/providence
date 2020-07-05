@@ -32,6 +32,7 @@
 	$t_instance 		= $this->getVar('t_instance');
 	$t_item 			= $this->getVar('t_item');				// list item
 	$t_item_rel 		= $this->getVar('t_item_rel');
+	$t_subject 			= $this->getVar('t_subject');
 	$va_settings 		= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
@@ -50,6 +51,10 @@
 	$va_initial_values	= $this->getVar('initialValues');
 	
 	$vn_browse_last_id = (int)Session::getVar('ca_list_items_'.$vs_id_prefix.'_browse_last_id');
+	
+	// Dyamically loaded sort ordering
+	$loaded_sort 			= $this->getVar('sort');
+	$loaded_sort_direction 	= $this->getVar('sortDirection');
 
 	// params to pass during occurrence lookup
 	$va_lookup_params = array(
@@ -57,23 +62,25 @@
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
 		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
 	);
-
-	if(caGetOption('showCount', $va_settings, false)) { print ($count = $this->getVar('relationship_count')) ? "({$count})" : ''; }
 	
+	$count = $this->getVar('relationship_count');
+	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
+
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
 	
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";	
 	if(sizeof($this->getVar('initialValues'))) {
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 	}
 	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
 		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
@@ -294,6 +301,7 @@
 ?>
 		
 		</div>
+		<div class="caNewItemList"></div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
@@ -342,7 +350,7 @@
 			}
 		});
 		
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: ['label', 'type_id', 'id'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
@@ -352,6 +360,7 @@
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			newItemListClassName: 'caNewItemList',
 			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
@@ -373,6 +382,14 @@
 			lastItemColor: '<?php print $vs_last_color; ?>',
 			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
+			loadedSort: <?= json_encode($loaded_sort); ?>,
+			loadedSortDirection: <?= json_encode($loaded_sort_direction); ?>,
+			
+			totalValueCount: <?php print (int)$count; ?>,
+			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_list_items')); ?>',
+			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			loadSize: <?php print $num_per_page; ?>,
+			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
@@ -385,7 +402,7 @@
 <?php
 	} else {
 ?>	
-		caUI.initChecklistBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+		caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: ['item_id'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
@@ -398,7 +415,12 @@
 			maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
 			defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
 			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+			
+			totalValueCount: <?php print (int)$count; ?>,
+			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_list_items')); ?>',
+			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			loadSize: <?php print $num_per_page; ?>,
 		});
 <?php
 	} 

@@ -239,7 +239,7 @@ class RequestHTTP extends Request {
 		return $va_locale_ids;
 	}
 	# -------------------------------------------------------
-	function isAjax() {
+	public static function isAjax() {
 		return ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=="XMLHttpRequest"));
 	}
 	# -------------------------------------------------------
@@ -528,15 +528,16 @@ class RequestHTTP extends Request {
 	/**
 	 *
 	 */
-	public function getParameter($pa_name, $pn_type, $ps_http_method=null, $pa_options=array()) {
+	public function parameterExists($pa_name, $ps_http_method=null, $pa_options=array()) {
 		if(!is_array($pa_name)) { $pa_name = [$pa_name]; }
 		
+		$vm_val = null;
 		foreach($pa_name as $ps_name) {
 			if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
 				$vm_val = $this->opa_params[$ps_http_method][$ps_name];
 			} else {
 				foreach(array('GET', 'POST', 'PATH', 'COOKIE', 'REQUEST') as $http_method) {
-					$vm_val = (isset($this->opa_params[$http_method]) && isset($this->opa_params[$http_method][$ps_name])) ? $this->opa_params[$http_method][$ps_name] : null;
+					$vm_val = (array_key_exists($http_method, $this->opa_params) && array_key_exists($ps_name, $this->opa_params[$http_method])) ? $this->opa_params[$http_method][$ps_name] : null;
 					if (isset($vm_val)) {
 						break;
 					}
@@ -545,6 +546,15 @@ class RequestHTTP extends Request {
 			
 			if (is_array($vm_val) || (strlen($vm_val) > 0)) { break; } 
 		}
+		
+		return $vm_val;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getParameter($pa_name, $pn_type, $ps_http_method=null, $pa_options=array()) {
+		$vm_val = $this->parameterExists($pa_name, $ps_http_method, $pa_options);
 		if (!isset($vm_val)) { return ""; }
 		
 		$vm_val = str_replace("\0", '', $vm_val);

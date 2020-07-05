@@ -34,7 +34,6 @@
    *
    */
    require_once(__CA_LIB_DIR__."/Logging/KLogger/KLogger.php");
-   
 	# ---------------------------------------
 	/**
 	 * Return KLogger instance for import log
@@ -62,7 +61,7 @@
 	 *
 	 * @param array $options Options include:
 	 *
-	 *                       logDirectory = Directory containing logs. [Default is to use app.conf $ps_opt_name value]
+	 *                       logDirectory = Directory containing logs. [Default is to use app.conf $opt_name value]
 	 *						 logName = Optional log name. [Default is to use a generic log name]
 	 *
 	 *                       logLevel = KLogger numeric constant of string code for log level. Valid string codes
@@ -77,6 +76,14 @@
 	 * @throws ApplicationException
 	 */
 	function caGetLogger($options=null, $opt_name=null) {
+		$log_dir = caGetLogPath($options, $opt_name);
+		return new KLogger($log_dir, caLogLevelStringToNumber(caGetOption('logLevel', $options, 'INFO')), caGetOption('logName', $options, null));
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetLogPath($options=null, $opt_name=null) {
 		$config = Configuration::load();
 		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $config->get($opt_name)))) {
 			$log_dir = '.';
@@ -92,12 +99,7 @@
 				throw new ApplicationException(_t("Cannot write log to %1 or temporary directory %2. Please check directory permissions and retry.", $log_dir, $tmp_dir));
 			}
 		}
-		
-		$log = new KLogger($log_dir, caLogLevelStringToNumber(caGetOption('logLevel', $options, 'INFO')), caGetOption('logName', $options, null));
-		if ($log_dir !== $orig_log_dir) {
-			$log->logInfo(_t('Logging to temporary directory %1 because configured log directory %2 is not writeable', $log_dir, $orig_log_dir));
-		}
-		return $log;
+		return $log_dir;
 	}
 	# ---------------------------------------
 	/**

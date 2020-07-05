@@ -2041,7 +2041,9 @@ class TimeExpressionParser {
 				break;
 			case 3:
 			case 4:
-				$vn_hours = $va_tmp[0]; $vn_minutes = $va_tmp[1]; $vn_seconds = $va_tmp[2] + (intval($va_tmp[3]) / pow(10, strlen((intval($va_tmp[3])))));
+				$vn_hours = (int)$va_tmp[0]; 
+				$vn_minutes = (int)$va_tmp[1]; 
+				$vn_seconds = (int)$va_tmp[2] + (is_numeric($va_tmp[3]) ? (intval($va_tmp[3]) / pow(10, strlen((intval($va_tmp[3]))))) : 0);
 				if (is_numeric($vn_hours) && ($vn_hours == intval($vn_hours)) && ($vn_hours >= 0) && ($vn_hours <= 23)) {
 					if (is_numeric($vn_minutes) && ($vn_minutes == intval($vn_minutes)) && ($vn_minutes >= 0) && ($vn_minutes <= 59)) {
 						if (is_numeric($vn_seconds) && ($vn_seconds >= 0) && ($vn_seconds <= 59)) {
@@ -2432,7 +2434,7 @@ class TimeExpressionParser {
 	 *		dateTimeConjunction (string) [default is first in lang. config]
 	 *		showADEra (true|false) [default is false]
 	 *		uncertaintyIndicator (string) [default is first in lang. config]
- 	 *		dateFormat		(text|delimited|iso8601)	[default is text]
+ 	 *		dateFormat		(text|delimited|iso8601|yearOnly)	[default is text]
 	 *		dateDelimiter	(string) [default is first delimiter in language config file]
 	 *		circaIndicator	(string) [default is first indicator in language config file]
 	 *		beforeQualifier	(string) [default is first indicator in language config file]
@@ -2590,6 +2592,9 @@ class TimeExpressionParser {
 			
 			// start is same as end so just output start date
 			if ($va_dates['start'] == $va_dates['end']) {
+				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'yearOnly'))) { 
+					return $va_start_pieces['year'];
+				}
 				if ($pa_options['start_as_iso8601'] || $pa_options['end_as_iso8601']) {
 					return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 				}
@@ -2598,6 +2603,9 @@ class TimeExpressionParser {
 				} else {
 					return $this->_dateTimeToText($va_start_pieces, $pa_options);
 				}
+			} elseif ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'yearOnly'))) { 
+				$va_range_conjunctions = $this->opo_language_settings->getList('rangeConjunctions');
+				return $va_start_pieces['year']." ".$va_range_conjunctions[0]." ".$va_end_pieces['year'];
 			}
 			
 		
@@ -2979,7 +2987,7 @@ class TimeExpressionParser {
 			} else {															// dates in different years
 			
 				// Try to infer qualified ranges from years (Eg. 1700 - 1720  => "early 18th century")
-				if (is_array($qualified_range_info = self::inferRangeQualifier(['start' => $va_start_pieces, 'end' => $va_end_pieces], $pa_options))) {
+				if (!$this->opo_datetime_settings->get('dontInferQualifiedRanges') && is_array($qualified_range_info = self::inferRangeQualifier(['start' => $va_start_pieces, 'end' => $va_end_pieces], $pa_options))) {
 					return $qualified_range_info['value'];
 				}
 				
@@ -3495,10 +3503,11 @@ class TimeExpressionParser {
 	 * @param array $pa_options Options include:
 	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
 	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
-	 *
+	 *		dateFormat = If set to "yearOnly" will return bare year. [Default is null]
 	 * @return string
 	 */
 	public function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
+		if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'yearOnly'))) { return $pa_date['year']; }
 		if (!$pa_date['month']) { $pa_date['month'] = ($ps_mode == 'END') ? 12 : 1; }
 		if (!$pa_date['day']) { $pa_date['day'] = ($ps_mode == 'END') ? 31 : 1; }
 		
