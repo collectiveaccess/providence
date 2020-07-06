@@ -2622,7 +2622,7 @@ class BaseEditorController extends ActionController {
 
 		$stored_files = [];
 		
-		$user_dir = caGetUserMediaDirectoryPath($user_id);
+		$user_dir = caGetMediaUploadPathForUser($user_id);
 		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
 
 		if(is_array($_FILES['files'])) {

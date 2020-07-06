@@ -218,26 +218,19 @@
 			if(!Datamodel::tableExists($vs_import_target)) {
 				$vs_import_target = 'ca_objects';
 			}
- 			$vs_directory = $this->request->getParameter('directory', pString);
- 			
- 			$vs_batch_media_import_root_directory = $this->request->config->get('batch_media_import_root_directory');
- 			 			
- 			if (preg_match("!/\.\.!", $vs_directory) || preg_match("!\.\./!", $vs_directory)) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
- 			if (!is_dir($vs_batch_media_import_root_directory.'/'.$vs_directory)) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
+ 			$directory = $this->request->getParameter('directory', pString);
+
+		    if (!caIsValidMediaImportDirectory($directory, ['user_id' => $this->request->getUserID()])) {
+			    $this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
+			    return;
+		    }
+
  			$va_options = array(
  				'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 
  				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 
  				'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger),
  				
- 				'importFromDirectory' => $vs_batch_media_import_root_directory.'/'.$vs_directory,
+ 				'importFromDirectory' => $directory,
  				'includeSubDirectories' => (bool)$this->request->getParameter('include_subdirectories', pInteger),
  				'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
@@ -277,9 +270,8 @@
  					$va_options['relationship_type_id_for_'.$vs_rel_table] = $this->request->getParameter('relationship_type_id_for_'.$vs_rel_table, pString);
  				}
  			}
- 			
  			$va_last_settings = $va_options;
- 			$va_last_settings['importFromDirectory'] = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_last_settings['importFromDirectory']); 
+ 			$va_last_settings['importFromDirectory'] = $va_last_settings['importFromDirectory'];
  			$this->request->user->setVar('batch_mediaimport_last_settings', $va_last_settings);
  			
  			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
@@ -410,8 +402,8 @@
  		public function GetDirectoryLevel() {
  			$ps_id = $this->request->getParameter('id', pString);
  			$pn_max = $this->request->getParameter('max', pString);
- 			$vs_root_directory = MediaUploadManager::getMediaPathForUser($this->request->getUserID());
- 			$global_import_root_directory = $this->request->config->get('batch_media_import_root_directory');
+ 			$user_import_root_directory = caGetMediaUploadPathForUser($this->request->getUserID());
+ 			$shared_import_root_directory = caGetSharedMediaUploadPath();
  			
  			$va_level_data = array();
  			
@@ -433,10 +425,10 @@
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
 					
-					$va_level_data["{$vs_k}|{$vn_i}"] = $va_file_list = $this->_getDirectoryListing([$vs_root_directory.'/'.$vs_directory, $global_import_root_directory.'/'.$vs_directory], false, 20, (int)$vn_start, (int)$pn_max);
+					$va_level_data["{$vs_k}|{$vn_i}"] = $va_file_list = $this->_getDirectoryListing([$user_import_root_directory.'/'.$vs_directory, $shared_import_root_directory.'/'.$vs_directory], false, 20, (int)$vn_start, (int)$pn_max);
 					$va_level_data["{$vs_k}|{$vn_i}"]['_primaryKey'] = 'name';
 					
-					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$vs_directory, false, false);
+					$va_counts = caGetDirectoryContentsCount($user_import_root_directory.'/'.$vs_directory, false, false);
 					$va_level_data["{$vs_k}|{$vn_i}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
 					$vn_i++;
  				}
@@ -463,11 +455,11 @@
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
 
-					$va_file_list = $this->_getDirectoryListing([$vs_root_directory.'/'.$ps_directory, $global_import_root_directory.'/'.$ps_directory], false, 20, (int)$pn_start, (int)$pn_max);
+					$va_file_list = $this->_getDirectoryListing([$user_import_root_directory.'/'.$ps_directory, $shared_import_root_directory.'/'.$ps_directory], false, 20, (int)$pn_start, (int)$pn_max);
 					$va_level_data["{$vs_k}|{$vn_level}"] = $va_file_list;
 					$va_level_data["{$vs_k}|{$vn_level}"]['_primaryKey'] = 'name';
 					
-					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_directory, false, false);
+					$va_counts = caGetDirectoryContentsCount($user_import_root_directory.'/'.$ps_directory, false, false);
 					$va_level_data["{$vs_k}|{$vn_level}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
 				}
 			}
@@ -503,31 +495,23 @@
  		 */
  		public function UploadFiles() {
  			$ps_directory = $this->request->getParameter('path', pString);
- 			$vs_batch_media_import_root_directory = $this->request->config->get('batch_media_import_root_directory');
- 			
- 			if (preg_match("!/\.\.!", $ps_directory) || preg_match("!\.\./!", $ps_directory)) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
- 			if (!is_dir($vs_batch_media_import_root_directory.'/'.$ps_directory)) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
- 			$o_media = new Media();
+
+		    if (!caIsValidMediaImportDirectory($ps_directory, ['user_id' => $this->request->getUserID()])) {
+			    $this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
+			    return;
+		    }
+
  			$va_extensions = Media::getImportFileExtensions();
- 			
  			$va_response = array('path' => $ps_directory, 'uploadMessage' => '', 'skippedMessage' => '');
- 			
+
  			if (!is_writeable($vs_batch_media_import_root_directory.$ps_directory)) {
  				$va_response['error'] = _t('Cannot write file: directory %1 is not accessible', $ps_directory);
  			} else {
 				foreach($_FILES as $vs_param => $va_file) {
 					foreach($va_file['name'] as $vn_i => $vs_name) {
-						if (!in_array(strtolower(pathinfo($vs_name, PATHINFO_EXTENSION)), $va_extensions)) { 
+						if (!in_array(strtolower(pathinfo($vs_name, PATHINFO_EXTENSION)), $va_extensions)) {
 							$va_response['skipped'][$vs_name] = true;
-							continue; 
+							continue;
 						}
 						if (copy($va_file['tmp_name'][$vn_i], $vs_batch_media_import_root_directory.$ps_directory."/".$vs_name)) {
 							$va_response['copied'][$vs_name] = true;
@@ -537,12 +521,12 @@
 					}
 				}
 			}
-			
+
 			$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 file', $vn_upload_count) : _t('Uploaded %1 files', $vn_upload_count);
 			if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
 				$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 file', $vn_skip_count) : _t('Skipped %1 files', $vn_skip_count);
 			}
-			
+
  			$this->view->setVar('response', $va_response);
  			$this->render('mediaimport/file_upload_response_json.php');
  		}

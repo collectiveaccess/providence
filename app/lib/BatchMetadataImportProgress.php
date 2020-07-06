@@ -75,7 +75,7 @@
 				}
 				
 				$vs_file_input = caGetOption('fileInput', $this->opa_options, null); 
-				$vs_base_import_dir = $req->config->get('batch_media_import_root_directory');
+				$vs_base_import_dir = caGetSharedMediaUploadPath();
 				$vs_file_import_directory = caGetOption('fileImportPath', $this->opa_options, null); 
 				if (($vs_file_input === 'import') && (is_dir($vs_base_import_dir.'/'.$vs_file_import_directory))) { 
 					// grab files from import directory

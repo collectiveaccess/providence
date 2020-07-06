@@ -744,27 +744,6 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Return path to user media directory (used to temporary storage of user-uploaded media)
-	 * Will create directory if it doesn't not yet exist, unless dontCreateDirectory option is set.
-	 *
-	 * @param int $user_id
-	 * @param array $options Options include:
-	 *		dontCreateDirectory = don't create user directory if it does not exist. [Default is false]
-	 * @return string pa 
-	 */
-	function caGetUserMediaDirectoryPath(int $user_id, array $options=null) {
-	    $config = Configuration::load();
-		if (!is_writeable($user_dir = MediaUploadManager::getMediaPathForUser($user_id))) {
-			$user_dir = caGetTempDirPath()."/userMedia{$user_id}";
-		}
-		
-		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
-			@mkdir($user_dir);
-		}
-		return $user_dir;
-	}
-	# ----------------------------------------
-	/**
 	 *
 	 */
 	function caCleanUserMediaDirectory(int $user_id) {
@@ -774,7 +753,7 @@ function caFileIsIncludable($ps_file) {
 			$tmp_directory = caGetTempDirPath();
 		}
 
-		$user_dir = caGetUserMediaDirectoryPath($user_id);
+		$user_dir = caGetMediaUploadPathForUser($user_id);
 		
 		if (!($timeout = (int)$config->get('ajax_media_upload_tmp_directory_timeout'))) {
 			$timeout = 24 * 60 * 60;

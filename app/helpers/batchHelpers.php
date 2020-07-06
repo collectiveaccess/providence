@@ -466,3 +466,86 @@
         }
         return array_unique($va_matched_files);
 	}
+	# ---------------------------------------
+	/**
+	 * Test if directory path (*relative to* upload root [user or shared media import] directory) exists.
+	 * Returns path to directory if found, false if it is not valid.
+	 *
+	 * @param string $directory
+	 * @param array $options Options include:
+	 *         user = User name or numeric user_id. If provided the media upload directory for the specified user will
+	 *                       be checked. If omitted, only the shared media import directory will be checked. [Default is null]
+	 * @return string|bool
+	 */
+	function caIsValidMediaImportDirectory(string $directory, array $options=null) {
+		$config = Configuration::load();
+
+		$batch_media_import_root_directory = caGetSharedMediaUploadPath();
+		if (preg_match("!/\.\.!", $directory) || preg_match("!\.\./!", $directory)) {
+			return false;
+		}
+
+		if (is_dir($dir="{$batch_media_import_root_directory}/{$directory}")) {
+			return $dir;
+		}
+
+		if($user_id = caGetOption('user_id', $options, null)) {
+			if ($user_path = caGetMediaUploadPathForUser($user_id)) {
+				if (is_dir($dir="{$user_path}/{$directory}")) {
+					return $dir;
+				}
+			}
+		}
+		return false;
+	}
+	# ---------------------------------------
+	/**
+	 * Return path to private media upload directory for a user. If user's private directory doesn't
+	 * exist yet, it will be created.
+	 *
+	 * @param string|int $user User_id, user_name or email of user
+	 * @param array $options Options include:
+	 *     dontCreateDirectory = Don't automatically create user directory. [Default is false]
+	 * @return string Path to user directory
+	 *
+	 * @throws ApplicationException
+	 */
+	function caGetMediaUploadPathForUser($user, array $options=null) {
+		if(!($user_name = ca_users::userNameFor($user))) { return null; }
+		$config = Configuration::load();
+		$user_dir = $config->get('media_uploader_root_directory')."/{$user_name}";
+
+		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
+			if(!mkdir($user_dir)) {
+				throw new ApplicationException(_t('Cannot create user upload directory'));
+			}
+		}
+		return $user_dir;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return path to shared import directory
+	 *
+	 * @return string
+	 */
+	function caGetSharedMediaUploadPath() {
+		$config = Configuration::load();
+		return $config->get('batch_media_import_root_directory');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return paths to shared and private import directories
+	 *
+	 * @return array
+	 */
+	function caGetAvailableMediaUploadPaths($user=null) {
+		$paths = [];
+		if ($user && ($p = caGetMediaUploadPathForUser($user))) {
+			$paths[] = $p;
+		}
+		if ($p = caGetSharedMediaUploadPath()) {
+			$paths[] = $p;
+		}
+		return $paths;
+	}
+	# ------------------------------------------------------

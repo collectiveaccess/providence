@@ -94,81 +94,58 @@ class MediaUploadManager {
         return null;
     }
     # ------------------------------------------------------
-        /**
-         * Get recent uploads for user
-         *
-         *
-         */
-        static public function getRecent(array $options) {
-            $user = caGetOption('user', $options, null);
-            $limit = caGetOption('limit', $options, 10);
-
-            $sessions = [];
-            if($user_id = self::_getUserID($user)) {
-	            if ($sessions = ca_media_upload_sessions::find(['user_id' => $user_id], ['returnAs' => 'arrays'])) {
- 		            $user_dir_path = MediaUploadManager::getMediaPathForUser($user_id);
-
-	                $sessions = array_reverse(caSortArrayByKeyInValue($sessions, ['created_on']));
-	                if ($limit > 0) {
-	                    $sessions = array_slice($sessions, 0, $limit);
-	                }
-	                $sessions = array_map(function($s) use ($user_dir_path) {
-	                    $files = caUnSerializeForDatabase($s['progress']);
-	                    $files_proc = [];
-	                    if(is_array($files)) {
-		                    foreach($files as $p => $info) {
-		                        $px = str_replace("{$user_dir_path}/", "", $p);
-		                        $files_proc[$px] = $info;
-		                    }
-		                }
-	                    $s['files'] = $files_proc;
-
-	                    foreach(['created_on', 'completed_on', 'last_activity_on'] as $f) {
-	                        $s[$f] = ($s[$f] > 0) ? caGetLocalizedDate($s[$f], ['dateFormat' => 'delimited']) : null;
-	                    }
-
-	                    unset($s['user_id']);
-	                    unset($s['progress']);
-
-	                    return $s;
-	                }, $sessions);
-
-	            }
-	        }
-
-            return array_values($sessions);
-        }
-    # ------------------------------------------------------
     /**
+     * Get recent uploads for user
+     *
      *
      */
-    static private function _getUserID($user) {
-        if (array_key_exists($user, self::$s_user_cache)) {
-            return self::$s_user_cache[$user];
-        }
-         if(is_numeric($user)) {
-			if ($u = ca_users::find(['user_id' => $user], ['returnAs' => 'firstModelInstance'])) {
-				return self::$s_user_cache[$user] = $u->getPrimaryKey();
-			}
-         }
+    static public function getRecent(array $options) {
+        $user = caGetOption('user', $options, null);
+        $limit = caGetOption('limit', $options, 10);
 
-        if (!($u = ca_users::findAsInstance(['user_name' => $user]))) {
-            $u = ca_users::findAsInstance(['email' => $user]);
+        $sessions = [];
+        if($user_id = self::_getUserID($user)) {
+            if ($sessions = ca_media_upload_sessions::find(['user_id' => $user_id], ['returnAs' => 'arrays'])) {
+                $user_dir_path = caGetMediaUploadPathForUser($user_id);
+                $sessions = array_reverse(caSortArrayByKeyInValue($sessions, ['created_on']));
+                if ($limit > 0) {
+                    $sessions = array_slice($sessions, 0, $limit);
+                }
+                $sessions = array_map(function($s) use ($user_dir_path) {
+                    $files = caUnSerializeForDatabase($s['progress']);
+                    $files_proc = [];
+                    if(is_array($files)) {
+	                    foreach($files as $p => $info) {
+	                        $px = str_replace("{$user_dir_path}/", "", $p);
+	                        $files_proc[$px] = $info;
+	                    }
+	                }
+                    $s['files'] = $files_proc;
+
+                    foreach(['created_on', 'completed_on', 'last_activity_on'] as $f) {
+                        $s[$f] = ($s[$f] > 0) ? caGetLocalizedDate($s[$f], ['dateFormat' => 'delimited']) : null;
+                    }
+
+                    unset($s['user_id']);
+                    unset($s['progress']);
+
+                    return $s;
+                }, $sessions);
+
+            }
         }
-        if($u && $u->isLoaded()) {
-            return self::$s_user_cache[$user] = $u->getPrimaryKey();
-        } else {
-            throw new MediaUploadManageSessionException(_t('Invalid user_id'));
-        }
+
+        return array_values($sessions);
     }
     # ------------------------------------------------------
     /**
      *
      */
-    static public function getMediaPathForUser($user) {
-        if(!($user_id = self::_getUserID($user))) { return null; }
-        $config = Configuration::load();
-        return $config->get('media_uploader_root_directory')."/userMedia".$user_id;
+    static private function _getUserID($user) {
+    	if ($user_id = ca_users::userIDFor($user)) {
+    		return $user_id;
+	    }
+	    throw new MediaUploadManageSessionException(_t('Invalid user_id'));
     }
     # ------------------------------------------------------
 }

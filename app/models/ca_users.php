@@ -303,6 +303,20 @@ class ca_users extends BaseModel {
 	static $s_user_source_with_access_cache = [];
 
 	/**
+	 * Used by ca_users::getUserID() to cache user_id return values
+	 *
+	 * @var array
+	 */
+	static $s_user_id_cache = [];
+
+	/**
+	 * Used by ca_users::getUserName() to cache user_name return values
+	 *
+	 * @var array
+	 */
+	static $s_user_name_cache = [];
+
+	/**
 	 * List of tables that can have bundle- or type-level access control
 	 */
 	static $s_bundlable_tables = array(
@@ -2611,6 +2625,62 @@ class ca_users extends BaseModel {
 			return true;
 		}
 		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert user name or email to integer user_id. Will return user_id if a numeric user_id is passed if a user
+	 * with that user_id exists. Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return int User_id value, or null if no match was found
+	 */
+	static public function userIDFor($user) {
+		if (array_key_exists($user, self::$s_user_id_cache)) {
+			return self::$s_user_id_cache[$user];
+		}
+		if(is_numeric($user)) {
+			// $user is valid integer user_id?
+			if ($u = ca_users::find(['user_id' => (int)$user], ['returnAs' => 'firstModelInstance'])) {
+				return self::$s_user_id_cache[$user] = $u->getPrimaryKey();
+			}
+		}
+
+		if (!($u = ca_users::findAsInstance(['user_name' => $user]))) { // $user is user_name value?
+			$u = ca_users::findAsInstance(['email' => $user]);          // $user is email value?
+		}
+		if($u && $u->isLoaded()) {
+			return self::$s_user_id_cache[ $user ] = $u->getPrimaryKey();
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert user_id or email to user_name value. Will return user_name if a user_name is passed and a user
+	 * with that user_id exists. Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static public function userNameFor($user) {
+		if (array_key_exists($user, self::$s_user_name_cache)) {
+			return self::$s_user_name_cache[$user];
+		}
+		if(is_numeric($user)) {
+			// $user is valid integer user_id?
+			if ($u = ca_users::find(['user_id' => (int)$user], ['returnAs' => 'firstModelInstance'])) {
+				return self::$s_user_name_cache[$user] = $u->get('user_name');
+			}
+		}
+
+		if (!($u = ca_users::findAsInstance(['email' => $user]))) { // $user is email value?
+			$u = ca_users::findAsInstance(['user_name' => $user]);          // $user is user_name value?
+		}
+		if($u && $u->isLoaded()) {
+			return self::$s_user_name_cache[ $user ] = $u->get('user_name');
+		}
+		return null;
 	}
 	# ----------------------------------------
 	/**

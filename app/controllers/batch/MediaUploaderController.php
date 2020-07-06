@@ -73,8 +73,7 @@
  		    // TODO: check if user has upload privs
 
  		    // Create user directory if it doesn't already exist
- 		    $user_dir_path = MediaUploadManager::getMediaPathForUser($this->request->user->getUserID());
- 		    if (!file_exists($user_dir_path)) { mkdir($user_dir_path); }
+ 		    $user_dir_path = caGetMediaUploadPathForUser($this->request->user->getUserID());
 
 			// Start up server
             $server = new \TusPhp\Tus\Server('redis');  // TODO: make cache type configurable

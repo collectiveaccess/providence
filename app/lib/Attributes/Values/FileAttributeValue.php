@@ -179,7 +179,7 @@
  			
  			if ($media_prefix = caGetOption('mediaPrefix', $pa_options, null)) {
  				$config = Configuration::load();
- 				if ($batch_media_directory = $config->get('batch_media_import_root_directory')) {
+ 				if ($batch_media_directory = caGetSharedMediaUploadPath()) {
 					$va_files = caBatchFindMatchingMedia($batch_media_directory.$media_prefix, $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
 					foreach($va_files as $vs_file) {
 						if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files

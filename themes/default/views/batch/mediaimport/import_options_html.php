@@ -92,7 +92,7 @@
 			uploadProgressID: "batchProcessingTableProgressGroup",
 			uploadProgressBarID: "progressbar",
 			uploadProgressStatusID: "batchProcessingTableStatus",
-			allowDragAndDropUpload: <?php print is_writable($this->request->config->get('batch_media_import_root_directory')) ? "true" : "false"; ?>,
+			allowDragAndDropUpload: <?php print (sizeof(array_filter(caGetAvailableMediaUploadPaths(), 'is_writable')) > 0) ? "true" : "false"; ?>,
 			dragAndDropUploadUrl: "<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
 
 			initItemID: '<?php print addslashes($va_last_settings['importFromDirectory']); ?>',

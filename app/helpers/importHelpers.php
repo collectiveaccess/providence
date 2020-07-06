@@ -314,7 +314,7 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
-		$vs_batch_media_directory = Configuration::load()->get('batch_media_import_root_directory');
+		$vs_batch_media_directory = caGetSharedMediaUploadPath();
 		$ps_refinery_name = caGetOption('refineryName', $pa_options, null);
 		
 		if (is_array($pa_attributes)) {
@@ -1120,7 +1120,7 @@
 								unset($va_val['_status']);
 								break;
 							case 'ca_object_representations':
-								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
+								if (!($vs_batch_media_directory = caGetSharedMediaUploadPath())) { break; }
 							
 							    if (isset($va_val['name']) && is_array($va_val['name']) && isset($va_val['name']['name']) && $va_val['name']['name']) { 
 							        $vs_name = $va_val['name']['name'];
