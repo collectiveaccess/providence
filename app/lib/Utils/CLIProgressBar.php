@@ -26,7 +26,6 @@ class CLIProgressBar
      */
     protected static $defaults = array(
         'format' => "\r:message::padding:%.01f%% %2\$d/%3\$d ETC: %4\$s. Elapsed: %5\$s [%6\$s]",
-        'ncursesFormat' => ":message::padding:%.01f%% %2\$d/%3\$d ETC: %4\$s. Elapsed: %5\$s [%6\$s]",
         'message' => 'Running',
         'size' => 30,
         'width' => null
@@ -72,11 +71,6 @@ class CLIProgressBar
      * What's the total number of times we're going to call set 
      */
     protected static $total;
-    
-    /**
-     * Optional ncurses window to render progress bar into
-     */
-    protected static $window = null;
 
     /**
      * Show a progress bar, actually not usually called explicitly. Called by next()
@@ -157,12 +151,6 @@ class CLIProgressBar
         $return = str_replace(':message:', $message, $return);
         $return = str_replace(':padding:', $padding, $return);
 
-		if (self::$window) {
-			ncurses_mvwaddstr(self::$window, 1, 2, $return);
-			ncurses_refresh();
-			ncurses_wrefresh(self::$window);
-			return '';
-		}
         return $return;
     }
 
@@ -175,11 +163,6 @@ class CLIProgressBar
     public static function finish()
     {
         self::reset();
-        if (self::$window) {
-        	ncurses_mvwaddstr(self::$window, 1, 2, "\n");
-			ncurses_refresh();
-			ncurses_wrefresh(self::$window);
-        }
         return "\n";
     }
 
@@ -248,7 +231,7 @@ class CLIProgressBar
         self::$window =  $options['window'];
 
         self::$done = $options['done'];
-        self::$format =  (!self::$window) ? $options['format'] : $options['ncursesFormat'];
+        self::$format = $options['format'];
         self::$message = CLIProgressBar::stripReturns($options['message']);
         self::$size = $options['size'];
         self::$start = $options['start'];
@@ -376,13 +359,8 @@ class CLIProgressBar
     {
     	$height = null;
         if ($width === null) {
-        	if (self::$window) {
-        		ncurses_getmaxyx(self::$window, $width, $height);
-        		$width = 96;
-        	} else {
-				if (DIRECTORY_SEPARATOR === '/') {
-					$width = `tput cols`;
-				}
+			if (DIRECTORY_SEPARATOR === '/') {
+				$width = `tput cols`;
 			}
             if ($width < 80) {
                 $width = 80;

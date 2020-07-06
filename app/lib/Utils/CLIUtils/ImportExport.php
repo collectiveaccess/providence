@@ -455,7 +455,7 @@
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
 			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback');
 			
-			$vs_detailed_log_name = (string)$po_opts->getOption('detailed-log-name');
+			$vs_detailed_log_name = $po_opts->getOption('detailed-log-name');
 
 			$vb_dryrun = (bool)$po_opts->getOption('dryrun');
 			$vs_format = $po_opts->getOption('format');
@@ -467,7 +467,8 @@
 				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 			}
 
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, 
+			$t_importer = new ca_data_importers();
+			if (!$t_importer->importDataFromSource($vs_data_source, $vs_mapping, 
 				[	'dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 
 					'format' => $vs_format, 'showCLIProgressBar' => true, 
 					'logDirectory' => $vs_log_dir, 'logLevel' => $po_opts->getOption('log-level'), 

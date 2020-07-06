@@ -101,12 +101,12 @@
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, (sizeof($va_initial_values) > 0), _t("Number of representations: %1", sizeof($va_initial_values)));
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, (sizeof($va_initial_values) > 0), _t("Number of representations: %1", sizeof($va_initial_values)));
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// Template to generate display for existing items
@@ -384,7 +384,7 @@
 			<script type='text/javascript'>
 			    jQuery(document).ready(function() {
 			        jQuery('input.caObjectRepresentationDetailEditorElement, select.caObjectRepresentationDetailEditorElement, textarea.caObjectRepresentationDetailEditorElement').prop('disabled', true);
-			        jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').on('click', '.caObjectRepresentationBatchDetailEditorElementEnable', function(e) {
+			        jQuery('#<?php print $vs_id_prefix; ?>').on('click', '.caObjectRepresentationBatchDetailEditorElementEnable', function(e) {
 			            var n = jQuery(this).attr('name').replace("_enabled", "");
 			            jQuery('#' + n).attr('disabled', !jQuery(this).prop('checked'));
 			        }); 
@@ -582,7 +582,7 @@
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
 	
 	jQuery(document).ready(function() {
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'num_transcriptions', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,

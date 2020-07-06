@@ -30,17 +30,6 @@
  * ----------------------------------------------------------------------
  */
 
-# ---------------------------------------
-/**
- * Is ncurses library available?
- *
- * @return bool True if CLI should use ncurses
- */
-function caCLIUseNcurses() {
-	if (function_exists("ncurses_init")) { return true; }
-
-	return false;
-}
 # ---------------------------------------------------------------------
 /**
  * Log message through global Zend_Log facilities (usually set up in caSetupCLIScript())

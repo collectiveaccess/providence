@@ -1459,7 +1459,8 @@
 				$va_sources[] = $vs_source;
 			}
 
-			ca_data_importers::importDataFromSource(join(',', $va_sources), $vs_mapping, array('format' => 'ULAN', 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level));
+			$t_importer = new ca_data_importers();
+			$t_importer->importDataFromSource(join(',', $va_sources), $vs_mapping, array('format' => 'ULAN', 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level));
 
 			return true;
 		}

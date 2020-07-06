@@ -773,7 +773,11 @@ class DisplayTemplateParser {
                                         // This allows us to support specification restrictToTypes on a unit relative to a relationship type, which is 
                                         // necessary when you want to pull content from both a related record and interstitial fields while also filtering
                                         // on related record type. In this case the unit needs to be relative to the relationship.
-                                        $va_related_items = $t_instance->getRelatedItems($t_opposite->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
+                                        if(isset($va_get_options['restrictToTypes']) && is_array($va_get_options['restrictToTypes']) && sizeof($va_get_options['restrictToTypes'])) {
+                                        	$va_related_items = $t_instance->getRelatedItems($t_opposite->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
+                                        } else {
+                                        	$va_related_items = $t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
+                                        }
                                         $va_relative_ids = $va_relation_ids = array_map(function($v) { return $v['relation_id']; }, $va_related_items);
                                     } else {
                                         if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }

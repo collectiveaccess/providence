@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -174,7 +174,7 @@
 			        }
                 }
 			}
-			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false)) {
+			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false) && (sizeof($t = caExtractTagsFromTemplate($ps_placeholder)) == 1) && (array_shift($t) === $ps_placeholder)) {
 				// Placeholder is a single caret-value
 				$va_tag = explode('~', $vs_key);
 				
