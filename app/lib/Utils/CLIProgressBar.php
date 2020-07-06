@@ -227,8 +227,6 @@ class CLIProgressBar
         if (empty($options['total'])) {
             $options['total'] = 0;
         }
-        
-        self::$window =  $options['window'];
 
         self::$done = $options['done'];
         self::$format = $options['format'];
