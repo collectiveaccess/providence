@@ -6,7 +6,6 @@
 
 /*==========================================================================*/
 
-drop table ca_media_upload_sessions;
 create table if not exists ca_media_upload_sessions (
    session_id                int unsigned                   not null AUTO_INCREMENT,
    user_id                   int unsigned                   not null references ca_users(user_id),
