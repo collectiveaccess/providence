@@ -179,7 +179,6 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 				$mimetypes = $t->get("{$pathless_spec}.mimetype",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
 				$file_mod_times = $t->get("{$pathless_spec}.fileModificationTime",['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
 			   
-				$ids = $t->get("{$pathless_spec}.id", ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
 				$files = $t->get($get_spec, ['returnAsArray' => true, 'filterNonPrimaryRepresentations' => false]);
 				
 				$seen_files = [];
@@ -194,7 +193,7 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 					
 					$e = $export_filename = self::processExportFilename($export_filename_spec, [
 						'extension' => $extension,
-						'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : null, 'original_basename' => $original_basename,
+						'original_filename' => $original_basename ? "{$original_basename}.{$extension}" : "media_{$i}.{$extension}", 'original_basename' => $original_basename,
 						'filename' => "{$basename}.{$extension}", "basename" => $basename, 
 					]);
 					
