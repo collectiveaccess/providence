@@ -246,6 +246,11 @@ class ExternalExportManager {
 						
 						$this->log->logDebug(_t('[ExternalExportManager] Found %1 unique ids for target %2 using "query" value %3', sizeof($ids_from_query), $target, $query));
 					}
+					if (!is_null($access = caGetOption('access', $trigger, null)) && $search = caGetSearchInstance($target_table)) {
+						$ids_from_query = $target_table::find(['access' => $access], ['returnAs' => 'ids', 'restrictToTypes' => caGetOption('restrictToTypes', $target_info, null), 'checkAccess' => caGetOption('checkAccess', $target_info, null)]);
+						
+						$this->log->logDebug(_t('[ExternalExportManager] Found %1 unique ids for target %2 using "access" value %3', sizeof($ids_from_query), $target, $access));
+					}
 					
 					if(!is_null($ids_from_log)) { $ids = $ids_from_log; }
 					if(!is_null($ids_from_query)) {
