@@ -4219,7 +4219,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                     throw new ApplicationException(_t('Cannot view media'));
                 }
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
-					throw new ApplicationException(_t('Invalid viewer'));
+					throw new ApplicationException(_t('Invalid viewer: %1/%2', $ps_display_type, $vs_mimetype));
 				}
 
 				$vs_viewer = $vs_viewer_name::getViewerHTML(
