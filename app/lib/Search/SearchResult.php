@@ -2125,6 +2125,7 @@ class SearchResult extends BaseObject {
 		
 		$va_return_values = [];
 		
+		$include_value_ids = caGetOption('includeValueIDs', $pa_options, false);
 		$pa_exclude_idnos = caGetOption('excludeIdnos', $pa_options, []);
 		if (!is_array($pa_exclude_idnos) && $pa_exclude_idnos) { $pa_exclude_idnos = [$pa_exclude_idnos]; } 
 		
@@ -2147,11 +2148,17 @@ class SearchResult extends BaseObject {
 				}
 				
 				$vb_did_return_value = false;
+				$vb_return_value_id = ($va_path_components['components'][sizeof($va_path_components['components'])-1] === 'value_id');
 
 				foreach($va_values as $o_value) {
 					$vs_val_proc = null;
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
+					
+					if ($vb_return_value_id) {
+						$va_return_values[(int)$vn_id][] = $o_value->getValueID();
+						continue;
+					}
 					
 					if(($vn_attr_type == 0) && $va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name'])) {
 					    continue;
@@ -2225,6 +2232,9 @@ class SearchResult extends BaseObject {
 										$vb_did_return_value = true;
 										if ($pa_options['returnWithStructure']) {
 											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')][$vs_element_code] = ($vb_has_field_spec || $vb_has_hierarchy_modifier) ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+											if($include_value_ids) {
+												$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')]["{$vs_element_code}_value_id"] = $o_value->getValueID();
+											}
 										} else {
 											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = ($vb_has_field_spec || $vb_has_hierarchy_modifier) ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
 										}
@@ -2363,6 +2373,9 @@ class SearchResult extends BaseObject {
 							if ($o_value->getType() == __CA_ATTRIBUTE_VALUE_DATERANGE__ && !caGetOption('omitDateSortKey', $pa_options, false)) {  // add sortable alternate value for dates
 							    $va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code.'_sort_'] = $o_value->getDisplayValue(['sortable' => true]); // add sortable alternate representation for dates; this will be used by the SearchResult::get() "sort" option to properly sort date values
 							}
+							if($include_value_ids) {
+								$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["{$vs_element_code}_value_id"] = $o_value->getValueID();
+							}
 						} else { 
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $vs_val_proc;	
 						}
@@ -2373,6 +2386,9 @@ class SearchResult extends BaseObject {
 					// value is missing so insert blank
 					if ($pa_options['returnWithStructure']) {
 						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$va_path_components['subfield_name']] = '';
+						if($include_value_ids) {
+							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["{$vs_element_code}_value_id"] = null;
+						}
 					} else { 
 						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = '';	
 					}
@@ -2401,7 +2417,10 @@ class SearchResult extends BaseObject {
 			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
 			
 			if ($pa_options['returnWithStructure'] && $pa_options['returnBlankValues']) {
-				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
+				$va_return_values[(int)$vn_id][null][null][$e = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
+				if($include_value_ids) {
+					$va_return_values[(int)$vn_id][null][null]["{$e}_value_id"] = null;
+				}
 			} elseif ($default_value) {
 			    $va_return_values[(int)$vn_id][null][null][] = $default_value;	
 			}
@@ -2409,7 +2428,7 @@ class SearchResult extends BaseObject {
 		
 		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
 		if ($pa_options['returnWithStructure']) { 
-			return is_array($va_return_values) ? $va_return_values : array(); 
+			return is_array($va_return_values) ? $va_return_values : []; 
 		}
 		
 		//
