@@ -158,10 +158,10 @@ class Query {
 					break;
 			}
 		}
-
-		if(sizeof($va_new_search_expression_parts) == sizeof($this->getRewrittenQuery()->getSigns())) {
+		$va_signs = $this->getRewrittenQuery()->getSigns() ?: [];
+		if(sizeof($va_new_search_expression_parts) == sizeof($va_signs)) {
 			$vs_search_expression = '';
-			$va_signs = $this->getRewrittenQuery()->getSigns();
+
 			foreach($va_new_search_expression_parts as $i=> $vs_part) {
 				$vb_sign = array_shift($va_signs);
 				if($vs_part) {
