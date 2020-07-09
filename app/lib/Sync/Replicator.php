@@ -270,6 +270,8 @@ class Replicator {
 				// get filter_on_access_settings
 				if (!is_array($pa_filter_on_access_settings = $this->opo_replication_conf->get('sources')[$vs_source_key]['filter_on_access_settings']) || !sizeof($pa_filter_on_access_settings)) {
 					$pa_filter_on_access_settings = null;
+				} else {
+					$pa_filter_on_access_settings = array_map('intval', $pa_filter_on_access_settings);
 				}
 				
 				$this->get_log_service_params = [
@@ -297,12 +299,17 @@ class Replicator {
                 
 				while(true) { // use chunks of 10 entries until something happens (success/err)
 				    $this->last_log_id = null;
+				    if (sizeof($this->sent_log_ids) > 100000) {
+				    	$this->log(_t("Reset sent log list because it was over 100000 entries. Memory usage was %1", caGetMemoryUsage()), Zend_Log::DEBUG);
+				    	$this->sent_log_ids = [];
+				    }
+				    $this->log(_t("Memory usage: %1", caGetMemoryUsage()), Zend_Log::DEBUG);
 				
 					// get change log from source, starting with the log id we got above
 					$va_source_log_entries = $o_source->setEndpoint('getlog')->clearGetParameters()
 						->addGetParameter('from', $replicated_log_id)
 						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-						->addGetParameter('limit', 10)
+						->addGetParameter('limit', 100)
 						->addGetParameter('ignoreTables', $vs_ignore_tables)
 						->addGetParameter('onlyTables', $vs_only_tables)
 						->addGetParameter('includeMetadata', $vs_include_metadata)
@@ -345,7 +352,7 @@ class Replicator {
 						$vs_access = is_array($pa_filter_on_access_settings) ? join(";", $pa_filter_on_access_settings) : "";
 						$o_access_by_guid = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
 						                    ->addGetParameter('access', $vs_access)
-											->setRequestBody($z=array_unique(array_merge(caExtractArrayValuesFromArrayOfArrays($va_source_log_entries, 'guid'), array_keys($va_subject_guids))))
+											->setRequestBody(array_unique(array_merge(caExtractArrayValuesFromArrayOfArrays($va_source_log_entries, 'guid'), array_keys($va_subject_guids))))
 											->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 											->request();
 						$va_access_by_guid = $o_access_by_guid->getRawData();
@@ -360,7 +367,7 @@ class Replicator {
 						    if ($this->sent_log_ids[$vn_log_id]) { continue; }	// Don't send a source entry more than once (should never happen)
 						    
 							$vb_logged_exists_on_target = is_array($va_guid_already_exists[$va_source_log_entry['guid']]);
-						    if ($pa_filter_on_access_settings && ($va_access_by_guid[$va_source_log_entry['guid']] !== '?') && !in_array($va_access_by_guid[$va_source_log_entry['guid']], $pa_filter_on_access_settings) && !$vb_logged_exists_on_target) {
+						    if ($pa_filter_on_access_settings && ($va_access_by_guid[$va_source_log_entry['guid']] !== '?') && !in_array((int)$va_access_by_guid[$va_source_log_entry['guid']], $pa_filter_on_access_settings, true) && !$vb_logged_exists_on_target) {
 						        // skip rows for which we have no access
 						        continue;
 						    }
@@ -380,7 +387,7 @@ class Replicator {
 								    $vb_have_access_to_subject = true;
 								    if ($pa_filter_on_access_settings) {
 								        if ($va_access_by_guid[$va_source_log_subject['guid']] !== '?') {
-								            $vb_have_access_to_subject = in_array($va_access_by_guid[$va_source_log_subject['guid']], $pa_filter_on_access_settings);
+								            $vb_have_access_to_subject = in_array((int)$va_access_by_guid[$va_source_log_subject['guid']], $pa_filter_on_access_settings, true);
 								        }
 								    }
 								    
@@ -413,6 +420,18 @@ class Replicator {
                                                 continue; 
                                             } 
                                             
+                                           //  $o_access_for_missing = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
+//                                                                     ->addGetParameter('access', $vs_access)
+//                                                                     ->setRequestBody([$vs_missing_guid])
+//                                                                     ->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+//                                                                     ->request();
+//                                             $va_access_for_missing = $o_access_for_missing->getRawData();
+//                                             if ($pa_filter_on_access_settings && ($va_access_for_missing[$vs_missing_guid] !== '?') && !in_array((int)$va_access_for_missing[$vs_missing_guid], $pa_filter_on_access_settings, true)) {
+// 												// skip rows for which we have no access
+// 												$this->log(_t("[%1] Don't pull log for missing guid %2 because we have no access.", $vs_source_key, $vs_missing_guid), Zend_Log::DEBUG);
+// 												continue;
+// 											}
+                                            
                                             // Pull log for "missing" guid we need to replicate on target
                                             $this->log(_t("[%1] Fetching log for missing guid %2.", $vs_source_key, $vs_missing_guid), Zend_Log::DEBUG);
                                             $va_log_for_missing_guid = $o_source->setEndpoint('getlog')
@@ -440,13 +459,14 @@ class Replicator {
                                                 $va_access_for_dependent = $o_access_for_dependent->getRawData();
                                                 
                                                 $va_filtered_log_for_missing_guid = [];  
+                                                $this->log(_t("[%1] Missing log for %2 is %3", $vs_source_key, $vs_missing_guid, print_R($va_log_for_missing_guid, true)), Zend_Log::DEBUG);
                                                 foreach($va_log_for_missing_guid as $va_missing_entry) {
                                                     if ($va_missing_entry['log_id'] >= $replicated_log_id) { 
                                                         // Skip rows in the future - the regular sync process will take care of those. 
                                                         // All we do here is bring the target "up to date"
                                                         continue; 
                                                     }
-                                                    if ($pa_filter_on_access_settings && ($va_access_for_dependent[$va_missing_entry['guid']] !== '?') && !in_array($va_access_for_dependent[$va_missing_entry['guid']], $pa_filter_on_access_settings)) {
+                                                    if ($pa_filter_on_access_settings && ($va_access_for_dependent[$va_missing_entry['guid']] !== '?') && !in_array((int)$va_access_for_dependent[$va_missing_entry['guid']], $pa_filter_on_access_settings, true)) {
                                                         // skip rows for which we have no access
                                                         $this->log(_t("[%1] Skip %2 because we have no access.", $vs_source_key, $va_missing_entry['guid']), Zend_Log::DEBUG);
                                                         continue;
@@ -505,8 +525,8 @@ class Replicator {
                                                         $va_access_for_missing = $o_access_for_missing->getRawData();
                                                         
                                                         if (is_array($va_access_for_missing)) {
-                                                        	$missing_guids = array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return (($v == '?') || (in_array($v, $pa_filter_on_access_settings))); }));
-                                                        	$this->guids_to_skip = array_merge($this->guids_to_skip, array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return !in_array($v, $pa_filter_on_access_settings); })));
+                                                        	$missing_guids = array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return (($v == '?') || (in_array((int)$v, $pa_filter_on_access_settings, true))); }));
+                                                        	$this->guids_to_skip = array_unique(array_merge($this->guids_to_skip, array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return !in_array((int)$v, $pa_filter_on_access_settings, true); }))));
                                                     	} else {
                                                     		$this->log(_t("[%1] Failed to retrieve access values for missing GUID.", $vs_source_key),Zend_Log::DEBUG);
                                                     	}
@@ -830,17 +850,19 @@ class Replicator {
 			}
 		
 			$this->log(_t("[%1] Pushing %2 missing entries for %3.", $this->source_key, sizeof($va_source_log_entries_for_missing_guid), $vs_missing_guid), Zend_Log::DEBUG);
+			
+			ksort($va_source_log_entries_for_missing_guid, SORT_NUMERIC);
 			while(sizeof($va_source_log_entries_for_missing_guid) > 0) {
 				$va_entries = [];
 				$vn_first_missing_log_id = null;
 			
-				ksort($va_source_log_entries_for_missing_guid, SORT_NUMERIC);
 				while(sizeof($va_source_log_entries_for_missing_guid) > 0) {
 					$va_log_entry = array_shift($va_source_log_entries_for_missing_guid);
-					if ($vn_log_id == $va_log_entry['log_id']) { continue; } // don't pull in current log entry
-					if (isset($va_source_log_entries[$va_log_entry['log_id']])) { continue; } // don't push source log entry for a second time
-				
 					$vn_mlog_id = $va_log_entry['log_id'];
+					
+					if ($vn_log_id == $vn_mlog_id) { continue; } // don't pull in current log entry
+					if (isset($va_source_log_entries[$vn_mlog_id])) { continue; } // don't push source log entry for a second time
+				
 										
 					// Don't send log entry for missing guid more than once 
 					// (can happen with attributes where they can be pulled as missing on the primary record 

@@ -174,7 +174,7 @@ class ReplicationService {
 					if (!file_exists(realpath($vs_local_path))) { continue; }
 					
 					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize($vn_filesize = @filesize($vs_local_path))."]");
-					if ($vn_filesize > (1024 * 1024 * 250)) { continue; } // bail if file > 250megs
+					if ($vn_filesize > (1024 * 1024 * 750)) { continue; } // bail if file > 750megs
 					// send media to remote service endpoint
 					$o_curl = curl_init($va_target_conf['url'] . '/service.php/replication/pushMedia');
 					$o_file = new CURLFile(realpath($vs_local_path));
@@ -458,16 +458,16 @@ class ReplicationService {
 			throw new Exception('Could not move temporary file. Please check the permissions for the workspace directory.');
 		}
 
-		$va_files[$vs_checksum] = $vs_new_file_path;
 
-		// only stash 500 files tops
-		if(sizeof($va_files) > 500) {
-			$va_excess_files = array_splice($va_files, 99);
+		// only stash 2000 files tops
+		if(sizeof($va_files) > 2000) {
+			$va_excess_files = array_splice($va_files, 0, 500);	// remove first 25% of list
 
 			foreach($va_excess_files as $vs_file) {
 				@unlink($vs_file);
 			}
 		}
+		$va_files[$vs_checksum] = $vs_new_file_path;
 
 		$o_app_vars->setVar('pushMediaFiles', $va_files);
 		$o_app_vars->save();
