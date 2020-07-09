@@ -64,7 +64,8 @@
 			ca_search_indexing_queue::process();
 			exit();
 		}
-
+		caGetSystemGuid();
+		
 		// run garbage collector
 		GarbageCollection::gc();
 
