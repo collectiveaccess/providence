@@ -984,7 +984,8 @@ class SearchResult extends BaseObject {
 	 *          convertCodesToValue = Convert list item_ids to item value's (ca_list_items.item_value). If convertCodesToDisplayText is also set then it will take precedence. [Default is false]
 	 *			output = Convert list item_ids to display text in user's preferred locale ("text") or idno ("idno"). This is an easier to type alternative to the convertCodesToDisplayText and convertCodesToIdno options. [Default is null]
 	 *			sort = Array list of bundles to sort returned values on. Currently sort is only supported when getting related values via simple related <table_name> and <table_name>.related bundle specifiers. Eg. from a ca_objects results you can sort when fetching 'ca_entities', 'ca_entities.related', 'ca_objects.related', etc.. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You can also sort on attributes if returnWithStructure is set. [Default is null]
-	*
+	 *			stripTags = Remove HTML/XML tags from returned values. [Default is false]
+	 *
 	 *		[Formatting for strings only]
  	 *			toUpper = Force all values to upper case. [Default is false]
 	 *			toLower = Force all values to lower case. [Default is false]
@@ -1072,6 +1073,7 @@ class SearchResult extends BaseObject {
 		$vb_convert_codes_to_idno 			= isset($pa_options['convertCodesToIdno']) ? (bool)$pa_options['convertCodesToIdno'] : false;
 		$vb_convert_codes_to_value 			= isset($pa_options['convertCodesToValue']) ? (bool)$pa_options['convertCodesToValue'] : false;
 		
+		$vb_strip_tags			 			= isset($pa_options['stripTags']) ? (bool)$pa_options['stripTags'] : false;
 		
 		$va_exclude_values 					= (isset($pa_options['excludeValues']) && $pa_options['excludeValues']) ? is_array($pa_options['excludeValues']) ? $pa_options['excludeValues'] : [$pa_options['excludeValues']] : [];
 		$va_exclude_idnos					= (isset($pa_options['excludeIdnos']) && $pa_options['excludeIdnos']) ? is_array($pa_options['excludeIdnos']) ? $pa_options['excludeIdnos'] : [$pa_options['excludeIdnos']] : [];
@@ -1806,9 +1808,16 @@ class SearchResult extends BaseObject {
 		
 		if ($vb_convert_line_breaks) {
 			if(is_array($vm_val)) {
-				return array_map(function($v) { return !is_array($vm_val) ? nl2br($v) : $v; }, $vm_val);
+				return array_map(function($v) { return !is_array($v) ? nl2br($v) : $v; }, $vm_val);
 			} else {
 				return nl2br($vm_val);
+			}
+		}
+		if ($vb_strip_tags) {
+			if(is_array($vm_val)) {
+				return array_map(function($v) { return !is_array($v) ? strip_tags($v) : $v; }, $vm_val);
+			} else {
+				return strip_tags($vm_val);
 			}
 		}
 		

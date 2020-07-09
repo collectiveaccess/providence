@@ -331,6 +331,20 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Return id numbers for List attribute values'),
 			'description' => _t('If set, idnos are returned for List attribute values instead of primary key values. Do not combine this with convertCodesToDisplayText!')
 		);
+		
+		$va_settings['stripTags'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Remove HTML pages from output?'),
+			'description' => _t('If set, HTML/XML tags are removed from output.')
+		);
 
 		$va_settings['skipIfExpression'] = array(
 			'formatType' => FT_TEXT,
