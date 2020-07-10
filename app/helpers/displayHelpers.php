@@ -3306,9 +3306,11 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		// If no display_template set try to get a default out of the app.conf file
 		if (!$vs_template) {
-			if (is_array($va_lookup_settings = $pt_subject->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
-				if (!($vs_lookup_delimiter = $pt_subject->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
-				$vs_template = join($vs_lookup_delimiter, $va_lookup_settings);
+			if(!trim($vs_template = $pt_subject->getAppConfig()->get("{$ps_related_table}_default_editor_display_template"))) {	// use explicit setting
+				if (is_array($va_lookup_settings = $pt_subject->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {	// fall back to derive from lookup setting
+					if (!($vs_lookup_delimiter = $pt_subject->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
+					$vs_template = join($vs_lookup_delimiter, $va_lookup_settings);
+				}
 			}
 		}
 
@@ -4216,7 +4218,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                     throw new ApplicationException(_t('Cannot view media'));
                 }
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
-					throw new ApplicationException(_t('Invalid viewer'));
+					throw new ApplicationException(_t('Invalid viewer: %1/%2', $ps_display_type, $vs_mimetype));
 				}
 
 				$vs_viewer = $vs_viewer_name::getViewerHTML(

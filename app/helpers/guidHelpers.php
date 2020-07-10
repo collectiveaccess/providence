@@ -32,10 +32,17 @@
 
 require_once(__CA_LIB_DIR__.'/ApplicationVars.php');
 
-$o_app_vars = new ApplicationVars();
-if(!($vs_system_guid = $o_app_vars->getVar('system_guid'))) {
-	$vs_system_guid = caGenerateGUID();
-	$o_app_vars->setVar('system_guid', $vs_system_guid);
-	$o_app_vars->save();
+/**
+ * Ensure system GUID is set and set system-wide GUID constant
+ */
+function caGetSystemGuid() {
+	$av = new ApplicationVars();
+	if(!($system_guid = $av->getVar('system_guid'))) {
+		$system_guid = caGenerateGUID();
+		$av->setVar('system_guid', $system_guid);
+		$av->save();
+	}
+	define('__CA_SYSTEM_GUID__', $system_guid);
+	
+	return $system_guid;
 }
-define('__CA_SYSTEM_GUID__', $vs_system_guid);

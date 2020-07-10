@@ -3189,7 +3189,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				} 
 				
 				SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-                if (($fields_changed > 0) && method_exists($this, "deriveHistoryTrackingCurrentValue") && !caGetOption('dontUpdateHistoryCurrentValueTracking', $pa_options, false)) {
+                if (($fields_changed > 0) && method_exists($this, "deriveHistoryTrackingCurrentValue") && !caGetOption('dontUpdateHistoryCurrentValueTracking', $pa_options, false) && !defined('__CA_DONT_UPDATE_HISTORY_TRACKING_CACHE__')) {
                     $table = $this->tableName();
                     $this->deriveHistoryTrackingCurrentValue();
                     if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }

@@ -269,7 +269,6 @@
 				"versions|v-s" => _t("Limit re-processing to specified versions. Separate multiple versions with commas."),
 				"log|L-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log_level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
-				"quiet|q" => _t('Suppress progress messages.'),
 				"start_id|s-n" => _t('Representation id to start reloading at'),
 				"end_id|e-n" => _t('Representation id to end reloading at'),
 				"id|i-n" => _t('Representation id to reload'),

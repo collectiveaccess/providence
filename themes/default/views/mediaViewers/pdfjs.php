@@ -394,5 +394,5 @@
  	window.pdfjsContentURL = '<?= $this->getVar('media_url'); ?>';
  	window.pdfjsContainerID = 'caMediaOverlayContent';
  </script>
- <script src="/assets/pdfjs/viewer/viewer.js"></script>
+ <script src="<?= $this->request->getBaseUrlPath(); ?>/assets/pdfjs/viewer/viewer.js"></script>
  

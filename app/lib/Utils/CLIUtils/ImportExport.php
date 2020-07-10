@@ -478,7 +478,7 @@
 					'detailedLogName' => $vs_detailed_log_name
 				]
 			)) {
-				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
+				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", $t_importer->getErrorList())));
 				return false;
 			} else {
 				CLIUtils::addMessage(_t("Imported data from source %1", $vs_data_source));

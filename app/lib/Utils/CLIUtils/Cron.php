@@ -57,7 +57,6 @@
 		 */
 		public static function process_task_queueParamList() {
 			return array(
-				"quiet|q" => _t("Run without outputting progress information."),
 				"restart|r" => _t("Restart/reset unfinished tasks before queue processing. This option can be useful when the task queue script (or the whole machine) crashed and you have 'zombie' entries in your task queue. This option shouldn't interfere with any existing task queue processes that are actually running.")
 			);
 		}
@@ -157,9 +156,7 @@
 		 *
 		 */
 		public static function list_task_queueParamList() {
-			return array(
-				"quiet|q" => _t("Run without outputting progress information."),
-			);
+			return [];
 		}
 		# -------------------------------------------------------
 		/**

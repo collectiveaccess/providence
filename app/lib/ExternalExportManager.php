@@ -244,6 +244,11 @@ class ExternalExportManager {
 						
 						$this->log->logDebug(_t('[ExternalExportManager] Found %1 unique ids for target %2 using "query" value %3', sizeof($ids_from_query), $target, $query));
 					}
+					if (!is_null($access = caGetOption('access', $trigger, null)) && $search = caGetSearchInstance($target_table)) {
+						$ids_from_query = $target_table::find(['access' => $access], ['returnAs' => 'ids', 'restrictToTypes' => caGetOption('restrictToTypes', $target_info, null), 'checkAccess' => caGetOption('checkAccess', $target_info, null)]);
+						
+						$this->log->logDebug(_t('[ExternalExportManager] Found %1 unique ids for target %2 using "access" value %3', sizeof($ids_from_query), $target, $access));
+					}
 					
 					if(!is_null($ids_from_log)) { $ids = $ids_from_log; }
 					if(!is_null($ids_from_query)) {
@@ -261,6 +266,15 @@ class ExternalExportManager {
 					$this->log_id = null;
 					foreach($ids as $id) {
 						if($seen["{$target_table}/{$id}"]) { continue; }
+						
+						if ((caGetOption('requireMedia', $target_info, false, ['castTo' => 'bool']))) {
+							if ($t = $target_table::find($id, ['returnAs' => 'firstModelInstance'])) {
+								if (!is_array($rep_ids = $t->get('ca_object_representations.representation_id', ['returnAsArray' => true])) || (sizeof($rep_ids) === 0)) {
+									$this->log->logDebug(_t('[ExternalExportManager] Skipped id %1 for target %2 because media is required and no media was foound', $id, $target));
+									continue; 
+								}
+							}
+						}
 						
 						$this->log->logDebug(_t('[ExternalExportManager] Processing %1 for target %2', "{$target_table}:{$id}", $target));
 						$files = $this->process($target_table, $id, array_merge($options, ['target' => $target, 'skipTransport' => true]));
