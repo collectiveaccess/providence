@@ -467,7 +467,7 @@ class ElementsController extends BaseEditorController {
 				(SELECT `rank`,count(*) as count
 					FROM ca_metadata_elements
 					WHERE parent_id=?
-					GROUP BY `rank) as `lambda`
+					GROUP BY `rank`) as `lambda`
 			WHERE
 				count > 1;
 		",$pn_parent_id);
