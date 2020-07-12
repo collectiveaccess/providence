@@ -1068,7 +1068,7 @@ class SearchResult extends BaseObject {
 		$vb_unserialize 					= isset($pa_options['unserialize']) ? (bool)$pa_options['unserialize'] : false;
 		
 		$vb_return_url 						= isset($pa_options['returnURL']) ? (bool)$pa_options['returnURL'] : false;
-		$vb_return_path 					= isset($pa_options['returnPath']) ? (bool)$pa_options['returnPAth'] : false;
+		$vb_return_path 					= isset($pa_options['returnPath']) ? (bool)$pa_options['returnPath'] : false;
 		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 		$vb_convert_codes_to_idno 			= isset($pa_options['convertCodesToIdno']) ? (bool)$pa_options['convertCodesToIdno'] : false;
 		$vb_convert_codes_to_value 			= isset($pa_options['convertCodesToValue']) ? (bool)$pa_options['convertCodesToValue'] : false;

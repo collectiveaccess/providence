@@ -869,6 +869,11 @@ if (!$for_current_value_reindex) {
 					$va_fields_to_index 	= $va_query_info['fields_to_index'];
 					$va_cv_fields_to_index  = $va_query_info['current_value_fields_to_index'];
 					
+						
+					if ($vb_index_count = (isset($va_fields_to_index['_count']) && is_array($va_fields_to_index['_count']))) {
+						$va_counts = $this->_getInitedCountList($t_rel); 
+					}
+					
 					foreach($va_queries as $vn_i => $va_query) {
 						$va_linking_table_config = is_array($va_query_info['linking_table_config_per_query'][$vn_i]) ? $va_query_info['linking_table_config_per_query'][$vn_i] : [];
 						
@@ -903,10 +908,6 @@ if (!$for_current_value_reindex) {
 
 						if(!$qr_res->seek(0)) {
 							$qr_res = $this->opo_db->query($vs_sql, $va_params);
-						}
-						
-						if ($vb_index_count = (isset($va_fields_to_index['_count']) && is_array($va_fields_to_index['_count']))) {
-							$va_counts = $this->_getInitedCountList($t_rel); 
 						}
 						
 						while($qr_res->nextRow()) {
@@ -1097,16 +1098,16 @@ if (!$for_current_value_reindex) {
                                     }
                                 }
                             }
-                            
-                            // index counts?
-                            // * Counts are not supported for current value indexing *
-                            // * (Not an issue as the count would always be 1...) *
-                            if ($vb_index_count) {
-                                foreach($va_counts as $vs_key => $vn_count) {
-                                    $this->opo_engine->indexField($vn_related_table_num, 'COUNT', 0, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
-                                    $this->_genIndexInheritance($t_subject, $t_rel, 'COUNT', $pn_subject_row_id, 0, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
-                                }
-                            }
+						}
+					}
+				
+					// index counts?
+					// * Counts are not supported for current value indexing *
+					// * (Not an issue as the count would always be 1...) *
+					if ($vb_index_count) {
+						foreach($va_counts as $vs_key => $vn_count) {
+							$this->opo_engine->indexField($vn_related_table_num, 'COUNT', 0, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
+							$this->_genIndexInheritance($t_subject, $t_rel, 'COUNT', $pn_subject_row_id, 0, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
 						}
 					}
 				}
