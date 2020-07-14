@@ -2644,7 +2644,7 @@ class BaseEditorController extends ActionController {
 					'size' => filesize($dest_path)
 				]));
 				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
-				$stored_files[$md5] = "userMedia{$user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
+				$stored_files[$md5] = caGetMediaUploadPathForUser($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
 		}
 

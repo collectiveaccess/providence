@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,8 +31,8 @@
  */
  
  /**
-  * Implements reindexing of search indices invoked via the web UI
-  * This application dispatcher plugin ensures that the indexing starts
+  * Implements data importinvoked via the web UI
+  * This application dispatcher plugin ensures that the import starts
   * after the web UI page has been sent to the client
   */
  
@@ -44,9 +44,9 @@
 		private $request;
 		private $opa_options;
 		# -------------------------------------------------------
-		public function __construct($po_request, $pa_options=null) {
+		public function __construct($po_request, $options=null) {
 			$this->request = $po_request;
-			$this->opa_options = is_array($pa_options) ? $pa_options : array();
+			$this->opa_options = is_array($options) ? $options : array();
 		}
 		# -------------------------------------------------------
 		public function dispatchLoopShutdown() {	
@@ -67,28 +67,27 @@
 				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
 			
 				if (isset($_FILES['sourceFile']['tmp_name']) && $_FILES['sourceFile']['tmp_name']) {
-					$vs_input = $_FILES['sourceFile']['tmp_name'];
-					$vs_input_filename = $_FILES['sourceFile']['name'];
-				} elseif(!($vs_input = $req->getParameter('sourceUrl', pString))) {
-					$vs_input = $req->getParameter('sourceText', pString);
-					$vs_input_filename = null;
+					$input = $_FILES['sourceFile']['tmp_name'];
+					$input_filename = $_FILES['sourceFile']['name'];
+				} elseif(!($input = $req->getParameter('sourceUrl', pString))) {
+					$input = $req->getParameter('sourceText', pString);
+					$input_filename = null;
 				}
 				
-				$vs_file_input = caGetOption('fileInput', $this->opa_options, null); 
-				$vs_base_import_dir = caGetSharedMediaUploadPath();
-				$vs_file_import_directory = caGetOption('fileImportPath', $this->opa_options, null); 
-				if (($vs_file_input === 'import') && (is_dir($vs_base_import_dir.'/'.$vs_file_import_directory))) { 
-					// grab files from import directory
-					$vs_input = $vs_base_import_dir.'/'.$vs_file_import_directory;
-				}
+				$file_input = caGetOption('fileInput', $this->opa_options, null); 
+				$file_import_directory = caGetOption('fileImportPath', $this->opa_options, null);
 
+				if ($file_input === 'import') { 
+					// grab files from import directory
+					$input = array_map(function($v) use ($file_import_directory) { return $v.'/'.$file_import_directory; }, caGetAvailableMediaUploadPaths($req->getUserID()));
+				}
 				
-				$va_errors = BatchProcessor::importMetadata(
+				$errors = BatchProcessor::importMetadata(
 					$req, 
-					$vs_input,
+					$input,
 					$req->getParameter('importer_id', pInteger),
 					$req->getParameter('inputFormat', pString),
-					array_merge($this->opa_options, array('originalFilename' => $vs_input_filename, 'progressCallback' => 'caIncrementBatchMetadataImportProgress', 'reportCallback' => 'caUpdateBatchMetadataImportResultsReport'))
+					array_merge($this->opa_options, array('originalFilename' => $input_filename, 'progressCallback' => 'caIncrementBatchMetadataImportProgress', 'reportCallback' => 'caUpdateBatchMetadataImportResultsReport'))
 				);
 			}
 		}	

@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');
+require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
 use GuzzleHttp\Client;
 use PHPUnit\Framework\Exception;
@@ -345,6 +346,9 @@ function caFileIsIncludable($ps_file) {
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
 
+		if (!file_exists($dir)) {	// directory does not exist
+			return [];
+		}
 		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
@@ -749,13 +753,10 @@ function caFileIsIncludable($ps_file) {
 	function caCleanUserMediaDirectory(int $user_id) {
 	    // use configured directory to dump media with fallback to standard tmp directory
 	    $config = Configuration::load();
-		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
-			$tmp_directory = caGetTempDirPath();
-		}
 
 		$user_dir = caGetMediaUploadPathForUser($user_id);
 		
-		if (!($timeout = (int)$config->get('ajax_media_upload_tmp_directory_timeout'))) {
+		if (!($timeout = (int)$config->get('media_upload_tmp_directory_timeout'))) {
 			$timeout = 24 * 60 * 60;
 		}
 		
@@ -796,7 +797,8 @@ function caFileIsIncludable($ps_file) {
 		$count = 0;
 		if(is_array($dirs = scandir($tmp_directory))) {
 			foreach($dirs as $dir) {
-				if (preg_match("!^userMedia([\d]+)$!", $dir, $m)) {
+				$d = caGetUserDirectoryName();
+				if (preg_match("!^({$d})$!", $dir, $m)) {
 					caCleanUserMediaDirectory($m[1]);
 					$count++;
 				}

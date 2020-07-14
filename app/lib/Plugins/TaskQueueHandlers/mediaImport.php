@@ -68,12 +68,13 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 			$va_parameters = caUnserializeForDatabase($pa_rec["parameters"]);
 			$va_params_for_display = [];
 
-			$vs_batch_media_import_root_directory = caGetSharedMediaUploadPath();
-			$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_parameters["importFromDirectory"]); 
-			
+			$$relative_directories = [];
+			foreach(caGetAvailableMediaUploadPaths() as $d) {
+				$relative_directories[] = preg_replace("!{$d}[/]*!", "", '/'.$va_parameters["importFromDirectory"]);;
+			}
 			$va_params_for_display['importFromDirectory'] = array(
 				'label' => _t("Importing media from"),
-				'value' => "/".$vs_relative_directory
+				'values' => $relative_directories
 			);
 			
 			if (file_exists($va_parameters["importFromDirectory"])) {
@@ -118,4 +119,3 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 		}
 		# --------------------------------------------------------------------------------
 	}
-?>

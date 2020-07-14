@@ -494,40 +494,41 @@
  		 *
  		 */
  		public function UploadFiles() {
- 			$ps_directory = $this->request->getParameter('path', pString);
+ 			$directory = $this->request->getParameter('path', pString);
 
-		    if (!caIsValidMediaImportDirectory($ps_directory, ['user_id' => $this->request->getUserID()])) {
+			$upload_path = caIsValidMediaImportDirectory($directory, ['user_id' => $this->request->getUserID()]);
+		    if (!$upload_path) {
 			    $this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
 			    return;
 		    }
 
- 			$va_extensions = Media::getImportFileExtensions();
- 			$va_response = array('path' => $ps_directory, 'uploadMessage' => '', 'skippedMessage' => '');
+ 			$extensions = Media::getImportFileExtensions();
+ 			$response = array('path' => $directory, 'uploadMessage' => '', 'skippedMessage' => '', 'copied' => []);
 
- 			if (!is_writeable($vs_batch_media_import_root_directory.$ps_directory)) {
- 				$va_response['error'] = _t('Cannot write file: directory %1 is not accessible', $ps_directory);
+ 			if (!is_writeable($upload_path)) {
+ 				$response['error'] = _t('Cannot write file: directory %1 is not accessible', $directory);
  			} else {
-				foreach($_FILES as $vs_param => $va_file) {
-					foreach($va_file['name'] as $vn_i => $vs_name) {
-						if (!in_array(strtolower(pathinfo($vs_name, PATHINFO_EXTENSION)), $va_extensions)) {
-							$va_response['skipped'][$vs_name] = true;
+				foreach($_FILES as $param => $file) {
+					foreach($file['name'] as $i => $name) {
+						if (!in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), $extensions)) {
+							$response['skipped'][$name] = true;
 							continue;
 						}
-						if (copy($va_file['tmp_name'][$vn_i], $vs_batch_media_import_root_directory.$ps_directory."/".$vs_name)) {
-							$va_response['copied'][$vs_name] = true;
+						if (copy($file['tmp_name'][$i], $upload_path."/".$name)) {
+							$response['copied'][$name] = true;
 						} else {
-							$va_response['skipped'][$vs_name] = true;
+							$response['skipped'][$name] = true;
 						}
 					}
 				}
 			}
 
-			$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 file', $vn_upload_count) : _t('Uploaded %1 files', $vn_upload_count);
-			if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
-				$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 file', $vn_skip_count) : _t('Skipped %1 files', $vn_skip_count);
+			$response['uploadMessage'] = (($upload_count = sizeof($response['copied'])) == 1) ? _t('Uploaded %1 file', $upload_count) : _t('Uploaded %1 files', $upload_count);
+			if (is_array($response['skipped']) && ($skip_count = sizeof($response['skipped'])) && !$response['error']) {
+				$response['skippedMessage'] = ($skip_count == 1) ? _t('Skipped %1 file', $skip_count) : _t('Skipped %1 files', $skip_count);
 			}
 
- 			$this->view->setVar('response', $va_response);
+ 			$this->view->setVar('response', $response);
  			$this->render('mediaimport/file_upload_response_json.php');
  		}
  		# ------------------------------------------------------------------

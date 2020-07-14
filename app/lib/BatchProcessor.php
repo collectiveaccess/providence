@@ -1486,7 +1486,7 @@
 		 * Import metadata using a mapping
 		 *
 		 * @param RequestHTTP $po_request The current request
-		 * @param string $ps_source A path to a file or directory of files to import
+		 * @param mixed $pm_source A path, or array containing a list of paths, to a file or directory of files to import
 		 * @param string $ps_importer The code of the importer (mapping) to use
 		 * @param string $ps_input_format The format of the source data
 		 * @param array $pa_options
@@ -1508,7 +1508,7 @@
 		 *			KLogger::DEBUG = Debugging messages
 
 		 */
-		public static function importMetadata($po_request, $ps_source, $ps_importer, $ps_input_format, $pa_options=null) {
+		public static function importMetadata($po_request, $pm_source, $ps_importer, $ps_input_format, $pa_options=null) {
 			$va_errors = $va_noticed = array();
 			$vn_start_time = time();
 			BatchProcessor::$s_import_error_list = [];
@@ -1536,10 +1536,15 @@
 			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
-			if (!isURL($ps_source) && is_dir($ps_source)) {
-				$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, false);
+			if(is_array($pm_source)) {
+			    $va_sources = [];
+			    foreach($pm_source as $s) {
+					$va_sources = array_unique(array_merge($va_sources, caGetDirectoryContentsAsList($s, true, false, false, false)));
+				}
+			} elseif (!isURL($pm_source) && is_dir($pm_source)) {
+				$va_sources = caGetDirectoryContentsAsList($pm_source, true, false, false, false);
 			} else {
-				$va_sources = array($ps_source);
+				$va_sources = [$pm_source];
 			}
 			
 			$vn_file_num = 0;
@@ -1550,16 +1555,16 @@
 					$va_errors['general'][] = array(
 						'idno' => "*",
 						'label' => "*",
-						'errors' => array(_t("Could not import source %1", $ps_source)),
+						'errors' => array(_t("Could not import source %1", $vs_source)),
 						'status' => 'ERROR'
 					);
-					BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $ps_source);
+					BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $vs_source);
 					return false;
 				} else {
 					$va_notices['general'][] = array(
 						'idno' => "*",
 						'label' => "*",
-						'errors' => array(_t("Imported data from source %1", $ps_source)),
+						'errors' => array(_t("Imported data from source %1", $vs_source)),
 						'status' => 'SUCCESS'
 					);
 					//return true;

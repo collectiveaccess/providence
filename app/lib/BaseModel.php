@@ -1659,7 +1659,7 @@ class BaseModel extends BaseObject {
 								|| 
 								($vb_allow_fetching_of_urls && isURL($vm_value))
 								||
-								(preg_match("!^userMedia[\d]+/!", $vm_value))
+								(preg_match("!^".caGetUserDirectoryName()."/!", $vm_value))
 							)
 						) {
 							$this->_SET_FILES[$vs_field]['original_filename'] = $pa_options["original_filename"];
@@ -4257,7 +4257,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				}
 			
 				// is it server-side stored user media?
-				if (preg_match("!^userMedia[\d]+/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
+				if (preg_match("!^".caGetUserDirectoryName()."/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
 					// use configured directory to dump media with fallback to standard tmp directory
 					if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
 						$vs_tmp_directory = caGetTempDirPath();

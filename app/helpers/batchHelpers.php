@@ -485,13 +485,13 @@
 			return false;
 		}
 
-		if (is_dir($dir="{$batch_media_import_root_directory}/{$directory}")) {
+		if (is_dir($dir="{$batch_media_import_root_directory}{$directory}")) {
 			return $dir;
 		}
 
 		if($user_id = caGetOption('user_id', $options, null)) {
 			if ($user_path = caGetMediaUploadPathForUser($user_id)) {
-				if (is_dir($dir="{$user_path}/{$directory}")) {
+				if (is_dir($dir="{$user_path}{$directory}")) {
 					return $dir;
 				}
 			}
@@ -502,7 +502,7 @@
 	/**
 	 * Return path to private media upload directory for a user. If user's private directory doesn't
 	 * exist yet, it will be created.
-	 *
+	 *`
 	 * @param string|int $user User_id, user_name or email of user
 	 * @param array $options Options include:
 	 *     dontCreateDirectory = Don't automatically create user directory. [Default is false]
@@ -513,7 +513,7 @@
 	function caGetMediaUploadPathForUser($user, array $options=null) {
 		if(!($user_name = ca_users::userNameFor($user))) { return null; }
 		$config = Configuration::load();
-		$user_dir = $config->get('media_uploader_root_directory')."/{$user_name}";
+		$user_dir = $config->get('media_uploader_root_directory').'/'.caGetUserDirectoryName($user);
 
 		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
 			if(!mkdir($user_dir)) {
@@ -539,6 +539,8 @@
 	 * @return array
 	 */
 	function caGetAvailableMediaUploadPaths($user=null) {
+		global $g_request;
+		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) { $user = $g_request->getUserID(); }
 		$paths = [];
 		if ($user && ($p = caGetMediaUploadPathForUser($user))) {
 			$paths[] = $p;
@@ -547,5 +549,21 @@
 			$paths[] = $p;
 		}
 		return $paths;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetUserDirectoryName($user=null) {
+		global $g_request;
+		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
+			$user = $g_request->getUserID();
+		}
+		$t_user = new ca_users($user);
+		if ($t_user) {
+			$user_name = preg_replace("![^A-Za-z0-9\-_]+!", "_", $t_user->get('user_name'));
+			return "~{$user_name}";
+		}
+		return null;
 	}
 	# ------------------------------------------------------
