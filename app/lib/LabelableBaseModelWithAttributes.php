@@ -482,7 +482,8 @@
 		 *		
 		 *			The default is ids
 		 *	
-		 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit
+		 *		start = if searchResult, ids or modelInstances is set, starts returned list of matches at specified index. Default is 0.
+		 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit.
 		 *		boolean = determines how multiple field values in $pa_values are combined to produce the final result. Possible values are:
 		 *			AND						= find rows that match all criteria in $pa_values
 		 *			OR						= find rows that match any criteria in $pa_values
@@ -969,10 +970,15 @@
 				}
 				if ($vs_orderby) { $vs_sql .= $vs_orderby; }
 			}
+
+			$start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
+			$limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
-			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-	
-			$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
+			$limit_sql = '';
+			if ($start > 0) { $limit_sql = "{$start}"; }
+			if ($limit > 0) { $limit_sql .= $limit_sql ? ", {$limit}" : "{$limit}"; }
+		
+			$qr_res = $o_db->query($vs_sql.($limit_sql ? " LIMIT {$limit_sql}" : ''), array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 				return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
@@ -1003,7 +1009,7 @@
 						if ($o_instance->load($qr_res->get($vs_pk))) {
 							$va_instances[] = $o_instance;
 							$vn_c++;
-							if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+							if ($limit && ($vn_c >= $limit)) { break; }
 						}
 					}
 					return $va_instances;
@@ -1022,7 +1028,7 @@
 					while($qr_res->nextRow()) {
 						$va_rows[] = $qr_res->getRow();
 						$vn_c++;
-						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+						if ($limit && ($vn_c >= $limit)) { break; }
 					}
 					return $va_rows;
 					break;
@@ -1033,7 +1039,7 @@
 					while($qr_res->nextRow()) {
 						$va_ids[] = $qr_res->get($vs_pk);
 						$vn_c++;
-						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+						if ($limit && ($vn_c >= $limit)) { break; }
 					}
 					if ($ps_return_as == 'searchresult') {
 						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids, ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
@@ -1054,30 +1060,6 @@
 		public static function findAsSearchResult($pa_values, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = []; }
 			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'searchResult']));
-		}
-		# ------------------------------------------------------------------
- 		/**
- 		 * Find row(s) with fields having values matching specific values. Returns a model instance for the first record found.
- 		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
- 		 * options offered by that method.
- 		 *
- 		 * @see LabelableBaseModelWithAttributes::find()
- 		 */
-		public static function findAsInstance($pa_values, $pa_options=null) {
-			if (!is_array($pa_options)) { $pa_options = []; }
-			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
-		}
-		# ------------------------------------------------------------------
- 		/**
- 		 * Find row(s) with fields having values matching specific values. Returns a the primary key (id) of the first record found.
- 		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
- 		 * options offered by that method.
- 		 *
- 		 * @see LabelableBaseModelWithAttributes::find()
- 		 */
-		public static function findAsID($pa_values, $pa_options=null) {
-			if (!is_array($pa_options)) { $pa_options = []; }
-			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstid']));
 		}
  		# ------------------------------------------------------------------
  		/**

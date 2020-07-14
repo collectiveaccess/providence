@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');
+require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
 use GuzzleHttp\Client;
 use PHPUnit\Framework\Exception;
@@ -345,6 +346,8 @@ function caFileIsIncludable($ps_file) {
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
 
+		if(!file_exists($dir)) { return []; }
+		
 		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
@@ -744,40 +747,15 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Return path to user media directory (used to temporary storage of user-uploaded media)
-	 * Will create directory if it doesn't not yet exist, unless dontCreateDirectory option is set.
-	 *
-	 * @param int $user_id
-	 * @param array $options Options include:
-	 *		dontCreateDirectory = don't create user directory if it does not exist. [Default is false]
-	 * @return string pa 
-	 */
-	function caGetUserMediaDirectoryPath(int $user_id, array $options=null) {
-	    $config = Configuration::load();
-		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
-			$tmp_directory = caGetTempDirPath();
-		}
-		
-		$user_dir =  "{$tmp_directory}/userMedia{$user_id}";
-		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
-			@mkdir($user_dir);
-		}
-		return $user_dir;
-	}
-	# ----------------------------------------
-	/**
 	 *
 	 */
 	function caCleanUserMediaDirectory(int $user_id) {
 	    // use configured directory to dump media with fallback to standard tmp directory
 	    $config = Configuration::load();
-		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
-			$tmp_directory = caGetTempDirPath();
-		}
 
-		$user_dir = caGetUserMediaDirectoryPath($user_id);
+		$user_dir = caGetMediaUploadPathForUser($user_id);
 		
-		if (!($timeout = (int)$config->get('ajax_media_upload_tmp_directory_timeout'))) {
+		if (!($timeout = (int)$config->get('media_upload_tmp_directory_timeout'))) {
 			$timeout = 24 * 60 * 60;
 		}
 		
@@ -818,7 +796,8 @@ function caFileIsIncludable($ps_file) {
 		$count = 0;
 		if(is_array($dirs = scandir($tmp_directory))) {
 			foreach($dirs as $dir) {
-				if (preg_match("!^userMedia([\d]+)$!", $dir, $m)) {
+				$d = caGetUserDirectoryName();
+				if (preg_match("!^({$d})$!", $dir, $m)) {
 					caCleanUserMediaDirectory($m[1]);
 					$count++;
 				}

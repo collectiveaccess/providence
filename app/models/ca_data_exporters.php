@@ -1900,7 +1900,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($t_exporter_item->getSetting('timeOmit')) {
 			$va_get_options['timeOmit'] = true;
 		}
-
+		
+		if($t_exporter_item->getSetting('stripTags')) {
+			$va_get_options['stripTags'] = true;
+		}
+		
 		if($t_exporter_item->getSetting('dontReturnValueIfOnSameDayAsStart')) {
 			$va_get_options['dontReturnValueIfOnSameDayAsStart'] = true;
 		}

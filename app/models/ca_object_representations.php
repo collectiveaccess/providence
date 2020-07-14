@@ -584,7 +584,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
 			$vs_tmp_directory = caGetTempDirPath();
 		}
-		if(preg_match("!^userMedia[\d]+/!", $vs_media_path) && file_exists("{$vs_tmp_directory}/{$vs_media_path}")) {
+		if(preg_match("!^".caGetUserDirectoryName()."/!", $vs_media_path) && file_exists("{$vs_tmp_directory}/{$vs_media_path}")) {
 			return false;
 		}
 		return true;

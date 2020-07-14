@@ -1659,7 +1659,7 @@ class BaseModel extends BaseObject {
 								|| 
 								($vb_allow_fetching_of_urls && isURL($vm_value))
 								||
-								(preg_match("!^userMedia[\d]+/!", $vm_value))
+								(preg_match("!^".caGetUserDirectoryName()."/!", $vm_value))
 							)
 						) {
 							$this->_SET_FILES[$vs_field]['original_filename'] = $pa_options["original_filename"];
@@ -3189,7 +3189,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				} 
 				
 				SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-                if (($fields_changed > 0) && method_exists($this, "deriveHistoryTrackingCurrentValue") && !caGetOption('dontUpdateHistoryCurrentValueTracking', $pa_options, false)) {
+                if (($fields_changed > 0) && method_exists($this, "deriveHistoryTrackingCurrentValue") && !caGetOption('dontUpdateHistoryCurrentValueTracking', $pa_options, false) && !defined('__CA_DONT_UPDATE_HISTORY_TRACKING_CACHE__')) {
                     $table = $this->tableName();
                     $this->deriveHistoryTrackingCurrentValue();
                     if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
@@ -4257,7 +4257,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				}
 			
 				// is it server-side stored user media?
-				if (preg_match("!^userMedia[\d]+/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
+				if (preg_match("!^".caGetUserDirectoryName()."/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
 					// use configured directory to dump media with fallback to standard tmp directory
 					if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
 						$vs_tmp_directory = caGetTempDirPath();
@@ -11497,7 +11497,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 *			The default is ids
 	 *	
-	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit
+	 *		start = if searchResult, ids or modelInstances is set, starts returned list of matches at specified index. Default is 0.
+	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit.
 	 *		boolean = determines how multiple field values in $pa_values are combined to produce the final result. Possible values are:
 	 *			AND						= find rows that match all criteria in $pa_values
 	 *			OR						= find rows that match any criteria in $pa_values
@@ -11743,8 +11744,14 @@ $pa_options["display_form_field_tips"] = true;
 			$o_db = new Db();
 		}
 		
-		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-		$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
+		$start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
+		$limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+		$limit_sql = '';
+		if ($start > 0) { $limit_sql = "{$start}"; }
+		if ($limit > 0) { $limit_sql .= $limit_sql ? ", {$limit}" : "{$limit}"; }
+		
+		$qr_res = $o_db->query($vs_sql.($limit_sql ? " LIMIT {$limit_sql}" : ''), array_merge($va_sql_params, $va_type_restriction_params));
 
 		if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 			return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
@@ -11776,7 +11783,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($t_instance->load($qr_res->get($vs_pk))) {
 						$va_instances[] = $t_instance;
 						$vn_c++;
-						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+						if ($limit && ($vn_c >= $limit)) { break; }
 					}
 				}
 				return $va_instances;
@@ -11795,7 +11802,7 @@ $pa_options["display_form_field_tips"] = true;
 				while($qr_res->nextRow()) {
 					$va_rows[] = $qr_res->getRow();
 					$vn_c++;
-					if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					if ($limit && ($vn_c >= $limit)) { break; }
 				}
 				return $va_rows;
 				break;
@@ -11805,7 +11812,7 @@ $pa_options["display_form_field_tips"] = true;
 				$va_ids = array();
 				while($qr_res->nextRow()) {
 					$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
-					if ($vn_limit && (sizeof($va_ids) >= $vn_limit)) { break; }
+					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
 					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
@@ -11815,6 +11822,30 @@ $pa_options["display_form_field_tips"] = true;
 				break;
 		}
 		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. Returns a model instance for the first record found.
+	 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+	 * options offered by that method.
+	 *
+	 * @see LabelableBaseModelWithAttributes::find()
+	 */
+	public static function findAsInstance($pa_values, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
+	}	
+	# ------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. Returns a the primary key (id) of the first record found.
+	 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+	 * options offered by that method.
+	 *
+	 * @see LabelableBaseModelWithAttributes::find()
+	 */
+	public static function findAsID($pa_values, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstid']));
 	}
 	# ------------------------------------------------------
 	/**

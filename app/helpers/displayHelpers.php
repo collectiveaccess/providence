@@ -2141,13 +2141,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 		$vs_buf .= "<strong>"._t("Batch import media")."</strong>\n";
 
-		$vs_batch_media_import_root_directory = $po_view->request->config->get('batch_media_import_root_directory');
-		$vs_buf .= "<p>"._t('<strong>Server directory:</strong> %1', $vs_batch_media_import_root_directory)."</p>\n";
-
-		// Show the counts here is nice but can bog the server down when the import directory is an NFS or SAMBA mount
-		//$va_counts = caGetDirectoryContentsCount($vs_batch_media_import_root_directory, true, false, false); 
-		//$vs_buf .= "<p>"._t('<strong>Directories on server:</strong> %1', $va_counts['directories'])."<br/>\n";
-		//$vs_buf .= _t('<strong>Files on server:</strong> %1', $va_counts['files'])."<p>\n";
+		$global_batch_media_import_root_directory = caGetSharedMediaUploadPath();
+		$user_batch_media_import_root_directory = caGetMediaUploadPathForUser($po_view->request->getUserID());
+		$vs_buf .= "<p>"._t('<strong>Directory (all users):</strong> %1', $global_batch_media_import_root_directory)."</p>\n";
+		$vs_buf .= "<p>"._t('<strong>Directory (user):</strong> %1', $user_batch_media_import_root_directory)."</p>\n";
 
 		$vs_buf .= "</div></h4>\n";
 
@@ -3309,9 +3306,11 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		// If no display_template set try to get a default out of the app.conf file
 		if (!$vs_template) {
-			if (is_array($va_lookup_settings = $pt_subject->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
-				if (!($vs_lookup_delimiter = $pt_subject->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
-				$vs_template = join($vs_lookup_delimiter, $va_lookup_settings);
+			if(!trim($vs_template = $pt_subject->getAppConfig()->get("{$ps_related_table}_default_editor_display_template"))) {	// use explicit setting
+				if (is_array($va_lookup_settings = $pt_subject->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {	// fall back to derive from lookup setting
+					if (!($vs_lookup_delimiter = $pt_subject->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
+					$vs_template = join($vs_lookup_delimiter, $va_lookup_settings);
+				}
 			}
 		}
 
@@ -4219,7 +4218,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
                     throw new ApplicationException(_t('Cannot view media'));
                 }
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
-					throw new ApplicationException(_t('Invalid viewer'));
+					throw new ApplicationException(_t('Invalid viewer: %1/%2', $ps_display_type, $vs_mimetype));
 				}
 
 				$vs_viewer = $vs_viewer_name::getViewerHTML(

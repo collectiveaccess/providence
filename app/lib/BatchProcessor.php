@@ -500,7 +500,7 @@
 		 */
 		public static function importMediaFromDirectory($po_request, $pa_options=null) {
 			global $g_ui_locale_id;
-			
+
 			BatchProcessor::$s_import_error_list = [];
 
 			$vs_log_dir = caGetOption('log', $pa_options, __CA_APP_DIR__."/log");
@@ -520,7 +520,7 @@
  			$o_eventlog = new Eventlog();
  			$t_set = new ca_sets();
 
- 			$va_notices = $va_errors = array();
+ 			$va_notices = $va_errors = [];
 
  			//$vb_we_set_transaction = false;
  			//$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
@@ -539,705 +539,879 @@
  				//'transaction' => $o_trans
  			));
 
- 			if (!is_dir($pa_options['importFromDirectory'])) {
- 				$o_eventlog->log(array(
-					"CODE" => 'ERR',
-					"SOURCE" => "mediaImport",
-					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is not a directory", $pa_options['importFromDirectory'])
-				));
-				BatchProcessor::$s_import_error_list[] = $vs_msg;
-				$o_log->logError($vs_msg);
- 				return null;
- 			}
-
- 			$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
- 			if (!preg_match("!^{$vs_batch_media_import_root_directory}!", $pa_options['importFromDirectory'])) {
- 				$o_eventlog->log(array(
-					"CODE" => 'ERR',
-					"SOURCE" => "mediaImport",
-					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is not within the configured root %2", $pa_options['importFromDirectory'], $vs_batch_media_import_root_directory)
-				));
-				$o_log->logError($vs_msg);
-				BatchProcessor::$s_import_error_list[] = $vs_msg;
- 				return null;
- 			}
-
- 			if (preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
- 				$o_eventlog->log(array(
-					"CODE" => 'ERR',
-					"SOURCE" => "mediaImport",
-					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
-				));
-				$o_log->logError($vs_msg);
-				BatchProcessor::$s_import_error_list[] = $vs_msg;
- 				return null;
- 			}
-
- 			$vb_include_subdirectories 			= (bool)$pa_options['includeSubDirectories'];
- 			$vb_delete_media_on_import			= (bool)$pa_options['deleteMediaOnImport'];
-
- 			$vs_import_mode 					= $pa_options['importMode'];
- 			$vs_match_mode 						= $pa_options['matchMode'];
- 			$vs_match_type						= $pa_options['matchType'];
- 			$vn_type_id 						= $pa_options[$vs_import_target.'_type_id'];
- 			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
-
- 			$va_limit_matching_to_type_ids 		= $pa_options[$vs_import_target.'_limit_matching_to_type_ids'];
- 			$vn_access							= $pa_options[$vs_import_target.'_access'];
- 			$vn_object_representation_access 	= $pa_options['ca_object_representations_access'];
- 			$vn_status 							= $pa_options[$vs_import_target.'_status'];
- 			$vn_object_representation_status 	= $pa_options['ca_object_representations_status'];
-
-			$vn_rel_type_id 					= (isset($pa_options[$vs_import_target.'_representation_relationship_type']) ? $pa_options[$vs_import_target.'_representation_relationship_type'] : null);
-
- 			$vn_mapping_id						= $pa_options[$vs_import_target.'_mapping_id'];
- 			$vn_object_representation_mapping_id= $pa_options['ca_object_representations_mapping_id'];
-
- 			$vs_idno_mode 						= $pa_options['idnoMode'];
- 			$vs_idno 							= $pa_options['idno'];
-
-			$vs_representation_idno_mode		= $pa_options['representationIdnoMode'];
-			$vs_representation_idno 			= $pa_options['representation_idno'];
-
- 			$vs_set_mode 						= $pa_options['setMode'];
- 			$vs_set_create_name 				= $pa_options['setCreateName'];
- 			$vn_set_id	 						= $pa_options['set_id'];
-
- 			$vn_locale_id						= $pa_options['locale_id'];
-
- 			$vs_skip_file_list					= $pa_options['skipFileList'];
- 			$vb_allow_duplicate_media			= $pa_options['allowDuplicateMedia'];
-
- 			$va_relationship_type_id_for = array();
- 			if (is_array($va_create_relationship_for = $pa_options['create_relationship_for'])) {
-				foreach($va_create_relationship_for as $vs_rel_table) {
-					$va_relationship_type_id_for[$vs_rel_table] = $pa_options['relationship_type_id_for_'.$vs_rel_table];
-				}
-			}
-
- 			if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
-
- 			$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories);
- 			$o_log->logInfo(_t('Found %1 files in directory \'%2\'', sizeof($va_files_to_process), $pa_options['importFromDirectory']));
-
- 			if ($vs_set_mode == 'add') {
- 				$t_set->load($vn_set_id);
- 			} else {
- 				if (($vs_set_mode == 'create') && ($vs_set_create_name)) {
- 					$va_set_ids = $t_set->getSets(array('user_id' => $vn_user_id, 'table' => $t_instance->tableName(), 'access' => __CA_SET_EDIT_ACCESS__, 'setIDsOnly' => true, 'name' => $vs_set_create_name));
- 					$vn_set_id = null;
- 					if (is_array($va_set_ids) && (sizeof($va_set_ids) > 0)) {
- 						$vn_possible_set_id = array_shift($va_set_ids);
- 						if ($t_set->load($vn_possible_set_id)) {
- 							$vn_set_id = $t_set->getPrimaryKey();
- 						}
- 					} else {
- 						$vs_set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_create_name), 0, 100);
- 						if ($t_set->load(array('set_code' => $vs_set_code))) {
- 							$vn_set_id = $t_set->getPrimaryKey();
- 						}
- 					}
-
- 					if (!$t_set->getPrimaryKey()) {
-						$t_set->setMode(ACCESS_WRITE);
-						$t_set->set('user_id', $vn_user_id);
-						$t_set->set('type_id', $o_config->get('ca_sets_default_type'));
-						$t_set->set('table_num', $t_instance->tableNum());
-						$t_set->set('set_code', $vs_set_code);
-
-						$t_set->insert();
-						if ($t_set->numErrors()) {
-							$va_notices['create_set'] = array(
-								'idno' => '',
-								'label' => _t('Create set %1', $vs_set_create_name),
-								'message' =>  $vs_msg = _t('Failed to create set %1: %2', $vs_set_create_name, join("; ", $t_set->getErrors())),
-								'file' => '',
-								'status' => 'SET ERROR'
-							);
-							$o_log->logError($vs_msg);
-						} else {
-							$t_set->addLabel(array('name' => $vs_set_create_name), $vn_locale_id, null, true);
-							if ($t_set->numErrors()) {
-								$va_notices['add_set_label'] = array(
-									'idno' => '',
-									'label' => _t('Add label to set %1', $vs_set_create_name),
-									'message' =>  $vs_msg = _t('Failed to add label to set: %1', join("; ", $t_set->getErrors())),
-									'file' => '',
-									'status' => 'SET ERROR'
-								);
-								$o_log->logError($vs_msg);
-							}
-							$vn_set_id = $t_set->getPrimaryKey();
-						}
-					}
- 				} else {
- 					$vn_set_id = null;	// no set
- 				}
- 			}
-
- 			if ($t_set->getPrimaryKey() && !$t_set->haveAccessToSet($vn_user_id, __CA_SET_EDIT_ACCESS__)) {
- 				$va_notices['set_access'] = array(
-					'idno' => '',
-					'label' => _t('You do not have access to set %1', $vs_set_create_name),
-					'message' =>  $vs_msg = _t('Cannot add to set %1 because you do not have edit access', $vs_set_create_name),
-					'file' => '',
-					'status' => 'SET ERROR'
-				);
-
- 				$o_log->logError($vs_msg);
-				$vn_set_id = null;
-				$t_set = new ca_sets();
- 			}
-
- 			$vn_num_items = sizeof($va_files_to_process);
-
- 			// Get list of regex packages that user can use to extract object idno's from filenames
- 			$va_media_filename_regex_list = caBatchGetMediaFilenameToIdnoRegexList(['log' => $o_log]);
-
-			// Get list of replacements that user can use to transform file names to match object idnos
-			$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(['log' => $o_log]);
-			
- 			// Get list of regex packages that user can use to transform object idnos
- 			$va_idno_regex_list = caBatchGetIdnoRegexList(['log' => $o_log]);
- 			$idno_alts_list = [];
- 			if (is_array($va_idno_regex_list) && sizeof($va_idno_regex_list) > 0) {
- 			    $qr = $vs_import_target::find('*', ['returnAs' => 'searchResult']);
- 			    $idno_fld = "{$vs_import_target}.".$t_instance->getProperty('ID_NUMBERING_ID_FIELD');
- 			    while($qr->nextHit()) {
- 			        $idno = $qr->get($idno_fld);
- 			        foreach($va_idno_regex_list as $n => $p) {
- 			            if(!isset($p['regexes']) || !is_array($p['regexes'])) { continue; }
- 			            
- 			            foreach($p['regexes'] as $pattern => $replacement) {
- 			                $idno_alts_list[strtolower(preg_replace("!{$pattern}!", $replacement, $idno))] = $idno;
- 			            }
- 			        }
- 			    }
- 			}
- 			$idno_alts_list = array_filter($idno_alts_list, function($v) { return strlen($v); });
-
- 			// Get list of files (or file name patterns) to skip
- 			$va_skip_list = preg_split("![\r\n]+!", $vs_skip_file_list);
- 			foreach($va_skip_list as $vn_i => $vs_skip) {
- 				if (!strlen($va_skip_list[$vn_i] = trim($vs_skip))) {
- 					unset($va_skip_list[$vn_i]);
- 				}
- 			}
-
- 			$vn_c = 0;
- 			$vn_start_time = time();
- 			
- 			foreach($va_files_to_process as $vs_file) {
- 				$va_tmp = explode("/", $vs_file);
- 				$f = array_pop($va_tmp);
- 				$d = array_pop($va_tmp);
- 				array_push($va_tmp, $d);
- 				$vs_directory = join("/", $va_tmp);
-
-				$vn_c++;
-
- 				$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
-
- 				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-					$ps_callback($po_request,
-                            $vn_c,
-                            $vn_num_items,
-                            _t("[%3/%4] Processing %1 (%3)",
-                                    caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30),
-                                    $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-                                    $vn_c,
-                                    $vn_num_items),
-                            null,
-                            time() - $vn_start_time,
-                            memory_get_usage(true),
-                            $vn_c,
-                            sizeof($va_errors));
-				}
-				
-				
- 				// Skip file names using $vs_skip_file_list
- 				if (BatchProcessor::_skipFile($f, $va_skip_list)) {
- 					$o_log->logInfo(_t('Skipped file %1 because it was on the skipped files list', $f));
- 					continue;
- 				}
- 				
- 				// does representation already exist?
- 				$use_existing_representation_id = null;
- 				if (!$vb_allow_duplicate_media && ($t_dupe = ca_object_representations::mediaExists($vs_file))) {
- 					if (!is_array($dupes_rel_ids = $t_dupe->get($t_instance->primaryKey(), ['returnAsArray' => true])) || (sizeof($dupes_rel_ids) === 0)) {
- 						$use_existing_representation_id = $t_dupe->getPrimaryKey();
- 					} else {
-						$va_notices[$vs_relative_directory.'/'.$f] = array(
-							'idno' => '',
-							'label' => $f,
-							'message' =>  $vs_msg = _t('Skipped %1 from %2 because it already exists %3', $f, $vs_relative_directory, $po_request ? caEditorLink($po_request, _t('(view)'), 'button', 'ca_object_representations', $t_dupe->getPrimaryKey()) : ''),
-							'file' => $f,
-							'status' => 'EXISTS'
-						);
-						$o_log->logInfo($vs_msg);
-						continue;
-					}
- 				}
-
-				$t_instance = Datamodel::getInstance($vs_import_target, false);
-				//$t_instance->setTransaction($o_trans);
-
-				$vs_modified_filename = $f;
-				$va_extracted_idnos_from_filename = array();
-				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH')) || (is_array($va_create_relationship_for) && sizeof($va_create_relationship_for))) {
-					foreach($va_media_filename_regex_list as $vs_regex_name => $va_regex_info) {
-
-						$o_log->logDebug(_t("Processing mediaFilenameToObjectIdnoRegexes entry %1",$vs_regex_name));
-
-						foreach($va_regex_info['regexes'] as $vs_regex) {
-							switch($vs_match_mode) {
-								case 'DIRECTORY_NAME':
-									$va_names_to_match = array($d, str_replace(":", "/", $d));
-									$o_log->logDebug(_t("Trying to match on directory '%1'", $d));
-									break;
-								case 'FILE_AND_DIRECTORY_NAMES':
-									$va_names_to_match = array($f, $d, str_replace(":", "/", $f), str_replace(":", "/", $d));
-									$o_log->logDebug(_t("Trying to match on directory '%1' and file name '%2'", $d, $f));
-									break;
-								default:
-								case 'FILE_NAME':
-									$va_names_to_match = array($f, str_replace(":", "/", $f));
-									$o_log->logDebug(_t("Trying to match on file name '%1'", $f));
-									break;
-							}
-
-							// are there any replacements? if so, try to match each element in $va_names_to_match AND all results of the replacements
-							if(is_array($va_replacements_list) && (sizeof($va_replacements_list)>0)) {
-								$va_names_to_match_copy = $va_names_to_match;
-								foreach($va_names_to_match_copy as $vs_name) {
-									foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
-										if(isset($va_replacement['regexes']) && is_array($va_replacement['regexes'])) {
-											$s = $r = [];
-
-											foreach($va_replacement['regexes'] as $vs_search => $vs_replace){
-												$s[] = '!'.$vs_search.'!';
-												$r[] = $vs_replace;
-											}
-
-											$vs_replacement_result = @preg_replace($s, $r, $vs_name);
-											
-											if(is_null($vs_replacement_result)) {
-												$o_log->logError(_t("There was an error in preg_replace while processing replacement %1.", $vs_replacement_code));
-											}
-
-											if($vs_replacement_result && strlen($vs_replacement_result)>0){
-												$o_log->logDebug(_t("The result for replacement with code %1 applied to value '%2' is '%3' and was added to the list of file names used for matching.", $vs_replacement_code, $vs_name, $vs_replacement_result));
-												$va_names_to_match[] = $vs_replacement_result;
-											}
-										} else {
-											$o_log->logDebug(_t("Skipped replacement %1 because no search expression was defined.", $vs_replacement_code));
-										}
-									}
-								}
-							}
-							
-                            $va_names_to_match = array_unique($va_names_to_match);
-                            
-							$o_log->logDebug("Names to match: ".print_r($va_names_to_match, true));
-
-							foreach($va_names_to_match as $vs_match_name) {
-								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
-									if (!$va_matches[1]) { if (!($va_matches[1] = $va_matches[0])) { continue; } }	// skip blank matches
-
-									$o_log->logDebug(_t("Matched name %1 on regex %2",$vs_match_name,$vs_regex));
-
-									if (!$vs_idno || (strlen($va_matches[1]) < strlen($vs_idno))) {
-										$vs_idno = $va_matches[1];
-									}
-									if (!$vs_modified_filename || (strlen($vs_modified_filename)  > strlen($va_matches[1]))) {
-										$vs_modified_filename = $va_matches[1];
-									}
-									$va_extracted_idnos_from_filename[] = $va_matches[1];
-
-									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
-										if(!is_array($va_fields_to_match_on = $o_config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
-											$va_fields_to_match_on = array('idno');
-										}
-
-										$vs_bool = 'OR';
-										$va_values = array();
-										
-										$match_value = $va_matches[1];
-									    if (isset($idno_alts_list[strtolower($match_value)])) { $match_value = $idno_alts_list[strtolower($match_value)];  }
-										foreach($va_fields_to_match_on as $vs_fld) {
-											switch($vs_match_type) {
-												case 'STARTS':
-													$match_value = "{$match_value}%";
-													break;
-												case 'ENDS':
-													$match_value = "%{$match_value}";
-													break;
-												case 'CONTAINS':
-													$match_value = "%{$match_value}%";
-													break;
-											}
-											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-												$va_values[$vs_fld] = ['name' => $match_value];
-											} elseif(sizeof($va_flds = explode('.', $vs_fld)) > 1) {
-												$va_values[$va_flds[0]][$va_flds[1]] = $match_value;
-											} else {
-												$va_values[$vs_fld] = $match_value;
-											}
-										}
-										
-										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
-
-										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool, 'restrictToTypes' => $va_limit_matching_to_type_ids)))) {
-											if ($t_instance->load($vn_id)) {
-												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
-													'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-													'label' => $t_instance->getLabelForDisplay(),
-													'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using expression "%4"', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false), $va_regex_info['displayName']),
-													'file' => $f,
-													'status' => 'MATCHED'
-												);
-												$o_log->logInfo($vs_msg);
-											}
-											break(3);
-										}
-									}
-								} else {
-									$o_log->logDebug(_t("Couldn't match name %1 on regex %2",$vs_match_name,$vs_regex));
-								}
-							}
-						}
-					}
-				}
-
-				if (!$t_instance->getPrimaryKey() && ($vs_import_mode !== 'DONT_MATCH')) {
-					// Use filename as idno if all else fails
-					if ($t_instance->load(array('idno' => $f, 'deleted' => 0))) {
-						$va_notices[$vs_relative_directory.'/'.$f.'_match'] = array(
- 							'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
- 							'label' => $t_instance->getLabelForDisplay(),
- 							'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using filename', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false)),
- 							'file' => $f,
- 							'status' => 'MATCHED'
- 						);
-						$o_log->logInfo($vs_msg);
-					}
-				}
-
-				switch(strtolower($vs_representation_idno_mode)) {
-					case 'filename':
-						// use the filename as identifier
-						$vs_rep_idno = $f;
-						break;
-                    case 'filename_no_ext':
-						// use filename without extension as identifier
-						$vs_rep_idno = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
-						break;
-					case 'directory_and_filename':
-						// use the directory + filename as identifier
-						$vs_rep_idno = $d.'/'.$f;
-						break;
-					default:
-						// use idno from form
-						$vs_rep_idno = $vs_representation_idno;
-						break;
-				}
-
-				$t_new_rep = null;
-				if ($t_instance->getPrimaryKey() && ($t_instance instanceof RepresentableBaseModel)) {
-					// found existing object
-					$t_instance->setMode(ACCESS_WRITE);
-
-					if ($use_existing_representation_id) {
-						if (!($t_new_rep = $t_instance->addRelationship('ca_object_representations', $use_existing_representation_id, $vn_rel_type_id))) { continue; }
-					} else {
-						$t_new_rep = $t_instance->addRepresentation(
-							$vs_directory.'/'.$f, $vn_rep_type_id, // path
-							$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, // locale, status, access, primary
-							array('idno' => $vs_rep_idno), // values
-							array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
-						);
-					}
-
-					if ($t_instance->numErrors()) {
-						$o_eventlog->log(array(
-							"CODE" => 'ERR',
-							"SOURCE" => "mediaImport",
-							"MESSAGE" => _t("Error importing {$f} from {$vs_directory}: %1", join('; ', $t_instance->getErrors()))
-						));
-
-
-						$va_errors[$vs_relative_directory.'/'.$f] = array(
-							'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-							'label' => $t_instance->getLabelForDisplay(),
-							'errors' => $t_instance->errors(),
-							'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
-							'file' => $f,
-							'status' => 'ERROR',
-						);
-						$o_log->logError($vs_msg);
-						//$o_trans->rollback();
-						continue;
-					} else {
-						if ($vb_delete_media_on_import) {
-							@unlink($vs_directory.'/'.$f);
-						}
-					}
-				} else {
-					// should we create new record?
-					if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'DONT_MATCH'))) {
-						$t_instance->setMode(ACCESS_WRITE);
-						$t_instance->set('type_id', $vn_type_id);
-						$t_instance->set('locale_id', $vn_locale_id);
-						$t_instance->set('status', $vn_status);
-						$t_instance->set('access', $vn_access);
-
-						// for places, take first hierarchy we can find. in most setups there is but one. we might wanna make this configurable via setup screen at some point
-						if($t_instance->hasField('hierarchy_id')) {
-							$va_hierarchies = $t_instance->getHierarchyList();
-							reset($va_hierarchies);
-							$vn_hierarchy_id = key($va_hierarchies);
-							$t_instance->set('hierarchy_id', $vn_hierarchy_id);
-						}
-
-						$vs_idno_value = null;
-						switch(strtolower($vs_idno_mode)) {
-							case 'filename':
-								// use the filename as identifier
-                                $vs_idno_value = $f;
-								break;
-                            case 'filename_no_ext':
-								// use filename without extension as identifier
-								$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
-								$vs_idno_value = $f_no_ext;
-								break;
-							case 'directory_and_filename':
-								// use the directory + filename as identifier
-								$vs_idno_value = $d.'/'.$f;
-								break;
-							default:
-								// Calculate identifier using numbering plugin
-								$o_numbering_plugin = $t_instance->getIDNoPlugInInstance();
-								if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
-								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', null, false, false, true))) { $va_idno_values = array(); }
-                                // true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
-								$vs_idno_value = join($vs_sep, $va_idno_values);
-								break;
-						}
-                        $t_instance->set('idno', $vs_idno_value);
-
-                        $t_instance->insert();
-
-						if ($t_instance->numErrors()) {
-							$o_eventlog->log(array(
-								"CODE" => 'ERR',
-								"SOURCE" => "mediaImport",
-								"MESSAGE" => _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
-							));
-							$va_errors[$vs_relative_directory.'/'.$f] = array(
-								'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-								'label' => $t_instance->getLabelForDisplay(),
-								'errors' => $t_instance->errors(),
-								'message' => $vs_msg = _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
-								'file' => $f,
-								'status' => 'ERROR',
-							);
-							$o_log->logError($vs_msg);
-							//$o_trans->rollback();
-							continue;
-						}
-
-						if($t_instance->tableName() == 'ca_entities') { // entity labels deserve special treatment
-							$t_instance->addLabel(
-								array('surname' => $f), $vn_locale_id, null, true
-							);
-						} else {
-							$t_instance->addLabel(
-								array($t_instance->getLabelDisplayField() => $f), $vn_locale_id, null, true
-							);
-						}
-
-						if ($t_instance->numErrors()) {
-							$o_eventlog->log(array(
-								"CODE" => 'ERR',
-								"SOURCE" => "mediaImport",
-								"MESSAGE" => _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
-							));
-
-							$va_errors[$vs_relative_directory.'/'.$f] = array(
-								'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-								'label' => $t_instance->getLabelForDisplay(),
-								'errors' => $t_instance->errors(),
-								'message' => $vs_msg = _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
-								'file' => $f,
-								'status' => 'ERROR',
-							);
-							$o_log->logError($vs_msg);
-							//$o_trans->rollback();
-							continue;
-						}
-
-						$t_new_rep = $t_instance->addRepresentation(
-							$vs_directory.'/'.$f, $vn_rep_type_id, // path, type_id
-							$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, // locale, status, access, primary
-							array('idno' => $vs_rep_idno), // values
-							array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
-						);
-
-						if ($t_instance->numErrors()) {
-							$o_eventlog->log(array(
-								"CODE" => 'ERR',
-								"SOURCE" => "mediaImport",
-								"MESSAGE" => _t("Error importing %1 from %2: ", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
-							));
-
-							$va_errors[$vs_relative_directory.'/'.$f] = array(
-								'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-								'label' => $t_instance->getLabelForDisplay(),
-								'errors' => $t_instance->errors(),
-								'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
-								'file' => $f,
-								'status' => 'ERROR',
-							);
-							$o_log->logError($vs_msg);
-							//$o_trans->rollback();
-							continue;
-						} else {
-							if ($vb_delete_media_on_import) {
-								@unlink($vs_directory.'/'.$f);
-							}
-						}
-					}
-				}
-
-				if ($t_instance->getPrimaryKey()) {
-					
-					if(!$vn_mapping_id && is_array($media_metadata_extraction_defaults = $o_config->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
-						$media_mimetype = $t_new_rep->get('mimetype');
-					
-						foreach($media_metadata_extraction_defaults as $m => $importer_code) {
-							if(caCompareMimetypes($media_mimetype, $m)) {
-								if (!($vn_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
-									if ($o_log) { $o_log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
-								}
-								break;
-							}
-						}
-					}
-					
-					if ($vn_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $vn_mapping_id], ['returnAs' => 'firstModelInstance']))) {
-						$format = $t_mapping->getSetting('inputFormats');
-						if(is_array($format)) { $format = array_shift($format); }
-						if ($o_log) { $o_log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
-						
-						$t_importer = new ca_data_importers();
-						$t_importer->importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $o_config->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()]]); 
-					}
-					
-					
-					if(!$vn_object_representation_mapping_id && is_array($media_metadata_extraction_defaults = $o_config->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
-						$media_mimetype = $t_new_rep->get('mimetype');
-					
-						foreach($media_metadata_extraction_defaults as $m => $importer_code) {
-							if(caCompareMimetypes($media_mimetype, $m)) {
-								if (!($vn_object_representation_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
-									if ($o_log) { $o_log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
-								}
-								break;
-							}
-						}
-					}
-					
-					if ($vn_object_representation_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $vn_object_representation_mapping_id], ['returnAs' => 'firstModelInstance']))) {
-						$format = $t_mapping->getSetting('inputFormats');
-						if(is_array($format)) { $format = array_shift($format); }
-						if ($o_log) { $o_log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
-						
-						$t_importer = new ca_data_importers();
-						$t_importer->importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $o_config->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()]]); 
-					}
-
-					$va_notices[$t_instance->getPrimaryKey()] = array(
-						'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-						'label' => $t_instance->getLabelForDisplay(),
-						'message' => $vs_msg = _t('Imported %1 as %2', $f, $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD'))),
-						'file' => $f,
-						'status' => 'SUCCESS'
-					);
-					$o_log->logInfo($vs_msg);
-
-					if ($vn_set_id) {
-						$t_set->addItem($t_instance->getPrimaryKey(), null, $vn_user_id);
-					}
-					$o_batch_log->addItem($t_instance->getPrimaryKey(), $t_instance->errors());
-
-					// Create relationships?
-					if(is_array($va_create_relationship_for) && sizeof($va_create_relationship_for) && is_array($va_extracted_idnos_from_filename) && sizeof($va_extracted_idnos_from_filename)) {
-						foreach($va_extracted_idnos_from_filename as $vs_idno) {
-							foreach($va_create_relationship_for as $vs_rel_table) {
-								if (!isset($va_relationship_type_id_for[$vs_rel_table]) || !$va_relationship_type_id_for[$vs_rel_table]) { continue; }
-								
-								$t_rel = Datamodel::getInstanceByTableName($vs_rel_table);
-								if ($t_rel->load(array($t_rel->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
-									$t_instance->addRelationship($vs_rel_table, $t_rel->getPrimaryKey(), $va_relationship_type_id_for[$vs_rel_table]);
-
-									if (!$t_instance->numErrors()) {
-										$va_notices[$t_instance->getPrimaryKey().'_rel'] = array(
-											'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-											'label' => $vs_label = $t_instance->getLabelForDisplay(),
-											'message' => $vs_msg = _t('Added relationship between <em>%1</em> and %2 <em>%3</em>', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay()),
-											'file' => $f,
-											'status' => 'RELATED'
-										);
-										$o_log->logInfo($vs_msg);
-									} else {
-										$va_notices[$t_instance->getPrimaryKey()] = array(
-											'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-											'label' => $vs_label = $t_instance->getLabelForDisplay(),
-											'message' => $vs_msg = _t('Could not add relationship between <em>%1</em> and %2 <em>%3</em>: %4', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay(), join("; ", $t_instance->getErrors())),
-											'file' => $f,
-											'status' => 'ERROR'
-										);
-										$o_log->logError($vs_msg);
-									}
-								}
-							}
-						}
-					}
-				} else {
-					$va_notices[$vs_relative_directory.'/'.$f] = array(
-						'idno' => '',
-						'label' => $f,
-						'message' => $vs_msg = (($vs_import_mode == 'ALWAYS_MATCH') ? _t('Skipped %1 from %2 because it could not be matched', $f, $vs_relative_directory) : _t('Skipped %1 from %2', $f, $vs_relative_directory)),
-						'file' => $f,
-						'status' => 'NO_MATCH'
-					);
-					$o_log->logInfo($vs_msg);
-				}
- 			}
-
-			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processing completed"), null, time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
-			}
-			
-			// Write error and skip logs
-			$r_err = fopen($error_log = caGetTempFileName("mediaImporterErrorLog", "csv", ['useAppTmpDir' => true]), "w");
-			fputcsv($r_err, ['idno', 'file', 'message', 'status']);
-			$r_skip = fopen($skip_log = caGetTempFileName("mediaImporterSkipLog", "csv", ['useAppTmpDir' => true]), "w");	
-			fputcsv($r_skip, ['file', 'message', 'status']);
-			
-			$error_count = $skip_count = 0;
-			foreach($va_notices as $k => $notice) {
-				if (in_array($notice['status'], ['EXISTS', 'NO_MATCH'])) {
-					fputcsv($r_skip, ['file' => $notice['file'], 'message' => strip_tags($notice['message']), 'status' => $notice['status']]);
-					$skip_count++;
-				}
-				if ($notice['status'] == 'ERROR') {
-					fputcsv($r_skip, ['idno' => $notice['idno'], 'file' => $notice['file'], 'message' => strip_tags($notice['message']), 'status' => $notice['status']]);
-					$skip_count++;
-				}
-			}		
-			fclose($r_skip);
-			
+			$batch_media_import_root_directory = null;
+			$batch_media_import_root_directories = array_filter(caGetAvailableMediaUploadPaths($vn_user_id), function($v) use ($pa_options) {
+				$p = $v."/".$pa_options['importFromDirectory'];
+				return is_dir($p);
+			});
+ 			if(sizeof($batch_media_import_root_directories) === 0) {
+			    $o_eventlog->log([
+				    "CODE"    => 'ERR',
+				    "SOURCE"  => "mediaImport",
+				    "MESSAGE" => $vs_msg
+					    = _t( "Specified import directory '%1' is not valid",
+					    $pa_options['importFromDirectory'])
+			    ]);
+			    $o_log->logError( $vs_msg );
+			    BatchProcessor::$s_import_error_list[] = $vs_msg;
+				return null;
+		    }
+ 			$batch_media_import_root_directory = array_shift($batch_media_import_root_directories);
+		    $batch_media_import_directory = $batch_media_import_root_directory.'/'.$pa_options['importFromDirectory'];
+
+		    $vb_include_subdirectories = (bool) $pa_options['includeSubDirectories'];
+		    $vb_delete_media_on_import = (bool) $pa_options['deleteMediaOnImport'];
+
+		    $vs_import_mode = $pa_options['importMode'];
+		    $vs_match_mode  = $pa_options['matchMode'];
+		    $vs_match_type  = $pa_options['matchType'];
+		    $vn_type_id     = $pa_options[ $vs_import_target.'_type_id' ];
+		    $vn_rep_type_id = $pa_options['ca_object_representations_type_id'];
+
+		    $va_limit_matching_to_type_ids   = $pa_options[ $vs_import_target . '_limit_matching_to_type_ids' ];
+		    $vn_access                       = $pa_options[ $vs_import_target . '_access' ];
+		    $vn_object_representation_access = $pa_options['ca_object_representations_access'];
+		    $vn_status                       = $pa_options[ $vs_import_target . '_status' ];
+		    $vn_object_representation_status = $pa_options['ca_object_representations_status'];
+
+		    $vn_rel_type_id = ( isset( $pa_options[ $vs_import_target . '_representation_relationship_type' ] )
+			    ? $pa_options[ $vs_import_target . '_representation_relationship_type' ] : null );
+
+		    $vn_mapping_id                       = $pa_options[ $vs_import_target . '_mapping_id' ];
+		    $vn_object_representation_mapping_id = $pa_options['ca_object_representations_mapping_id'];
+
+		    $vs_idno_mode = $pa_options['idnoMode'];
+		    $vs_idno      = $pa_options['idno'];
+
+		    $vs_representation_idno_mode = $pa_options['representationIdnoMode'];
+		    $vs_representation_idno      = $pa_options['representation_idno'];
+
+		    $vs_set_mode        = $pa_options['setMode'];
+		    $vs_set_create_name = $pa_options['setCreateName'];
+		    $vn_set_id          = $pa_options['set_id'];
+
+		    $vn_locale_id = $pa_options['locale_id'];
+
+		    $vs_skip_file_list        = $pa_options['skipFileList'];
+		    $vb_allow_duplicate_media = $pa_options['allowDuplicateMedia'];
+
+		    $va_relationship_type_id_for = array();
+		    if ( is_array( $va_create_relationship_for = $pa_options['create_relationship_for'] ) ) {
+			    foreach ( $va_create_relationship_for as $vs_rel_table ) {
+				    $va_relationship_type_id_for[ $vs_rel_table ] = $pa_options[ 'relationship_type_id_for_'
+				                                                                 . $vs_rel_table ];
+			    }
+		    }
+
+		    if ( ! $vn_locale_id ) {
+			    $vn_locale_id = $g_ui_locale_id;
+		    }
+
+		    $va_files_to_process = caGetDirectoryContentsAsList( $batch_media_import_directory,
+			    $vb_include_subdirectories );
+		    $o_log->logInfo( _t( 'Found %1 files in directory \'%2\'', sizeof( $va_files_to_process ),
+			    $batch_media_import_directory) );
+
+		    if ( $vs_set_mode == 'add' ) {
+			    $t_set->load( $vn_set_id );
+		    } else {
+			    if ( ( $vs_set_mode == 'create' ) && ( $vs_set_create_name ) ) {
+				    $va_set_ids = $t_set->getSets( array(
+					    'user_id'    => $vn_user_id,
+					    'table'      => $t_instance->tableName(),
+					    'access'     => __CA_SET_EDIT_ACCESS__,
+					    'setIDsOnly' => true,
+					    'name'       => $vs_set_create_name
+				    ) );
+				    $vn_set_id  = null;
+				    if ( is_array( $va_set_ids ) && ( sizeof( $va_set_ids ) > 0 ) ) {
+					    $vn_possible_set_id = array_shift( $va_set_ids );
+					    if ( $t_set->load( $vn_possible_set_id ) ) {
+						    $vn_set_id = $t_set->getPrimaryKey();
+					    }
+				    } else {
+					    $vs_set_code = mb_substr( preg_replace( "![^A-Za-z0-9_\-]+!", "_", $vs_set_create_name ), 0,
+						    100 );
+					    if ( $t_set->load( array( 'set_code' => $vs_set_code ) ) ) {
+						    $vn_set_id = $t_set->getPrimaryKey();
+					    }
+				    }
+
+				    if ( ! $t_set->getPrimaryKey() ) {
+					    $t_set->setMode( ACCESS_WRITE );
+					    $t_set->set( 'user_id', $vn_user_id );
+					    $t_set->set( 'type_id', $o_config->get( 'ca_sets_default_type' ) );
+					    $t_set->set( 'table_num', $t_instance->tableNum() );
+					    $t_set->set( 'set_code', $vs_set_code );
+
+					    $t_set->insert();
+					    if ( $t_set->numErrors() ) {
+						    $va_notices['create_set'] = array(
+							    'idno'    => '',
+							    'label'   => _t( 'Create set %1', $vs_set_create_name ),
+							    'message' => $vs_msg = _t( 'Failed to create set %1: %2', $vs_set_create_name,
+								    join( "; ", $t_set->getErrors() ) ),
+							    'file'    => '',
+							    'status'  => 'SET ERROR'
+						    );
+						    $o_log->logError( $vs_msg );
+					    } else {
+						    $t_set->addLabel( array( 'name' => $vs_set_create_name ), $vn_locale_id, null, true );
+						    if ( $t_set->numErrors() ) {
+							    $va_notices['add_set_label'] = array(
+								    'idno'    => '',
+								    'label'   => _t( 'Add label to set %1', $vs_set_create_name ),
+								    'message' => $vs_msg = _t( 'Failed to add label to set: %1',
+									    join( "; ", $t_set->getErrors() ) ),
+								    'file'    => '',
+								    'status'  => 'SET ERROR'
+							    );
+							    $o_log->logError( $vs_msg );
+						    }
+						    $vn_set_id = $t_set->getPrimaryKey();
+					    }
+				    }
+			    } else {
+				    $vn_set_id = null;    // no set
+			    }
+		    }
+
+		    if ( $t_set->getPrimaryKey() && ! $t_set->haveAccessToSet( $vn_user_id, __CA_SET_EDIT_ACCESS__ ) ) {
+			    $va_notices['set_access'] = array(
+				    'idno'    => '',
+				    'label'   => _t( 'You do not have access to set %1', $vs_set_create_name ),
+				    'message' => $vs_msg = _t( 'Cannot add to set %1 because you do not have edit access',
+					    $vs_set_create_name ),
+				    'file'    => '',
+				    'status'  => 'SET ERROR'
+			    );
+
+			    $o_log->logError( $vs_msg );
+			    $vn_set_id = null;
+			    $t_set     = new ca_sets();
+		    }
+
+		    $vn_num_items = sizeof( $va_files_to_process );
+
+		    // Get list of regex packages that user can use to extract object idno's from filenames
+		    $va_media_filename_regex_list = caBatchGetMediaFilenameToIdnoRegexList( [ 'log' => $o_log ] );
+
+		    // Get list of replacements that user can use to transform file names to match object idnos
+		    $va_replacements_list = caBatchGetMediaFilenameReplacementRegexList( [ 'log' => $o_log ] );
+
+		    // Get list of regex packages that user can use to transform object idnos
+		    $va_idno_regex_list = caBatchGetIdnoRegexList( [ 'log' => $o_log ] );
+		    $idno_alts_list     = [];
+		    if ( is_array( $va_idno_regex_list ) && sizeof( $va_idno_regex_list ) > 0 ) {
+			    $qr       = $vs_import_target::find( '*', [ 'returnAs' => 'searchResult' ] );
+			    $idno_fld = "{$vs_import_target}." . $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' );
+			    while ( $qr->nextHit() ) {
+				    $idno = $qr->get( $idno_fld );
+				    foreach ( $va_idno_regex_list as $n => $p ) {
+					    if ( ! isset( $p['regexes'] ) || ! is_array( $p['regexes'] ) ) {
+						    continue;
+					    }
+
+					    foreach ( $p['regexes'] as $pattern => $replacement ) {
+						    $idno_alts_list[ strtolower( preg_replace( "!{$pattern}!", $replacement, $idno ) ) ]
+							    = $idno;
+					    }
+				    }
+			    }
+		    }
+		    $idno_alts_list = array_filter( $idno_alts_list, function ( $v ) {
+			    return strlen( $v );
+		    } );
+
+		    // Get list of files (or file name patterns) to skip
+		    $va_skip_list = preg_split( "![\r\n]+!", $vs_skip_file_list );
+		    foreach ( $va_skip_list as $vn_i => $vs_skip ) {
+			    if ( ! strlen( $va_skip_list[ $vn_i ] = trim( $vs_skip ) ) ) {
+				    unset( $va_skip_list[ $vn_i ] );
+			    }
+		    }
+
+		    $vn_c          = 0;
+		    $vn_start_time = time();
+
+		    foreach ($va_files_to_process as $vs_file) {
+			    $va_tmp = explode( "/", $vs_file );
+			    $f      = array_pop( $va_tmp );
+			    $d      = array_pop( $va_tmp );
+			    array_push( $va_tmp, $d );
+			    $vs_directory = join( "/", $va_tmp );
+
+			    $vn_c ++;
+
+			    $vs_relative_directory = preg_replace( "!{$batch_media_import_root_directory}[/]*!", "",
+				    $vs_directory );
+
+			    if ( isset( $pa_options['progressCallback'] )
+			         && ( $ps_callback
+					    = $pa_options['progressCallback'] )
+			    ) {
+				    $ps_callback( $po_request,
+					    $vn_c,
+					    $vn_num_items,
+					    _t( "[%3/%4] Processing %1 (%3)",
+						    caTruncateStringWithEllipsis( $vs_relative_directory, 20 ) . '/'
+						    . caTruncateStringWithEllipsis( $f, 30 ),
+						    $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+						    $vn_c,
+						    $vn_num_items ),
+					    null,
+					    time() - $vn_start_time,
+					    memory_get_usage( true ),
+					    $vn_c,
+					    sizeof( $va_errors ) );
+			    }
+
+
+			    // Skip file names using $vs_skip_file_list
+			    if ( BatchProcessor::_skipFile( $f, $va_skip_list ) ) {
+				    $o_log->logInfo( _t( 'Skipped file %1 because it was on the skipped files list', $f ) );
+				    continue;
+			    }
+
+			    // does representation already exist?
+			    $use_existing_representation_id = null;
+			    if ( ! $vb_allow_duplicate_media
+			         && ( $t_dupe
+					    = ca_object_representations::mediaExists( $vs_file ) )
+			    ) {
+				    if ( ! is_array( $dupes_rel_ids = $t_dupe->get( $t_instance->primaryKey(),
+						    [ 'returnAsArray' => true ] ) )
+				         || ( sizeof( $dupes_rel_ids ) === 0 )
+				    ) {
+					    $use_existing_representation_id = $t_dupe->getPrimaryKey();
+				    } else {
+					    $va_notices[ $vs_relative_directory . '/' . $f ] = array(
+						    'idno'    => '',
+						    'label'   => $f,
+						    'message' => $vs_msg = _t( 'Skipped %1 from %2 because it already exists %3', $f,
+							    $vs_relative_directory,
+							    $po_request ? caEditorLink( $po_request, _t( '(view)' ), 'button',
+								    'ca_object_representations', $t_dupe->getPrimaryKey() ) : '' ),
+						    'file'    => $f,
+						    'status'  => 'EXISTS'
+					    );
+					    $o_log->logInfo( $vs_msg );
+					    continue;
+				    }
+			    }
+
+			    $t_instance = Datamodel::getInstance( $vs_import_target, false );
+			    //$t_instance->setTransaction($o_trans);
+
+			    $vs_modified_filename             = $f;
+			    $va_extracted_idnos_from_filename = array();
+			    if ( in_array( $vs_import_mode, array( 'TRY_TO_MATCH', 'ALWAYS_MATCH' ) )
+			         || ( is_array( $va_create_relationship_for ) && sizeof( $va_create_relationship_for ) )
+			    ) {
+				    foreach ( $va_media_filename_regex_list as $vs_regex_name => $va_regex_info ) {
+
+					    $o_log->logDebug( _t( "Processing mediaFilenameToObjectIdnoRegexes entry %1",
+						    $vs_regex_name ) );
+
+					    foreach ( $va_regex_info['regexes'] as $vs_regex ) {
+						    switch ( $vs_match_mode ) {
+							    case 'DIRECTORY_NAME':
+								    $va_names_to_match = array( $d, str_replace( ":", "/", $d ) );
+								    $o_log->logDebug( _t( "Trying to match on directory '%1'", $d ) );
+								    break;
+							    case 'FILE_AND_DIRECTORY_NAMES':
+								    $va_names_to_match = array(
+									    $f,
+									    $d,
+									    str_replace( ":", "/", $f ),
+									    str_replace( ":", "/", $d )
+								    );
+								    $o_log->logDebug( _t( "Trying to match on directory '%1' and file name '%2'",
+									    $d, $f ) );
+								    break;
+							    default:
+							    case 'FILE_NAME':
+								    $va_names_to_match = array( $f, str_replace( ":", "/", $f ) );
+								    $o_log->logDebug( _t( "Trying to match on file name '%1'", $f ) );
+								    break;
+						    }
+
+						    // are there any replacements? if so, try to match each element in $va_names_to_match AND all results of the replacements
+						    if ( is_array( $va_replacements_list ) && ( sizeof( $va_replacements_list ) > 0 ) ) {
+							    $va_names_to_match_copy = $va_names_to_match;
+							    foreach ( $va_names_to_match_copy as $vs_name ) {
+								    foreach ( $va_replacements_list as $vs_replacement_code => $va_replacement ) {
+									    if ( isset( $va_replacement['regexes'] )
+									         && is_array( $va_replacement['regexes'] )
+									    ) {
+										    $s = $r = [];
+
+										    foreach ( $va_replacement['regexes'] as $vs_search => $vs_replace ) {
+											    $s[] = '!' . $vs_search . '!';
+											    $r[] = $vs_replace;
+										    }
+
+										    $vs_replacement_result = @preg_replace( $s, $r, $vs_name );
+
+										    if ( is_null( $vs_replacement_result ) ) {
+											    $o_log->logError( _t( "There was an error in preg_replace while processing replacement %1.",
+												    $vs_replacement_code ) );
+										    }
+
+										    if ( $vs_replacement_result && strlen( $vs_replacement_result ) > 0 ) {
+											    $o_log->logDebug( _t( "The result for replacement with code %1 applied to value '%2' is '%3' and was added to the list of file names used for matching.",
+												    $vs_replacement_code, $vs_name, $vs_replacement_result ) );
+											    $va_names_to_match[] = $vs_replacement_result;
+										    }
+									    } else {
+										    $o_log->logDebug( _t( "Skipped replacement %1 because no search expression was defined.",
+											    $vs_replacement_code ) );
+									    }
+								    }
+							    }
+						    }
+
+						    $va_names_to_match = array_unique( $va_names_to_match );
+
+						    $o_log->logDebug( "Names to match: " . print_r( $va_names_to_match, true ) );
+
+						    foreach ( $va_names_to_match as $vs_match_name ) {
+							    if ( preg_match( '!' . $vs_regex . '!', $vs_match_name, $va_matches ) ) {
+								    if ( ! $va_matches[1] ) {
+									    if ( ! ( $va_matches[1] = $va_matches[0] ) ) {
+										    continue;
+									    }
+								    }    // skip blank matches
+
+								    $o_log->logDebug( _t( "Matched name %1 on regex %2", $vs_match_name,
+									    $vs_regex ) );
+
+								    if ( ! $vs_idno || ( strlen( $va_matches[1] ) < strlen( $vs_idno ) ) ) {
+									    $vs_idno = $va_matches[1];
+								    }
+								    if ( ! $vs_modified_filename
+								         || ( strlen( $vs_modified_filename ) > strlen( $va_matches[1] ) )
+								    ) {
+									    $vs_modified_filename = $va_matches[1];
+								    }
+								    $va_extracted_idnos_from_filename[] = $va_matches[1];
+
+								    if ( in_array( $vs_import_mode, array( 'TRY_TO_MATCH', 'ALWAYS_MATCH' ) ) ) {
+									    if ( ! is_array( $va_fields_to_match_on
+											    = $o_config->getList( 'batch_media_import_match_on' ) )
+									         || ! sizeof( $va_fields_to_match_on )
+									    ) {
+										    $va_fields_to_match_on = array( 'idno' );
+									    }
+
+									    $vs_bool   = 'OR';
+									    $va_values = array();
+
+									    $match_value = $va_matches[1];
+									    if ( isset( $idno_alts_list[ strtolower( $match_value ) ] ) ) {
+										    $match_value = $idno_alts_list[ strtolower( $match_value ) ];
+									    }
+									    foreach ( $va_fields_to_match_on as $vs_fld ) {
+										    switch ( $vs_match_type ) {
+											    case 'STARTS':
+												    $match_value = "{$match_value}%";
+												    break;
+											    case 'ENDS':
+												    $match_value = "%{$match_value}";
+												    break;
+											    case 'CONTAINS':
+												    $match_value = "%{$match_value}%";
+												    break;
+										    }
+										    if ( in_array( $vs_fld,
+											    array( 'preferred_labels', 'nonpreferred_labels' ) )
+										    ) {
+											    $va_values[ $vs_fld ] = [ 'name' => $match_value ];
+										    } elseif ( sizeof( $va_flds = explode( '.', $vs_fld ) ) > 1 ) {
+											    $va_values[ $va_flds[0] ][ $va_flds[1] ] = $match_value;
+										    } else {
+											    $va_values[ $vs_fld ] = $match_value;
+										    }
+									    }
+
+									    $o_log->logDebug( "Trying to find records using boolean {$vs_bool} and values "
+									                      . print_r( $va_values, true ) );
+
+									    if ( class_exists( $vs_import_target )
+									         && ( $vn_id
+											    = $vs_import_target::find( $va_values, array(
+											    'returnAs'        => 'firstId',
+											    'allowWildcards'  => true,
+											    'boolean'         => $vs_bool,
+											    'restrictToTypes' => $va_limit_matching_to_type_ids
+										    ) ) )
+									    ) {
+										    if ( $t_instance->load( $vn_id ) ) {
+											    $va_notices[ $vs_relative_directory . '/' . $vs_match_name
+											                 . '_match' ]
+												    = array(
+												    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+												    'label'   => $t_instance->getLabelForDisplay(),
+												    'message' => $vs_msg
+													    = _t( 'Matched media %1 from %2 to %3 using expression "%4"',
+													    $f, $vs_relative_directory,
+													    caGetTableDisplayName( $vs_import_target, false ),
+													    $va_regex_info['displayName'] ),
+												    'file'    => $f,
+												    'status'  => 'MATCHED'
+											    );
+											    $o_log->logInfo( $vs_msg );
+										    }
+										    break( 3 );
+									    }
+								    }
+							    } else {
+								    $o_log->logDebug( _t( "Couldn't match name %1 on regex %2", $vs_match_name,
+									    $vs_regex ) );
+							    }
+						    }
+					    }
+				    }
+			    }
+
+			    if ( ! $t_instance->getPrimaryKey() && ( $vs_import_mode !== 'DONT_MATCH' ) ) {
+				    // Use filename as idno if all else fails
+				    if ( $t_instance->load( array( 'idno' => $f, 'deleted' => 0 ) ) ) {
+					    $va_notices[ $vs_relative_directory . '/' . $f . '_match' ] = array(
+						    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+						    'label'   => $t_instance->getLabelForDisplay(),
+						    'message' => $vs_msg = _t( 'Matched media %1 from %2 to %3 using filename', $f,
+							    $vs_relative_directory, caGetTableDisplayName( $vs_import_target, false ) ),
+						    'file'    => $f,
+						    'status'  => 'MATCHED'
+					    );
+					    $o_log->logInfo( $vs_msg );
+				    }
+			    }
+
+			    switch ( strtolower( $vs_representation_idno_mode ) ) {
+				    case 'filename':
+					    // use the filename as identifier
+					    $vs_rep_idno = $f;
+					    break;
+				    case 'filename_no_ext':
+					    // use filename without extension as identifier
+					    $vs_rep_idno = preg_replace( self::REGEXP_FILENAME_NO_EXT, '', $f );
+					    break;
+				    case 'directory_and_filename':
+					    // use the directory + filename as identifier
+					    $vs_rep_idno = $d . '/' . $f;
+					    break;
+				    default:
+					    // use idno from form
+					    $vs_rep_idno = $vs_representation_idno;
+					    break;
+			    }
+
+			    $t_new_rep = null;
+			    if ( $t_instance->getPrimaryKey() && ( $t_instance instanceof RepresentableBaseModel ) ) {
+				    // found existing object
+				    $t_instance->setMode( ACCESS_WRITE );
+
+				    if ( $use_existing_representation_id ) {
+					    if ( ! ( $t_new_rep = $t_instance->addRelationship( 'ca_object_representations',
+						    $use_existing_representation_id, $vn_rel_type_id ) )
+					    ) {
+						    continue;
+					    }
+				    } else {
+					    $t_new_rep = $t_instance->addRepresentation(
+						    $vs_directory . '/' . $f, $vn_rep_type_id, // path
+						    $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access,
+						    false, // locale, status, access, primary
+						    array( 'idno' => $vs_rep_idno ), // values
+						    array(
+							    'original_filename'    => $f,
+							    'returnRepresentation' => true,
+							    'type_id'              => $vn_rel_type_id
+						    ) // options
+					    );
+				    }
+
+				    if ( $t_instance->numErrors() ) {
+					    $o_eventlog->log( array(
+						    "CODE"    => 'ERR',
+						    "SOURCE"  => "mediaImport",
+						    "MESSAGE" => _t( "Error importing {$f} from {$vs_directory}: %1",
+							    join( '; ', $t_instance->getErrors() ) )
+					    ) );
+
+
+					    $va_errors[ $vs_relative_directory . '/' . $f ] = array(
+						    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+						    'label'   => $t_instance->getLabelForDisplay(),
+						    'errors'  => $t_instance->errors(),
+						    'message' => $vs_msg = _t( "Error importing %1 from %2: %3", $f, $vs_relative_directory,
+							    join( '; ', $t_instance->getErrors() ) ),
+						    'file'    => $f,
+						    'status'  => 'ERROR',
+					    );
+					    $o_log->logError( $vs_msg );
+					    //$o_trans->rollback();
+					    continue;
+				    } else {
+					    if ( $vb_delete_media_on_import ) {
+						    @unlink( $vs_directory . '/' . $f );
+					    }
+				    }
+			    } else {
+				    // should we create new record?
+				    if ( in_array( $vs_import_mode, array( 'TRY_TO_MATCH', 'DONT_MATCH' ) ) ) {
+					    $t_instance->setMode( ACCESS_WRITE );
+					    $t_instance->set( 'type_id', $vn_type_id );
+					    $t_instance->set( 'locale_id', $vn_locale_id );
+					    $t_instance->set( 'status', $vn_status );
+					    $t_instance->set( 'access', $vn_access );
+
+					    // for places, take first hierarchy we can find. in most setups there is but one. we might wanna make this configurable via setup screen at some point
+					    if ( $t_instance->hasField( 'hierarchy_id' ) ) {
+						    $va_hierarchies = $t_instance->getHierarchyList();
+						    reset( $va_hierarchies );
+						    $vn_hierarchy_id = key( $va_hierarchies );
+						    $t_instance->set( 'hierarchy_id', $vn_hierarchy_id );
+					    }
+
+					    $vs_idno_value = null;
+					    switch ( strtolower( $vs_idno_mode ) ) {
+						    case 'filename':
+							    // use the filename as identifier
+							    $vs_idno_value = $f;
+							    break;
+						    case 'filename_no_ext':
+							    // use filename without extension as identifier
+							    $f_no_ext      = preg_replace( self::REGEXP_FILENAME_NO_EXT, '', $f );
+							    $vs_idno_value = $f_no_ext;
+							    break;
+						    case 'directory_and_filename':
+							    // use the directory + filename as identifier
+							    $vs_idno_value = $d . '/' . $f;
+							    break;
+						    default:
+							    // Calculate identifier using numbering plugin
+							    $o_numbering_plugin = $t_instance->getIDNoPlugInInstance();
+							    if ( ! ( $vs_sep = $o_numbering_plugin->getSeparator() ) ) {
+								    $vs_sep = '';
+							    }
+							    if ( ! is_array(
+								    $va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray( 'idno', null,
+									    false, false, true ) )
+							    ) {
+								    $va_idno_values = array();
+							    }
+							    // true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
+							    $vs_idno_value = join( $vs_sep, $va_idno_values );
+							    break;
+					    }
+					    $t_instance->set( 'idno', $vs_idno_value );
+
+					    $t_instance->insert();
+
+					    if ( $t_instance->numErrors() ) {
+						    $o_eventlog->log( array(
+							    "CODE"    => 'ERR',
+							    "SOURCE"  => "mediaImport",
+							    "MESSAGE" => _t( "Error creating new record while importing %1 from %2: %3", $f,
+								    $vs_relative_directory, join( '; ', $t_instance->getErrors() ) )
+						    ) );
+						    $va_errors[ $vs_relative_directory . '/' . $f ] = array(
+							    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+							    'label'   => $t_instance->getLabelForDisplay(),
+							    'errors'  => $t_instance->errors(),
+							    'message' => $vs_msg
+								    = _t( "Error creating new record while importing %1 from %2: %3", $f,
+								    $vs_relative_directory, join( '; ', $t_instance->getErrors() ) ),
+							    'file'    => $f,
+							    'status'  => 'ERROR',
+						    );
+						    $o_log->logError( $vs_msg );
+						    //$o_trans->rollback();
+						    continue;
+					    }
+
+					    if ( $t_instance->tableName()
+					         == 'ca_entities'
+					    ) { // entity labels deserve special treatment
+						    $t_instance->addLabel(
+							    array( 'surname' => $f ), $vn_locale_id, null, true
+						    );
+					    } else {
+						    $t_instance->addLabel(
+							    array( $t_instance->getLabelDisplayField() => $f ), $vn_locale_id, null, true
+						    );
+					    }
+
+					    if ( $t_instance->numErrors() ) {
+						    $o_eventlog->log( array(
+							    "CODE"    => 'ERR',
+							    "SOURCE"  => "mediaImport",
+							    "MESSAGE" => _t( "Error creating record label while importing %1 from %2: %3", $f,
+								    $vs_relative_directory, join( '; ', $t_instance->getErrors() ) )
+						    ) );
+
+						    $va_errors[ $vs_relative_directory . '/' . $f ] = array(
+							    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+							    'label'   => $t_instance->getLabelForDisplay(),
+							    'errors'  => $t_instance->errors(),
+							    'message' => $vs_msg
+								    = _t( "Error creating record label while importing %1 from %2: %3", $f,
+								    $vs_relative_directory, join( '; ', $t_instance->getErrors() ) ),
+							    'file'    => $f,
+							    'status'  => 'ERROR',
+						    );
+						    $o_log->logError( $vs_msg );
+						    //$o_trans->rollback();
+						    continue;
+					    }
+
+					    $t_new_rep = $t_instance->addRepresentation(
+						    $vs_directory . '/' . $f, $vn_rep_type_id, // path, type_id
+						    $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true,
+						    // locale, status, access, primary
+						    array( 'idno' => $vs_rep_idno ), // values
+						    array(
+							    'original_filename'    => $f,
+							    'returnRepresentation' => true,
+							    'type_id'              => $vn_rel_type_id
+						    ) // options
+					    );
+
+					    if ( $t_instance->numErrors() ) {
+						    $o_eventlog->log( array(
+							    "CODE"    => 'ERR',
+							    "SOURCE"  => "mediaImport",
+							    "MESSAGE" => _t( "Error importing %1 from %2: ", $f, $vs_relative_directory,
+								    join( '; ', $t_instance->getErrors() ) )
+						    ) );
+
+						    $va_errors[ $vs_relative_directory . '/' . $f ] = array(
+							    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+							    'label'   => $t_instance->getLabelForDisplay(),
+							    'errors'  => $t_instance->errors(),
+							    'message' => $vs_msg = _t( "Error importing %1 from %2: %3", $f,
+								    $vs_relative_directory, join( '; ', $t_instance->getErrors() ) ),
+							    'file'    => $f,
+							    'status'  => 'ERROR',
+						    );
+						    $o_log->logError( $vs_msg );
+						    //$o_trans->rollback();
+						    continue;
+					    } else {
+						    if ( $vb_delete_media_on_import ) {
+							    @unlink( $vs_directory . '/' . $f );
+						    }
+					    }
+				    }
+			    }
+
+			    if ( $t_instance->getPrimaryKey() ) {
+
+				    if ( ! $vn_mapping_id
+				         && is_array( $media_metadata_extraction_defaults
+						    = $o_config->getAssoc( 'embedded_metadata_extraction_mapping_defaults' ) )
+				    ) {
+					    $media_mimetype = $t_new_rep->get( 'mimetype' );
+
+					    foreach ( $media_metadata_extraction_defaults as $m => $importer_code ) {
+						    if ( caCompareMimetypes( $media_mimetype, $m ) ) {
+							    if ( ! ( $vn_mapping_id
+								    = ca_data_importers::find( [ 'importer_code' => $importer_code ],
+								    [ 'returnAs' => 'firstId' ] ) )
+							    ) {
+								    if ( $o_log ) {
+									    $o_log->logInfo( _t( 'Could not find embedded metadata importer with code %1',
+										    $importer_code ) );
+								    }
+							    }
+							    break;
+						    }
+					    }
+				    }
+
+				    if ( $vn_mapping_id
+				         && ( $t_mapping
+						    = ca_data_importers::find( [ 'importer_id' => $vn_mapping_id ],
+						    [ 'returnAs' => 'firstModelInstance' ] ) )
+				    ) {
+					    $format = $t_mapping->getSetting( 'inputFormats' );
+					    if ( is_array( $format ) ) {
+						    $format = array_shift( $format );
+					    }
+					    if ( $o_log ) {
+						    $o_log->logDebug( _t( 'Using embedded media mapping %1 (format %2)',
+							    $t_mapping->get( 'importer_code' ), $format ) );
+					    }
+
+					    $t_importer = new ca_data_importers();
+					    $t_importer->importDataFromSource( $vs_directory . '/' . $f, $vn_mapping_id, [
+						    'logLevel'                  => $o_config->get( 'embedded_metadata_extraction_mapping_log_level' ),
+						    'format'                    => $format,
+						    'forceImportForPrimaryKeys' => [ $t_instance->getPrimaryKey() ]
+					    ] );
+				    }
+
+
+				    if ( ! $vn_object_representation_mapping_id
+				         && is_array( $media_metadata_extraction_defaults
+						    = $o_config->getAssoc( 'embedded_metadata_extraction_mapping_defaults' ) )
+				    ) {
+					    $media_mimetype = $t_new_rep->get( 'mimetype' );
+
+					    foreach ( $media_metadata_extraction_defaults as $m => $importer_code ) {
+						    if ( caCompareMimetypes( $media_mimetype, $m ) ) {
+							    if ( ! ( $vn_object_representation_mapping_id
+								    = ca_data_importers::find( [ 'importer_code' => $importer_code ],
+								    [ 'returnAs' => 'firstId' ] ) )
+							    ) {
+								    if ( $o_log ) {
+									    $o_log->logInfo( _t( 'Could not find embedded metadata importer with code %1',
+										    $importer_code ) );
+								    }
+							    }
+							    break;
+						    }
+					    }
+				    }
+
+				    if ( $vn_object_representation_mapping_id
+				         && ( $t_mapping
+						    = ca_data_importers::find( [ 'importer_id' => $vn_object_representation_mapping_id ],
+						    [ 'returnAs' => 'firstModelInstance' ] ) )
+				    ) {
+					    $format = $t_mapping->getSetting( 'inputFormats' );
+					    if ( is_array( $format ) ) {
+						    $format = array_shift( $format );
+					    }
+					    if ( $o_log ) {
+						    $o_log->logDebug( _t( 'Using embedded media mapping %1 (format %2)',
+							    $t_mapping->get( 'importer_code' ), $format ) );
+					    }
+
+					    $t_importer = new ca_data_importers();
+					    $t_importer->importDataFromSource( $vs_directory . '/' . $f,
+						    $vn_object_representation_mapping_id, [
+							    'logLevel'                  => $o_config->get( 'embedded_metadata_extraction_mapping_log_level' ),
+							    'format'                    => $format,
+							    'forceImportForPrimaryKeys' => [ $t_new_rep->getPrimaryKey() ]
+						    ] );
+				    }
+
+				    $va_notices[ $t_instance->getPrimaryKey() ] = array(
+					    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+					    'label'   => $t_instance->getLabelForDisplay(),
+					    'message' => $vs_msg = _t( 'Imported %1 as %2', $f,
+						    $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ) ),
+					    'file'    => $f,
+					    'status'  => 'SUCCESS'
+				    );
+				    $o_log->logInfo( $vs_msg );
+
+				    if ( $vn_set_id ) {
+					    $t_set->addItem( $t_instance->getPrimaryKey(), null, $vn_user_id );
+				    }
+				    $o_batch_log->addItem( $t_instance->getPrimaryKey(), $t_instance->errors() );
+
+				    // Create relationships?
+				    if ( is_array( $va_create_relationship_for ) && sizeof( $va_create_relationship_for )
+				         && is_array( $va_extracted_idnos_from_filename )
+				         && sizeof( $va_extracted_idnos_from_filename )
+				    ) {
+					    foreach ( $va_extracted_idnos_from_filename as $vs_idno ) {
+						    foreach ( $va_create_relationship_for as $vs_rel_table ) {
+							    if ( ! isset( $va_relationship_type_id_for[ $vs_rel_table ] )
+							         || ! $va_relationship_type_id_for[ $vs_rel_table ]
+							    ) {
+								    continue;
+							    }
+
+							    $t_rel = Datamodel::getInstanceByTableName( $vs_rel_table );
+							    if ( $t_rel->load( array( $t_rel->getProperty( 'ID_NUMBERING_ID_FIELD' ) => $vs_idno ) ) ) {
+								    $t_instance->addRelationship( $vs_rel_table, $t_rel->getPrimaryKey(),
+									    $va_relationship_type_id_for[ $vs_rel_table ] );
+
+								    if ( ! $t_instance->numErrors() ) {
+									    $va_notices[ $t_instance->getPrimaryKey() . '_rel' ] = array(
+										    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+										    'label'   => $vs_label = $t_instance->getLabelForDisplay(),
+										    'message' => $vs_msg
+											    = _t( 'Added relationship between <em>%1</em> and %2 <em>%3</em>',
+											    $vs_label, $t_rel->getProperty( 'NAME_SINGULAR' ),
+											    $t_rel->getLabelForDisplay() ),
+										    'file'    => $f,
+										    'status'  => 'RELATED'
+									    );
+									    $o_log->logInfo( $vs_msg );
+								    } else {
+									    $va_notices[ $t_instance->getPrimaryKey() ] = array(
+										    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+										    'label'   => $vs_label = $t_instance->getLabelForDisplay(),
+										    'message' => $vs_msg
+											    = _t( 'Could not add relationship between <em>%1</em> and %2 <em>%3</em>: %4',
+											    $vs_label, $t_rel->getProperty( 'NAME_SINGULAR' ),
+											    $t_rel->getLabelForDisplay(),
+											    join( "; ", $t_instance->getErrors() ) ),
+										    'file'    => $f,
+										    'status'  => 'ERROR'
+									    );
+									    $o_log->logError( $vs_msg );
+								    }
+							    }
+						    }
+					    }
+				    }
+			    } else {
+				    $va_notices[ $vs_relative_directory . '/' . $f ] = array(
+					    'idno'    => '',
+					    'label'   => $f,
+					    'message' => $vs_msg = ( ( $vs_import_mode == 'ALWAYS_MATCH' )
+						    ? _t( 'Skipped %1 from %2 because it could not be matched', $f, $vs_relative_directory )
+						    : _t( 'Skipped %1 from %2', $f, $vs_relative_directory ) ),
+					    'file'    => $f,
+					    'status'  => 'NO_MATCH'
+				    );
+				    $o_log->logInfo( $vs_msg );
+			    }
+		    }
+
+		    if ( isset( $pa_options['progressCallback'] ) && ( $ps_callback = $pa_options['progressCallback'] ) ) {
+			    $ps_callback( $po_request, $vn_num_items, $vn_num_items, _t( "Processing completed" ), null,
+				    time() - $vn_start_time, memory_get_usage( true ), $vn_c, sizeof( $va_errors ) );
+		    }
+
+		    // Write error and skip logs
+		    $r_err = fopen(
+			    $error_log = caGetTempFileName( "mediaImporterErrorLog", "csv", [ 'useAppTmpDir' => true ] ), "w" );
+		    fputcsv( $r_err, [ 'idno', 'file', 'message', 'status' ] );
+		    $r_skip = fopen(
+			    $skip_log = caGetTempFileName( "mediaImporterSkipLog", "csv", [ 'useAppTmpDir' => true ] ), "w" );
+		    fputcsv( $r_skip, [ 'file', 'message', 'status' ] );
+
+		    $error_count = $skip_count = 0;
+		    foreach ( $va_notices as $k => $notice ) {
+			    if ( in_array( $notice['status'], [ 'EXISTS', 'NO_MATCH' ] ) ) {
+				    fputcsv( $r_skip, [
+					    'file'    => $notice['file'],
+					    'message' => strip_tags( $notice['message'] ),
+					    'status'  => $notice['status']
+				    ] );
+				    $skip_count ++;
+			    }
+			    if ( $notice['status'] == 'ERROR' ) {
+				    fputcsv( $r_skip, [
+					    'idno'    => $notice['idno'],
+					    'file'    => $notice['file'],
+					    'message' => strip_tags( $notice['message'] ),
+					    'status'  => $notice['status']
+				    ] );
+				    $skip_count ++;
+			    }
+		    }
+		    fclose( $r_skip );
+
 			foreach($va_errors as $k => $error) {
 				if ($error['status'] == 'ERROR') {
 					fputcsv($r_err, ['idno' => $error['idno'], 'file' => $error['file'], 'message' => $error['message'], 'status' => $error['status']]);
@@ -1312,7 +1486,7 @@
 		 * Import metadata using a mapping
 		 *
 		 * @param RequestHTTP $po_request The current request
-		 * @param string $ps_source A path to a file or directory of files to import
+		 * @param mixed $pm_source A path, or array containing a list of paths, to a file or directory of files to import
 		 * @param string $ps_importer The code of the importer (mapping) to use
 		 * @param string $ps_input_format The format of the source data
 		 * @param array $pa_options
@@ -1334,7 +1508,7 @@
 		 *			KLogger::DEBUG = Debugging messages
 
 		 */
-		public static function importMetadata($po_request, $ps_source, $ps_importer, $ps_input_format, $pa_options=null) {
+		public static function importMetadata($po_request, $pm_source, $ps_importer, $ps_input_format, $pa_options=null) {
 			$va_errors = $va_noticed = array();
 			$vn_start_time = time();
 			BatchProcessor::$s_import_error_list = [];
@@ -1362,10 +1536,15 @@
 			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
-			if (!isURL($ps_source) && is_dir($ps_source)) {
-				$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, false);
+			if(is_array($pm_source)) {
+			    $va_sources = [];
+			    foreach($pm_source as $s) {
+					$va_sources = array_unique(array_merge($va_sources, caGetDirectoryContentsAsList($s, true, false, false, false)));
+				}
+			} elseif (!isURL($pm_source) && is_dir($pm_source)) {
+				$va_sources = caGetDirectoryContentsAsList($pm_source, true, false, false, false);
 			} else {
-				$va_sources = array($ps_source);
+				$va_sources = [$pm_source];
 			}
 			
 			$vn_file_num = 0;
@@ -1376,16 +1555,16 @@
 					$va_errors['general'][] = array(
 						'idno' => "*",
 						'label' => "*",
-						'errors' => array(_t("Could not import source %1", $ps_source)),
+						'errors' => array(_t("Could not import source %1", $vs_source)),
 						'status' => 'ERROR'
 					);
-					BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $ps_source);
+					BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $vs_source);
 					return false;
 				} else {
 					$va_notices['general'][] = array(
 						'idno' => "*",
 						'label' => "*",
-						'errors' => array(_t("Imported data from source %1", $ps_source)),
+						'errors' => array(_t("Imported data from source %1", $vs_source)),
 						'status' => 'SUCCESS'
 					);
 					//return true;

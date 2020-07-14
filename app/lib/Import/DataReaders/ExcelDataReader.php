@@ -160,7 +160,8 @@ class ExcelDataReader extends BaseDataReader {
 		    try {
 			    $pn_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pn_col);
 			} catch(Exception $e) {
-			    throw new ApplicationException(_t('Invalid Excel (XLSX) column specified \'%1\'', $pn_col));
+			    //throw new ApplicationException(_t('Invalid Excel (XLSX) column specified \'%1\'', $pn_col));
+			    return null;
 			}
 		}
 

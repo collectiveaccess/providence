@@ -4288,10 +4288,8 @@ if (!$vb_batch) {
                                     if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
                                         $va_tmp = explode('/', $vs_path);
                                         $vs_original_name = array_pop($va_tmp);
-                                    } elseif(preg_match("!^userMedia".$po_request->getUserID()."!", $va_values['tmp_name'])) {
-                                    	if (!is_writeable($vs_tmp_directory = $po_request->config->get('ajax_media_upload_tmp_directory'))) {
-											$vs_tmp_directory = caGetTempDirPath();
-										}
+                                    } elseif(preg_match("!^".caGetUserDirectoryName($po_request->getUserID())."!", $va_values['tmp_name'])) {
+	                                    $vs_tmp_directory = caGetMediaUploadPathForUser($po_request->getUserID());
                                     	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
                                     	$md = json_decode(file_get_contents("{$vs_path}_metadata"), true);
                                         $vs_original_name = $md['original_filename'];

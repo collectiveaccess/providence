@@ -7258,6 +7258,31 @@ create table if not exists ca_representation_transcriptions (
 
 
 /*==========================================================================*/
+create table if not exists ca_media_upload_sessions (
+   session_id                int unsigned                   not null AUTO_INCREMENT,
+   user_id                   int unsigned                   not null references ca_users(user_id),
+   session_key               char(36)                       not null,
+   created_on                int unsigned                   not null,
+   completed_on              int unsigned                   null,
+   last_activity_on          int unsigned                   null,
+   cancelled                 tinyint unsigned               not null default 0,
+   
+   num_files		         int unsigned                   not null,
+   total_bytes		         int unsigned                   not null,
+   progress		             longtext                       null,
+   
+   primary key (session_id),
+
+   index i_session_id               (session_id),
+   index i_created_on			    (created_on),
+   index i_completed_on			    (completed_on),
+   index i_last_activity_on			(last_activity_on),
+   index i_cancelled      	        (cancelled),
+   unique index i_session_key      	(session_key)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7268,4 +7293,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (163, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (164, unix_timestamp());
