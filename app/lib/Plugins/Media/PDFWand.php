@@ -79,6 +79,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
+			"SHARPEN"			=> ['radius', 'sigma'], // dummy
 			"ANNOTATE"	=> array("text", "font", "size", "color", "position", "inset"),	// dummy
 			"WATERMARK"	=> array("image", "width", "height", "position", "opacity"),	// dummy
 			"SET" 				=> array("property", "value")
