@@ -1,0 +1,21 @@
+@import "~bootstrap/scss/bootstrap";
+
+.mediaUploaderDropZone {
+  border: 1px dashed #000;
+  padding: 15px;
+  margin: 0px;
+}
+
+.mediaUploaderDropZoneInput {
+  cursor: default !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.mediaUploaderDropZoneInput:focus {
+  outline: none !important;
+}
