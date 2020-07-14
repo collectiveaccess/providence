@@ -184,8 +184,9 @@
 			if (!($va_match_on = caGetOption("{$ps_refinery_name}_matchOn", $pa_item['settings'], false))) {
 				$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
 			}
+			$vb_ignore_type = caGetOption("{$ps_refinery_name}_ignoreType", $pa_item['settings'], false);
 			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
-			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
+			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type), $pa_options);
 			
 			$vn_hierarchy_id = null;
 			switch($ps_table) {
@@ -758,6 +759,9 @@
 		
 		if (isset($pa_item['settings']["{$ps_refinery_name}_ignoreParent"])) {
 			$pa_options['ignoreParent'] = $pa_item['settings']["{$ps_refinery_name}_ignoreParent"];
+		}
+		if (isset($pa_item['settings']["{$ps_refinery_name}_ignoreType"])) {
+			$pa_options['ignoreType'] = $pa_item['settings']["{$ps_refinery_name}_ignoreType"];
 		}
 		
 		$pa_options['dontCreate'] = $pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
