@@ -470,18 +470,34 @@ function caFileIsIncludable($ps_file) {
 	# ----------------------------------------
 	/**
 	 * Checks if a given directory is empty (i.e. doesn't have any subdirectories or files in it)
-	 * @param string $vs_dir The directory to check
+	 * @param string $dir The directory to check
 	 * @return bool false if it's not a readable directory or if it's not empty, otherwise true
 	 */
-	function caDirectoryIsEmpty($vs_dir) {
-		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
+	function caDirectoryIsEmpty($dir) {
+		if(!is_readable($dir) || !is_dir($dir)) { return false; }
 
 		try {
-			$o_iterator = new \FilesystemIterator($vs_dir);
+			$o_iterator = new \FilesystemIterator($dir);
 			return !$o_iterator->valid();
 		} catch (Exception $e) {
 			return false;
 		}
+	}
+	# ----------------------------------------
+	/**
+	 * Calculates size of directory and all sub-directories in bytes.
+	 *
+	 * @param string $dir The directory to check
+	 * @return int Size of directory contents (including all sub-directories) in bytes
+	 */
+	function caDirectorySize($dir) {
+		$size = 0;
+
+		foreach (glob(rtrim($dir, '/').'/*', GLOB_NOSORT) as $each) {
+			$size += is_file($each) ? filesize($each) : caDirectorySize($each);
+		}
+
+		return $size;
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
