@@ -139,6 +139,66 @@ class MediaUploadManager {
     }
     # ------------------------------------------------------
     /**
+     * Get recent uploads for user
+     *
+     *
+     */
+    static public function getLog(array $options) {
+        $user = caGetOption('user', $options, null);
+        $limit = caGetOption('limit', $options, 10);
+
+        $sessions = [];
+        $user_id = $user ? self::_getUserID($user) : null;
+        
+        $params = [];
+        if ($user_id) { $params['user_id'] = $user_id; }
+        
+        if (!sizeof($params)) { $params = '*'; }
+        
+		if ($sessions = ca_media_upload_sessions::find($params, ['returnAs' => 'arrays'], ['sort' => 'created_on', 'sortDirection' => 'desc'])) {
+			$user_dir_path = caGetMediaUploadPathForUser($user_id);
+			$sessions = array_reverse(caSortArrayByKeyInValue($sessions, ['created_on']));
+			if ($limit > 0) {
+				$sessions = array_slice($sessions, 0, $limit);
+			}
+			$sessions = array_map(function($s) use ($user_dir_path) {
+				$files = caUnSerializeForDatabase($s['progress']);
+				$files_proc = [];
+				if(is_array($files)) {
+					foreach($files as $p => $info) {
+						$px = str_replace("{$user_dir_path}/", "", $p);
+						$files_proc[$px] = $info;
+					}
+				}
+				
+				$s['user'] = ca_users::userInfoFor($s['user_id']);
+				$s['files'] = $files_proc;
+
+				foreach(['created_on', 'completed_on', 'last_activity_on'] as $f) {
+					$s[$f] = ($s[$f] > 0) ? caGetLocalizedDate($s[$f], ['dateFormat' => 'delimited']) : null;
+				}
+				if ($s['completed_on']) {
+					$s['status'] = 'COMPLETED';
+				} elseif ($s['cancelled']) {
+					$s['status'] = 'CANCELLED';
+				} elseif ($s['last_activity_on']) {
+					$s['status'] = 'IN_PROGRESS';
+				} elseif ($s['last_activity_on']) {
+					$s['status'] = 'UNKNOWN';
+				}
+
+				unset($s['user_id']);
+				unset($s['progress']);
+
+				return $s;
+			}, $sessions);
+
+		}
+
+        return array_values($sessions);
+    }
+    # ------------------------------------------------------
+    /**
      *
      */
     static private function _getUserID($user) {

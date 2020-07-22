@@ -66,6 +66,20 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 * Generates admin console
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView
+ 		 *
+ 		 */
+ 		public function Admin($pa_options=null) {
+ 			AssetLoadManager::register("directoryBrowser");
+
+ 			$this->render('mediauploader/admin_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		# Services
+ 		# -------------------------------------------------------
+ 		/**
  		 * tus resume-able file upload API endpoint (see https://tus.io and https://github.com/ankitpokhrel/tus-php)
  		 */
  		public function tus(){
@@ -193,6 +207,26 @@
                 $this->view->setVar('response', ['ok' => 0, 'errors' => $errors]);
             }
             $this->render('mediauploader/response_json.php');
+        }
+        # -------------------------------------------------------
+        /**
+         * Log data for admin console
+         */
+        public function logdata(){
+        	header('Access-Control-Allow-Origin: *');
+			header('Access-Control-Allow-Methods: GET, POST');
+			header("Access-Control-Allow-Headers: X-Requested-With");
+        	// TODO: Check that user has privs to use uploader admin console
+        	// TODO: Add parameters to allow filtering by user, date range and upload status
+
+			if(false) {
+				// Handling of filtered query goes here
+			} else {
+				// No params, so show recent uploads by default
+ 		    	$recent = MediaUploadManager::getLog([]);
+ 		    }
+ 		    $this->view->setVar('response', ['ok' => 0, 'data' => $recent]);
+ 		    $this->render('mediauploader/response_json.php');
         }
 		# ------------------------------------------------------------------
  		# Sidebar info handler
