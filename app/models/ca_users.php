@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -315,6 +315,7 @@ class ca_users extends BaseModel {
 	 * @var array
 	 */
 	static $s_user_name_cache = [];
+	static $s_user_info_cache = [];
 
 	/**
 	 * List of tables that can have bundle- or type-level access control
@@ -2636,21 +2637,8 @@ class ca_users extends BaseModel {
 	 * @return int User_id value, or null if no match was found
 	 */
 	static public function userIDFor($user) {
-		if (array_key_exists($user, self::$s_user_id_cache)) {
-			return self::$s_user_id_cache[$user];
-		}
-		if(is_numeric($user)) {
-			// $user is valid integer user_id?
-			if ($u = ca_users::find(['user_id' => (int)$user], ['returnAs' => 'firstModelInstance'])) {
-				return self::$s_user_id_cache[$user] = $u->getPrimaryKey();
-			}
-		}
-
-		if (!($u = ca_users::findAsInstance(['user_name' => $user]))) { // $user is user_name value?
-			$u = ca_users::findAsInstance(['email' => $user]);          // $user is email value?
-		}
-		if($u && $u->isLoaded()) {
-			return self::$s_user_id_cache[ $user ] = $u->getPrimaryKey();
+		if ($info = self::userInfoFor($user)) {
+			return $info['user_id'];
 		}
 		return null;
 	}
@@ -2664,13 +2652,27 @@ class ca_users extends BaseModel {
 	 * @return string user_name value, or null if no match was found
 	 */
 	static public function userNameFor($user) {
-		if (array_key_exists($user, self::$s_user_name_cache)) {
-			return self::$s_user_name_cache[$user];
+		if ($info = self::userInfoFor($user)) {
+			return $info['user_name'];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get array of information for  user_id or email.  Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static public function userInfoFor($user) {
+		if (array_key_exists($user, self::$s_user_info_cache)) {
+			return self::$s_user_info_cache[$user];
 		}
 		if(is_numeric($user)) {
 			// $user is valid integer user_id?
 			if ($u = ca_users::find(['user_id' => (int)$user], ['returnAs' => 'firstModelInstance'])) {
-				return self::$s_user_name_cache[$user] = $u->get('user_name');
+				return self::$s_user_info_cache[$user] = self::_getUserInfoFromInstance($u);
 			}
 		}
 
@@ -2678,9 +2680,24 @@ class ca_users extends BaseModel {
 			$u = ca_users::findAsInstance(['user_name' => $user]);          // $user is user_name value?
 		}
 		if($u && $u->isLoaded()) {
-			return self::$s_user_name_cache[ $user ] = $u->get('user_name');
+			return self::$s_user_info_cache[ $user ] = self::_getUserInfoFromInstance($u);
 		}
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get array of information for  user_id or email.  Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static private function _getUserInfoFromInstance($user) {
+		$info = [];
+		foreach(['user_id', 'user_name', 'email', 'fname', 'lname', 'active', 'userclass'] as $f) {
+			$info[$f] = $user->get("ca_users.{$f}");
+		}
+		return $info;
 	}
 	# ----------------------------------------
 	/**
