@@ -92,7 +92,7 @@
 			// Start up server
             $server = new \TusPhp\Tus\Server('redis');  // TODO: make cache type configurable
 
-           // $server->middleware()->add(MediaUploaderHandler::class);
+           	$server->middleware()->add(MediaUploaderHandler::class);
             $server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
 
             $server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) {
@@ -169,7 +169,7 @@
             }
             if(sizeof($errors) === 0) {
 				$session = MediaUploadManager::newSession($user_id, $num_files, $size);
-				$this->view->setVar('response', ['ok' => 1, 'key' => $session->get('session_key')]);
+				$this->view->setVar('response', array_merge(['ok' => 1, 'key' => $session->get('session_key')], caGetUserMediaStorageUsageStats($user_id)));
 			} else {
 				$this->view->setVar('response', ['ok' => 0, 'errors' => $errors]);
 			}
@@ -182,8 +182,8 @@
         public function recent(){
  		    $user_id = $this->request->getUserID();
 
- 		    $recent = MediaUploadManager::getRecent(['user' => $user_id]);
- 		    $this->view->setVar('response', ['ok' => 0, 'recent' => $recent]);
+ 		    $recent = MediaUploadManager::getRecent(['user' => $user_id, 'limit' => 9]);
+ 		    $this->view->setVar('response', array_merge(['ok' => 0, 'recent' => $recent], caGetUserMediaStorageUsageStats($user_id)));
  		    $this->render('mediauploader/response_json.php');
         }
  		# -------------------------------------------------------
@@ -202,7 +202,7 @@
             if(sizeof($errors) === 0) {
                 $session->set('completed_on', _t('now'));
                 $session->update();
-                $this->view->setVar('response', ['ok' => 1, 'key' => $session->get('session_key'), 'completed_on' => $session->get('completed_on')]);
+                $this->view->setVar('response', array_merge(['ok' => 1, 'key' => $session->get('session_key'), 'completed_on' => $session->get('completed_on')], caGetUserMediaStorageUsageStats($user_id)));
             } else {
                 $this->view->setVar('response', ['ok' => 0, 'errors' => $errors]);
             }

@@ -10,6 +10,7 @@
 	providenceUIApps['mediauploader'] = {
         'selector': '#mediaUploaderUI',
         'endpoint': '<?= caNavUrl($this->request, 'batch', 'MediaUploader', ''); ?>',
+        'maxConcurrentUploads': <?= (int)Configuration::load()->get('media_uploader_max_conncurrent_user_uploads'); ?>,
         'data': {
 
         }

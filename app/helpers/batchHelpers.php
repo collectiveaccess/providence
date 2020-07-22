@@ -567,3 +567,33 @@
 		return null;
 	}
 	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return int
+	 */
+	function caGetUserMediaStorageUsage($user=null, array $options=null) {
+		global $g_request;
+		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
+			$user = $g_request->getUserID();
+		}
+		
+		$size = caDirectorySize(caGetMediaUploadPathForUser($user));
+		if(caGetOption('forDisplay', $options, false)) { $size = caHumanFilesize($size); }
+		return $size;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	function caGetUserMediaStorageUsageStats($user=null, array $options=null) {
+		$ret = [
+			'storageUsage' => caGetUserMediaStorageUsage($user),
+			'storageUsageDisplay' => caGetUserMediaStorageUsage($user, ['forDisplay' => true])
+		];
+		
+		return $ret;
+	}
+	# ------------------------------------------------------

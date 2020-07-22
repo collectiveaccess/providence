@@ -765,14 +765,14 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	function caCleanUserMediaDirectory(int $user_id) {
+	function caCleanUserMediaDirectory($user) {
 	    // use configured directory to dump media with fallback to standard tmp directory
 	    $config = Configuration::load();
 
-		$user_dir = caGetMediaUploadPathForUser($user_id);
+		$user_dir = caGetMediaUploadPathForUser($user);
 		
-		if (!($timeout = (int)$config->get('media_upload_tmp_directory_timeout'))) {
-			$timeout = 24 * 60 * 60;
+		if (($timeout = (int)$config->get('media_uploader_directory_timeout')) <= 0) {		// bail if no timeout
+			return 0;
 		}
 		
 		// Cleanup any old files here
@@ -787,11 +787,11 @@ function caFileIsIncludable($ps_file) {
 	
 		foreach($files as $f => $i) {
 			$b = pathinfo($f, PATHINFO_BASENAME);
-			if (preg_match("!^([^_]+)_metadata!", $b, $m) && !isset($files[$user_dir."/".$m[1]])) {
+			if (preg_match("!^\.([^_]+)_metadata!", $b, $m) && !isset($files[$user_dir."/".$m[1]])) {
 				@unlink($f);
 				continue;
 			}
-			if (preg_match("!^md5_(.*)$!", $b, $m)) {
+			if (preg_match("!^\.md5_(.*)$!", $b, $m)) {
 				$r = @file_get_contents($f);
 				if (!isset($files[$user_dir."/".$r])) { @unlink($f); }
 			}
@@ -805,15 +805,14 @@ function caFileIsIncludable($ps_file) {
 	function caCleanUserMediaDirectories() {
 	    // use configured directory to dump media with fallback to standard tmp directory
 	    $config = Configuration::load();
-		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
-			$tmp_directory = caGetTempDirPath();
+		if (!is_writeable($tmp_directory = $config->get('media_uploader_root_directory'))) {
+			return null;
 		}
 
 		$count = 0;
 		if(is_array($dirs = scandir($tmp_directory))) {
 			foreach($dirs as $dir) {
-				$d = caGetUserDirectoryName();
-				if (preg_match("!^({$d})$!", $dir, $m)) {
+				if (preg_match("!^~([A-Za-z0-9_\-]+)$!", $dir, $m)) {
 					caCleanUserMediaDirectory($m[1]);
 					$count++;
 				}

@@ -4259,8 +4259,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				// is it server-side stored user media?
 				if (preg_match("!^".caGetUserDirectoryName()."/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
 					// use configured directory to dump media with fallback to standard tmp directory
-					if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
-						$vs_tmp_directory = caGetTempDirPath();
+					if (!is_readable($vs_tmp_directory = $this->getAppConfig()->get('media_uploader_root_directory'))) {
+						$this->postError(1600, _t('User media upload directory is not readable'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+						return false;
 					}
 					$this->_SET_FILES[$ps_field]['tmp_name'] = "{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name'];
 				

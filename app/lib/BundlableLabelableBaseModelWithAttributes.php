@@ -4282,20 +4282,26 @@ if (!$vb_batch) {
 									$vn_type_id = $po_request->getParameter($vs_prefix_stub.'rel_type_id_new_'.$va_matches[1], pInteger);
 								}
 								
+								$is_user_media = false;
 								if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
                                     $this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
                                 } else {
-                                    if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
+                                    if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url']) && isUrl($vs_path)) {
                                         $va_tmp = explode('/', $vs_path);
                                         $vs_original_name = array_pop($va_tmp);
-                                    } elseif(preg_match("!^".caGetUserDirectoryName($po_request->getUserID())."!", $va_values['tmp_name'])) {
+                                    } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."!", $va_values['tmp_name'])) {
 	                                    $vs_tmp_directory = caGetMediaUploadPathForUser($po_request->getUserID());
-                                    	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
-                                    	$md = json_decode(file_get_contents("{$vs_path}_metadata"), true);
-                                        $vs_original_name = $md['original_filename'];
+                                    	$vs_path = $vs_tmp_directory.'/'.str_replace($u, "", $va_values['tmp_name']);
+                                        $vs_original_name = pathinfo($vs_path, PATHINFO_BASENAME);
+                                        $is_user_media = true;
                                     } else {
                                         $vs_path = $va_values['tmp_name'];
                                         $vs_original_name = $va_values['name'];
+                                        
+                                        if (file_exists($vs_path) && !caIsRunFromCLI()) {
+                                        	 $po_request->addActionErrors([_t('Cannot use path')], $vs_f, 'new_'.$va_matches[1]);
+                                        	 continue;
+                                        }
                                     }
                                     
                                     if (!$vs_path) { continue; }
@@ -4360,6 +4366,9 @@ if (!$vb_batch) {
 											
 											$t_importer = new ca_data_importers();
 											$t_importer->importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
+										}
+										if($is_user_media) {
+											@unlink($vs_path);
 										}
                                     }
                                 }

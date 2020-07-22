@@ -2628,23 +2628,11 @@ class BaseEditorController extends ActionController {
 		if(is_array($_FILES['files'])) {
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				if(!strlen($f)) { continue; }
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
 				
-				$md5 = md5_file($f);
-				if (isset($user_files["{$user_dir}/md5_{$md5}"])) { 
-					$f = "{$user_dir}/".file_get_contents("{$user_dir}/md5_{$md5}");
-				}
-				
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
+				$dest_filename = isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME);
 				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
 
-				// write file metadata
-				@file_put_contents("{$dest_path}_metadata", json_encode([
-					'original_filename' => $_FILES['files']['name'][$i],
-					'size' => filesize($dest_path)
-				]));
-				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
-				$stored_files[$md5] = caGetMediaUploadPathForUser($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
+				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
 		}
 

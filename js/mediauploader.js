@@ -12,6 +12,8 @@ axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 const selector = providenceUIApps.mediauploader.selector;
 const endpoint = providenceUIApps.mediauploader.endpoint;
+let maxConcurrentUploads = providenceUIApps.mediauploader.maxConcurrentUploads;
+maxConcurrentUploads = ((maxConcurrentUploads === undefined) || (parseInt(maxConcurrentUploads) <= 0)) ? maxConcurrentUploads = 4 : parseInt(maxConcurrentUploads);
 
 class MediaUploader extends React.Component {
 
@@ -41,7 +43,9 @@ class MediaUploader extends React.Component {
 
             paused: false,
 
-            sessionKey: null
+            sessionKey: null,
+            
+            storageUsage: ''
         };
 
         this.init = this.init.bind(this);
@@ -102,7 +106,7 @@ class MediaUploader extends React.Component {
         let i = 0;
         while(queue.length > 0) {
             if (Object.keys(state.connections).length >= maxConnections) {
-                console.log("Stopping queue because max connections have been reached", state.connections, state.connections.length);
+                //console.log("Stopping queue because max connections have been reached", state.connections, state.connections.length);
                 return;
             }
             let file = queue.shift();
@@ -141,6 +145,11 @@ class MediaUploader extends React.Component {
                         that.setState(state);
                     }
                 },
+                onAfterResponse: function (req, res) {
+                    let state = that.state;
+					state.storageUsage = res.getHeader("storageUsageDisplay");
+                    that.setState(state);
+				},
                 onSuccess: () => {
                     let state = that.state;
                     delete state.connections[connectionIndex];
@@ -237,6 +246,7 @@ class MediaUploader extends React.Component {
                 state.sessionKey = response.data.key;
                 state.filesUploaded = 0;
                 state.filesSelected = that.queueLength();
+                state.storageUsage = response.data.storageUsageDisplay;
                 that.setState(state);
 
                 that.statusMessage('upload');
@@ -331,6 +341,7 @@ class MediaUploader extends React.Component {
         }).then(function(response) {
             let state = that.state;
             state.recentList = response.data.recent;
+            state.storageUsage = response.data.storageUsageDisplay;
             that.setState(state);
 
         });
@@ -340,10 +351,12 @@ class MediaUploader extends React.Component {
      *
      */
   render() {
+  	let storageUsage = this.state.storageUsage;
+  	
     return (
         <div>
           <div className="row">
-              <div className="col-md-10">
+              <div className="col-md-12">
                   <h2>{this.state.status}</h2>
               </div>
           </div>
@@ -377,6 +390,9 @@ class MediaUploader extends React.Component {
                       </div>
                   </div>
               </div>
+              <div className="col-md-4">
+                  <MediaUploaderInfo storageUsage={storageUsage}/>
+              </div>
             </div>
             <div className="row">
                 <div className="col-md-10">
@@ -393,18 +409,27 @@ class MediaUploader extends React.Component {
               </div>
             </div>
             <div className="row mt-3">
-              <div className="col-md-10">
+              <div className="col-md-12">
                   <MediauploaderQueueList queue={this.state.queue} deleteCallback={this.deleteQueuedUpload}/>
               </div>
             </div>
             <div className="row mt-3">
-                <div className="col-md-10">
+                <div className="col-md-12">
                     <MediauploaderRecentsList sessions={this.state.recentList}/>
                 </div>
             </div>
           </div>
     );
   }
+}
+
+class MediaUploaderInfo extends React.Component {
+	
+    render() {
+		return <div>
+				Storage usage: {this.props.storageUsage}
+			</div>;
+    }
 }
 
 class MediauploaderQueueProgress extends React.Component {
@@ -564,7 +589,7 @@ class MediauploaderRecentItem extends React.Component {
             statusClass = 'badge badge-warning pull-right';
         }
 
-        return <div className="col-md-4 mt-3">
+        return <div className="col-md-3 mt-3">
                 <div className="card">
                     <div className="card-body">
                         <div
@@ -582,4 +607,4 @@ class MediauploaderRecentItem extends React.Component {
     }
 }
 
-ReactDOM.render(<MediaUploader maxConcurrentConnections="4" endpoint={endpoint}/>, document.querySelector(selector));
+ReactDOM.render(<MediaUploader maxConcurrentConnections={maxConcurrentUploads} endpoint={endpoint}/>, document.querySelector(selector));
