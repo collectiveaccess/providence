@@ -31,7 +31,8 @@
 	$i = 0;
 	$item_count = 0;
 ?>
-	<div id="commentsResults">	
+	<div id="commentsResults">
+		<form id="commentListForm"><input type="hidden" name="mode" value="search">	
 		<div style="text-align:right;">
 			<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
 			<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
@@ -116,5 +117,5 @@
 		}
 ?>
 			</tbody>
-		</table>
+		</table></form>
 	</div><!--end commentsResults -->
