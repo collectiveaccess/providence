@@ -19,3 +19,22 @@
 .mediaUploaderDropZoneInput:focus {
   outline: none !important;
 }
+
+div.mediaUploaderInfoCard {
+  padding: 5px;
+  margin: 0px;
+}
+
+ul.mediaUploaderInfo {
+	list-style: none;
+    padding-left: 0;
+}
+
+h4.mediaUploaderError {
+	color: #cc0000;
+}
+
+h4.MediaUploaderStorageError {
+	color: #cc0000;
+	font-size: 11px;
+}

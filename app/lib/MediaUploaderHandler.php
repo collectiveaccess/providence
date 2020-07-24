@@ -3,6 +3,8 @@ use TusPhp\Request;
 use TusPhp\Response;
 use TusPhp\Middleware\TusMiddleware;
 
+require_once(__CA_LIB_DIR__."/MediaUploadManager.php");
+
 class MediaUploaderHandler implements TusMiddleware {
 
     /**
@@ -12,6 +14,11 @@ class MediaUploaderHandler implements TusMiddleware {
         // TODO: Add checks here?
         
         $stats = caGetUserMediaStorageUsageStats();
+        
+        if ($stats['storageUsage'] > $stats['storageAvailable']) {
+        	throw new MediaUploadManageSessionException('User storage quota exceeded');
+        }
+        
         unset($stats['storageUsage']);
         $h = array_merge($response->getHeaders(), $stats);
         $response->setHeaders($h);

@@ -488,15 +488,38 @@ function caFileIsIncludable($ps_file) {
 	 * Calculates size of directory and all sub-directories in bytes.
 	 *
 	 * @param string $dir The directory to check
-	 * @return int Size of directory contents (including all sub-directories) in bytes
+	 * @param array $options Options include:
+	 *		forDisplay = return human-readable version of size value. [Default is false]
+	 *		returnAll = return array with size in bytes, human readable size and file count
+	 * @return mixed Size of directory contents (including all sub-directories) in bytes; human-readable version of size or array with size and count
 	 */
-	function caDirectorySize($dir) {
-		$size = 0;
-
-		foreach (glob(rtrim($dir, '/').'/*', GLOB_NOSORT) as $each) {
-			$size += is_file($each) ? filesize($each) : caDirectorySize($each);
+	function caDirectorySize($dir, array $options=null) {
+		$size = $c = $dc = 0;
+		
+		if ($dir) {
+			foreach (glob(rtrim($dir, '/').'/*', GLOB_NOSORT) as $each) {
+				if (!$each) { continue; }
+				if(is_file($each)) {
+					$size += filesize($each);
+					$c++;
+				} else {
+					$d = caDirectorySize($each, ['returnAll' => true]);
+					$size += $d['size'];
+					$c += $d['fileCount'];
+					$dc += $d['directoryCount'] + 1;
+				}
+			}
 		}
-
+		
+		if(caGetOption('forDisplay', $options, false)) { return caHumanFilesize($size); }
+		if(caGetOption('returnAll', $options, false)) { 
+			return [
+				'size' => $size, 
+				'display' => caHumanFilesize($size), 
+				'fileCount' => $c, 
+				'directoryCount' => $dc
+			]; 
+		}
 		return $size;
 	}
 	# ----------------------------------------
@@ -2873,6 +2896,29 @@ function caFileIsIncludable($ps_file) {
 
 		return sprintf("%.{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
 	}
+	
+	# ----------------------------------------
+	/** 
+	 *
+	 */
+	function caParseHumanFilesize(string $from): ?int {
+		$units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+		$number = substr($from, 0, -2);
+		$suffix = strtoupper(substr($from,-2));
+
+		//B or no suffix
+		if(is_numeric(substr($suffix, 0, 1))) {
+			return preg_replace('/[^\d]/', '', $from);
+		}
+
+		$exponent = array_flip($units)[$suffix] ?? null;
+		if($exponent === null) {
+			return null;
+		}
+
+		return $number * (1024 ** $exponent);
+	}
+
 	# ----------------------------------------
 	/**
 	 * Upload a local file to a GitHub repository

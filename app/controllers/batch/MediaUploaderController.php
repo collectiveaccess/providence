@@ -148,8 +148,17 @@
                 }
 
             });
-            $response = $server->serve();
-            $response->send();
+            try {
+            	$response = $server->serve();
+           		$response->send();
+           	} catch(MediaUploadManageSessionException $e) {
+           		http_response_code(401);
+           		header("Location", "None");
+           		header("Tus-Resumable: 1.0.0");
+           		$this->view->setVar('response', ['error' => $e->getMessage(), 'global' => true, 'state' => 'quota']);
+           		$this->render('mediauploader/response_json.php');
+           		return;
+           	}
  		}
  		# -------------------------------------------------------
  		/**

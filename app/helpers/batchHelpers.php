@@ -586,12 +586,40 @@
 	/**
 	 * 
 	 *
+	 * @return int
+	 */
+	function caGetUserMediaStorageAvailable($user=null, array $options=null) {
+		$config = Configuration::load();
+		global $g_request;
+		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
+			$user = $g_request->getUserID();
+		}
+		
+		$size = caParseHumanFilesize($config->get('media_uploader_max_user_storage'));
+		
+		if(caGetOption('forDisplay', $options, false)) { $size = caHumanFilesize($size); }
+		return $size;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
 	 * @return array
 	 */
 	function caGetUserMediaStorageUsageStats($user=null, array $options=null) {
+		global $g_request;
+		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
+			$user = $g_request->getUserID();
+		}
+		$storage_usage = caDirectorySize(caGetMediaUploadPathForUser($user), ['returnAll' => true]);
+		$available_storage = caGetUserMediaStorageAvailable($user);
 		$ret = [
-			'storageUsage' => caGetUserMediaStorageUsage($user),
-			'storageUsageDisplay' => caGetUserMediaStorageUsage($user, ['forDisplay' => true])
+			'storageUsage' => $storage_usage['size'],
+			'storageUsageDisplay' => $storage_usage['display'],
+			'fileCount' => $storage_usage['fileCount'],
+			'directoryCount' => $storage_usage['directoryCount'],
+			'storageAvailable' => $available_storage,
+			'storageAvailableDisplay' => caHumanFilesize($available_storage)
 		];
 		
 		return $ret;

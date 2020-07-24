@@ -26,6 +26,7 @@ class MediaUploader extends React.Component {
             start: 'Starting upload',
             upload: 'Uploading files',
             complete: 'Upload complete',
+            quota: 'User storage limit exceeded',
             error: 'Error'
         };
 
@@ -38,6 +39,7 @@ class MediaUploader extends React.Component {
             queue: [],
             connections: {},
             connectionIndex: 0,
+            error: null,
 
             recentList: [],
 
@@ -45,7 +47,12 @@ class MediaUploader extends React.Component {
 
             sessionKey: null,
             
-            storageUsage: ''
+            storageUsage: '-',
+            storageUsageBytes: 0,
+            storageAvailable: '-',
+            storageAvailableBytes: 0,
+            storageFileCount: 0,
+            storageDirectoryCount: 0
         };
 
         this.init = this.init.bind(this);
@@ -132,9 +139,25 @@ class MediaUploader extends React.Component {
                 onError: (error) => {
                     let state = that.state;
                     if(state.connections[connectionIndex]) {
-                        state.connections[connectionIndex]['status'] = 'Error';
-                        that.setState(state);
-                        console.log('Error: ', error);
+                    	// error during transfer
+                        let error_resp = JSON.parse(error.originalResponse.getBody());
+                        let error_msg = (error_resp && error_resp.error) ? error_resp.error : 'Unknown error';
+                        let is_global = (error_resp && error_resp.global) ? error_resp.global : false;
+                        let error_state = (error_resp && error_resp.state) ? error_resp.state : 'error';
+                        console.log("Error:", error_msg);
+                        state.connections[connectionIndex]['status'] = error_msg;
+                        state.connections[connectionIndex]['uploadedBytes'] = 0;
+                        
+                        if(is_global) {
+                        	that.statusMessage(error_state);
+                        	state.error = error_msg;
+                        }
+                        
+						state.connections[connectionIndex].upload.abort();
+						delete state['connections'][connectionIndex];
+						that.setState(state);
+						that.checkSession();// is session over now?
+                        
                     }
                 },
                 onProgress: (uploadedBytes, totalBytes) => {
@@ -147,12 +170,19 @@ class MediaUploader extends React.Component {
                 },
                 onAfterResponse: function (req, res) {
                     let state = that.state;
-					state.storageUsage = res.getHeader("storageUsageDisplay");
-                    that.setState(state);
+                    if (res.getHeader("storageAvailableDisplay")) {
+						state.storageUsageBytes = res.getHeader("storageUsage");
+						state.storageUsage = res.getHeader("storageUsageDisplay");
+						state.storageAvailableBytes = res.getHeader("storageAvailable");
+						state.storageAvailable = res.getHeader("storageAvailableDisplay");
+						state.storageFileCount = res.getHeader("fileCount");
+						state.storageDirectoryCount = res.getHeader("directoryCount");
+                    	that.setState(state);
+                    }
 				},
                 onSuccess: () => {
                     let state = that.state;
-                    delete state.connections[connectionIndex];
+                    delete(state.connections[connectionIndex]);
 
                     that.checkSession();
                     state['filesUploaded']++;
@@ -246,7 +276,15 @@ class MediaUploader extends React.Component {
                 state.sessionKey = response.data.key;
                 state.filesUploaded = 0;
                 state.filesSelected = that.queueLength();
-                state.storageUsage = response.data.storageUsageDisplay;
+                
+                if(response.data.storageAvailableDisplay) {
+					state.storageUsage = response.data.storageUsageDisplay;
+					state.storageUsageBytes = response.data.storageUsage;
+					state.storageAvailable = response.data.storageAvailableDisplay;
+					state.storageAvailableBytes = response.data.storageAvailable;
+					state.storageFileCount = response.data.fileCount;
+					state.storageDirectoryCount = response.data.storageDirectoryCount;
+				}
                 that.setState(state);
 
                 that.statusMessage('upload');
@@ -341,7 +379,15 @@ class MediaUploader extends React.Component {
         }).then(function(response) {
             let state = that.state;
             state.recentList = response.data.recent;
-            state.storageUsage = response.data.storageUsageDisplay;
+            
+            if (response.data.storageAvailableDisplay) {
+				state.storageUsage = response.data.storageUsageDisplay;
+				state.storageUsageBytes = response.data.storageUsage;
+				state.storageAvailable = response.data.storageAvailableDisplay;
+				state.storageAvailableBytes = response.data.storageAvailable;
+				state.storageFileCount = response.data.fileCount;
+				state.storageDirectoryCount = response.data.directoryCount;
+			}
             that.setState(state);
 
         });
@@ -352,12 +398,16 @@ class MediaUploader extends React.Component {
      */
   render() {
   	let storageUsage = this.state.storageUsage;
+  	let storageAvailable = this.state.storageAvailable;
+  	let fileCount = this.state.storageFileCount;
+  	let directoryCount = this.state.storageDirectoryCount;
   	
     return (
         <div>
           <div className="row">
               <div className="col-md-12">
                   <h2>{this.state.status}</h2>
+                  <h4 className="mediaUploaderError">{this.state.error}</h4>
               </div>
           </div>
             <div className="row">
@@ -390,8 +440,10 @@ class MediaUploader extends React.Component {
                       </div>
                   </div>
               </div>
-              <div className="col-md-4">
-                  <MediaUploaderInfo storageUsage={storageUsage}/>
+              <div className="col-md-2 card">
+                  <MediaUploaderInfo storageUsage={storageUsage} storageAvailable={storageAvailable} 
+                  storageUsageBytes={this.state.storageUsageBytes} storageAvailableBytes={this.state.storageAvailableBytes}
+                  fileCount={fileCount} directoryCount={directoryCount}/>
               </div>
             </div>
             <div className="row">
@@ -424,10 +476,17 @@ class MediaUploader extends React.Component {
 }
 
 class MediaUploaderInfo extends React.Component {
-	
     render() {
-		return <div>
-				Storage usage: {this.props.storageUsage}
+		let storage_exceeded = (this.props.storageUsageBytes > this.props.storageAvailableBytes) ? "Storage allocation exceeded" : "";
+		return <div className="mediaUploaderInfo">
+				<h2>Storage</h2>
+				<h4 className="MediaUploaderStorageError">{storage_exceeded}</h4>
+				<ul className="mediaUploaderInfo">
+					<li>Available: {this.props.storageAvailable}</li>
+					<li>In use: {this.props.storageUsage}</li>
+					<li>Files: {this.props.fileCount}</li>
+					<li>Directories: {this.props.directoryCount}</li>
+				</ul>
 			</div>;
     }
 }
