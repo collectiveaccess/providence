@@ -1620,7 +1620,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											break;
 									}
 
-									$pa_direct_sql_query_params = array();
+									$pa_direct_sql_query_params = null;
 								}
 							}
 						}
