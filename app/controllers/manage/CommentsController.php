@@ -65,6 +65,7 @@
  		 * (eg. CollectionSearch for collections, EntitySearch for entities) and pass it to BaseSearchController->Index() 
  		 */ 
  		public function Index($pa_options=null) {
+ 			$this->view->setVar('mode', 'search');
  			$pa_options['search'] = new ItemCommentSearch();
  			
  			$this->view->setVar('table_list', $table_list = caGetPrimaryTablesForHTMLSelect());
@@ -115,6 +116,7 @@
  		# -------------------------------------------------------
  		public function ListUnmoderated() {
  			$t_comments = new ca_item_comments();
+ 			$this->view->setVar('mode', 'list');
  			$this->view->setVar('t_comments', $t_comments);
  			$this->view->setVar('comments_list', $t_comments->getUnmoderatedComments(['returnAs' => 'searchResult']));
  			if(sizeof($t_comments->getUnmoderatedComments()) == 0){
@@ -157,12 +159,13 @@
  					$this->ListUnmoderated();
  				break;
  				# -----------------------
- 				case "search":
- 					$this->Index();
- 				break;
- 				# -----------------------
  				case "dashboard":
  					$this->response->setRedirect(caNavUrl($this->request, "", "Dashboard", "Index"));
+ 				break;
+ 				# -----------------------
+ 				case "search":
+ 				default:
+ 					$this->Index();
  				break;
  				# -----------------------
  			}

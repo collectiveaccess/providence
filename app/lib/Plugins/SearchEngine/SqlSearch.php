@@ -1620,7 +1620,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											break;
 									}
 
-									$pa_direct_sql_query_params = array();
+									$pa_direct_sql_query_params = null;
 								}
 							}
 						}
@@ -1810,7 +1810,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_sql .= " HAVING count(distinct sw.stem) >= {$vn_num_terms}";
 								}
 								$t = new Timer();
-								
+								print_R($pa_direct_sql_query_params);
 								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
 								if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
 								$qr_res = $this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
