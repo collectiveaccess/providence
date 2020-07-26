@@ -623,7 +623,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			}
 		}
 
-		if(sizeof($va_bulk_params['body'])) {
+		if(!empty($va_bulk_params['body'])) {
 			// Improperly encoded UTF8 characters in the body will make
 			// Elastic throw errors and result in records being omitted from the index.
 			// We force the document to UTF8 here to avoid that fate.
