@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,6 +247,61 @@ class ca_data_importer_items extends BaseModel {
 			),
 			'label' => _t('Skip mapping if empty'),
 			'description' => _t('Skip mapping if value for this element is empty.')
+		);
+		
+		$va_settings['skipWhenEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Skip mapping if any listed elements is empty'),
+			'description' => _t('Skip mapping if any values for listed elements are empty.')
+		);
+		$va_settings['skipWhenAllEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Skip mapping if all listed elements are empty'),
+			'description' => _t('Skip mapping if all values for listed elements are empty.')
+		);
+		$va_settings['skipGroupWhenEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Skip group if any listed elements is empty'),
+			'description' => _t('Skip group if any values for listed elements are empty.')
+		);
+		$va_settings['skipGroupWhenAllEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Skip group if all listed elements are empty'),
+			'description' => _t('Skip group if all values for listed elements are empty.')
+		);
+		$va_settings['skipRowWhenEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Skip row if any listed elements is empty'),
+			'description' => _t('Skip row if any values for listed elements are empty.')
+		);
+		$va_settings['skipRowWhenAllEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Skip row if all listed elements are empty'),
+			'description' => _t('Skip row if all values for listed elements are empty.')
 		);
 		$va_settings['skipIfValue'] = array(
 			'formatType' => FT_TEXT,
