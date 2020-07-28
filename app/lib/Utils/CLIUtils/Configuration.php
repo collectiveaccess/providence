@@ -133,7 +133,7 @@
 			$vo_installer->processMetadataAlerts();
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing post install tasks")); }
-			$vo_installer->performPostInstallTasks();
+			$vo_installer->performPostInstallTasks($pb_installing);
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Installation complete")); }
 
