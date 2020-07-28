@@ -6397,8 +6397,10 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     position: fixed;
     top: 0px;
     left: 0px;
-    width: 900px;
-    height: 600px;
+    width: 80vh;
+    min-width: 900px;
+    height: 80vh;
+    min-height: 600px;
     overflow: auto;
     display: none;
     margin: 0px;

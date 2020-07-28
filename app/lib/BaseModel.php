@@ -2726,7 +2726,6 @@ class BaseModel extends BaseObject {
 						$this->postError($vn_err_num, $o_e->getErrorDescription().' ['.$vn_err_num.']', "BaseModel->insert()", $this->tableName().'.'.$vs_field);
 						break;
 				}
-
 			}
 			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -3189,7 +3188,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				} 
 				
 				SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-                if (($fields_changed > 0) && method_exists($this, "deriveHistoryTrackingCurrentValue") && !caGetOption('dontUpdateHistoryCurrentValueTracking', $pa_options, false)) {
+                if (($fields_changed > 0) && method_exists($this, "deriveHistoryTrackingCurrentValue") && !caGetOption('dontUpdateHistoryCurrentValueTracking', $pa_options, false) && !defined('__CA_DONT_UPDATE_HISTORY_TRACKING_CACHE__')) {
                     $table = $this->tableName();
                     $this->deriveHistoryTrackingCurrentValue();
                     if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
@@ -9089,7 +9088,7 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->insert();
 					
 					if ($t_item_rel->numErrors() > 0) {
-						$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+						$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 						return false;
 					}
 					
@@ -9102,7 +9101,7 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->update();
 							
 							if ($t_item_rel->numErrors() > 0) {
-								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 								return false;
 							}
 						} else {
@@ -9112,7 +9111,7 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->insert();
 							
 							if ($t_item_rel->numErrors() > 0) {
-								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 								return false;
 							}
 						}
@@ -9122,7 +9121,7 @@ $pa_options["display_form_field_tips"] = true;
 						$this->update();
 					
 						if ($this->numErrors() > 0) {
-							$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+							$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 							return false;
 						}
 						return $this;
@@ -11497,7 +11496,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 *			The default is ids
 	 *	
-	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit
+	 *		start = if searchResult, ids or modelInstances is set, starts returned list of matches at specified index. Default is 0.
+	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit.
 	 *		boolean = determines how multiple field values in $pa_values are combined to produce the final result. Possible values are:
 	 *			AND						= find rows that match all criteria in $pa_values
 	 *			OR						= find rows that match any criteria in $pa_values
@@ -11743,8 +11743,14 @@ $pa_options["display_form_field_tips"] = true;
 			$o_db = new Db();
 		}
 		
-		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-		$qr_res = $o_db->query($vs_sql, array_merge($va_sql_params, $va_type_restriction_params));
+		$start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
+		$limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+		$limit_sql = '';
+		if ($start > 0) { $limit_sql = "{$start}"; }
+		if ($limit > 0) { $limit_sql .= $limit_sql ? ", {$limit}" : "{$limit}"; }
+		
+		$qr_res = $o_db->query($vs_sql.($limit_sql ? " LIMIT {$limit_sql}" : ''), array_merge($va_sql_params, $va_type_restriction_params));
 
 		if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 			return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
@@ -11776,7 +11782,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($t_instance->load($qr_res->get($vs_pk))) {
 						$va_instances[] = $t_instance;
 						$vn_c++;
-						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+						if ($limit && ($vn_c >= $limit)) { break; }
 					}
 				}
 				return $va_instances;
@@ -11795,7 +11801,7 @@ $pa_options["display_form_field_tips"] = true;
 				while($qr_res->nextRow()) {
 					$va_rows[] = $qr_res->getRow();
 					$vn_c++;
-					if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					if ($limit && ($vn_c >= $limit)) { break; }
 				}
 				return $va_rows;
 				break;
@@ -11805,7 +11811,7 @@ $pa_options["display_form_field_tips"] = true;
 				$va_ids = array();
 				while($qr_res->nextRow()) {
 					$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
-					if ($vn_limit && (sizeof($va_ids) >= $vn_limit)) { break; }
+					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
 					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));

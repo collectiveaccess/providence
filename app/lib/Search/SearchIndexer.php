@@ -869,8 +869,9 @@ class SearchIndexer extends SearchBase {
                         foreach($policies as $p => $pinfo) {
                             $history = $t_subject->getHistory(['policy' => $p,  'limit' => 1, 'row_id' => $pn_subject_row_id]); //'currentOnly' => true,
                             
-                            if (is_array($history) && (sizeof($history) > 0)) { 
-                                $current_value = array_shift(array_shift($history));
+                            if (is_array($history) && (sizeof($history) > 0)) {
+                                $current_history = array_shift($history);
+                                $current_value = array_shift($current_history);
                                 if ($current_history_type !== $current_value['type']) { continue; }
                                 $current_value_ids[$current_value['current_row_id']][] = $p;
                             }
@@ -883,6 +884,11 @@ class SearchIndexer extends SearchBase {
 					$va_queries 			= $va_query_info['queries'];
 					$va_fields_to_index 	= $va_query_info['fields_to_index'];
 					$va_cv_fields_to_index  = $va_query_info['current_value_fields_to_index'];
+					
+						
+					if ($vb_index_count = (isset($va_fields_to_index['_count']) && is_array($va_fields_to_index['_count']))) {
+						$va_counts = $this->_getInitedCountList($t_rel); 
+					}
 					
 					foreach($va_queries as $vn_i => $va_query) {
 						$va_linking_table_config = is_array($va_query_info['linking_table_config_per_query'][$vn_i]) ? $va_query_info['linking_table_config_per_query'][$vn_i] : [];
@@ -919,25 +925,21 @@ class SearchIndexer extends SearchBase {
 						if(!$qr_res->seek(0)) {
 							$qr_res = $this->opo_db->query($vs_sql, $va_params);
 						}
-						
-						if ($vb_index_count = (isset($va_fields_to_index['_count']) && is_array($va_fields_to_index['_count']))) {
-							$va_counts = $this->_getInitedCountList($t_rel); 
-						}
 
 						$vn_count = 0;
-                        while ($qr_res->nextRow()) {
-                            $vn_count++;
-
-                            $va_field_data = $qr_res->getRow();
-                            $vn_rel_subject_row_id = $vn_row_id = $qr_res->get($vs_related_pk);
-                            if (is_a($t_rel, "BaseLabel")) {
-                                $vn_rel_subject_row_id = $qr_res->get($t_rel->getSubjectTableInstance(['dontLoadInstance' => true])->primaryKey());
-                            }
-
-                            $vn_rel_type_id = (int) $qr_res->get('rel_type_id');
-                            $vn_row_type_id = (int) $qr_res->get('type_id');
-
-                            if (!$vb_force_related && ($vs_related_table==$vs_subject_tablename) && is_array($va_restrict_self_indexing_to_types) && !in_array($vn_row_type_id, $va_restrict_self_indexing_to_types)) {
+						while($qr_res->nextRow()) {
+							$vn_count++;
+							
+							$va_field_data = $qr_res->getRow();
+							$vn_rel_subject_row_id = $vn_row_id = $qr_res->get($vs_related_pk);
+							if (is_a($t_rel, "BaseLabel")) {
+							    $vn_rel_subject_row_id = $qr_res->get($t_rel->getSubjectTableInstance(['dontLoadInstance' => true])->primaryKey());
+							}
+							
+							$vn_rel_type_id = (int)$qr_res->get('rel_type_id');
+							$vn_row_type_id = (int)$qr_res->get('type_id');
+							
+                            if(!$vb_force_related && ($vs_related_table == $vs_subject_tablename) && is_array($va_restrict_self_indexing_to_types) && !in_array($vn_row_type_id, $va_restrict_self_indexing_to_types)) {
                                 continue;
                             }
                             if (is_array($va_restrict_indexing_to_types) && !in_array($vn_row_type_id, $va_restrict_indexing_to_types)) {
@@ -1133,17 +1135,17 @@ class SearchIndexer extends SearchBase {
                                     }
                                 }
                             }
-
-                            // index counts?
-                            // * Counts are not supported for current value indexing *
-                            // * (Not an issue as the count would always be 1...) *
-                            if ($vb_index_count) {
-                                foreach ($va_counts as $vs_key => $vn_count) {
-                                    $this->opo_engine->indexField($vn_related_table_num, 'COUNT', 0, [(int) $vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
-                                    $this->_genIndexInheritance($t_subject, $t_rel, 'COUNT', $pn_subject_row_id, 0, [(int) $vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
-                                }
-                            }
-                        }
+						}
+					}
+				
+					// index counts?
+					// * Counts are not supported for current value indexing *
+					// * (Not an issue as the count would always be 1...) *
+					if ($vb_index_count) {
+						foreach($va_counts as $vs_key => $vn_count) {
+							$this->opo_engine->indexField($vn_related_table_num, 'COUNT', 0, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
+							$this->_genIndexInheritance($t_subject, $t_rel, 'COUNT', $pn_subject_row_id, 0, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
+						}
 					}
 				}
 			}
@@ -1395,7 +1397,7 @@ class SearchIndexer extends SearchBase {
 									if (method_exists($t_rel, 'getAttributesByElement') && is_array($va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id'])))) {
 										foreach($va_attributes as $vo_attribute) {
 											foreach($vo_attribute->getValues() as $vo_value) {
-												$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
+												$vs_value_to_index = $vo_value->getDisplayValue();
 
 												$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 												if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
@@ -2919,7 +2921,9 @@ class SearchIndexer extends SearchBase {
 		if(isset($va_fields_to_index['_count']) && is_array($va_fields_to_index['_count'])) {
 			$vn_subject_table_num = $pt_subject->tableNum();
 			$vn_related_table_num = $pt_rel->tableNum();
-			if (!is_array($va_rel_field_info = $va_fields_to_index['_count'])) { $va_rel_field_info = []; }
+            $vs_related_pk = Datamodel::primaryKey($vn_related_table_num);
+
+            if (!is_array($va_rel_field_info = $va_fields_to_index['_count'])) { $va_rel_field_info = []; }
 		
 			foreach($va_queries as $va_query) {
 				$vs_sql = $va_query['sql'];
@@ -2933,7 +2937,8 @@ class SearchIndexer extends SearchBase {
 				}
 
 				$va_counts = $this->_getInitedCountList($pt_rel); 
-				
+
+				$vn_count = 0;
 				while($qr_res->nextRow()) {
 					$vn_count++;
 

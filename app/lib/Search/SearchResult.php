@@ -984,7 +984,8 @@ class SearchResult extends BaseObject {
 	 *          convertCodesToValue = Convert list item_ids to item value's (ca_list_items.item_value). If convertCodesToDisplayText is also set then it will take precedence. [Default is false]
 	 *			output = Convert list item_ids to display text in user's preferred locale ("text") or idno ("idno"). This is an easier to type alternative to the convertCodesToDisplayText and convertCodesToIdno options. [Default is null]
 	 *			sort = Array list of bundles to sort returned values on. Currently sort is only supported when getting related values via simple related <table_name> and <table_name>.related bundle specifiers. Eg. from a ca_objects results you can sort when fetching 'ca_entities', 'ca_entities.related', 'ca_objects.related', etc.. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You can also sort on attributes if returnWithStructure is set. [Default is null]
-	*
+	 *			stripTags = Remove HTML/XML tags from returned values. [Default is false]
+	 *
 	 *		[Formatting for strings only]
  	 *			toUpper = Force all values to upper case. [Default is false]
 	 *			toLower = Force all values to lower case. [Default is false]
@@ -1067,11 +1068,12 @@ class SearchResult extends BaseObject {
 		$vb_unserialize 					= isset($pa_options['unserialize']) ? (bool)$pa_options['unserialize'] : false;
 		
 		$vb_return_url 						= isset($pa_options['returnURL']) ? (bool)$pa_options['returnURL'] : false;
-		$vb_return_path 					= isset($pa_options['returnPath']) ? (bool)$pa_options['returnPAth'] : false;
+		$vb_return_path 					= isset($pa_options['returnPath']) ? (bool)$pa_options['returnPath'] : false;
 		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 		$vb_convert_codes_to_idno 			= isset($pa_options['convertCodesToIdno']) ? (bool)$pa_options['convertCodesToIdno'] : false;
 		$vb_convert_codes_to_value 			= isset($pa_options['convertCodesToValue']) ? (bool)$pa_options['convertCodesToValue'] : false;
 		
+		$vb_strip_tags			 			= isset($pa_options['stripTags']) ? (bool)$pa_options['stripTags'] : false;
 		
 		$va_exclude_values 					= (isset($pa_options['excludeValues']) && $pa_options['excludeValues']) ? is_array($pa_options['excludeValues']) ? $pa_options['excludeValues'] : [$pa_options['excludeValues']] : [];
 		$va_exclude_idnos					= (isset($pa_options['excludeIdnos']) && $pa_options['excludeIdnos']) ? is_array($pa_options['excludeIdnos']) ? $pa_options['excludeIdnos'] : [$pa_options['excludeIdnos']] : [];
@@ -1806,9 +1808,16 @@ class SearchResult extends BaseObject {
 		
 		if ($vb_convert_line_breaks) {
 			if(is_array($vm_val)) {
-				return array_map(function($v) { return !is_array($vm_val) ? nl2br($v) : $v; }, $vm_val);
+				return array_map(function($v) { return !is_array($v) ? nl2br($v) : $v; }, $vm_val);
 			} else {
 				return nl2br($vm_val);
+			}
+		}
+		if ($vb_strip_tags) {
+			if(is_array($vm_val)) {
+				return array_map(function($v) { return !is_array($v) ? strip_tags($v) : $v; }, $vm_val);
+			} else {
+				return strip_tags($vm_val);
 			}
 		}
 		
@@ -2125,6 +2134,7 @@ class SearchResult extends BaseObject {
 		
 		$va_return_values = [];
 		
+		$include_value_ids = caGetOption('includeValueIDs', $pa_options, false);
 		$pa_exclude_idnos = caGetOption('excludeIdnos', $pa_options, []);
 		if (!is_array($pa_exclude_idnos) && $pa_exclude_idnos) { $pa_exclude_idnos = [$pa_exclude_idnos]; } 
 		
@@ -2147,11 +2157,17 @@ class SearchResult extends BaseObject {
 				}
 				
 				$vb_did_return_value = false;
+				$vb_return_value_id = ($va_path_components['components'][sizeof($va_path_components['components'])-1] === 'value_id');
 
 				foreach($va_values as $o_value) {
 					$vs_val_proc = null;
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
+					
+					if ($vb_return_value_id) {
+						$va_return_values[(int)$vn_id][] = $o_value->getValueID();
+						continue;
+					}
 					
 					if(($vn_attr_type == 0) && $va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name'])) {
 					    continue;
@@ -2225,6 +2241,9 @@ class SearchResult extends BaseObject {
 										$vb_did_return_value = true;
 										if ($pa_options['returnWithStructure']) {
 											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')][$vs_element_code] = ($vb_has_field_spec || $vb_has_hierarchy_modifier) ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+											if($include_value_ids) {
+												$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')]["{$vs_element_code}_value_id"] = $o_value->getValueID();
+											}
 										} else {
 											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = ($vb_has_field_spec || $vb_has_hierarchy_modifier) ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
 										}
@@ -2363,6 +2382,9 @@ class SearchResult extends BaseObject {
 							if ($o_value->getType() == __CA_ATTRIBUTE_VALUE_DATERANGE__ && !caGetOption('omitDateSortKey', $pa_options, false)) {  // add sortable alternate value for dates
 							    $va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code.'_sort_'] = $o_value->getDisplayValue(['sortable' => true]); // add sortable alternate representation for dates; this will be used by the SearchResult::get() "sort" option to properly sort date values
 							}
+							if($include_value_ids) {
+								$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["{$vs_element_code}_value_id"] = $o_value->getValueID();
+							}
 						} else { 
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $vs_val_proc;	
 						}
@@ -2373,6 +2395,9 @@ class SearchResult extends BaseObject {
 					// value is missing so insert blank
 					if ($pa_options['returnWithStructure']) {
 						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$va_path_components['subfield_name']] = '';
+						if($include_value_ids) {
+							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["{$vs_element_code}_value_id"] = null;
+						}
 					} else { 
 						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = '';	
 					}
@@ -2401,7 +2426,10 @@ class SearchResult extends BaseObject {
 			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
 			
 			if ($pa_options['returnWithStructure'] && $pa_options['returnBlankValues']) {
-				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
+				$va_return_values[(int)$vn_id][null][null][$e = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
+				if($include_value_ids) {
+					$va_return_values[(int)$vn_id][null][null]["{$e}_value_id"] = null;
+				}
 			} elseif ($default_value) {
 			    $va_return_values[(int)$vn_id][null][null][] = $default_value;	
 			}
@@ -2409,7 +2437,7 @@ class SearchResult extends BaseObject {
 		
 		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
 		if ($pa_options['returnWithStructure']) { 
-			return is_array($va_return_values) ? $va_return_values : array(); 
+			return is_array($va_return_values) ? $va_return_values : []; 
 		}
 		
 		//

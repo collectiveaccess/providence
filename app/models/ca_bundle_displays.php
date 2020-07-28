@@ -2293,7 +2293,10 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(false); }
-			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], array_merge($pa_options, ['policy' => $va_settings['policy']])));	// policy passed for history tracking current value
+			
+			// policy passed for history tracking current value
+			// returnPath passed to force absolute file path to be used when running reports – some systems cannot handle urls in PDFs due to DNS configuration
+			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $pa_options, ['policy' => $va_settings['policy'], 'returnPath' => $pa_options['forReport']]));	
 			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(true); }
 		}
 		

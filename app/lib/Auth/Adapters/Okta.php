@@ -235,7 +235,8 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
                 throw new OktaException(_t('Verification of Okta JWT failed'));
             }
             setcookie("access_token", $exchange['access_token'],time()+$exchange['expires_in'],"/",false);
-            header('Location: /'.$this->config->get('default_action'));
+            if(!($redirect_url = Session::getVar('pawtucket2_last_page')) && ($redirect_url !== '/')) { $redirect_url = $this->config->get('default_action'); }
+            header('Location: '.$this->config->get('site_host').'/'.$redirect_url);
             return;
         }
         throw new OktaException(_t('An Okta error during login has occurred'));
