@@ -114,6 +114,7 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
         $zip = new ZipFile(__CA_APP_DIR__."/tmp");
         
         $content_mappings = caGetOption('content', $output_config, []);
+        $media_index = caGetOption('mediaIndex', $options, null);
         
         $file_list = [];
         
@@ -129,7 +130,7 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
 					}
                     break;
                 case 'file':
-                    $ret = self::_processFiles($t_instance, $content_spec);
+                    $ret = self::_processFiles($t_instance, $content_spec, $options);
                     $file_list = array_merge($file_list, $ret['fileList']);
                     
                     foreach($file_list as $file_info) {
@@ -145,7 +146,7 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
     
     	// copy Zip workfile to Zip file with configured name 
     	// (ZipFile generated work file will be deleted once ZipFile object goes out of scope)
-    	if (copy($zip->output(ZIPFILE_FILEPATH), $f = __CA_APP_DIR__."/tmp/{$name}.zip")) {
+    	if (copy($zip->output(ZIPFILE_FILEPATH), $f = __CA_APP_DIR__."/tmp/{$name}".(!is_null($media_index) ? '-'.($media_index+1) : '').".zip")) {
     		$log->logDebug(_t('[ExternalExport::Output::SimpleZip] Copied ZIP data to temporary location %1', $f));
     	} else {
     		throw new WLPlugSimpleZipException(_t('Could not copy ZIP data to temporary location %1', $f));
