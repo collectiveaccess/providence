@@ -301,7 +301,7 @@
 	 */
 	function caMakeTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = []; }
-		if (!is_array($pa_types)) { $pa_types = []; }
+		if (!is_array($pa_types)) { $pa_types = $pa_types ? [$pa_types] : []; }
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, $pa_types), "caMakeTypeIDList:{$pm_table_name_or_num}");
 		if (ExternalCache::contains($vs_cache_key, 'listItems')) { return ExternalCache::fetch($vs_cache_key, 'listItems'); }
 		if (is_numeric($pm_table_name_or_num)) {
@@ -335,8 +335,7 @@
 	 * @return array List of numeric item_ids
 	 */
 	function caMakeItemIDList($pm_list_code_or_id, $pa_item_idnos, $pa_options=null) {
-		if (!is_array($pa_item_idnos) && !strlen($pa_item_idnos)) { return []; }
-		if (!is_array($pa_item_idnos)) { $pa_item_idnos = [$pa_item_idnos]; }
+		if (!is_array($pa_item_idnos)) { $pa_item_idnos = strlen($pa_item_idnos) ? [$pa_item_idnos]: []; }
 		if (!is_array($pa_options)) { $pa_options = []; }
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, $pa_item_idnos), "caMakeItemIDList:{$pm_list_code_or_id}");
 		if (ExternalCache::contains($vs_cache_key, 'listItems')) { return ExternalCache::fetch($vs_cache_key, 'listItems'); }
@@ -396,7 +395,7 @@
 	 */
 	function caMakeTypeList($pm_table_name_or_num, $pa_type_ids, $pa_options=null) {
 		if (is_array($pa_type_ids) && !sizeof($pa_type_ids)) { return array(); }
-		if (!is_array($pa_type_ids)) { $pa_type_ids = [$pa_type_ids]; }
+		if (!is_array($pa_type_ids)) { $pa_type_ids = strlen($pa_type_ids) ? [$pa_type_ids] : []; }
 		
 		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	 	
@@ -456,6 +455,8 @@
 	function caMakeSourceIDList($pm_table_name_or_num, $pa_sources, $pa_options=null) {
 		if(isset($pa_options['dontIncludeSubsourcesInSourceRestriction']) && (!isset($pa_options['dont_include_subsources_in_source_restriction']) || !$pa_options['dont_include_subsources_in_source_restriction'])) { $pa_options['dont_include_subsources_in_source_restriction'] = $pa_options['dontIncludeSubsourcesInSourceRestriction']; }
 	 	
+		if (!is_array($pa_sources)) { $pa_sources = strlen($pa_sources) ? [$pa_sources] : []; }
+		
 		if (isset($pa_options['dont_include_subsources_in_source_restriction']) && $pa_options['dont_include_subsources_in_source_restriction']) {
 			$pa_options['noChildren'] = true;
 		}

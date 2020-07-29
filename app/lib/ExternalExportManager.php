@@ -104,6 +104,8 @@ class ExternalExportManager {
 	 *			NOTICE = Notices (normal but significant conditions)
 	 *			INFO = Informational messages
 	 *			DEBUG = Debugging messages
+	 *		mediaIndex = Zero-based index of media file to restrict output to. If null all media is processed. 
+	 *					This option supports limitations of the CTDA digital preservation system and is unlikely to be useful for much else. [Default is null]
      *
      * @return array List of files generated
      * @throws ExternalExportManagerException
@@ -126,6 +128,8 @@ class ExternalExportManager {
     	}
     
         if ($target) { $targets = [$target => $targets[$target]]; }
+        
+        $media_index = caGetOption('mediaIndex', $options, null);
     
     	$files = [];
         foreach($targets as $target => $target_info) {
@@ -165,8 +169,7 @@ class ExternalExportManager {
             		continue; 
             	}
             }
-                 
-            $files[] = $f = $plugin->process($t_instance, array_merge($target_info, ['target' => $target, 'logLevel' => caGetOption('logLevel', $options, null)]), []);
+            $files[] = $f = $plugin->process($t_instance, array_merge($target_info, ['target' => $target, 'logLevel' => caGetOption('logLevel', $options, null)]), ['mediaIndex' => $media_index]);
             $this->log->logDebug(_t('Generated file %1 for %2:%3 for target %4', $f, $table, $id, $target));
          
          	if(!$skip_transport) {
@@ -271,15 +274,34 @@ class ExternalExportManager {
 						
 						if ((caGetOption('requireMedia', $target_info, false, ['castTo' => 'bool']))) {
 							if ($t = $target_table::find($id, ['returnAs' => 'firstModelInstance'])) {
-								if (!is_array($rep_ids = $t->get('ca_object_representations.representation_id', ['returnAsArray' => true])) || (sizeof($rep_ids) === 0)) {
-									$this->log->logDebug(_t('[ExternalExportManager] Skipped id %1 for target %2 because media is required and no media was foound', $id, $target));
+								if (
+									!is_array($rep_ids = $t->get('ca_object_representations.representation_id', ['filterNonPrimaryRepresentations' => false, 'returnAsArray' => true])) 
+									|| 
+									(sizeof($rep_ids) === 0)
+								) {
+									$this->log->logDebug(_t('[ExternalExportManager] Skipped id %1 for target %2 because media is required and no media was found', $id, $target));
 									continue; 
 								}
 							}
 						}
 						
 						$this->log->logDebug(_t('[ExternalExportManager] Processing %1 for target %2', "{$target_table}:{$id}", $target));
-						$files = $this->process($target_table, $id, array_merge($options, ['target' => $target, 'skipTransport' => true]));
+						if (
+							(caGetOption('singleMediaPerExport', $target_info, false, ['castTo' => 'bool'])) 
+							&& 
+							($t = $target_table::find($id, ['returnAs' => 'firstModelInstance']))
+							&&
+							(is_array($rep_ids = $t->get('ca_object_representations.representation_id', ['filterNonPrimaryRepresentations' => false, 'returnAsArray' => true])))
+							&&
+							(sizeof($rep_ids) > 1)
+						) {
+							$files = [];
+							foreach($rep_ids as $media_index => $rep_id) {
+								$files = array_merge($files, $f=$this->process($target_table, $id, array_merge($options, ['mediaIndex' => $media_index, 'target' => $target, 'skipTransport' => true])));
+							}
+						} else {
+							$files = $this->process($target_table, $id, array_merge($options, ['target' => $target, 'skipTransport' => true]));
+						}
 						$seen["{$target_table}/{$id}"] = true;
 						
 						if(is_array($files)) {
