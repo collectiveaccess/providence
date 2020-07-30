@@ -6520,6 +6520,7 @@ if (!$vb_batch) {
 		if ($pb_show_current_only) {
 		    $va_tmp = [];
 		    foreach(array_reverse($va_rels) as $rel) {
+		    	if(!is_array($rel)) { continue; }
 		        if(isset($va_tmp[$rel['row_id']])) { continue; }
 		        $va_tmp[$rel['row_id']] = $rel;
 		    }
@@ -6598,7 +6599,6 @@ if (!$vb_batch) {
 		if ((($pn_start > 0) || ($pn_limit > 0)) && is_array($pa_sort_fields)) { 
 			$va_rels = array_slice($va_rels, $pn_start, $pn_limit);
 		}
-		//print_R($va_rels);
 		switch($ps_return_as) {
 			case 'firstmodelinstance':
 				foreach($va_rels as $vn_id) {

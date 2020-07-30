@@ -2726,7 +2726,6 @@ class BaseModel extends BaseObject {
 						$this->postError($vn_err_num, $o_e->getErrorDescription().' ['.$vn_err_num.']', "BaseModel->insert()", $this->tableName().'.'.$vs_field);
 						break;
 				}
-
 			}
 			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -9090,7 +9089,7 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->insert();
 					
 					if ($t_item_rel->numErrors() > 0) {
-						$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+						$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 						return false;
 					}
 					
@@ -9103,7 +9102,7 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->update();
 							
 							if ($t_item_rel->numErrors() > 0) {
-								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 								return false;
 							}
 						} else {
@@ -9113,7 +9112,7 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->insert();
 							
 							if ($t_item_rel->numErrors() > 0) {
-								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 								return false;
 							}
 						}
@@ -9123,7 +9122,7 @@ $pa_options["display_form_field_tips"] = true;
 						$this->update();
 					
 						if ($this->numErrors() > 0) {
-							$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+							$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 							return false;
 						}
 						return $this;

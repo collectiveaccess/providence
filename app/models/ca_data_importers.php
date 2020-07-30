@@ -2072,7 +2072,79 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 
 						// Do value conversions
-						foreach ( $va_vals as $vn_i => $vm_val ) {
+						foreach($va_vals as $vn_i => $vm_val) {
+							if ($va_item['settings']['skipWhenEmpty'] && !is_array($va_item['settings']['skipWhenEmpty'])) { $va_item['settings']['skipWhenEmpty'] = array($va_item['settings']['skipWhenEmpty']); }
+							if (isset($va_item['settings']['skipWhenEmpty']) && is_array($va_item['settings']['skipWhenEmpty'])) {
+								foreach($va_item['settings']['skipWhenEmpty'] as $v) {
+									if(!strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
+										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping for %2 because at least one value in list (%3) is empty', $vs_idno, $va_item['destination'], join('; ', $va_item['settings']['skipWhenEmpty']))); }
+										continue(2);
+									}
+								}
+							}
+							if ($va_item['settings']['skipWhenAllEmpty'] && !is_array($va_item['settings']['skipWhenAllEmpty'])) { $va_item['settings']['skipWhenAllEmpty'] = array($va_item['settings']['skipWhenAllEmpty']); }
+							if (isset($va_item['settings']['skipWhenAllEmpty']) && is_array($va_item['settings']['skipWhenAllEmpty'])) {
+								$all_empty = true;
+								foreach($va_item['settings']['skipWhenAllEmpty'] as $v) {
+									if(strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
+										$all_empty = false;
+										break;
+									}
+								}
+								if($all_empty) {
+									if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping for %2 because all values in list (%3) are empty', $vs_idno, $vn_row, join('; ', $va_item['settings']['skipWhenEmpty']))); }
+									continue(2);
+								}
+							}
+							
+							if ($va_item['settings']['skipGroupWhenEmpty'] && !is_array($va_item['settings']['skipGroupWhenEmpty'])) { $va_item['settings']['skipGroupWhenEmpty'] = array($va_item['settings']['skipGroupWhenEmpty']); }
+							if (isset($va_item['settings']['skipGroupWhenEmpty']) && is_array($va_item['settings']['skipGroupWhenEmpty'])) {
+								foreach($va_item['settings']['skipGroupWhenEmpty'] as $v) {
+									if(!strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
+										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because at least one value in list (%3) is empty', $vs_idno, $vn_group_id, join('; ', $va_item['settings']['skipGroupWhenEmpty']))); }
+										continue(3);
+									}
+								}
+							}
+							if ($va_item['settings']['skipGroupWhenAllEmpty'] && !is_array($va_item['settings']['skipGroupWhenAllEmpty'])) { $va_item['settings']['skipGroupWhenAllEmpty'] = array($va_item['settings']['skipGroupWhenAllEmpty']); }
+							if (isset($va_item['settings']['skipGroupWhenAllEmpty']) && is_array($va_item['settings']['skipGroupWhenAllEmpty'])) {
+								$all_empty = true;
+								foreach($va_item['settings']['skipGroupWhenAllEmpty'] as $v) {
+									if(strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
+										$all_empty = false;
+										break;
+									}
+								}
+								if($all_empty) {
+									if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because all values in list (%3) are empty', $vs_idno, $vn_group_id, join('; ', $va_item['settings']['skipGroupWhenAllEmpty']))); }
+									continue(3);
+								}
+							}
+							
+							if ($va_item['settings']['skipRowWhenEmpty'] && !is_array($va_item['settings']['skipRowWhenEmpty'])) { $va_item['settings']['skipRowWhenEmpty'] = array($va_item['settings']['skipRowWhenEmpty']); }
+							if (isset($va_item['settings']['skipRowWhenEmpty']) && is_array($va_item['settings']['skipRowWhenEmpty'])) {
+								foreach($va_item['settings']['skipRowWhenEmpty'] as $v) {
+									if(!strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
+										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because at least one value in list (%3) is empty', $vs_idno, $vn_row, join('; ', $va_item['settings']['skipRowWhenEmpty']))); }
+										continue(4);
+									}
+								}
+							}
+							if ($va_item['settings']['skipRowWhenAllEmpty'] && !is_array($va_item['settings']['skipRowWhenAllEmpty'])) { $va_item['settings']['skipRowWhenAllEmpty'] = array($va_item['settings']['skipRowWhenAllEmpty']); }
+							if (isset($va_item['settings']['skipRowWhenAllEmpty']) && is_array($va_item['settings']['skipRowWhenAllEmpty'])) {
+								$all_empty = true;
+								foreach($va_item['settings']['skipRowWhenAllEmpty'] as $v) {
+									if(strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
+										$all_empty = false;
+										break;
+									}
+								}
+								if($all_empty) {
+									if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because all values in list (%3) are empty', $vs_idno, $vn_row, join('; ', $va_item['settings']['skipRowWhenAllEmpty']))); }
+									continue(4);
+								}
+							}
+						
 							// Evaluate skip-if-empty options before setting default value, adding prefix/suffix or formatting with templates
 							// because "empty" refers to the source value before this sort of additive processing.
 							if ( isset( $va_item['settings']['skipRowIfEmpty'] )
