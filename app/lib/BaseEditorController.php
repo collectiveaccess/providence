@@ -2611,7 +2611,7 @@ class BaseEditorController extends ActionController {
 	/**
 	 * Handle ajax media uploads from editor
 	 */
-	public function UploadFiles($pa_options=null) {
+	public function UploadFiles($options=null) {
 		if (!$this->request->isLoggedIn() || ((int)$this->request->user->get('userclass') !== 0)) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
 			return;
@@ -2623,7 +2623,6 @@ class BaseEditorController extends ActionController {
 		$stored_files = [];
 		
 		$user_dir = caGetMediaUploadPathForUser($user_id);
-		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
 
 		if(is_array($_FILES['files'])) {
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
