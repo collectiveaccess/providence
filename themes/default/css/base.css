@@ -3565,6 +3565,12 @@ input.urlBg, textarea.urlBg {
     background-repeat:no-repeat;
     background-position:right center;
 }
+input.filesizeBg, textarea.filesizeBg {
+    background-image: url('../graphics/icons/formBgFilesize.gif');
+    background-repeat:no-repeat;
+    background-position:right center;
+    padding-right:35px;
+}
 input.lookupBg, textarea.lookupBg {
     background-image: url('../graphics/icons/formBgLookup.gif');
     background-repeat:no-repeat;
