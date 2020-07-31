@@ -2899,17 +2899,31 @@ function caFileIsIncludable($ps_file) {
 	
 	# ----------------------------------------
 	/** 
+	 * Parse human-readable filesize into bytes. Note that we always assume that 
+	 * 1 kilobyte = 1024 bytes, not 1000 bytes as Mac OS and some hard drive manufacturers do.
 	 *
+	 * Common and IEC units may be used:
+	 *		Common = 'B', 'KB', 'MB', 'GB', 'TB', 'PB'
+	 *		IEC = 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'
+	 *
+	 * @param string $from File size expression
+	 * @return int File size in bytes, or null if the expression could not be parsed.
 	 */
 	function caParseHumanFilesize(string $from): ?int {
+		$alts = [
+			'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'		// iec
+		];
 		$units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-		$number = substr($from, 0, -2);
-		$suffix = strtoupper(substr($from,-2));
-
+		
+		$suffix = preg_match('![ ]*([KIBMGTP]+)[ ]*$!i', $from, $m) ? strtoupper($m[1]) : null;
+		$number = preg_replace('![^\d]!', '', $from);
+		
 		//B or no suffix
-		if(is_numeric(substr($suffix, 0, 1))) {
-			return preg_replace('/[^\d]/', '', $from);
+		if(is_numeric($number) && !$suffix) {
+			return $number;
 		}
+		
+		if (isset($alts[$suffix])) { $suffix = $alts[$suffix]; }
 
 		$exponent = array_flip($units)[$suffix] ?? null;
 		if($exponent === null) {
@@ -2918,7 +2932,6 @@ function caFileIsIncludable($ps_file) {
 
 		return $number * (1024 ** $exponent);
 	}
-
 	# ----------------------------------------
 	/**
 	 * Upload a local file to a GitHub repository
