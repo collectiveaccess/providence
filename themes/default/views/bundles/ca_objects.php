@@ -9,7 +9,7 @@
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
  * Copyright 2009-2020 Whirl-i-Gig
  *
- * For more information visit http://www.CollectiveA<a href="ca_objects.php">ca_objects.php</a>ccess.org
+ * For more information visit http://www.CollectiveAccess.org
  *
  * This program is free software; you may redistribute it and/or modify it under
  * the terms of the provided license as published by Whirl-i-Gig
