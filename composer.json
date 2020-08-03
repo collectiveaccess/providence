@@ -31,7 +31,7 @@
     "scholarslab/bagit": "~0.3.1",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "tedivm/stash": "0.14.*",
-    "wamania/php-stemmer": "*"
+    "wamania/php-stemmer": "*",
     "zendframework/zend-stdlib": "^3.2"
   },
   "require": {
