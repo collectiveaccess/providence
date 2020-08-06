@@ -238,7 +238,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, ['canBeEmpty']);
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
-				$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+				$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 				return false;
 			}
 			return [];
@@ -294,7 +294,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				    return false;
                 }
 				if(!$va_settings["canBeEmpty"]){
-					$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+					$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 					return false;
 				}
 				return [];
