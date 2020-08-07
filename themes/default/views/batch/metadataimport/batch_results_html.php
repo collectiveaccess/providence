@@ -105,14 +105,14 @@
 			foreach($pa_notices as $vn_id => $va_notice) {
 				switch($va_notice['status']) {
 					case 'SUCCESS':
-						$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): ".$va_notice['status']."</li>";
+						$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
 						break;
 					case 'SKIPPED':
 					case 'MATCHED':
 						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']."</li>";
 						break;
 					default:
-						$vs_buf .= "<li><em>".$va_notice['label']."</em> (".$va_notice['idno']."): ".$va_notice['status']."</li>";
+						$vs_buf .= "<li><em>".$va_notice['label']."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
 						break;
 				}
 			}
