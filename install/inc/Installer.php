@@ -384,7 +384,7 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function performPostInstallTasks($pb_installing) {
+	public function performPostInstallTasks() {
 	    // process metadata element settings that couldn't be processed during install
 	    // (Eg. those for hideIfSelected_*)
 	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
