@@ -147,6 +147,7 @@
       <xs:enumeration value="StorageLocations"/>
       <xs:enumeration value="ObjectRepresentations"/>
       <xs:enumeration value="Color"/>
+      <xs:enumeration value="Filesize"/>
     </xs:restriction>
   </xs:simpleType>
 
