@@ -251,6 +251,15 @@
  		}
  		# ------------------------------------------------------------------
 		/**
+		 * Returns name of field in ca_attribute_values to use for sort operations
+		 * 
+		 * @return string Name of sort field
+		 */
+		public function sortField() {
+			return null;
+		}
+ 		# ------------------------------------------------------------------
+		/**
 		 * Returns constant for taxonomy attribute value
 		 * 
 		 * @return int Attribute value type code
@@ -260,4 +269,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

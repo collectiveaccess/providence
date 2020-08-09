@@ -36,17 +36,16 @@
   
 include_once(__CA_LIB_DIR__."/Browse/BrowseEngine.php");
   
-	class BaseBrowse extends BrowseEngine {
-		# -------------------------------------------------------
-		
-		# -------------------------------------------------------
-		public function __construct($pm_subject_table_name_or_num, $pn_browse_id=null, $ps_context='') {
-			parent::__construct($pm_subject_table_name_or_num, $pn_browse_id, $ps_context);
-		}
-		# -------------------------------------------------------
-		public function execute($pa_options=null) {
-			return parent::execute($pa_options);
-		}
-		# -------------------------------------------------------
+class BaseBrowse extends BrowseEngine {
+	# -------------------------------------------------------
+	
+	# -------------------------------------------------------
+	public function __construct($pm_subject_table_name_or_num, $pn_browse_id=null, $ps_context='') {
+		parent::__construct($pm_subject_table_name_or_num, $pn_browse_id, $ps_context);
 	}
-?>
+	# -------------------------------------------------------
+	public function execute($pa_options=null) {
+		return parent::execute($pa_options);
+	}
+	# -------------------------------------------------------
+}

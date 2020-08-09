@@ -2764,7 +2764,7 @@
 			$o_results = $this->getResults();
 			if (!is_array($va_criteria = $this->getCriteria())) { $va_criteria = []; }
 
-			if (($o_results->numHits() > 1) || !sizeof($va_criteria)) {
+			if (($o_results['result']->numHits() > 1) || !sizeof($va_criteria)) {
 				$va_facets = $this->getFacetList();
 				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();
 
@@ -3725,7 +3725,9 @@
 								$b->addCriteria($f, array_keys($x));
 							}
 							$b->execute();
-							$adj_results = $b->getResults()->getAllFieldValues($t_subject->primaryKey(true));
+							
+							$res = $b->getResults();
+							$adj_results = $res['result']->getAllFieldValues($t_subject->primaryKey(true));
 							if(is_array($adj_results) && (sizeof($adj_results) > 0)) { 
 								$va_results = $adj_results; 
 							}
@@ -6794,52 +6796,72 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		/**
 		 * Fetch the subject rows found by an execute()'d browse
 		 */
-		public function getResults($pa_options=null) {
-			return $this->doGetResults(null, $pa_options);
+		public function getResults($options=null) {
+			$start = (int) caGetOption('start', $options, 0);
+			$limit = (int) caGetOption('limit', $options, 0);
+			
+			$ret = $this->doGetResults(get_class($this).'Result', array_merge($options, ['returnIds' => (($start > 0) || ($limit > 0))]));
+			
+			if (($start > 0) || ($limit > 0)) {
+ 				$result = array_slice($ret['result'], $start, $limit);
+ 				$ret['result'] = new WLPlugSearchEngineBrowseEngine($result, $this->opn_browse_table_num);
+ 			}
+			return $ret['result'];
 		}
 		# ------------------------------------------------------
 		/**
 		 * Fetch the subject rows found by an execute()'d browse
 		 */
-		protected function doGetResults($po_result=null, $pa_options=null) {
+		public function getResultsForPage(array $options=null) {
+			return $this->doGetResults(get_class($this).'Result', $options);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Fetch the subject rows found by an execute()'d browse
+		 */
+		protected function doGetResults($classname=null, $options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
 
-			$vs_sort = caGetOption('sort', $pa_options, null);
-			$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
+			$vs_sort = caGetOption('sort', $options, null);
+			$vs_sort_direction = strtolower(caGetOption('sortDirection', $options, caGetOption('sort_direction', $options, null)));
 
 			$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 			$vb_will_sort = ($vs_sort && (($this->getCachedSortSetting() != $vs_sort) || ($this->getCachedSortDirectionSetting() != $vs_sort_direction)));
 
 			$vs_pk = $t_item->primaryKey();
 			$vs_label_display_field = null;
+			
+			$start = (int) caGetOption('start', $options, 0);
+			$limit = (int) caGetOption('limit', $options, 0);
 
-			if(is_array($va_results =  $this->opo_ca_browse_cache->getResults()) && sizeof($va_results)) {
+			$total_size = $page_size = 0;
+			if(is_array($results =  $this->opo_ca_browse_cache->getResults()) && ($total_size = sizeof($results))) {
 				if ($vb_will_sort) {
-					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction);
+					$results = $this->sortHits($results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction, $options);
 
+					$page_size = sizeof($results);
+					
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
 					$this->opo_ca_browse_cache->setParameter('sort', $vs_sort);
 					$this->opo_ca_browse_cache->setParameter('sort_direction', $vs_sort_direction);
 
-					$this->opo_ca_browse_cache->setResults($va_results);
+					$this->opo_ca_browse_cache->setResults($results);
 					$this->opo_ca_browse_cache->save();
-				}
-
-				$vn_start = (int) caGetOption('start', $pa_options, 0);
-				$vn_limit = (int) caGetOption('limit', $pa_options, 0);
-				if (($vn_start > 0) || ($vn_limit > 0)) {
-					$va_results = array_slice($va_results, $vn_start, $vn_limit);
+				} else {
+					$results = array_slice($results, $start, $limit);
 				}
 			}
-			if (!is_array($va_results)) { $va_results = array(); }
+			if (!is_array($results)) { $results = []; }
 
-			if ($po_result) {
-				$po_result->init(new WLPlugSearchEngineBrowseEngine($va_results, $this->opn_browse_table_num), array(), $pa_options);
-
-				return $po_result;
+			if(caGetOption('returnIds', $options, false)) {
+				$po_result = $results;
+			} elseif($classname) {
+				$po_result = is_object($classname) ? $classname : new $classname();
+				$po_result->init(new WLPlugSearchEngineBrowseEngine($results, $this->opn_browse_table_num), array(), $options);
 			} else {
-				return new WLPlugSearchEngineBrowseEngine($va_results, $this->opn_browse_table_num);
+				$po_result = new WLPlugSearchEngineBrowseEngine($results, $this->opn_browse_table_num);
 			}
+			return ['result' => $po_result, 'total' => $total_size, 'page' => $page_size, 'start' => $start];
 		}
 		# ------------------------------------------------------------------
 		/**

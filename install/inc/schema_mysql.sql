@@ -4181,6 +4181,7 @@ create table ca_attribute_values
    value_decimal1                 decimal(40,20),
    value_decimal2                 decimal(40,20),
    value_integer1                 int unsigned,
+   value_sortable				  varchar(100),
    source_info                    longtext                       not null,
    primary key (value_id),
    constraint fk_ca_attribute_values_attribute_id foreign key (attribute_id)
@@ -4205,6 +4206,8 @@ create index i_value_longtext2 on ca_attribute_values
 (
    value_longtext2(128)
 );
+create index i_value_sortable on ca_attribute_values(value_sortable);
+create index i_sorting ON ca_attribute_values(element_id, attribute_id, value_sortable);
 create index i_source_info on ca_attribute_values(source_info(255));
 create index i_attr_element on ca_attribute_values(attribute_id, element_id);
 
@@ -7258,6 +7261,31 @@ create table if not exists ca_representation_transcriptions (
 
 
 /*==========================================================================*/
+create table if not exists ca_media_upload_sessions (
+   session_id                int unsigned                   not null AUTO_INCREMENT,
+   user_id                   int unsigned                   not null references ca_users(user_id),
+   session_key               char(36)                       not null,
+   created_on                int unsigned                   not null,
+   completed_on              int unsigned                   null,
+   last_activity_on          int unsigned                   null,
+   cancelled                 tinyint unsigned               not null default 0,
+   
+   num_files		         int unsigned                   not null,
+   total_bytes		         int unsigned                   not null,
+   progress		             longtext                       null,
+   
+   primary key (session_id),
+
+   index i_session_id               (session_id),
+   index i_created_on			    (created_on),
+   index i_completed_on			    (completed_on),
+   index i_last_activity_on			(last_activity_on),
+   index i_cancelled      	        (cancelled),
+   unique index i_session_key      	(session_key)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7268,4 +7296,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (163, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (165, unix_timestamp());

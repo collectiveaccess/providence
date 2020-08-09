@@ -76,6 +76,9 @@
  			$vs_search 				= html_entity_decode($this->opo_result_context->getSearchExpression());	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
  			$vb_is_new_search		= $this->opo_result_context->isNewSearch();
  			
+ 			$num_hits = 0;
+ 			
+ 			
  			if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {
  				$vs_search = '';
  				$vb_is_new_search = true;
@@ -177,7 +180,11 @@
  						$po_search->setFacetGroup($vs_group_name);
  					}
  					
-					$vo_result = $po_search->getResults($va_search_opts);
+					$results = $po_search->getResultsForPage(array_merge($va_search_opts,
+						['start' => ($vn_page_num - 1) * $vn_items_per_page, 'limit' => $vn_items_per_page])
+					);
+					$vo_result = $results['result'];
+					$num_hits = $results['total'];
 					
 					if (!is_array($va_facets_with_info = $po_search->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
 						$this->view->setVar('open_refine_controls', false);
@@ -219,8 +226,8 @@
 					//if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
 					$vn_page_num = 1; 
 				}
- 				$this->view->setVar('num_hits', $vo_result->numHits());
- 				$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
+ 				$this->view->setVar('num_hits', $num_hits);
+ 				$this->view->setVar('num_pages', $vn_num_pages = ceil($num_hits/$vn_items_per_page));
  				$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
  				if ($vn_page_num > $vn_num_pages) { $vn_page_num = 1; }
  				

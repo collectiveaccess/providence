@@ -146,7 +146,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
-				$this->postError(1970, _t('Entry was blank.'), 'FloorPlanAttributeValue->parseValue()');
+				$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'FloorPlanAttributeValue->parseValue()');
 				return false;
 			}
 			return array();
@@ -246,22 +246,22 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
  		return $_ca_attribute_settings['FloorPlanAttributeValue'];
  	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns name of field in ca_attribute_values to use for sort operations
-		 * 
-		 * @return string Name of sort field
-		 */
-		public function sortField() {
-			return 'value_blob';
-		}
+	/**
+	 * Returns name of field in ca_attribute_values to use for sort operations
+	 * 
+	 * @return string Name of sort field
+	 */
+	public function sortField() {
+		return 'value_blob';
+	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns constant for FloorPlan attribute value
-		 * 
-		 * @return int Attribute value type code
-		 */
-		public function getType() {
-			return __CA_ATTRIBUTE_VALUE_FLOORPLAN__;
-		}
- 		# ------------------------------------------------------------------
+	/**
+	 * Returns constant for FloorPlan attribute value
+	 * 
+	 * @return int Attribute value type code
+	 */
+	public function getType() {
+		return __CA_ATTRIBUTE_VALUE_FLOORPLAN__;
+	}
+	# ------------------------------------------------------------------
 }

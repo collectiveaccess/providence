@@ -238,7 +238,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, ['canBeEmpty']);
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
-				$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+				$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 				return false;
 			}
 			return [];
@@ -285,6 +285,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
                                 return [
                                     'value_longtext1' => $vs_text,
                                     'value_longtext2' => $vs_id,
+                                    'value_sortable' => $this->sortableValue($vs_text)
                                 ];
                             }
                         }
@@ -294,7 +295,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				    return false;
                 }
 				if(!$va_settings["canBeEmpty"]){
-					$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+					$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 					return false;
 				}
 				return [];
@@ -303,6 +304,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			return [
 				'value_longtext1' => $vs_text,
 				'value_longtext2' => $vs_id,
+				'value_sortable' => $this->sortableValue($vs_text)
 			];
 		}
 	}
@@ -440,22 +442,33 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  		return $_ca_attribute_settings['GeoNamesAttributeValue'];
  	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns name of field in ca_attribute_values to use for sort operations
-		 * 
-		 * @return string Name of sort field
-		 */
-		public function sortField() {
-			return 'value_longtext1';
-		}
+	/**
+	 * Returns name of field in ca_attribute_values to use for sort operations
+	 * 
+	 * @return string Name of sort field
+	 */
+	public function sortField() {
+		return 'value_sortable';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(string $value) {
+		return mb_strtolower(substr(trim($value), 0, 100));
+	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns constant for geonames attribute value
-		 * 
-		 * @return int Attribute value type code
-		 */
-		public function getType() {
-			return __CA_ATTRIBUTE_VALUE_GEONAMES__;
-		}
- 		# ------------------------------------------------------------------
+	/**
+	 * Returns constant for geonames attribute value
+	 * 
+	 * @return int Attribute value type code
+	 */
+	public function getType() {
+		return __CA_ATTRIBUTE_VALUE_GEONAMES__;
+	}
+	# ------------------------------------------------------------------
 }

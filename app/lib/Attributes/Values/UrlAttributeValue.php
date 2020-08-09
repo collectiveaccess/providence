@@ -274,7 +274,8 @@
  			}
  			
  			return array(
- 				'value_longtext1' => $ps_value
+ 				'value_longtext1' => $ps_value,
+ 				'value_sortable' => $this->sortableValue($ps_value)
  			);
  		}
  		# ------------------------------------------------------------------/**
@@ -353,7 +354,18 @@
 		 * @return string Name of sort field
 		 */
 		public function sortField() {
-			return 'value_longtext1';
+			return 'value_sortable';
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns sortable value for metadata value
+		 *
+		 * @param string $value
+		 * 
+		 * @return string
+		 */
+		public function sortableValue(string $value) {
+			return mb_strtolower(trim(preg_replace('!^[A-Za-z]+://!', '', $value), 0, 100));
 		}
  		# ------------------------------------------------------------------
 		/**
