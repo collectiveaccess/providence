@@ -99,7 +99,7 @@ class Intrinsic extends FieldType {
 
 		switch($va_field_info['FIELD_TYPE']) {
 			case (FT_BIT):
-				$pm_content = (bool) $pm_content;
+				$pm_content = (bool) $pm_content ? 1 : 0;
 				break;
 			case (FT_NUMBER):
 			case (FT_TIME):
