@@ -248,7 +248,11 @@ class Mapping {
 				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'date';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'date_time_no_millis';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = true;
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => ($this->version == 2) ? 'string' : 'text');
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_text']['type'] = ($this->version == 2) ? 'string' : 'text';
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_start']['type'] = 'date';
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_start']['ignore_malformed'] = true;
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_end']['type'] = 'date';
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_end']['ignore_malformed'] = true;
 				break;
 			case 4:	// geocode
 				//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
