@@ -741,13 +741,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$vn_row_num = $o_row->getRowIndex();
 			$o_cell = $o_sheet->getCellByColumnAndRow(1, $vn_row_num);
-			$vs_mode = (string)$o_cell->getValue();
+			$vs_mode = strtolower((string)$o_cell->getValue());
 
-			switch(strtolower($vs_mode)) {
+			switch($vs_mode) {
 				case 'mapping':
 				case 'constant':
 				case 'variable':
 				case 'repeatmappings':
+				case 'template':
 					$o_id = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					$o_element = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
@@ -760,7 +761,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$va_ids[] = $vs_id;
 					}
 
-					if($vs_parent_id = trim((string)$o_parent->getValue())) {
+					$vs_parent_id = trim((string)$o_parent->getValue());
+					if(($vs_mode !== 'template') && $parent_id) {
 						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)) {
 							$pa_errors[] = $m = _t("Warning: skipped mapping at row %1 because parent id was invalid",$vn_row);
 							$o_log->logWarn($m);
@@ -817,7 +819,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						'source' => ($vs_mode == "RepeatMappings" ? null : $vs_source),
 						'options' => $va_options,
 						'original_values' => $va_original_values,
-						'replacement_values' => $va_replacement_values
+						'replacement_values' => $va_replacement_values,
+						'skip' => ($vs_mode === 'template')
 					);
 
 					// allow mapping repetition
@@ -828,7 +831,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 						$va_new_items = array();
 
-						$va_mapping_items_to_repeat = explode(',', $vs_source);
+						$va_mapping_items_to_repeat = preg_split('/[,;]/', $vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
 							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
@@ -839,21 +842,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							}
 
 							// add item to repeat under current item
-
 							$va_new_items[$vs_key."_:_".$vs_mapping_item_to_repeat] = $va_mapping[$vs_mapping_item_to_repeat];
 							$va_new_items[$vs_key."_:_".$vs_mapping_item_to_repeat]['parent_id'] = $vs_key;
+							
+							unset($va_new_items[$vs_key."_:_".$vs_mapping_item_to_repeat]['skip']);
 
 							// Find children of item to repeat (and their children) and add them as well, preserving the hierarchy
 							// the code below banks on the fact that hierarchy children are always defined AFTER their parents
 							// in the mapping document.
 
-							$va_keys_to_lookup = array($vs_mapping_item_to_repeat);
+							$va_keys_to_lookup = [$vs_mapping_item_to_repeat];
 
 							foreach($va_mapping as $vs_item_key => $va_item) {
-								if(in_array($va_item['parent_id'], $va_keys_to_lookup)) {
+								if(in_array($va_item['parent_id'], $va_keys_to_lookup, true)) {
 									$va_keys_to_lookup[] = $vs_item_key;
 									$va_new_items[$vs_key."_:_".$vs_item_key] = $va_item;
 									$va_new_items[$vs_key."_:_".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "_:_".$va_item['parent_id'] : "");
+									
+									unset($va_new_items[$vs_key."_:_".$vs_item_key]['skip']);
 								}
 							}
 						}
@@ -1024,15 +1030,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$vn_parent_id = null;
 			if($va_info['parent_id']) { $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
 
-			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
+			if(!$va_info['skip']) {
+				$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
 
-			if ($t_exporter->numErrors()) {
-				$pa_errors[] = $m = _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()));
-				$o_log->logError($m);
-				return;
+				if ($t_exporter->numErrors()) {
+					$pa_errors[] = $m = _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()));
+					$o_log->logError($m);
+					return;
+				}
+
+				$va_id_map[$vs_mapping_id] = $t_item->getPrimaryKey();
 			}
-
-			$va_id_map[$vs_mapping_id] = $t_item->getPrimaryKey();
 		}
 
 		$va_mapping_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
@@ -1349,7 +1357,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 
 			if ($vb_show_cli_progress_bar) {
-				print CLIProgressBar::next(1, _t("Exporting records ..."));
+				print CLIProgressBar::next(1, _t("Exporting records..."));
 			}
 
 			$vn_num_processed++;
@@ -1675,7 +1683,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
             $vn_new_table_num = $vs_new_table_name = $vs_key = null;
             if (sizeof($tmp = explode('.', $vs_context)) == 2) {
-                // convert <table>.<spec> contexts to just <spec> when table i
+                // convert <table>.<spec> contexts to just <spec> when table is present
                 $vn_new_table_num = Datamodel::getTableNum($tmp[0]);
                 
                 if ($pn_table_num != $vn_new_table_num) {
@@ -1686,14 +1694,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
                 } else {
                     $vn_new_table_num = null;
                 }
-            } else {
-                if($vn_new_table_num = Datamodel::getTableNum($vs_context)) { // switch to new table
-                    $vs_key = Datamodel::primaryKey($vs_context);
-                    $vs_new_table_name = Datamodel::getTableName($vs_context);
-                } else { // this table, i.e. hierarchy context switch
-                    $vs_key = $t_instance->primaryKey();
-			    }
+            } elseif($vn_new_table_num = Datamodel::getTableNum($vs_context)) { // switch to new table
+				$vs_key = Datamodel::primaryKey($vs_context);
+				$vs_new_table_name = Datamodel::getTableName($vs_context);
+			} else { // this table, i.e. hierarchy context switch
+				$vs_key = $t_instance->primaryKey();
 			}
+			
 			$vb_context_is_related_table = false;
 			$va_related = null;
 			$vb_force_context = false;
@@ -1803,8 +1810,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_info = array();
 
-			if(is_array($va_related)) {
-				$o_log->logDebug(_t("The current mapping will now be repreated for these items: %1", print_r($va_related,true)));
+			if(is_array($va_related) && sizeof($va_related)) {
+				$o_log->logDebug(_t("The current mapping will now be repeated for these items: %1", print_r($va_related,true)));
 				if(!$vn_new_table_num) { $vn_new_table_num = $pn_table_num; }
 
 				foreach($va_related as $va_rel) {
