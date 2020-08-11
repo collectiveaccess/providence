@@ -122,9 +122,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				try {
 					if(!$this->getClient()->indices()->exists(['index' => $index_name])) {
 						$this->getClient()->indices()->create(['index' => $index_name]);
-					} else {
-						$this->getClient()->indices()->delete(['index' => $index_name]);
-					}
+					} 
 					// if we don't refresh() after creating, ES throws a IndexPrimaryShardNotAllocatedException
 					// @see https://groups.google.com/forum/#!msg/elasticsearch/hvMhx162E-A/on-3druwehwJ
 					// -- seems to be fixed in 2.x
@@ -399,7 +397,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$va_search_params['body']['query']['bool']['must'][] = $va_filter;
 			}
 		}
-
+		
 		Debug::msg("[ElasticSearch] actual query filters are: " . print_r($va_additional_filters, true));
 		try {
 			$va_results = $this->getClient()->search($va_search_params);
