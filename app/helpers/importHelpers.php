@@ -117,7 +117,7 @@
 						if ($last['type'] == 'SERIAL') {
 							$n[] = '%';
 						} else {
-							$n[] = '1';
+							$n[] = isset($last['default']) ? $last['default'] : '1';
 						}
 					}
 					$vs_idno = join($sep, $n);
