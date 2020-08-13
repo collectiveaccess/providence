@@ -200,12 +200,12 @@ create table ca_list_item_labels
 create index i_name_singular on ca_list_item_labels
 (
    item_id,
-   name_singular(128)
+   name_singular
 );
 create index i_name on ca_list_item_labels
 (
    item_id,
-   name_plural(128)
+   name_plural
 );
 create index i_item_id on ca_list_item_labels(item_id);
 create unique index u_all on ca_list_item_labels
@@ -216,8 +216,9 @@ create unique index u_all on ca_list_item_labels
    type_id,
    locale_id
 );
-create index i_name_sort on ca_list_item_labels(name_sort(128));
 create index i_type_id on ca_list_item_labels(type_id);
+create index i_name_sort on ca_list_item_labels(name_sort);
+create index i_key_name_sort on ca_list_item_labels(item_id, name_sort);
 
 
 /*==========================================================================*/
@@ -592,7 +593,7 @@ create table ca_object_representation_labels
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
    name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -607,6 +608,19 @@ create table ca_object_representation_labels
       references ca_object_representations (representation_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_object_representation_id on ca_object_representation_labels(representation_id);
+create unique index u_all on ca_object_representation_labels(
+   representation_id,
+   name(255),
+   type_id,
+   locale_id
+);
+create index i_locale_id on ca_object_representation_labels(locale_id);
+create index i_type_id on ca_object_representation_labels(type_id);
+create index i_name on ca_object_representation_labels(name(255));
+create index i_name_sort on ca_object_representation_labels(name_sort);
+create index i_key_name_sort on ca_object_representation_labels(representation_id, name_sort);
 
 
 /*==========================================================================*/
@@ -727,8 +741,8 @@ create table ca_occurrence_labels
    occurrence_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                   not null,
-   name_sort                      varchar(1024)                   not null,
+   name                           varchar(1024)                  not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -741,7 +755,6 @@ create table ca_occurrence_labels
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_occurrence_id on ca_occurrence_labels(occurrence_id);
-create index i_name on ca_occurrence_labels(name(128));
 create unique index u_all on ca_occurrence_labels(
    occurrence_id,
    name(255),
@@ -749,8 +762,10 @@ create unique index u_all on ca_occurrence_labels(
    locale_id
 );
 create index i_locale_id on ca_occurrence_labels(locale_id);
-create index i_name_sort on ca_occurrence_labels(name_sort(255));
 create index i_type_id on ca_occurrence_labels(type_id);
+create index i_name on ca_occurrence_labels(name(255));
+create index i_name_sort on ca_occurrence_labels(name_sort);
+create index i_key_name_sort on ca_occurrence_labels(occurrence_id, name_sort);
 
 
 /*==========================================================================*/
@@ -830,7 +845,7 @@ create table ca_collection_labels
    collection_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(255)                   not null,
+   name                           varchar(1024)                  not null,
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
@@ -844,17 +859,18 @@ create table ca_collection_labels
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_collection_id on ca_collection_labels(collection_id);
-create index i_name on ca_collection_labels(name(128));
 create unique index u_all on ca_collection_labels
 (
    collection_id,
-   name,
+   name(255),
    type_id,
    locale_id
 );
 create index i_locale_id on ca_collection_labels(locale_id);
 create index i_type_id on ca_collection_labels(type_id);
-create index i_name_sort on ca_collection_labels(name_sort(128));
+create index i_name on ca_collection_labels(name(255));
+create index i_name_sort on ca_collection_labels(name_sort);
+create index i_key_name_sort on ca_collection_labels(collection_id, name_sort);
 
 
 /*==========================================================================*/
@@ -940,7 +956,7 @@ create table ca_place_labels
    place_id                       int unsigned               not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(255)                   not null,
+   name                           varchar(1024)                  not null,
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
@@ -954,17 +970,18 @@ create table ca_place_labels
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_place_id on ca_place_labels(place_id);
-create index i_name on ca_place_labels(name(128));
-create index i_name_sort on ca_place_labels(name_sort(128));
 create unique index u_all on ca_place_labels
 (
    place_id,
-   name,
+   name(255),
    type_id,
    locale_id
 );
 create index i_locale_id on ca_place_labels(locale_id);
 create index i_type_id on ca_place_labels(type_id);
+create index i_name on ca_place_labels(name(255));
+create index i_name_sort on ca_place_labels(name_sort);
+create index i_key_name_sort on ca_place_labels(place_id, name_sort);
 
 
 /*==========================================================================*/
@@ -1035,7 +1052,7 @@ create table ca_storage_location_labels
    location_id                    int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(255)                   not null,
+   name                           varchar(1024)                  not null,
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
@@ -1048,18 +1065,19 @@ create table ca_storage_location_labels
       references ca_storage_locations (location_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-create index i_name on ca_storage_location_labels(name(128));
 create index i_location_id on ca_storage_location_labels(location_id);
 create unique index u_all on ca_storage_location_labels
 (
    location_id,
-   name,
+   name(255),
    locale_id,
    type_id
 );
 create index i_locale_id on ca_storage_location_labels(locale_id);
 create index i_type_id on ca_storage_location_labels(type_id);
-create index i_name_sort on ca_storage_location_labels(name_sort(128));
+create index i_name on ca_storage_location_labels(name(255));
+create index i_name_sort on ca_storage_location_labels(name_sort);
+create index i_key_name_sort on ca_storage_location_labels(location_id, name_sort);
 
 
 /*==========================================================================*/
@@ -1134,7 +1152,7 @@ create table ca_loan_labels (
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
    name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1153,8 +1171,16 @@ create table ca_loan_labels (
 create index i_loan_id on ca_loan_labels(loan_id);
 create index i_locale_id_id on ca_loan_labels(locale_id);
 create index i_type_id on ca_loan_labels(type_id);
-create index i_name on ca_loan_labels(name(128));
-create index i_name_sort on ca_loan_labels(name_sort(128));
+create index i_name on ca_loan_labels(name(255));
+create index i_name_sort on ca_loan_labels(name_sort);
+create index i_key_name_sort on ca_loan_labels(loan_id, name_sort);
+create unique index u_all on ca_loan_labels
+(
+   loan_id,
+   name(255),
+   locale_id,
+   type_id
+);
 
 
 /*==========================================================================*/
@@ -1217,7 +1243,7 @@ create table ca_movement_labels (
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
    name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1236,8 +1262,16 @@ create table ca_movement_labels (
 create index i_movement_id on ca_movement_labels(movement_id);
 create index i_locale_id_id on ca_movement_labels(locale_id);
 create index i_type_id on ca_movement_labels(type_id);
-create index i_name on ca_movement_labels(name(128));
-create index i_name_sort on ca_movement_labels(name_sort(128));
+create index i_name on ca_movement_labels(name(255));
+create index i_name_sort on ca_movement_labels(name_sort);
+create index i_key_name_sort on ca_movement_labels(movement_id, name_sort);
+create unique index u_all on ca_movement_labels
+(
+   movement_id,
+   name(255),
+   locale_id,
+   type_id
+);
 
 
 /*==========================================================================*/
@@ -1525,7 +1559,7 @@ create table ca_representation_annotation_labels
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
    name                           text		                     not null,
-   name_sort                      text                  		 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1538,17 +1572,18 @@ create table ca_representation_annotation_labels
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_annotation_id on ca_representation_annotation_labels(annotation_id);
-create index i_name on ca_representation_annotation_labels(name(128));
 create unique index u_all on ca_representation_annotation_labels
 (
-   name(128),
+   name(255),
    locale_id,
    type_id,
    annotation_id
 );
 create index i_locale_id on ca_representation_annotation_labels(locale_id);
-create index i_name_sort on ca_representation_annotation_labels(name_sort(128));
 create index i_type_id on ca_representation_annotation_labels(type_id);
+create index i_name on ca_representation_annotation_labels(name(255));
+create index i_name_sort on ca_representation_annotation_labels(name_sort);
+create index i_key_name_sort on ca_representation_annotation_labels(annotation_id, name_sort);
 
 
 /*==========================================================================*/
@@ -1581,11 +1616,11 @@ create index i_error_code on ca_task_queue(error_code);
 create table ca_object_lot_labels
 (
    label_id                       int unsigned                   not null AUTO_INCREMENT,
-   lot_id                         int unsigned               not null,
+   lot_id                         int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
    name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1597,7 +1632,6 @@ create table ca_object_lot_labels
       references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-create index i_name on ca_object_lot_labels(name(128));
 create index i_lot_id on ca_object_lot_labels(lot_id);
 create unique index u_all on ca_object_lot_labels
 (
@@ -1606,7 +1640,9 @@ create unique index u_all on ca_object_lot_labels
    type_id,
    locale_id
 );
-create index i_name_sort on ca_object_lot_labels(name_sort(128));
+create index i_name on ca_object_lot_labels(name(255));
+create index i_name_sort on ca_object_lot_labels(name_sort);
+create index i_key_name_sort on ca_object_lot_labels(lot_id, name_sort);
 create index i_type_id on ca_object_lot_labels(type_id);
 create index i_locale_id on ca_object_lot_labels(locale_id);
 
@@ -1840,11 +1876,11 @@ create index i_submission_via_form on ca_objects(submission_via_form);
 create table ca_object_labels
 (
    label_id                       int unsigned                   not null AUTO_INCREMENT,
-   object_id                      int unsigned               not null,
+   object_id                      int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
    name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1856,7 +1892,6 @@ create table ca_object_labels
       references ca_objects (object_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-create index i_name on ca_object_labels(name(128));
 create index i_object_id on ca_object_labels(object_id);
 create unique index u_all on ca_object_labels
 (
@@ -1865,10 +1900,11 @@ create unique index u_all on ca_object_labels
    type_id,
    locale_id
 );
-create index i_name_sort on ca_object_labels(name_sort(128));
+create index i_name on ca_object_labels(name(255));
+create index i_name_sort on ca_object_labels(name_sort);
+create index i_key_name_sort on ca_object_labels(object_id, name_sort);
 create index i_type_id on ca_object_labels(type_id);
 create index i_locale_id on ca_object_labels(locale_id);
-
 
 
 /*==========================================================================*/
@@ -2179,7 +2215,7 @@ create table ca_data_importer_labels (
    label_id          int unsigned         not null AUTO_INCREMENT,
    importer_id          int unsigned         not null,
    locale_id            smallint unsigned    not null,
-   name              varchar(255)         not null,
+   name                 varchar(255)         not null,
    name_sort            varchar(255)         not null,
    description          text              not null,
    source_info          longtext             not null,
@@ -2196,7 +2232,6 @@ create table ca_data_importer_labels (
 
 create index i_importer_id on ca_data_importer_labels(importer_id);
 create index i_locale_id on ca_data_importer_labels(locale_id);
-create index i_name_sort on ca_data_importer_labels(name_sort(128));
 create unique index u_all on ca_data_importer_labels
 (
    importer_id,
@@ -2204,6 +2239,9 @@ create unique index u_all on ca_data_importer_labels
    name,
    is_preferred
 );
+create index i_name on ca_data_importer_labels(name);
+create index i_name_sort on ca_data_importer_labels(name_sort);
+create index i_key_name_sort on ca_data_importer_labels(importer_id, name_sort);
 
 
 /*==========================================================================*/
@@ -2262,9 +2300,9 @@ create table ca_data_exporter_labels (
    label_id          int unsigned         not null AUTO_INCREMENT,
    exporter_id          int unsigned         not null,
    locale_id            smallint unsigned    not null,
-   name              varchar(255)         not null,
+   name                 varchar(255)         not null,
    name_sort            varchar(255)         not null,
-   description          text              not null,
+   description          text                 not null,
    source_info          longtext             not null,
    is_preferred         tinyint unsigned     not null,
 
@@ -2279,7 +2317,6 @@ create table ca_data_exporter_labels (
 
 create index i_exporter_id on ca_data_exporter_labels(exporter_id);
 create index i_locale_id on ca_data_exporter_labels(locale_id);
-create index i_name_sort on ca_data_exporter_labels(name_sort(128));
 create unique index u_all on ca_data_exporter_labels
 (
    exporter_id,
@@ -2287,6 +2324,9 @@ create unique index u_all on ca_data_exporter_labels
    name,
    is_preferred
 );
+create index i_name on ca_data_exporter_labels(name);
+create index i_name_sort on ca_data_exporter_labels(name_sort);
+create index i_key_name_sort on ca_data_exporter_labels(exporter_id, name_sort);
 
 /*==========================================================================*/
 create table ca_data_exporter_items (
@@ -2625,7 +2665,7 @@ create table ca_entity_labels
    surname                        varchar(512)                   not null,
    prefix                         varchar(100)                   not null,
    suffix                         varchar(100)                   not null,
-   name_sort                      varchar(512)                   not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -2638,8 +2678,6 @@ create table ca_entity_labels
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_entity_id on ca_entity_labels(entity_id);
-create index i_forename on ca_entity_labels(forename);
-create index i_surname on ca_entity_labels(surname(128));
 create unique index u_all on ca_entity_labels
 (
    entity_id,
@@ -2652,7 +2690,10 @@ create unique index u_all on ca_entity_labels
 );
 create index i_locale_id on ca_entity_labels(locale_id);
 create index i_type_id on ca_entity_labels(type_id);
-create index i_name_sort on ca_entity_labels(name_sort(128));
+create index i_forename on ca_entity_labels(forename);
+create index i_surname on ca_entity_labels(surname(255));
+create index i_name_sort on ca_entity_labels(name_sort);
+create index i_key_name_sort on ca_entity_labels(entity_id, name_sort);
 
 
 /*==========================================================================*/
@@ -4788,6 +4829,10 @@ create table ca_search_form_labels (
 	KEY i_locale_id (locale_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+create index i_name on ca_search_form_labels(name);
+create index i_name_sort on ca_search_form_labels(name_sort);
+create index i_key_name_sort on ca_search_form_labels(form_id, name_sort);
+
 
 /*==========================================================================*/
 create table ca_search_form_placements (
@@ -4937,6 +4982,10 @@ create table ca_bundle_display_labels (
 	KEY i_locale_id (locale_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+create index i_name on ca_bundle_display_labels(name);
+create index i_name_sort on ca_bundle_display_labels(name_sort);
+create index i_key_name_sort on ca_bundle_display_labels(form_id, name_sort);
+
 
 /*==========================================================================*/
 create table ca_bundle_display_placements (
@@ -5037,8 +5086,8 @@ create table ca_tour_labels
    label_id                       int unsigned              not null AUTO_INCREMENT,
    tour_id                        int unsigned              not null,
    locale_id                      smallint unsigned              not null,
+   name                           varchar(1024)                   not null,
    name_sort                      varchar(255)                   not null,
-   name                           varchar(255)                   not null,
    primary key (label_id),
    
    constraint fk_ca_tour_labels_tour_id foreign key (tour_id)
@@ -5050,9 +5099,17 @@ create table ca_tour_labels
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_tour_id on ca_tour_labels(tour_id);
-create index i_name on ca_tour_labels(name(128));
-create index i_name_sort on ca_tour_labels(name_sort(128));
 create unique index u_locale_id on ca_tour_labels(tour_id, locale_id);
+create index i_name on ca_tour_labels(name(255));
+create index i_name_sort on ca_tour_labels(name_sort);
+create index i_key_name_sort on ca_tour_labels(tour_id, name_sort);
+create unique index u_all on ca_tour_labels
+(
+   name(255),
+   locale_id,
+   type_id,
+   tour_id
+);
 
 
 /*==========================================================================*/
@@ -5101,7 +5158,7 @@ create table ca_tour_stop_labels
    label_id                       int unsigned              not null AUTO_INCREMENT,
    stop_id                        int unsigned              not null,
    locale_id                      smallint unsigned              not null,
-   name                           varchar(255)                   not null,
+   name                           varchar(1024)                   not null,
    name_sort                      varchar(255)                   not null,
    primary key (label_id),
    
@@ -5114,10 +5171,17 @@ create table ca_tour_stop_labels
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_stop_id on ca_tour_stop_labels(stop_id);
-create index i_name on ca_tour_stop_labels(name(128));
-create index i_name_sort on ca_tour_stop_labels(name_sort(128));
 create unique index u_locale_id on ca_tour_stop_labels(stop_id, locale_id);
-
+create index i_name on ca_tour_stop_labels(name(255));
+create index i_name_sort on ca_tour_stop_labels(name_sort);
+create index i_key_name_sort on ca_tour_stop_labels(stop_id, name_sort);
+create unique index u_all on ca_tour_labels
+(
+   name(255),
+   locale_id,
+   type_id,
+   stop_id
+);
 
 /*==========================================================================*/
 create table ca_tour_stops_x_objects
@@ -6542,6 +6606,10 @@ create table ca_metadata_dictionary_entry_labels (
 	KEY i_locale_id (locale_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+create index i_name on ca_metadata_dictionary_entry_labels(name);
+create index i_name_sort on ca_metadata_dictionary_entry_labels(name_sort);
+create index i_key_name_sort on ca_metadata_dictionary_entry_labels(entry, name_sort);
+
 
 /*==========================================================================*/
 create table ca_metadata_dictionary_rules (
@@ -6615,7 +6683,7 @@ create table ca_user_representation_annotation_labels
   locale_id                      smallint unsigned              not null,
   type_id                        int unsigned                   null,
   name                           text		                     not null,
-  name_sort                      text                  		 not null,
+  name_sort                      varchar(255)                  		 not null,
   source_info                    longtext                       not null,
   is_preferred                   tinyint unsigned               not null,
   primary key (label_id),
@@ -6628,17 +6696,18 @@ create table ca_user_representation_annotation_labels
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_annotation_id on ca_user_representation_annotation_labels(annotation_id);
-create index i_name on ca_user_representation_annotation_labels(name(128));
 create unique index u_all on ca_user_representation_annotation_labels
 (
-  name(128),
+  name(255),
   locale_id,
   type_id,
   annotation_id
 );
 create index i_locale_id on ca_user_representation_annotation_labels(locale_id);
-create index i_name_sort on ca_user_representation_annotation_labels(name_sort(128));
 create index i_type_id on ca_user_representation_annotation_labels(type_id);
+create index i_name on ca_user_representation_annotation_labels(name(255));
+create index i_name_sort on ca_user_representation_annotation_labels(name_sort);
+create index i_key_name_sort on ca_user_representation_annotation_labels(annotation_id, name_sort);
 
 
 /*==========================================================================*/
@@ -6978,6 +7047,10 @@ create table ca_metadata_alert_rule_labels (
   KEY i_rule_id (rule_id),
   KEY i_locale_id (locale_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_name on ca_metadata_alert_rule_labels(name);
+create index i_name_sort on ca_metadata_alert_rule_labels(name_sort);
+create index i_key_name_sort on ca_metadata_alert_rule_labels(display_id, name_sort);
 
 /*==========================================================================*/
 

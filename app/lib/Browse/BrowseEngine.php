@@ -90,16 +90,6 @@
 		private $opb_dont_expand_source_restrictions = false;
 
 		/**
-		 * @var Instance of Datamodel class
-		 */
-		protected $opo_datamodel;
-
-		/**
-		 * @var Instance of Db database client
-		 */
-		protected $opo_db;
-
-		/**
 		 * @var Instance of Configuration class loaded with application configuration (app.conf)
 		 */
 		private $opo_config;
@@ -139,8 +129,7 @@
 		 *
 		 */
 		public function __construct($pm_subject_table_name_or_num, $pn_browse_id=null, $ps_browse_context='') {
-			$this->opo_db = new Db();
-
+			parent::__construct(null);
 			$this->opa_result_filters = array();
 
 			if (is_numeric($pm_subject_table_name_or_num)) {
@@ -1313,7 +1302,7 @@
 												{$vs_join_sql}
 												{$vs_where_sql}";
 
-											$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
+											$qr_res = $this->db->query($vs_sql, $va_sql_params);
 										} else {
 											if ($va_facet_info['element_code']) {
 											    $vs_sql = "
@@ -1323,7 +1312,7 @@
                                                     {$vs_join_sql}
                                                     {$vs_where_sql}";
 
-                                                $qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
+                                                $qr_res = $this->db->query($vs_sql, $va_sql_params);
 											} else {
 												$vs_sql = "
 													SELECT ".$t_item->primaryKey()."
@@ -1336,7 +1325,7 @@
 														{$vs_where_sql}
 													)";
 
-                                                $qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
+                                                $qr_res = $this->db->query($vs_sql, $va_sql_params);
                                             }
 										}
 										$va_acc[$vn_i] = $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey());
@@ -1414,7 +1403,7 @@
 											WHERE
 												".join(" AND ", $wheres);
 										//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
-										$qr_res = $this->opo_db->query($vs_sql, $params);
+										$qr_res = $this->db->query($vs_sql, $params);
 									
 										if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
 										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
@@ -1453,7 +1442,7 @@
 												WHERE
 													({$vs_table_name}.{$vs_field_name} = ?)";
 
-											$qr_res = $this->opo_db->query($vs_sql, (string)$vn_row_id);
+											$qr_res = $this->db->query($vs_sql, (string)$vn_row_id);
 										} else {
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -1462,7 +1451,7 @@
 												WHERE
 													({$vs_table_name}.{$vs_field_name} = ?)";
 
-											$qr_res = $this->opo_db->query($vs_sql, (string)$vn_row_id);
+											$qr_res = $this->db->query($vs_sql, (string)$vn_row_id);
 
 										}
 
@@ -1587,7 +1576,7 @@
 											WHERE
 												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql}";
 
-										$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
+										$qr_res = $this->db->query($vs_sql, $va_attr_values);
 										
 										if (!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
 										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
@@ -1686,7 +1675,7 @@
 														(ca_attribute_values.value_decimal2 IS NULL)
 														{$vs_container_sql}
 												";
-												$qr_res = $this->opo_db->query($vs_sql, $va_params);
+												$qr_res = $this->db->query($vs_sql, $va_params);
 											} else {
 											    $va_params = [intval($vs_target_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']];
 												if ($va_attr_values) { $va_params[] = $va_attr_values; }
@@ -1714,7 +1703,7 @@
 														)
 														{$vs_container_sql}
 												";
-												$qr_res = $this->opo_db->query($vs_sql, $va_params);
+												$qr_res = $this->db->query($vs_sql, $va_params);
 											}
 										} else {
 											// is intrinsic
@@ -1728,7 +1717,7 @@
 														AND
 														({$this->ops_browse_table_name}.{$vs_browse_end_fld} IS NULL)
 												";
-												$qr_res = $this->opo_db->query($vs_sql);
+												$qr_res = $this->db->query($vs_sql);
 											} else {
 												$vs_sql = "
 													SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -1748,7 +1737,7 @@
 															({$this->ops_browse_table_name}.{$vs_browse_end_fld} BETWEEN ? AND ?)
 														)
 												";
-												$qr_res = $this->opo_db->query($vs_sql, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+												$qr_res = $this->db->query($vs_sql, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
 											}
 										}
 
@@ -1841,7 +1830,7 @@
 												(ca_attribute_values.value_decimal1 BETWEEN ? AND ?)
                                                 {$vs_container_sql}
 										";
-										$qr_res = $this->opo_db->query($vs_sql, $va_params);
+										$qr_res = $this->db->query($vs_sql, $va_params);
 
 										if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
 										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
@@ -1930,7 +1919,7 @@
 												(ca_attribute_values.value_decimal1 BETWEEN ? AND ?)
                                                 {$vs_container_sql}
 										";
-										$qr_res = $this->opo_db->query($vs_sql, $va_params);
+										$qr_res = $this->db->query($vs_sql, $va_params);
 
 										if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
 										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
@@ -2084,7 +2073,7 @@
 													{$vs_get_item_sql}
 													{$vs_where_sql}";
 
-											$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
+											$qr_res = $this->db->query($vs_sql, $va_sql_params);
 										} else {
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -2095,7 +2084,7 @@
 													{$vs_get_item_sql}
 													{$vs_where_sql}";
 
-											$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
+											$qr_res = $this->db->query($vs_sql, $va_sql_params);
 
 										}
 
@@ -2136,7 +2125,7 @@
 														.((sizeof($va_row_tmp) == 2) ? " AND (cv.current_type_id IN (?))" : "")
 														.((sizeof($va_row_tmp) > 2) ? " AND (((cv.current_type_id = ?) AND (cv.current_row_id = ?)) OR (cv.current_row_id IN (?)))" : "");
 			
-											$qr_res = $this->opo_db->query($vs_sql, $va_row_tmp);
+											$qr_res = $this->db->query($vs_sql, $va_row_tmp);
 										} else {
 											$vs_sql = "
 												SELECT cv.row_id
@@ -2145,7 +2134,7 @@
 													(cv.is_future IS NULL) AND (cv.current_table_num = ?)"
 														.((sizeof($va_row_tmp) > 1) ? " AND (cv.current_type_id = ?)" : "")
 														.((sizeof($va_row_tmp) > 2) ? " AND (cv.current_row_id = ?)" : "");
-											$qr_res = $this->opo_db->query($vs_sql, $va_row_tmp);
+											$qr_res = $this->db->query($vs_sql, $va_row_tmp);
 										}
 										
 										if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
@@ -2193,7 +2182,7 @@
 												WHERE
 													({$vs_table_name}.{$vs_field_name} IN (?))";
 
-											$qr_res = $this->opo_db->query($vs_sql, [$ids]);
+											$qr_res = $this->db->query($vs_sql, [$ids]);
 										} else {
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -2202,7 +2191,7 @@
 												WHERE
 													({$vs_table_name}.{$vs_field_name} IN (?))";
 
-											$qr_res = $this->opo_db->query($vs_sql, [$ids]);
+											$qr_res = $this->db->query($vs_sql, [$ids]);
 
 										}
 										
@@ -2241,7 +2230,7 @@
 											WHERE
 												(ca_metadata_dictionary_rules.rule_code = ?)";
 
-										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+										$qr_res = $this->db->query($vs_sql, $vn_row_id);
 									} else {
 										$vs_sql = "
 											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -2252,7 +2241,7 @@
 											WHERE
 												(ca_metadata_dictionary_rules.rule_code = ?)";
 
-										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+										$qr_res = $this->db->query($vs_sql, $vn_row_id);
 
 									}
 									
@@ -2290,7 +2279,7 @@
 											WHERE
 												(ca_item_tags.tag_id = ?)";
 
-										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+										$qr_res = $this->db->query($vs_sql, $vn_row_id);
 									} else {
 										$vs_sql = "
 											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -2301,7 +2290,7 @@
 											WHERE
 												(ca_item_tags.tag_id = ?)";
 
-										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+										$qr_res = $this->db->query($vs_sql, $vn_row_id);
 
 									}
 									
@@ -2378,7 +2367,7 @@
 											break;
 									}
 
-									$qr_res = $this->opo_db->query($vs_sql.$vs_user_sql, $va_params);
+									$qr_res = $this->db->query($vs_sql.$vs_user_sql, $va_params);
 									
 									if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
 									$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues('ca_objects.object_id'));
@@ -2433,7 +2422,7 @@
 									HAVING c IN (?)
 									";
 
-								$qr_res = $this->opo_db->query($vs_sql, [$va_row_ids]);
+								$qr_res = $this->db->query($vs_sql, [$va_row_ids]);
 							
 							    if(is_array($idno_list = $qr_res->getAllFieldValues($idno_fld)) && (sizeof($idno_list) > 0)) {
 							
@@ -2445,7 +2434,7 @@
                                             ".((sizeof($va_wheres) > 0) ? " WHERE ".join(" AND ", $va_wheres) : "")."
                                             ";
 
-                                    $qr_res = $this->opo_db->query($vs_sql, [$idno_list]);
+                                    $qr_res = $this->db->query($vs_sql, [$idno_list]);
                                 
                                     if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
                                     $va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($vs_browse_table_name.'.'.$t_item->primaryKey()));
@@ -2496,7 +2485,7 @@
 												if (!($t_target_rel = Datamodel::getInstanceByTableName($va_path_to_target[1], true)) || !$t_target_rel->isRelationship() || !$t_target_rel->hasField('type_id')) { break; }
 												$va_ids_from_rel = array_unique($this->_getRelationshipTypeIDs(explode(",", $va_tmp[1]), $va_path_to_target[1]));
 												if (is_array($va_ids_from_rel) && (sizeof($va_ids_from_rel) > 0)) {
-													$qr_res = $this->opo_db->query("SELECT DISTINCT {$vs_target_browse_table_pk} FROM ".$va_path_to_target[1]." WHERE type_id IN (?)", [$va_ids_from_rel]);
+													$qr_res = $this->db->query("SELECT DISTINCT {$vs_target_browse_table_pk} FROM ".$va_path_to_target[1]." WHERE type_id IN (?)", [$va_ids_from_rel]);
 													$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($vs_target_browse_table_pk));
 												}
 											}
@@ -2537,7 +2526,7 @@
                                 $params[] = $omit_child_records_for_types;
                             }
                             if(!sizeof($va_acc_content)) { continue; }
-                            $qr_expand =  $this->opo_db->query("
+                            $qr_expand =  $this->db->query("
                                 SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()." 
                                 FROM ".$this->ops_browse_table_name."
                                 WHERE
@@ -2635,7 +2624,7 @@
 							$vs_filter_join_sql = join("\n", $va_joins);
 						}
 
-						$qr_res = $this->opo_db->query("
+						$qr_res = $this->db->query("
 							SELECT {$vs_sql_distinct} ".$this->ops_browse_table_name.".".$t_item->primaryKey()."
 							FROM ".$this->ops_browse_table_name."
 							{$vs_filter_join_sql}
@@ -2722,7 +2711,7 @@
 						$vs_filter_join_sql = join("\n", $va_joins);
 					}
 
-					$qr_res = $this->opo_db->query("
+					$qr_res = $this->db->query("
 						SELECT {$vs_pk}
 						FROM ".$t_item->tableName()."
 						{$vs_filter_join_sql}
@@ -3230,7 +3219,7 @@
 									LIMIT 2
 								";
 								//print "$vs_sql<hr>";
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = $this->db->query($vs_sql);
 								if ($qr_res->nextRow()) {
 									$va_counts[$vs_state_name] = (int)$qr_res->numRows();
 								}
@@ -3241,7 +3230,7 @@
 									{$vs_join_sql}
 									{$vs_where_sql}";
 								//print "$vs_sql<hr>";
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = $this->db->query($vs_sql);
 								if ($qr_res->numRows() > 0) {
 									$va_facet[$vs_state_name] = array_merge($va_state_info, ['content_count' => $qr_res->numRows()]);
 								} else {
@@ -3410,7 +3399,7 @@
 									";
 								}
 								//print "$vs_sql<hr>";
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = $this->db->query($vs_sql);
 								if ($qr_res->nextRow()) {
 									$va_counts[$vs_state_name] = (int)$qr_res->numRows();
 								}
@@ -3435,7 +3424,7 @@
 								}
 									
 								//print "$vs_sql<hr>";
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = $this->db->query($vs_sql);
 								if ($qr_res->numRows() > 0) {
 									$va_facet[$vs_state_name] = array_merge($va_state_info, ['content_count' => $qr_res->numRows()]);
 								} else {
@@ -3593,7 +3582,7 @@
 								{$vs_where_sql}
 							LIMIT 1
 						";
-						$qr_res = $this->opo_db->query($vs_sql, $params);
+						$qr_res = $this->db->query($vs_sql, $params);
 
 						return ((int)$qr_res->numRows() > 0) ? true : false;
 					} else {
@@ -3609,7 +3598,7 @@
 							ORDER BY ".((sizeof($va_label_order_by_fields) > 0) ? join(", ", $va_label_order_by_fields) : "l.{$vs_label_display_field}")."
 						";
 
-						$qr_res = $this->opo_db->query($vs_sql, $params);
+						$qr_res = $this->db->query($vs_sql, $params);
 
 						$va_values = array();
 						$va_child_counts = array();
@@ -3830,7 +3819,7 @@
 							WHERE
 								(ca_attribute_values.element_id = ?) {$vs_criteria_exclude_sql} {$vs_where_sql}
 							LIMIT 2";
-						$qr_res = $this->opo_db->query($vs_sql,$params);
+						$qr_res = $this->db->query($vs_sql,$params);
 
 						return ((int)$qr_res->numRows() > 1) ? true : false;
 					} else {
@@ -3849,7 +3838,7 @@
 								ca_attribute_values.element_id = ? {$vs_where_sql} {$vs_container_sql}
 						    GROUP BY value_longtext1, value_decimal1, value_longtext2, value_integer1
 						";
-						$qr_res = $this->opo_db->query($vs_sql, $va_params);
+						$qr_res = $this->db->query($vs_sql, $va_params);
 
 						$va_values = [];
                         $va_list_items = $va_suppress_values = null;
@@ -3963,7 +3952,7 @@
                                                 WHERE
                                                     ca_attribute_values.element_id = ? {$vs_where_sql} AND {$vs_get_item_sql}	
                                             ";
-                                            $q_hier_count = $this->opo_db->query($vs_sql, $vn_element_id);
+                                            $q_hier_count = $this->db->query($vs_sql, $vn_element_id);
 										    $q_hier_count->nextRow();
 										
 											$va_facet_list[$vn_ancestor_id] = array(
@@ -4198,7 +4187,7 @@
 							WHERE
 								{$vs_where_sql}
 							LIMIT 2";
-						$qr_res = $this->opo_db->query($vs_sql, $params);
+						$qr_res = $this->db->query($vs_sql, $params);
 
 						if ($qr_res->nextRow()) {
 							return ((int)$qr_res->numRows() > 0) ? true : false;
@@ -4220,7 +4209,7 @@
 							$vs_sql .= " ORDER BY {$vs_sort_field}";
 						}
 						//print $vs_sql; 
-						$qr_res = $this->opo_db->query($vs_sql, $params);
+						$qr_res = $this->db->query($vs_sql, $params);
 
 						$va_collapse_map = $this->getCollapseMapForLocationFacet($va_facet_info);
 
@@ -4396,7 +4385,7 @@
 								WHERE
 									ca_lists.list_code = ? {$vs_where_sql}
 								LIMIT 2";
-							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
+							$qr_res = $this->db->query($vs_sql, $vs_list_name);
 							return ((int)$qr_res->numRows() > 1) ? true : false;
 						} else {
 							// Get label ordering fields
@@ -4443,7 +4432,7 @@
 								{$vs_order_by}
 								";
 							//print $vs_sql." [$vs_list_name]";
-							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
+							$qr_res = $this->db->query($vs_sql, $vs_list_name);
 
 							$va_values = [];
 							$vn_root_id = $t_list->getRootItemIDForList();
@@ -4577,7 +4566,7 @@
 									".($vs_where_sql ? 'WHERE' : '')."
 									{$vs_where_sql}
 									LIMIT 2";
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = $this->db->query($vs_sql);
 
 								return ((int)$qr_res->numRows() > 1) ? true : false;
 							} else {
@@ -4591,7 +4580,7 @@
 								";
 								//print $vs_sql." [$vs_list_name]";
 
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = $this->db->query($vs_sql);
 								$va_values = array();
 								while($qr_res->nextRow()) {
 									$vn_id = $qr_res->get($vs_field_name);
@@ -4685,7 +4674,7 @@
 										{$vs_join_sql}
 										{$vs_where_sql}
 										LIMIT 1";
-									$qr_res = $this->opo_db->query($vs_sql);
+									$qr_res = $this->db->query($vs_sql);
 
 									return ((int)$qr_res->numRows() > 0) ? true : false;
 								} else {
@@ -4698,7 +4687,7 @@
 									    GROUP BY ".$t_browse_table->primaryKey(true)."
 									";
 									//print $vs_sql;
-									$qr_res = $this->opo_db->query($vs_sql);
+									$qr_res = $this->db->query($vs_sql);
 
 									$va_values = array();
 									$vs_pk = $t_browse_table->primaryKey();
@@ -4841,7 +4830,7 @@
 							WHERE
 								{$vs_where_sql}
 							LIMIT 2";
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 
 						if ($qr_res->numRows() > 1) {
 							return true;
@@ -4861,7 +4850,7 @@
 						if($vs_sort_field) {
 							$vs_sql .= " ORDER BY {$vs_sort_field}";
 						}
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 
 						$va_values = array();
 						while($qr_res->nextRow()) {
@@ -4964,7 +4953,7 @@
 								{$vs_where_sql}
 							LIMIT 2";
 
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 
 						if ($qr_res->nextRow()) {
 							return ((int)$qr_res->numRows() > 0) ? true : false;
@@ -4983,7 +4972,7 @@
 							GROUP BY ca_metadata_dictionary_rules.rule_id
 						";
 
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 
 						$va_values = array();
 						$t_rule = new ca_metadata_dictionary_rules();
@@ -5094,7 +5083,7 @@
 								{$vs_where_sql}
 							LIMIT 2";
 
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 
 						if ($qr_res->nextRow()) {
 							return ((int)$qr_res->numRows() > 0) ? true : false;
@@ -5114,7 +5103,7 @@
 							ORDER BY ca_item_tags.tag
 						";
 
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 
 						$va_values = array();
 						while($qr_res->nextRow()) {
@@ -5252,7 +5241,7 @@
 								break;
 						}
 
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 
 						if ($qr_res->nextRow()) {
 							return ((int)$qr_res->numRows() > 0) ? true : false;
@@ -5272,7 +5261,7 @@
 										{$vs_where_sql} ".((sizeof($va_results) ? " AND (".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))" : "")).
 									" GROUP BY ca_object_checkouts.user_id, ca_users.fname, ca_users.lname, ca_users.email";
 
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = $this->db->query($vs_sql);
 
 								while($qr_res->nextRow()) {
 									$vn_user_id = $qr_res->get('user_id');
@@ -5330,7 +5319,7 @@
 										WHERE
 											{$vs_where}
 									";
-									$qr_res = $this->opo_db->query($vs_sql);
+									$qr_res = $this->db->query($vs_sql);
 
 									$qr_res->nextRow();
 									if (!$qr_res->get('c')) { continue; }
@@ -5500,7 +5489,7 @@
 									{$vs_where_sql}
 									LIMIT 1";
 							//print $vs_sql;
-							$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
+							$qr_res = $this->db->query($vs_sql, $vn_element_id);
 
 							return ((int)$qr_res->numRows() > 0) ? true : false;
 						} else {
@@ -5523,7 +5512,7 @@
 								GROUP BY ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attributes.row_id
 							";
 							//print $vs_sql;
-							$qr_res = $this->opo_db->query($vs_sql, $va_params);
+							$qr_res = $this->db->query($vs_sql, $va_params);
 
 							$vn_current_year = (int)date("Y");
 							$va_values = array();
@@ -5591,7 +5580,7 @@
 										{$vs_where_sql}
 								";
 								//print $vs_sql;
-								$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
+								$qr_res = $this->db->query($vs_sql, $vn_element_id);
 								if ($qr_res->numRows() < sizeof($va_results)) {
 									$vb_unknown_is_set = true;
 								}
@@ -5658,7 +5647,7 @@
 									{$vs_where_sql}
 									LIMIT 1";
 							//print $vs_sql;
-							$qr_res = $this->opo_db->query($vs_sql);
+							$qr_res = $this->db->query($vs_sql);
 
 							return ((int)$qr_res->numRows() > 0) ? true : false;
 						} else {
@@ -5674,7 +5663,7 @@
 								GROUP BY {$vs_browse_table_name}.{$vs_browse_start_fld}, {$vs_browse_table_name}.{$vs_browse_end_fld}
 							";
 							//print $vs_sql;
-							$qr_res = $this->opo_db->query($vs_sql);
+							$qr_res = $this->db->query($vs_sql);
 
 							$va_values = array();
 							
@@ -5833,7 +5822,7 @@
 								{$vs_where_sql}
 								LIMIT 1";
 						//print $vs_sql;
-						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
+						$qr_res = $this->db->query($vs_sql, $vn_element_id);
 
 						return ((int)$qr_res->numRows() > 0) ? true : false;
 					} else {
@@ -5856,7 +5845,7 @@
 							GROUP BY ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
 						";
 						//print $vs_sql;
-						$qr_res = $this->opo_db->query($vs_sql, $va_params);
+						$qr_res = $this->db->query($vs_sql, $va_params);
 
 						$va_values = array();
 
@@ -6022,7 +6011,7 @@
 								{$vs_where_sql}
 								LIMIT 1";
 						//print $vs_sql;
-						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
+						$qr_res = $this->db->query($vs_sql, $vn_element_id);
 
 						return ((int)$qr_res->numRows() > 0) ? true : false;
 					} else {
@@ -6045,7 +6034,7 @@
 							GROUP BY ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
 						";
 						//print $vs_sql;
-						$qr_res = $this->opo_db->query($vs_sql, $va_params);
+						$qr_res = $this->db->query($vs_sql, $va_params);
 
 						$va_values = array();
 
@@ -6412,7 +6401,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							{$vs_join_sql}
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)." LIMIT 1";
 	}
-						$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
+						$qr_res = $this->db->query($vs_sql, $va_sql_params);
 						//print "<hr>$vs_sql<hr>\n";
 
 						return ((int)$qr_res->numRows() > 0) ? true : false;
@@ -6436,7 +6425,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 	                    $vs_sql .= " GROUP BY ".join(', ', array_map(function($v) { return str_replace(' rel_type_id', '', $v); }, $va_select_flds));
 					    
 					    //print "<hr>$vs_sql<hr>\n"; print_R($va_sql_params);
-						$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
+						$qr_res = $this->db->query($vs_sql, $va_sql_params);
 
 						$va_facet = $va_facet_items = array();
 						$vs_rel_pk = $t_rel_item->primaryKey();
@@ -6612,7 +6601,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 										".(sizeof($va_label_wheres) ? ' WHERE ' : '').join(" AND ", $va_label_wheres)."
 										".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '')."";
 								//print $vs_sql;
-								$qr_labels = $this->opo_db->query($vs_sql);
+								$qr_labels = $this->db->query($vs_sql);
 
 								while($qr_labels->nextRow()) {
 									$va_fetched_row = $qr_labels->getRow();
@@ -6632,7 +6621,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 							// get attributes for facet items
 							if (sizeof($va_attrs_to_fetch)) {
-								$qr_attrs = $this->opo_db->query("
+								$qr_attrs = $this->db->query("
 									SELECT c_av.*, c_a.locale_id, c_a.row_id
 									FROM ca_attributes c_a
 									INNER JOIN ca_attribute_values c_av ON c_a.attribute_id = c_av.attribute_id
@@ -6745,7 +6734,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							LIMIT 2
 						";
 						//print "$vs_sql<hr>";
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 						if ($qr_res->nextRow()) {
 							return true;
 						}
@@ -6758,7 +6747,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							GROUP BY {$vs_browse_table_name}.{$idno_fld}
 							HAVING c > 1";
 						//print "$vs_sql<hr>";
-						$qr_res = $this->opo_db->query($vs_sql);
+						$qr_res = $this->db->query($vs_sql);
 						while($qr_res->nextRow()) {
 							$c = $qr_res->get('c');
 							
@@ -6905,14 +6894,14 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 * Created temporary table for use while performing browse
 		 */
 		private function _createTempTable($ps_name) {
-			$this->opo_db->query("
+			$this->db->query("
 				CREATE TEMPORARY TABLE {$ps_name} (
 					row_id int unsigned not null,
 
 					primary key (row_id)
 				) engine=memory;
 			");
-			if ($this->opo_db->numErrors()) {
+			if ($this->db->numErrors()) {
 				return false;
 			}
 			return true;
@@ -6922,10 +6911,10 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 * Drops temporary table created while performing browse
 		 */
 		private function _dropTempTable($ps_name) {
-			$this->opo_db->query("
+			$this->db->query("
 				DROP TABLE {$ps_name};
 			");
-			if ($this->opo_db->numErrors()) {
+			if ($this->db->numErrors()) {
 				return false;
 			}
 			return true;
@@ -7496,7 +7485,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
                 
                 $vs_rel_pk = $t_rel_item->primaryKey();
                 $vs_item_pk = $t_item->primaryKey();
-                $qr = $this->opo_db->query("
+                $qr = $this->db->query("
                     SELECT DISTINCT ca_relationship_types.*, ca_relationship_type_labels.*
                     FROM {$va_path[1]}
                     INNER JOIN ca_relationship_types ON ca_relationship_types.type_id = {$va_path[1]}.type_id

@@ -86,7 +86,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lot_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
-				'BOUNDS_LENGTH' => array(0,1024)
+				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 

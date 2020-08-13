@@ -68,7 +68,7 @@ BaseModel::$s_ca_models_definitions['ca_tour_stop_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of tour'),
-				'BOUNDS_LENGTH' => array(1,255)
+				'BOUNDS_LENGTH' => array(1,1024)
 		),
 		'name_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -199,4 +199,3 @@ class ca_tour_stop_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>
