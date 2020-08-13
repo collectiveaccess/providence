@@ -413,8 +413,8 @@ class Installer {
 		// refresh mapping if ElasticSearch is used
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			$o_si = new SearchIndexer();
-			$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false));
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->refreshMapping(true);
 			CompositeCache::flush();
 		}
 	}

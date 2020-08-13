@@ -2195,7 +2195,7 @@ class SearchResult extends BaseObject {
 								array_shift($va_auth_spec); // remove auth_attr_code
 							}
 						} elseif ($vb_element_is_present && $vb_sub_element_is_present) {
-							$va_auth_spec = [];
+							$va_auth_spec = array_slice($va_path_components['components'], 3);
 						} elseif ($vb_element_is_present) {
 							// ca_objects.authority_attr_code
 							$va_auth_spec = array_slice($va_path_components['components'], 2);

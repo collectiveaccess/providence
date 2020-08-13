@@ -1198,7 +1198,7 @@
             unset($pa_options['start']);
             unset($pa_options['limit']);
             
-            $vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
+            $vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, Configuration::load()->get('ca_object_representations_default_editor_display_template'), ['defaultOnEmptyString' => true]);
             $bundles_to_save = caGetOption('showBundlesForEditing', $pa_bundle_settings, null);
             
             $va_reps = $this->getRepresentations(['thumbnail', 'original'], null, $pa_options);
