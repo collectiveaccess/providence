@@ -1575,6 +1575,7 @@ create index i_completed_on on ca_task_queue(completed_on);
 create index i_entity_key on ca_task_queue(entity_key);
 create index i_row_key on ca_task_queue(row_key);
 create index i_error_code on ca_task_queue(error_code);
+create index i_handler on ca_task_queue(handler);
 
 
 /*==========================================================================*/
