@@ -676,7 +676,7 @@ class Installer {
 					$this->logStatus(_t('Deleting list item with idno %1', $vs_item_idno));
 					$t_item = new ca_list_items($vn_item_id);
 					$t_item->setMode(ACCESS_WRITE);
-					$status = $t_item->delete();
+					$t_item->delete();
 					continue;
 				}
 				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
