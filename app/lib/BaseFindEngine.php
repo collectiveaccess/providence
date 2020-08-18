@@ -307,19 +307,107 @@ class BaseFindEngine extends BaseObject {
 		
 		$primary_sort_field = array_shift($sort_fields);
 		if ($primary_sort_field === '_natural') { return $hits; }
-		$primary_sort_direction = (strtolower(array_shift($sort_directions)) === 'desc') ? 'desc' : 'asc';
+		$primary_sort_direction = self::sortDirection(array_shift($sort_directions));
 		
+			
+		$sorted_hits = $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, $options);
 		
-		// $_sort_field = array_shift($sort_fields);
-// 		if ($primary_sort_field === '_natural') { return $hits; }
-// 		$primary_sort_direction = (strtolower(array_shift($sort_directions)) === 'desc') ? 'desc' : 'asc';
-
 		// secondary sorts?
-		// if(sizeof($sort_fields) > 0) {
-// 			
-// 		}
+		if(sizeof($sort_fields) > 0) {
+			$sorted_hits = $this->_secondarySortHits($hits, $sorted_hits, $table, $primary_sort_field, $primary_sort_direction, $sort_fields, $sort_directions, $options);
+		}
 		
-		return $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, $options);
+		return $sorted_hits;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function _secondarySortHits(array $hits, array $page_hits, string $table, string $primary_field, string $primary_sort_direction, array $sort_fields, array $sort_directions, array $options=null) {
+		$sort_spec = array_shift($sort_fields);
+		$sort_direction = self::sortDirection(array_shift($sort_directions));
+		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_spec);
+	
+		// Extract sortable values present on results page ($page_hits)
+		$values = $this->_getSortValues($page_hits, $table, $primary_field, $sort_direction);
+		// Get all ids for each key value 
+		$row_ids_by_value = $this->_getRowIDsForValues($hits, $table, $primary_field, array_keys($values));
+	
+		// Sort rows for each value
+		$sorted_rows_by_value = [];	// only includes rows with frequency > 1
+		foreach($row_ids_by_value as $value => $row_ids) {
+			if(sizeof($row_ids) === 1) { continue; }
+			if(sizeof($row_ids) < 1) { unset($row_ids_by_value[$value]); continue; }
+			
+			$s = $this->doSort($row_ids, $table, $sort_spec, $sort_direction, []);
+			if (is_array($s) && sizeof($s)) { 
+				$sorted_rows_by_value[$value] = $s; 
+			} else {
+				unset($sorted_rows_by_value[$value]);
+				continue;
+			}
+			
+			if(sizeof($sort_fields)) {
+				$sorted_rows_by_value[$value] = $this->_secondarySortHits($sorted_rows_by_value[$value], $sorted_rows_by_value[$value], $table, $sort_spec, $sort_direction, $sort_fields, $sort_directions, []);
+			}
+		}
+	
+		// Splice secondary sorts into page
+		$sorted_page_hits = $page_hits;
+		
+		$page_start = $s = caGetOption('start', $options, 0);
+		$l = caGetOption('limit', $options, sizeof($page_hits));
+		
+		foreach($sorted_rows_by_value as $value => $row_ids) {
+			foreach($page_hits as $index => $row_id) {
+				if (($map_index = array_search($row_id, $row_ids)) !== false) {
+					if ($index > 0) {	// starts after beginning of this page
+						$lr = sizeof($row_ids);
+						if (($lr + $index) >= sizeof($sorted_page_hits)) { $lr = sizeof($sorted_page_hits) - $index; }
+						array_splice($sorted_page_hits, $index, $lr, array_slice($row_ids, 0, $lr));
+					} else {
+						// first result is at start of page, so we need to figure out if the sequence begins on a previous page
+						$start = null;
+						if ($page_start > 0) {
+							$c = 0;
+							do {			// loop back through pages until we find the beginning
+								$c++;
+								$s -= $l;
+								$p_hits = $this->doSort($hits, $table, $primary_field, $primary_sort_direction, ['start' => $s, 'limit' => $l]); 
+					
+								foreach($p_hits as $p_index => $p_row_id) {
+									if (($p_map_index = array_search($p_row_id, $row_ids)) !== false) {	// sorted rows present on this page
+										if($p_index > 0) { 		// starts on this page
+											$start = (($c-1) * $l) + $p_index;
+											break(2); 
+										} else {					// covers entire currage page. so we can't be sure this is the start... keep looking
+											continue(2);
+										}
+									} 
+								}
+								
+								// nothing found on page
+								$start = $l * ($c-1);
+								break;
+							} while($s > 0);
+						} else {
+							$start = $map_index;
+						}
+					
+						if(!is_null($start)) {
+							$s_row_ids = array_slice($row_ids, $start, $l);
+							array_splice($sorted_page_hits, 0, sizeof($s_row_ids), $s_row_ids);
+						} else {
+							continue;
+						}
+					}
+					
+					
+					break;
+				}
+			}
+		}
+		return $sorted_page_hits;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -349,11 +437,10 @@ class BaseFindEngine extends BaseObject {
 		
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
-						
 		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
 		if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { 
 			//throw new ApplicationException(_t('Invalid sort field: %1', $sort_table));
-			return $pa_hits;
+			return $hits;
 		}
 
 		$hit_table = $this->_createTempTableForHits($hits);
@@ -399,13 +486,13 @@ class BaseFindEngine extends BaseObject {
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
-		$sort_direction = (strtolower($direction) === 'desc') ? 'desc' : 'asc';
+		$direction = self::sortDirection($direction);
 		
 		$sql = "
 			SELECT {$table}.{$table_pk}
 			FROM {$table}
 			INNER JOIN {$hit_table} ON {$hit_table}.row_id = {$table}.{$table_pk}
-			ORDER BY {$table}.`{$intrinsic}` {$sort_direction}
+			ORDER BY {$table}.`{$intrinsic}` {$direction}
 			{$limit_sql}
 		";
 		$qr_sort = $this->db->query($sql);
@@ -425,19 +512,20 @@ class BaseFindEngine extends BaseObject {
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
-		$sort_direction = (strtolower($direction) === 'desc') ? 'desc' : 'asc';
+		$direction =  self::sortDirection($direction);
 		
-		$joins = $this->_getJoins($t_table, $t_rel_table, $rel_label_field);
+		$joins = $this->_getJoins($t_table, $t_rel_table, $intrinsic);
 		$join_sql = join("\n", $joins);
 		
 		$sql = "
 			SELECT t.{$table_pk}
 			FROM {$table} t
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
-			{$joins_sql}
+			{$join_sql}
 			ORDER BY s.`{$intrinsic}` {$direction}
 			{$limit_sql}
 		";
+		
 		$qr_sort = $this->db->query($sql);
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
@@ -459,13 +547,13 @@ class BaseFindEngine extends BaseObject {
 		$t_label = $t_table->getLabelTableInstance();
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
-		$sort_direction = (strtolower($direction) === 'desc') ? 'desc' : 'asc';
+		$direction = self::sortDirection($direction);
 		
 		$sql = "
 			SELECT l.{$table_pk}
 			FROM {$label_table} l
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
-			ORDER BY l.`{$label_field}` {$sort_direction}
+			ORDER BY l.`{$label_field}` {$direction}
 			{$limit_sql}
 		";
 		$qr_sort = $this->db->query($sql);
@@ -489,7 +577,7 @@ class BaseFindEngine extends BaseObject {
 		$t_label = $t_rel_table->getLabelTableInstance();
 		if (!$rel_label_field || !$t_label->hasField($rel_label_field)) { $rel_label_field = $t_rel_table->getLabelSortField(); }
 		
-		$sort_direction = (strtolower($direction) === 'desc') ? 'desc' : 'asc';
+		$direction = self::sortDirection($direction);
 		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $rel_label_field);
 		$join_sql = join("\n", $joins);
@@ -500,7 +588,7 @@ class BaseFindEngine extends BaseObject {
 			{$join_sql}
 			INNER JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
-			ORDER BY rl.`{$rel_label_field}` {$sort_direction}
+			ORDER BY rl.`{$rel_label_field}` {$direction}
 			{$limit_sql}
 		";
 		
@@ -521,15 +609,16 @@ class BaseFindEngine extends BaseObject {
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
 		
-		$sort_direction = (strtolower($direction) === 'desc') ? 'desc' : 'asc';
+		$direction = self::sortDirection($direction);
 
 		$attr_tmp_table = $this->_createTempTableForAttributeIDs();
 		$sql = "
 			INSERT INTO {$attr_tmp_table} 
 				SELECT a.attribute_id, a.row_id 
 				FROM ca_attributes a  
+				INNER JOIN ca_attribute_values as cav ON cav.attribute_id = a.attribute_id
 				INNER JOIN {$hit_table} AS ht ON ht.row_id = a.row_id
-				WHERE a.table_num = ? and a.element_id = ?
+				WHERE a.table_num = ? and cav.element_id = ?
 		";
 
 		$qr_sort = $this->db->query($sql, [$table_num, $element_id]);
@@ -538,7 +627,7 @@ class BaseFindEngine extends BaseObject {
 					FROM ca_attribute_values cav FORCE INDEX(i_sorting)
 					INNER JOIN {$attr_tmp_table} AS attr_tmp ON attr_tmp.attribute_id = cav.attribute_id
 					WHERE cav.element_id = ? 
-					ORDER BY cav.value_sortable {$sort_direction}
+					ORDER BY cav.value_sortable {$direction}
 					{$limit_sql}";
 		
 		$qr_sort = $this->db->query($sql, [$element_id]);
@@ -554,7 +643,11 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _sortByRelatedAttribute($t_table, $t_rel_table, string $hit_table, string $element_code=null, string $limit_sql=null, $direction='asc') {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
+		$rel_table = $t_rel_table->tableName();
+		$rel_table_pk = $t_rel_table->primaryKey();
 		$rel_table_num = $t_rel_table->tableNum();
 		
 		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
@@ -577,14 +670,459 @@ class BaseFindEngine extends BaseObject {
 		$join_sql = join("\n", $joins);
 		
 		$sql = "SELECT t.{$table_pk} row_id
-					FROM ca_attribute_values cav FORCE INDEX(i_sorting)
-					INNER JOIN {$attr_tmp_table} AS attr_tmp ON attr_tmp.attribute_id = cav.attribute_id
+					FROM {$table} t
 					{$join_sql}
+					INNER JOIN ca_attributes AS a ON a.row_id =  s.{$rel_table_pk} AND a.table_num = {$rel_table_num}
+					INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
+					INNER JOIN {$attr_tmp_table} AS attr_tmp ON attr_tmp.attribute_id = a.attribute_id
 					WHERE cav.element_id = ? 
 					ORDER BY cav.value_sortable {$direction}
 					{$limit_sql}";
-		
+	
 		$qr_sort = $this->db->query($sql, [$element_id]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['row_id']] = true;
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSortValues(array $hits, string $table, string $sort_field, string $direction='asc') {
+		$t_table = Datamodel::getInstance($table, true);
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		
+		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+		
+		$values = [];
+		
+		// Extract sort key values + frequency from hits
+		if ($sort_table === $table) {	// sort in primary table
+			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
+				$values = $this->_getSortValuesForIntrinsic($hits, $t_table, $sort_field, $direction);
+			} elseif($t_table->hasElement($sort_field)) { // is attribute
+				$values = $this->_getSortValuesForAttribute($hits, $t_table, $sort_field, $direction);
+			} elseif($sort_field === 'preferred_labels') {
+				$values = $this->_getSortValuesForLabel($hits, $t_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
+			} else {
+				throw new ApplicationException(_t('Unhandled secondary sort'));
+			}
+		} elseif($t_table->getLabelTableName() == $sort_table) {
+			// is label?
+			$values = $this->_getSortValuesForLabel($hits, $t_table, $sort_field, $direction);	
+		} else {
+			// is related field
+			// $t_rel_table = Datamodel::getInstance($sort_table, true);
+ 			$is_attribute = $t_rel_table->hasElement($sort_field);
+ 			
+ 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+ 				$sort_key_values[] = $this->_getRelatedSortValuesForIntrinsic($hits, $t_table, $t_rel_table, $sort_field, $direction);
+ 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
+ 				$sort_key_values[] = $this->_getRelatedSortValuesForLabel($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
+ 			} elseif($is_attribute) {							// sort key is metadata attribute
+ 				$sort_key_values[] = $this->_getRelatedSortValuesForAttribute($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);		
+ 			} else {
+				throw new ApplicationException(_t('Unhandled secondary sort'));
+			}
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSortValuesForIntrinsic(array $hits, $t_table, string $intrinsic, string $direction) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$sql = "
+			SELECT {$intrinsic} val
+			FROM {$table}
+			WHERE {$table}.{$table_pk} IN (?)
+			ORDER BY val {$direction}
+		";
+		$qr_sort = $this->db->query($sql, [$hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedSortValuesForIntrinsic(array $hits, $t_table, $t_rel_table,  string $intrinsic, string $direction) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $intrinsic);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "
+			SELECT s.{$intrinsic} val
+			FROM {$table}
+			{$join_sql}
+			WHERE {$table}.{$table_pk} IN (?)
+			ORDER BY val {$direction}
+		";
+		$qr_sort = $this->db->query($sql, [$hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSortValuesForLabel(array $hits, $t_table, string $label_field, string $direction) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		
+		$t_label = $t_table->getLabelTableInstance();
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$sql = "
+			SELECT l.{$label_field} val
+			FROM {$label_table} l
+			WHERE l.{$table_pk} IN (?)
+			ORDER BY val {$direction}
+		";
+		$qr_sort = $this->db->query($sql, [$hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedSortValuesForLabel(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		$t_label = $t_table->getLabelTableInstance();
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "
+			SELECT rl.{$label_field} val
+			FROM {$label_table} l
+			{$join_sql}
+			INNER JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
+			WHERE rl.{$table_pk} IN (?)
+			ORDER BY val {$direction}
+		";
+		$qr_sort = $this->db->query($sql, [$hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSortValuesForAttribute(array $hits, $t_table, string $element_code, string $direction) {
+		$table_num = $t_table->tableNum();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+
+		$sql = "SELECT cav.value_sortable val
+					FROM ca_attribute_values cav
+					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+					WHERE cav.element_id = ? AND a.row_id IN (?)
+				ORDER BY val {$direction}
+					";
+		
+		$qr_sort = $this->db->query($sql, [$element_id, $hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		return $sort_keys;
+	}
+	
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_num = $t_rel_table->tableNum();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "SELECT cav.value_sortable val
+					FROM {$table} pt
+					{$join_sql}
+					INNER JOIN ca_attributes AS a ON a.row_id = t.{$rel_table_pk} AND a.table_num = {$rel_table_num}
+					INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
+					WHERE cav.element_id = ? AND pt.{$table_pk} IN (?)
+				ORDER BY val {$direction}
+					";
+		$qr_sort = $this->db->query($sql, [$element_id, $hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRowIDsForValues(array $hits, string $table, string $sort_field, array $values) {
+		$t_table = Datamodel::getInstance($table, true);
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		
+		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+		
+		$row_ids = [];
+		
+		$hit_table = $this->_createTempTableForHits($hits);
+		
+		// Extract sort key values + frequency from hits
+		if ($sort_table === $table) {	// sort in primary table
+			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
+				$row_ids = $this->_getRowIDsForIntrinsic($values, $t_table, $hit_table, $sort_field);
+			} elseif($t_table->hasElement($sort_field)) { // is attribute
+				$row_ids = $this->_getRowIDsForAttribute($values, $t_table, $hit_table, $sort_field);
+			} elseif($sort_field === 'preferred_labels') {
+				$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
+			} else {
+				throw new ApplicationException(_t('Unhandled secondary sort'));
+			}
+		} elseif($t_table->getLabelTableName() == $sort_table) {
+			// is label?
+			$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_field);	
+		} else {
+			// is related field
+			$t_rel_table = Datamodel::getInstance($sort_table, true);
+ 			$is_attribute = $t_rel_table->hasElement($sort_field);
+ 			
+ 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+ 				$sort_key_values[] = $this->_getRelatedRowIDsForIntrinsic($values, $t_table, $t_rel_table, $hit_table, $sort_field);
+ 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
+ 				$sort_key_values[] = $this->_getRelatedRowIDsForLabel($values, $t_table, $t_rel_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
+ 			} elseif($is_attribute) {							// sort key is metadata attribute
+ 				$sort_key_values[] = $this->_getRelatedRowIDsForAttribute($values, $t_table, $t_rel_table, $hit_table, $sort_field);		
+ 			} else {
+				throw new ApplicationException(_t('Unhandled secondary sort'));
+			}
+		}
+		return $row_ids;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRowIDsForIntrinsic(array $values, $t_table, string $hit_table, string $intrinsic) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$sql = "
+			SELECT {$table}.{$table_pk}, {$table}.{$intrinsic} val
+			FROM {$table}
+			INNER JOIN {$hit_table} ON {$hit_table}.row_id = {$table}.{$table_pk}
+			WHERE
+				{$table}.{$intrinsic} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row[$table_pk];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedRowIDsForIntrinsic(array $values, $t_table, $t_rel_table, string $hit_table, string $intrinsic) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $intrinsic);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "
+			SELECT s.{$rel_table_pk}, s.{$intrinsic} val
+			FROM {$table}
+			INNER JOIN {$hit_table} ON {$hit_table}.row_id = {$table}.{$table_pk}
+			{$join_sql}
+			WHERE
+				s.{$intrinsic} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row[$table_pk];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		
+		$t_label = $t_table->getLabelTableInstance();
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$sql = "
+			SELECT l.{$table_pk}, l.{$label_field} val
+			FROM {$label_table} l
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
+			WHERE
+				l.{$label_field} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row[$table_pk];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedRowIDsForLabel(array $values, $t_table, $t_rel_table, string $hit_table, string $label_field) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		$t_label = $t_table->getLabelTableInstance();
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "
+			SELECT rl.{$table_pk}, rl.{$label_field} val
+			FROM {$label_table} l
+			{$join_sql}
+			INNER JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
+			WHERE
+				rl.{$label_field} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row[$table_pk];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRowIDsForAttribute(array $values, $t_table, string $hit_table, string $element_code) {
+		$table_num = $t_table->tableNum();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
+		
+
+		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
+					FROM ca_attribute_values cav
+					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+					INNER JOIN {$hit_table} AS ht ON ht.row_id = a.row_id
+					WHERE 
+						a.table_num = ? AND cav.element_id = ? AND cav.{$attr_val_sort_field} IN (?)
+		";
+		
+		$qr_sort = $this->db->query($sql, [$table_num, $element_id, $values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row['row_id'];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedRowIDsForAttribute(array $values, $t_table, $t_rel_table, string $hit_table, string $element_code=null) {
+		$table_num = $t_table->tableNum();
+		$rel_table_num = $t_rel_table->tableNum();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
+
+		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
+					FROM ca_attribute_values cav
+					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+					INNER JOIN {$hit_table} AS ht ON ht.row_id = a.row_id
+					WHERE 
+						a.table_num = ? AND cav.element_id = ? AND cav.{$attr_val_sort_field} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$rel_table_num, $element_id, $values]);
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
@@ -650,13 +1188,12 @@ class BaseFindEngine extends BaseObject {
 				
 				break;
 			case 2:
-				if ($is_attribute) {
+				//if ($is_attribute) {
 					$joins[] = "INNER JOIN {$rel_table} AS s ON s.{$rel_table_pk} = t.{$rel_table_pk}";
-					$joins[] = "INNER JOIN {$table} AS t ON t.{$rel_table_pk} = l.{$table_pk}";
-				} else {	
-					$joins[] = "INNER JOIN {$rel_table} AS s ON s.{$rel_table_pk} = t.{$rel_table_pk}";
-				}
-				
+				//} else {	
+				//	$joins[] = "INNER JOIN {$rel_table} AS s ON s.{$rel_table_pk} = t.{$rel_table_pk}";
+			//	}
+				//
 				break;
 			default:
 				throw new ApplicationException(_t('Invalid related sort'));
@@ -689,6 +1226,13 @@ class BaseFindEngine extends BaseObject {
 		}
 		unset($this->temporary_tables[$table_name]);
 		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function sortDirection($direction) {
+		return (strtolower($direction) === 'desc') ? 'desc' : 'asc';
 	}
 	# -------------------------------------------------------
 	/**
