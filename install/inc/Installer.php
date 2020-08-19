@@ -669,10 +669,10 @@ class Installer {
 			if (!isset($vs_rank)) { $vs_rank = 0; }
 
 			$this->logStatus(_t('Processing list item with idno %1', $vs_item_idno));
-
+			$vb_deleted = self::getAttribute($vo_item, "deleted");
 			if($vn_item_id = caGetListItemID($t_list->get('list_code'), $vs_item_idno, array('dontCache' => true))) {
 				$this->logStatus(_t('List item with idno %1 already exists', $vs_item_idno));
-				if(self::getAttribute($vo_item, "deleted")) {
+				if($vb_deleted) {
 					$this->logStatus(_t('Deleting list item with idno %1', $vs_item_idno));
 					$t_item = new ca_list_items($vn_item_id);
 					$t_item->setMode(ACCESS_WRITE);
@@ -682,7 +682,11 @@ class Installer {
 				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
 			} else {
 				$this->logStatus(_t('List item with idno %1 is a new item', $vs_item_idno));
-				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
+				if ($vb_deleted) {
+					continue;
+				} else {
+					$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
+				}
 			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
