@@ -146,13 +146,16 @@ class MediaUploadManager {
     static public function getLog(array $options) {
         $user = caGetOption('user', $options, null);
         $limit = caGetOption('limit', $options, 10);
+        $date = caGetOption('date', $options, null);
 
         $sessions = [];
         $user_id = $user ? self::_getUserID($user) : null;
         
         $params = [];
-        if ($user_id) { $params['user_id'] = $user_id; }
-        
+        if($user_id) { $params['user_id'] = $user_id; }
+        if($date && ($d = caDateToUnixTimestamps($date))) {
+        	$params['created_on'] = ['BETWEEN', [$d['start'], $d['end']]]; 
+        }
         if (!sizeof($params)) { $params = '*'; }
         
 		if ($sessions = ca_media_upload_sessions::find($params, ['returnAs' => 'arrays'], ['sort' => 'created_on', 'sortDirection' => 'desc'])) {

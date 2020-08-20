@@ -227,9 +227,12 @@
 			header("Access-Control-Allow-Headers: X-Requested-With");
         	// TODO: Check that user has privs to use uploader admin console
         	// TODO: Add parameters to allow filtering by user, date range and upload status
+        	
+        	$date = $this->request->getParameter('date', pString);
 
-			if(false) {
+			if(strlen($date) > 0) {
 				// Handling of filtered query goes here
+				$recent = MediaUploadManager::getLog(['date' => $date]);
 			} else {
 				// No params, so show recent uploads by default
  		    	$recent = MediaUploadManager::getLog([]);
