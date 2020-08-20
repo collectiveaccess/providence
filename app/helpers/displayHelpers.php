@@ -4922,7 +4922,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			case 'original_name':
 			default:
 				if (strpos($mode, "^") !== false) { // template
-				   $filename = caProcessTemplateForIDs($mode, 'ca_object_representations', [$data['representation_id']]);
+				   $filename = preg_replace('!\.[A-Za-z]{1}[A-Za-z0-9]{1,3}$!', '', caProcessTemplateForIDs($mode, 'ca_object_representations', [$data['representation_id']]));
+				   
 				} elseif ($data['original_filename']) {
 					$tmp = explode('.', $data['original_filename']);
 					if (sizeof($tmp) > 1) { 
