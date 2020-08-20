@@ -31,7 +31,8 @@
     "scholarslab/bagit": "~0.3.1",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "tedivm/stash": "0.15.*",
-    "zendframework/zend-stdlib": "^3.2"
+    "zendframework/zend-stdlib": "^3.2",
+    "james-heinrich/getid3": "^1.9.20"
   },
   "require": {
     "ext-iconv": "*",
