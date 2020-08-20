@@ -63,7 +63,8 @@ class FindTest extends BaseTestWithData {
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
 				'idno' => 'TEST & STUFF',
-				'acquisition_type_id' => 'gift'
+				'acquisition_type_id' => 'gift',
+				'extent' => 10
 			),
 			'preferred_labels' => array(
 				array(
@@ -144,7 +145,8 @@ class FindTest extends BaseTestWithData {
 		$this->assertGreaterThan(0, $this->opn_object_id2 = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'dataset',
-				'idno' => 'Another TEST'
+				'idno' => 'Another TEST',
+				'extent' => 3
 			),
 			'preferred_labels' => array(
 				array(
@@ -349,8 +351,68 @@ Said, hey honey, take a walk on the wild side.'
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertContains($this->opn_object_id, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);	
+	}
+	# -------------------------------------------------------
+	public function testBaseModelFindByIntrinsicWithNotInOperator() {	
+		$vm_ret = ca_objects::find(['idno' => ['NOT IN', ['INVALID VALUE', 'Another TEST']]], ['purify' => true, 'returnAs' => 'ids']);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['idno' => ['NOT IN', ['TEST & STUFF']]], ['purify' => true, 'returnAs' => 'ids']);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
 		$this->assertContains($this->opn_object_id2, $vm_ret);
 		
+		$vm_ret = ca_objects::find(['idno' => ['NOT IN', ['INVALID VALUE']]], ['purify' => false, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);	
+	}
+	# -------------------------------------------------------
+	public function testBaseModelFindByIntrinsicWithBetweenOperator() {	
+		$vm_ret = ca_objects::find(['extent' => ['BETWEEN', [1, 5]]], ['purify' => true, 'returnAs' => 'ids']);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['extent' => ['BETWEEN', [3, 100]]], ['purify' => true, 'returnAs' => 'ids']);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['extent' => ['BETWEEN', [8, 100]]], ['purify' => true, 'returnAs' => 'ids']);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['extent' => ['BETWEEN', [0, 2]]], ['purify' => true, 'returnAs' => 'ids']);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(0, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testBaseModelFindByAttributeWithBetweenOperator() {	
+		$vm_ret = ca_objects::find(['integer_test' => ['BETWEEN', [400, 600]]], ['purify' => true, 'returnAs' => 'ids']);
+	
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['integer_test' => ['BETWEEN', [0, 1000]]], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['integer_test' => ['BETWEEN', [5000, 100000]]], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(0, $vm_ret);
 	}
 	# -------------------------------------------------------
 	public function testFindByPreferredLabelWithInOperator() {	
@@ -367,6 +429,18 @@ Said, hey honey, take a walk on the wild side.'
 		$this->assertCount(2, $vm_ret);
 		$this->assertContains($this->opn_object_id, $vm_ret);
 		$this->assertContains($this->opn_object_id2, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testFindByPreferredLabelWithNotInOperator() {	
+		$vm_ret = ca_objects::find(['preferred_labels' => ['name' => ['NOT IN', ['Sound & Motion']]]], ['purify' => true, 'returnAs' => 'ids']);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);	
+		
+		$vm_ret = ca_objects::find(['preferred_labels' => ['name' => ['NOT IN', ['INVALID VALUE', 'A Walk on the Wild Side']]]], ['purify' => true, 'returnAs' => 'ids']);
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
 	}
 	# -------------------------------------------------------
 	public function testFindByNonPreferredLabelWithInOperator() {	

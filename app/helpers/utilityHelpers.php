@@ -4105,6 +4105,9 @@ function caFileIsIncludable($ps_file) {
 			case 'not in':
 				return ($pb_is_list) ? true : false;
 				break;
+			case 'between':
+				return ($pb_is_list) ? true : false;
+				break;
 		}
 		return false;
 	}
