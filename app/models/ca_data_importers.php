@@ -2958,7 +2958,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 				if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
 	
-				if ($vb_use_parent_as_subject) { 
+				if (($vb_use_parent_as_subject) && is_array($va_content_tree[$vs_subject_table])) { 
 					foreach($va_content_tree[$vs_subject_table] as $vn_i => $va_element_data) {
 						foreach($va_element_data as $vs_element => $va_element_value) {
 							if ($vs_element == 'parent_id') {
@@ -3030,7 +3030,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$vs_idno_gen = $t_subject->get($vs_idno_fld);
 					$va_log_import_error_opts['idno'] = $vs_idno_gen;
 					
-					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not insert new record for %2: ", $vs_idno, $t_subject->getProperty('NAME_SINGULAR')), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not insert new record for %2 (type was %3): ", $vs_idno, $t_subject->getProperty('NAME_SINGULAR'), $vs_type), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 					
 						$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => null]));
 						if ($vs_import_error_policy == 'stop') {
