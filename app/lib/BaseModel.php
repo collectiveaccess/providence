@@ -11476,9 +11476,13 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * 		["idno" => ['=', '2012.001'], "access" => ['>', 1]]
 	 *
-	 * 		You may also specify lists of values for use with the IN operator:
+	 * 		You may also specify lists of values for use with the IN and NOT IN operators:
 	 *
 	 * 		["idno" => ['=', '2012.001'], "access" => ['IN', [1,2,3]]]
+	 *
+	 * 		Range searches may be performed using the BETWEEN operator:
+	 *
+	 * 		["idno" => ['=', '2012.001'], "access" => ['BETWEEN', [1,3]]]
 	 *
 	 *		 If you pass an integer instead of an array it will be used as the primary key value for the table; result will be returned as "firstModelInstance" unless the returnAs option is explicitly set.
 	 *
@@ -11544,7 +11548,6 @@ $pa_options["display_form_field_tips"] = true;
 	
 		// Convert value array such that all values use operators
 		$pa_values = caNormalizeValueArray($pa_values, ['purify' => $vb_purify]);
-		
 		$va_sql_params = [];
 		
 		$vs_type_restriction_sql = '';
@@ -11682,8 +11685,14 @@ $pa_options["display_form_field_tips"] = true;
 						if ($vs_op !== '=') { $vs_op = 'IS'; }
 						$va_sql_wheres[] = "({$vs_field} {$vs_op} NULL)";
 					} elseif (is_array($vm_value) && sizeof($vm_value)) {
-						if (strtoupper($vs_op) !== 'NOT IN') { $vs_op = 'IN'; }
-						$va_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
+						if (!in_array(strtoupper($vs_op), ['=', 'NOT IN', 'BETWEEN'])) { $vs_op = 'IN'; }
+						if (strtoupper($vs_op) === 'BETWEEN') {
+							$va_sql_wheres[] = "({$vs_field} BETWEEN ? AND ?)";
+							$va_sql_params[] = $vm_value[0];
+							$va_sql_params[] = $vm_value[1];
+						} else {
+							$va_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
+						}
 					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
 						$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
 					} else {
