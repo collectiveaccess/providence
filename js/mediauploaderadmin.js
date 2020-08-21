@@ -2,8 +2,8 @@
 import React, { Component } from "react";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import { Tabs, Tab } from "react-bootstrap";
-import Recent from "./components/RecentTab/Recent";
-import Search from "./components/SearchTab/Search";
+import Recent from "./mediauploaderadmin/RecentTab/Recent";
+import Search from "./mediauploaderadmin/SearchTab/Search";
 
 const axios = require("axios");
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
