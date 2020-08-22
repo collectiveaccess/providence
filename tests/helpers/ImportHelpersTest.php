@@ -185,10 +185,11 @@ class ImportHelpersTest extends TestCase {
     # -------------------------------------------------------
     public function testAATMatchPeople() {
         // some real-world examples
-        $vm_ret = caMatchAAT(
-                explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression: visual arts:abstraction')
-        );
+        $o_service = new WLPlugInformationServiceAAT();
 
+        $vm_ret = caMatchAAT(
+                explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression: visual arts:abstraction'),
+                null, null, $o_service);
         $this->assertEquals('http://vocab.getty.edu/aat/300056508', $vm_ret);
     }
 
