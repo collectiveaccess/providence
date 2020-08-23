@@ -32,9 +32,7 @@
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "tedivm/stash": "0.15.*",
     "zendframework/zend-stdlib": "^3.2",
-    "james-heinrich/getid3": "^1.9.20"
-  },
-  "require": {
+    "james-heinrich/getid3": "^1.9.20",
     "ext-iconv": "*",
     "ext-simplexml": "*",
     "phpseclib/phpseclib": "^2.0",

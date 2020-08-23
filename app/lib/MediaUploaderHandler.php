@@ -13,14 +13,17 @@ class MediaUploaderHandler implements TusMiddleware {
     public function handle(Request $request, Response $response) {
         // TODO: Add checks here?
         
-        $stats = caGetUserMediaStorageUsageStats();
-        
-        if ($stats['storageUsage'] > $stats['storageAvailable']) {
-        	throw new MediaUploadManageSessionException('User storage quota exceeded');
+        if (rand(0,100) === 50) {
+			$stats = caGetUserMediaStorageUsageStats();
+		
+			if ($stats['storageUsage'] > $stats['storageAvailable']) {
+				throw new MediaUploadManageSessionException('User storage quota exceeded');
+			}
+		
+			unset($stats['storageUsage']);
+			$h = array_merge($response->getHeaders(), $stats);
+		
+        	$response->setHeaders($h);
         }
-        
-        unset($stats['storageUsage']);
-        $h = array_merge($response->getHeaders(), $stats);
-        $response->setHeaders($h);
     }
 }

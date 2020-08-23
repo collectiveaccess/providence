@@ -1,7 +1,13 @@
 @import "~bootstrap/scss/bootstrap";
 
+#mediaUploaderUI {
+	box-sizing: border-box !important;	/* Default legacy content-box here for Bootstrap compatibility */
+}
+
 .mediaUploaderDropZone {
-  border: 1px dashed #000;
+  height: 110px;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
   padding: 15px;
   margin: 0px;
 }
@@ -28,13 +34,34 @@ div.mediaUploaderInfoCard {
 ul.mediaUploaderInfo {
 	list-style: none;
     padding-left: 0;
+    display: block !important;
 }
+
 
 h4.mediaUploaderError {
 	color: #cc0000;
+	font-weight: bold;
+	font-style: italic;
+	font-size: 12px;
 }
 
-h4.MediaUploaderStorageError {
+h4.mediaUploaderStorageError {
 	color: #cc0000;
 	font-size: 11px;
+}
+
+h4.mediaUploaderStatus {
+	color: #a0a0a0;
+	font-size: 16px;
+}
+
+a.mediaUploaderFilename {
+	text-decoration: none;
+	color: #000;
+	cursor: help;
+}
+
+.mediaUploaderRecentItem {
+	height: 200px;
+	overflow-y: auto;
 }

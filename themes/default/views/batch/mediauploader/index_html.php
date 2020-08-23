@@ -1,7 +1,7 @@
 <div class="row">
 	<div class="col-md-12">
 		<div id="mediaUploaderUI">
-			UI goes here
+			
 		</div>
 	</div>
 </div>

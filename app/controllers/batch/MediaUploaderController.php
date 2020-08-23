@@ -185,6 +185,16 @@
 			$this->render('mediauploader/response_json.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 * Get current storage stats
+ 		 */
+ 		public function storage(){
+ 		    $user_id = $this->request->getUserID();
+			$this->view->setVar('response', array_merge(['ok' => 1], caGetUserMediaStorageUsageStats($user_id)));
+			
+			$this->render('mediauploader/response_json.php');
+ 		}
+ 		# -------------------------------------------------------
         /**
          * Get recent uploads
          */
