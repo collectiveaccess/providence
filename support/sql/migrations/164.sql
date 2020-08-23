@@ -16,7 +16,7 @@ create table if not exists ca_media_upload_sessions (
    cancelled                 tinyint unsigned               not null default 0,
    
    num_files		         int unsigned                   not null,
-   total_bytes		         int unsigned                   not null,
+   total_bytes		         bigint unsigned                   not null default 0,
    progress		             longtext                       null,
    
    primary key (session_id),
