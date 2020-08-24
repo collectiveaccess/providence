@@ -2,8 +2,12 @@
 
 /*  dark gray #4b4a4a - teal #134959 - turquoise #1FAA99 - med gray #DDDDDD - light gray #EEEEEE */
 
-*, *::before, *::after {
+html {
 	box-sizing: content-box !important;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit !important;
 }
 
 html {
@@ -2782,7 +2786,7 @@ div.caMediaOverlayControls {
     opacity: 0.7;
 }
 
-div.caMediaOverlayControls a{
+div.caMediaOverlayControls a {
     text-decoration:none;
     font-weight:bold;
     font-size:16px;
@@ -2793,19 +2797,30 @@ div.caMediaOverlayControls a:hover{
     color:#FFF;
 }
 div.caMediaOverlayControls .close {
-    float:right;
-    width:15px;
+    position: absolute;
+    text-align: right;
+    width:200px;
     height:16px;
-    margin: 0px 10px 0px 20px;
+    margin: 10px 10px 0px 20px;
+    top: 0px;
+    right: 0px;
 }
+div.caMediaOverlayControls .close a {
+    font-size: 12px;
+}
+
 
 div.caMediaOverlayControls .close a {
     text-decoration: none;
 }
 
 div.caMediaOverlayControls .download {
-    float:right;
-    margin-left:20px;
+   	position: absolute;
+    width:200px;
+    height:16px;
+    margin: 10px 10px 0px 20px;
+    top: 0px;
+    right: 300px;
 }
 
 div.caMediaOverlayControls .download form a, div.caMediaOverlayControls .download a {
@@ -3558,6 +3573,12 @@ input.urlBg, textarea.urlBg {
     background-image: url('../graphics/icons/formBgUrl.gif');
     background-repeat:no-repeat;
     background-position:right center;
+}
+input.filesizeBg, textarea.filesizeBg {
+    background-image: url('../graphics/icons/formBgFilesize.gif');
+    background-repeat:no-repeat;
+    background-position:right center;
+    padding-right:35px;
 }
 input.lookupBg, textarea.lookupBg {
     background-image: url('../graphics/icons/formBgLookup.gif');
@@ -6402,8 +6423,10 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     position: fixed;
     top: 0px;
     left: 0px;
-    width: 900px;
-    height: 600px;
+    width: 80vh;
+    min-width: 900px;
+    height: 80vh;
+    min-height: 600px;
     overflow: auto;
     display: none;
     margin: 0px;

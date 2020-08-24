@@ -29,5 +29,15 @@
  	//print caBatchMediaImportInspector($this, array());
 ?>
 <h3 class='importers'><?php print _t('Media uploader'); ?>
-<div></div>
+<div id="mediaUploaderStats"></div>
 </h3>
+
+<script type="text/javascript">	
+	providenceUIApps['mediauploaderstats'] = {
+        'selector': '#mediaUploaderStats',
+        'endpoint': '<?= caNavUrl($this->request, 'batch', 'MediaUploader', ''); ?>',
+        'data': {
+
+        }
+    };
+</script>

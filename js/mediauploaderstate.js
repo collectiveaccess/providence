@@ -1,0 +1,3 @@
+let mediauploaderstate = {};
+
+export {mediauploaderstate};

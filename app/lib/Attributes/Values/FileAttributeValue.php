@@ -191,9 +191,9 @@
  			if (
  				(is_array($ps_value) && $ps_value['_uploaded_file'] && file_exists($ps_value['tmp_name']) && (filesize($ps_value['tmp_name']) > 0))
  				||
- 				($vb_is_file_path = file_exists($ps_value))
+ 				(is_string($ps_value) && ($vb_is_file_path = file_exists($ps_value)))
  				||
- 				($vb_is_file_path = preg_match("!^".caGetUserDirectoryName()."/!", $ps_value))
+ 				(is_string($ps_value) && ($vb_is_file_path = isURL($ps_value)))
  				||
  				($vb_is_user_media = preg_match("!^".caGetUserDirectoryName()."/!", $ps_value))
  			) {
@@ -201,18 +201,10 @@
  				$vs_original_name = pathinfo(caGetOption('original_filename', $pa_options, null), PATHINFO_BASENAME);
  				if ($vb_is_user_media) {
  					$vb_is_file_path = true;
- 					$o_config = Configuration::load();
- 					if (!is_writeable($vs_tmp_directory = $o_config->get('ajax_media_upload_tmp_directory'))) {
-						$vs_tmp_directory = caGetTempDirPath();
+ 					if (!is_readable($vs_tmp_directory = Configuration::load()->get('media_uploader_root_directory'))) {
+						return null;
 					}
 					$ps_value = "{$vs_tmp_directory}/{$ps_value}";
-					
-					// read metadata
-					if (file_exists("{$ps_value}_metadata")) {
-						if (is_array($va_tmp_metadata = json_decode(file_get_contents("{$ps_value}_metadata"), true))) {
-							$vs_original_name = $va_tmp_metadata['original_filename'];
-						}
-					}
  				}
  				if ($vb_is_file_path) {
  					return array(

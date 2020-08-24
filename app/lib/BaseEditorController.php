@@ -1389,7 +1389,7 @@ class BaseEditorController extends ActionController {
 						// If in strict mode and a top-level type is disabled, then show sub-types so user can select an enabled type
 				) {
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
-						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => true]);
+						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !(bool)$va_item['is_enabled']]);
 					}
 				}
 
@@ -2611,7 +2611,7 @@ class BaseEditorController extends ActionController {
 	/**
 	 * Handle ajax media uploads from editor
 	 */
-	public function UploadFiles($pa_options=null) {
+	public function UploadFiles($options=null) {
 		if (!$this->request->isLoggedIn() || ((int)$this->request->user->get('userclass') !== 0)) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
 			return;
@@ -2623,28 +2623,15 @@ class BaseEditorController extends ActionController {
 		$stored_files = [];
 		
 		$user_dir = caGetMediaUploadPathForUser($user_id);
-		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
 
 		if(is_array($_FILES['files'])) {
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				if(!strlen($f)) { continue; }
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
 				
-				$md5 = md5_file($f);
-				if (isset($user_files["{$user_dir}/md5_{$md5}"])) { 
-					$f = "{$user_dir}/".file_get_contents("{$user_dir}/md5_{$md5}");
-				}
-				
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
+				$dest_filename = isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME);
 				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
 
-				// write file metadata
-				@file_put_contents("{$dest_path}_metadata", json_encode([
-					'original_filename' => $_FILES['files']['name'][$i],
-					'size' => filesize($dest_path)
-				]));
-				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
-				$stored_files[$md5] = caGetMediaUploadPathForUser($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
+				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
 		}
 

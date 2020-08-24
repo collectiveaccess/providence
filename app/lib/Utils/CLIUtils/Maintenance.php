@@ -1210,7 +1210,7 @@
 				PersistentCache::flush();
 			}
 			if (in_array($ps_cache, array('all', 'usermedia'))) {
-				if (($vs_tmp_directory = $o_config->get('ajax_media_upload_tmp_directory')) && (file_exists($vs_tmp_directory))) {
+				if (($vs_tmp_directory = $o_config->get('media_uploader_root_directory')) && (file_exists($vs_tmp_directory))) {
 					if (is_writable($vs_tmp_directory)) {
 						CLIUtils::addMessage(_t('Clearing user media cache in %1...', $vs_tmp_directory));
 						caRemoveDirectory($vs_tmp_directory, false);

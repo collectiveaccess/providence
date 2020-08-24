@@ -54,9 +54,9 @@
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	
 	//print "<div class='bundleSubLabel'>";	
 	//print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
@@ -66,7 +66,7 @@
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
@@ -178,7 +178,7 @@
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
 		
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,

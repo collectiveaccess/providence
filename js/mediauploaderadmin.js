@@ -1,12 +1,12 @@
-'use strict';
+"use strict";
 import React, { Component } from "react";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import { Tabs, Tab } from "react-bootstrap";
-import Recent from "./components/RecentTab/Recent";
-import Search from "./components/SearchTab/Search";
+import Recent from "./mediauploaderadmin/RecentTab/Recent";
+import Search from "./mediauploaderadmin/SearchTab/Search";
 
-const axios = require('axios');
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+const axios = require("axios");
+axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 
 const selector = providenceUIApps.mediauploaderadmin.selector;
 const endpoint = providenceUIApps.mediauploaderadmin.endpoint;
@@ -16,20 +16,26 @@ class MediaUploaderAdmin extends Component {
     super(props);
     this.state = {
       activeTab: "recent",
-      file_data: [],
+      responseData: [],
+      users: [],
       isLoading: true,
+      filteredData: [],
     };
     this.handleSelectedTab = this.handleSelectedTab.bind(this);
+    this.handleSearchParams = this.handleSearchParams.bind(this);
   }
 
   componentDidMount() {
-    const endpoint = this.props.endpoint;
-    axios.get(endpoint).then((response) => {
+    axios
+      .get(endpoint + '/logdata')
+      .then((response) => {
         this.setState({
-          file_data: response.data.data,
+          responseData: response.data.data,
+          users: response.data.userList,
           isLoading: false,
         });
-        console.log("Loaded service", this.state);
+        //console.log("Loaded service", this.state);
+        //console.log("endpoint", endpoint);
       })
       .catch((error) => {
         if (error.response) {
@@ -38,9 +44,6 @@ class MediaUploaderAdmin extends Component {
            * that falls out of the range of 2xx
            */
           console.log("Response error");
-          console.log(error.response.data);
-          console.log(error.response.status);
-          console.log(error.response.headers);
         } else if (error.request) {
           /*
            * The request was made but no response was received, `error.request`
@@ -66,43 +69,60 @@ class MediaUploaderAdmin extends Component {
     });
   }
 
+  handleSearchParams(date, status, user) {
+    axios.post(endpoint + '/logdata', {}, {
+                params: {
+                    date: date,
+                    status: status,
+                    user: user
+                }
+            }).then((response) => {
+            	console.log(response);
+      this.setState({
+        filteredData: response.data.data,
+      });
+    });
+  }
+
   render() {
-    console.log("Active Tab: " + this.state.activeTab);
-    console.log("Data: ");
-    console.log(this.state.file_data);
     return (
       <div>
-
         <div className="container">
           <div className="row">
-          <div className="col-sm-10">
-          <h1 style={{ textAlign: "center" }}>Media Uploader Admin Console</h1>
-
-          {
-            this.state.isLoading === true ?
-            <h3>Loading...</h3>
-            :
-            <Tabs
-              activeKey={this.state.activeTab}
-              onSelect={this.handleSelectedTab}
-            >
-              <Tab eventKey="recent" title="Recent">
-                <Recent data={this.state.file_data} />
-              </Tab>
-              <Tab eventKey="search" title="Search">
-                <Search data={this.state.file_data} />
-              </Tab>
-            </Tabs>
-          }
-
+            <div className="col-sm-11">
+              {this.state.isLoading === true ? (
+                <h3>Loading...</h3>
+              ) : (
+                <Tabs
+                  activeKey={this.state.activeTab}
+                  onSelect={this.handleSelectedTab}
+                >
+                  <Tab eventKey="recent" title="Recent uploads">
+                    <Recent 
+                      data={this.state.responseData} 
+                      endpoint={endpoint}
+                	/>
+                  </Tab>
+                  <Tab eventKey="search" title="Search">
+                    <Search
+                      data={this.state.responseData}
+                      handleSearchParams={this.handleSearchParams}
+                      filteredData={this.state.filteredData}
+                      users={this.state.users}
+                      endpoint={endpoint}
+                    />
+                  </Tab>
+                </Tabs>
+              )}
+            </div>
           </div>
-          </div>
-
-
         </div>
       </div>
     );
   }
 }
 
-ReactDOM.render(<MediaUploaderAdmin endpoint={endpoint}/>, document.querySelector(selector));
+ReactDOM.render(
+  <MediaUploaderAdmin endpoint={endpoint} />,
+  document.querySelector(selector)
+);

@@ -65,9 +65,7 @@ class MediaUploadManager {
      */
     static public function newSession($user, $num_files, $size) {
         $user_id = self::_getUserID($user);
-    	if ($s = self::findSession($key, $user_id)) {
-    	    return $s;
-    	}
+
     	$s = new ca_media_upload_sessions();
     	$s->set([
     		'session_key' => caGenerateGUID(),
@@ -85,13 +83,45 @@ class MediaUploadManager {
     /**
      *
      */
-    static public function findSession($key) {
-        if(!$key) { return null; }
+    static public function findSession($key, $user_id=null) {
+        if(!$key) { throw new MediaUploadSessionDoesNotExistException(_t('Empty session')); }
 
         if ($s = ca_media_upload_sessions::findAsInstance(['session_key' => $key])) {
+        	if ($user_id && ($s->get('user_id') != $user_id)) { 
+        		throw new MediaUploadSessionDoesNotExistException(_t('Session not found'));
+        	}
             return $s;
         }
-        return null;
+        throw new MediaUploadSessionDoesNotExistException(_t('Session not found'));
+    }
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    static public function completeSession($key, $user_id=null){
+		$s = MediaUploadManager::findSession($key, $user_id);
+		
+		$s->set('completed_on', _t('now'));
+		$s->update();
+		if ($s->numErrors() > 0) {
+			throw new MediaUploadManageSessionException(_t('Could not complete media upload session: '.join('; ', $s->getErrors())));
+		}
+        return $s;
+    }
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    static public function cancelSession($key, $user_id=null){
+		$s = MediaUploadManager::findSession($key, $user_id);
+		
+		$s->set('completed_on', _t('now'));
+		$s->set('cancelled', 1);
+		$s->update();
+		if ($s->numErrors() > 0) {
+			throw new MediaUploadManageSessionException(_t('Could not cancel media upload session: '.join('; ', $s->getErrors())));
+		}
+        return $s;
     }
     # ------------------------------------------------------
     /**
@@ -103,60 +133,35 @@ class MediaUploadManager {
         $user = caGetOption('user', $options, null);
         $limit = caGetOption('limit', $options, 10);
 
-        $sessions = [];
-        if($user_id = self::_getUserID($user)) {
-            if ($sessions = ca_media_upload_sessions::find(['user_id' => $user_id], ['returnAs' => 'arrays'])) {
-                $user_dir_path = caGetMediaUploadPathForUser($user_id);
-                $sessions = array_reverse(caSortArrayByKeyInValue($sessions, ['created_on']));
-                if ($limit > 0) {
-                    $sessions = array_slice($sessions, 0, $limit);
-                }
-                $sessions = array_map(function($s) use ($user_dir_path) {
-                    $files = caUnSerializeForDatabase($s['progress']);
-                    $files_proc = [];
-                    if(is_array($files)) {
-	                    foreach($files as $p => $info) {
-	                        $px = str_replace("{$user_dir_path}/", "", $p);
-	                        $files_proc[$px] = $info;
-	                    }
-	                }
-                    $s['files'] = $files_proc;
-
-                    foreach(['created_on', 'completed_on', 'last_activity_on'] as $f) {
-                        $s[$f] = ($s[$f] > 0) ? caGetLocalizedDate($s[$f], ['dateFormat' => 'delimited']) : null;
-                    }
-
-                    unset($s['user_id']);
-                    unset($s['progress']);
-
-                    return $s;
-                }, $sessions);
-
-            }
-        }
-
-        return array_values($sessions);
+       	return self::getLog(['user' => $user, 'limit' => $limit]);
     }
     # ------------------------------------------------------
     /**
-     * Get recent uploads for user
+     * Get upload log
      *
      *
      */
     static public function getLog(array $options) {
         $user = caGetOption('user', $options, null);
+        $status = caGetOption('status', $options, null, ['forceUppercase' => true]);
+        $date = caGetOption('date', $options, null);
         $limit = caGetOption('limit', $options, 10);
 
-        $sessions = [];
         $user_id = $user ? self::_getUserID($user) : null;
         
+        $sessions = [];
         $params = [];
-        if ($user_id) { $params['user_id'] = $user_id; }
         
+        if($user_id) { $params['user_id'] = $user_id; }
+        if($date && ($d = caDateToUnixTimestamps($date))) {
+        	$params['created_on'] = ['BETWEEN', [$d['start'], $d['end']]]; 
+        }
         if (!sizeof($params)) { $params = '*'; }
         
 		if ($sessions = ca_media_upload_sessions::find($params, ['returnAs' => 'arrays'], ['sort' => 'created_on', 'sortDirection' => 'desc'])) {
-			$user_dir_path = caGetMediaUploadPathForUser($user_id);
+			if (!($user_dir_path = caGetMediaUploadPathForUser($user_id))) {
+				$user_dir_path = caGetUserMediaUploadPath(); 
+			}
 			$sessions = array_reverse(caSortArrayByKeyInValue($sessions, ['created_on']));
 			if ($limit > 0) {
 				$sessions = array_slice($sessions, 0, $limit);
@@ -164,27 +169,33 @@ class MediaUploadManager {
 			$sessions = array_map(function($s) use ($user_dir_path) {
 				$files = caUnSerializeForDatabase($s['progress']);
 				$files_proc = [];
+				$s['user'] = $u = ca_users::userInfoFor($s['user_id']);
+				
 				if(is_array($files)) {
 					foreach($files as $p => $info) {
-						$px = str_replace("{$user_dir_path}/", "", $p);
+						$px = str_replace("{$user_dir_path}/~{$u['user_name']}/", "", $p);
+						$px = str_replace("{$user_dir_path}/", "", $px);
 						$files_proc[$px] = $info;
 					}
 				}
 				
-				$s['user'] = ca_users::userInfoFor($s['user_id']);
 				$s['files'] = $files_proc;
 
 				foreach(['created_on', 'completed_on', 'last_activity_on'] as $f) {
 					$s[$f] = ($s[$f] > 0) ? caGetLocalizedDate($s[$f], ['dateFormat' => 'delimited']) : null;
 				}
-				if ($s['completed_on']) {
-					$s['status'] = 'COMPLETED';
-				} elseif ($s['cancelled']) {
+				if ($s['cancelled']) {
 					$s['status'] = 'CANCELLED';
+					$s['status_display'] = _t('Cancelled');
+				} elseif ($s['completed_on']) {
+					$s['status'] = 'COMPLETED';
+					$s['status_display'] = _t('Completed');
 				} elseif ($s['last_activity_on']) {
 					$s['status'] = 'IN_PROGRESS';
+					$s['status_display'] = _t('In progress');
 				} elseif ($s['last_activity_on']) {
 					$s['status'] = 'UNKNOWN';
+					$s['status_display'] = _t('Unknown');
 				}
 
 				unset($s['user_id']);
@@ -192,10 +203,35 @@ class MediaUploadManager {
 
 				return $s;
 			}, $sessions);
+			
+			if($status) {
+				$sessions = array_filter($sessions, function($v) use ($status) {
+					return $v['status'] === $status;
+				});
+			}
 
 		}
 
         return array_values($sessions);
+    }
+    # ------------------------------------------------------
+    /**
+     * Get list of users who have performed uploads
+     *
+     */
+    static public function getUserList(array $options=null) {
+       $db = new Db();
+       $qr = $db->query("
+			SELECT DISTINCT u.user_id, u.user_name, u.fname, u.lname, u.email
+			FROM ca_media_upload_sessions s
+			INNER JOIN ca_users AS u ON u.user_id = s.user_id
+			ORDER BY u.lname, u.fname
+		");
+		$users = [];
+		while($qr->nextRow()) {
+			$users[$qr->get('user_id')] = $qr->getRow();
+		}
+        return $users;
     }
     # ------------------------------------------------------
     /**
@@ -211,3 +247,4 @@ class MediaUploadManager {
 }
 
 class MediaUploadManageSessionException extends Exception {}
+class MediaUploadSessionDoesNotExistException extends Exception {}

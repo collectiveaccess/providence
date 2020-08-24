@@ -30,7 +30,9 @@
  * ----------------------------------------------------------------------
  */
 
- /**
+use Zend\Stdlib\Glob;
+
+/**
    *
    */
 	require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
@@ -118,11 +120,11 @@
 				if(!file_exists($vs_path)) { continue; }
 		
 				if (is_array($va_cached_list)) {
-					$f = array_map("filemtime", glob("{$vs_template_path}/*.{php,css}", GLOB_BRACE));
+					$f = array_map("filemtime", Glob::glob("{$vs_template_path}/*.{php,css}", Glob::GLOB_BRACE));
 					sort($f);
 					$vn_template_rev = file_exists($vs_template_path) ? array_pop($f) : 0;
 					
-					$f = array_map("filemtime", glob("{$vs_template_path}/local/*.{php,css}", GLOB_BRACE));
+					$f = array_map("filemtime", Glob::glob("{$vs_template_path}/local/*.{php,css}", Glob::GLOB_BRACE));
 					sort($f);
 					$vn_local_rev = file_exists("{$vs_template_path}/local") ? array_pop($f) : 0;
 					
@@ -217,7 +219,7 @@
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type.'/'.$vs_template_path);
 			if (ExternalCache::contains($vs_cache_key, 'PrintTemplateDetails')) {
 				$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplateDetails');
-				if(!is_array($files = glob("{$vs_template_path}/*.{php,css}", GLOB_BRACE))) {
+				if(!is_array($files = Glob::glob("{$vs_template_path}/*.{php,css}", Glob::GLOB_BRACE))) {
 					$files = [$vs_template_path];
 				}
 				

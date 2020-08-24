@@ -103,17 +103,7 @@
 			o.retainPath = false;
 			var $ul = $(['li.',o.hoverClass].join(''),this).add(this).not(not).removeClass(o.hoverClass)
 					.find('>ul').hide().css('visibility','hidden');
-					
-			// if menu was moved to avoid being offscreen, restore its original location before it's hidden
-			if ($ul.data('moved') == 1) { 
-				$ul.css('margin-left', $ul.data('orig-left'));
-				$ul.css('margin-top',  $ul.data('orig-top'));
-				$ul.parent().css('z-index', $ul.data('orig-zindex'));
-				$ul.data('moved', 0);
-				$ul.data('orig-left', '');
-				$ul.data('orig-top', '');
-				$ul.data('orig-z-index', '');
-			}
+			
 			o.onHide.call($ul);
 			return this;
 		},
@@ -127,7 +117,7 @@
 			
 			// menu goes off screen?
 			if (((offset.left + (2 * $ul.width())) > jQuery(window).width()) && ($ul.data('moved') != 1) && ($ul.parents('li').length > 1)){
-				
+
 				$ul.data('orig-left', $ul.css('margin-left'));
 				$ul.data('orig-top', $ul.css('margin-top'));
 				$ul.data('orig-z-index',  $ul.parent().css('z-index'));
@@ -138,17 +128,7 @@
 					$ul.parent().css('z-index', $ul.parent().css('z-index') + 10);	// IE7 wants the z-index set to something higher than the parent...
 				}
 				$ul.data('moved', 1);
-			} else {
-				if ($ul.data('moved') == 1) { 
-					$ul.css('margin-left', $ul.data('orig-left'));
-					$ul.css('margin-top',  $ul.data('orig-top'));
-					$ul.parent().css('z-index', $ul.data('orig-zindex'));
-					$ul.data('moved', 0);
-					$ul.data('orig-left', '');
-					$ul.data('orig-top', '');
-					$ul.data('orig-z-index', '');
-				}
-			}
+			} 
 			
 			o.onBeforeShow.call($ul);
 			$ul.animate(o.animation,o.speed,function(){ sf.IE7fix.call($ul); o.onShow.call($ul); });

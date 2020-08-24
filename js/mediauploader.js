@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import fileSize from "filesize";
 import Dropzone from "react-dropzone";
+import {mediauploaderstate} from "mediauploaderstate";
 
 const axios = require('axios');
 const tus = require("tus-js-client");
@@ -12,6 +13,8 @@ axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 const selector = providenceUIApps.mediauploader.selector;
 const endpoint = providenceUIApps.mediauploader.endpoint;
+let maxConcurrentUploads = providenceUIApps.mediauploader.maxConcurrentUploads;
+maxConcurrentUploads = ((maxConcurrentUploads === undefined) || (parseInt(maxConcurrentUploads) <= 0)) ? maxConcurrentUploads = 4 : parseInt(maxConcurrentUploads);
 
 class MediaUploader extends React.Component {
 
@@ -24,6 +27,7 @@ class MediaUploader extends React.Component {
             start: 'Starting upload',
             upload: 'Uploading files',
             complete: 'Upload complete',
+            quota: 'User storage limit exceeded',
             error: 'Error'
         };
 
@@ -36,13 +40,23 @@ class MediaUploader extends React.Component {
             queue: [],
             connections: {},
             connectionIndex: 0,
+            error: null,
 
             recentList: [],
 
             paused: false,
 
-            sessionKey: null
+            sessionKey: null,
+            
+            storageUsage: '-',
+            storageUsageBytes: 0,
+            storageAvailable: '-',
+            storageAvailableBytes: 0,
+            storageFileCount: 0,
+            storageDirectoryCount: 0
         };
+        
+        this.sharedstate = mediauploaderstate;
 
         this.init = this.init.bind(this);
         this.start = this.start.bind(this);
@@ -69,7 +83,6 @@ class MediaUploader extends React.Component {
      */
     selectFiles(e) {
         let state = this.state;
-        console.log(e);
         if(e.target) {  // From <input type="file" ... />
             state['queue'].push(...e.target.files);
         } else {        // From dropzone
@@ -102,7 +115,7 @@ class MediaUploader extends React.Component {
         let i = 0;
         while(queue.length > 0) {
             if (Object.keys(state.connections).length >= maxConnections) {
-                console.log("Stopping queue because max connections have been reached", state.connections, state.connections.length);
+                //console.log("Stopping queue because max connections have been reached", state.connections, state.connections.length);
                 return;
             }
             let file = queue.shift();
@@ -117,7 +130,7 @@ class MediaUploader extends React.Component {
             }
 
             let upload = new tus.Upload(file, {
-                endpoint: this.props.endpoint + '/tus?download=1',
+                endpoint: this.props.endpoint + '/tus',
                 retryDelays: [0, 1000, 3000, 5000],
                 chunkSize: 1024 * 512,      // TODO: make configurable
                 metadata: {
@@ -125,12 +138,32 @@ class MediaUploader extends React.Component {
                     sessionKey: state.sessionKey,
                     relativePath: relPath
                 },
+                onBeforeRequest: function (req) {
+					var xhr = req.getUnderlyingObject()
+					xhr.setRequestHeader('x-session-key', state.sessionKey);
+				},
                 onError: (error) => {
                     let state = that.state;
+					// error during transfer
+					let error_resp = JSON.parse(error.originalResponse.getBody());
+					let error_msg = (error_resp && error_resp.error) ? error_resp.error : 'Unknown error';
+					let is_global = (error_resp && error_resp.global) ? error_resp.global : false;
+					let error_state = (error_resp && error_resp.state) ? error_resp.state : 'error';
+					
+					if(is_global) {
+						that.statusMessage(error_state);
+						state.error = error_msg;
+					}
+                     console.log("Error:", error_msg);
                     if(state.connections[connectionIndex]) {
-                        state.connections[connectionIndex]['status'] = 'Error';
-                        that.setState(state);
-                        console.log('Error: ', error);
+                        state.connections[connectionIndex]['status'] = error_msg;
+                        state.connections[connectionIndex]['uploadedBytes'] = 0;
+                        
+                        
+						state.connections[connectionIndex].upload.abort();
+						delete state['connections'][connectionIndex];
+						that.setState(state);
+						that.checkSession();// is session over now?
                     }
                 },
                 onProgress: (uploadedBytes, totalBytes) => {
@@ -141,9 +174,23 @@ class MediaUploader extends React.Component {
                         that.setState(state);
                     }
                 },
+                onAfterResponse: function (req, res) {
+                    let state = that.state;
+                    if (res.getHeader("storageAvailableDisplay")) {
+						state.storageUsageBytes = res.getHeader("storageUsage");
+						state.storageUsage = res.getHeader("storageUsageDisplay");
+						state.storageAvailableBytes = res.getHeader("storageAvailable");
+						state.storageAvailable = res.getHeader("storageAvailableDisplay");
+						state.storageFileCount = res.getHeader("fileCount");
+						state.storageDirectoryCount = res.getHeader("directoryCount");
+                    	that.setState(state);
+
+                    	that.sharedstate = state;
+                    }
+				},
                 onSuccess: () => {
                     let state = that.state;
-                    delete state.connections[connectionIndex];
+                    delete(state.connections[connectionIndex]);
 
                     that.checkSession();
                     state['filesUploaded']++;
@@ -237,6 +284,17 @@ class MediaUploader extends React.Component {
                 state.sessionKey = response.data.key;
                 state.filesUploaded = 0;
                 state.filesSelected = that.queueLength();
+                
+                if(response.data.storageAvailableDisplay) {
+					state.storageUsage = response.data.storageUsageDisplay;
+					state.storageUsageBytes = response.data.storageUsage;
+					state.storageAvailable = response.data.storageAvailableDisplay;
+					state.storageAvailableBytes = response.data.storageAvailable;
+					state.storageFileCount = response.data.fileCount;
+					state.storageDirectoryCount = response.data.storageDirectoryCount;
+					
+                    that.sharedstate = state;
+				}
                 that.setState(state);
 
                 that.statusMessage('upload');
@@ -331,6 +389,15 @@ class MediaUploader extends React.Component {
         }).then(function(response) {
             let state = that.state;
             state.recentList = response.data.recent;
+            
+            if (response.data.storageAvailableDisplay) {
+				state.storageUsage = response.data.storageUsageDisplay;
+				state.storageUsageBytes = response.data.storageUsage;
+				state.storageAvailable = response.data.storageAvailableDisplay;
+				state.storageAvailableBytes = response.data.storageAvailable;
+				state.storageFileCount = response.data.fileCount;
+				state.storageDirectoryCount = response.data.directoryCount;
+			}
             that.setState(state);
 
         });
@@ -340,26 +407,26 @@ class MediaUploader extends React.Component {
      *
      */
   render() {
+  	let storageUsage = this.state.storageUsage;
+  	let storageAvailable = this.state.storageAvailable;
+  	let fileCount = this.state.storageFileCount;
+  	let directoryCount = this.state.storageDirectoryCount;
+  	
     return (
         <div>
-          <div className="row">
-              <div className="col-md-10">
-                  <h2>{this.state.status}</h2>
-              </div>
-          </div>
             <div className="row">
-              <div className="col-md-4">
+              <div className="col-md-11">
                   <div className="row mediaUploaderDropZone">
-                      <div className="col-md-8 offset-md-2">
+                      <div className="col-md-6 offset-md-4 mt-3">
                           <Dropzone multiple={true} onDrop={acceptedFiles => {this.selectFiles(acceptedFiles)}}>
                               {({getRootProps, getInputProps}) => (
                                   <div {...getRootProps()} className='row mediaUploaderDropZoneInput'>
-                                      <div className='col-md-1'>
+                                      <div className='col-md-2'>
                                           <input {...getInputProps()}/>
                                           <i className="fa fa-plus-circle fa-4x" aria-hidden="true"></i>
                                       </div>
-                                      <div className='col-md-6 align-self-center'>
-                                          <h4>Add media</h4>
+                                      <div className='col-md-7 align-self-center'>
+                                          <h4>Drag media here or click to browse</h4>
                                       </div>
                                   </div>
                                   )}
@@ -367,38 +434,38 @@ class MediaUploader extends React.Component {
                       </div>
                   </div>
               </div>
-              <div className="col-md-4">
-                  <div className="row">
-                     <div className="col-md-1">
-                         {((this.queueLength() + this.numConnections()) > 0) ? <Button variant="primary" onClick={this.start}><i className="fa fa-play-circle fa-2x" aria-hidden="true"></i></Button> : ''}
-                     </div>
-                      <div className="col-md-1">
-                         {(((this.queueLength() + this.numConnections()) > 0) && !this.state.paused) ? <Button variant="outline-secondary" onClick={this.pauseUploads}><i className="fa fa-pause-circle fa-2x" aria-hidden="true"></i></Button> : ''}
-                      </div>
-                  </div>
+          </div>
+          <div className="row">
+              <div className="col-md-11 mt-1">
+                  <h4 className="mediaUploaderError">{this.state.error}</h4>
               </div>
-            </div>
-            <div className="row">
-                <div className="col-md-10">
-                </div>
-             </div>
+          </div>
+          <div className="row">
+			 <div className="col-md-2">
+				 <span className="mr-2">{((this.queueLength() + this.numConnections()) > 0) ? <Button variant="primary" onClick={this.start}><i className="fa fa-play-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
+				 <span>{(((this.queueLength() + this.numConnections()) > 0) && !this.state.paused) ? <Button variant="outline-secondary" onClick={this.pauseUploads}><i className="fa fa-pause-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
+			  </div>
+			 <div className="col-md-9">
+				<h4 className="mediaUploaderStatus float-right">{this.state.status}</h4>
+			</div>
+          </div>
             <div className="row mt-3">
-              <div className="col-md-10">
+              <div className="col-md-11">
                  <MediauploaderQueueProgress totalFiles={this.state.filesSelected} filesUploaded={this.state.filesUploaded}/>
               </div>
             </div>
             <div className="row mt-3">
-              <div className="col-md-10">
+              <div className="col-md-11">
                     <MediauploaderUploadList uploads={this.state.connections} deleteCallback={this.deleteUpload} />
               </div>
             </div>
             <div className="row mt-3">
-              <div className="col-md-10">
+              <div className="col-md-11">
                   <MediauploaderQueueList queue={this.state.queue} deleteCallback={this.deleteQueuedUpload}/>
               </div>
             </div>
             <div className="row mt-3">
-                <div className="col-md-10">
+                <div className="col-md-11">
                     <MediauploaderRecentsList sessions={this.state.recentList}/>
                 </div>
             </div>
@@ -406,6 +473,7 @@ class MediaUploader extends React.Component {
     );
   }
 }
+
 
 class MediauploaderQueueProgress extends React.Component {
     render() {
@@ -501,16 +569,25 @@ class MediauploaderQueueItem extends React.Component {
     deleteItem() {
         this.props.deleteCallback(this.props.index);
     }
+    
+    truncateFileName(f) {
+		let l = 25;
+		let tl = 10;
+		if (f.length > l) {
+			return f.substr(0, l-tl) + '...' + f.substr(f.length-tl, f.length);
+		}
+		return f;
+	}
 
     render() {
         return <div className="row" style={{breakInside: 'avoid'}}>
-            <div className="col-md-1">
+            <div className="col-md-1 mr-2">
                 <Button variant="outline-secondary" className="mediaUploaderQueueItemDelete" onClick={this.deleteItem}><i className="fa fa-trash"
                                                                              aria-hidden="true"></i></Button>
             </div>
-            <div className="col-md-3">
-                {this.props.item.name}
-                ({fileSize(this.props.item.size, {round: 1, base: 10})})
+            <div className="col-md-10">
+                <a href='#' className='mediaUploaderFilename' title={this.props.item.name}>{this.truncateFileName(this.props.item.name)}</a>
+                <br/>{fileSize(this.props.item.size, {round: 1, base: 10})}
             </div>
         </div>
     }
@@ -545,7 +622,7 @@ class MediauploaderRecentItem extends React.Component {
 
     render() {
         let item = this.props.item;
-        let n = Object.keys(item.files).length;
+        let n = item.num_files; 
         let examplePaths = Object.keys(item.files).slice(0, 3);
 
         let contentsStr = examplePaths.join(", ");
@@ -554,7 +631,11 @@ class MediauploaderRecentItem extends React.Component {
         }
 
         let status, statusClass, current;
-        if (item.completed_on) {
+        if (item.cancelled > 0) {
+            current = 'Cancelled: ' + item.completed_on;
+            status = 'Cancelled';
+            statusClass = 'badge badge-danger pull-right';
+        } else if (item.completed_on) {
             current = 'Completed: ' + item.completed_on;
             status = 'Completed';
             statusClass = 'badge badge-success pull-right';
@@ -564,8 +645,8 @@ class MediauploaderRecentItem extends React.Component {
             statusClass = 'badge badge-warning pull-right';
         }
 
-        return <div className="col-md-4 mt-3">
-                <div className="card">
+        return <div className="col-md-3 mt-3">
+                <div className="card mediaUploaderRecentItem">
                     <div className="card-body">
                         <div
                             className={statusClass}>{status}</div>
@@ -582,4 +663,4 @@ class MediauploaderRecentItem extends React.Component {
     }
 }
 
-ReactDOM.render(<MediaUploader maxConcurrentConnections="4" endpoint={endpoint}/>, document.querySelector(selector));
+ReactDOM.render(<MediaUploader maxConcurrentConnections={maxConcurrentUploads} endpoint={endpoint}/>, document.querySelector(selector));

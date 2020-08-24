@@ -1372,12 +1372,13 @@
 	 */
 	function caRewriteDateForElasticSearch($ps_date, $pb_is_start=true) {
 		// substitute start and end of universe values with ElasticSearch's builtin boundaries
-		$ps_date = str_replace(TEP_START_OF_UNIVERSE,"-292275054",$ps_date);
+		$ps_date = str_replace(TEP_START_OF_UNIVERSE,"-9999",$ps_date);
 		$ps_date = str_replace(TEP_END_OF_UNIVERSE,"9999",$ps_date);
-
-		if(preg_match("/(\d+)\-(\d+)\-(\d+)T(\d+)\:(\d+)\:(\d+)Z/", $ps_date, $va_date_parts)) {
+		if(preg_match("/^([\-]{0,1}[\d]+)\-(\d+)\-(\d+)T(\d+)\:(\d+)\:(\d+)Z/", $ps_date, $va_date_parts)) {
 			// fix large (positive) years
-			if(intval($va_date_parts[1]) > 9999) { $va_date_parts[1] = "9999"; }
+			if(intval($va_date_parts[1]) > 9999) { $va_date_parts[1] = 9999; }
+			if(intval($va_date_parts[1]) < -9999) { $va_date_parts[1] = -9999; }
+			
 			// fix month-less dates
 			if(intval($va_date_parts[2]) < 1) { $va_date_parts[2]  = ($pb_is_start ?  "01" : "12"); }
 			// fix messed up months
@@ -1385,7 +1386,7 @@
 			// fix day-less dates
 			if(intval($va_date_parts[3]) < 1) { $va_date_parts[3]  = ($pb_is_start ?  "01" : "31"); }
 			// fix messed up days
-			$vn_days_in_month = cal_days_in_month(CAL_GREGORIAN, intval($va_date_parts[2]), intval($va_date_parts[1]));
+			$vn_days_in_month = cal_days_in_month(CAL_GREGORIAN, intval($va_date_parts[2]), intval(abs($va_date_parts[1])));
 			if(intval($va_date_parts[3]) > $vn_days_in_month) { $va_date_parts[3] = (string) $vn_days_in_month; }
 
 			// fix hours

@@ -121,6 +121,8 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         $staging_dir = $tmp_dir."/".uniqid("ca_bagit");
         @mkdir($staging_dir);
         
+        $media_index = caGetOption('mediaIndex', $options, null);
+        
         $bag = new BagIt("{$staging_dir}/{$name}", true, true, true, []);
         $bag->setHashEncoding(caGetOption('hash', $output_config, 'md5', ['validValues' => ['md5', 'sha1']]));
         
@@ -144,7 +146,7 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
 					}
                     break;
                 case 'file':
-                    $ret = self::_processFiles($t_instance, $content_spec);
+                    $ret = self::_processFiles($t_instance, $content_spec, $options);
                     $file_list = array_merge($file_list, $ret['fileList']);
                     $total_filesize += $ret['totalFileSize'];
                     $file_mimetypes = array_unique(array_merge($file_mimetypes, $ret['fileMimeTypes']));
@@ -183,7 +185,7 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         }
         
         $bag->update();
-        $bag->package("{$tmp_dir}/{$name}");
+        $bag->package("{$tmp_dir}/{$name}".(!is_null($media_index) ? '-'.($media_index+1) : ''));
         
         return "{$tmp_dir}/{$name}.tgz";
     }

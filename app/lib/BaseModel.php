@@ -2726,7 +2726,6 @@ class BaseModel extends BaseObject {
 						$this->postError($vn_err_num, $o_e->getErrorDescription().' ['.$vn_err_num.']', "BaseModel->insert()", $this->tableName().'.'.$vs_field);
 						break;
 				}
-
 			}
 			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -4259,8 +4258,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				// is it server-side stored user media?
 				if (preg_match("!^".caGetUserDirectoryName()."/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
 					// use configured directory to dump media with fallback to standard tmp directory
-					if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
-						$vs_tmp_directory = caGetTempDirPath();
+					if (!is_readable($vs_tmp_directory = $this->getAppConfig()->get('media_uploader_root_directory'))) {
+						$this->postError(1600, _t('User media upload directory is not readable'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+						return false;
 					}
 					$this->_SET_FILES[$ps_field]['tmp_name'] = "{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name'];
 				
@@ -9089,7 +9089,7 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->insert();
 					
 					if ($t_item_rel->numErrors() > 0) {
-						$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+						$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 						return false;
 					}
 					
@@ -9102,7 +9102,7 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->update();
 							
 							if ($t_item_rel->numErrors() > 0) {
-								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 								return false;
 							}
 						} else {
@@ -9112,7 +9112,7 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->insert();
 							
 							if ($t_item_rel->numErrors() > 0) {
-								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 								return false;
 							}
 						}
@@ -9122,7 +9122,7 @@ $pa_options["display_form_field_tips"] = true;
 						$this->update();
 					
 						if ($this->numErrors() > 0) {
-							$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+							$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 							return false;
 						}
 						return $this;
@@ -11477,9 +11477,13 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * 		["idno" => ['=', '2012.001'], "access" => ['>', 1]]
 	 *
-	 * 		You may also specify lists of values for use with the IN operator:
+	 * 		You may also specify lists of values for use with the IN and NOT IN operators:
 	 *
 	 * 		["idno" => ['=', '2012.001'], "access" => ['IN', [1,2,3]]]
+	 *
+	 * 		Range searches may be performed using the BETWEEN operator:
+	 *
+	 * 		["idno" => ['=', '2012.001'], "access" => ['BETWEEN', [1,3]]]
 	 *
 	 *		 If you pass an integer instead of an array it will be used as the primary key value for the table; result will be returned as "firstModelInstance" unless the returnAs option is explicitly set.
 	 *
@@ -11545,7 +11549,6 @@ $pa_options["display_form_field_tips"] = true;
 	
 		// Convert value array such that all values use operators
 		$pa_values = caNormalizeValueArray($pa_values, ['purify' => $vb_purify]);
-		
 		$va_sql_params = [];
 		
 		$vs_type_restriction_sql = '';
@@ -11683,8 +11686,14 @@ $pa_options["display_form_field_tips"] = true;
 						if ($vs_op !== '=') { $vs_op = 'IS'; }
 						$va_sql_wheres[] = "({$vs_field} {$vs_op} NULL)";
 					} elseif (is_array($vm_value) && sizeof($vm_value)) {
-						if (strtoupper($vs_op) !== 'NOT IN') { $vs_op = 'IN'; }
-						$va_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
+						if (!in_array(strtoupper($vs_op), ['=', 'NOT IN', 'BETWEEN'])) { $vs_op = 'IN'; }
+						if (strtoupper($vs_op) === 'BETWEEN') {
+							$va_sql_wheres[] = "({$vs_field} BETWEEN ? AND ?)";
+							$va_sql_params[] = $vm_value[0];
+							$va_sql_params[] = $vm_value[1];
+						} else {
+							$va_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
+						}
 					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
 						$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
 					} else {

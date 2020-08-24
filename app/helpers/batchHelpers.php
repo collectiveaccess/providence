@@ -500,6 +500,18 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Return path to media upload directory for users. 
+	 *`
+	 * @return string Path to user directory
+	 *
+	 * @throws ApplicationException
+	 */
+	function caGetUserMediaUploadPath() {
+		$config = Configuration::load();
+		return $config->get('media_uploader_root_directory');
+	}
+	# ---------------------------------------
+	/**
 	 * Return path to private media upload directory for a user. If user's private directory doesn't
 	 * exist yet, it will be created.
 	 *`
@@ -512,8 +524,9 @@
 	 */
 	function caGetMediaUploadPathForUser($user, array $options=null) {
 		if(!($user_name = ca_users::userNameFor($user))) { return null; }
-		$config = Configuration::load();
-		$user_dir = $config->get('media_uploader_root_directory').'/'.caGetUserDirectoryName($user);
+		
+		$user_media_path = caGetUserMediaUploadPath();
+		$user_dir = $user_media_path.'/'.caGetUserDirectoryName($user);
 
 		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
 			if(!mkdir($user_dir)) {
@@ -565,5 +578,63 @@
 			return "~{$user_name}";
 		}
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return int
+	 */
+	function caGetUserMediaStorageUsage($user=null, array $options=null) {
+		global $g_request;
+		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
+			$user = $g_request->getUserID();
+		}
+		
+		$size = caDirectorySize(caGetMediaUploadPathForUser($user));
+		if(caGetOption('forDisplay', $options, false)) { $size = caHumanFilesize($size); }
+		return $size;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return int
+	 */
+	function caGetUserMediaStorageAvailable($user=null, array $options=null) {
+		$config = Configuration::load();
+		global $g_request;
+		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
+			$user = $g_request->getUserID();
+		}
+		
+		$size = caParseHumanFilesize($config->get('media_uploader_max_user_storage'));
+		
+		if(caGetOption('forDisplay', $options, false)) { $size = caHumanFilesize($size); }
+		return $size;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	function caGetUserMediaStorageUsageStats($user=null, array $options=null) {
+		global $g_request;
+		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
+			$user = $g_request->getUserID();
+		}
+		$storage_usage = caDirectorySize(caGetMediaUploadPathForUser($user), ['returnAll' => true]);
+		$available_storage = caGetUserMediaStorageAvailable($user);
+		$ret = [
+			'storageUsage' => $storage_usage['size'],
+			'storageUsageDisplay' => $storage_usage['display'],
+			'fileCount' => $storage_usage['fileCount'],
+			'directoryCount' => $storage_usage['directoryCount'],
+			'storageAvailable' => $available_storage,
+			'storageAvailableDisplay' => caHumanFilesize($available_storage)
+		];
+		
+		return $ret;
 	}
 	# ------------------------------------------------------

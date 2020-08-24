@@ -1198,7 +1198,7 @@
             unset($pa_options['start']);
             unset($pa_options['limit']);
             
-            $vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
+            $vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, Configuration::load()->get('ca_object_representations_default_editor_display_template'), ['defaultOnEmptyString' => true]);
             $bundles_to_save = caGetOption('showBundlesForEditing', $pa_bundle_settings, null);
             
             $va_reps = $this->getRepresentations(['thumbnail', 'original'], null, $pa_options);
@@ -1236,18 +1236,18 @@
 				
                 $vn_i = 0;
                 
-				if($limit > 0) {
-					$va_relation_ids = array_slice($va_relation_ids, $start, $limit);
-				} elseif($start > 0) {
-					$va_relation_ids = array_slice($va_relation_ids, $start);
-				}
-				
 				// Get display template values
                 $va_display_template_values = [];
                 if($vs_bundle_template && ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) {
                     $va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('start' => null, 'limit' => null, 'returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true, 'indexWithIDs' => true)));
                     $va_relation_ids = array_keys($va_display_template_values);
                 }
+				
+				if($limit > 0) {
+					$va_relation_ids = array_slice($va_relation_ids, $start, $limit);
+				} elseif($start > 0) {
+					$va_relation_ids = array_slice($va_relation_ids, $start);
+				}
 				
                 foreach ($va_relation_ids as $relation_id) {
                 	foreach((array_filter($va_reps, function($v) use ($relation_id) { return ($v['relation_id'] == $relation_id); })) as $va_rep) {

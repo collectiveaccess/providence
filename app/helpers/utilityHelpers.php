@@ -470,18 +470,57 @@ function caFileIsIncludable($ps_file) {
 	# ----------------------------------------
 	/**
 	 * Checks if a given directory is empty (i.e. doesn't have any subdirectories or files in it)
-	 * @param string $vs_dir The directory to check
+	 * @param string $dir The directory to check
 	 * @return bool false if it's not a readable directory or if it's not empty, otherwise true
 	 */
-	function caDirectoryIsEmpty($vs_dir) {
-		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
+	function caDirectoryIsEmpty($dir) {
+		if(!is_readable($dir) || !is_dir($dir)) { return false; }
 
 		try {
-			$o_iterator = new \FilesystemIterator($vs_dir);
+			$o_iterator = new \FilesystemIterator($dir);
 			return !$o_iterator->valid();
 		} catch (Exception $e) {
 			return false;
 		}
+	}
+	# ----------------------------------------
+	/**
+	 * Calculates size of directory and all sub-directories in bytes.
+	 *
+	 * @param string $dir The directory to check
+	 * @param array $options Options include:
+	 *		forDisplay = return human-readable version of size value. [Default is false]
+	 *		returnAll = return array with size in bytes, human readable size and file count
+	 * @return mixed Size of directory contents (including all sub-directories) in bytes; human-readable version of size or array with size and count
+	 */
+	function caDirectorySize($dir, array $options=null) {
+		$size = $c = $dc = 0;
+		
+		if ($dir) {
+			foreach (glob(rtrim($dir, '/').'/*', GLOB_NOSORT) as $each) {
+				if (!$each) { continue; }
+				if(is_file($each)) {
+					$size += filesize($each);
+					$c++;
+				} else {
+					$d = caDirectorySize($each, ['returnAll' => true]);
+					$size += $d['size'];
+					$c += $d['fileCount'];
+					$dc += $d['directoryCount'] + 1;
+				}
+			}
+		}
+		
+		if(caGetOption('forDisplay', $options, false)) { return caHumanFilesize($size); }
+		if(caGetOption('returnAll', $options, false)) { 
+			return [
+				'size' => $size, 
+				'display' => caHumanFilesize($size), 
+				'fileCount' => $c, 
+				'directoryCount' => $dc
+			]; 
+		}
+		return $size;
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
@@ -749,14 +788,14 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	function caCleanUserMediaDirectory(int $user_id) {
+	function caCleanUserMediaDirectory($user) {
 	    // use configured directory to dump media with fallback to standard tmp directory
 	    $config = Configuration::load();
 
-		$user_dir = caGetMediaUploadPathForUser($user_id);
+		$user_dir = caGetMediaUploadPathForUser($user);
 		
-		if (!($timeout = (int)$config->get('media_upload_tmp_directory_timeout'))) {
-			$timeout = 24 * 60 * 60;
+		if (($timeout = (int)$config->get('media_uploader_directory_timeout')) <= 0) {		// bail if no timeout
+			return 0;
 		}
 		
 		// Cleanup any old files here
@@ -771,11 +810,11 @@ function caFileIsIncludable($ps_file) {
 	
 		foreach($files as $f => $i) {
 			$b = pathinfo($f, PATHINFO_BASENAME);
-			if (preg_match("!^([^_]+)_metadata!", $b, $m) && !isset($files[$user_dir."/".$m[1]])) {
+			if (preg_match("!^\.([^_]+)_metadata!", $b, $m) && !isset($files[$user_dir."/".$m[1]])) {
 				@unlink($f);
 				continue;
 			}
-			if (preg_match("!^md5_(.*)$!", $b, $m)) {
+			if (preg_match("!^\.md5_(.*)$!", $b, $m)) {
 				$r = @file_get_contents($f);
 				if (!isset($files[$user_dir."/".$r])) { @unlink($f); }
 			}
@@ -789,15 +828,14 @@ function caFileIsIncludable($ps_file) {
 	function caCleanUserMediaDirectories() {
 	    // use configured directory to dump media with fallback to standard tmp directory
 	    $config = Configuration::load();
-		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
-			$tmp_directory = caGetTempDirPath();
+		if (!is_writeable($tmp_directory = $config->get('media_uploader_root_directory'))) {
+			return null;
 		}
 
 		$count = 0;
 		if(is_array($dirs = scandir($tmp_directory))) {
 			foreach($dirs as $dir) {
-				$d = caGetUserDirectoryName();
-				if (preg_match("!^({$d})$!", $dir, $m)) {
+				if (preg_match("!^~([A-Za-z0-9_\-]+)$!", $dir, $m)) {
 					caCleanUserMediaDirectory($m[1]);
 					$count++;
 				}
@@ -2852,11 +2890,46 @@ function caFileIsIncludable($ps_file) {
 	/** 
 	 *
 	 */
-	function caHumanFilesize($bytes, $decimals = 2) {
-		$size = array('B','KiB','MiB','GiB','TiB');
-		$factor = intval(floor((strlen($bytes) - 1) / 3), 10);
+	function caHumanFilesize($bytes, $decimals = 2) : string {
+		$size = ['B','KiB','MiB','GiB','TiB'];
+		$factor = intval(floor((strlen((int)$bytes) - 1) / 3), 10);
 
-		return sprintf("%.{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
+		return sprintf("%.{$decimals}f", (int)$bytes/pow(1024, $factor)).@$size[$factor];
+	}
+	# ----------------------------------------
+	/** 
+	 * Parse human-readable filesize into bytes. Note that we always assume that 
+	 * 1 kilobyte = 1024 bytes, not 1000 bytes as Mac OS and some hard drive manufacturers do.
+	 *
+	 * Common and IEC units may be used:
+	 *		Common = 'B', 'KB', 'MB', 'GB', 'TB', 'PB'
+	 *		IEC = 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'
+	 *
+	 * @param string $from File size expression
+	 * @return int File size in bytes, or null if the expression could not be parsed.
+	 */
+	function caParseHumanFilesize(string $from): ?int {
+		$alts = [
+			'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'		// iec
+		];
+		$units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+		
+		$suffix = preg_match('![ ]*([KIBMGTP]+)[ ]*$!i', $from, $m) ? strtoupper($m[1]) : null;
+		$number = preg_replace('![^\d\.]!', '', $from);
+		
+		//B or no suffix
+		if(is_numeric($number) && !$suffix) {
+			return $number;
+		}
+		
+		if (isset($alts[$suffix])) { $suffix = $alts[$suffix]; }
+
+		$exponent = array_flip($units)[$suffix] ?? null;
+		if($exponent === null) {
+			return null;
+		}
+
+		return $number * (1024 ** $exponent);
 	}
 	# ----------------------------------------
 	/**
@@ -4047,6 +4120,9 @@ function caFileIsIncludable($ps_file) {
 				break;
 			case 'in':
 			case 'not in':
+				return ($pb_is_list) ? true : false;
+				break;
+			case 'between':
 				return ($pb_is_list) ? true : false;
 				break;
 		}

@@ -184,8 +184,11 @@ var caUI = caUI || {};
                         } else {
                             d = jQuery(values[tagProc]).val();
                         }
-                        t=t.replace(tag, d.replace('&nbsp;', ' ').trim());
-                        if (d) { bAtLeastOneValueIsSet = true; }
+    
+                        if (d) { 
+                        	t=t.replace(tag, d.replace('&nbsp;', ' ').trim());
+                        	bAtLeastOneValueIsSet = true; 
+                        }
                         cmds.push(null);
                         qtys.push(null);
                     } else {
