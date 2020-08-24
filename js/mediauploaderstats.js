@@ -14,8 +14,6 @@ class MediaUploaderStats extends React.Component {
     constructor(props) {
         super(props);
 
-        
-
         this.state = {
             storageUsage: '-',
             storageUsageBytes: 0,

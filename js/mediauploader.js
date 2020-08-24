@@ -83,7 +83,6 @@ class MediaUploader extends React.Component {
      */
     selectFiles(e) {
         let state = this.state;
-        console.log(e);
         if(e.target) {  // From <input type="file" ... />
             state['queue'].push(...e.target.files);
         } else {        // From dropzone
@@ -131,7 +130,7 @@ class MediaUploader extends React.Component {
             }
 
             let upload = new tus.Upload(file, {
-                endpoint: this.props.endpoint + '/tus?download=1',
+                endpoint: this.props.endpoint + '/tus',
                 retryDelays: [0, 1000, 3000, 5000],
                 chunkSize: 1024 * 512,      // TODO: make configurable
                 metadata: {
@@ -139,28 +138,32 @@ class MediaUploader extends React.Component {
                     sessionKey: state.sessionKey,
                     relativePath: relPath
                 },
+                onBeforeRequest: function (req) {
+					var xhr = req.getUnderlyingObject()
+					xhr.setRequestHeader('x-session-key', state.sessionKey);
+				},
                 onError: (error) => {
                     let state = that.state;
+					// error during transfer
+					let error_resp = JSON.parse(error.originalResponse.getBody());
+					let error_msg = (error_resp && error_resp.error) ? error_resp.error : 'Unknown error';
+					let is_global = (error_resp && error_resp.global) ? error_resp.global : false;
+					let error_state = (error_resp && error_resp.state) ? error_resp.state : 'error';
+					
+					if(is_global) {
+						that.statusMessage(error_state);
+						state.error = error_msg;
+					}
+                     console.log("Error:", error_msg);
                     if(state.connections[connectionIndex]) {
-                    	// error during transfer
-                        let error_resp = JSON.parse(error.originalResponse.getBody());
-                        let error_msg = (error_resp && error_resp.error) ? error_resp.error : 'Unknown error';
-                        let is_global = (error_resp && error_resp.global) ? error_resp.global : false;
-                        let error_state = (error_resp && error_resp.state) ? error_resp.state : 'error';
-                        console.log("Error:", error_msg);
                         state.connections[connectionIndex]['status'] = error_msg;
                         state.connections[connectionIndex]['uploadedBytes'] = 0;
                         
-                        if(is_global) {
-                        	that.statusMessage(error_state);
-                        	state.error = error_msg;
-                        }
                         
 						state.connections[connectionIndex].upload.abort();
 						delete state['connections'][connectionIndex];
 						that.setState(state);
 						that.checkSession();// is session over now?
-                        
                     }
                 },
                 onProgress: (uploadedBytes, totalBytes) => {
@@ -619,7 +622,7 @@ class MediauploaderRecentItem extends React.Component {
 
     render() {
         let item = this.props.item;
-        let n = Object.keys(item.files).length;
+        let n = item.num_files; 
         let examplePaths = Object.keys(item.files).slice(0, 3);
 
         let contentsStr = examplePaths.join(", ");
@@ -628,7 +631,11 @@ class MediauploaderRecentItem extends React.Component {
         }
 
         let status, statusClass, current;
-        if (item.completed_on) {
+        if (item.cancelled > 0) {
+            current = 'Cancelled: ' + item.completed_on;
+            status = 'Cancelled';
+            statusClass = 'badge badge-danger pull-right';
+        } else if (item.completed_on) {
             current = 'Completed: ' + item.completed_on;
             status = 'Completed';
             statusClass = 'badge badge-success pull-right';

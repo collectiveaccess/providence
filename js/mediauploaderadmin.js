@@ -9,28 +9,29 @@ const axios = require("axios");
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 
 const selector = providenceUIApps.mediauploaderadmin.selector;
-const endpoint = providenceUIApps.mediauploaderadmin.endpoint + "?date=";
+const endpoint = providenceUIApps.mediauploaderadmin.endpoint;
 
 class MediaUploaderAdmin extends Component {
   constructor(props) {
     super(props);
     this.state = {
       activeTab: "recent",
-      file_data: [],
+      responseData: [],
+      users: [],
       isLoading: true,
-      dateFilteredData: [],
+      filteredData: [],
     };
     this.handleSelectedTab = this.handleSelectedTab.bind(this);
-    this.handleDateChange = this.handleDateChange.bind(this);
+    this.handleSearchParams = this.handleSearchParams.bind(this);
   }
 
   componentDidMount() {
-    // const endpoint = this.props.endpoint;
     axios
-      .get(endpoint)
+      .get(endpoint + '/logdata')
       .then((response) => {
         this.setState({
-          file_data: response.data.data,
+          responseData: response.data.data,
+          users: response.data.userList,
           isLoading: false,
         });
         //console.log("Loaded service", this.state);
@@ -43,9 +44,6 @@ class MediaUploaderAdmin extends Component {
            * that falls out of the range of 2xx
            */
           console.log("Response error");
-          console.log(error.response.data);
-          console.log(error.response.status);
-          console.log(error.response.headers);
         } else if (error.request) {
           /*
            * The request was made but no response was received, `error.request`
@@ -71,31 +69,27 @@ class MediaUploaderAdmin extends Component {
     });
   }
 
-  handleDateChange(date) {
-    // console.log("date changed");
-    const filteredEndpoint = endpoint + date;
-    // console.log("filtered endpoint: ", filteredEndpoint);
-
-    axios.get(filteredEndpoint).then((response) => {
+  handleSearchParams(date, status, user) {
+    axios.post(endpoint + '/logdata', {}, {
+                params: {
+                    date: date,
+                    status: status,
+                    user: user
+                }
+            }).then((response) => {
+            	console.log(response);
       this.setState({
-        dateFilteredData: response.data.data,
+        filteredData: response.data.data,
       });
-      // console.log("Date Filtered Data", this.state.dateFilteredData);
     });
   }
 
   render() {
-    // console.log('Data', this.state.file_data);
-    // console.log('Date Filtered Data', this.state.dateFilteredData);
     return (
       <div>
         <div className="container">
           <div className="row">
             <div className="col-sm-11">
-              <h1 style={{ textAlign: "center" }}>
-                Media Uploader Admin Console
-              </h1>
-
               {this.state.isLoading === true ? (
                 <h3>Loading...</h3>
               ) : (
@@ -103,14 +97,19 @@ class MediaUploaderAdmin extends Component {
                   activeKey={this.state.activeTab}
                   onSelect={this.handleSelectedTab}
                 >
-                  <Tab eventKey="recent" title="Recent">
-                    <Recent data={this.state.file_data} />
+                  <Tab eventKey="recent" title="Recent uploads">
+                    <Recent 
+                      data={this.state.responseData} 
+                      endpoint={endpoint}
+                	/>
                   </Tab>
                   <Tab eventKey="search" title="Search">
                     <Search
-                      data={this.state.file_data}
-                      handleDateChange={this.handleDateChange}
-                      dateFilteredData={this.state.dateFilteredData}
+                      data={this.state.responseData}
+                      handleSearchParams={this.handleSearchParams}
+                      filteredData={this.state.filteredData}
+                      users={this.state.users}
+                      endpoint={endpoint}
                     />
                   </Tab>
                 </Tabs>

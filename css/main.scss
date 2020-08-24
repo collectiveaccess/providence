@@ -65,3 +65,13 @@ a.mediaUploaderFilename {
 	height: 200px;
 	overflow-y: auto;
 }
+
+.nav-link {
+	text-decoration: none !important;
+	color: #000 !important;
+	font-size: 14px;
+}
+
+.nav-link.active { 
+	font-weight: bold;
+}

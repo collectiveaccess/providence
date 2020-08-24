@@ -500,6 +500,18 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Return path to media upload directory for users. 
+	 *`
+	 * @return string Path to user directory
+	 *
+	 * @throws ApplicationException
+	 */
+	function caGetUserMediaUploadPath() {
+		$config = Configuration::load();
+		return $config->get('media_uploader_root_directory');
+	}
+	# ---------------------------------------
+	/**
 	 * Return path to private media upload directory for a user. If user's private directory doesn't
 	 * exist yet, it will be created.
 	 *`
@@ -512,8 +524,9 @@
 	 */
 	function caGetMediaUploadPathForUser($user, array $options=null) {
 		if(!($user_name = ca_users::userNameFor($user))) { return null; }
-		$config = Configuration::load();
-		$user_dir = $config->get('media_uploader_root_directory').'/'.caGetUserDirectoryName($user);
+		
+		$user_media_path = caGetUserMediaUploadPath();
+		$user_dir = $user_media_path.'/'.caGetUserDirectoryName($user);
 
 		if(!caGetOption('dontCreateDirectory', $options, false) && !file_exists($user_dir)) {
 			if(!mkdir($user_dir)) {

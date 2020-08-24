@@ -10,7 +10,7 @@ class Recent extends Component {
     return (
       <div>
         <br />
-        <UploadList data={recentUploads} />
+        <UploadList data={recentUploads} endpoint={this.props.endpoint} />
       </div>
     );
   }

@@ -84,10 +84,12 @@
  		 */
  		public function tus(){
             $key = $this->request->getParameter('key', pString);
+            $user_id = $this->request->getUserID();
+            
  		    // TODO: check if user has upload privs
 
  		    // Create user directory if it doesn't already exist
- 		    $user_dir_path = caGetMediaUploadPathForUser($this->request->user->getUserID());
+ 		    $user_dir_path = caGetMediaUploadPathForUser($user_id);
 
 			// Start up server
             $server = new \TusPhp\Tus\Server('redis');  // TODO: make cache type configurable
@@ -95,14 +97,14 @@
            	$server->middleware()->add(MediaUploaderHandler::class);
             $server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
 
-            $server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) {
+            $server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
                 $fileMeta = $event->getFile()->details();
                 $request  = $event->getRequest();
                 $response = $event->getResponse();
                 $key = $fileMeta['metadata']['sessionKey'];
 
                 // ...
-                if ($session = MediaUploadManager::findSession($key)) {
+                if ($session = MediaUploadManager::findSession($key, $user_id)) {
                     $session->set('last_activity_on', _t('now'));
                     $progress_data = $session->get('progress');
                     $progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
@@ -112,14 +114,14 @@
                     $session->update();
                 }
             });
-            $server->event()->addListener('tus-server.upload.complete', function (\TusPhp\Events\TusEvent $event) {
+            $server->event()->addListener('tus-server.upload.complete', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
                 $fileMeta = $event->getFile()->details();
                 $request  = $event->getRequest();
                 $response = $event->getResponse();
                 $key = $fileMeta['metadata']['sessionKey'];
 
                 // ...
-                if ($session = MediaUploadManager::findSession($key)) {
+                if ($session = MediaUploadManager::findSession($key, $user_id)) {
                     $session->set('last_activity_on', _t('now'));
                     $session->set('progress_files', (int)$session->set('progress_files') + 1);
                      $progress_data = $session->get('progress');
@@ -151,9 +153,9 @@
             try {
             	$response = $server->serve();
            		$response->send();
-           	} catch(MediaUploadManageSessionException $e) {
+           	} catch(Exception $e) {
+           		AppController::getInstance()->removeAllPlugins();
            		http_response_code(401);
-           		header("Location", "None");
            		header("Tus-Resumable: 1.0.0");
            		$this->view->setVar('response', ['error' => $e->getMessage(), 'global' => true, 'state' => 'quota']);
            		$this->render('mediauploader/response_json.php');
@@ -205,26 +207,55 @@
  		    $this->view->setVar('response', array_merge(['ok' => 0, 'recent' => $recent], caGetUserMediaStorageUsageStats($user_id)));
  		    $this->render('mediauploader/response_json.php');
         }
+        # -------------------------------------------------------
+        /**
+         * Mark upload session as cancelled
+         */
+        public function cancel(){
+            $key = $this->request->getParameter('key', pString);
+            $user_id = $this->request->getUserID();
+
+            $errors = [];
+			try {
+				$session = MediaUploadManager::cancelSession($key, $user_id);
+				
+				$this->view->setVar('response', array_merge(
+					[
+						'ok' => 1, 
+						'key' => $session->get('session_key'), 
+						'completed_on' => $session->get('completed_on'),
+						'cancelled' => 1
+					], 
+					caGetUserMediaStorageUsageStats($user_id)
+				));
+			} catch(Exception $e) {
+				$this->view->setVar('response', ['ok' => 0, 'errors' => [$e->getMessage()]]);
+			}
+            $this->render('mediauploader/response_json.php');
+        }
  		# -------------------------------------------------------
         /**
          * Mark upload session as complete
          */
         public function complete(){
-            $user_id = $this->request->getUserID();
             $key = $this->request->getParameter('key', pString);
+            $user_id = $this->request->getUserID();
 
             $errors = [];
-
-			if (!($session = MediaUploadManager::findSession($key, $user_id))) {
-				 $errors[] = _t('Invalid key');
+			try {
+				$session = MediaUploadManager::completeSession($key, $user_id);
+				
+				$this->view->setVar('response', array_merge(
+					[
+						'ok' => 1, 
+						'key' => $session->get('session_key'), 
+						'completed_on' => $session->get('completed_on')
+					], 
+					caGetUserMediaStorageUsageStats($user_id)
+				));
+			} catch(Exception $e) {
+				$this->view->setVar('response', ['ok' => 0, 'errors' => [$e->getMessage()]]);
 			}
-            if(sizeof($errors) === 0) {
-                $session->set('completed_on', _t('now'));
-                $session->update();
-                $this->view->setVar('response', array_merge(['ok' => 1, 'key' => $session->get('session_key'), 'completed_on' => $session->get('completed_on')], caGetUserMediaStorageUsageStats($user_id)));
-            } else {
-                $this->view->setVar('response', ['ok' => 0, 'errors' => $errors]);
-            }
             $this->render('mediauploader/response_json.php');
         }
         # -------------------------------------------------------
@@ -238,16 +269,18 @@
         	// TODO: Check that user has privs to use uploader admin console
         	// TODO: Add parameters to allow filtering by user, date range and upload status
         	
+        	$user = $this->request->getParameter('user', pString);
+        	$status = $this->request->getParameter('status', pString);
         	$date = $this->request->getParameter('date', pString);
 
-			if(strlen($date) > 0) {
+			if(strlen($date) || strlen($status) || strlen($user)) {
 				// Handling of filtered query goes here
-				$recent = MediaUploadManager::getLog(['date' => $date]);
+				$recent = MediaUploadManager::getLog(['date' => $date, 'status' => $status, 'user' => $user]);
 			} else {
 				// No params, so show recent uploads by default
  		    	$recent = MediaUploadManager::getLog([]);
  		    }
- 		    $this->view->setVar('response', ['ok' => 0, 'data' => $recent]);
+ 		    $this->view->setVar('response', ['ok' => 0, 'userList' => array_values(MediaUploadManager::getUserList()), 'data' => $recent]);
  		    $this->render('mediauploader/response_json.php');
         }
 		# ------------------------------------------------------------------

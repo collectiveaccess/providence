@@ -7,9 +7,9 @@ class SearchOptions extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedUser: this.props.data[0].user.user_name,
-      selectedStatus: "COMPLETED",
-      selectedDate: "",
+      selectedUser: '',
+      selectedStatus: '',
+      selectedDate: '',
       currentPage: 1,
       uploadsPerPage: 8,
     };
@@ -24,18 +24,18 @@ class SearchOptions extends Component {
     event.preventDefault();
   }
 
-  //change select options handler
+  // Change select options handler
   handleChange(event) {
     const { name, value } = event.target;
     this.setState({ [name]: value });
   }
 
-  //Change Page Handler for pagination
+  // Change page handler for pagination
   changePageHandler = (pageNumber) => {
     this.setState({ currentPage: pageNumber });
   };
 
-  //for pagination
+  // for pagination
   prevPageHandler(currentPage) {
     if (this.state.currentPage > 1) {
       this.setState({
@@ -44,7 +44,7 @@ class SearchOptions extends Component {
     }
   }
 
-  //for pagination
+  // For pagination
   nextPageHandler(currentPage, numberOfPages) {
     if (this.state.currentPage !== numberOfPages) {
       this.setState({
@@ -54,23 +54,13 @@ class SearchOptions extends Component {
   }
 
   render() {
-    //filtered uploads list
-    let filteredUploads = this.props.dateFilteredData.filter((upload) => {
-      return (
-        upload.user.user_name === this.state.selectedUser &&
-        upload.status === this.state.selectedStatus
-      );
-    });
+    // Filtered uploads list
+    let filteredUploads = this.props.filteredData;
 
-    //Get Current Uploads, for pagination
+    // Get Current Uploads, for pagination
     const indexOfLastUpload = this.state.currentPage * this.state.uploadsPerPage;
     const indexOfFirstUpload = indexOfLastUpload - this.state.uploadsPerPage;
     const currentUploads = filteredUploads.slice(indexOfFirstUpload, indexOfLastUpload);
-
-    //remove duplicates in list of users
-    let uniqueUsers = [
-      ...new Set(this.props.data.map((upload) => upload.user.user_name)),
-    ];
 
     return (
       <div>
@@ -81,17 +71,18 @@ class SearchOptions extends Component {
                 <div className="form-row" style={{ padding: "5px" }}>
                   <div className="form-group" style={{ marginRight: "10px" }}>
                     <label htmlFor="username" style={{ marginRight: "5px" }}>
-                      Users
+                      User
                     </label>
                     <select
                       value={this.state.selectedUser}
                       onChange={this.handleChange}
                       name="selectedUser"
                     >
-                      {uniqueUsers.map((username) => {
+                    <option value=''>-</option>
+                      {this.props.users.map((u) => {
                         return (
-                          <option value={username} key={username}>
-                            {username}
+                          <option value={u.user_name} key={u.user_name}>
+                            {u.fname} {u.lname}
                           </option>
                         );
                       })}
@@ -103,22 +94,23 @@ class SearchOptions extends Component {
                       htmlFor="upload-status"
                       style={{ marginRight: "5px" }}
                     >
-                      Upload Status
+                    Status
                     </label>
                     <select
                       value={this.state.selectedStatus}
                       onChange={this.handleChange}
                       name="selectedStatus"
                     >
-                      <option>COMPLETED</option>
-                      <option>IN_PROGRESS</option>
-                      <option>CANCELLED</option>
+                      <option value=''>-</option>
+                      <option value='COMPLETED'>COMPLETED</option>
+                      <option value='IN_PROGRESS'>IN PROGRESS</option>
+                      <option value='CANCELLED'>CANCELLED</option>
                     </select>
                   </div>
 
                   <div className="form-group">
                     <label htmlFor="upload-date" style={{ marginRight: "5px" }}>
-                      Upload Date
+                    Date
                     </label>
                     <input
                       type="text"
@@ -134,7 +126,7 @@ class SearchOptions extends Component {
                       type="submit"
                       className="btn btn-outline-primary"
                       onClick={() =>
-                        this.props.handleDateChange(this.state.selectedDate)
+                        this.props.handleSearchParams(this.state.selectedDate, this.state.selectedStatus, this.state.selectedUser)
                       }
                     >
                       Submit

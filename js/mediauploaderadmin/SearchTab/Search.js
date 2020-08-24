@@ -8,7 +8,12 @@ class Search extends Component {
   render() {
     return (
       <div>
-        <SearchOptions data={this.props.data} handleDateChange={this.props.handleDateChange} dateFilteredData={this.props.dateFilteredData} />
+        <SearchOptions data={this.props.data} 
+        	handleSearchParams={this.props.handleSearchParams} 
+        	filteredData={this.props.filteredData} 
+        	users={this.props.users} 
+        	endpoint={this.props.endpoint}
+        />
       </div>
     );
   }
