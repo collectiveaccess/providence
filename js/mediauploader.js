@@ -5,7 +5,6 @@ import Button from 'react-bootstrap/Button';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import fileSize from "filesize";
 import Dropzone from "react-dropzone";
-import {mediauploaderstate} from "mediauploaderstate";
 
 const axios = require('axios');
 const tus = require("tus-js-client");
@@ -17,7 +16,6 @@ let maxConcurrentUploads = providenceUIApps.mediauploader.maxConcurrentUploads;
 maxConcurrentUploads = ((maxConcurrentUploads === undefined) || (parseInt(maxConcurrentUploads) <= 0)) ? maxConcurrentUploads = 4 : parseInt(maxConcurrentUploads);
 
 class MediaUploader extends React.Component {
-
     constructor(props) {
         super(props);
 
@@ -56,7 +54,6 @@ class MediaUploader extends React.Component {
             storageDirectoryCount: 0
         };
         
-        this.sharedstate = mediauploaderstate;
 
         this.init = this.init.bind(this);
         this.start = this.start.bind(this);
@@ -74,6 +71,7 @@ class MediaUploader extends React.Component {
         this.getRecentListData = this.getRecentListData.bind(this);
 
         this.getRecentListData();
+        
     }
 
     /**
@@ -184,8 +182,6 @@ class MediaUploader extends React.Component {
 						state.storageFileCount = res.getHeader("fileCount");
 						state.storageDirectoryCount = res.getHeader("directoryCount");
                     	that.setState(state);
-
-                    	that.sharedstate = state;
                     }
 				},
                 onSuccess: () => {
@@ -292,8 +288,6 @@ class MediaUploader extends React.Component {
 					state.storageAvailableBytes = response.data.storageAvailable;
 					state.storageFileCount = response.data.fileCount;
 					state.storageDirectoryCount = response.data.storageDirectoryCount;
-					
-                    that.sharedstate = state;
 				}
                 that.setState(state);
 
@@ -409,11 +403,21 @@ class MediaUploader extends React.Component {
   render() {
   	let storageUsage = this.state.storageUsage;
   	let storageAvailable = this.state.storageAvailable;
+  	let storageUsageBytes = this.state.storageUsageBytes;
+  	let storageAvailableBytes = this.state.storageAvailableBytes;
   	let fileCount = this.state.storageFileCount;
   	let directoryCount = this.state.storageDirectoryCount;
-  	
+  
     return (
         <div>
+        	<MediaUploaderStats 
+        		storageUsage={storageUsage} 
+        		storageAvailable={storageAvailable} 
+        		storageFileCount={fileCount} 
+        		storageDirectoryCount={directoryCount} 
+        		storageUsageBytes={storageUsageBytes} 
+        		storageAvailableBytes={storageAvailableBytes}
+        	/>
             <div className="row">
               <div className="col-md-11">
                   <div className="row mediaUploaderDropZone">
@@ -635,6 +639,10 @@ class MediauploaderRecentItem extends React.Component {
             current = 'Cancelled: ' + item.completed_on;
             status = 'Cancelled';
             statusClass = 'badge badge-danger pull-right';
+        } else if (parseInt(item.error_code) > 0) {
+            current = 'Error: ' + item.error_display;
+            status = 'Error';
+            statusClass = 'badge badge-danger pull-right';
         } else if (item.completed_on) {
             current = 'Completed: ' + item.completed_on;
             status = 'Completed';
@@ -661,6 +669,41 @@ class MediauploaderRecentItem extends React.Component {
                 </div>
             </div>
     }
+}
+
+class MediaUploaderStats extends React.Component {
+	
+    constructor(props) {
+        super(props);
+    }
+    
+    /**
+     *
+     */
+  render() {
+  	let storageUsage = this.props.storageUsage;
+  	let storageAvailable = this.props.storageAvailable;
+  	let fileCount = this.props.storageFileCount;
+  	let directoryCount = this.props.storageDirectoryCount;
+  	
+	let storageExceeded = (this.props.storageUsageBytes > this.props.storageAvailableBytes) ? 'Storage allocation exceeded' : '';
+
+	return ReactDOM.createPortal(
+		<div className="row">
+			<div className="col-md-12">
+				{() => { return storageExceeded ? (<div className="mediaUploaderStorageHeading">Storage</div>) : ''}}
+				<div className="mediaUploaderStorageError">{storageExceeded}</div>
+				<ul className="mediaUploaderInfo">
+					<li>Available: {storageAvailable}</li>
+					<li>In use: {storageUsage}</li>
+					<li>Files: {fileCount}</li>
+					<li>Directories: {directoryCount}</li>
+				</ul>
+			</div>
+		</div>,
+		document.querySelector('#mediaUploaderStats')
+  	);
+  }
 }
 
 ReactDOM.render(<MediaUploader maxConcurrentConnections={maxConcurrentUploads} endpoint={endpoint}/>, document.querySelector(selector));

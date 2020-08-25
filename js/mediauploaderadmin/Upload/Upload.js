@@ -12,6 +12,8 @@ class Upload extends Component {
     this.state = {
     	status: this.props.data.status,
     	status_display: this.props.data.status_display,
+    	error_code: this.props.data.error_code,
+    	error_display: this.props.data.error_display,
     	completed_on: this.props.data.completed_on,
     	cancelled_on: this.props.data.cancelled_on
     };
@@ -30,7 +32,6 @@ class Upload extends Component {
       	if((response.data['ok'] === 1) && response.data['cancelled'] === 1) {
 			this.setState({
 				status: 'CANCELLED',
-				status_display: 'Cancelled',
 				status_display: response.data.status_display,
 				completed_on: response.data.completed_on,
 			});
@@ -78,6 +79,8 @@ class Upload extends Component {
     let badge_class = 'badge badge-success pull-right';
     if (this.state.status === 'IN_PROGRESS') {
     	badge_class = 'badge badge-warning pull-right';
+    } else if (this.state.status === 'ERROR') {
+    	badge_class = 'badge badge-danger pull-right';
     } else if (this.state.status === 'CANCELLED') {
     	badge_class = 'badge badge-danger pull-right';
     } else if (this.state.status === 'UNKNOWN') {
@@ -159,9 +162,16 @@ class Upload extends Component {
                 Started on: {this.props.data.created_on}
               </p>
             )}
+             {this.state.status === "ERROR" ? (
+             	<p className="card-text">
+                Error: {this.state.error_display}
+              </p>
+                ) : (
+                  ""
+                )}
           </div>
 
-          {this.state.status !== "COMPLETED" ? progressBar : ""}
+          {((this.state.status !== "COMPLETED") && this.state.status !== "ERROR") ? progressBar : ""}
         </div>
       </div>
     );

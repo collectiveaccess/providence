@@ -13,6 +13,7 @@ class MediaUploaderHandler implements TusMiddleware {
     public function handle(Request $request, Response $response) {
         // Check if upload is valid
         $session_key = $request->header('x-session-key');
+        $session = null;
 		try {
 			$session = MediaUploadManager::findSession($session_key);
 			if((int)$session->get('cancelled') == 1) {
@@ -30,6 +31,9 @@ class MediaUploaderHandler implements TusMiddleware {
 			$stats = caGetUserMediaStorageUsageStats();
 		
 			if ($stats['storageUsage'] > $stats['storageAvailable']) {
+				$session = MediaUploadManager::findSession($session_key);
+				$session->set('error_code', 3600);
+				$session->update();
 				throw new MediaUploadManageSessionException('User storage quota exceeded');
 			}
 		

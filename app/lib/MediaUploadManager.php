@@ -184,9 +184,13 @@ class MediaUploadManager {
 				foreach(['created_on', 'completed_on', 'last_activity_on'] as $f) {
 					$s[$f] = ($s[$f] > 0) ? caGetLocalizedDate($s[$f], ['dateFormat' => 'delimited']) : null;
 				}
-				if ($s['cancelled']) {
+				if ($s['cancelled'] > 0) {
 					$s['status'] = 'CANCELLED';
 					$s['status_display'] = _t('Cancelled');
+				} elseif ($s['error_code'] > 0) {
+					$s['status'] = 'ERROR';
+					$s['status_display'] = _t('Error');
+					$s['error_display'] = caGetErrorMessage($s['error_code']);	
 				} elseif ($s['completed_on']) {
 					$s['status'] = 'COMPLETED';
 					$s['status_display'] = _t('Completed');
