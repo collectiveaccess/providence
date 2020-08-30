@@ -258,3 +258,4 @@
 
 # --- Media uploader errors
 3600 = Storage allocation exceeded
+3605 = Server connection limit exceeded

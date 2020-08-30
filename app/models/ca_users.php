@@ -3351,36 +3351,59 @@ class ca_users extends BaseModel {
 	/**
 	 * Checks if user is allowed to perform the specified action (possible actions are defined in app/conf/user_actions.conf)
 	 * Returns true if user can do action, false otherwise.
+	 *
+	 * @param string $action
+	 * @param array $options Options include:
+	 *		throwException = Throw application exception if user does not have specified action. [Default is false]
+	 *		exceptionMessage = Message returned in exception on error. [Default is 'Access Denied']
+	 * @return bool
 	 */
-	public function canDoAction($ps_action) {
-		$vs_cache_key = $ps_action."/".$this->getPrimaryKey();
-		if (isset(ca_users::$s_user_action_access_cache[$vs_cache_key])) { return ca_users::$s_user_action_access_cache[$vs_cache_key]; }
+	public function canDoAction(string $action, array $options=null) : bool {
+		$throw = caGetOption('throwException', $options, false); 
+		$cache_key = $action."/".$this->getPrimaryKey();
+		if (isset(ca_users::$s_user_action_access_cache[$cache_key])) { 
+			if ($throw && !ca_users::$s_user_action_access_cache[$cache_key]) {
+				throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+			}
+			return ca_users::$s_user_action_access_cache[$cache_key]; 
+		}
 
-		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
-		if(!ca_user_roles::isValidAction($ps_action)) { 
+		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
+		if(!ca_user_roles::isValidAction($action)) { 
 		    // check for alternatives...
-		    if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $ps_action, $m)) {
+		    if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $action, $m)) {
 		        if (ca_user_roles::isValidAction("can_configure_".$m[2])) {
-		            return self::canDoAction("can_configure_".$m[2]);
+		        	$r = self::canDoAction("can_configure_".$m[2]);
+		        	if ($throw && !$r) {
+						throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+					}
+		            return $r;
 		        }
 		    }
 		    
 			// return false if action is not valid	
-		    return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; 
+			if ($throw) {
+				throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+			}
+		    return ca_users::$s_user_action_access_cache[$cache_key] = false; 
 		}
 		
 		// is user administrator?
-		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
+		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
 		
 		// get user roles
-		$va_roles = $this->getUserRoles();
-		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
-			$va_roles[$vn_role_id] = $va_role_info;
+		$roles = $this->getUserRoles();
+		foreach($this->getGroupRoles() as $role_id => $role_info) {
+			$roles[$role_id] = $role_info;
 		}
 		
-		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
-		if (in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
-		return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
+		$actions = ca_user_roles::getActionsForRoleIDs(array_keys($roles));
+		if (in_array('is_administrator', $actions)) { return ca_users::$s_user_action_access_cache[$cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
+		$r =  ca_users::$s_user_action_access_cache[$cache_key] = in_array($action, $actions);
+		if ($throw & !$r) {
+			throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+		}
+		return $r;
 	}
 	# ----------------------------------------
 	/**
@@ -3712,3 +3735,8 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 }
+
+/** 
+ * Exception thrown when user lacks required action-level privs
+ */
+class UserActionException extends Exception {}

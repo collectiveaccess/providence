@@ -25,7 +25,8 @@ class MediaUploader extends React.Component {
             start: 'Starting upload',
             upload: 'Uploading files',
             complete: 'Upload complete',
-            quota: 'User storage limit exceeded',
+            userquota: 'User storage allocation exceeded',
+            systemquota: 'System storage allocation exceeded',
             error: 'Error'
         };
 
@@ -91,6 +92,7 @@ class MediaUploader extends React.Component {
         if (state['queue'].length > 0) {
             this.statusMessage('ready');
         }
+        state.error = '';
         this.setState(state);
     }
 
@@ -181,6 +183,10 @@ class MediaUploader extends React.Component {
 						state.storageAvailable = res.getHeader("storageAvailableDisplay");
 						state.storageFileCount = res.getHeader("fileCount");
 						state.storageDirectoryCount = res.getHeader("directoryCount");
+						
+						if (state.storageUsageBytes > state.storageAvailableBytes) {
+							that.statusMessage('userquota');
+						}
                     	that.setState(state);
                     }
 				},
@@ -288,6 +294,10 @@ class MediaUploader extends React.Component {
 					state.storageAvailableBytes = response.data.storageAvailable;
 					state.storageFileCount = response.data.fileCount;
 					state.storageDirectoryCount = response.data.storageDirectoryCount;
+					
+					if (state.storageUsageBytes > state.storageAvailableBytes) {
+						that.statusMessage('userquota');
+					}
 				}
                 that.setState(state);
 
@@ -391,6 +401,10 @@ class MediaUploader extends React.Component {
 				state.storageAvailableBytes = response.data.storageAvailable;
 				state.storageFileCount = response.data.fileCount;
 				state.storageDirectoryCount = response.data.directoryCount;
+				
+				if (state.storageUsageBytes > state.storageAvailableBytes) {
+					that.statusMessage('userquota');
+				}
 			}
             that.setState(state);
 

@@ -43,12 +43,6 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			// Can user batch import media?
- 			if (!$po_request->user->canDoAction('can_batch_import_media')) {
- 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3410?r='.urlencode($po_request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			AssetLoadManager::register('react');
  		}
  		# -------------------------------------------------------
@@ -72,6 +66,9 @@
  		 *
  		 */
  		public function Admin($pa_options=null) {
+        	// Check that user has privs to use uploader admin console
+ 		    $this->request->getUser()->canDoAction('is_media_uploader_administrator', ['throwException' => true]);
+ 		    
  			AssetLoadManager::register("directoryBrowser");
 
  			$this->render('mediauploader/admin_html.php');
@@ -83,73 +80,9 @@
  		 * tus resume-able file upload API endpoint (see https://tus.io and https://github.com/ankitpokhrel/tus-php)
  		 */
  		public function tus(){
-            $key = $this->request->getParameter('key', pString);
             $user_id = $this->request->getUserID();
-            
- 		    // TODO: check if user has upload privs
 
- 		    // Create user directory if it doesn't already exist
- 		    $user_dir_path = caGetMediaUploadPathForUser($user_id);
-
-			// Start up server
-            $server = new \TusPhp\Tus\Server('redis');  // TODO: make cache type configurable
-
-           	$server->middleware()->add(MediaUploaderHandler::class);
-            $server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
-
-            $server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
-                $fileMeta = $event->getFile()->details();
-                $request  = $event->getRequest();
-                $response = $event->getResponse();
-                $key = $fileMeta['metadata']['sessionKey'];
-
-                // ...
-                if ($session = MediaUploadManager::findSession($key, $user_id)) {
-                    $session->set('last_activity_on', _t('now'));
-                    $progress_data = $session->get('progress');
-                    $progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
-                    $progress_data[$fileMeta['file_path']]['progressInBytes'] = $fileMeta['offset'];
-                    $progress_data[$fileMeta['file_path']]['complete'] = false;
-                    $session->set('progress', $progress_data);
-                    $session->update();
-                }
-            });
-            $server->event()->addListener('tus-server.upload.complete', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
-                $fileMeta = $event->getFile()->details();
-                $request  = $event->getRequest();
-                $response = $event->getResponse();
-                $key = $fileMeta['metadata']['sessionKey'];
-
-                // ...
-                if ($session = MediaUploadManager::findSession($key, $user_id)) {
-                    $session->set('last_activity_on', _t('now'));
-                    $session->set('progress_files', (int)$session->set('progress_files') + 1);
-                     $progress_data = $session->get('progress');
-                        $progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
-                        $progress_data[$fileMeta['file_path']]['progressInBytes'] = $fileMeta['size'];
-                        $progress_data[$fileMeta['file_path']]['complete'] = true;
-                        $session->set('progress', $progress_data);
-                        $session->update();
-                    $session->update();
-                }
-
-				// If subdirectory
-				$rel_path = $fileMeta['metadata']['relativePath'];
-                if(isset($rel_path) && strlen($rel_path) && file_exists($fileMeta['file_path'])) {
-                    $path = pathinfo($fileMeta['file_path'], PATHINFO_DIRNAME);
-                    $name = pathinfo($fileMeta['file_path'], PATHINFO_BASENAME);
-
-                    $rel_path_proc = [];
-                    foreach(preg_split('!/!', $rel_path) as $rel_path_dir) {
-                        if(strlen($rel_path_dir = preg_replace('![^A-Za-z0-9\-_]+!', '_', $rel_path_dir))) {
-                            $rel_path_proc[] = $rel_path_dir;
-                            mkdir("{$path}/".join("/", $rel_path_proc));
-                        }
-                    }
-                    @rename($fileMeta['file_path'], "{$path}/".join("/", $rel_path_proc)."/{$name}");
-                }
-
-            });
+ 		    $server = MediaUploadManager::getTUSServer($user_id);
             try {
             	$response = $server->serve();
            		$response->send();
@@ -263,11 +196,8 @@
          * Log data for admin console
          */
         public function logdata(){
-        	header('Access-Control-Allow-Origin: *');
-			header('Access-Control-Allow-Methods: GET, POST');
-			header("Access-Control-Allow-Headers: X-Requested-With");
-        	// TODO: Check that user has privs to use uploader admin console
-        	// TODO: Add parameters to allow filtering by user, date range and upload status
+        	// Check that user has privs to use uploader admin console
+ 		    $this->request->getUser()->canDoAction('is_media_uploader_administrator', ['throwException' => true]);
         	
         	$user = $this->request->getParameter('user', pString);
         	$status = $this->request->getParameter('status', pString);
@@ -292,10 +222,6 @@
  		 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
  		 */
  		public function info($pa_parameters) {
- 			
-			//$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
-			//$this->view->setVar('result_context', $this->getResultContext());
-			
  			return $this->render('mediauploader/widget_media_uploader_html.php', true);
  		}
 		# ------------------------------------------------------------------

@@ -585,7 +585,7 @@
 	 *
 	 * @return int
 	 */
-	function caGetUserMediaStorageUsage($user=null, array $options=null) {
+	function caGetUserMediaStorageUsage($user=null, array $options=null) : int {
 		global $g_request;
 		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
 			$user = $g_request->getUserID();
@@ -601,7 +601,7 @@
 	 *
 	 * @return int
 	 */
-	function caGetUserMediaStorageAvailable($user=null, array $options=null) {
+	function caGetUserMediaStorageAvailable($user=null, array $options=null) : int {
 		$config = Configuration::load();
 		global $g_request;
 		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
@@ -619,13 +619,20 @@
 	 *
 	 * @return array
 	 */
-	function caGetUserMediaStorageUsageStats($user=null, array $options=null) {
+	function caGetUserMediaStorageUsageStats($user=null, array $options=null) : array {
 		global $g_request;
 		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
-			$user = $g_request->getUserID();
+			$user_id = $g_request->getUserID();
+		} else {
+			$user_id = ca_users::userIDFor($user);
 		}
-		$storage_usage = caDirectorySize(caGetMediaUploadPathForUser($user), ['returnAll' => true]);
-		$available_storage = caGetUserMediaStorageAvailable($user);
+		
+		if(!caGetOption('noCache', $options, false) && PersistentCache::contains('userStorageStats_'.$user_id, 'mediaUploader')) {
+			return PersistentCache::fetch('userStorageStats_'.$user_id, 'mediaUploader');
+		}
+		
+		$storage_usage = caDirectorySize(caGetMediaUploadPathForUser($user_id), ['returnAll' => true]);
+		$available_storage = caGetUserMediaStorageAvailable($user_id);
 		$ret = [
 			'storageUsage' => $storage_usage['size'],
 			'storageUsageDisplay' => $storage_usage['display'],
@@ -634,6 +641,8 @@
 			'storageAvailable' => $available_storage,
 			'storageAvailableDisplay' => caHumanFilesize($available_storage)
 		];
+		
+		PersistentCache::save('userStorageStats_'.$user, $ret, 'mediaUploader');
 		
 		return $ret;
 	}

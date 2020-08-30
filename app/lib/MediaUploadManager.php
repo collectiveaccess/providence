@@ -45,11 +45,6 @@ class MediaUploadManager {
      */
     private $log;
 
-    /**
-     *
-     */
-    static $s_user_cache = [];
-
     
     # ------------------------------------------------------
     /**
@@ -238,6 +233,27 @@ class MediaUploadManager {
         return $users;
     }
     # ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getCurrentUploadSessionCount(array $options=null) {
+		$params = [
+			'completed_on' => null,
+			'last_activity_on' => ['>', time() - 15],
+			'cancelled' => 0,
+		];
+		return $c = ca_media_upload_sessions::find($params, ['returnAs' => 'count']) ? $c : 0;
+	}
+	# ------------------------------------------------------
+    /**
+     *
+     */
+	static public function connectionsAvailable(array $options=null) {
+		$max_concurrent_uploads = Configuration::load()->get('media_uploader_max_concurrent_uploads');
+		
+		return (self::getCurrentUploadSessionCount() <= $max_concurrent_uploads);
+	}
+	# ------------------------------------------------------
     /**
      *
      */
@@ -246,6 +262,96 @@ class MediaUploadManager {
     		return $user_id;
 	    }
 	    throw new MediaUploadManageSessionException(_t('Invalid user_id'));
+    }
+    # ------------------------------------------------------
+    /**
+     * Set up and return TUS server instance for file upload
+     *
+     * @param int $user_id
+     * @return \TusPhp\Tus\Server Server instance
+     */
+    static public function getTUSServer(int $user_id) {
+    	 // Create user directory if it doesn't already exist
+		$user_dir_path = caGetMediaUploadPathForUser($user_id);
+
+		// Start up server
+		$server = new \TusPhp\Tus\Server('redis');  // TODO: make cache type configurable
+
+		$server->middleware()->add(MediaUploaderHandler::class);
+		$server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
+
+		$server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
+			$fileMeta = $event->getFile()->details();
+			$request  = $event->getRequest();
+			$response = $event->getResponse();
+			$key = $request->header('x-session-key');
+
+			// ...
+			if ($session = MediaUploadManager::findSession($key, $user_id)) {
+				$session->set('last_activity_on', _t('now'));
+				$progress_data = $session->get('progress');
+				
+				$progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
+				$progress_data[$fileMeta['file_path']]['progressInBytes'] = $fileMeta['offset'];
+				$progress_data[$fileMeta['file_path']]['complete'] = false;
+				$session->set('progress', $progress_data);
+				$session->update();
+				
+			}
+		});
+		$server->event()->addListener('tus-server.upload.complete', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
+			$fileMeta = $event->getFile()->details();
+			$request  = $event->getRequest();
+			$response = $event->getResponse();
+			$key = $request->header('x-session-key');
+
+			// ...
+			if ($session = MediaUploadManager::findSession($key, $user_id)) {
+				$session->set('last_activity_on', _t('now'));
+				$session->set('progress_files', (int)$session->set('progress_files') + 1);
+				$progress_data = $session->get('progress');
+				$progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
+				$progress_data[$fileMeta['file_path']]['progressInBytes'] = $fileMeta['size'];
+				$progress_data[$fileMeta['file_path']]['complete'] = true;
+				$session->set('progress', $progress_data);
+				$session->update();
+				if (PersistentCache::contains('userStorageStats_'.$user_id, 'mediaUploader')) {
+					$stats = PersistentCache::fetch('userStorageStats_'.$user_id, 'mediaUploader');
+					$stats['fileCount']++;
+					
+					$stats['storageUsage'] += $fileMeta['size'];
+					$stats['storageUsageDisplay'] = caHumanFilesize($stats['storageUsage']);
+					
+					PersistentCache::save('userStorageStats_'.$user_id, $stats, 'mediaUploader');
+				}
+			}
+
+			// If subdirectory
+			$new_dir_count = 0;
+			$rel_path = $fileMeta['metadata']['relativePath'];
+			if(isset($rel_path) && strlen($rel_path) && file_exists($fileMeta['file_path'])) {
+				$path = pathinfo($fileMeta['file_path'], PATHINFO_DIRNAME);
+				$name = pathinfo($fileMeta['file_path'], PATHINFO_BASENAME);
+
+				$rel_path_proc = [];
+				foreach(preg_split('!/!', $rel_path) as $rel_path_dir) {
+					if(strlen($rel_path_dir = preg_replace('![^A-Za-z0-9\-_]+!', '_', $rel_path_dir))) {
+						if(file_exists($rel_path_dir)) { continue; }
+						$rel_path_proc[] = $rel_path_dir;
+						mkdir("{$path}/".join("/", $rel_path_proc));
+						$new_dir_count++;
+					}
+				}
+				@rename($fileMeta['file_path'], "{$path}/".join("/", $rel_path_proc)."/{$name}");
+			}
+			
+			if ($new_dir_count && PersistentCache::contains('userStorageStats_'.$user_id, 'mediaUploader')) {
+				$stats = PersistentCache::fetch('userStorageStats_'.$user_id, 'mediaUploader');
+				$stats['directoryCount'] += $new_dir_count;
+				PersistentCache::save('userStorageStats_'.$user_id, $stats, 'mediaUploader');
+			}
+		});
+		return $server;
     }
     # ------------------------------------------------------
 }

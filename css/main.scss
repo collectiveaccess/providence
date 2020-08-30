@@ -45,9 +45,15 @@ h4.mediaUploaderError {
 	font-size: 12px;
 }
 
-h4.mediaUploaderStorageError {
+div.mediaUploaderStorageHeading {
+	color: #000;
+	font-size: 16px;
+}
+
+div.mediaUploaderStorageError {
 	color: #cc0000;
-	font-size: 11px;
+	font-size: 14px;
+	background-color: none;
 }
 
 h4.mediaUploaderStatus {
