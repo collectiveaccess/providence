@@ -484,8 +484,8 @@
 		if (preg_match("!/\.\.!", $directory) || preg_match("!\.\./!", $directory)) {
 			return false;
 		}
-
-		if (is_dir($dir="{$batch_media_import_root_directory}{$directory}")) {
+		$directory = preg_replace('!^[/]+!', '', $directory);
+		if (is_dir($dir="{$batch_media_import_root_directory}/{$directory}")) {
 			return $dir;
 		}
 

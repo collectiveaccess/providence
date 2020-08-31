@@ -2143,8 +2143,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$global_batch_media_import_root_directory = caGetSharedMediaUploadPath();
 		$user_batch_media_import_root_directory = caGetMediaUploadPathForUser($po_view->request->getUserID());
-		$vs_buf .= "<p>"._t('<strong>Directory (all users):</strong> %1', $global_batch_media_import_root_directory)."</p>\n";
-		$vs_buf .= "<p>"._t('<strong>Directory (user):</strong> %1', $user_batch_media_import_root_directory)."</p>\n";
+		$vs_buf .= "<p class='abbreviatedPath' title='{$global_batch_media_import_root_directory}'>"._t('<strong>Directory (all users):</strong> %1', caTruncateStringWithEllipsis($global_batch_media_import_root_directory, 30, 'middle'))."</p>\n";
+		$vs_buf .= "<p class='abbreviatedPath' title='{$user_batch_media_import_root_directory}'>"._t('<strong>Directory (user):</strong> %1', caTruncateStringWithEllipsis($user_batch_media_import_root_directory, 30, 'middle'))."</p>\n";
 
 		$vs_buf .= "</div></h4>\n";
 

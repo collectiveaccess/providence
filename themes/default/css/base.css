@@ -7730,3 +7730,7 @@ div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
     text-decoration: none;
     color: #000;
 }
+
+p.abbreviatedPath {
+	cursor: help;
+}
