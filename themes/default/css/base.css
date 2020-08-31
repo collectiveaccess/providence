@@ -7731,6 +7731,6 @@ div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
     color: #000;
 }
 
-p.abbreviatedPath {
+p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 	cursor: help;
 }
