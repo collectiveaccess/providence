@@ -374,7 +374,7 @@ class Media extends BaseObject {
 		$this->instance->set('version', '');
 		$files = $this->instance->writePreviews($this->filepath, $options);
 		
-		if(caGetOption('cleanupFiles', $options, true)) {
+		if(is_array($files) && caGetOption('cleanupFiles', $options, true)) {
 			$this->tmp_files = array_unique(array_merge($this->tmp_files, $files));
 		}
 		return $files;
