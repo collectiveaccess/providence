@@ -647,3 +647,38 @@
 		return $ret;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Return list of valid media upload modes for batch media importer
+	 *
+	 * @param array $options No options are currently supported.
+	 * @return array
+	 */
+	function caGetAvailableMediaUploadModes(array $options=null) {
+		$config = Configuration::load();
+		
+		$import_modes = [];
+		if (!is_array($available_modes = $config->getList('media_importer_allowed_modes'))) { $available_modes = []; }
+		foreach([
+				_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
+				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
+				_t('Import all media, creating new records for each') => 'DONT_MATCH'
+			] as $label => $mode) {
+			if(!in_array($mode, $available_modes)) { continue; }
+			$import_modes[$label] = $mode;
+		}
+		
+		return $import_modes;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Test if media import mode is valud
+	 * 
+	 * @param string $mode
+	 * @param array $options No options are currently supported.
+	 * @return bool
+	 */
+	function caIsValidMediaUploadMode(string $mode, array $options=null) : bool {
+		$available_modes = caGetAvailableMediaUploadModes($options);
+		return in_array($mode, $available_modes, true);
+	}
+	# ------------------------------------------------------

@@ -563,6 +563,10 @@
 		    $vb_delete_media_on_import = (bool) $pa_options['deleteMediaOnImport'];
 
 		    $vs_import_mode = $pa_options['importMode'];
+		    if(!caIsValidMediaUploadMode($vs_import_mode)) {
+		    	throw new ApplicationException(_t('Invalid import mode %1', $vs_import_mode));
+		    }
+		    
 		    $vs_match_mode  = $pa_options['matchMode'];
 		    $vs_match_type  = $pa_options['matchType'];
 		    $vn_type_id     = $pa_options[ $vs_import_target.'_type_id' ];
