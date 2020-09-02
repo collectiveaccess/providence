@@ -259,3 +259,5 @@
 # --- Media uploader errors
 3600 = Storage allocation exceeded
 3605 = Server connection limit exceeded
+3610 = Per-session file count limit exceeded
+3615 = Maximum file size limit exceeded

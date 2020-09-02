@@ -81,7 +81,7 @@ class MediaUploadManager {
     static public function findSession($key, $user_id=null) {
         if(!$key) { throw new MediaUploadSessionDoesNotExistException(_t('Empty session')); }
 
-        if ($s = ca_media_upload_sessions::findAsInstance(['session_key' => $key])) {
+        if ($s = ca_media_upload_sessions::findAsInstance(['session_key' => $key], ['noCache' => true])) {
         	if ($user_id && ($s->get('user_id') != $user_id)) { 
         		throw new MediaUploadSessionDoesNotExistException(_t('Session not found'));
         	}
@@ -291,12 +291,20 @@ class MediaUploadManager {
 				$session->set('last_activity_on', _t('now'));
 				$progress_data = $session->get('progress');
 				
-				$progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
-				$progress_data[$fileMeta['file_path']]['progressInBytes'] = $fileMeta['offset'];
-				$progress_data[$fileMeta['file_path']]['complete'] = false;
+				$fp = self::_partialToFinalPath($fileMeta['file_path']);
+			
+				$progress_data[$fp]['totalSizeInBytes'] = $fileMeta['size'];
+				$progress_data[$fp]['progressInBytes'] = $fileMeta['offset'];
+				$progress_data[$fp]['complete'] = false;
 				$session->set('progress', $progress_data);
-				$session->update();
 				
+				$config = Configuration::load();
+				$max_file_size = caParseHumanFilesize($config->get('media_uploader_max_file_size'));
+				if(($max_file_size > 0) && (($max_file_size < $fileMeta['size']) || ($max_file_size < $fileMeta['offset']))) {
+					$session->set('error_code', 3615); // limit for size of a single file exceeded
+				}
+				
+				$session->update();
 			}
 		});
 		$server->event()->addListener('tus-server.upload.complete', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
@@ -305,25 +313,37 @@ class MediaUploadManager {
 			$response = $event->getResponse();
 			$key = $request->header('x-session-key');
 
+			$fp = self::_partialToFinalPath($fileMeta['file_path']);
+				
 			// ...
 			if ($session = MediaUploadManager::findSession($key, $user_id)) {
 				$session->set('last_activity_on', _t('now'));
 				$session->set('progress_files', (int)$session->set('progress_files') + 1);
 				$progress_data = $session->get('progress');
-				$progress_data[$fileMeta['file_path']]['totalSizeInBytes'] = $fileMeta['size'];
-				$progress_data[$fileMeta['file_path']]['progressInBytes'] = $fileMeta['size'];
-				$progress_data[$fileMeta['file_path']]['complete'] = true;
+				
+				
+				$progress_data[$fp]['totalSizeInBytes'] = $fileMeta['size'];
+				$progress_data[$fp]['progressInBytes'] = $fileMeta['size'];
+				$progress_data[$fp]['complete'] = true;
 				$session->set('progress', $progress_data);
-				$session->update();
+				
 				if (PersistentCache::contains('userStorageStats_'.$user_id, 'mediaUploader')) {
 					$stats = PersistentCache::fetch('userStorageStats_'.$user_id, 'mediaUploader');
 					$stats['fileCount']++;
-					
+				
 					$stats['storageUsage'] += $fileMeta['size'];
 					$stats['storageUsageDisplay'] = caHumanFilesize($stats['storageUsage']);
-					
+				
 					PersistentCache::save('userStorageStats_'.$user_id, $stats, 'mediaUploader');
+				
+					$config = Configuration::load();
+					$max_num_files = (int)$config->get('media_uploader_max_files_per_session');
+					if (($max_num_files > 0) && (sizeof($progress_data) > $max_num_files)) {
+						// exceeded max files per session limit
+						$session->set('error_code', 3610);
+					}
 				}
+				$session->update();
 			}
 
 			// If subdirectory
@@ -338,11 +358,16 @@ class MediaUploadManager {
 					if(strlen($rel_path_dir = preg_replace('![^A-Za-z0-9\-_]+!', '_', $rel_path_dir))) {
 						if(file_exists($rel_path_dir)) { continue; }
 						$rel_path_proc[] = $rel_path_dir;
-						mkdir("{$path}/".join("/", $rel_path_proc));
+						@mkdir("{$path}/".join("/", $rel_path_proc));
 						$new_dir_count++;
 					}
 				}
-				@rename($fileMeta['file_path'], "{$path}/".join("/", $rel_path_proc)."/{$name}");
+				$name_proc = self::_partialToFinalPath($fileMeta['file_path'], ['nameOnly' => true]);
+				error_log("copy ".$fileMeta['file_path']);
+				error_log("to "."{$path}/".join("/", $rel_path_proc)."/{$name_proc}");
+				@rename($fileMeta['file_path'], "{$path}/".join("/", $rel_path_proc)."/{$name_proc}");
+			} else {
+				@rename($fileMeta['file_path'], $fp);
 			}
 			
 			if ($new_dir_count && PersistentCache::contains('userStorageStats_'.$user_id, 'mediaUploader')) {
@@ -352,6 +377,19 @@ class MediaUploadManager {
 			}
 		});
 		return $server;
+    }
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    static private function _partialToFinalPath(string $filepath, array $options=null) : string {
+    	$basepath = pathinfo($filepath, PATHINFO_DIRNAME);
+    	$basename = pathinfo($filepath, PATHINFO_BASENAME);
+    	
+    	$basename = preg_replace('!^\.{1}!', '', $basename);
+    	$basename = preg_replace('!\.part$!', '', $basename);
+    	
+    	return caGetOption('nameOnly', $options, false) ? $basename : $basepath.'/'.$basename;
     }
     # ------------------------------------------------------
 }

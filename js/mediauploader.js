@@ -14,6 +14,14 @@ const selector = providenceUIApps.mediauploader.selector;
 const endpoint = providenceUIApps.mediauploader.endpoint;
 let maxConcurrentUploads = providenceUIApps.mediauploader.maxConcurrentUploads;
 maxConcurrentUploads = ((maxConcurrentUploads === undefined) || (parseInt(maxConcurrentUploads) <= 0)) ? maxConcurrentUploads = 4 : parseInt(maxConcurrentUploads);
+let maxFileSize = providenceUIApps.mediauploader.maxFileSize;
+maxFileSize = ((maxFileSize === undefined) || (parseInt(maxFileSize) <= 0)) ? maxFileSize = 0 : parseInt(maxFileSize);
+let maxFilesPerSession = providenceUIApps.mediauploader.maxFilesPerSession;
+maxFilesPerSession = ((maxFilesPerSession === undefined) || (parseInt(maxFilesPerSession) <= 0)) ? maxFilesPerSession = 0 : parseInt(maxFilesPerSession);
+
+// Error types
+const ERR_RECOVERABLE = 1;
+const ERR_BLOCKING = 2;
 
 class MediaUploader extends React.Component {
     constructor(props) {
@@ -25,21 +33,26 @@ class MediaUploader extends React.Component {
             start: 'Starting upload',
             upload: 'Uploading files',
             complete: 'Upload complete',
-            userquota: 'User storage allocation exceeded',
-            systemquota: 'System storage allocation exceeded',
             error: 'Error'
+        };
+        
+        this.errorMessages = {
+        	userquota: 'User storage allocation exceeded',
+            sessionfilelimit: 'Limit of ' + maxFilesPerSession + ' files per upload exceeded',
+            filesizelimit: fileSize(maxFileSize, {round: 1, base: 10}) + ' file size limit exceeded',
+            systemquota: 'System storage allocation exceeded'
         };
 
         this.state = {
             filesSelected: 0,
             filesUploaded: 0,
             status: this.statusMessages['idle'],
-            uploadUrl: null,
-            upload: null,
             queue: [],
             connections: {},
             connectionIndex: 0,
             error: null,
+            errorMessage: null,
+            errorType: null,
 
             recentList: [],
 
@@ -65,8 +78,12 @@ class MediaUploader extends React.Component {
         this.resumeUploads = this.resumeUploads.bind(this);
         this.deleteUpload = this.deleteUpload.bind(this);
         this.deleteQueuedUpload = this.deleteQueuedUpload.bind(this);
+        this.resetQueue = this.resetQueue.bind(this);
+        this.checkQueue = this.checkQueue.bind(this);
         this.selectFiles = this.selectFiles.bind(this);
         this.statusMessage = this.statusMessage.bind(this);
+        this.setError = this.setError.bind(this);
+        this.clearError = this.clearError.bind(this);
         this.checkSession = this.checkSession.bind(this);
         this.numConnections = this.numConnections.bind(this);
         this.getRecentListData = this.getRecentListData.bind(this);
@@ -81,19 +98,26 @@ class MediaUploader extends React.Component {
      * @param Event e
      */
     selectFiles(e) {
-        let state = this.state;
+    	let queue = [...this.state['queue']];
         if(e.target) {  // From <input type="file" ... />
-            state['queue'].push(...e.target.files);
+            queue.push(...e.target.files);
         } else {        // From dropzone
-            state['queue'].push(...e);
+            queue.push(...e);
         }
-        state['queue'] = state['queue'].filter(f => f.size > 0);
+        queue = queue.filter(f => f.size > 0);
 
-        if (state['queue'].length > 0) {
-            this.statusMessage('ready');
-        }
-        state.error = '';
-        this.setState(state);
+		this.setState({queue: queue});
+		
+		if (this.checkQueue()) {
+			if (queue.length > 0) {
+				this.statusMessage('ready');
+			}
+			this.clearError();
+			
+			if (this.numConnections() > 0) {
+				this.processQueue();
+			}
+		}
     }
 
     /**
@@ -101,7 +125,7 @@ class MediaUploader extends React.Component {
      */
     processQueue() {
         let that = this;
-        let state = this.state;
+        let state = {...this.state};
         let queue = state.queue;
         if (!queue) return;
 
@@ -134,7 +158,7 @@ class MediaUploader extends React.Component {
                 retryDelays: [0, 1000, 3000, 5000],
                 chunkSize: 1024 * 512,      // TODO: make configurable
                 metadata: {
-                    filename: file.name,
+                    filename: '.' + file.name + '.part',
                     sessionKey: state.sessionKey,
                     relativePath: relPath
                 },
@@ -143,7 +167,7 @@ class MediaUploader extends React.Component {
 					xhr.setRequestHeader('x-session-key', state.sessionKey);
 				},
                 onError: (error) => {
-                    let state = that.state;
+                    let state = {...that.state};
 					// error during transfer
 					let error_resp = JSON.parse(error.originalResponse.getBody());
 					let error_msg = (error_resp && error_resp.error) ? error_resp.error : 'Unknown error';
@@ -154,7 +178,7 @@ class MediaUploader extends React.Component {
 						that.statusMessage(error_state);
 						state.error = error_msg;
 					}
-                     console.log("Error:", error_msg);
+                    console.log("Error:", error_msg);
                     if(state.connections[connectionIndex]) {
                         state.connections[connectionIndex]['status'] = error_msg;
                         state.connections[connectionIndex]['uploadedBytes'] = 0;
@@ -167,7 +191,7 @@ class MediaUploader extends React.Component {
                     }
                 },
                 onProgress: (uploadedBytes, totalBytes) => {
-                    let state = that.state;
+                    let state = {...that.state};
                     if(state.connections[connectionIndex]) {
                         state.connections[connectionIndex]['totalBytes'] = totalBytes;
                         state.connections[connectionIndex]['uploadedBytes'] = uploadedBytes;
@@ -175,7 +199,7 @@ class MediaUploader extends React.Component {
                     }
                 },
                 onAfterResponse: function (req, res) {
-                    let state = that.state;
+                    let state = {...that.state};
                     if (res.getHeader("storageAvailableDisplay")) {
 						state.storageUsageBytes = res.getHeader("storageUsage");
 						state.storageUsage = res.getHeader("storageUsageDisplay");
@@ -185,19 +209,20 @@ class MediaUploader extends React.Component {
 						state.storageDirectoryCount = res.getHeader("directoryCount");
 						
 						if (state.storageUsageBytes > state.storageAvailableBytes) {
-							that.statusMessage('userquota');
+							that.setError('userquota', ERR_BLOCKING);
 						}
                     	that.setState(state);
                     }
 				},
                 onSuccess: () => {
-                    let state = that.state;
-                    delete(state.connections[connectionIndex]);
+                    let connections = {...that.state.connections};
+                    let filesUploaded = that.state.filesUploaded;
+                    delete connections[connectionIndex];
 
+                    filesUploaded++;
+                    that.setState({connections: connections, filesUploaded: filesUploaded});
+                    
                     that.checkSession();
-                    state['filesUploaded']++;
-                    this.setState(state);
-
                     if(state.sessionKey) {
                         that.processQueue();
                     }
@@ -207,7 +232,7 @@ class MediaUploader extends React.Component {
             upload.findPreviousUploads().then((previousUploads) => {
               if(previousUploads.length > 0) {
                   let resumable = previousUploads.pop();    // Grab last discontinued upload to resume
-                  console.log('Resuming download: ', resumable);
+                  //console.log('Resuming download: ', resumable);
                   upload.resumeFromPreviousUpload(resumable);
               }
             });
@@ -223,36 +248,32 @@ class MediaUploader extends React.Component {
 
             i++;
         }
-
-
-
+        
         this.setState(state);
     }
 
+	/**
+     *
+     */
     init() {
-        let state = this.state;
         let that = this;
-
+        this.setState({sessionKey: null, filesUploaded: 0, filesSelected: 0, connectionIndex: 0});
         this.statusMessage('complete');
-
-        state.sessionKey = null;
-        state.filesUploaded = 0;
-        state.filesSelected = 0;
-        state.connectionIndex = 0;
-        this.setState(state);
 
         setTimeout(function() {
             that.statusMessage('idle');
         }, 3000);
     }
 
+	/**
+     *
+     */
     checkSession() {
-        let state = this.state;
         let that = this;
-        if((Object.keys(state.connections).length === 0) && state.sessionKey) {
+        if((Object.keys(this.state.connections).length === 0) && this.state.sessionKey) {
             axios.post(that.props.endpoint + '/complete', {}, {
                 params: {
-                    key: state.sessionKey
+                    key: that.state.sessionKey
                 }
             }).then(function(response) {
                 // Refresh recent uploads list
@@ -266,16 +287,15 @@ class MediaUploader extends React.Component {
      *
      */
     start() {
-        let state = this.state;
         let that = this;
 
-        if(state.paused === true) {
+        if(this.state.paused === true) {
             this.resumeUploads();
             return;
         }
 
         // Get session key and start upload
-        if(state.sessionKey === null) {
+        if(this.state.sessionKey === null) {
             this.statusMessage('start');
             axios.post(this.props.endpoint + '/session', {}, {
                 params: {
@@ -283,39 +303,54 @@ class MediaUploader extends React.Component {
                     size: this.queueFilesize()
                 }
             }).then(function (response) {
-                state.sessionKey = response.data.key;
-                state.filesUploaded = 0;
-                state.filesSelected = that.queueLength();
-                
-                if(response.data.storageAvailableDisplay) {
-					state.storageUsage = response.data.storageUsageDisplay;
-					state.storageUsageBytes = response.data.storageUsage;
-					state.storageAvailable = response.data.storageAvailableDisplay;
-					state.storageAvailableBytes = response.data.storageAvailable;
-					state.storageFileCount = response.data.fileCount;
-					state.storageDirectoryCount = response.data.storageDirectoryCount;
+            	if(parseInt(response.data.ok) === 1) {
+					let state = {
+						sessionKey: response.data.key,
+						filesUploaded: 0,
+						filesSelected: that.queueLength()
+					};
 					
-					if (state.storageUsageBytes > state.storageAvailableBytes) {
-						that.statusMessage('userquota');
+					if(response.data.storageAvailableDisplay) {
+						state.storageUsage = response.data.storageUsageDisplay;
+						state.storageUsageBytes = response.data.storageUsage;
+						state.storageAvailable = response.data.storageAvailableDisplay;
+						state.storageAvailableBytes = response.data.storageAvailable;
+						state.storageFileCount = response.data.fileCount;
+						state.storageDirectoryCount = response.data.storageDirectoryCount;
+					
+						if (state.storageUsageBytes > state.storageAvailableBytes) {
+							that.setError('userquota', ERR_BLOCKING);
+						}
 					}
+					that.setState(state);
+
+					that.statusMessage('upload');
+
+					that.processQueue();
+				} else {
+					that.setError('sessionfilelimit', ERR_RECOVERABLE);
 				}
-                that.setState(state);
-
-                that.statusMessage('upload');
-
-                that.processQueue();
             });
         }
     }
 
+	/**
+     *
+     */
     queueLength() {
         return this.state['queue'].length;
     }
 
+	/**
+     *
+     */
     queueFilesize() {
         return this.state['queue'].reduce((acc, cv) => acc + parseInt(cv.size) , 0);
     }
 
+	/**
+     *
+     */
     numConnections() {
         return Object.keys(this.state.connections).length;
     }
@@ -331,24 +366,28 @@ class MediaUploader extends React.Component {
      *
      */
     pauseUpload(connectionIndex) {
+        this.setState({paused: true});
         this.state.connections[connectionIndex].upload.abort();
     }
 
+	/**
+     *
+     */
     resumeUploads() {
-        let state = this.state;
-        state.paused = false;
+        this.setState({paused: false});
         for(let connectionIndex in this.state.connections) {
-            state.connections[connectionIndex].upload.start();
+            this.state.connections[connectionIndex].upload.start();
         }
-        this.setState(state);
     }
+
+	/**
+     *
+     */
     pauseUploads() {
-        let state = this.state;
-        state.paused = true;
+        this.setState({paused: true});
         for(let connectionIndex in this.state.connections) {
-            state.connections[connectionIndex].upload.abort();
+            this.state.connections[connectionIndex].upload.abort();
         }
-        this.setState(state);
     }
 
     /**
@@ -357,9 +396,43 @@ class MediaUploader extends React.Component {
      * @param index
      */
     deleteQueuedUpload(index) {
-        let state = this.state;
-        delete state['queue'][index];
-        this.setState(state);
+        let queue = [ ...this.state.queue ];
+        queue.splice(index, 1);
+        this.setState({queue: queue});
+       	this.checkQueue(queue);
+    }
+    
+    /**
+     * Remove all items from queue
+     */
+    resetQueue() {
+        this.setState({queue: []});
+        this.checkQueue([]);
+    }
+    
+    /**
+     *
+     */
+    checkQueue(currentQueue=null) {
+    	let queue = currentQueue ? currentQueue : this.state.queue;
+    	if (maxFilesPerSession > 0) {
+    		if (queue.length > maxFilesPerSession) {
+    			this.setError('sessionfilelimit', ERR_BLOCKING);
+    			return false;
+    		} else {
+    			this.clearError('sessionfilelimit');
+    		}
+    	}
+    	if (maxFileSize > 0) {
+    		let q = queue.filter((item) => { console.log("i", item); return (item.size > maxFileSize); });
+    		if (q.length > 0) {
+    			this.setError('filesizelimit', ERR_BLOCKING);
+    			return false;
+    		} else {
+    			this.clearError('filesizelimit');
+    		}
+    	}
+    	return true;
     }
 
     /**
@@ -368,31 +441,62 @@ class MediaUploader extends React.Component {
      * @param index
      */
     deleteUpload(connectionIndex) {
-        let state = this.state;
-        state.connections[connectionIndex].upload.abort();
-        delete state['connections'][connectionIndex];
-        this.setState(state);
+        this.state.connections[connectionIndex].upload.abort();
+        
+        let connections = {...this.state['connections']};
+        delete connections[connectionIndex];
+        this.setState({connections: connections} );
         this.checkSession();// is session over now?
+        this.checkQueue();
     }
 
     statusMessage(stage) {
-        let state = this.state;
+    	let status = '';
         if(this.statusMessages[stage]) {
-            state.status =  this.statusMessages[stage];
-        } else {
-            state.status = '';
-        }
-        this.setState(state);
-        return state.status;
+            status =  this.statusMessages[stage];
+        } 
+        this.setState({status: status});
+        return status;
+    }
+    
+    setError(error, type) {
+    	let errorMessage = '';
+        if(this.errorMessages[error]) {
+       		errorMessage = this.errorMessages[error];
+       	} else {
+       		console.log('Invalid error state', error);
+       		return false;
+       	}
+       	if ((type !== ERR_BLOCKING) && (type !== ERR_RECOVERABLE)) {
+       		console.log('Invalid error type', type);
+       		return false;
+       	}
+       	
+        this.setState({error: error, errorMessage: errorMessage, errorType: type, status: this.statusMessages['error']});
+        return errorMessage;
+    }
+    
+    /**
+     *
+     */
+    clearError(error=null) {
+    	if((error === null) || (this.state.error === error)) {
+    		this.setState({error: null, errorMessage: null, errorType: null});
+    		this.statusMessage('READY');
+    	}
     }
 
+	/**
+     *
+     */
     getRecentListData() {
         let that = this;
         axios.post(this.props.endpoint + '/recent', {}, {
             params: {}
         }).then(function(response) {
-            let state = that.state;
-            state.recentList = response.data.recent;
+            let state = {
+            	recentList: response.data.recent
+            };
             
             if (response.data.storageAvailableDisplay) {
 				state.storageUsage = response.data.storageUsageDisplay;
@@ -403,7 +507,7 @@ class MediaUploader extends React.Component {
 				state.storageDirectoryCount = response.data.directoryCount;
 				
 				if (state.storageUsageBytes > state.storageAvailableBytes) {
-					that.statusMessage('userquota');
+					that.setError('userquota', ERR_BLOCKING);
 				}
 			}
             that.setState(state);
@@ -415,13 +519,16 @@ class MediaUploader extends React.Component {
      *
      */
   render() {
-  	let storageUsage = this.state.storageUsage;
-  	let storageAvailable = this.state.storageAvailable;
-  	let storageUsageBytes = this.state.storageUsageBytes;
-  	let storageAvailableBytes = this.state.storageAvailableBytes;
-  	let fileCount = this.state.storageFileCount;
-  	let directoryCount = this.state.storageDirectoryCount;
+  	const storageUsage = this.state.storageUsage;
+  	const storageAvailable = this.state.storageAvailable;
+  	const storageUsageBytes = this.state.storageUsageBytes;
+  	const storageAvailableBytes = this.state.storageAvailableBytes;
+  	const fileCount = this.state.storageFileCount;
+  	const directoryCount = this.state.storageDirectoryCount;
+  	
+  	const showStartControl = ((this.queueLength() + this.numConnections()) > 0) && !this.state.error;
   
+  	const disableUploads = (this.state.errorType === ERR_BLOCKING);
     return (
         <div>
         	<MediaUploaderStats 
@@ -436,7 +543,7 @@ class MediaUploader extends React.Component {
               <div className="col-md-11">
                   <div className="row mediaUploaderDropZone">
                       <div className="col-md-6 offset-md-4 mt-3">
-                          <Dropzone multiple={true} onDrop={acceptedFiles => {this.selectFiles(acceptedFiles)}}>
+                          <Dropzone multiple={true} onDrop={acceptedFiles => {this.selectFiles(acceptedFiles)}} disabled={disableUploads}>
                               {({getRootProps, getInputProps}) => (
                                   <div {...getRootProps()} className='row mediaUploaderDropZoneInput'>
                                       <div className='col-md-2'>
@@ -455,13 +562,13 @@ class MediaUploader extends React.Component {
           </div>
           <div className="row">
               <div className="col-md-11 mt-1">
-                  <h4 className="mediaUploaderError">{this.state.error}</h4>
+                  <h4 className="mediaUploaderError">{this.state.errorMessage}</h4>
               </div>
           </div>
           <div className="row">
 			 <div className="col-md-2">
-				 <span className="mr-2">{((this.queueLength() + this.numConnections()) > 0) ? <Button variant="primary" onClick={this.start}><i className="fa fa-play-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
-				 <span>{(((this.queueLength() + this.numConnections()) > 0) && !this.state.paused) ? <Button variant="outline-secondary" onClick={this.pauseUploads}><i className="fa fa-pause-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
+				 <span className="mr-2">{showStartControl ? <Button variant="primary" onClick={this.start}><i className="fa fa-play-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
+				 <span>{(showStartControl && !this.state.paused) ? <Button variant="outline-secondary" onClick={this.pauseUploads}><i className="fa fa-pause-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
 			  </div>
 			 <div className="col-md-9">
 				<h4 className="mediaUploaderStatus float-right">{this.state.status}</h4>
@@ -479,7 +586,7 @@ class MediaUploader extends React.Component {
             </div>
             <div className="row mt-3">
               <div className="col-md-11">
-                  <MediauploaderQueueList queue={this.state.queue} deleteCallback={this.deleteQueuedUpload}/>
+                  <MediauploaderQueueList queue={this.state.queue} deleteCallback={this.deleteQueuedUpload} resetQueueCallback={this.resetQueue}/>
               </div>
             </div>
             <div className="row mt-3">
@@ -516,7 +623,7 @@ class MediauploaderUploadList extends React.Component {
     render() {
         let items = [];
         for(let i in this.props.uploads) {
-            items.push(<MediauploaderUploadItem item={this.props.uploads[i]} index={i} deleteCallback={this.props.deleteCallback}/>);
+            items.push(<MediauploaderUploadItem key={i} item={this.props.uploads[i]} index={i} deleteCallback={this.props.deleteCallback}/>);
         }
         if(items.length > 0) {
             return <div>
@@ -558,15 +665,20 @@ class MediauploaderQueueList extends React.Component {
     constructor(props) {
         super(props);
     }
+    
     render() {
         let items = [];
         for(let i in this.props.queue) {
-            items.push(<MediauploaderQueueItem item={this.props.queue[i]} index={i} deleteCallback={this.props.deleteCallback}/>);
+            items.push(<MediauploaderQueueItem key={i} item={this.props.queue[i]} index={i} deleteCallback={this.props.deleteCallback}/>);
         }
 
         if (items.length > 0) {
             return <div>
-                <h2>Queued ({items.length})</h2>
+                <h2>
+                	Queued ({items.length})
+                	<Button variant="outline-secondary" className="mediaUploaderQueueItemDelete" onClick={this.props.resetQueueCallback}><i className="fa fa-trash"
+                                                                             aria-hidden="true"></i></Button>
+                </h2>
                 <div style={ {columnCount: 3} }>
                     {items}
                 </div>
@@ -619,7 +731,7 @@ class MediauploaderRecentsList extends React.Component {
     render() {
         let items = [];
         for(let i in this.props.sessions) {
-            items.push(<MediauploaderRecentItem item={this.props.sessions[i]}/>);
+            items.push(<MediauploaderRecentItem key={i} item={this.props.sessions[i]}/>);
         }
 
         if(items.length > 0) {
@@ -667,7 +779,7 @@ class MediauploaderRecentItem extends React.Component {
             statusClass = 'badge badge-warning pull-right';
         }
 
-        return <div className="col-md-3 mt-3">
+        return <div className="col-md-4 mt-4">
                 <div className="card mediaUploaderRecentItem">
                     <div className="card-body">
                         <div
@@ -705,7 +817,7 @@ class MediaUploaderStats extends React.Component {
 	return ReactDOM.createPortal(
 		<div className="row">
 			<div className="col-md-12">
-				{() => { return storageExceeded ? (<div className="mediaUploaderStorageHeading">Storage</div>) : ''}}
+				{storageExceeded ? (<div className="mediaUploaderStorageHeading">Storage</div>) : null}
 				<div className="mediaUploaderStorageError">{storageExceeded}</div>
 				<ul className="mediaUploaderInfo">
 					<li>Available: {storageAvailable}</li>

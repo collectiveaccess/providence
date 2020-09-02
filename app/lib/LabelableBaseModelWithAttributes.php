@@ -1011,7 +1011,7 @@
 					while($qr_res->nextRow()) {
 						$o_instance = new $vs_table;
 						if($dont_filter_by_acl && method_exists($t_instance, "disableACL")) { $o_instance->disableACL(true); }
-						if ($o_instance->load($qr_res->get($vs_pk))) {
+						if ($o_instance->load($qr_res->get($vs_pk), !caGetOption('noCache', $pa_options, false))) {
 							return $o_instance;
 						}
 					}

@@ -228,4 +228,14 @@ class ca_media_upload_sessions extends BaseModel {
 		return ($completed_on > 0) ? $completed_on : false;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded upload is marked as errored
+	 *
+	 * @return int Error code, or false if no error
+	 */
+	public function hasError() {
+		if(!$this->isLoaded()) { return null; }
+		return ($error_code = (int)$this->get('error_code')) ? $error_code : false;
+	}
+	# ------------------------------------------------------
 }

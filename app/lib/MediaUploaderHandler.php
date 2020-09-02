@@ -46,23 +46,29 @@ class MediaUploaderHandler implements TusMiddleware {
 		try {
 			$session = MediaUploadManager::findSession($session_key);
 			if((int)$session->get('cancelled') == 1) {
-				throw new MediaUploadManageSessionException('Upload has been cancelled');
+				throw new MediaUploadManageSessionException(_t('Upload has been cancelled'));
 			}
 			if(strlen($session->get('completed_on')) > 0) {
-				throw new MediaUploadManageSessionException('Upload is complete. No further data can be accepted.');
+				throw new MediaUploadManageSessionException(_t('Upload is complete'));
+			}
+			if($error_num = $session->hasError()) {
+				throw new MediaUploadManageSessionException(_t('Error: %1', caGetErrorMessage($error_num)));
 			}
 		} catch (MediaUploadSessionDoesNotExistException $e) {
 			throw new MediaUploadManageSessionException('Invalid session key: '.$session_key);
 		}
 		
 		// Check available storage
-		$stats = caGetUserMediaStorageUsageStats(null, ['noCache' => (rand(0,100) === 50)]);
+		$stats = caGetUserMediaStorageUsageStats(null, ['noCache' => $no_cache = (rand(0,100) === 50)]);
 	
 		if ($stats['storageUsage'] > $stats['storageAvailable']) {
-			$session = MediaUploadManager::findSession($session_key);
-			$session->set('error_code', 3600);
-			$session->update();
-			throw new MediaUploadManageSessionException('User storage quota exceeded');
+			$stats = !$no_cache ? caGetUserMediaStorageUsageStats(null, ['noCache' => true]) : $stats;	// check one more time if decision was based upon cached statd
+			if ($stats['storageUsage'] > $stats['storageAvailable']) {
+				$session = MediaUploadManager::findSession($session_key);
+				$session->set('error_code', 3600);
+				$session->update();
+				throw new MediaUploadManageSessionException('User storage quota exceeded');
+			}
 		}
 	
 		unset($stats['storageUsage']);
@@ -75,7 +81,7 @@ class MediaUploaderHandler implements TusMiddleware {
         	$session = MediaUploadManager::findSession($session_key);
 			$session->set('error_code', 3605);
 			$session->update();
-			throw new MediaUploadManageSessionException('Server connection limit exceeded. Please try again later.');
+			throw new MediaUploadManageSessionException('Server connection limit exceeded, please try again later');
         }       
     }
 }

@@ -87,6 +87,19 @@
             	$response = $server->serve();
            		$response->send();
            	} catch(Exception $e) {
+           		// Delete all files
+           		$request = $server->getRequest();
+           		$key = $request->header('x-session-key');
+
+				if ($session = MediaUploadManager::findSession($key, $user_id)) {
+					if(is_array($progress_data = $session->get('progress'))) {
+						foreach(array_keys($progress_data) as $f) {
+							@unlink($f);
+						}	
+					}
+				}
+           	
+           		// Return error
            		AppController::getInstance()->removeAllPlugins();
            		http_response_code(401);
            		header("Tus-Resumable: 1.0.0");
@@ -107,6 +120,10 @@
  		    $errors = [];
  		    if ($num_files < 1) {
  		        $errors[] = _t('Invalid file count');
+ 		    }
+ 		    $max_num_files = (int)$this->request->config->get('media_uploader_max_files_per_session');
+ 		    if (($max_num_files > 0) && ($num_files > $max_num_files)) {
+ 		    	$errors[] = _t('A maximum of %1 files may be uploaded at once. Try again with fewer files.', $max_num_files);
  		    }
  		    if ($size < 1) {
                 $errors[] = _t('Invalid size');
