@@ -12,6 +12,8 @@ axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 const selector = providenceUIApps.mediauploader.selector;
 const endpoint = providenceUIApps.mediauploader.endpoint;
+
+// Settings from invocation
 let maxConcurrentUploads = providenceUIApps.mediauploader.maxConcurrentUploads;
 maxConcurrentUploads = ((maxConcurrentUploads === undefined) || (parseInt(maxConcurrentUploads) <= 0)) ? maxConcurrentUploads = 4 : parseInt(maxConcurrentUploads);
 let maxFileSize = providenceUIApps.mediauploader.maxFileSize;
@@ -38,7 +40,7 @@ class MediaUploader extends React.Component {
         
         this.errorMessages = {
         	userquota: 'User storage allocation exceeded',
-            sessionfilelimit: 'Limit of ' + maxFilesPerSession + ' files per upload exceeded',
+            sessionfilelimit: 'Limit of ' + this.props.maxFilesPerSession + ' files per upload exceeded',
             filesizelimit: fileSize(maxFileSize, {round: 1, base: 10}) + ' file size limit exceeded',
             systemquota: 'System storage allocation exceeded'
         };
@@ -46,19 +48,19 @@ class MediaUploader extends React.Component {
         this.state = {
             filesSelected: 0,
             filesUploaded: 0,
-            status: this.statusMessages['idle'],
-            queue: [],
-            connections: {},
-            connectionIndex: 0,
-            error: null,
-            errorMessage: null,
-            errorType: null,
+            status: this.statusMessages['idle'],	/* Current status code; determined status message to be displayed */
+            queue: [],					/* List of pending uploads */
+            connections: {},			/* List of open tus upload connections */
+            connectionIndex: 0,			/* Index/key for next connection; changes for each allocated connection */	
+            error: null,				/* Current symbolic error code (Ex. 'userquota', 'filesizelimit') */
+            errorMessage: null,			/* Current error message for display */
+            errorType: null,			/* Numeric error type; ERR_RECOVERABLE (1) = Resolvable by user; ERR_BLOCKING (2) = Fatal, don't allow upload */
 
             recentList: [],
 
             paused: false,
 
-            sessionKey: null,
+            sessionKey: null,			/* Unique identifier for current upload session */
             
             storageUsage: '-',
             storageUsageBytes: 0,
@@ -88,7 +90,7 @@ class MediaUploader extends React.Component {
         this.numConnections = this.numConnections.bind(this);
         this.getRecentListData = this.getRecentListData.bind(this);
 
-        this.getRecentListData();
+        this.getRecentListData();	// load recent uploads for display
         
     }
 
@@ -121,7 +123,7 @@ class MediaUploader extends React.Component {
     }
 
     /**
-     *
+     * Main loop to create new uploads from user-selected files
      */
     processQueue() {
         let that = this;
@@ -153,6 +155,7 @@ class MediaUploader extends React.Component {
                 relPath  = tmp.join('/');
             }
 
+			// Set up tus upload process for file, with handlers for success, error and progress
             let upload = new tus.Upload(file, {
                 endpoint: this.props.endpoint + '/tus',
                 retryDelays: [0, 1000, 3000, 5000],
@@ -229,6 +232,7 @@ class MediaUploader extends React.Component {
                 }
             });
 
+			// Try to resume upload if possible
             upload.findPreviousUploads().then((previousUploads) => {
               if(previousUploads.length > 0) {
                   let resumable = previousUploads.pop();    // Grab last discontinued upload to resume
@@ -253,7 +257,9 @@ class MediaUploader extends React.Component {
     }
 
 	/**
+     * Initialize UI with selection and message defaults
      *
+     * @return void
      */
     init() {
         let that = this;
@@ -266,7 +272,9 @@ class MediaUploader extends React.Component {
     }
 
 	/**
+     * Close session and reset UI if nothing more queued for upload
      *
+     * @return void
      */
     checkSession() {
         let that = this;
@@ -284,7 +292,9 @@ class MediaUploader extends React.Component {
     }
 
     /**
+     * Start upload process
      *
+     * @return void
      */
     start() {
         let that = this;
@@ -294,7 +304,7 @@ class MediaUploader extends React.Component {
             return;
         }
 
-        // Get session key and start upload
+        // Get session key and begin upload
         if(this.state.sessionKey === null) {
             this.statusMessage('start');
             axios.post(this.props.endpoint + '/session', {}, {
@@ -335,43 +345,60 @@ class MediaUploader extends React.Component {
     }
 
 	/**
+     * Return number of files queued for upload
      *
+     * @return int
      */
     queueLength() {
         return this.state['queue'].length;
     }
 
 	/**
+     * Return total size of files queued for upload
      *
+     * @return int
      */
     queueFilesize() {
         return this.state['queue'].reduce((acc, cv) => acc + parseInt(cv.size) , 0);
     }
 
 	/**
+     * Return number of open upload connections
      *
+     * @return int
      */
     numConnections() {
         return Object.keys(this.state.connections).length;
     }
 
     /**
+     * Start upload of specific connection
      *
+     * @param int connectionIndex Index/key of connection to start
+     * @return bool True if connectionIndex is valid
      */
     startUpload(connectionIndex) {
+    	if(!this.state.connections[connectionIndex]) { return false; }
         this.state.connections[connectionIndex].upload.start();
+        return true;
     }
 
     /**
+     * Pause upload of specific connection
      *
+     * @param int connectionIndex Index/key of connection to pause
+     * @return bool True if connectionIndex is valid
      */
     pauseUpload(connectionIndex) {
+    	if(!this.state.connections[connectionIndex]) { return false; }
         this.setState({paused: true});
         this.state.connections[connectionIndex].upload.abort();
     }
 
 	/**
+     * Resume upload on all open collections
      *
+     * @return void
      */
     resumeUploads() {
         this.setState({paused: false});
@@ -381,7 +408,9 @@ class MediaUploader extends React.Component {
     }
 
 	/**
+     * Pause upload of all open collections
      *
+     * @return void
      */
     pauseUploads() {
         this.setState({paused: true});
@@ -391,9 +420,11 @@ class MediaUploader extends React.Component {
     }
 
     /**
-     * Remove item from queue
+     * Remove specified item from queue
      *
-     * @param index
+     * @param int index Index in queue of item to remove
+     *
+     * @return void
      */
     deleteQueuedUpload(index) {
         let queue = [ ...this.state.queue ];
@@ -404,6 +435,8 @@ class MediaUploader extends React.Component {
     
     /**
      * Remove all items from queue
+     *
+     * @return void
      */
     resetQueue() {
         this.setState({queue: []});
@@ -411,20 +444,30 @@ class MediaUploader extends React.Component {
     }
     
     /**
+     * Trigger error states as needed for the current queue state. Two error states 
+     * are checked for:
      *
+     *	1. sessionfilelimit limits how many files may be added in a single upload session. 
+     *		If the queue length + number of open connections is greater than the limit an 
+     *		error is triggered here.
+     *
+     *  2. filesizelimit limits how large any single file in an upload session can be. 
+     *		If any file exceeds the configured threshold an error is triggered here.
+     *
+     * @return bool True if queue is ok, false if error was triggered
      */
     checkQueue(currentQueue=null) {
     	let queue = currentQueue ? currentQueue : this.state.queue;
-    	if (maxFilesPerSession > 0) {
-    		if (queue.length > maxFilesPerSession) {
+    	if (this.props.maxFilesPerSession > 0) {
+    		if (this.queueLength() + this.numConnections() > this.props.maxFilesPerSession) {
     			this.setError('sessionfilelimit', ERR_BLOCKING);
     			return false;
     		} else {
     			this.clearError('sessionfilelimit');
     		}
     	}
-    	if (maxFileSize > 0) {
-    		let q = queue.filter((item) => { console.log("i", item); return (item.size > maxFileSize); });
+    	if (this.props.maxFileSize > 0) {
+    		let q = queue.filter((item) => { return (item.size > this.props.maxFileSize); });
     		if (q.length > 0) {
     			this.setError('filesizelimit', ERR_BLOCKING);
     			return false;
@@ -436,11 +479,14 @@ class MediaUploader extends React.Component {
     }
 
     /**
-     * Remove running upload
+     * Abort and remove running upload connection
      *
-     * @param index
+     * @param int connectionIndex Index/key for upload to remove
+     *
+     * @return string bool True if successful
      */
     deleteUpload(connectionIndex) {
+    	if(!this.state.connections[connectionIndex]) { return false; }
         this.state.connections[connectionIndex].upload.abort();
         
         let connections = {...this.state['connections']};
@@ -450,6 +496,14 @@ class MediaUploader extends React.Component {
         this.checkQueue();
     }
 
+	/**
+	 * Set status message for display
+	 *
+	 * @param string stage Upload process status. Can be one of the following:
+	 *		 idle, ready, start, upload, complete, error
+	 *		
+	 * @return string Text of status message to display
+	 */
     statusMessage(stage) {
     	let status = '';
         if(this.statusMessages[stage]) {
@@ -459,6 +513,18 @@ class MediaUploader extends React.Component {
         return status;
     }
     
+    /**
+	 * Set error message and type. Message is displayed to end user, and type is employed
+	 * to determine how much of the UI to make responsive due to the error state.
+	 *
+	 * @param string error Error code. Can be one of the following:
+	 *		userquota, sessionfilelimit, filesizelimit, systemquota
+	 * @param int type Type of error. Can be one of the following:
+	 *		ERR_RECOVERABLE (1) = User can use UI to clear error state
+	 *		ERR_BLOCKING (2) = Error state is not user-recoverable; UI is locked
+	 *
+	 * @return string Error message to display; error if invalid error state is passed.
+	 */
     setError(error, type) {
     	let errorMessage = '';
         if(this.errorMessages[error]) {
@@ -477,7 +543,13 @@ class MediaUploader extends React.Component {
     }
     
     /**
+     * Clear error message. If error parameter is passed, only the specified message will 
+     * be cleared if it is present.
      *
+     * @param string error Optional error state to clear. If set, only the specified error 
+     *		is cleared if present. All other error states will be left in as-is.
+     *
+     * @return void
      */
     clearError(error=null) {
     	if((error === null) || (this.state.error === error)) {
@@ -487,7 +559,9 @@ class MediaUploader extends React.Component {
     }
 
 	/**
-     *
+     * Fetch recent upload list from the server
+     * 
+     * @return void
      */
     getRecentListData() {
         let that = this;
@@ -832,4 +906,4 @@ class MediaUploaderStats extends React.Component {
   }
 }
 
-ReactDOM.render(<MediaUploader maxConcurrentConnections={maxConcurrentUploads} endpoint={endpoint}/>, document.querySelector(selector));
+ReactDOM.render(<MediaUploader maxConcurrentConnections={maxConcurrentUploads} maxFileSize={maxFileSize} maxFilesPerSession={maxFilesPerSession} endpoint={endpoint}/>, document.querySelector(selector));
