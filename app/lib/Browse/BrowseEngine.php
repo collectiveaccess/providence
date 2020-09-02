@@ -368,8 +368,8 @@
 			
 			$purifier = new HTMLPurifier();
 			foreach($pa_row_ids as $vn_i => $vn_row_id) {
-			    $vn_row_id = $purifier->purify(urldecode($vn_row_id)); // sanitize facet values
-				$va_criteria[$ps_facet_name][urldecode($vn_row_id)] = true;
+			    $vn_row_id = str_replace("&amp;", "&", $purifier->purify(rawurldecode($vn_row_id))); // sanitize facet values
+				$va_criteria[$ps_facet_name][$vn_row_id] = true;
 				
 				if (isset($pa_display_strings[$vn_i])) { $va_criteria_display_strings[$ps_facet_name][urldecode($vn_row_id)] = $pa_display_strings[$vn_i]; }
 			}
