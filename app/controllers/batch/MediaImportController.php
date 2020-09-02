@@ -139,11 +139,11 @@
 				'onchange' => 'window.location.replace("'.caNavUrl($this->getRequest(), $this->getRequest()->getModulePath(), $this->getRequest()->getController(), $this->getRequest()->getAction()) . '/target/" + jQuery("#caImportTargetSelect").val()); return false;'
 			), array('value' => $vs_import_target)));
 			
-			$this->view->setVar('import_mode', caHTMLSelect('import_mode', array(
-				_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
-				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
-				_t('Import all media, creating new records for each') => 'DONT_MATCH'
-			), array(), array('value' => $va_last_settings['importMode'])));
+			if(!sizeof($import_modes = caGetAvailableMediaUploadModes())) {
+				throw new ApplicationException(_t('No import modes are configured. Check the application configuration <em>media_importer_allowed_modes</em> setting and make sure at least one valid mode is set.'));
+			}
+			
+			$this->view->setVar('import_mode', caHTMLSelect('import_mode', $import_modes, array(), array('value' => $va_last_settings['importMode'])));
 			
 			$this->view->setVar('match_mode', caHTMLSelect('match_mode', array(
 				_t('Match using file name') => 'FILE_NAME',
@@ -541,7 +541,14 @@
  			if(file_exists($path = "{$tmp_dir}/{$file}.csv")) {
  				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  				$o_view->setVar('archive_path', $path);
- 				$o_view->setVar('archive_name', (strpos($path, "SkipLog") !== false) ? "skipped_files_log.csv" : "error_log.csv");
+ 				
+ 				$file_name = 'error_log.csv';
+ 				if (strpos($path, "SkipLog") !== false) {
+ 					$file_name = 'skipped_files_log.csv';
+ 				} else if(strpos($path, "ProcessingLog") !== false) {
+ 					$file_name = 'processing_log.csv';
+ 				} 
+ 				$o_view->setVar('archive_name', $file_name);
  				$this->response->addContent($o_view->render('download_file_binary.php'));
  				return;
  			} else {

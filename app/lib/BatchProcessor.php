@@ -563,6 +563,10 @@
 		    $vb_delete_media_on_import = (bool) $pa_options['deleteMediaOnImport'];
 
 		    $vs_import_mode = $pa_options['importMode'];
+		    if(!caIsValidMediaUploadMode($vs_import_mode)) {
+		    	throw new ApplicationException(_t('Invalid import mode %1', $vs_import_mode));
+		    }
+		    
 		    $vs_match_mode  = $pa_options['matchMode'];
 		    $vs_match_type  = $pa_options['matchType'];
 		    $vn_type_id     = $pa_options[ $vs_import_target.'_type_id' ];
@@ -640,7 +644,7 @@
 				    if ( ! $t_set->getPrimaryKey() ) {
 					    $t_set->setMode( ACCESS_WRITE );
 					    $t_set->set( 'user_id', $vn_user_id );
-					    $t_set->set( 'type_id', $o_config->get( 'ca_sets_default_type' ) );
+					    $t_set->set( 'type_id', $o_config->get('ca_sets_default_type'));
 					    $t_set->set( 'table_num', $t_instance->tableNum() );
 					    $t_set->set( 'set_code', $vs_set_code );
 
@@ -649,7 +653,7 @@
 						    $va_notices['create_set'] = array(
 							    'idno'    => '',
 							    'label'   => _t( 'Create set %1', $vs_set_create_name ),
-							    'message' => $vs_msg = _t( 'Failed to create set %1: %2', $vs_set_create_name,
+							    'message' => $vs_msg = _t('Failed to create set %1: %2', $vs_set_create_name,
 								    join( "; ", $t_set->getErrors() ) ),
 							    'file'    => '',
 							    'status'  => 'SET ERROR'
@@ -661,7 +665,7 @@
 							    $va_notices['add_set_label'] = array(
 								    'idno'    => '',
 								    'label'   => _t( 'Add label to set %1', $vs_set_create_name ),
-								    'message' => $vs_msg = _t( 'Failed to add label to set: %1',
+								    'message' => $vs_msg = _t('Failed to add label to set: %1',
 									    join( "; ", $t_set->getErrors() ) ),
 								    'file'    => '',
 								    'status'  => 'SET ERROR'
@@ -740,6 +744,8 @@
 			    $d      = array_pop( $va_tmp );
 			    array_push( $va_tmp, $d );
 			    $vs_directory = join( "/", $va_tmp );
+			    
+			    $is_new_record = false;
 
 			    $vn_c ++;
 
@@ -779,7 +785,7 @@
 			         && ( $t_dupe
 					    = ca_object_representations::mediaExists( $vs_file ) )
 			    ) {
-				    if ( ! is_array( $dupes_rel_ids = $t_dupe->get( $t_instance->primaryKey(),
+				    if ( ! is_array( $dupes_rel_ids = $t_dupe->get( $t_instance->primaryKey(true),
 						    [ 'returnAsArray' => true ] ) )
 				         || ( sizeof( $dupes_rel_ids ) === 0 )
 				    ) {
@@ -788,10 +794,10 @@
 					    $va_notices[ $vs_relative_directory . '/' . $f ] = array(
 						    'idno'    => '',
 						    'label'   => $f,
-						    'message' => $vs_msg = _t( 'Skipped %1 from %2 because it already exists %3', $f,
-							    $vs_relative_directory,
-							    $po_request ? caEditorLink( $po_request, _t( '(view)' ), 'button',
-								    'ca_object_representations', $t_dupe->getPrimaryKey() ) : '' ),
+						    'message' => $vs_msg = _t( 'Skipped %1 from %2 because it already exists as representation %3', $f,
+							    $vs_relative_directory, $t_dupe->get('ca_object_representations.idno')),
+							'reference' => ($po_request ? caEditorUrl( $po_request, 
+								    'ca_object_representations', $t_dupe->getPrimaryKey(), false, null, ['absolute' => true]) : ''),
 						    'file'    => $f,
 						    'status'  => 'EXISTS'
 					    );
@@ -1132,6 +1138,8 @@
 						    //$o_trans->rollback();
 						    continue;
 					    }
+					    
+					    $is_new_record = true;
 
 					    if ( $t_instance->tableName()
 					         == 'ca_entities'
@@ -1300,11 +1308,11 @@
 						    ] );
 				    }
 
+					$cur_idno = $t_instance->get($t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ));
 				    $va_notices[ $t_instance->getPrimaryKey() ] = array(
-					    'idno'    => $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ),
+					    'idno'    => $cur_idno,
 					    'label'   => $t_instance->getLabelForDisplay(),
-					    'message' => $vs_msg = _t( 'Imported %1 as %2', $f,
-						    $t_instance->get( $t_instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) ) ),
+					    'message' => $vs_msg = (!$is_new_record ? _t( 'Imported %1 into %2 %3 (%4)', $f, $t_instance->getProperty('NAME_SINGULAR'), $t_instance->getLabelForDisplay(), $cur_idno) : _t('Imported %1 into new %2', $f, $t_instance->getProperty('NAME_SINGULAR'))),
 					    'file'    => $f,
 					    'status'  => 'SUCCESS'
 				    );
@@ -1376,6 +1384,13 @@
 				    $o_log->logInfo( $vs_msg );
 			    }
 		    }
+		    
+		    if ($vb_delete_media_on_import) {
+		    	// Delete enclosing directory if empty
+		    	if(($c = caGetDirectoryContentsCount($batch_media_import_directory, true, true, ['returnAsTotal' => true])) === 0) {
+		    		@rmdir($batch_media_import_directory);
+		    	}
+		    }
 
 		    if ( isset( $pa_options['progressCallback'] ) && ( $ps_callback = $pa_options['progressCallback'] ) ) {
 			    $ps_callback( $po_request, $vn_num_items, $vn_num_items, _t( "Processing completed" ), null,
@@ -1385,40 +1400,58 @@
 		    // Write error and skip logs
 		    $r_err = fopen(
 			    $error_log = caGetTempFileName( "mediaImporterErrorLog", "csv", [ 'useAppTmpDir' => true ] ), "w" );
-		    fputcsv( $r_err, [ 'idno', 'file', 'message', 'status' ] );
+		    fputcsv( $r_err, [_t('Identifier'), _t('File'), _t('Message'), _t('Status')] );
 		    $r_skip = fopen(
 			    $skip_log = caGetTempFileName( "mediaImporterSkipLog", "csv", [ 'useAppTmpDir' => true ] ), "w" );
-		    fputcsv( $r_skip, [ 'file', 'message', 'status' ] );
+		    fputcsv( $r_skip, [_t('File'), _t('Message'), _t('Status'), _t('Reference')] );
+			$r_processing = fopen(
+			    $processing_log = caGetTempFileName( "mediaImporterProcessingLog", "csv", [ 'useAppTmpDir' => true ] ), "w" );
+		    fputcsv( $r_processing, [_t('Identifier'), _t('File'), _t('Message'), _t('Status'), _t('Reference')] );
 
 		    $error_count = $skip_count = 0;
+		    
 		    foreach ( $va_notices as $k => $notice ) {
 			    if ( in_array( $notice['status'], [ 'EXISTS', 'NO_MATCH' ] ) ) {
-				    fputcsv( $r_skip, [
+				    fputcsv( $r_skip, $log_entry = [
 					    'file'    => $notice['file'],
 					    'message' => strip_tags( $notice['message'] ),
-					    'status'  => $notice['status']
+					    'status'  => $notice['status'],
+					    'reference'  => isset($notice['reference']) ? $notice['reference'] : ''
 				    ] );
+				    fputcsv( $r_processing, array_merge(['idno' => ''], $log_entry) );
 				    $skip_count ++;
 			    }
 			    if ( $notice['status'] == 'ERROR' ) {
-				    fputcsv( $r_skip, [
+				    fputcsv( $r_skip, $log_entry = [
 					    'idno'    => $notice['idno'],
 					    'file'    => $notice['file'],
 					    'message' => strip_tags( $notice['message'] ),
 					    'status'  => $notice['status']
 				    ] );
+				    fputcsv( $r_processing, $log_entry );
 				    $skip_count ++;
+			    }
+			    
+			    if ($notice['status'] == 'SUCCESS') {
+			    	fputcsv( $r_processing, $log_entry = [
+					    'idno'    => $notice['idno'],
+					    'file'    => $notice['file'],
+					    'message' => strip_tags( $notice['message'] ),
+					    'status'  => $notice['status']
+				    ]);
 			    }
 		    }
 		    fclose( $r_skip );
 
 			foreach($va_errors as $k => $error) {
 				if ($error['status'] == 'ERROR') {
-					fputcsv($r_err, ['idno' => $error['idno'], 'file' => $error['file'], 'message' => $error['message'], 'status' => $error['status']]);
+					fputcsv($r_err, $log_entry = ['idno' => $error['idno'], 'file' => $error['file'], 'message' => $error['message'], 'status' => $error['status']]);
+					fputcsv( $r_processing, $log_entry );
 					$error_count++;
 				}
 			}		
 			fclose($r_err);
+			fclose($r_processing);
 			
 			
 
@@ -1433,7 +1466,8 @@
 					'set_id' => $t_set->getPrimaryKey(),
 					'setName' => $t_set->getLabelForDisplay(),
 					'errorlog' => ($error_count > 0) ? $error_log : null,
-					'skiplog' => ($skip_count > 0) ? $skip_log : null
+					'skiplog' => ($skip_count > 0) ? $skip_log : null,
+					'processingLog' => $processing_log
 				);
 				$ps_callback($po_request, $va_general, $va_notices, $va_errors);
 			}
@@ -1459,6 +1493,7 @@
 					if ($error_count > 0) { 
 						$attachments[] = ['path' => $error_log, 'name' => 'error_log.csv', 'mimetype' => 'text/csv'];
 					}
+					$attachments[] = ['path' => $processing_log, 'name' => 'processing_log.csv', 'mimetype' => 'text/csv'];
 				
 					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch media import completed', $po_request->config->get('app_display_name')), 'batch_media_import_completed.tpl',
 						array(

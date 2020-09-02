@@ -484,8 +484,8 @@
 		if (preg_match("!/\.\.!", $directory) || preg_match("!\.\./!", $directory)) {
 			return false;
 		}
-
-		if (is_dir($dir="{$batch_media_import_root_directory}{$directory}")) {
+		$directory = preg_replace('!^[/]+!', '', $directory);
+		if (is_dir($dir="{$batch_media_import_root_directory}/{$directory}")) {
 			return $dir;
 		}
 
@@ -585,7 +585,7 @@
 	 *
 	 * @return int
 	 */
-	function caGetUserMediaStorageUsage($user=null, array $options=null) {
+	function caGetUserMediaStorageUsage($user=null, array $options=null) : int {
 		global $g_request;
 		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
 			$user = $g_request->getUserID();
@@ -601,7 +601,7 @@
 	 *
 	 * @return int
 	 */
-	function caGetUserMediaStorageAvailable($user=null, array $options=null) {
+	function caGetUserMediaStorageAvailable($user=null, array $options=null) : int {
 		$config = Configuration::load();
 		global $g_request;
 		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
@@ -619,13 +619,20 @@
 	 *
 	 * @return array
 	 */
-	function caGetUserMediaStorageUsageStats($user=null, array $options=null) {
+	function caGetUserMediaStorageUsageStats($user=null, array $options=null) : array {
 		global $g_request;
 		if (!$user && is_object($g_request) && $g_request->isLoggedIn()) {
-			$user = $g_request->getUserID();
+			$user_id = $g_request->getUserID();
+		} else {
+			$user_id = ca_users::userIDFor($user);
 		}
-		$storage_usage = caDirectorySize(caGetMediaUploadPathForUser($user), ['returnAll' => true]);
-		$available_storage = caGetUserMediaStorageAvailable($user);
+		
+		if(!caGetOption('noCache', $options, false) && PersistentCache::contains('userStorageStats_'.$user_id, 'mediaUploader')) {
+			return PersistentCache::fetch('userStorageStats_'.$user_id, 'mediaUploader');
+		}
+		
+		$storage_usage = caDirectorySize(caGetMediaUploadPathForUser($user_id), ['returnAll' => true]);
+		$available_storage = caGetUserMediaStorageAvailable($user_id);
 		$ret = [
 			'storageUsage' => $storage_usage['size'],
 			'storageUsageDisplay' => $storage_usage['display'],
@@ -635,6 +642,43 @@
 			'storageAvailableDisplay' => caHumanFilesize($available_storage)
 		];
 		
+		PersistentCache::save('userStorageStats_'.$user, $ret, 'mediaUploader');
+		
 		return $ret;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of valid media upload modes for batch media importer
+	 *
+	 * @param array $options No options are currently supported.
+	 * @return array
+	 */
+	function caGetAvailableMediaUploadModes(array $options=null) {
+		$config = Configuration::load();
+		
+		$import_modes = [];
+		if (!is_array($available_modes = $config->getList('media_importer_allowed_modes'))) { $available_modes = []; }
+		foreach([
+				_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
+				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
+				_t('Import all media, creating new records for each') => 'DONT_MATCH'
+			] as $label => $mode) {
+			if(!in_array($mode, $available_modes)) { continue; }
+			$import_modes[$label] = $mode;
+		}
+		
+		return $import_modes;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Test if media import mode is valud
+	 * 
+	 * @param string $mode
+	 * @param array $options No options are currently supported.
+	 * @return bool
+	 */
+	function caIsValidMediaUploadMode(string $mode, array $options=null) : bool {
+		$available_modes = caGetAvailableMediaUploadModes($options);
+		return in_array($mode, $available_modes, true);
 	}
 	# ------------------------------------------------------

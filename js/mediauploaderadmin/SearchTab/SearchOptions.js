@@ -105,6 +105,7 @@ class SearchOptions extends Component {
                       <option value='COMPLETED'>COMPLETED</option>
                       <option value='IN_PROGRESS'>IN PROGRESS</option>
                       <option value='CANCELLED'>CANCELLED</option>
+                      <option value='ERROR'>ERROR</option>
                     </select>
                   </div>
 
@@ -155,7 +156,7 @@ class SearchOptions extends Component {
           numberOfPages={ Math.ceil(filteredUploads.length / this.state.uploadsPerPage)}
         />
 
-        <UploadList data={currentUploads} />
+        <UploadList data={currentUploads} endpoint={this.props.endpoint} />
       </div>
     );
   }

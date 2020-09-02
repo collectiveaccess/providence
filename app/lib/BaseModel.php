@@ -11778,7 +11778,7 @@ $pa_options["display_form_field_tips"] = true;
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
-					if ($t_instance->load((int)$qr_res->get($vs_pk))) {
+					if ($t_instance->load((int)$qr_res->get($vs_pk), !caGetOption('noCache', $pa_options, false))) {
 						return $t_instance;
 					}
 				}

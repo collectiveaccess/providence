@@ -338,6 +338,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_options Additional options, including:
 	 *		modifiedSince = Only return files and directories modified after a Unix timestamp [Default=null]
 	 *		notModifiedSince = Only return files and directories not modified after a Unix timestamp [Default=null]
+	 *		includeRoot = Include root directory path in returned values. [Default is false]
 	 * @return array An array of file paths.
 	 */
 	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false, $pa_options=null) {
@@ -347,6 +348,10 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		if(!file_exists($dir)) { return []; }
+		
+		if(caGetOption('includeRoot', $pa_options, false)) {
+			$va_file_list[$dir] = true;
+		}
 		
 		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
@@ -395,9 +400,11 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $dir The path to the directory you wish to get the contents list for
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
-	 * @return array An array of counts with two keys: 'directories' and 'files'
+	 * @param array $options Options include:
+	 *		returnAsTotal = Return integer count of files + directories. [Default is false]
+	 * @return mixed An array of counts with two keys: 'directories' and 'files' unless returnAsTotal option is set, in which case an integer sum of both keys is returned.
 	 */
-	function caGetDirectoryContentsCount($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+	function caGetDirectoryContentsCount($dir, $pb_recursive=true, $pb_include_hidden_files=false, array $options=null) {
 		$vn_file_count = 0;
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
@@ -427,6 +434,9 @@ function caFileIsIncludable($ps_file) {
 			closedir($handle);
 		}
 
+		if (caGetOption('returnAsTotal', $options, false)) {
+			return (int)$va_counts['files'] + (int)$va_counts['directories'];
+		}
 		return $va_counts;
 	}
 	# ----------------------------------------
@@ -2136,18 +2146,33 @@ function caFileIsIncludable($ps_file) {
 	function caTruncateStringWithEllipsis($ps_text, $pn_max_length=30, $ps_side="start") {
 		if ($pn_max_length < 1) { $pn_max_length = 30; }
 		if (mb_strlen($ps_text) > $pn_max_length) {
-			if (strtolower($ps_side == 'end')) {
-				$vs_txt = mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3, null, 'UTF-8');
-				if (preg_match("!<[^>]*$!", $vs_txt, $va_matches)) {
-					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
-				}
-				$ps_text = "...{$vs_txt}";
-			} else {
-				$vs_txt = mb_substr($ps_text, 0, ($pn_max_length - 3), 'UTF-8');
-				if (preg_match("!(<[^>]*)$!", $vs_txt, $va_matches)) {
-					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
-				}
-				$ps_text = "{$vs_txt}...";
+			switch(strtolower($ps_side)) {
+				case 'end':
+					$vs_txt = mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3, null, 'UTF-8');
+					if (preg_match("!<[^>]*$!", $vs_txt, $va_matches)) {
+						$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
+					}
+					$ps_text = "...{$vs_txt}";
+					break;
+				case 'middle':
+					$l = floor(($pn_max_length-3)/2);
+					$start = mb_substr($ps_text, 0, $l);
+					if (preg_match("!<[^>]*$!", $start, $va_matches)) {
+						$start = preg_replace("!{$va_matches[0]}$!", '', $start);
+					}
+					$end = mb_substr($ps_text, -1*$l);
+					if (preg_match("!<[^>]*$!", $end, $va_matches)) {
+						$end = preg_replace("!{$va_matches[0]}$!", '', $end);
+					}
+					$ps_text = $start.'...'.$end;
+					break;
+				default:
+					$vs_txt = mb_substr($ps_text, 0, ($pn_max_length - 3), 'UTF-8');
+					if (preg_match("!(<[^>]*)$!", $vs_txt, $va_matches)) {
+						$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
+					}
+					$ps_text = "{$vs_txt}...";
+					break;
 			}
 		}
 		return $ps_text;

@@ -11,8 +11,8 @@
         'selector': '#mediaUploaderUI',
         'endpoint': '<?= caNavUrl($this->request, 'batch', 'MediaUploader', ''); ?>',
         'maxConcurrentUploads': <?= (int)Configuration::load()->get('media_uploader_max_conncurrent_user_uploads'); ?>,
-        'data': {
-
-        }
+        'maxFileSize': <?= caParseHumanFilesize(Configuration::load()->get('media_uploader_max_file_size')); ?>,
+        'maxFilesPerSession': <?= caParseHumanFilesize(Configuration::load()->get('media_uploader_max_files_per_session')); ?>,
+        'data': {}
     };
 </script>

@@ -102,6 +102,13 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 				'DEFAULT' => 0,
 				'LABEL' => _t('Total upload size'), 'DESCRIPTION' => _t('The total size of the upload for all files, in bytes.')
 		),
+		'error_code' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Error code'), 'DESCRIPTION' => _t('Error code. Zero if no error.')
+		),
 		'progress' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -219,6 +226,16 @@ class ca_media_upload_sessions extends BaseModel {
 		if(!$this->isLoaded()) { return null; }
 		$completed_on = $this->get('completed_on', ['getDirectDate' => true]);
 		return ($completed_on > 0) ? $completed_on : false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded upload is marked as errored
+	 *
+	 * @return int Error code, or false if no error
+	 */
+	public function hasError() {
+		if(!$this->isLoaded()) { return null; }
+		return ($error_code = (int)$this->get('error_code')) ? $error_code : false;
 	}
 	# ------------------------------------------------------
 }

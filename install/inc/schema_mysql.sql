@@ -7266,6 +7266,7 @@ create table if not exists ca_media_upload_sessions (
    completed_on              int unsigned                   null,
    last_activity_on          int unsigned                   null,
    cancelled                 tinyint unsigned               not null default 0,
+   error_code                smallint unsigned              not null default 0,
    
    num_files		         int unsigned                   not null,
    total_bytes		         bigint unsigned                not null default 0,
@@ -7278,6 +7279,7 @@ create table if not exists ca_media_upload_sessions (
    index i_completed_on			    (completed_on),
    index i_last_activity_on			(last_activity_on),
    index i_cancelled      	        (cancelled),
+   index i_error_code      	        (error_code),
    unique index i_session_key      	(session_key)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 

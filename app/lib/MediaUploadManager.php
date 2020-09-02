@@ -45,11 +45,6 @@ class MediaUploadManager {
      */
     private $log;
 
-    /**
-     *
-     */
-    static $s_user_cache = [];
-
     
     # ------------------------------------------------------
     /**
@@ -86,7 +81,7 @@ class MediaUploadManager {
     static public function findSession($key, $user_id=null) {
         if(!$key) { throw new MediaUploadSessionDoesNotExistException(_t('Empty session')); }
 
-        if ($s = ca_media_upload_sessions::findAsInstance(['session_key' => $key])) {
+        if ($s = ca_media_upload_sessions::findAsInstance(['session_key' => $key], ['noCache' => true])) {
         	if ($user_id && ($s->get('user_id') != $user_id)) { 
         		throw new MediaUploadSessionDoesNotExistException(_t('Session not found'));
         	}
@@ -184,9 +179,13 @@ class MediaUploadManager {
 				foreach(['created_on', 'completed_on', 'last_activity_on'] as $f) {
 					$s[$f] = ($s[$f] > 0) ? caGetLocalizedDate($s[$f], ['dateFormat' => 'delimited']) : null;
 				}
-				if ($s['cancelled']) {
+				if ($s['cancelled'] > 0) {
 					$s['status'] = 'CANCELLED';
 					$s['status_display'] = _t('Cancelled');
+				} elseif ($s['error_code'] > 0) {
+					$s['status'] = 'ERROR';
+					$s['status_display'] = _t('Error');
+					$s['error_display'] = caGetErrorMessage($s['error_code']);	
 				} elseif ($s['completed_on']) {
 					$s['status'] = 'COMPLETED';
 					$s['status_display'] = _t('Completed');
@@ -234,6 +233,27 @@ class MediaUploadManager {
         return $users;
     }
     # ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getCurrentUploadSessionCount(array $options=null) {
+		$params = [
+			'completed_on' => null,
+			'last_activity_on' => ['>', time() - 15],
+			'cancelled' => 0,
+		];
+		return $c = ca_media_upload_sessions::find($params, ['returnAs' => 'count']) ? $c : 0;
+	}
+	# ------------------------------------------------------
+    /**
+     *
+     */
+	static public function connectionsAvailable(array $options=null) {
+		$max_concurrent_uploads = Configuration::load()->get('media_uploader_max_concurrent_uploads');
+		
+		return (self::getCurrentUploadSessionCount() <= $max_concurrent_uploads);
+	}
+	# ------------------------------------------------------
     /**
      *
      */
@@ -242,6 +262,134 @@ class MediaUploadManager {
     		return $user_id;
 	    }
 	    throw new MediaUploadManageSessionException(_t('Invalid user_id'));
+    }
+    # ------------------------------------------------------
+    /**
+     * Set up and return TUS server instance for file upload
+     *
+     * @param int $user_id
+     * @return \TusPhp\Tus\Server Server instance
+     */
+    static public function getTUSServer(int $user_id) {
+    	 // Create user directory if it doesn't already exist
+		$user_dir_path = caGetMediaUploadPathForUser($user_id);
+
+		// Start up server
+		$server = new \TusPhp\Tus\Server('redis');  // TODO: make cache type configurable
+
+		$server->middleware()->add(MediaUploaderHandler::class);
+		$server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
+
+		$server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
+			$fileMeta = $event->getFile()->details();
+			$request  = $event->getRequest();
+			$response = $event->getResponse();
+			$key = $request->header('x-session-key');
+
+			// ...
+			if ($session = MediaUploadManager::findSession($key, $user_id)) {
+				$session->set('last_activity_on', _t('now'));
+				$progress_data = $session->get('progress');
+				
+				$fp = self::_partialToFinalPath($fileMeta['file_path']);
+			
+				$progress_data[$fp]['totalSizeInBytes'] = $fileMeta['size'];
+				$progress_data[$fp]['progressInBytes'] = $fileMeta['offset'];
+				$progress_data[$fp]['complete'] = false;
+				$session->set('progress', $progress_data);
+				
+				$config = Configuration::load();
+				$max_file_size = caParseHumanFilesize($config->get('media_uploader_max_file_size'));
+				if(($max_file_size > 0) && (($max_file_size < $fileMeta['size']) || ($max_file_size < $fileMeta['offset']))) {
+					$session->set('error_code', 3615); // limit for size of a single file exceeded
+				}
+				
+				$session->update();
+			}
+		});
+		$server->event()->addListener('tus-server.upload.complete', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
+			$fileMeta = $event->getFile()->details();
+			$request  = $event->getRequest();
+			$response = $event->getResponse();
+			$key = $request->header('x-session-key');
+
+			$fp = self::_partialToFinalPath($fileMeta['file_path']);
+				
+			// ...
+			if ($session = MediaUploadManager::findSession($key, $user_id)) {
+				$session->set('last_activity_on', _t('now'));
+				$session->set('progress_files', (int)$session->set('progress_files') + 1);
+				$progress_data = $session->get('progress');
+				
+				
+				$progress_data[$fp]['totalSizeInBytes'] = $fileMeta['size'];
+				$progress_data[$fp]['progressInBytes'] = $fileMeta['size'];
+				$progress_data[$fp]['complete'] = true;
+				$session->set('progress', $progress_data);
+				
+				if (PersistentCache::contains('userStorageStats_'.$user_id, 'mediaUploader')) {
+					$stats = PersistentCache::fetch('userStorageStats_'.$user_id, 'mediaUploader');
+					$stats['fileCount']++;
+				
+					$stats['storageUsage'] += $fileMeta['size'];
+					$stats['storageUsageDisplay'] = caHumanFilesize($stats['storageUsage']);
+				
+					PersistentCache::save('userStorageStats_'.$user_id, $stats, 'mediaUploader');
+				
+					$config = Configuration::load();
+					$max_num_files = (int)$config->get('media_uploader_max_files_per_session');
+					if (($max_num_files > 0) && (sizeof($progress_data) > $max_num_files)) {
+						// exceeded max files per session limit
+						$session->set('error_code', 3610);
+					}
+				}
+				$session->update();
+			}
+
+			// If subdirectory
+			$new_dir_count = 0;
+			$rel_path = $fileMeta['metadata']['relativePath'];
+			if(isset($rel_path) && strlen($rel_path) && file_exists($fileMeta['file_path'])) {
+				$path = pathinfo($fileMeta['file_path'], PATHINFO_DIRNAME);
+				$name = pathinfo($fileMeta['file_path'], PATHINFO_BASENAME);
+
+				$rel_path_proc = [];
+				foreach(preg_split('!/!', $rel_path) as $rel_path_dir) {
+					if(strlen($rel_path_dir = preg_replace('![^A-Za-z0-9\-_]+!', '_', $rel_path_dir))) {
+						if(file_exists($rel_path_dir)) { continue; }
+						$rel_path_proc[] = $rel_path_dir;
+						@mkdir("{$path}/".join("/", $rel_path_proc));
+						$new_dir_count++;
+					}
+				}
+				$name_proc = self::_partialToFinalPath($fileMeta['file_path'], ['nameOnly' => true]);
+				error_log("copy ".$fileMeta['file_path']);
+				error_log("to "."{$path}/".join("/", $rel_path_proc)."/{$name_proc}");
+				@rename($fileMeta['file_path'], "{$path}/".join("/", $rel_path_proc)."/{$name_proc}");
+			} else {
+				@rename($fileMeta['file_path'], $fp);
+			}
+			
+			if ($new_dir_count && PersistentCache::contains('userStorageStats_'.$user_id, 'mediaUploader')) {
+				$stats = PersistentCache::fetch('userStorageStats_'.$user_id, 'mediaUploader');
+				$stats['directoryCount'] += $new_dir_count;
+				PersistentCache::save('userStorageStats_'.$user_id, $stats, 'mediaUploader');
+			}
+		});
+		return $server;
+    }
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    static private function _partialToFinalPath(string $filepath, array $options=null) : string {
+    	$basepath = pathinfo($filepath, PATHINFO_DIRNAME);
+    	$basename = pathinfo($filepath, PATHINFO_BASENAME);
+    	
+    	$basename = preg_replace('!^\.{1}!', '', $basename);
+    	$basename = preg_replace('!\.part$!', '', $basename);
+    	
+    	return caGetOption('nameOnly', $options, false) ? $basename : $basepath.'/'.$basename;
     }
     # ------------------------------------------------------
 }

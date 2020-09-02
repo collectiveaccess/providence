@@ -1,3 +1,0 @@
-let mediauploaderstate = {};
-
-export {mediauploaderstate};
