@@ -345,7 +345,7 @@
 									'value_longtext2' => $vs_url,							// uri
 									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 								);
-							
+								break;
 							}
 						}
 					}	
