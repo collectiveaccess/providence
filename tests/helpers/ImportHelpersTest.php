@@ -34,6 +34,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_APP_DIR__ . "/helpers/importHelpers.php");
 
+
 class ImportHelpersTest extends TestCase {
 
     protected $data;
@@ -44,7 +45,194 @@ class ImportHelpersTest extends TestCase {
 
     static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
 
+    private $va_mock_response_AAT = array(
+            'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression:visual arts:abstraction' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300056508',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'abstraction',
+                                            ),
+                                    'Parents' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), ... Associated Concepts Facet',
+                                            ),
+                                    'ParentsFull' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), artistic concepts, <concepts in the arts and humanities>, Associated Concepts (hierarchy name), Associated Concepts Facet',
+                                            ),
+                            )
+            ),
+            'Objects We Use:Visual Works:visual works:visual works by medium or technique:prints:prints by process or technique:prints by process: transfer method:intaglio prints:etchings' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300056508',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'abstraction',
+                                            ),
+                                    'Parents' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), ... Associated Concepts Facet',
+                                            ),
+                                    'ParentsFull' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), artistic concepts, <concepts in the arts and humanities>, Associated Concepts (hierarchy name), Associated Concepts Facet',
+                                            ),
+                            )
+            ),
+            'Objects We Use:Visual Works:visual works:visual works by medium or technique:works on paper' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300056508',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'abstraction',
+                                            ),
+                                    'Parents' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), ... Associated Concepts Facet',
+                                            ),
+                                    'ParentsFull' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), artistic concepts, <concepts in the arts and humanities>, Associated Concepts (hierarchy name), Associated Concepts Facet',
+                                            ),
+                            )
+            ),
+            'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300056508',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'abstraction',
+                                            ),
+                                    'Parents' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), ... Associated Concepts Facet',
+                                            ),
+                                    'ParentsFull' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), artistic concepts, <concepts in the arts and humanities>, Associated Concepts (hierarchy name), Associated Concepts Facet',
+                                            ),
+                            )
+            ),
+            'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:art genres:computer art' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300056508',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'abstraction',
+                                            ),
+                                    'Parents' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), ... Associated Concepts Facet',
+                                            ),
+                                    'ParentsFull' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), artistic concepts, <concepts in the arts and humanities>, Associated Concepts (hierarchy name), Associated Concepts Facet',
+                                            ),
+                            )
+            ),
+            'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting techniques:painting techniques by medium:acrylic painting (technique)' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300056508',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'abstraction',
+                                            ),
+                                    'Parents' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), ... Associated Concepts Facet',
+                                            ),
+                                    'ParentsFull' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), artistic concepts, <concepts in the arts and humanities>, Associated Concepts (hierarchy name), Associated Concepts Facet',
+                                            ),
+                            )
+            ),
+            'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting (image-making)' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300056508',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'abstraction',
+                                            ),
+                                    'Parents' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), ... Associated Concepts Facet',
+                                            ),
+                                    'ParentsFull' =>
+                                            array(
+                                                    'type' => 'literal',
+                                                    'value' => '<forms of expression for visual arts>, forms of expression (artistic concept), artistic concepts, <concepts in the arts and humanities>, Associated Concepts (hierarchy name), Associated Concepts Facet',
+                                            ),
+                            )
+            ),
+    );
+    private $va_mock_response_people;
+
     protected function setUp(): void {
+
         $this->data = [
                 1 => "Verdun",
                 2 => ['Cambrai', 'Arras'],
@@ -181,15 +369,18 @@ class ImportHelpersTest extends TestCase {
         return $result;
     }
 
-
+    protected function _createAATServiceStub($ps_query) {
+        $o_service = $this->createStub(WLPlugInformationServiceAAT::class);
+        $o_service->method('lookup')
+                ->willReturn($this->va_mock_response_AAT[$ps_query]);
+        return $o_service;
+    }
     # -------------------------------------------------------
     public function testAATMatchPeople() {
         // some real-world examples
-        $o_service = new WLPlugInformationServiceAAT();
-
-        $vm_ret = caMatchAAT(
-                explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression: visual arts:abstraction'),
-                null, null, $o_service);
+        $vs_query = 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression:visual arts:abstraction';
+        $o_service = $this->_createAATServiceStub($vs_query);
+            $vm_ret = caMatchAAT(explode(':', $vs_query), null, null, $o_service);
         $this->assertEquals('http://vocab.getty.edu/aat/300056508', $vm_ret);
     }
 
