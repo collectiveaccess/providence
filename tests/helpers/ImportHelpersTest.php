@@ -269,21 +269,20 @@ class ImportHelpersTest extends TestCase {
         );
 
         $this->groups = array();
-
     }
 
     /**
      * Delete all records we created for this test to avoid side effects with other tests
      */
-    protected function tearDown() : void {
-        if($this->opb_care_about_side_effects) {
-            foreach($this->opa_record_map as $vs_table => &$va_records) {
+    protected function tearDown(): void {
+        if ($this->opb_care_about_side_effects) {
+            foreach ($this->opa_record_map as $vs_table => &$va_records) {
                 $t_instance = Datamodel::getInstance($vs_table);
                 // delete in reverse order so that we can properly
                 // catch potential hierarchical relationships
                 rsort($va_records);
-                foreach($va_records as $vn_id) {
-                    if($t_instance->load($vn_id)) {
+                foreach ($va_records as $vn_id) {
+                    if ($t_instance->load($vn_id)) {
                         $t_instance->setMode(ACCESS_WRITE);
                         $t_instance->delete(true, array('hard' => true));
                     }
@@ -294,27 +293,29 @@ class ImportHelpersTest extends TestCase {
             $this->checkRecordCounts();
         }
     }
+
     # -------------------------------------------------------
     private function checkRecordCounts() {
         // ensure there are no lingering records
         $o_db = new Db();
-        foreach(self::$opa_valid_tables as $vs_table) {
+        foreach (self::$opa_valid_tables as $vs_table) {
             $qr_rows = $o_db->query("SELECT count(*) AS c FROM {$vs_table}");
             $qr_rows->nextRow();
 
             // these two are allowed to have hierarchy roots
-            if(in_array($vs_table, array('ca_storage_locations', 'ca_places'))) {
+            if (in_array($vs_table, array('ca_storage_locations', 'ca_places'))) {
                 $vn_allowed_records = 1;
-            } else {
+            }
+            else {
                 $vn_allowed_records = 0;
             }
 
-            $this->assertEquals($vn_allowed_records, $qr_rows->get('c'), "Table {$vs_table} should be empty to avoid side effects between tests");
+            $this->assertEquals($vn_allowed_records, $qr_rows->get('c'),
+                    "Table {$vs_table} should be empty to avoid side effects between tests");
         }
     }
 
     protected function _runGenericImportSplitter($ps_refinery_name, $ps_table, $ps_type) {
-
         global $g_ui_locale_id;
         $g_ui_locale_id = 1;
         $ps_item_prefix = "";
@@ -338,7 +339,8 @@ class ImportHelpersTest extends TestCase {
      */
     protected function _loadRefinery($refinery_name): string {
         $refinery_class = $refinery_name . 'Refinery';
-        require_once(join(DIRECTORY_SEPARATOR, [__CA_APP_DIR__, 'refineries', $refinery_name, $refinery_class . '.php']));
+        require_once(join(DIRECTORY_SEPARATOR,
+                [__CA_APP_DIR__, 'refineries', $refinery_name, $refinery_class . '.php']));
         return $refinery_class;
     }
 
@@ -365,7 +367,8 @@ class ImportHelpersTest extends TestCase {
         $pa_options = array(
                 'refinery' => $stubRefinery,
         );
-        $result = caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $pn_c, $pa_options);
+        $result = caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $pn_c,
+                $pa_options);
         return $result;
     }
 
@@ -387,7 +390,8 @@ class ImportHelpersTest extends TestCase {
     public function testAATMatchPrints() {
         // some real-world examples
         $vm_ret = caMatchAAT(
-                explode(':', 'Objects We Use:Visual Works:visual works:visual works by medium or technique:prints:prints by process or technique:prints by process: transfer method:intaglio prints:etchings')
+                explode(':',
+                        'Objects We Use:Visual Works:visual works:visual works by medium or technique:prints:prints by process or technique:prints by process: transfer method:intaglio prints:etchings')
         );
 
         $this->assertEquals('http://vocab.getty.edu/aat/300041365', $vm_ret);
@@ -396,7 +400,8 @@ class ImportHelpersTest extends TestCase {
     public function testAATMatchPaper() {
         // some real-world examples
         $vm_ret = caMatchAAT(
-                explode(':', 'Objects We Use:Visual Works:visual works:visual works by medium or technique:works on paper')
+                explode(':',
+                        'Objects We Use:Visual Works:visual works:visual works by medium or technique:works on paper')
         );
 
         $this->assertEquals('http://vocab.getty.edu/aat/300189621', $vm_ret);
@@ -406,7 +411,8 @@ class ImportHelpersTest extends TestCase {
         // some real-world examples
 
         $vm_ret = caMatchAAT(
-                explode(':', 'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract'),
+                explode(':',
+                        'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract'),
                 180, array('removeParensFromLabels' => true)
         );
 
@@ -417,7 +423,8 @@ class ImportHelpersTest extends TestCase {
         // some real-world examples
 
         $vm_ret = caMatchAAT(
-                explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:art genres:computer art'),
+                explode(':',
+                        'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:art genres:computer art'),
                 180, array('removeParensFromLabels' => true)
         );
 
@@ -428,7 +435,8 @@ class ImportHelpersTest extends TestCase {
         // some real-world examples
 
         $vm_ret = caMatchAAT(
-                explode(':', 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting techniques:painting techniques by medium:acrylic painting (technique)'),
+                explode(':',
+                        'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting techniques:painting techniques by medium:acrylic painting (technique)'),
                 180, array('removeParensFromLabels' => true)
         );
 
@@ -439,14 +447,14 @@ class ImportHelpersTest extends TestCase {
         // some real-world examples
 
         $vm_ret = caMatchAAT(
-                explode(':', 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting (image-making)'),
+                explode(':',
+                        'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting (image-making)'),
                 180, array('removeParensFromLabels' => true)
         );
 
         $this->assertEquals('http://vocab.getty.edu/aat/300054216', $vm_ret);
     }
     # -------------------------------------------------------
-
 
     /**
      *
