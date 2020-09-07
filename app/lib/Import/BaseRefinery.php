@@ -135,6 +135,7 @@
 		 *		returnAsString = Return array of repeating values as string using delimiter. Has effect only is $pn_index parameter is set to null. [Default is false]
 		 *		delimiter = Delimiter to join array values with when returnAsString option is set; or the delimiter to use when breaking apart a value for return via the returnDelimitedValueAt option. [Default is ";"]
 		 *		returnDelimitedValueAt = Return a specific part of a value delimited by the "delimiter" option. Only has effect when returning a specific index of a repeating value (Eg. $pn_index is not null). The option value is a zero-based index. [Default is null – return entire value]
+		 *		applyImportItemSettings = Apply mapping options such as applyRegularExpressions to value. [Default is true]
 		 *
 		 * @return mixed An array or string
 		 */
@@ -256,11 +257,16 @@
 				}
 			}
 			if (!is_array($vm_val)) { $vm_val = [$vm_val]; }
+			
+			$apply_import_item_settings = caGetOption('applyImportItemSettings', $pa_options, true);
 			foreach($vm_val as $i => $v) {
                 if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($v), $pa_item['settings']['original_values'])) !== false)) {
                     $v = $pa_item['settings']['replacement_values'][$vn_i];
                 }
-                $v = caProcessImportItemSettingsForValue($v, $pa_item['settings']);
+                
+                if ($apply_import_item_settings) {
+               		$v = caProcessImportItemSettingsForValue($v, $pa_item['settings']);
+               	}
                 $vm_val[$i] = $v;
             }
 			
