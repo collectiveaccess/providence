@@ -1402,6 +1402,9 @@ class TilepicParser {
 					return false;
 				}
 				
+				
+				if($rotation == 180) { $slice->rotateimage("#FFFFFF", $rotation); }
+				
 				if (!$slice->setimageformat($magick)) {
 					$this->error = "Tile conversion failed: $reason; $description";
 					return false;
