@@ -275,11 +275,17 @@
 					// try to match on text using id.loc.gov service
 					$ps_value = str_replace(array("‘", "’", "“", "”"), array("'", "'", '"', '"'), $ps_value);
 					
+					$vs_service_url = null;
 					if (caGetOption('matchUsingLOCLabel', $pa_options, false)) {
 						$vs_service_url = "http://id.loc.gov/authorities/label/".rawurlencode($ps_value);
+					} elseif (preg_match("!http://id.loc.gov/authorities/[A-Za-z]+!", $ps_value)) {
+						$vs_service_url = $ps_value;
+					}
+					
+					if($vs_service_url) {
 						$o_client = new Zend_Http_Client($vs_service_url);
 						$o_client->setConfig(array(
-							'maxredirects' => 0,
+							'maxredirects' => 5,
 							'timeout'      => 30));
 					
 						try {
@@ -289,15 +295,14 @@
 							return false;
 						}
 
-						// $vn_status = $o_response->getStatus();
 						$va_headers = $o_response->getHeaders();
-				
-						if (($vn_status >= 300) && ($vn_status <= 399) && (isset($va_headers['X-preflabel'])) && $va_headers['X-preflabel']) {
-							$vs_url = $va_headers['Location'];
+			
+						if ((isset($va_headers['X-preflabel'])) && $va_headers['X-preflabel']) {
+							$vs_url = $va_headers['X-uri'];
 							$va_url = explode("/", $vs_url);
 							$vs_id = array_pop($va_url);
 							$vs_label = $va_headers['X-preflabel'];
-					
+							
 							$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', $vs_url);
 					
 							if ($vs_url) {
@@ -311,7 +316,7 @@
 								return false;
 							}
 						} else {
-							$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]', $ps_value, $vs_service_url), 'LCSHAttributeValue->parseValue()');
+							$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]; status was %3', $ps_value, $vs_service_url, $vn_status), 'LCSHAttributeValue->parseValue()');
 							return false;
 						}
 					} else {
@@ -345,7 +350,7 @@
 									'value_longtext2' => $vs_url,							// uri
 									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 								);
-							
+								break;
 							}
 						}
 					}	
