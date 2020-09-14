@@ -1017,7 +1017,6 @@
 		// try ZendPDF
 		if(!$o_config->get('dont_use_zendpdf_to_identify_pdfs')) {
 			try {
-				include_once(__CA_LIB_DIR__."/Zend/Pdf.php");
 				$o_pdf = Zend_Pdf::load($ps_filepath);
 			} catch(Exception $e){
 				$o_pdf = null;
