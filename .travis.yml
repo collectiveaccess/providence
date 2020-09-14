@@ -42,7 +42,7 @@ install:
   # Create setup.php
   - export PROFILE=${PROFILE:-testing}
   - ln -s .travis.setup.php setup.php
-  - test/update_dependencies.sh
+  - tests/update_dependencies.sh
   # Install the testing profile
   - tests/profile_setup.sh "$PROFILE"
 
