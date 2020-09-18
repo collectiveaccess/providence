@@ -3596,7 +3596,7 @@ class TimeExpressionParser {
 
 					for($vn_y=$vn_s; $vn_y <= $vn_e; $vn_y+= 100) {
 
-						$vn_century_num = abs(floor($vn_y/100)) + 1;
+						$vn_century_num = ($vn_y >= 0) ? abs(floor($vn_y/100)) + 1 : abs(floor($vn_y/100));
 						if ($vn_century_num == 0)  { continue; }
 						$vn_x = substr((string)$vn_century_num, strlen($vn_century_num) - 1, 1);
 
