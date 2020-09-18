@@ -1553,6 +1553,8 @@ class TimeExpressionParserTest extends TestCase {
 
 		$this->assertEquals(5, sizeof($va_centuries));
 		$this->assertEquals($va_expected, array_keys($va_centuries));
+		$this->assertEquals('5th century BCE', array_shift($va_centuries));
+		$this->assertEquals('1st century BCE', array_pop($va_centuries));
 	}
 	
 	function testNormalizationCenturiesBC2AD() {
