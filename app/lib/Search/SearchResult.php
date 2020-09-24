@@ -1334,7 +1334,7 @@ class SearchResult extends BaseObject {
 							    is_array($pa_options['filterTypes']) &&
 							    (sizeof($pa_options['filterTypes']) > 0)
 							) {
-							    $filter_by_types = caMakeTypeIDList($va_path_components['table_name'], $pa_options['filterTypes']);
+							    $filter_by_types = caMakeTypeIDList($va_path_components['table_name'], $pa_options['filterTypes'], ['dontIncludeSubtypesInTypeRestriction' => true]);
 						        $type_spec = join('.', [$va_path_components['table_name'], $type_id_fld]);
 							}
 							

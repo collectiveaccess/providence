@@ -662,7 +662,7 @@ class DisplayTemplateParser {
 						if (sizeof($va_relative_ids) && is_array($va_get_options['filterTypes'])) {
 						    $vs_rel_table_name = $t_rel_instance->tableName();
 						    $vs_rel_pk = $t_rel_instance->primaryKey();
-						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'])) && sizeof($va_filter_types)) {
+						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'], ['dontIncludeSubtypesInTypeRestriction' => true])) && sizeof($va_filter_types)) {
 						        if ($qr_types = caMakeSearchResult($vs_rel_table_name, $va_relative_ids)) {
 						            $va_filtered_ids = [];
 						            while($qr_types->nextHit()) {
@@ -805,23 +805,7 @@ class DisplayTemplateParser {
 						if (sizeof($va_relative_ids) && is_array($va_get_options['filterTypes'])) {
 						    $vs_rel_table_name = $t_rel_instance->tableName();
 						    $vs_rel_pk = $t_rel_instance->primaryKey();
-						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'])) && sizeof($va_filter_types)) {
-						        if ($qr_types = caMakeSearchResult($vs_rel_table_name, $va_relative_ids)) {
-						            $va_filtered_ids = [];
-						            while($qr_types->nextHit()) {
-						                if(in_array($qr_types->get("{$vs_rel_table_name}.type_id"), $va_filter_types)) {
-						                    $va_filtered_ids[] = (int)$qr_types->get("{$vs_rel_table_name}.{$vs_rel_pk}");
-						                }
-						            }
-						            $va_relative_ids = $va_filtered_ids;
-						        }
-						    }
-						}
-						
-						if (sizeof($va_relative_ids) && is_array($va_get_options['filterTypes'])) {
-						    $vs_rel_table_name = $t_rel_instance->tableName();
-						    $vs_rel_pk = $t_rel_instance->primaryKey();
-						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'])) && sizeof($va_filter_types)) {
+						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'], ['dontIncludeSubtypesInTypeRestriction' => true])) && sizeof($va_filter_types)) {
 						        if ($qr_types = caMakeSearchResult($vs_rel_table_name, $va_relative_ids)) {
 						            $va_filtered_ids = [];
 						            while($qr_types->nextHit()) {
