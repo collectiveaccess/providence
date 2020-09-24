@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -474,7 +474,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				$this->set('md5', $va_media_info['MD5']);
 				$this->set('mimetype', $va_media_info['MIMETYPE']);
 			
-				if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+				if(is_array($va_media_info = $this->getMediaInfo('media')) && isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
 					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
 				}
 			}
@@ -494,7 +494,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
 				$this->set('md5', $va_media_info['MD5']);
 				$this->set('mimetype', $va_media_info['MIMETYPE']);
-				if (is_array($va_media_info = $this->getMediaInfo('media'))) {
+				if (is_array($va_media_info = $this->getMediaInfo('media')) && isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
 					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
 				}
 			}
