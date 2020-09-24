@@ -2288,7 +2288,14 @@ class SearchResult extends BaseObject {
                                             break;
                                     }
                                 }
-                                $vs_val_proc = $o_value->getDisplayValue(['return' => $vs_return_type, 'version' => $vs_version]);
+                                if($alt_text = caGetOption('alt', $pa_options, null)) {
+									// noop
+								} elseif ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
+									$alt_text = $this->getWithTemplate($alt_text_template);
+								} else {
+									$alt_text = $this->get($this->tableName().".preferred_labels");
+								}
+                                $vs_val_proc = $o_value->getDisplayValue(['alt' => $alt_text, 'return' => $vs_return_type, 'version' => $vs_version]);
 						        break;
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
