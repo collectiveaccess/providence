@@ -39,9 +39,6 @@
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/Configuration.php');
-	require_once(__CA_LIB_DIR__."/Zend/Http/Client.php");
- 	require_once(__CA_LIB_DIR__.'/Zend/Feed.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Feed/Atom.php');
  	require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
  	
  	global $_ca_attribute_settings;
