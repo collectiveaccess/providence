@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -106,7 +106,7 @@ var caUI = caUI || {};
 							ht.selectCell(r,c);
 							var physicalIndex = ht.sortIndex[r] ? ht.sortIndex[r][0] : r;		// need to do translation in case user has sorted on a column
 							var rowData = that.initialData[physicalIndex];
-							var placementID = colSpec.placement_id;
+							var placementID = colSpec.data;
 							
 							that.dataEditorPanel.showPanel(that.dataEditUrl + "/bundle/" + p + "/id/" + rowData['id'] + '/row/' + r + '/col/' + c + '/pl/' + placementID);
 						}
@@ -186,7 +186,6 @@ var caUI = caUI || {};
 			that.saveQueue = [];
 			jQuery.post(that.dataSaveUrl, { changes: q },
 				function(data) {
-					console.log("data", data);
 					if (parseInt(data.status) !== 0) {
 						var errorMessages = [];
 						jQuery.each(data.errors, function(error, bundle) {
