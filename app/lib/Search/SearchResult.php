@@ -1423,7 +1423,8 @@ class SearchResult extends BaseObject {
 						$va_ids = array($vn_row_id);
 					}
 					
-					$va_hier_list = array();
+					if (!is_array($va_ids)) { $va_ids = []; }
+					$va_hier_list = [];
 					foreach($va_ids as $vn_id) {
 						if (
 							!is_array(SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5])
