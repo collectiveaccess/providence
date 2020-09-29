@@ -63,6 +63,11 @@ class Session {
 	/**
 	 *
 	 */
+	private static $api_session_lifetime = "";		# session length for REST API 
+
+	/**
+	 *
+	 */
 	private static $start_time = 0;	# microtime session object was created - used for page performance measurements
 
 	/**
@@ -86,6 +91,8 @@ class Session {
 	 */
 	public static function init($ps_app_name=null, $pb_dont_create_new_session=false) {
  		$o_config = Configuration::load();
+ 		$service_config = Configuration::load(__CA_CONF_DIR__."/services.conf");
+
 		# --- Init
 		if (defined("__CA_MICROTIME_START_OF_REQUEST__")) {
 			Session::$start_time = __CA_MICROTIME_START_OF_REQUEST__;
@@ -97,6 +104,7 @@ class Session {
 		Session::$name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
 		Session::$domain = $o_config->get("session_domain");
 		Session::$lifetime = (int) $o_config->get("session_lifetime");
+		Session::$api_session_lifetime = (int) $service_config->get("api_session_lifetime");
 
 		if(!Session::$lifetime) {
 			Session::$lifetime = 3600 * 24 * 7;
@@ -162,8 +170,8 @@ class Session {
 		}
 
 		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
-		ExternalCache::save($session_id, $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);
-		ExternalCache::save($vs_token, $session_id, 'ServiceAuthTokensToSessionID', 60 * 60 * 2);
+		ExternalCache::save($session_id, $vs_token, 'SessionIDToServiceAuthTokens', Session::$api_session_lifetime);
+		ExternalCache::save($vs_token, $session_id, 'ServiceAuthTokensToSessionID', Session::$api_session_lifetime);
 
 		return $vs_token;
 	}

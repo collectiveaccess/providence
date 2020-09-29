@@ -34,6 +34,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_APP_DIR__ . "/helpers/importHelpers.php");
 
+
 class ImportHelpersTest extends TestCase {
 
     protected $data;
@@ -43,6 +44,122 @@ class ImportHelpersTest extends TestCase {
     protected $groups;
 
     static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
+
+    private $va_mock_response_AAT = array(
+            'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression:visual arts:abstraction' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300056508',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'abstraction',
+                                            ),
+                            )
+            ),
+            'Objects We Use:Visual Works:visual works:visual works by medium or technique:prints:prints by process or technique:prints by process:transfer method:intaglio prints:etchings' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300041365',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'etchings',
+                                            ),
+
+                            )
+            ),
+            'Objects We Use:Visual Works:visual works:visual works by medium or technique:works on paper' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300189621',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'works on paper',
+                                            ),
+                            )
+            ),
+            'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300108127',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'Abstract',
+                                            ),
+                            )
+            ),
+            'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:art genres:computer art' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300069478',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'computer art',
+                                            ),
+                            )
+            ),
+            'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting techniques:painting techniques by medium:acrylic painting (technique)' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300182574',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'acrylic painting (technique)',
+                                            ),
+                            )
+            ),
+            'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting (image-making)' => array(
+                    0 =>
+                            array(
+                                    'ID' =>
+                                            array(
+                                                    'type' => 'uri',
+                                                    'value' => 'http://vocab.getty.edu/aat/300054216',
+                                            ),
+                                    'TermPrefLabel' =>
+                                            array(
+                                                    'xml:lang' => 'en',
+                                                    'type' => 'literal',
+                                                    'value' => 'painting image-making',
+                                            ),
+                            )
+            ),
+    );
 
     protected function setUp(): void {
         $this->data = [
@@ -81,21 +198,20 @@ class ImportHelpersTest extends TestCase {
         );
 
         $this->groups = array();
-
     }
 
     /**
      * Delete all records we created for this test to avoid side effects with other tests
      */
-    protected function tearDown() : void {
-        if($this->opb_care_about_side_effects) {
-            foreach($this->opa_record_map as $vs_table => &$va_records) {
+    protected function tearDown(): void {
+        if ($this->opb_care_about_side_effects) {
+            foreach ($this->opa_record_map as $vs_table => &$va_records) {
                 $t_instance = Datamodel::getInstance($vs_table);
                 // delete in reverse order so that we can properly
                 // catch potential hierarchical relationships
                 rsort($va_records);
-                foreach($va_records as $vn_id) {
-                    if($t_instance->load($vn_id)) {
+                foreach ($va_records as $vn_id) {
+                    if ($t_instance->load($vn_id)) {
                         $t_instance->setMode(ACCESS_WRITE);
                         $t_instance->delete(true, array('hard' => true));
                     }
@@ -106,27 +222,29 @@ class ImportHelpersTest extends TestCase {
             $this->checkRecordCounts();
         }
     }
+
     # -------------------------------------------------------
     private function checkRecordCounts() {
         // ensure there are no lingering records
         $o_db = new Db();
-        foreach(self::$opa_valid_tables as $vs_table) {
+        foreach (self::$opa_valid_tables as $vs_table) {
             $qr_rows = $o_db->query("SELECT count(*) AS c FROM {$vs_table}");
             $qr_rows->nextRow();
 
             // these two are allowed to have hierarchy roots
-            if(in_array($vs_table, array('ca_storage_locations', 'ca_places'))) {
+            if (in_array($vs_table, array('ca_storage_locations', 'ca_places'))) {
                 $vn_allowed_records = 1;
-            } else {
+            }
+            else {
                 $vn_allowed_records = 0;
             }
 
-            $this->assertEquals($vn_allowed_records, $qr_rows->get('c'), "Table {$vs_table} should be empty to avoid side effects between tests");
+            $this->assertEquals($vn_allowed_records, $qr_rows->get('c'),
+                    "Table {$vs_table} should be empty to avoid side effects between tests");
         }
     }
 
     protected function _runGenericImportSplitter($ps_refinery_name, $ps_table, $ps_type) {
-
         global $g_ui_locale_id;
         $g_ui_locale_id = 1;
         $ps_item_prefix = "";
@@ -150,7 +268,8 @@ class ImportHelpersTest extends TestCase {
      */
     protected function _loadRefinery($refinery_name): string {
         $refinery_class = $refinery_name . 'Refinery';
-        require_once(join(DIRECTORY_SEPARATOR, [__CA_APP_DIR__, 'refineries', $refinery_name, $refinery_class . '.php']));
+        require_once(join(DIRECTORY_SEPARATOR,
+                [__CA_APP_DIR__, 'refineries', $refinery_name, $refinery_class . '.php']));
         return $refinery_class;
     }
 
@@ -177,84 +296,103 @@ class ImportHelpersTest extends TestCase {
         $pa_options = array(
                 'refinery' => $stubRefinery,
         );
-        $result = caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $pn_c, $pa_options);
+        $result = caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $pn_c,
+                $pa_options);
         return $result;
     }
 
+    protected function _createAATServiceStub($ps_query) {
+        $o_service = $this->createStub(WLPlugInformationServiceAAT::class);
+        $o_service->method('lookup')
+                ->willReturn($this->va_mock_response_AAT[$ps_query]);
+        return $o_service;
+    }
+
+    # -------------------------------------------------------
+    public function testAATExternal() {
+        // some real-world examples
+        $o_service = new WLPlugInformationServiceAAT();
+        $result = $o_service->lookup([], 'test');
+        $this->assertIsArray($result);
+    }
 
     # -------------------------------------------------------
     public function testAATMatchPeople() {
         // some real-world examples
-        $vm_ret = caMatchAAT(
-                explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression: visual arts:abstraction')
-        );
-
+        $vs_query = 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression:visual arts:abstraction';
+        $o_service = $this->_createAATServiceStub($vs_query);
+        $vm_ret = caMatchAAT(explode(':', $vs_query), null, null, $o_service);
         $this->assertEquals('http://vocab.getty.edu/aat/300056508', $vm_ret);
     }
 
     public function testAATMatchPrints() {
         // some real-world examples
-        $vm_ret = caMatchAAT(
-                explode(':', 'Objects We Use:Visual Works:visual works:visual works by medium or technique:prints:prints by process or technique:prints by process: transfer method:intaglio prints:etchings')
-        );
+        $vs_query = 'Objects We Use:Visual Works:visual works:visual works by medium or technique:prints:prints by process or technique:prints by process:transfer method:intaglio prints:etchings';
+        $o_service = $this->_createAATServiceStub($vs_query);
+        $vm_ret = caMatchAAT(explode(':', $vs_query), null, null, $o_service);
 
         $this->assertEquals('http://vocab.getty.edu/aat/300041365', $vm_ret);
     }
 
     public function testAATMatchPaper() {
+        $vs_query = 'Objects We Use:Visual Works:visual works:visual works by medium or technique:works on paper';
+        $o_service = $this->_createAATServiceStub($vs_query);
         // some real-world examples
-        $vm_ret = caMatchAAT(
-                explode(':', 'Objects We Use:Visual Works:visual works:visual works by medium or technique:works on paper')
-        );
+        $vm_ret = caMatchAAT(explode(':', $vs_query), null, null, $o_service);
 
         $this->assertEquals('http://vocab.getty.edu/aat/300189621', $vm_ret);
     }
 
-    public function testAATMatchAbstractArt() {
+    public function testAATMatchAbstractArtRemoveParens() {
         // some real-world examples
 
-        $vm_ret = caMatchAAT(
-                explode(':', 'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract'),
-                180, array('removeParensFromLabels' => true)
-        );
+        $vs_query = 'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract';
+
+        $o_service = $this->_createAATServiceStub($vs_query);
+        // some real-world examples
+        $vm_ret = caMatchAAT(explode(':', $vs_query), 180, array('removeParensFromLabels' => true), $o_service);
 
         $this->assertEquals('http://vocab.getty.edu/aat/300108127', $vm_ret);
     }
 
-    public function testAATMatchComputerArt() {
+    public function testAATMatchComputerArtRemoveParens() {
         // some real-world examples
 
-        $vm_ret = caMatchAAT(
-                explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:art genres:computer art'),
-                180, array('removeParensFromLabels' => true)
+        $vs_query = 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:art genres:computer art';
+        $o_service = $this->_createAATServiceStub($vs_query);
+        $vm_ret = caMatchAAT(explode(':', $vs_query),
+                180, array('removeParensFromLabels' => true),
+                $o_service
         );
 
         $this->assertEquals('http://vocab.getty.edu/aat/300069478', $vm_ret);
     }
 
-    public function testAATMatchAcrylicPainting() {
+    public function testAATMatchAcrylicPaintingRemoveParens() {
         // some real-world examples
 
-        $vm_ret = caMatchAAT(
-                explode(':', 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting techniques:painting techniques by medium:acrylic painting (technique)'),
-                180, array('removeParensFromLabels' => true)
+        $vs_query = 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting techniques:painting techniques by medium:acrylic painting (technique)';
+        $o_service = $this->_createAATServiceStub($vs_query);
+        $vm_ret = caMatchAAT(explode(':', $vs_query),
+                180, array('removeParensFromLabels' => true),
+                $o_service
         );
-
         $this->assertEquals('http://vocab.getty.edu/aat/300182574', $vm_ret);
     }
 
-    public function testAATMatchPainting() {
+    public function testAATMatchPaintingRemoveParens() {
         // some real-world examples
 
-        $vm_ret = caMatchAAT(
-                explode(':', 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting (image-making)'),
-                180, array('removeParensFromLabels' => true)
+        $vs_query = 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting (image-making)';
+        $o_service = $this->_createAATServiceStub($vs_query);
+        $vm_ret = caMatchAAT(explode(':', $vs_query),
+                180, array('removeParensFromLabels' => true),
+                $o_service
         );
 
         $this->assertEquals('http://vocab.getty.edu/aat/300054216', $vm_ret);
     }
     # -------------------------------------------------------
-
 
     /**
      *

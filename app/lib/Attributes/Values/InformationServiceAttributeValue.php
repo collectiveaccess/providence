@@ -232,7 +232,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		));
 
 		//if (!trim($ps_value)) {
-		//$this->postError(1970, _t('Entry was blank.'), 'InformationServiceAttributeValue->parseValue()');
+		//$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'InformationServiceAttributeValue->parseValue()');
 		//	return false;
 		//}
 

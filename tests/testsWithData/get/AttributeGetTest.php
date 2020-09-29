@@ -210,13 +210,14 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
 		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
 		// subfield notation for "extra info"
-		$this->assertStringContainsString('Burr shot his political rival Alexander Hamilton in an 1804 duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
 		$this->assertEquals('40.5667', $this->opt_object->get('ca_objects.tgn.lat'));
 
 		// informationservice attributes in container
 		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
 		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
-		$this->assertStringContainsString('Burr shot his political rival Alexander Hamilton in an 1804 duel', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
+        $vs_expected_abstract_wikipedia_burr = 'Aaron Burr Jr.';
+        $this->assertStringContainsString($vs_expected_abstract_wikipedia_burr, $this->opt_object->get('ca_objects.wikipedia.abstract'));
+		$this->assertStringContainsString($vs_expected_abstract_wikipedia_burr, $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
 	}
 	# -------------------------------------------------------
 	public function testGetCounts() {

@@ -948,7 +948,7 @@ class MultipartIDNumber extends IDNumber {
 		        $va_output_values = array_merge($va_output_values, preg_split("![".preg_quote(join('', $va_delimiters), "!")."]!", $ps_value));
 		    }
 		}
-		return array_unique($va_output_values);
+		return $va_output_values;
 	}
 	# -------------------------------------------------------
 	# User interace (HTML)
