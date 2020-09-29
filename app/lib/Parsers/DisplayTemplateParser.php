@@ -676,6 +676,12 @@ class DisplayTemplateParser {
 						}
 						
 						$vn_num_vals = sizeof($va_relative_ids);
+						if ((($vn_start > 0) || ($vn_length > 0)) && sizeof($va_relative_ids)) {
+							// Only evaluate units that fall within the start/length window to save time
+							// We pass the full count of units as 'fullValueCount' to ensure that ^count, ^index and friends 
+							// are accurate.
+							$va_relative_ids = array_slice($va_relative_ids, $vn_start, ($vn_length > 0) ? $vn_length : null); // trim to start/length
+						}
 						
 						// process template for all records selected by unit tag
 						$va_tmpl_val = DisplayTemplateParser::evaluate(
