@@ -668,6 +668,26 @@ class ca_data_importer_items extends BaseModel {
 			'description' => _t('Determines whether to search on file names, enclosing directory names or both. Valid values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES and FILE_NAME. (Default is FILE_NAME).')
 		);
 		
+		$va_settings['add'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Always add values?'),
+			'description' => _t('Always add values after existing ones even if existing record policy mandates replacement (Eg. merge_on_idno_with_replace, Etc.).')
+		);
+		
+		$va_settings['replace'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Always replace values?'),
+			'description' => _t('Always replace values, removing existing, ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
+		);
+		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
