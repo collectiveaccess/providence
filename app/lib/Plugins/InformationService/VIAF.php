@@ -80,7 +80,7 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
             'headers' => [
                 'Accept' => 'application/json'
             ],
-            'query' => ['query'=>$ps_search]
+            ['query' => "'".$ps_search."'"]
         ]);
         #$vo_request->setHeader('Accept', 'application/json');
         #$vo_request->getQuery()->add('query', "'".$ps_search."'");
