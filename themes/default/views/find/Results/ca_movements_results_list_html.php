@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -97,8 +97,8 @@
 					</td>
 <?php
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_movements', $vn_movement_id, array())."</td>";
-					foreach($va_display_list as $vn_placement_id => $va_info) {
-						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</td>";
+					foreach($va_display_list as $placement_id => $info) {
+						print "<td>".$t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(array('request' => $this->request), is_array($info['settings']) ? $info['settings'] : array()))."</td>";
 					}
 ?>	
 				</tr>
@@ -115,7 +115,7 @@
 					<tr>
 						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
 <?php
-						foreach($va_bottom_line as $vn_placement_id => $vs_bottom_line_value) {
+						foreach($va_bottom_line as $placement_id => $vs_bottom_line_value) {
 							print "<td>{$vs_bottom_line_value}</td>";
 						}
 ?>

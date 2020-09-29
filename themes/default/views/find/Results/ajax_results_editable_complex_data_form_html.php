@@ -33,7 +33,7 @@
  	$vs_bundle = 		$this->getVar('bundle');
  	$vn_row = 			$this->getVar('row');
  	$vn_col = 			$this->getVar('col');
- 	$vn_placement_id = 	$this->getVar('placement_id');
+ 	$placement_id = 	$this->getVar('placement_id');
  	
  	$vb_can_edit = true;
 ?>
@@ -71,7 +71,7 @@
 		print caHTMLHiddenInput('bundle', array('value' => $vs_bundle));
 		print caHTMLHiddenInput('row', array('value' => $vn_row));
 		print caHTMLHiddenInput('col', array('value' => $vn_col));
-		print caHTMLHiddenInput('placement_id', array('value' => $vn_placement_id));
+		print caHTMLHiddenInput('placement_id', array('value' => $placement_id));
 ?>
 		</div>
 	</form>
