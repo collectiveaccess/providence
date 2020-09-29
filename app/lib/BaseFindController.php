@@ -939,7 +939,20 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_READ_ACCESS__))));
+ 			
+ 			$set_list = caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_READ_ACCESS__)));
+            
+            // other users' public sets
+            if ($this->request->user->getPreference('list_public_sets') === 'show') {
+				$all_users_public_sets = caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'allUsers' => true, 'checkAccess' => 1)));
+				foreach ($all_users_public_sets as $key => $value){
+					if(key_exists($key, $set_list))
+						continue;
+					$set_list[$key] = $value;
+				}
+			}
+            $this->view->setVar('available_sets', $set_list); // show own sets and other users's public sets
+ 			
  			$this->view->setVar('available_editable_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
