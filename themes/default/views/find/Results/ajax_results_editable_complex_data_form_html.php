@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
  	$vs_bundle = 		$this->getVar('bundle');
  	$vn_row = 			$this->getVar('row');
  	$vn_col = 			$this->getVar('col');
+ 	$placement_id = 	$this->getVar('placement_id');
  	
  	$vb_can_edit = true;
 ?>
@@ -70,6 +71,7 @@
 		print caHTMLHiddenInput('bundle', array('value' => $vs_bundle));
 		print caHTMLHiddenInput('row', array('value' => $vn_row));
 		print caHTMLHiddenInput('col', array('value' => $vn_col));
+		print caHTMLHiddenInput('placement_id', array('value' => $placement_id));
 ?>
 		</div>
 	</form>

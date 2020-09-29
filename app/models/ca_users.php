@@ -39,7 +39,6 @@ require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
-require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
 require_once(__CA_LIB_DIR__ . '/Auth/AuthenticationManager.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 

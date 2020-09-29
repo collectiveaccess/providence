@@ -1334,7 +1334,7 @@ class SearchResult extends BaseObject {
 							    is_array($pa_options['filterTypes']) &&
 							    (sizeof($pa_options['filterTypes']) > 0)
 							) {
-							    $filter_by_types = caMakeTypeIDList($va_path_components['table_name'], $pa_options['filterTypes']);
+							    $filter_by_types = caMakeTypeIDList($va_path_components['table_name'], $pa_options['filterTypes'], ['dontIncludeSubtypesInTypeRestriction' => true]);
 						        $type_spec = join('.', [$va_path_components['table_name'], $type_id_fld]);
 							}
 							
@@ -1423,7 +1423,8 @@ class SearchResult extends BaseObject {
 						$va_ids = array($vn_row_id);
 					}
 					
-					$va_hier_list = array();
+					if (!is_array($va_ids)) { $va_ids = []; }
+					$va_hier_list = [];
 					foreach($va_ids as $vn_id) {
 						if (
 							!is_array(SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5])
@@ -2288,7 +2289,14 @@ class SearchResult extends BaseObject {
                                             break;
                                     }
                                 }
-                                $vs_val_proc = $o_value->getDisplayValue(['return' => $vs_return_type, 'version' => $vs_version]);
+                                if($alt_text = caGetOption('alt', $pa_options, null)) {
+									// noop
+								} elseif ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
+									$alt_text = $this->getWithTemplate($alt_text_template);
+								} else {
+									$alt_text = $this->get($this->tableName().".preferred_labels");
+								}
+                                $vs_val_proc = $o_value->getDisplayValue(['alt' => $alt_text, 'return' => $vs_return_type, 'version' => $vs_version]);
 						        break;
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());

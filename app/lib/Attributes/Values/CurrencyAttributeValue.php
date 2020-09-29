@@ -40,11 +40,6 @@
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
- 	require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Locale.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Locale/Data.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Locale/Format.php');
- 
  	global $_ca_attribute_settings;
  	
  	$_ca_attribute_settings['CurrencyAttributeValue'] = array(		// global

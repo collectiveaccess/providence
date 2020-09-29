@@ -28,10 +28,7 @@
  */
  	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
  	require_once(__CA_LIB_DIR__.'/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Cache.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Feed.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Feed/Rss.php');
- 
+
 	class rssViewerWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;

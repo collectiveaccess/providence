@@ -1524,6 +1524,55 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals(10, sizeof($va_decades));
 		$this->assertEquals($va_decades_expected, $va_decades);
 	}
+	
+	function testNormalizationCenturiesAD() {
+		$o_tep = new TimeExpressionParser('1600 - 1900');
+		$va_historic = $o_tep->getHistoricTimestamps();
+
+		$va_expected = [];
+		for($vn_i = 1600; $vn_i <= 1900; $vn_i += 100) {
+			$va_expected[] = $vn_i;
+		}
+
+		$va_centuries = $o_tep->normalizeDateRange($va_historic['start'], $va_historic['end'], 'centuries');
+	
+		$this->assertEquals(4, sizeof($va_centuries));
+		$this->assertEquals($va_expected, array_keys($va_centuries));
+	}
+	
+	function testNormalizationCenturiesBC() {
+		$o_tep = new TimeExpressionParser('500 BCE - 100 BCE');
+		$va_historic = $o_tep->getHistoricTimestamps();
+
+		$va_expected = [];
+		for($vn_i = -500; $vn_i <= -100; $vn_i += 100) {
+			$va_expected[] = $vn_i;
+		}
+
+		$va_centuries = $o_tep->normalizeDateRange($va_historic['start'], $va_historic['end'], 'centuries');
+
+		$this->assertEquals(5, sizeof($va_centuries));
+		$this->assertEquals($va_expected, array_keys($va_centuries));
+		$this->assertEquals('5th century BCE', array_shift($va_centuries));
+		$this->assertEquals('1st century BCE', array_pop($va_centuries));
+	}
+	
+	function testNormalizationCenturiesBC2AD() {
+		$o_tep = new TimeExpressionParser('100 B.C. - 150 A.D.');
+		$va_historic = $o_tep->getHistoricTimestamps();
+
+		$va_expected = [];
+		for($vn_i = -100; $vn_i <= 100; $vn_i += 100) {
+			$va_expected[] = $vn_i;
+		}
+
+		$va_centuries = $o_tep->normalizeDateRange($va_historic['start'], $va_historic['end'], 'centuries');
+
+		$this->assertEquals(3, sizeof($va_centuries));
+		$this->assertEquals($va_expected, array_keys($va_centuries));
+		$this->assertEquals('1st century BCE', array_shift($va_centuries));
+		$this->assertEquals('2nd century', array_pop($va_centuries));
+	}
 
 	function testMultiWordConjunctions() {
 		$o_tep = new TimeExpressionParser();

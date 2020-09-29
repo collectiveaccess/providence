@@ -57,6 +57,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	static private $doc_content_buffer = [];
 	static private $update_content_buffer = [];
 	static private $delete_buffer = [];
+	static private $record_cache = [];
 
 	protected $elasticsearch_index_name = '';
 	protected $elasticsearch_base_url = '';
@@ -178,15 +179,19 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		foreach($pa_subject_row_ids as $pn_subject_row_id) {
 			// fetch the record
 			try {
-				$f = [
+				$record = $this->record_cache[$table][$pn_subject_row_id] ?? null;
+				if (is_null($record)){
+					$f = [
 						'index' => $this->getIndexName($table),
 						'type' => $type,
 						'id' => $pn_subject_row_id
-				];
-				$va_record = $this->getClient()->get($f)['_source'];
+					];
+					$va_record = $this->getClient()->get($f)['_source'];
+				}
  			} catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 				$va_record = []; // record doesn't exist yet --> the update API will create it
 			}
+			$this->record_cache[$table][$pn_subject_row_id] = $record;
 
 			$this->addFragmentToUpdateContentBuffer($va_fragment, $va_record, $table, $pn_subject_row_id, $pn_content_row_id);
 		}
@@ -239,7 +244,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	protected function getClient() {
 		if(!self::$client) {
 			self::$client = Elasticsearch\ClientBuilder::create()
-				->setHosts([$this->elasticsearch_base_url])
+				->setHosts([parse_url($this->elasticsearch_base_url)])
 				->setRetries(3)
 				->build();
 		}
@@ -682,6 +687,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		self::$doc_content_buffer = [];
 		self::$update_content_buffer = [];
 		self::$delete_buffer = [];
+		self::$record_cache = [];
 	}
 	# -------------------------------------------------------
 	/**

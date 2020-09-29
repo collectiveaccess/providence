@@ -1,13 +1,39 @@
 /*
-	Date: 30 May 2020
+	Date: 16 June 2020
 	Migration: 164
-	Description:    Sql Search Word index with locale
+	Description:    Add media upload manager session table; add index to ca_task_queue
 */
 
 /*==========================================================================*/
 
-drop index u_word on ca_sql_search_words;
-create unique index u_word on ca_sql_search_words(word,locale_id);
+create table if not exists ca_media_upload_sessions (
+   session_id                int unsigned                   not null AUTO_INCREMENT,
+   user_id                   int unsigned                   not null references ca_users(user_id),
+   session_key               char(36)                       not null,
+   created_on                int unsigned                   not null,
+   completed_on              int unsigned                   null,
+   last_activity_on          int unsigned                   null,
+   cancelled                 tinyint unsigned               not null default 0,
+
+   num_files		         int unsigned                   not null,
+   total_bytes		         bigint unsigned                not null default 0,
+   error_code                smallint unsigned              not null default 0,
+   progress		             longtext                       null,
+
+   primary key (session_id),
+
+   index i_session_id               (session_id),
+   index i_created_on			    (created_on),
+   index i_completed_on			    (completed_on),
+   index i_last_activity_on			(last_activity_on),
+   index i_cancelled      	        (cancelled),
+   index i_error_code      	        (error_code),
+   unique index i_session_key      	(session_key)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+create index i_handler on ca_task_queue(handler);
+
 
 /*==========================================================================*/
 

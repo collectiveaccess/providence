@@ -30,7 +30,6 @@
 # --- Import classes
 # ----------------------------------------------------------------------
 require_once(__CA_LIB_DIR__."/Search/SearchBase.php");
-require_once(__CA_LIB_DIR__."/Zend/Search/Lucene.php");
 require_once(__CA_LIB_DIR__."/Plugins/SearchEngine/CachedResult.php");
 require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
 require_once(__CA_LIB_DIR__."/Search/SearchResult.php");
@@ -40,9 +39,6 @@ require_once(__CA_LIB_DIR__."/Utils/Timer.php");
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 
 require_once(__CA_LIB_DIR__."/Search/Common/Parsers/LuceneSyntaxParser.php");
-require_once(__CA_LIB_DIR__."/Zend/Search/Lucene/Search/Query.php");
-require_once(__CA_LIB_DIR__."/Zend/Search/Lucene/Search/Query/Boolean.php");
-require_once(__CA_LIB_DIR__."/Zend/Search/Lucene/Search/Query/Term.php");
 
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_acl.php');

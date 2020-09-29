@@ -2619,6 +2619,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if ( isset( $va_item['settings']['matchOn'] ) ) {
 								$va_group_buf[ $vn_c ]['_matchOn'] = $va_item['settings']['matchOn'];
 							}
+							
+							if (isset($va_item['settings']['add'])) {
+								$va_group_buf[$vn_c]['_add'] = $va_item['settings']['add'];
+							}
+							if (isset($va_item['settings']['replace'])) {
+								$va_group_buf[$vn_c]['_replace'] = $va_item['settings']['_replace'];
+							}
 
 							if ( $va_item['settings']['skipIfDataPresent'] ) {
 								$va_group_buf[ $vn_c ]['_skipIfDataPresent'] = true;
@@ -3079,8 +3086,25 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->clearErrors();
 					if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0) && (!$vb_was_preferred_label_match)) {
 						$vb_remove_labels = true;
-						foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_fld) {
-							if ($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
+						
+						$pref_label_data = array_filter($va_content_tree[$vs_subject_table], function($v) {
+							if (isset($v['preferred_labels'])) {
+								$pref_label_is_set = false;
+								foreach($v['preferred_labels'] as $k => $kv) {
+									if (preg_match("!^[a-z_]+$!", $k) && strlen($kv)) {
+										return true;
+									}
+								}
+							}
+							return false;
+						});
+						
+						if (!sizeof($pref_label_data)) { 
+							$vb_remove_labels = false;
+						} else {
+							foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_fld) {
+								if ($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
+							}
 						}
 						
 						if ($vb_remove_labels) {
@@ -3160,6 +3184,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									
 										$vs_item_error_policy = $va_element_content['_errorPolicy'];
 										unset($va_element_content['_errorPolicy']); 
+										
+										$vb_force_add = $va_element_content['_add'];
+										unset($va_element_content['_add']); 
+										
+										$vb_force_replace = $va_element_content['_replace'];
+										unset($va_element_content['_replace']); 
 										
 										$vb_skip_if_data_present = $va_element_content['_skipIfDataPresent'];
 										unset($va_element_content['_skipIfDataPresent']);
@@ -3309,7 +3339,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											if (is_array($va_element_content)) { $va_element_content['locale_id'] = $vn_locale_id; }
 										
 											if ($vb_skip_if_data_present && ($t_subject->getAttributeCountByElement($vs_element) > 0)) { continue(2); } 
-											if (!isset($va_elements_set_for_this_record[$vs_element]) && !$va_elements_set_for_this_record[$vs_element] && in_array($vs_existing_record_policy, array('merge_on_idno_with_replace', 'merge_on_preferred_labels_with_replace', 'merge_on_idno_and_preferred_labels_with_replace'))) {
+											if (
+												(
+													!isset($va_elements_set_for_this_record[$vs_element]) && 
+													!$va_elements_set_for_this_record[$vs_element] && 
+													in_array($vs_existing_record_policy, ['merge_on_idno_with_replace', 'merge_on_preferred_labels_with_replace', 
+																							'merge_on_idno_and_preferred_labels_with_replace']) &&
+													!$vb_force_add
+												)
+												||
+												$vb_force_replace
+											) {
 												$t_subject->removeAttributes($vs_element, array('force' => true));
 											} 
 											$va_elements_set_for_this_record[$vs_element] = true;

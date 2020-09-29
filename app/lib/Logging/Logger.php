@@ -35,9 +35,6 @@
    */
    
 require_once(__CA_LIB_DIR__.'/Configuration.php');
-require_once(__CA_LIB_DIR__."/Zend/Log/Writer/Stream.php");
-require_once(__CA_LIB_DIR__."/Zend/Log/Writer/Syslog.php");
-require_once(__CA_LIB_DIR__."/Zend/Log/Formatter/Simple.php");
 require_once(__CA_LIB_DIR__."/Utils/CLIUtils.php");
  
  # ----------------------------------------------------------------------

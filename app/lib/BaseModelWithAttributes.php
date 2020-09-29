@@ -1953,10 +1953,12 @@
 					
 					$vs_form_element = str_replace(
 						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')",
-						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $f)."')", 
+						"jQuery('#".str_replace('.', '_',$f)."')", 
 						$vs_form_element
 					);
-					$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $f, $vs_form_element);
+					
+					$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_',$f), $vs_form_element);
+					$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_autocomplete{n}', str_replace('.', '_',$f).'_autocomplete', $vs_form_element);
 					if (caGetOption('removeTemplateNumberPlaceholders', $pa_options, true)) {
 						$vs_form_element = str_replace('{n}', '', $vs_form_element);
 					}

@@ -767,7 +767,7 @@
 		$pa_options['dontCreate'] = $pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = [];  // value list for all items
-		$vn_c = 0;
+	
 		if (!($t_instance = Datamodel::getInstanceByTableName($ps_table, true))) { return array(); }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
@@ -1136,11 +1136,13 @@
 							    
 								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText().']'; }
 					
-								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && ((isset($va_val['media']['media']) && ($va_val['media']['media'])) || $vs_item)) {
+								if ($va_val['media']['media'] || $vs_item) {
+									// Search for files in import directory (or subdirectory of import directory specified by mediaPrefix)
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
 
 								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'], null), 'log' => $o_log]);
 
+									$files_added = 0;
 									foreach($va_files as $vs_file) {
 										if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
 										
@@ -1154,16 +1156,21 @@
 
 					                    $va_media_val['_matchOn'] = $va_match_on;
 							            $va_vals[] = $va_media_val;
+							            $files_added++;
 							        }
-							        $vn_c++;
-							        continue(2);
-								} else {
-								    if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
-								        $va_val['media']['media'] = $vs_item;
-								    } else {
-									    $va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
-									}
+							        if($files_added > 0) {	// if we found matching files we're done
+							        	continue(2);
+							        }
 								}
+								if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
+									// Is the media import item a URL?
+									$va_val['media']['media'] = $vs_item;
+								} else {
+									// If noting else matches, just try to load the item from the import directory using the value as file name
+									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
+								}
+								
+								// Default idno for rperesentation is the file name
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
 							default:
@@ -1210,7 +1217,6 @@
 					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 					if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 					$va_vals[] = $va_val;
-					$vn_c++;
 				}
 			}
 		} else {

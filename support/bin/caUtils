@@ -39,7 +39,6 @@
 	require_once(__CA_APP_DIR__."/helpers/CLIHelpers.php");
 	require_once(__CA_LIB_DIR__."/Utils/CLIUtils.php");
 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-	require_once(__CA_LIB_DIR__."/Zend/Console/Getopt.php");
 
 	if (!caIsRunFromCLI()) {
 		die("Sorry, caUtils must be run from the command line!\n");
