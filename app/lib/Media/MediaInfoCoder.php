@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2019 Whirl-i-Gig
+ * Copyright 2006-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -294,18 +294,14 @@ class MediaInfoCoder {
 	public function getMediaVersions($pa_options=null) {
 		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
-		unset($va_media_info["ORIGINAL_FILENAME"]);
-		unset($va_media_info["INPUT"]);
-		unset($va_media_info["VOLUME"]);
-		unset($va_media_info["_undo_"]);
-		unset($va_media_info["TRANSFORMATION_HISTORY"]);
-		unset($va_media_info["_CENTER"]);
-		unset($va_media_info["_SCALE"]);
-		unset($va_media_info["_SCALE_UNITS"]);
-		unset($va_media_info["REPLICATION_KEYS"]);
-		unset($va_media_info["REPLICATION_STATUS"]);
-		unset($va_media_info["REPLICATION_LOG"]);
+		$to_remove = ['ORIGINAL_FILENAME', 'INPUT', 'VOLUME', 'TRANSFORMATION_HISTORY', 
+						'REPLICATION_KEYS', 'REPLICATION_STATUS', 'REPLICATION_LOG'];
 		
+		foreach($va_media_info as $k => $v) {
+			if(in_array($k, $to_remove, true) || preg_match('!^_[A-Z_]+$!', $k)) {
+				unset($va_media_info[$k]);
+			}
+		}
 		return array_keys($va_media_info);		
 	}
 	# ---------------------------------------------------------------------------
