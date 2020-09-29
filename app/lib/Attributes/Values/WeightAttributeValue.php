@@ -38,8 +38,7 @@
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
- 	require_once(__CA_LIB_DIR__.'/Zend/Measure/Weight.php');	
- 	
+
  	global $_ca_attribute_settings;
  	$_ca_attribute_settings['WeightAttributeValue'] = array(		// global
 		'fieldWidth' => array(

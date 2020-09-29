@@ -146,7 +146,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
-				$this->postError(1970, _t('Entry was blank.'), 'FloorPlanAttributeValue->parseValue()');
+				$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'FloorPlanAttributeValue->parseValue()');
 				return false;
 			}
 			return array();

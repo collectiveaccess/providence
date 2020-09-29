@@ -574,6 +574,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('Formatting option for Geocode attributes. Forces return of coordinates only, omitting text labels.')
 		);
 		
+		$va_settings['stripNewlines'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Remove newline characters from text values'),
+			'description' => _t('Formatting option for text attributes. Removes any newline characters in output.')
+		);
+		
 		$va_settings['_id'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

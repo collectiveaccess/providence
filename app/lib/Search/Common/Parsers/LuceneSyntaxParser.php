@@ -1,18 +1,6 @@
 <?php
 
 
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Term.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/MultiTerm.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Boolean.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Phrase.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Wildcard.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Range.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Fuzzy.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Empty.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Insignificant.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserContext.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryEntry/Subquery.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/FSM.php');
 require_once(__CA_LIB_DIR__.'/Search/Common/Parsers/LuceneSyntaxParserContext.php');
 require_once(__CA_LIB_DIR__.'/Search/Common/Parsers/LuceneSyntaxLexer.php');
 require_once(__CA_LIB_DIR__.'/Search/Common/Parsers/QueryEntry/PhraseQueryEntry.php');
@@ -262,7 +250,6 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 	 */
 	public function processModifierParameter() {
 		if ($this->opo_last_token === null) {
-			require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php';
 			throw new Zend_Search_Lucene_Search_QueryParserException('Lexeme modifier parameter must follow lexeme modifier. Char position 0.' );
 		}
 
@@ -277,7 +264,6 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 
 			default:
 				// It's not a user input exception
-				require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Exception.php';
 				throw new Zend_Search_Lucene_Exception('Lexeme modifier parameter must follow lexeme modifier. Char position 0.' );
 		}
 	}
@@ -296,7 +282,6 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 	 */
 	public function subqueryEnd() {
 		if (count($this->opa_context_stack) == 0) {
-			require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php';
 			throw new Zend_Search_Lucene_Search_QueryParserException('Syntax Error: mismatched parentheses, every opening must have closing. Char position ' . $this->opo_current_token->position . '.' );
 		}
 
@@ -330,7 +315,6 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 		$to = new Zend_Search_Lucene_Index_Term($this->opo_current_token->text, $this->opo_context->getField());
 
 		if ($from === null  &&  $to === null) {
-			require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php';
 			throw new Zend_Search_Lucene_Search_QueryParserException('At least one range query boundary term must be non-empty term');
 		}
 

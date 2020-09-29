@@ -4995,7 +4995,7 @@ create table ca_bundle_display_type_restrictions (
 
 
 /*==========================================================================*/
-/* Support for tour content
+/* Support for tour content                                                 */
 /*==========================================================================*/
 create table ca_tours
 (

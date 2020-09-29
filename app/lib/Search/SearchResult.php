@@ -1233,7 +1233,7 @@ class SearchResult extends BaseObject {
 					break;
 				case 'hierarchy':
 					$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
-					
+
 					// generate the hierarchy
 					if ($va_path_components['related']) {
 						// [RELATED TABLE HIERARCHY]
@@ -1538,6 +1538,9 @@ class SearchResult extends BaseObject {
 //
 				if ($va_path_components['field_name'] == '_guid') {
 					$vm_val = ca_guids::getForRow(Datamodel::getTableNum($va_path_components['table_name']), $vn_row_id);
+					if ($vb_return_as_array && !is_array($vm_val)){
+						$vm_val= [$vm_val];
+					}
 					goto filter;
 				}
 
@@ -1703,7 +1706,7 @@ class SearchResult extends BaseObject {
 		
 		filter:
 		
-		
+
 		// Sort structures by key
 		$va_sort_fields = caGetOption('sort', $pa_options, null);
 		if($va_sort_fields && !is_array($va_sort_fields)) { $va_sort_fields = [$va_sort_fields]; }
@@ -1731,7 +1734,7 @@ class SearchResult extends BaseObject {
 				}
 			}
 		}
-		
+
 		// process excludes 
 		if (sizeof($va_exclude_values) > 0) {
 			if ($vb_return_as_array && is_array($vm_val)) {
@@ -1758,7 +1761,7 @@ class SearchResult extends BaseObject {
 				}
 			} elseif (in_array($vm_val, $va_exclude_values)) { $vm_val = null; } 
 		}
-		
+
 		if ($vb_return_as_array && sizeof($va_filters)) {
 			$va_tmp = explode(".", $ps_field);
 			if (sizeof($va_tmp) > 1) { array_pop($va_tmp); }
@@ -1806,7 +1809,7 @@ class SearchResult extends BaseObject {
 				}
 			}
 		}
-		
+
 		if ($vb_convert_line_breaks) {
 			if(is_array($vm_val)) {
 				return array_map(function($v) { return !is_array($v) ? nl2br($v) : $v; }, $vm_val);
@@ -1821,7 +1824,7 @@ class SearchResult extends BaseObject {
 				return strip_tags($vm_val);
 			}
 		}
-		
+
 		if ($vb_return_as_search_result) {
 			if (!is_array($vm_val) || !sizeof($vm_val)) { return null; }
 			return caMakeSearchResult($va_path_components['table_name'], $vm_val, $pa_options);
@@ -2196,7 +2199,7 @@ class SearchResult extends BaseObject {
 								array_shift($va_auth_spec); // remove auth_attr_code
 							}
 						} elseif ($vb_element_is_present && $vb_sub_element_is_present) {
-							$va_auth_spec = [];
+							$va_auth_spec = array_slice($va_path_components['components'], 3);
 						} elseif ($vb_element_is_present) {
 							// ca_objects.authority_attr_code
 							$va_auth_spec = array_slice($va_path_components['components'], 2);

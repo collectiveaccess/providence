@@ -2,8 +2,6 @@
 require_once '../../../../../../setup.php';
 
 require_once __CA_LIB_DIR__."/Search/Common/Parsers/LuceneSyntaxParser.php";
-require_once __CA_LIB_DIR__."/Zend/Search/Lucene.php";
-require_once __CA_LIB_DIR__."/Zend/Search/Lucene/Search/QueryParser.php";
 
 $vo_old_parser = new Zend_Search_Lucene_Search_QueryParser();
 $vo_parser = new LuceneSyntaxParser();
