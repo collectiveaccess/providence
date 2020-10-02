@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,6 +55,7 @@
  				'ca_storage_locations' 			=> ['relevance' => '_natural', 'name' => 'ca_storage_location_labels.name', 'displayidno' => '', 'idno' => '', 'displayname' => _t('Storage locations'), 'primary_key' => 'location_id', 'module' => 'editor/storage_locations', 'controller' => 'StorageLocationEditor', 'action' => $vs_default_actions["ca_storage_locations"], 'searchModule' => 'find', 'searchController' => 'SearchStorageLocations', 'searchAction' => "Index"],
  				'ca_loans' 						=> ['relevance' => '_natural', 'name' => 'ca_loan_labels.name', 'displayidno' => 'ca_loans.idno', 'idno' => 'ca_loans.idno_sort', 'displayname' => _t('Loans'), 'primary_key' => 'loan_id', 'module' => 'editor/loans', 'controller' => 'LoanEditor', 'action' => $vs_default_actions["ca_loans"], 'searchModule' => 'find', 'searchController' => 'SearchLoans', 'searchAction' => "Index"],
  				'ca_movements' 					=> ['relevance' => '_natural', 'name' => 'ca_movement_labels.name', 'displayidno' => 'ca_movements.idno', 'idno' => 'ca_movements.idno_sort', 'displayname' => _t('Movements'), 'primary_key' => 'movement_id', 'module' => 'editor/movements', 'controller' => 'MovementEditor', 'action' => $vs_default_actions["ca_movements"], 'searchModule' => 'find', 'searchController' => 'SearchMovements', 'searchAction' => "Index"],
+ 				'ca_object_representations' 	=> ['relevance' => '_natural', 'name' => 'ca_object_representation_labels.name', 'displayidno' => 'ca_object_representations.idno', 'idno' => 'ca_object_representations.idno_sort', 'displayname' => _t('Object representations'), 'primary_key' => 'representation_id', 'module' => 'editor/object_representations', 'controller' => 'ObjectRepresentationEditor', 'action' => $vs_default_actions["ca_object_representations"], 'searchModule' => 'find', 'searchController' => 'SearchObjectRepresentations', 'searchAction' => "Index"],
  				'ca_tours'	 					=> ['relevance' => '_natural', 'name' => 'ca_tour_labels.name', 'displayidno' => 'ca_tours.tour_code', 'idno' => 'ca_tours.tour_code', 'displayname' => _t('Tours'), 'primary_key' => 'tour_id', 'module' => 'editor/tours', 'controller' => 'TourEditor', 'action' => $vs_default_actions["ca_tours"], 'searchModule' => 'find', 'searchController' => 'SearchTours', 'searchAction' => "Index"],
  				'ca_tour_stops' 				=> ['relevance' => '_natural', 'name' => 'ca_tour_stop_labels.name', 'displayidno' => 'ca_tour_stops.idno', 'idno' => 'ca_tour_stops.idno_sort', 'displayname' => _t('Tour stops'), 'primary_key' => 'stop_id', 'module' => 'editor/tour_stops', 'controller' => 'TourStopEditor', 'action' => $vs_default_actions["ca_tour_stops"], 'searchModule' => 'find', 'searchController' => 'SearchTourStops', 'searchAction' => "Index"]
  			];
