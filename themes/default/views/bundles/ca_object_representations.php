@@ -178,7 +178,7 @@
 	} 
 						foreach($bundles_to_edit_proc as $f) {
 							if($f === 'type_id') { // type
-								print $t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+								print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 							} elseif($t_item->hasField($f)) { // intrinsic
 								print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 							} elseif($t_item->hasElement($f)) {
@@ -270,7 +270,7 @@
 					if(in_array($f, ['media'])) { continue; }
 					
 					if($f === 'type_id') { // type
-						print $t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+						print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 					} elseif($t_item->hasField($f)) { // intrinsic
 						print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 					} elseif($t_item->hasElement($f)) {

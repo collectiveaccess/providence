@@ -1197,8 +1197,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								_t('Classic') => 'CLASSIC',
 								_t('New UI with batch uploading') => 'NEW_UI'
 							],
-							'default' => '',
-							'multiple' => true,
+							'default' => 'NEW_UI',
+							'multiple' => false,
 							'label' => _t('User interface style'),
 							'description' => _t('')
 						];
