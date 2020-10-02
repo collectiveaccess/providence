@@ -4307,7 +4307,7 @@ if (!$vb_batch) {
 											$vs_tmp_directory = caGetTempDirPath();
 										}
                                     	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
-                                    	$md = json_decode(file_get_contents("{$vs_path}_metadata"), true);
+                                    	$md = json_decode(@file_get_contents("{$vs_path}_metadata"), true);
                                         $vs_original_name = $md['original_filename'];
                                     } else {
                                         $vs_path = $va_values['tmp_name'];
