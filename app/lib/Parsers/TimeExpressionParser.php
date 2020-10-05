@@ -2441,7 +2441,7 @@ class TimeExpressionParser {
 	 *		dateTimeConjunction (string) [default is first in lang. config]
 	 *		showADEra (true|false) [default is false]
 	 *		uncertaintyIndicator (string) [default is first in lang. config]
- 	 *		dateFormat		(text|delimited|iso8601|yearOnly)	[default is text]
+ 	 *		dateFormat		(text|delimited|iso8601|yearOnly|ymd)	[default is text]
 	 *		dateDelimiter	(string) [default is first delimiter in language config file]
 	 *		circaIndicator	(string) [default is first indicator in language config file]
 	 *		beforeQualifier	(string) [default is first indicator in language config file]
@@ -2612,7 +2612,7 @@ class TimeExpressionParser {
 				}
 			} elseif ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'yearOnly'))) { 
 				$va_range_conjunctions = $this->opo_language_settings->getList('rangeConjunctions');
-				return $va_start_pieces['year']." ".$va_range_conjunctions[0]." ".$va_end_pieces['year'];
+				return ($va_start_pieces['year'] != $va_end_pieces['year']) ? $va_start_pieces['year']." ".$va_range_conjunctions[0]." ".$va_end_pieces['year'] : $va_start_pieces['year'];
 			}
 			
 		
@@ -3241,7 +3241,7 @@ class TimeExpressionParser {
 		
 		$vs_month = null;
 		if ($pa_date_pieces['month'] > 0) {		// date with month
-			if ($pa_options['dateFormat'] == 'delimited') {
+			if (in_array((string)$pa_options['dateFormat'], ['delimited', 'ymd'], true)) {
 				$vs_month = $pa_date_pieces['month'];
 			} else {
 				$va_months = $this->getMonthList();
@@ -3279,7 +3279,12 @@ class TimeExpressionParser {
 			$vs_day .= $vs_day_suffix;
 		}
 		
-		if ($vb_month_comes_first) {
+		if($pa_options['dateFormat'] === 'ymd') {
+			$va_date[] = $vs_year;
+			if ($vs_month) { $va_date[] = sprintf("%02d", $vs_month); }
+			if ($vs_day) { $va_date[] =  sprintf("%02d", $vs_day); }
+			return join($vs_date_delimiter, $va_date);
+		} elseif ($vb_month_comes_first) {
 			if ($vs_month) { $va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_month) : $vs_month); }
 			if ($vs_day) { 
 				if (
