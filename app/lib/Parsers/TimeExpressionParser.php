@@ -753,7 +753,14 @@ class TimeExpressionParser {
 		if ($va_hook_result["expression"] != $ps_expression) {
 			$ps_expression = $va_hook_result["expression"];
 		}
-
+		
+		
+		// Convert ISO ranges
+		if (preg_match("!^([\d\-:TZ]+)/([\d\-:TZ]+)$!", trim($ps_expression), $matches)) {
+			$conjunction = array_shift($this->opo_language_settings->getList("rangeConjunctions"));
+			$ps_expression = $matches[1]." {$conjunction} ".$matches[2];
+		}
+	
 		# convert
 		$va_dict = $this->opo_datetime_settings->getAssoc("expressions");
 		$vs_lc_expression = mb_strtolower($ps_expression);
@@ -837,11 +844,11 @@ class TimeExpressionParser {
 		# convert dd-mm-yyyy dates to dd/mm/yyyy to prevent our range conjunction code below doesn't mangle it
 		$ps_expression = preg_replace("/([\d]{2})-([\d]{2})-([\d]{4})/", "$1/$2/$3", $ps_expression);
 		
-		if (preg_match("/([\d]{4})-([\d]{2})$/", $ps_expression, $va_matches)) {
+		if (preg_match("/([\d]{4})-([\d]{2})(\/|$)/", $ps_expression, $va_matches)) {
 			if (intval($va_matches[2]) > 12) {
-				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})$/", "$1-".substr($va_matches[1], 0, 2)."$2", $ps_expression);
+				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})(\/|$)/", "$1-".substr($va_matches[1], 0, 2)."$2$3", $ps_expression);
 			} else {
-				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})$/", "$1#$2", $ps_expression);
+				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})(\/|$)/", "$1#$2$3", $ps_expression);
 			}
 		}
 		
