@@ -37,13 +37,10 @@ require_once(__CA_APP_DIR__."/helpers/errorHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/systemHelpers.php");
 require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer
 
-require_once(__CA_LIB_DIR__."/Zend/Translate.php");
-require_once(__CA_LIB_DIR__."/Zend/Cache.php");
 require_once(__CA_LIB_DIR__."/Cache/MemoryCache.php"); // is used in utilityHelpers
 require_once(__CA_LIB_DIR__."/Cache/ExternalCache.php"); // is used in utilityHelpers
 require_once(__CA_LIB_DIR__."/Cache/CompositeCache.php"); // is used in utilityHelpers
 require_once(__CA_LIB_DIR__."/Cache/PersistentCache.php"); // is used in utilityHelpers
-require_once(__CA_LIB_DIR__."/Zend/Registry.php");
 
 require_once(__CA_LIB_DIR__."/Utils/Debug.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");

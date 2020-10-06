@@ -329,6 +329,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				CompositeCache::delete($vs_cache_key, 'ElementList');
 			}
 		}
+		$this->resetElasticSearchMappingRefresh();
 	}
 	# ------------------------------------------------------
 	# Element set methods
@@ -1726,4 +1727,19 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return null;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Ensure that ElasticSearch mapping gets updated on next indexing run by setting the last time to be the start of the epoch.
+	 */
+	private function resetElasticSearchMappingRefresh() {
+		if ($this->getAppConfig()->get('search_engine_plugin') === 'ElasticSearch') {
+			if (!$this->opo_app_vars) {
+				$this->opo_app_vars = new ApplicationVars($this->getDb());
+			}
+			$vs_var = 'ElasticSearchMappingRefresh';
+			if ($this->opo_app_vars->getVar($vs_var) > 0) {
+				$this->opo_app_vars->setVar($vs_var,0);
+				$this->opo_app_vars->save();
+			}
+		}
+	}
 }

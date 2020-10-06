@@ -59,7 +59,7 @@
 					'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
 					'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 					'wrap' => true,
-					'shrinkToFit'=> true),
+					'shrinkToFit'=> false),
 			'borders' => array(
 					'allborders'=>array(
 							'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK)));
@@ -72,7 +72,7 @@
 					'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
 					'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 					'wrap' => true,
-					'shrinkToFit'=> true),
+					'shrinkToFit'=> false),
 			'borders' => array(
 					'allborders'=>array(
 							'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)));

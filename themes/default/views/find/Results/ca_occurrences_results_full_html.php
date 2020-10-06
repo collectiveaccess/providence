@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,10 +63,10 @@
 		print "<div class='objectFullTextTitle'>".caEditorLink($this->request, implode("<br/>", $va_labels), '', 'ca_occurrences', $vn_occurrence_id, array())."</div>";
 		
 		// Output configured fields in display
-		foreach($va_display_list as $vn_placement_id => $va_info) {
-			if (in_array($va_info['bundle_name'], array('ca_occurrences.preferred_labels', 'ca_occurrence_labels.name'))) { continue; } 		// skip preferred labels because we always output them above
-			if ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
-				print "<div class='objectFullTextTextBlock'><span class='formLabel'>".$va_info['display']."</span>: ".$vs_display_text."</div>\n";
+		foreach($va_display_list as $placement_id => $info) {
+			if (in_array($info['bundle_name'], array('ca_occurrences.preferred_labels', 'ca_occurrence_labels.name'))) { continue; } 		// skip preferred labels because we always output them above
+			if ($vs_display_text = $t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(array('request' => $this->request), is_array($info['settings']) ? $info['settings'] : array()))) {
+				print "<div class='objectFullTextTextBlock'><span class='formLabel'>".$info['display']."</span>: ".$vs_display_text."</div>\n";
 			}
 		}
 		print "</div><!-- END objectFullText -->";

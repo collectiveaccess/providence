@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,6 @@ require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
-require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
 require_once(__CA_LIB_DIR__ . '/Auth/AuthenticationManager.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 
@@ -2694,7 +2693,6 @@ class ca_users extends BaseModel {
 	 */
 	public function close() {
 		if($this->getPrimaryKey()) {
-			$this->setMode(ACCESS_WRITE);
 			$this->update(['dontLogChange' => true]);
 		}
 	}
@@ -2795,7 +2793,7 @@ class ca_users extends BaseModel {
 				} elseif(function_exists('openssl_random_pseudo_bytes')) {
 					$vs_password_reset_token = hash('sha256', openssl_random_pseudo_bytes(32));
 				} else {
-					throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+					throw new ApplicationException('mcrypt or OpenSSL is required for CollectiveAccess to run');
 				}
 
 				$this->setVar("{$vs_app_name}_password_reset_token", $vs_password_reset_token);
@@ -2812,7 +2810,6 @@ class ca_users extends BaseModel {
 			$this->passwordResetDeactivateAccount();
 		}
 
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
 	}
 	# ----------------------------------------
@@ -2841,7 +2838,6 @@ class ca_users extends BaseModel {
 		if(!$vb_return) {
 			// invalid token checks count as completely botched password reset attempt. you can only have so many of those
 			$this->removePendingPasswordReset(false);
-			$this->setMode(ACCESS_WRITE);
 			$this->update();
 		}
 
@@ -2860,7 +2856,6 @@ class ca_users extends BaseModel {
 		// use the reset password feature again. Otherwise he would immediately be locked out again.
 		$this->removePendingPasswordReset(true);
 		$this->set('active', 0);
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
 
 		$this->opo_log->log(array(
@@ -3021,17 +3016,14 @@ class ca_users extends BaseModel {
 				    $this->set('userclass', 1);
 				}
 
-				$vn_mode = $this->getMode();
-				$this->setMode(ACCESS_WRITE);
 				$this->insert();
 
 				if (!$this->getPrimaryKey()) {
-					$this->setMode($vn_mode);
 					$this->opo_log->log(array(
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
+						'MESSAGE' => $err = _t('User could not be created after getting info from authentication adapter: %1', join(" ", $this->getErrors()))
 					));
-					throw($e);
+					throw new ApplicationException($err);
 				}
 
 				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
@@ -3049,9 +3041,6 @@ class ca_users extends BaseModel {
 				}
 
 				$this->update();
-
-				// restore mode
-				$this->setMode($vn_mode);
 			}
 		}
 

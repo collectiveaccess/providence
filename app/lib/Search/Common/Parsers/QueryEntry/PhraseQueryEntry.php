@@ -1,7 +1,5 @@
 <?php
 
-require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Index/Term.php';
-require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryEntry.php';
 
 class PhraseQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	/**
@@ -69,7 +67,6 @@ class PhraseQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	 */
 	public function getQuery($encoding) {
 		if (strpos($this->_phrase, '?') !== false || strpos($this->_phrase, '*') !== false) {
-		    require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php';
 		    throw new Zend_Search_Lucene_Search_QueryParserException('Wildcards are only allowed in a single terms.');
 		}
 
