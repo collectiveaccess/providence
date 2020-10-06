@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,10 +49,10 @@ class AppController {
 	private $opo_dispatcher;
 	
 	# -------------------------------------------------------
-	public static function getInstance(&$po_request=null, &$po_response=null) {
+	public static function getInstance(&$po_request=null, &$po_response=null, $dont_create=false) {
 		global $g_app_controller;
 		if (!$g_app_controller) {
-			return $g_app_controller = new AppController($po_request, $po_response);
+			return $dont_create ? null : $g_app_controller = new AppController($po_request, $po_response);
 		}
 		return $g_app_controller;
 	}
