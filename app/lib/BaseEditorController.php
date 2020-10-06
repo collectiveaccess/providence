@@ -2516,10 +2516,11 @@ class BaseEditorController extends ActionController {
 					$names_set[$vs_name]++;
 					$ext = pathinfo($vs_name, PATHINFO_EXTENSION);
 					$vs_name = pathinfo($vs_name, PATHINFO_FILENAME).'-'.$names_set[$vs_name].'.'.$ext;
+				} else {
+					$names_set[$vs_name] = 1;
 				}
 				$o_zip->addFile($vs_path, $vs_name);
 				
-				$names_set[$vs_name] = 1;
 			}
 			$o_view->setVar('zip_stream', $o_zip);
 			$o_view->setVar('archive_name', caGetMediaDownloadArchiveName($t_subject->tableName(), $vn_subject_id, ['extension' => 'zip'])); //preg_replace('![^A-Za-z0-9\.\-]+!', '_', trim($t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), "/")).'.zip');
