@@ -109,7 +109,8 @@
 			if (!$this->errors) { $this->errors = array(); }
 			array_push($this->errors, $o_error);
 			
-			if (($app = AppController::getInstance()) && ($o_request = $app->getRequest()) && defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			$dummy = null;
+			if (($app = AppController::getInstance($dummy, $dummy, true)) && ($o_request = $app->getRequest()) && defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
 				$va_trace = debug_backtrace();
 				array_shift($va_trace);
 				$vs_stacktrace = '';
