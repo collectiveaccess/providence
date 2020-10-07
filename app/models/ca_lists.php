@@ -1979,7 +1979,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getListCodes($pa_options=null) {		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
-		if (ExternalCache::contains($vs_cache_key, 'listCodes')) { return ExternalCache::fetch($vs_cache_key, 'listCodes'); }
+		if (ExternalCache::contains($vs_cache_key, 'listCodes') && is_array($v = ExternalCache::fetch($vs_cache_key, 'listCodes'))) { 
+			return $v; 
+		}
 		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
