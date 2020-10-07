@@ -39,7 +39,8 @@ if (!is_array($opa_error_messages)) {
 <head>
 	<title>CollectiveAccess configuration error display</title>
 	<link href="<?php print __CA_THEME_URL__; ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
-	<link href='../assets/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css' media='all'/>
+	<link href='../assets/fontawesome/css/all.min.css' rel='stylesheet' type='text/css' media='all'/>
+    <link href='../assets/fontawesome/css/v4-shims.min.css' rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>
