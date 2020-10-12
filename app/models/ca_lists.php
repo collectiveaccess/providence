@@ -1658,7 +1658,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if ($omit_type && is_array($omit_map[$omit_type])) { 
 					$omit_map = $omit_map[$omit_type];						// type specific policy
 				} else {
-					$omit_map = $omit_map['__default__'];					// defaulr (all type) policy
+					$omit_map = $omit_map['__default__'];					// default (all type) policy
 				}
 				
 				if (is_array($omit_map)) {
