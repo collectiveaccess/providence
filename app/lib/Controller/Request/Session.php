@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2019 Whirl-i-Gig
+ * Copyright 2000-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -114,7 +114,8 @@ class Session {
 			// try to get session ID from cookie. if that doesn't work, generate a new one
 			if (!($session_id = self::getSessionID())) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
-				if (!caIsRunFromCLI()) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath); }
+				$secure = (__CA_SITE_PROTOCOL__ === 'https');
+				if (!caIsRunFromCLI()) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
