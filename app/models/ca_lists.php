@@ -1643,6 +1643,37 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['disabledOptions'] = $va_disabled_options;
 		
+		// For "access_statuses" list we enforce per-table/type option visibility restrictions
+		// here using specification in app.conf "omit_access_statuses" setting
+		//
+		if (
+			($t_list->get('ca_lists.list_code') === 'access_statuses') && 
+			($omit_table = caGetOption('table', $pa_options, null))			// table to omit values for
+		) {
+			$omit_type = caGetOption('type', $pa_options, null);			// optional type to omit values for
+			$config = Configuration::load();
+			$omit_map = $config->getAssoc('omit_access_statuses');
+			
+			if (isset($omit_map[$omit_table]) && ($omit_map = $omit_map[$omit_table])) {
+				if ($omit_type && is_array($omit_map[$omit_type])) { 
+					$omit_map = $omit_map[$omit_type];						// type specific policy
+				} else {
+					$omit_map = $omit_map['__default__'];					// default (all type) policy
+				}
+				
+				if (is_array($omit_map)) {
+					foreach($omit_map as $i => $value) {
+						if(!strlen(trim($value))) { continue; }
+						if (!is_numeric($value)) { 
+							$value = caGetListItemValueForIdno('access_statuses', $value); 	// convert status identifiers to integer code values
+							if(!strlen(trim($value))) { continue; }
+						}
+						unset($va_options[(int)$value]);
+					}
+				}
+			}
+		}
+		
 		if (($max_columns = caGetOption('maxColumns', $pa_options, 1, ['castTo' => 'integer'])) < 1) { $max_columns = 1; }
 		switch($vs_render_as) {
 			case 'radio_buttons':
