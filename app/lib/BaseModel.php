@@ -119,7 +119,6 @@ require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/MediaContentLocationIndexer.php");
-require_once(__CA_LIB_DIR__.'/Media/Remote/Base.php');
 
 /**
  * Base class for all database table classes. Implements database insert/update/delete
