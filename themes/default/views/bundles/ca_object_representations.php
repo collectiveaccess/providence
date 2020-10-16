@@ -62,6 +62,7 @@
 	$loaded_sort_direction 	= $this->getVar('sortDirection');
 	
 	$rep_count = $t_subject->getRepresentationCount($settings);
+	$allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 	
 	$errors = $failed_inserts = [];
 	
@@ -256,6 +257,11 @@
 					</div>
 				</div>
 				<div class="mediaUploadEditArea">
+	
+<?php if ($allow_fetching_from_urls) { ?>
+				<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>
+				
+<?php } ?>				
 <?php
     if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
 ?>
@@ -270,7 +276,7 @@
 					if(in_array($f, ['media'])) { continue; }
 					
 					if($f === 'type_id') { // type
-						print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 					} elseif($t_item->hasField($f)) { // intrinsic
 						print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 					} elseif($t_item->hasElement($f)) {

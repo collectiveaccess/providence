@@ -4377,19 +4377,22 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param string $url
 	 * @param string $dest File path to write data to. If omitted a temporary file will be created. [Default is null]
+	 * @param array $options Options include:
+	 *		mimetypes = MIME type, or list of MIME types expected in response to URL. If content type of response does ot match the MIME type(s) specified here a UrlFetchException is thrown.
 	 * 
+	 * @throws UrlFetchException
 	 * @return string Path to file
 	 */
-	function caFetchFileFromUrl($url, $dest=null) {
+	function caFetchFileFromUrl($url, $dest=null, array $options=null) {
 		$tmp_file = $dest ? $dest : tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
 		$r_incoming_fp = @fopen($url, 'r');
 		if(!$r_incoming_fp) {
-			throw new ApplicationException(_t("Cannot open remote URL [%1] to fetch media", $url));
+			throw new UrlFetchException(_t("Cannot open remote URL [%1] to fetch media", $url));
 		}
 
 		$r_outgoing_fp = @fopen($tmp_file, 'w');
 		if(!$r_outgoing_fp) {
-			throw new ApplicationException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
+			throw new UrlFetchException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
 		}
 
 		while(($content = fgets($r_incoming_fp, 4096)) !== false) {
@@ -4398,6 +4401,20 @@ function caFileIsIncludable($ps_file) {
 		fclose($r_incoming_fp);
 		fclose($r_outgoing_fp);
 		
+		$mimetypes = caGetOption('mimetype', $options, null, ['castTo' => 'array']);
+		if (is_array($mimetypes) && sizeof($mimetypes)) {
+			$content_type = null;
+			foreach(array_reverse($http_response_header) as $hv) {
+				if (preg_match('!^Content-Type: (.*)!', $hv, $h)) {
+					$content_type = $h[1];
+					break;
+				}
+			}
+			if(!$content_type || !in_array($content_type, $mimetypes, true)) { 
+				@unlink($tmp_file);
+				throw new UrlFetchException(_t("Media fetched from URL [%1] in not in accepted format", $url));
+			}
+		}
 		return $tmp_file;
 	}
 	# ----------------------------------------

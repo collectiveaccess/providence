@@ -91,8 +91,13 @@ spl_autoload_register(function ($class) {
         if(require(__CA_MODELS_DIR__."/{$class}.php")) { return true; }
     }
     
+    // strip namespaces if present
+    if(strpos($class, '\\') !== false) {
+    	$class = array_pop(explode('\\', $class));
+    }
+    
     // search common locations for class
-    $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers', __CA_LIB_DIR__.'/Media'];
+    $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers', __CA_LIB_DIR__.'/Media', __CA_LIB_DIR__.'/Exceptions'];
     foreach($paths as $path) {
         if(file_exists("{$path}/{$class}.php")) {
             if(require("{$path}/{$class}.php")) { return true; }   

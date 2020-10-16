@@ -1738,6 +1738,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				
 			if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 				$va_tmp['fetched_from'] = $vs_fetched_from_url;
+				$va_tmp['fetched_original_url'] = caGetOption('FETCHED_ORIGINAL_URL', $va_info['INPUT'], null);
+				$va_tmp['fetched_by'] = caGetOption('FETCHED_BY', $va_info['INPUT'], null);
 				$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
 			}
  			

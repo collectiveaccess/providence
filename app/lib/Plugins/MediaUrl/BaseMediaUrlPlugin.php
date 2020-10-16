@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/WLPlug.php :
+ * app/lib/Plugins/MediaUrlParser/BaseMediaUrlParserPlugin.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2008 Whirl-i-Gig
+ * Copyright 2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,33 +24,40 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage LibraryPlugins
+ * @subpackage Media
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+namespace CA\MediaUrl\Plugins;
  
  /**
   *
   */
 
-class WLPlug extends BaseObject {
-	# ------------------------------------------------------------------------
-	var $error_output = false;
-	var $description = '';
+include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
+
+class BaseMediaUrlPlugin extends \WLPlug  {
+	# ------------------------------------------------
+	/**
+	 * 
+	 */
+	protected $info = [];
 	
-	# ------------------------------------------------------------------------
-	public function getDescription() {
-		return isset($this->description) ? $this->description : '';
+	
+	# ------------------------------------------------
+	public function __construct() {
+		parent::__construct();
 	}
-	# ------------------------------------------------------------------------
-	public function checkStatus() {
-		return array(
-			'description' => $this->getDescription(),
-			'errors' => [],
-			'warnings' => [],
-			'available' => false
-		);
-	}
-	# ------------------------------------------------------------------------
+	# ------------------------------------------------
+	/** 
+	 * Announce what kinds of media this plug-in supports for import and export
+	 */
+	public function register() {
+		$this->opo_config = Configuration::load();
+		
+		$this->info["INSTANCE"] = $this;
+		return $this->info;
+	}	
+	# ------------------------------------------------
 }
