@@ -288,7 +288,7 @@
 		# Export set items
 		# -------------------------------------------------------
 		public function exportSetItems() {
-			set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
+			set_time_limit(7200); // allow a lot of time for this because the sets can be potentially large
 			
 			$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
 			if (!$t_set->getPrimaryKey()) {
@@ -313,7 +313,13 @@
 			# --- get the export format/template to use
 			$ps_export_format = $this->request->getParameter('export_format', pString);
 			
-			caExportResult($this->request, $qr_res, $ps_export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set]);
+			
+			$filename_stub = $t_set->get('ca_sets.preferred_labels.name');
+			if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
+				$filename_stub = $t_set->getWithTemplate($filename_template);
+			}
+			
+			caExportResult($this->request, $qr_res, $ps_export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
 			
 			return;
 		}

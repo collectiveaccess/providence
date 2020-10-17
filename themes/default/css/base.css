@@ -295,6 +295,11 @@ div.clear {
 #leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
+	color: #1ab3c8;
+}
+#leftNav .resultLink:hover  {
+	color: #1ab3c8;
+	text-decoration:underline;
 }
 #leftNav .creatingNew {
 	font-family: "DIN-Regular", Helvetica, sans-serif;
