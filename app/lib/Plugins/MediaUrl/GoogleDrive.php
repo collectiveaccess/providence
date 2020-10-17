@@ -85,14 +85,29 @@ class GoogleDrive Extends BaseMediaUrlPlugin {
 	public function parse(string $url, array $options=null) {
 		if (!is_array($parsed_url = parse_url(urldecode($url)))) { return null; }
  		
- 		$format = caGetOption('format', $options, 'pdf', ['validValues' => ['pdf', 'xlsx', 'docx']]);
+ 		$format = caGetOption('format', $options, null, ['validValues' => [null, 'pdf', 'xlsx', 'docx']]);
 		$tmp = explode('/', $parsed_url['path']);
 		array_pop($tmp); $tmp[] = 'export';
 		$path = join("/", $tmp);
-		$transformed_url = $parsed_url['scheme']."://".$parsed_url['host'].$path."?format={$format}";
-		if (!isUrl($transformed_url) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file)/d/!', $transformed_url)) {
+		
+		$url_stub = $parsed_url['scheme']."://".$parsed_url['host'].$path; 
+		if (!isUrl($url_stub) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file|document)/d/!', $url_stub, $m)) {
 			return false;
 		}
+		if (!$format) {
+			switch($m[2]) {
+				case 'spreadsheets':
+					$format = 'xlsx';
+					break;
+				case 'document':
+					$format = 'docx';
+					break;
+				default:
+					$format = 'pdf';
+					break;
+			}
+		}
+		$transformed_url = $format ? "{$url_stub}?format={$format}" : $url_stub;
 		
 		// Get doc title
  		$content = file_get_contents($url);
@@ -116,7 +131,7 @@ class GoogleDrive Extends BaseMediaUrlPlugin {
 	 */
 	public function fetch(string $url, array $options=null) {
 		if ($p = $this->parse($url, $options)) {
- 			$format = caGetOption('format', $options, 'pdf', ['validValues' => ['pdf', 'xlsx', 'docx']]);
+ 			$format = $p['format']; //caGetOption('format', $options, null, ['validValues' => [null, 'pdf', 'xlsx', 'docx']]);
 			if($dest = caGetOption('filename', $options, null)) {
 				$dest .= '.'.caGetOption('extension', $options, '.bin');
 			}
