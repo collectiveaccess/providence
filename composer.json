@@ -24,5 +24,8 @@
     "league/flysystem-webdav": ">=1.0.0",
     "league/flysystem-ziparchive": ">=1.0.0",
     "guzzlehttp/psr7": "^1.4"
+  },
+  "config": {
+  	"discard-changes": true
   }
 }
