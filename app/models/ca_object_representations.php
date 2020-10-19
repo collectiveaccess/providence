@@ -2388,7 +2388,18 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				break;
 			case 'page_count':
 			case 'preview_count':
-				return $this->numFiles($row_id);
+				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
+					$mimetype = $qr->getMediaInfo('media', 'INPUT', 'MIMETYPE');
+					$class = caGetMediaClass($mimetype);
+					
+					if (($bundle_name === 'page_count') && in_array($class, ['document', 'image'])) {
+						return $this->numFiles($row_id);
+					}
+					if (($bundle_name === 'preview_count') && in_array($class, ['audio', 'video'])) {
+						return $this->numFiles($row_id);
+					}
+				}
+				return null;
 				break;
 			case 'media_dimensions':
 			case 'media_duration':

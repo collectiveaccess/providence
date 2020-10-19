@@ -1194,7 +1194,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "{$vs_watch}\n";
 				TooltipManager::add("#caWatchItemButton", _t('Watch/Unwatch this record'));
 
-				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) > 1)) {
 
 					$vs_buf .= "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 
@@ -4962,15 +4962,16 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caGetMediaDownloadArchiveName($table, $id, $options=null) {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", "downloaded_media_archive_file_naming","{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", 'downloaded_media_archive_file_naming', "{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
 			case 'idno':
-				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
-				break;
+				// Noop - fall through	
 			default:
-				if (strpos($mode, "^") == false) { // use default templte
+				if (strpos($mode, "^") === false) { // use default template
 					$mode = "^{$table}.idno";
 				}
-				$filename = caProcessTemplateForIDs($mode, $table, [$id]);
+				if (!($filename = caProcessTemplateForIDs($mode, $table, [$id]))) {
+					$filename = 'export';
+				}
 				$ext = caGetOption('extension', $options, 'zip');
 				
 				if(!preg_match("!\.{$ext}$!i", $filename)) {
