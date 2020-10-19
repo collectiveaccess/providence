@@ -897,7 +897,13 @@ class BaseEditorController extends ActionController {
 
                     $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
             
-                    $o_pdf->render($vs_content, array('stream'=> true, 'append' => $media_to_append, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+            		if (!$filename_template = $this->request->config->get($t_subject->tableName().'_summary_file_naming')) {
+            			$filename_template = $this->view->getVar('filename') ? $filename_template : caGetOption('filename', $va_template_info, 'print_summary');
+            		}
+            		if (!($filename = caProcessTemplateForIDs($filename_template, $t_subject->tableName(), [$vn_subject_id]))) {
+            			$filename = 'print_summary';
+            		}
+                    $o_pdf->render($vs_content, ['stream'=> true, 'append' => $media_to_append, 'filename' => "{$filename}.pdf"]);
 
                     $vb_printed_properly = true;
                     break;
