@@ -633,7 +633,7 @@ class OAIPMHService extends BaseService {
 							'datestamp' => self::unixToUtc($va_deleted_timestamps[$vn_id]['timestamp'] ? $va_deleted_timestamps[$vn_id]['timestamp'] : $va_timestamps[$vn_id]['timestamp'])	
 						);
 					
-						if ($verb == 'ListIdentifiers') {å
+						if ($verb == 'ListIdentifiers') {
 							$header = $this->createElementWithChildren($oaiData, $verbElement, 'header', $headerData);
 							$header->setAttribute("status", "deleted");
 						} else {
