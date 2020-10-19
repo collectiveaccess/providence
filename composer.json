@@ -19,5 +19,8 @@
     "dompdf/dompdf": "~0.8",
     "scholarslab/bagit": "~0.2",
     "guzzlehttp/psr7": "^1.4"
+  },
+  "config": {
+  	"discard-changes": true
   }
 }
