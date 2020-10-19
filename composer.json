@@ -32,5 +32,8 @@
     "spomky-labs/jose": "^7.1",
     "opis/json-schema": "^1.0",
     "onelogin/php-saml": ">=2.0"
+  },
+  "config": {
+  	"discard-changes": true
   }
 }
