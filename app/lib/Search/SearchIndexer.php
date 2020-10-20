@@ -2916,7 +2916,7 @@ if (!$for_current_value_reindex) {
 						foreach($types as $t) {
 							if(is_numeric($t)) {
 								$type_criteria[] = (int)$t;
-							} elseif($type_id = caGetListItemID($field_info['LIST_CODE'], $t)) {
+							} elseif(!empty($field_info['LIST_CODE']) && ($type_id = caGetListItemID($field_info['LIST_CODE'], $t))) {
 								$type_criteria[] = $type_id;
 							}
 						}
