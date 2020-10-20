@@ -2712,7 +2712,7 @@ if (!$for_current_value_reindex) {
 					if (($va_type_res = $va_linking_tables_config[$vs_right_table]['types']) && is_array($va_type_res) && sizeof($va_type_res)) {
 						$va_rel_type_ids = caMakeRelationshipTypeIDList($vs_right_table, $va_type_res);
 					}
-						
+					
 					if (is_array($va_table_key_list) && (isset($va_table_key_list[$vs_list_name][$vs_right_table][$vs_left_table]) || isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table]))) {		// are the keys for this join specified in the indexing config?
 												
 						$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
@@ -2728,7 +2728,7 @@ if (!$for_current_value_reindex) {
 						
 						if (isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table])) {
 							$va_key_spec = $va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table];
-							$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['right_key']} = {$vs_prev_alias}.{$va_key_spec['left_key']}".$vs_rel_type_res_sql;
+							$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['right_key']} = {$vs_prev_alias}.{$va_key_spec['left_key']}".$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias);
 							if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
 								if ($va_key_spec['right_table_num']) {
 									$vs_join .= " AND {$vs_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_left_table);
@@ -2739,7 +2739,7 @@ if (!$for_current_value_reindex) {
 							$vs_join .= ")";
 						} else {
 							$va_key_spec = $va_table_key_list[$vs_list_name][$vs_right_table][$vs_left_table];
-							$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['left_key']} = {$vs_prev_alias}.{$va_key_spec['right_key']}".$vs_rel_type_res_sql;
+							$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['left_key']} = {$vs_prev_alias}.{$va_key_spec['right_key']}".$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias);
 							if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
 								if ($va_key_spec['right_table_num']) {
 									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_right_table);
@@ -2753,6 +2753,7 @@ if (!$for_current_value_reindex) {
 						if (($pt_rel_instance = Datamodel::getInstanceByTableName($vs_right_table, true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
 							$vs_rel_type_id_fld = "{$va_alias}.type_id";
 						}
+						
 						$va_joins[] = [$vs_join];
 					} else {
 						if ($va_rel = Datamodel::getOneToManyRelations($vs_left_table, $vs_right_table)) {
@@ -2767,8 +2768,8 @@ if (!$for_current_value_reindex) {
 								$t_self_rel = Datamodel::getInstanceByTableName($va_rel['many_table'], true);
 							
 								$va_joins[] = [
-												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql,
-												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql
+												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias),
+												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias)
 											];
 										
 								if ($t_self_rel->hasField('type_id')) {
@@ -2782,7 +2783,7 @@ if (!$for_current_value_reindex) {
 								    $vs_type_id_fld = "{$vs_alias}.type_id";
 								    $vs_rel_type_res_sql .= " AND {$vs_type_id_fld} IN (".join(',', $pa_restrict_to_types).")";
 								}
-								$va_joins[] = ["INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql];
+								$va_joins[] = ["INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias)];
 							}
 						} elseif ($va_rel = Datamodel::getOneToManyRelations($vs_right_table, $vs_left_table)) {
 							$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
@@ -2810,7 +2811,7 @@ if (!$for_current_value_reindex) {
 								    $vs_type_id_fld = "{$vs_alias}.type_id";
 								    $vs_rel_type_res_sql .= " AND {$vs_type_id_fld} IN (".join(',', $pa_restrict_to_types).")";
 								}
-								$va_joins[] = ["INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql];
+								$va_joins[] = ["INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias)];
 								
 							}
 						}
@@ -2877,7 +2878,64 @@ if (!$for_current_value_reindex) {
 	}
 	# ------------------------------------------------
 	/**
-	 * Generate count indexing � the number of relationships on the subject, broken out by type
+	 * Generate join clauses for table-level filters. 
+	 * Filters may be specified directly in a table block or in a linking table entry.
+	 *
+	 * @param string $table Table name
+	 * @param array $table_info Table configuration
+	 * @param array $linking_tables_config Config from linking tables block 
+	 * @param string $alias Table alias
+	 *
+	 * @return string
+	 */
+	private static function _genQueryFilters(string $table, array $table_info, ?array $linking_tables_config,  string $alias) {
+		$filter_sql = null;
+		if($filters = caGetOption('filter', $table_info, caGetOption('filter', $linking_tables_config, null))) {
+			$filter_criteria = [];
+			foreach($filters as $k => $v) {
+				if(!($field_info = Datamodel::getFieldInfo($table, $k))) { continue; }
+				switch($k) {
+					case 'status':
+					case 'access':
+						$criteria = [];
+						$vals = is_array($v) ? $v : preg_split('![;,]+!', $v);
+						foreach($vals as $t) {
+							$criteria[] = (int)$t;
+						}
+						if(sizeof($criteria) > 0) {
+							$filter_criteria[] = "({$alias}.{$k} IN (".join(', ', $criteria)."))";
+						}
+						break;
+					case 'is_preferred':
+						$value = (bool)$v ? 1 : 0;
+						$filter_criteria[] = "{$alias}.{$k} = {$value}";
+						break;
+					case 'type_id':
+						$type_criteria = [];
+						$types = is_array($v) ? $v : preg_split('![;,]+!', $v);
+						foreach($types as $t) {
+							if(is_numeric($t)) {
+								$type_criteria[] = (int)$t;
+							} elseif(!empty($field_info['LIST_CODE']) && ($type_id = caGetListItemID($field_info['LIST_CODE'], $t))) {
+								$type_criteria[] = $type_id;
+							}
+						}
+						if(sizeof($type_criteria) > 0) {
+							$filter_criteria[] = "({$alias}.{$k} IN (".join(', ', $type_criteria).") OR {$alias}.{$k} IS NULL)";
+						}
+						break;
+				}
+			}
+			if (sizeof($filter_criteria) > 0) {
+				$filter_sql = ' AND ('.join(' AND ', $filter_criteria).')';
+			}
+		}
+		
+		return $filter_sql;
+	}
+	# ------------------------------------------------
+	/**
+	 * Generate count indexing  the number of relationships on the subject, broken out by type
 	 *
 	 * @param BaseModel $pt_subject
 	 * @param int $pn_subject_row_id
