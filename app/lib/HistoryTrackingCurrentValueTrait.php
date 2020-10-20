@@ -1683,11 +1683,15 @@
 				
 				        $vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate", "ca_storage_locations_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 					
-						$va_date = array(
-							'sortable' => $qr_locations->get("{$linking_table}.effective_date", array('getDirectDate' => true)),
-							'bounds' => explode("/", $qr_locations->get("{$linking_table}.effective_date", array('sortable' => true))),
-							'display' => $qr_locations->get("{$linking_table}.effective_date")
-						);
+						if($pb_date_mode) {
+						    $va_date = $current_date_arr;
+						} else {
+							$va_date = array(
+								'sortable' => $qr_locations->get("{$linking_table}.effective_date", array('getDirectDate' => true)),
+								'bounds' => explode("/", $qr_locations->get("{$linking_table}.effective_date", array('sortable' => true))),
+								'display' => $qr_locations->get("{$linking_table}.effective_date")
+							);
+						}
 
 						if (!$va_date['sortable']) { continue; }
 						if (sizeof($va_location_types) && sizeof($va_location_types) && !in_array($vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id"), $va_location_types)) { continue; }
