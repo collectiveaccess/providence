@@ -2897,8 +2897,14 @@ if (!$for_current_value_reindex) {
 				switch($k) {
 					case 'status':
 					case 'access':
-						$value = (int)$v;
-						$filter_criteria[] = "{$alias}.{$k} = {$value}";
+						$criteria = [];
+						$vals = is_array($v) ? $v : preg_split('![;,]+!', $v);
+						foreach($vals as $t) {
+							$criteria[] = (int)$t;
+						}
+						if(sizeof($criteria) > 0) {
+							$filter_criteria[] = "({$alias}.{$k} IN (".join(', ', $criteria)."))";
+						}
 						break;
 					case 'is_preferred':
 						$value = (bool)$v ? 1 : 0;
