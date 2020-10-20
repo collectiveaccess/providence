@@ -5014,6 +5014,7 @@ if (!$vb_batch) {
 					
 						$this->set('is_deaccessioned', $vb_is_deaccessioned = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}is_deaccessioned", pInteger));
 						$this->set('deaccession_notes', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_notes", pString));
+						$this->set('deaccession_authorized_by', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_authorized_by", pString));
 						$this->set('deaccession_type_id', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_type_id", pString));
 	
 						$this->set('deaccession_date', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_date", pString));
