@@ -4904,12 +4904,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		extension = file extension of media being downloaded.
 	 *		original_filename = original filename of media being downloaded.
 	 *		representation_id = Representation_id of media being downloaded.
+	 * @param array $options Options include:
+	 *		mode = Naming mode. Can be idno, idno_and_version, idno_and_rep_id_and_version, original_name. If not set defaults to value in <table>_downloaded_file_naming or _downloaded_file_naming app.conf directive.
 	 *
 	 * @return string File name
 	 */
-	function caGetRepresentationDownloadFileName($table, $data, $options=null) {
+	function caGetRepresentationDownloadFileName(string $table, array $data, ?array $options=null) : string {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = caGetOption('mode', $options, $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming']))) {
 			case 'idno':
 				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
 				break;
