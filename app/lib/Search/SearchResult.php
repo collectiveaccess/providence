@@ -3653,6 +3653,28 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * 
+	 */
+	public function hasValueForBundle(string $bundle, ?array $options=null){
+		if (($vn_cur_row_index = $this->opo_engine_result->currentRow()) < 0) {
+			$vn_cur_row_index = 0;
+		}
+		self::seek(0);
+		
+		while(self::nextHit()) {
+			if($this->get($bundle) !== null) { 
+				self::seek($vn_cur_row_index);	// restore current position
+				return true; 
+			}
+		}
+		
+		// restore current position
+		self::seek($vn_cur_row_index);
+		
+		return false;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 *
 	 */
 	public function getIdentifierForUrl() {

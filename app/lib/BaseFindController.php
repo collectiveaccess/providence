@@ -188,7 +188,7 @@
 				$t_label = $t_instance->getLabelTableInstance();
 				$vs_label_table_name = $t_label->tableName();
 				$vs_label_display_field = $t_label->getDisplayField();
-				foreach($display_list as $vn_i => $va_display_item) {
+				foreach($display_list as $i => $va_display_item) {
 					$tmp = explode('.', $va_display_item['bundle_name']);
 					
 					if (
@@ -196,25 +196,25 @@
 						||
 						(($tmp[0] == $this->ops_tablename) && ($tmp[1] === 'preferred_labels'))
 					) {
-						$display_list[$vn_i]['is_sortable'] = true;
-						$display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$t_instance->getLabelSortField();
+						$display_list[$i]['is_sortable'] = true;
+						$display_list[$i]['bundle_sort'] = $vs_label_table_name.'.'.$t_instance->getLabelSortField();
 						continue;
 					}
 
 					// if sort is set in the bundle settings, use that
 					if(isset($va_display_item['settings']['sort']) && (strlen($va_display_item['settings']['sort']) > 0)) {
-						$display_list[$vn_i]['is_sortable'] = true;
-						$display_list[$vn_i]['bundle_sort'] = $va_display_item['settings']['sort'];
+						$display_list[$i]['is_sortable'] = true;
+						$display_list[$i]['bundle_sort'] = $va_display_item['settings']['sort'];
 						continue;
 					}
 
 					if ($tmp[0] != $this->ops_tablename) { 
 					    // Sort on related tables
 						if (($t_rel = Datamodel::getInstance($tmp[0], true)) && method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
-                            $display_list[$vn_i]['is_sortable'] = true; 
+                            $display_list[$i]['is_sortable'] = true; 
                             $types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
                             
-                            $display_list[$vn_i]['bundle_sort'] = "{$tmp[0]}.preferred_labels.".$t_rel->getLabelSortField().((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
+                            $display_list[$i]['bundle_sort'] = "{$tmp[0]}.preferred_labels.".$t_rel->getLabelSortField().((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
                         }
 						continue; 
 					}
@@ -223,19 +223,19 @@
 						if($t_instance->getFieldInfo($tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
 							continue;
 						}
-						$display_list[$vn_i]['is_sortable'] = true;
+						$display_list[$i]['is_sortable'] = true;
 						
 						if ($t_instance->hasField($tmp[1].'_sort')) {
-							$display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'].'_sort';
+							$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'].'_sort';
 						} else {
-							$display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+							$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'];
 						}
 						continue;
 					}
 					
 					if (isset($va_attribute_list[$tmp[1]]) && $va_sortable_elements[$va_attribute_list[$tmp[1]]]) {
-                        $display_list[$vn_i]['is_sortable'] = true;
-                        $display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+                        $display_list[$i]['is_sortable'] = true;
+                        $display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'];
 					    if(ca_metadata_elements::getElementDatatype($tmp[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
 					        // If container includes a field type this is typically "preferred" for sorting use that in place of the container aggregate
 					        $elements = ca_metadata_elements::getElementsForSet($tmp[1]);
@@ -249,7 +249,7 @@
 					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 					                case __CA_ATTRIBUTE_VALUE_LENGTH__:
-					                    $display_list[$vn_i]['bundle_sort'] = "{$va_display_item['bundle_name']}.{$e['element_code']}";
+					                    $display_list[$i]['bundle_sort'] = "{$va_display_item['bundle_name']}.{$e['element_code']}";
 					                    break(2);
 					            }
 					        }
@@ -325,6 +325,12 @@
 			$this->view->setVar('children_display_mode', $ps_children_display_mode);				
 			$this->view->setVar('hide_children', $pb_hide_children = in_array(strtolower($ps_children_display_mode), ['hide', 'alwayshide']));			
 			$this->view->setVar('show_children_display_mode_control', !in_array(strtolower($vs_children_display_mode_default), ['alwaysshow', 'alwayshide']));
+ 		
+ 			
+ 			$this->view->setVar('ca_object_representation_download_versions', $this->request->config->getList('ca_object_representation_download_versions'));
+ 		
+ 			$media_elements = ca_metadata_elements::getElementsAsList(false, $this->ops_tablename, $this->opn_type_restriction_id, false, false, true, [__CA_ATTRIBUTE_VALUE_MEDIA__]);
+ 			$this->view->setVar('media_metadata_elements', (is_array($media_elements) && sizeof($media_elements)) ? $media_elements : []); 
  		}
  		# -------------------------------------------------------
 		/**
@@ -332,15 +338,15 @@
 		  */
  		protected function _setBottomLineValues($po_result, $pa_display_list, $pt_display) {
  			$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
-			if (!($vn_items_per_page = $this->opo_result_context->getItemsPerPage())) { 
- 				$vn_items_per_page = $this->opn_items_per_page_default; 
+			if (!($items_per_page = $this->opo_result_context->getItemsPerPage())) { 
+ 				$items_per_page = $this->opn_items_per_page_default; 
  			}
  			
 			$va_bottom_line = array();
 			$vb_bottom_line_is_set = false;
 			foreach($pa_display_list as $placement_id => $va_placement) {
 				if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
-					$va_bottom_line[$placement_id] = caProcessBottomLineTemplateForPlacement($this->request, $va_placement, $po_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page));
+					$va_bottom_line[$placement_id] = caProcessBottomLineTemplateForPlacement($this->request, $va_placement, $po_result, array('pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page));
 					$vb_bottom_line_is_set = true;
 				} else {
 					$va_bottom_line[$placement_id] = '';
@@ -352,7 +358,7 @@
 			//
 			// Bottom line for display
 			//
-			$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay($this->request, $pt_display, $po_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page)));
+			$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay($this->request, $pt_display, $po_result, array('pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page)));
  		}
 		# -------------------------------------------------------
 		# Printing
@@ -465,7 +471,7 @@
 				$vs_content .= $this->render("pdfEnd.php");
 				
 				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'labels.pdf')));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $va_template_info, 'labels.pdf')));
 
 				$vb_printed_properly = true;
 				
@@ -618,7 +624,7 @@
 					
 					$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
 					
-					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results.pdf')));
+					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $va_template_info, 'export_results.pdf')));
 					exit;
 				} catch (Exception $e) {
 					die($e->getMessage());
@@ -808,92 +814,115 @@
  		 */ 
  		public function DownloadMedia() {
  			if ($t_subject = Datamodel::getInstanceByTableName($this->ops_tablename, true)) {
-				$o_media_metadata_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
+				$o_md_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
 
- 				$pa_ids = null;
- 				if (($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($vs_ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
- 					if ($vs_ids != 'all') {
-						$pa_ids = explode(';', $vs_ids);
+ 				$id_list = null;	// list of ids to pull media for
+ 				if (($ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
+ 					if ($ids !== 'all') {
+						$id_list = explode(';', $ids);
 						
-						foreach($pa_ids as $vn_i => $vs_id) {
-							if (!trim($vs_id) || !(int)$vs_id) { unset($pa_ids[$vn_i]); }
+						foreach($id_list as $i => $id) {
+							if (!trim($id) || !(int)$id) { unset($id_list[$i]); }
 						}
 					}
  				}
  		
- 				if (!is_array($pa_ids) || !sizeof($pa_ids)) { 
- 					$pa_ids = $this->opo_result_context->getResultList();
+ 				if (!is_array($id_list) || !sizeof($id_list)) { 
+ 					$id_list = $this->opo_result_context->getResultList();	// get media for entire result set
  				}
  				
- 				if (($vn_limit = (int)$t_subject->getAppConfig()->get('maximum_download_file_count')) > 0) {
- 					$pa_ids = array_slice($pa_ids, 0, $vn_limit);
+ 				if (($limit = (int)$t_subject->getAppConfig()->get('maximum_download_file_count')) > 0) {	// truncate to maximum
+ 					$id_list = array_slice($id_list, 0, $limit);
  				}
  				
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 						
-				$va_download_list = [];
- 				if (is_array($pa_ids) && sizeof($pa_ids)) {
- 					$ps_version = $this->request->getParameter('version', pString);
-					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
-						
-						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
-						set_time_limit($vn_limit * 10);
+				$download_list = [];
+ 				if (is_array($id_list) && sizeof($id_list)) {
+ 					$preferred_version = $this->request->getParameter('version', pString);
+ 					
+ 					$element_code = null;
+					if (preg_match('!^attribute([\d]+)$!', $preferred_version, $m)) {
+						// Derive get() spec for FT_MEDIA metadata attribute
+						$version = 'original';
+						if (!($t_element = ca_metadata_elements::getInstance($element_id = $m[1]))) { throw new ApplicationException(_t('Invalid element_id')); }
+						if (!($t_root = ca_metadata_elements::getInstance($root_id = $t_element->get('ca_metadata_elements.hier_element_id')))) { throw new ApplicationException(_t('Invalid parent element_id')); }
+						$element_code = $t_subject->tableName().'.'.(($root_id != $element_id) ? $t_root->get('element_code').'.'.$t_element->get('element_code') : $t_element->get('element_code'));
+					}
+					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $id_list, array('filterNonPrimaryRepresentations' => false))) {
+						if (!($limit = ini_get('max_execution_time'))) { $limit = 30; }
+						set_time_limit($limit * 10);	// allow extra time to process files
 						
 						while($qr_res->nextHit()) {
-							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
-								$vs_version = 'original';
-							} else {
-								$vs_version = $ps_version;
-							}
-							$va_paths = $qr_res->getMediaPaths('ca_object_representations.media', $vs_version);
-							$infos = $qr_res->getMediaInfos('ca_object_representations.media');
-							$va_representation_ids = $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true));
-							$va_representation_types = $qr_res->get('ca_object_representations.type_id', array('returnAsArray' => true));
+							if(!$element_code) {
+								// representation
+								$version = (is_array($version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($preferred_version, $version_list)) ? $preferred_version : 'original';
 							
-							foreach($va_paths as $vn_i => $vs_path) {
-								$vs_ext = array_pop(explode(".", $vs_path));
-								$vs_idno = $qr_res->get($t_subject->tableName().'.idno');
-								$vs_original_name = $infos[$vn_i]['ORIGINAL_FILENAME'];
-								$vn_index = (sizeof($va_paths) > 1) ? ($vn_i + 1) : '';
-								$vn_representation_id = $va_representation_ids[$vn_i];
-								$vs_representation_type = caGetListItemIdno($va_representation_types[$vn_i]);
+								$paths = $qr_res->getMediaPaths('ca_object_representations.media', $version);
+								$infos = $qr_res->getMediaInfos('ca_object_representations.media');
+								$representation_ids = $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true));
+								$representation_types = $qr_res->get('ca_object_representations.type_id', array('returnAsArray' => true));
+							
+								foreach($paths as $i => $path) {
+									$ext = array_pop(explode(".", $path));
+									$idno = $qr_res->get($t_subject->tableName().'.idno');
+									$original_name = $infos[$i]['ORIGINAL_FILENAME'];
+									$index = (sizeof($paths) > 1) ? ($i + 1) : '';
+									$representation_id = $representation_ids[$i];
+									$representation_type = caGetListItemIdno($representation_types[$i]);
 
-								// make sure we don't download representations the user isn't allowed to read
-								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $vn_representation_id)){ continue; }
+									// make sure we don't download representations the user isn't allowed to read
+									if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $representation_id)){ continue; }
 										
-								$vs_filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $vs_idno, 'index' => $vn_index, 'version' => $vs_version, 'extension' => $vs_ext, 'original_filename' => $vs_original_name, 'representation_id' => $vn_representation_id]);				
+									$filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $idno, 'index' => $index, 'version' => $version, 'extension' => $ext, 'original_filename' => $original_name, 'representation_id' => $representation_id]);				
 
-								if($o_media_metadata_conf->get('do_metadata_embedding_for_search_result_media_download')) {
-									if ($vs_path_with_embedding = caEmbedMediaMetadataIntoFile($vs_path,
-										'ca_objects', $qr_res->get('ca_objects.object_id'), caGetListItemIdno($qr_res->get('ca_objects.type_id')),
-										$vn_representation_id, $vs_representation_type
-									)) {
-										$vs_path = $vs_path_with_embedding;
+									if($o_md_conf->get('do_metadata_embedding_for_search_result_media_download')) {
+										if ($path_with_embedding = caEmbedMediaMetadataIntoFile($path,
+											'ca_objects', $qr_res->get('ca_objects.object_id'), caGetListItemIdno($qr_res->get('ca_objects.type_id')),
+											$representation_id, $representation_type
+										)) {
+											$path = $path_with_embedding;
+										}
 									}
+									if (!file_exists($path)) { continue; }
+									$download_list[$path] = $filename;
 								}
-								if (!file_exists($vs_path)) { continue; }
-								$va_download_list[$vs_path] = $vs_filename;
+							} else {
+								// metadata element
+								$paths = $qr_res->get("{$element_code}.{$version}.path", ['returnAsArray' => true]);
+								$idno = $qr_res->get($t_subject->tableName().'.idno');
+								$original_filename = pathinfo($qr_res->get($element_code.'.original_filename'), PATHINFO_BASENAME);
+							
+								foreach($paths as $i => $path) {
+									$ext = array_pop(explode(".", $path));
+								
+									$index = (sizeof($paths) > 1) ? ($i + 1) : '';
+									$filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $idno, 'index' => $index, 'version' => $version, 'extension' => $ext, 'original_filename' => $original_filename], ['mode' => $original_filename ? 'original_filename' : 'idno']);	
+									
+									if (!file_exists($path)) { continue; }
+									$download_list[$path] = $filename;
+								}
 							}
 						}
 					}
 				}
-				
-				$vn_file_count = sizeof($va_download_list);			
- 				if ($vn_file_count > 1) {
+			
+				$file_count = sizeof($download_list);			
+ 				if ($file_count > 1) {
 					$o_zip = new ZipStream();
-					foreach($va_download_list as $vs_path => $vs_filename) {
-						$o_zip->addFile($vs_path, $vs_filename);
+					foreach($download_list as $path => $filename) {
+						$o_zip->addFile($path, $filename);
 					}
 					
  					$o_view->setVar('zip_stream', $o_zip);
 					$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 
 					$this->response->addContent($o_view->render('download_file_binary.php'));
-					set_time_limit($vn_limit);
-				} elseif($vn_file_count == 1) {
-					foreach($va_download_list as $vs_path => $vs_filename) {
-						$o_view->setVar('archive_path', $vs_path);
-						$o_view->setVar('archive_name', $vs_filename);
+					set_time_limit($limit);
+				} elseif($file_count == 1) {
+					foreach($download_list as $path => $filename) {
+						$o_view->setVar('archive_path', $path);
+						$o_view->setVar('archive_name', $filename);
 						$this->response->addContent($o_view->render('download_file_binary.php'));
 						break;
 					}
@@ -911,7 +940,7 @@
  		 * Set up variables for "tools" widget
  		 */
  		public function Tools($pa_parameters) {
- 			if (!$vn_items_per_page = $this->opo_result_context->getItemsPerPage()) { $vn_items_per_page = $this->opa_items_per_page[0]; }
+ 			if (!$items_per_page = $this->opo_result_context->getItemsPerPage()) { $items_per_page = $this->opa_items_per_page[0]; }
  			if (!$vs_view 			= $this->opo_result_context->getCurrentView()) { 
  				$tmp = array_keys($this->opa_views);
  				$vs_view = array_shift($tmp); 
@@ -933,7 +962,7 @@
  			$this->view->setVar('current_sort', $sort);
  			
 			$this->view->setVar('items_per_page', $this->opa_items_per_page);
-			$this->view->setVar('current_items_per_page', $vn_items_per_page);
+			$this->view->setVar('current_items_per_page', $items_per_page);
 			
  			//
  			// Available sets
