@@ -575,7 +575,7 @@
 		# ------------------------------------------------------------------
 		public function load($pm_id=null, $pb_use_cache=true) {
 			$this->init();
-			$this->setFieldValuesArray(array());
+			$this->setFieldValuesArray([]);
 			if ($vn_c = parent::load($pm_id, $pb_use_cache)) {
 				// Copy attributes into field values array in BaseModel
 				//$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());

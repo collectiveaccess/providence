@@ -362,6 +362,8 @@ class BaseModel extends BaseObject {
 	 */
 	protected $opn_instantiated_at = 0;
 	
+	static $field_list_for_load = [];
+	
 	/**
 	 * Constructor
 	 * In general you should not call this constructor directly. Any table in your database
@@ -378,6 +380,19 @@ class BaseModel extends BaseObject {
 		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$vs_table_name]['FIELDS']) {
 			die("Field definitions not found for {$vs_table_name}");
 		}
+		if (!is_array(self::$field_list_for_load)) { self::$field_list_for_load = []; }
+		if (!self::$field_list_for_load[$vs_table_name]) {
+			self::$field_list_for_load[$vs_table_name] = [];
+			foreach($this->FIELDS as $f => $info) {
+				if(isset($info['START']) && isset($info['END'])) {
+					self::$field_list_for_load[$vs_table_name][] = "`{$info['START']}`";
+					self::$field_list_for_load[$vs_table_name][] = "`{$info['END']}`";
+				} else {
+					self::$field_list_for_load[$vs_table_name][] = "`{$f}`";
+				}
+			}
+		}
+		
 		$this->NAME_SINGULAR =& BaseModel::$s_ca_models_definitions[$vs_table_name]['NAME_SINGULAR'];
 		$this->NAME_PLURAL =& BaseModel::$s_ca_models_definitions[$vs_table_name]['NAME_PLURAL'];
 		
@@ -1907,6 +1922,7 @@ class BaseModel extends BaseObject {
 	 * @return bool success state
 	 */
 	public function load($pm_id=null, $pb_use_cache=true) {
+		Timer::start("LOAD");
 		$this->clear();
 		$vs_table_name = $this->tableName();
 		if ($pb_use_cache && is_numeric($pm_id) && isset(BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id]) && is_array(BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id])) {
@@ -1920,7 +1936,7 @@ class BaseModel extends BaseObject {
 		if (is_null($pm_id)) {
 			return false;
 		}
-
+//Timer::p("LOAD", "[LOAD:1] %time<br>\n");
 		$o_db = $this->getDb();
 
 		if (!is_array($pm_id)) {
@@ -1930,7 +1946,8 @@ class BaseModel extends BaseObject {
 				$pm_id = intval($pm_id);
 			}
 
-			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ".$pm_id;
+			$vs_sql = "SELECT ".join(',', self::$field_list_for_load[$this->tableName()])." FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ".$pm_id;
+//Timer::p("LOAD", "[LOAD:2] %time<br>\n");
 		} else {
 			$va_sql_wheres = array();
 			foreach ($pm_id as $vs_field => $vm_value) {
@@ -1948,6 +1965,7 @@ class BaseModel extends BaseObject {
 					$vs_field = $va_matches[2]; # get field name alone
 				}
 
+//Timer::p("LOAD", "[3] %time<br>\n");
 				if (!$this->hasField($vs_field)) {
 					$this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
 					return false;
@@ -1967,17 +1985,27 @@ class BaseModel extends BaseObject {
 					if ($vm_value === '') { continue; }
 					$va_sql_wheres[] = "($vs_field = $vm_value)";
 				}
+				
+//Timer::p("LOAD", "[4] %time<br>\n");
 			}
-			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";
+			$vs_sql = "SELECT ".join(',', self::$field_list_for_load[$this->tableName()])." FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";
+			
+//Timer::p("LOAD", "[5] %time<br>\n");
+//print "$vs_sql<br>\n";
+//if ($this->tableName() == 'ca_metadata_elements') { print caPrintStackTrace(); }
 		}
 
+//Timer::p("LOAD", "[LOAD:6s] %time<br>\n");
+//print "$vs_sql<br>\n";
 		try {
 			$qr_res = $o_db->query($vs_sql);
 		} catch (DatabaseException $e) {
 			$this->_processDatabaseException($e, $o_db);
-			return false;
-			
+			return false;	
 		}
+		
+//Timer::p("LOAD", "[LOAD:6e] %time<br>\n");
+
 		if ($qr_res->nextRow()) {
 			foreach($this->FIELDS as $vs_field => $va_attr) {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
@@ -2005,6 +2033,8 @@ class BaseModel extends BaseObject {
 						$this->_FIELD_VALUES[$vs_field] = $va_row[$vs_field];
 						break;
 				}
+				
+//Timer::p("LOAD", "[7] %time<br>\n");
 			}
 			
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
@@ -2017,6 +2047,8 @@ class BaseModel extends BaseObject {
 				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES; 
 			}
 			$this->opn_instantiated_at = time();
+			
+//Timer::p("LOAD", "[8] %time<br>\n");
 			return true;
 		} else {
 			if (!is_array($pm_id)) {
@@ -2222,7 +2254,7 @@ class BaseModel extends BaseObject {
 	 * Use this method to insert new record using supplied values
 	 * (assuming that you've constructed your BaseModel object as empty record)
 	 * @param $pa_options array optional associative array of options. Supported options include: 
-	 *		dont_do_search_indexing = if set to true then no search indexing on the inserted record is performed
+	 *		dontDoSearchIndexing = if set to true then no search indexing on the inserted record is performed. [Default is false]
 	 *		dontLogChange = don't log change in change log. [Default is false]
 	 * @return int primary key of the new record, false on error
 	 */
@@ -2669,7 +2701,7 @@ class BaseModel extends BaseObject {
 				#
 				$vn_id = $this->getPrimaryKey();
 				
-				if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+				if (!caGetOption(['dont_do_search_indexing', 'dontDoSearchIndexing'], $pa_options, false) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 					$va_index_options = array('isNewRow' => true);
 					if(caGetOption('queueIndexing', $pa_options, true)) {
 						$va_index_options['queueIndexing'] = true;
@@ -2745,6 +2777,7 @@ class BaseModel extends BaseObject {
 	 *		force = if set field values are not verified prior to performing the update
 	 *		dontLogChange = don't log change in change log. [Default is false]
 	 *      dontUpdateHistoryCurrentValueTracking = Skip updating current value tracking caches. Used internally when deleting rows. [Default is false]
+	 *		dontDoSearchIndexing = if set to true then no search indexing on the inserted record is performed. [Default is false]
 	 * @return bool success state
 	 */
 	public function update($pa_options=null) {
@@ -3194,7 +3227,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
                     if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
                 }
 				
-				if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+				if (!caGetOption(['dont_do_search_indexing', 'dontDoSearchIndexing'], $pa_options, false) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 					# update search index
 					$va_index_options = array();
 					if(caGetOption('queueIndexing', $pa_options, true)) {

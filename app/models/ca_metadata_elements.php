@@ -951,11 +951,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------
-	public static function getDataTypeForElementCode($ps_element_code) {
-		if(is_numeric($ps_element_code)) { $ps_element_code = self::getElementCodeForId($ps_element_code); }
-
-		$t_element = new ca_metadata_elements();
-		if($t_element->load(array('element_code' => $ps_element_code))) {
+	/**
+	 *
+	 */
+	public static function getDataTypeForElementCode($pm_table_name_or_num) {
+		if($t_element = self::getInstance($pm_table_name_or_num)) {
 			return (int) $t_element->get('datatype');
 		} else {
 			return false;

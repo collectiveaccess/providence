@@ -60,9 +60,9 @@
 		if (!$vb_dont_enforce_access_settings) {
 			$va_access = array();
 			$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
-			if($vb_is_privileged) {
+			if($vb_is_privileged && is_array($va_privileged_access_settings)) {
 				$va_access = $va_privileged_access_settings;
-			} else {
+			} elseif(is_array($va_public_access_settings)) {
 				$va_access = $va_public_access_settings;
 			}
 			

@@ -954,39 +954,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Create instance of idno numbering plugin (if table supports it)
 		if ($vs_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
 			if (!$vn_type_id) { $vn_type_id = null; }
-			$va_types = array();
-			$o_db = $this->getDb();		// have to do direct query here... if we use ca_list_items model we'll just endlessly recurse
-			
-			if ($vn_type_id) {
-				
-				$qr_res = $o_db->query("
-					SELECT idno, list_id, hier_left, hier_right 
-					FROM ca_list_items 
-					WHERE 
-						item_id = ?"
-					, (int)$vn_type_id);
-					
-				if ($qr_res->nextRow()) {
-					if ($vn_list_id = $qr_res->get('list_id')) {
-						$vn_hier_left 		= $qr_res->get('hier_left');
-						$vn_hier_right 		= $qr_res->get('hier_right');
-						$vs_idno 			= $qr_res->get('idno');
-						$qr_res = $o_db->query("
-							SELECT idno, parent_id
-							FROM ca_list_items 
-							WHERE 
-								(list_id = ? AND hier_left < ? AND hier_right > ?)", 
-						(int)$vn_list_id, (int)$vn_hier_left, (int)$vn_hier_right);
-						
-						while($qr_res->nextRow()) {
-							if (!$qr_res->get('parent_id')) { continue; }
-							$va_types[] = $qr_res->get('idno');
-						}
-						$va_types[] = $vs_idno;
-						$va_types = array_reverse($va_types);
-					}
-				}
-			}
+			//$va_types = array();
+			$va_types = $vn_type_id ? caMakeTypeIDList($this->tableName(), [$vn_type_id]) : null;
 			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $o_db);
 		} else {
 			$this->opo_idno_plugin_instance = null;
@@ -5600,7 +5569,7 @@ if (!$vb_batch) {
  	 */
 	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null, &$pn_count=null) {
 		global $AUTH_CURRENT_USER_ID;
-				        
+			Timer::start("REL");	        
 		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
 
@@ -5630,7 +5599,6 @@ if (!$vb_batch) {
 		if (($pa_options['restrictToLists'] = caGetOption(array('restrictToLists', 'restrict_to_lists'), $pa_options, null)) && !is_array($pa_options['restrictToLists'])) {
 			$pa_options['restrictToLists'] = preg_split("![;,]{1}!", $pa_options['restrictToLists']);
 		}
-		
 		$pb_group_fields = isset($pa_options['groupFields']) ? $pa_options['groupFields'] : false;
 		$pa_primary_ids = (isset($pa_options['primaryIDs']) && is_array($pa_options['primaryIDs'])) ? $pa_options['primaryIDs'] : null;
 		$pb_show_current_only = caGetOption('showCurrentOnly', $pa_options, caGetOption('currentOnly', $pa_options, false));
@@ -5682,22 +5650,27 @@ if (!$vb_batch) {
 		
 		$vs_subject_table_name = $this->tableName();
 		$vs_item_rel_table_name = $vs_rel_item_table_name = null;
+		
+		Timer::p("REL", "[REL:3] %time<br>\n");
 		switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_subject_table_name, $vs_related_table_name)))) {
 			case 3:
-				$t_item_rel = Datamodel::getInstance($va_path[1]);
-				$vs_item_rel_table_name = $t_item_rel->tableName();
+			
+				$t_item_rel = Datamodel::getInstance($va_path[1], true);
+				$vs_item_rel_table_name = $va_path[1];
 				
-				$t_rel_item = Datamodel::getInstance($va_path[2]);
-				$vs_rel_item_table_name = $t_rel_item->tableName();
+				$t_rel_item = Datamodel::getInstance($va_path[2], true);
+				$vs_rel_item_table_name = $va_path[2];
 				
 				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
+				Timer::p("REL", "[REL:3.1] %time<br>\n");
+				
 				break;
 			case 2:
 				$t_item_rel = $this->isRelationship() ? $this : null;
 				$vs_item_rel_table_name = $t_item_rel ? $t_item_rel->tableName() : null;
 				
-				if (!($t_rel_item = Datamodel::getInstance($va_path[1]))) { return null; }
-				$vs_rel_item_table_name = $t_rel_item->tableName();
+				if (!($t_rel_item = Datamodel::getInstance($va_path[1], true))) { return null; }
+				$vs_rel_item_table_name = $va_path[1];
 				
 				$vs_key = $t_rel_item->primaryKey();
 				break;
@@ -5707,17 +5680,17 @@ if (!$vb_batch) {
 					$va_path = [$this->tableName(), 'ca_items_x_tags', 'ca_item_tags'];
 					$vb_is_combo_key_relation = true;
 					
-					$t_item_rel = Datamodel::getInstance($va_path[1]);
-					$vs_item_rel_table_name = $t_item_rel->tableName();
-					$t_rel_item = Datamodel::getInstance($va_path[2]);
-					$vs_rel_item_table_name = $t_rel_item->tableName();
+					$t_item_rel = Datamodel::getInstance($va_path[1], true);
+					$vs_item_rel_table_name = $va_path[1];
+					$t_rel_item = Datamodel::getInstance($va_path[2], true);
+					$vs_rel_item_table_name = $va_path[2];
 					$vs_key = $t_item_rel->primaryKey();
 					break;
 				}
 				
 				
 				if (
-					($t_rel_item = Datamodel::getInstance($vs_related_table_name))
+					($t_rel_item = Datamodel::getInstance($vs_related_table_name, true))
 					&&
 					$t_rel_item->hasField('table_num') && $t_rel_item->hasField('row_id')
 				) {
@@ -5737,16 +5710,17 @@ if (!$vb_batch) {
 		$vb_self_relationship = false;
 		if($vs_subject_table_name == $vs_related_table_name) {
 			$vb_self_relationship = true;
-			$t_item_rel = Datamodel::getInstance($va_path[1]);
-			$vs_item_rel_table_name = $t_item_rel->tableName();
+			$t_item_rel = Datamodel::getInstance($va_path[1], true);
+			$vs_item_rel_table_name = $va_path[1];
 			
-			$t_rel_item = Datamodel::getInstance($va_path[0]);
-			$vs_rel_item_table_name = $t_rel_item->tableName();
+			$t_rel_item = Datamodel::getInstance($va_path[0], true);
+			$vs_rel_item_table_name = $va_path[0];
 		}
 
-		$va_wheres = array();
-		$va_selects = array();
-		$va_joins_post_add = array();
+		Timer::p("REL", "[REL:3x] %time<br>\n");
+		$va_wheres = [];
+		$va_selects = [];
+		$va_joins_post_add = [];
 
 		$vs_related_table = $vs_rel_item_table_name;
 		if ($t_rel_item->hasField('type_id')) { $va_selects[] = "{$vs_related_table}.type_id item_type_id"; }
@@ -5754,7 +5728,7 @@ if (!$vb_batch) {
 
 		// TODO: get these field names from models
 		if (($t_tmp = $t_item_rel) || ($t_rel_item->isRelationship() && ($t_tmp = $t_rel_item))) {
-			//define table names
+			// define table names
 			$vs_linking_table = $t_tmp->tableName();
 
 			$va_selects[] = "{$vs_related_table}.".$t_rel_item->primaryKey();
@@ -5767,6 +5741,7 @@ if (!$vb_batch) {
 				$vb_uses_effective_dates = true;
 			}
 
+		Timer::p("REL", "[REL:3y] %time<br>\n");
 			if ($t_rel_item->hasField('is_enabled')) {
 				$va_selects[] = "{$vs_related_table}.is_enabled";
 			}
@@ -5880,6 +5855,7 @@ if (!$vb_batch) {
 			)";
 		}
 
+Timer::p("REL", "[REL:3c] %time<br>\n");
 		if (is_array($pa_get_where)) {
 			foreach($pa_get_where as $vs_fld => $vm_val) {
 				if ($t_rel_item->hasField($vs_fld)) {
@@ -6362,8 +6338,10 @@ if (!$vb_batch) {
 				{$vs_order_by}
 			";
 			
+Timer::p("REL", "[REL:3d] %time<br>\n");
 			$qr_res = $o_db->query($vs_sql);
 			
+Timer::p("REL", "[REL:3e] %time<br>\n");
 			if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 			
 			if ($vb_uses_relationship_types)  {

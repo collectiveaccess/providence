@@ -3776,7 +3776,14 @@ class TimeExpressionParser {
 	public static function now($pa_options=null) {
 		$ps_format = caGetOption('format', $pa_options, null, ['toLowerCase' => true]);
 		$o_tep = new TimeExpressionParser();
-		$o_tep->parse(__TEP_NOW__);
+
+		$va_now = $o_tep->gmgetdate();
+		$date = array(
+			'month' => $va_now['mon'], 'day' => $va_now['mday'], 'year' => $va_now['year'],
+			'hours' => $va_now['hours'], 'minutes' => $va_now['minutes'], 'seconds' => $va_now['seconds'],
+			'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+		);
+		$o_tep->_processParseResults(['start' => $date, 'end' => $date], $pa_options);
 		
 		switch($ps_format) {
 			case 'unix':
