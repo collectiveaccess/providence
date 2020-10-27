@@ -440,9 +440,13 @@
 		 *
 		 * ["idno" => ['=', '2012.001'], "access" => ['>', 1], 'preferred_labels' => ['name' => ['LIKE', '%Luna Park at Night%']]]
 		 *
-		 * You may also specify lists of values for use with the IN operator:
+		 * You may also specify lists of values for use with the IN and NOT IN operator:
 		 *
 		 * ["idno" => ['=', '2012.001'], "access" => ['IN', [1,2,3]], 'preferred_labels' => ['name' => ['LIKE', '%Luna Park at Night%']]]
+		 *
+		 * Range searches may be performed using the BETWEEN operator:
+		 *
+		 * ["idno" => ['=', '2012.001'], "access" => ['BETWEEN', [1,3]], 'preferred_labels' => ['name' => ['LIKE', '%Luna Park at Night%']]]
 		 *
 		 * Passing an array of values with a 
 		 *
@@ -734,7 +738,7 @@
 									if ($vs_op !== '=') { $vs_op = 'IS'; }
 									$va_label_sql_wheres[] = "({$vs_label_table}.{$vs_field} {$vs_op} NULL)";
 								} elseif (is_array($vm_value) && sizeof($vm_value)) {
-									if ($vs_op !== '=') { $vs_op = 'IN'; }
+									if (strtoupper($vs_op) !== 'NOT IN') { $vs_op = 'IN'; }
 									$va_label_sql_wheres[] = "({$vs_field} {$vs_op} (".join(',', $vm_value)."))";
 								} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
 									$va_label_sql_wheres[] = "({$vs_label_table}.{$vs_field} LIKE {$vm_value})";
@@ -775,14 +779,18 @@
 						} elseif (caGetOption('allowWildcards', $pa_options, false) && !is_array($vm_value) && (strpos($vm_value, '%') !== false)) {
 							$va_label_sql[] = "({$vs_table}.{$vs_field} LIKE ?)";
 							$va_sql_params[] = $vm_value;
+						} elseif (is_array($vm_value) && sizeof($vm_value)) {
+							if (!in_array(strtoupper($vs_op), ['=', 'NOT IN', 'BETWEEN'])) { $vs_op = 'IN'; }
+							if (strtoupper($vs_op) === 'BETWEEN') {
+								$va_label_sql[] = "({$vs_table}.{$vs_field} BETWEEN ? AND ?)";
+								$va_sql_params[] = $vm_value[0];
+								$va_sql_params[] = $vm_value[1];
+							} else {
+								$va_label_sql[] = "({$vs_table}.{$vs_field} {$vs_op} (".join(',', $vm_value)."))";
+							}
 						} else {
 							if ($vm_value === '') { continue; }
-							if (($vs_op == 'in') && is_array($vm_value)) {
-								if (!sizeof($vm_value)) { continue; }
-								$va_label_sql[] = "({$vs_table}.{$vs_field} {$vs_op} (?))";
-							} else {
-								$va_label_sql[] = "({$vs_table}.{$vs_field} {$vs_op} ?)";
-							}
+							$va_label_sql[] = "({$vs_table}.{$vs_field} {$vs_op} ?)";
 							$va_sql_params[] = $vm_value;
 						}
 					}
@@ -882,16 +890,24 @@
 											if ($vs_op !== '=') { $vs_op = 'IS'; }
 											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} NULL))";
 										} elseif (is_array($vm_value) && sizeof($vm_value)) {
-											if ($vs_op !== '=') { $vs_op = 'IN'; }
-											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} (?)))";
+											if (!in_array(strtoupper($vs_op), ['=', 'NOT IN', 'BETWEEN'])) { $vs_op = 'IN'; }
+											if (strtoupper($vs_op) === 'BETWEEN') {
+												$va_q[] = "(ca_attribute_values.{$vs_fld} BETWEEN ? AND ?)";
+												$va_attr_params[] = $vm_value[0];
+												$va_attr_params[] = $vm_value[1];
+											} else {
+												$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} (?)))";
+												$va_attr_params[] = $vm_value;
+											}
 										} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
 											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} LIKE ?))";
+											$va_attr_params[] = $vm_value;
 										} else {
 											if ($vm_value === '') { break; }
 											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} ?))";
+											$va_attr_params[] = $vm_value;
 										}
 								
-										$va_attr_params[] = $vm_value;
 										break;
 								}
 						

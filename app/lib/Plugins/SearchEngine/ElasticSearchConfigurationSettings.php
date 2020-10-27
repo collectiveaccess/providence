@@ -41,8 +41,7 @@ require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Search/SearchBase.php');
 require_once(__CA_LIB_DIR__.'/Search/ASearchConfigurationSettings.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
-require_once(__CA_LIB_DIR__.'/Zend/Http/Client.php');
-require_once(__CA_LIB_DIR__.'/Zend/Http/Response.php');
+
 # ------------------------------------------------
 class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------

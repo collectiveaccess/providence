@@ -1695,6 +1695,8 @@ Timer::start("PROCESS");
 		$settings = $t_exporter_item->getSettings();
 		$return_raw_data = (bool)$settings['returnRawData'];
 
+		$vb_strip_newlines = caGetOption('stripNewlines',$pa_options, $t_exporter_item->getSetting('stripNewlines'));
+
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
 		if(!$vb_ignore_context && ($vs_context = $settings['context'])) {
@@ -2261,6 +2263,8 @@ Timer::p("PROCESS", "[$pn_item_id/end context switch] %time<br>\n");
 
 			// if returned value is null then we skip the item
 			$this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => &$va_item));
+	
+			if($vb_strip_newlines) { $va_item['text'] = preg_replace("![\n\r]+!", '', $va_item['text']); }
 		}
 
 		$o_log->logInfo(_t("Extracted data for this mapping is as follows:"));

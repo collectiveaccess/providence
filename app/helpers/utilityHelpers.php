@@ -39,11 +39,7 @@ require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/Utils/Encoding.php');
-require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
-use GuzzleHttp\Client;
-use PHPUnit\Framework\Exception;
-use PHPUnit\Framework\SelfDescribing;
 
 /**
  * array_key_first polyfill for PHP < 7.3
@@ -4105,6 +4101,9 @@ function caFileIsIncludable($ps_file) {
 			case 'not in':
 				return ($pb_is_list) ? true : false;
 				break;
+			case 'between':
+				return ($pb_is_list) ? true : false;
+				break;
 		}
 		return false;
 	}
@@ -4378,27 +4377,47 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param string $url
 	 * @param string $dest File path to write data to. If omitted a temporary file will be created. [Default is null]
+	 * @param array $options Options include:
+	 *		mimetypes = MIME type, or list of MIME types expected in response to URL. If content type of response does ot match the MIME type(s) specified here a UrlFetchException is thrown.
 	 * 
+	 * @throws UrlFetchException
 	 * @return string Path to file
 	 */
-	function caFetchFileFromUrl($url, $dest=null) {
+	function caFetchFileFromUrl($url, $dest=null, array $options=null) {
 		$tmp_file = $dest ? $dest : tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
-		$r_incoming_fp = @fopen($url, 'r');
-		if(!$r_incoming_fp) {
-			throw new ApplicationException(_t("Cannot open remote URL [%1] to fetch media", $url));
-		}
-
+		
 		$r_outgoing_fp = @fopen($tmp_file, 'w');
 		if(!$r_outgoing_fp) {
-			throw new ApplicationException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
+			throw new UrlFetchException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
 		}
-
-		while(($content = fgets($r_incoming_fp, 4096)) !== false) {
-			fwrite($r_outgoing_fp, $content);
+		
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_FILE, $r_outgoing_fp);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 240);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_exec($ch);
+ 
+		if(curl_errno($ch)){
+			throw new UrlFetchException(_t('Media fetch from URL [%1] failed: %2', $url, curl_error($ch)));
 		}
-		fclose($r_incoming_fp);
+ 
+		$status_code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$content_type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+		curl_close($ch);
 		fclose($r_outgoing_fp);
 		
+		if ($status_code !== 200) {
+			@unlink($tmp_file);
+			throw new UrlFetchException(_t("Media fetched from URL [%1] failed with status code %2", $url, $status_code));
+		}
+		
+		$mimetypes = caGetOption('mimetype', $options, null, ['castTo' => 'array']);
+		if (is_array($mimetypes) && sizeof($mimetypes)) {
+			if(!$content_type || !in_array($content_type, $mimetypes, true)) { 
+				@unlink($tmp_file);
+				throw new UrlFetchException(_t("Media fetched from URL [%1] is not in accepted format", $url));
+			}
+		}
 		return $tmp_file;
 	}
 	# ----------------------------------------

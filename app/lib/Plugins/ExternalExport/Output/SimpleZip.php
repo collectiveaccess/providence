@@ -109,7 +109,7 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
         
         $output_config = caGetOption('output', $target_info, null);
         $target_options = caGetOption('options', $output_config, null);
-        $name = $t_instance->getWithTemplate(caGetOption('name', $output_config, null));
+        $name = preg_replace("![^A-Za-z0-9\-\.\_]+!", "_", $t_instance->getWithTemplate(caGetOption('name', $output_config, null)));
                 
         $zip = new ZipFile(__CA_APP_DIR__."/tmp");
         

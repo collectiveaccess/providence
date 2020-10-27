@@ -1575,6 +1575,7 @@ create index i_completed_on on ca_task_queue(completed_on);
 create index i_entity_key on ca_task_queue(entity_key);
 create index i_row_key on ca_task_queue(row_key);
 create index i_error_code on ca_task_queue(error_code);
+create index i_handler on ca_task_queue(handler);
 
 
 /*==========================================================================*/
@@ -1747,6 +1748,7 @@ create table ca_objects
    deaccession_disposal_edatetime decimal(30,20),
    is_deaccessioned               tinyint                        not null default 0,
    deaccession_notes              text                           not null,
+   deaccession_authorized_by      varchar(255)                   not null default '',
    deaccession_type_id            int unsigned                   null,
    current_loc_class              tinyint unsigned               null,
    current_loc_subclass           int unsigned                   null,
@@ -1823,6 +1825,7 @@ create index i_deaccession_sdatetime on ca_objects(deaccession_sdatetime);
 create index i_deaccession_edatetime on ca_objects(deaccession_edatetime);
 create index i_deaccession_disposal_sdatetime on ca_objects(deaccession_disposal_sdatetime);
 create index i_deaccession_disposal_edatetime on ca_objects(deaccession_disposal_edatetime);
+create index i_deaccession_auth_by on ca_objects(deaccession_authorized_by);
 create index i_deaccession_type_id on ca_objects(deaccession_type_id);
 create index i_is_deaccessioned on ca_objects(is_deaccessioned);
 create index i_current_loc_class on ca_objects(current_loc_class);
@@ -4995,7 +4998,7 @@ create table ca_bundle_display_type_restrictions (
 
 
 /*==========================================================================*/
-/* Support for tour content
+/* Support for tour content                                                 */
 /*==========================================================================*/
 create table ca_tours
 (
@@ -7258,6 +7261,33 @@ create table if not exists ca_representation_transcriptions (
 
 
 /*==========================================================================*/
+create table if not exists ca_media_upload_sessions (
+   session_id                int unsigned                   not null AUTO_INCREMENT,
+   user_id                   int unsigned                   not null references ca_users(user_id),
+   session_key               char(36)                       not null,
+   created_on                int unsigned                   not null,
+   completed_on              int unsigned                   null,
+   last_activity_on          int unsigned                   null,
+   cancelled                 tinyint unsigned               not null default 0,
+   error_code                smallint unsigned              not null default 0,
+   
+   num_files		         int unsigned                   not null,
+   total_bytes		         bigint unsigned                not null default 0,
+   progress		             longtext                       null,
+   
+   primary key (session_id),
+
+   index i_session_id               (session_id),
+   index i_created_on			    (created_on),
+   index i_completed_on			    (completed_on),
+   index i_last_activity_on			(last_activity_on),
+   index i_cancelled      	        (cancelled),
+   index i_error_code      	        (error_code),
+   unique index i_session_key      	(session_key)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7268,4 +7298,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (163, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (165, unix_timestamp());

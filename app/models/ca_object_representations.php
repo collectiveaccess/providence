@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -474,7 +474,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				$this->set('md5', $va_media_info['MD5']);
 				$this->set('mimetype', $va_media_info['MIMETYPE']);
 			
-				if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+				if(is_array($va_media_info = $this->getMediaInfo('media')) && isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
 					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
 				}
 			}
@@ -494,7 +494,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
 				$this->set('md5', $va_media_info['MD5']);
 				$this->set('mimetype', $va_media_info['MIMETYPE']);
-				if (is_array($va_media_info = $this->getMediaInfo('media'))) {
+				if (is_array($va_media_info = $this->getMediaInfo('media')) && isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
 					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
 				}
 			}
@@ -1738,6 +1738,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				
 			if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 				$va_tmp['fetched_from'] = $vs_fetched_from_url;
+				$va_tmp['fetched_original_url'] = caGetOption('FETCHED_ORIGINAL_URL', $va_info['INPUT'], null);
+				$va_tmp['fetched_by'] = caGetOption('FETCHED_BY', $va_info['INPUT'], null);
 				$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
 			}
  			
@@ -2386,7 +2388,18 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				break;
 			case 'page_count':
 			case 'preview_count':
-				return $this->numFiles($row_id);
+				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
+					$mimetype = $qr->getMediaInfo('media', 'INPUT', 'MIMETYPE');
+					$class = caGetMediaClass($mimetype);
+					
+					if (($bundle_name === 'page_count') && in_array($class, ['document', 'image'])) {
+						return $this->numFiles($row_id);
+					}
+					if (($bundle_name === 'preview_count') && in_array($class, ['audio', 'video'])) {
+						return $this->numFiles($row_id);
+					}
+				}
+				return null;
 				break;
 			case 'media_dimensions':
 			case 'media_duration':

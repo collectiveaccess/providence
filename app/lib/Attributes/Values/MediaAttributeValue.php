@@ -132,6 +132,7 @@
  		 *	showMediaInfo - if true media info (dimensions, filesize, bit depth) is returns as part of display; default is false
  		 *	version - name of media version to return; default is 'thumbnail'
  		 *  return - valid settings are url, tag, path; if set to a valid value then the url, tag or path for the media is returned rather than display HTML
+ 		 *	alt = ALT text to use when generating a media tag
  		 *
  		 * You can also pass other options to be passed-through to the underlying media plugin. Useful ones for video include:
  		 *		viewer_width		(also used for audio and tilepic image versions)
@@ -162,7 +163,7 @@
                         return $this->opo_media_info_coder->getMediaInfo($vs_version, 'MIMETYPE');
                         break;
                     case 'tag':
-                        return $this->opo_media_info_coder->getMediaTag($vs_version);
+                        return $this->opo_media_info_coder->getMediaTag($vs_version, ['alt' => caGetOption('alt', $pa_options, null)]);
                         break;
                     case 'path':
                         return $this->opo_media_info_coder->getMediaPath($vs_version);

@@ -2942,6 +2942,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			'limit' => $limit
 		];
 
+
+		$policy = caGetOption('showCurrentOnly', $pa_bundle_settings, false) ? caGetOption('policy', $pa_bundle_settings, null) : null;
+
 		if($ps_related_table == 'ca_sets') {
 			// sets special case
 			
@@ -2963,8 +2966,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 
 			return $va_vals;
-		} elseif (sizeof($va_items = $this->getRelatedItems($ps_related_table, array_merge($va_get_related_opts, ['returnAs' => 'data', 'sort' => $sort, 'sortDirection' => $sort_direction, 'start' => $start, 'limit' => $limit])))) { //, ['start' => caGetOption('start', $pa_options, 0), 'limit' => $limit]
-			// Show full list
+		} else {
+			if (($policy) && is_array($h = $this->getContents($policy, ['returnHistoryTrackingData' => true]))) {	
+				$rel_table_num = (int)$t_rel->tableNum(); 
+				$rel_pk = $t_rel->primaryKey();
+				
+				$va_items = array_map(function($v) use ($rel_pk) { 
+					return ['relation_id' => $v['tracked_row_id'], $rel_pk => $v['row_id']];	// Convert history list to item list format required below
+				}, array_filter($h, function($v) use ($rel_table_num) {
+					return ((int)$v['table_num'] === $rel_table_num);		// Filter out any current values thar aren't for the the related table
+				}));
+			} else {
+				$va_items = $this->getRelatedItems($ps_related_table, array_merge($va_get_related_opts, ['returnAs' => 'data', 'sort' => $sort, 'sortDirection' => $sort_direction, 'start' => $start, 'limit' => $limit]));
+			}
 			
 			if ($vb_is_many_many) {
 				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
@@ -4262,7 +4276,7 @@ if (!$vb_batch) {
 											$vs_tmp_directory = caGetTempDirPath();
 										}
                                     	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
-                                    	$md = json_decode(file_get_contents("{$vs_path}_metadata"), true);
+                                    	$md = json_decode(@file_get_contents("{$vs_path}_metadata"), true);
                                         $vs_original_name = $md['original_filename'];
                                     } else {
                                         $vs_path = $va_values['tmp_name'];
@@ -4969,6 +4983,7 @@ if (!$vb_batch) {
 					
 						$this->set('is_deaccessioned', $vb_is_deaccessioned = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}is_deaccessioned", pInteger));
 						$this->set('deaccession_notes', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_notes", pString));
+						$this->set('deaccession_authorized_by', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_authorized_by", pString));
 						$this->set('deaccession_type_id', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_type_id", pString));
 	
 						$this->set('deaccession_date', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_date", pString));

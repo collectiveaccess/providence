@@ -836,6 +836,33 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			"#searchFormEditor__fulltext",
 			"<h2>{$vs_label}</h2>{$vs_description}"
 		);
+		
+		// GENERIC 
+		$vs_bundle = "_generic";
+		$vs_display = "<div id='searchFormEditor__fulltext'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t("General").'</span> '.($vs_label = _t('Generic'))."</div>";
+		$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+			'bundle' => $vs_bundle,
+			'label' => $vs_label,
+			'display' => $vs_display,
+			'description' => $vs_description = _t('Searches on any bundle as specified'),
+			'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+			'settings' => array_merge($va_additional_settings, [
+				'bundle' => [
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 70, 'height' => 2,
+					'takesLocale' => false,
+					'default' => "",
+					'label' => _t('Bundle'),
+					'description' => _t('Bundle specifier')
+				]
+			])
+		);
+
+		TooltipManager::add(
+			"#searchFormEditor__generic",
+			"<h2>{$vs_label}</h2>{$vs_description}"
+		);
 
 
 		// get fields 
@@ -1206,6 +1233,22 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						'name' => $va_element['bundle_name']
 					);
 					continue(2);
+				case '_generic':
+					$bundle = $va_element['settings']['bundle'];
+					$bundle_proc = str_replace('.', '_', $bundle);
+					$va_output[] = array(
+						'element' => caHTMLTextInput($bundle_proc, array(
+							'value' => $pa_form_data[$bundle],
+							'id' => $bundle_proc
+						),
+							array(
+								'width' => (isset($va_element['settings']['width']) && ($va_element['settings']['width'] > 0)) ? $va_element['settings']['width'] : "100px",
+								'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 1
+							)),
+						'label' => $vs_field_label,
+						'name' => $bundle
+					);
+					continue(2);
 				case 'created':
 				case 'modified':
 					$va_output[] = array(
@@ -1347,6 +1390,12 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_form_contents = $this->getElementsForForm();
 		$va_values = [];
 		foreach($va_form_contents as $vn_i => $vs_element) {
+			switch($vs_element) {
+				case '_generic':
+					$info = $this->getPlacementInfo($vn_i);
+					$vs_element = $info['settings']['bundle'];
+					break;
+			}
 			$vs_dotless_element = str_replace('.', '_', $vs_element);
 			if (isset($pa_form_content[$vs_dotless_element])) { // && strlen($pa_form_content[$vs_dotless_element])) {
 				$va_values[$vs_element] = strlen(($pa_form_content[$vs_dotless_element])) ? $pa_form_content[$vs_dotless_element] : ' ';
@@ -1381,19 +1430,27 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			}
 			if ($t_element->load(array('element_code' => $element_code))) {
 				if ($t_element->get('datatype') > 0) {
-					$va_elements[] = $va_placement['bundle_name'];
+					$va_elements[$vn_i] = $va_placement['bundle_name'];
 				}
 				if (sizeof($va_sub_elements = $t_element->getElementsInSet()) > 1) {
 					foreach($va_sub_elements as $vn_element_id => $va_element_info) {
 						if ($element_code == $va_element_info['element_code']) { continue; }
-						$va_elements[] = $element_prefix.'.'.$va_element_info['element_code'];
+						$va_elements[$vn_i] = $element_prefix.'.'.$va_element_info['element_code'];
 					}
 				}
 			} else {
-				$va_elements[] = $va_placement['bundle_name'];
+				$va_elements[$vn_i] = $va_placement['bundle_name'];
 			}
 		}
 		return $va_elements;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getPlacementInfo($index, $options=null) {
+		$placements = $this->getPlacements();
+		return isset($placements[$index]) ? $placements[$index] : null;
 	}
 	# ------------------------------------------------------
 	# Bundles

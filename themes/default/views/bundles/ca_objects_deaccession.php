@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2017 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,21 +50,23 @@
 		<div class='formLabel'><?php print _t('Deaccessioned: %1', ((bool)$t_subject->get('is_deaccessioned')) ? _t('Yes') : _t('No')); ?></div>
 <?php
 	} else {
-		print $t_subject->htmlFormElement('is_deaccessioned', '^ELEMENT '._t('Deaccessioned?'), array('name' => "{$vs_id_prefix}is_deaccessioned", 'id' => "{$vs_id_prefix}IsDeaccessioned", 'onclick' => 'return caShowDeaccessionControls(); '));
+		print $t_subject->htmlFormElement('is_deaccessioned', '^ELEMENT '._t('Deaccessioned'), array('name' => "{$vs_id_prefix}is_deaccessioned", 'id' => "{$vs_id_prefix}IsDeaccessioned", 'onclick' => 'return caShowDeaccessionControls(); '));
 	}
 ?>
 				</div>
 				<div id='<?php print $vs_id_prefix; ?>DeaccessionContainer' <?php print ((bool)$t_subject->get('is_deaccessioned') ? "" : "style='display: none;'"); ?>>
 <?php
-	print $t_subject->htmlFormElement('deaccession_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_date", 'id' => "{$vs_id_prefix}DeaccessionDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only));
+	print $t_subject->htmlFormElement('deaccession_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_date", 'id' => "{$vs_id_prefix}DeaccessionDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only, 'timeOmit' => true));
 	
 	if ($this->request->config->get('deaccession_use_disposal_date')) {
-	    print $t_subject->htmlFormElement('deaccession_disposal_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_disposal_date", 'id' => "{$vs_id_prefix}DeaccessionDisposalDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only));
+	    print $t_subject->htmlFormElement('deaccession_disposal_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_disposal_date", 'id' => "{$vs_id_prefix}DeaccessionDisposalDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only, 'timeOmit' => true));
     }
-	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA"._t('Type')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID", 'readonly' => $vb_read_only));
+	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA"._t('Disposal type')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID", 'readonly' => $vb_read_only));
 ?>
 	<br class="clear"/>
 <?php
+	print $t_subject->htmlFormElement('deaccession_authorized_by', "<div class='formLabel'>^EXTRA"._t('Authorized by')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_authorized_by", 'id' => "{$vs_id_prefix}DeaccessionAuthorizedBy", 'readonly' => $vb_read_only));
+
 	print $t_subject->htmlFormElement('deaccession_notes', "<div class='formLabel'>^EXTRA"._t('Notes')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_notes", 'id' => "{$vs_id_prefix}DeaccessionNotes", 'readonly' => $vb_read_only));
 ?>
 				</div>
@@ -84,8 +86,14 @@
 	jQuery(document).ready(function() {
 		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDate').datepicker({constrainInput: false});
 		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDisposalDate').datepicker({constrainInput: false});
+		
+		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionAuthorizedBy').autocomplete( 
+						{ 
+							source: '<?= caNavUrl($this->request, 'lookup', 'Intrinsic', 'Get', ['max' => 500, 'bundle' => 'ca_objects.deaccession_authorized_by']); ?>',
+							minLength: 3, delay: 800
+						}
+					);
 	});
 </script>
 <?php
 	}
-?>

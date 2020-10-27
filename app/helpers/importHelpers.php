@@ -767,7 +767,7 @@
 		$pa_options['dontCreate'] = $pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = [];  // value list for all items
-		$vn_c = 0;
+	
 		if (!($t_instance = Datamodel::getInstanceByTableName($ps_table, true))) { return array(); }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
@@ -799,7 +799,7 @@
 								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x))) {
 									$vs_item = $vs_laddered_val;
 									if ($o_log) { $o_log->logDebug(_t("[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank", $vs_item)); }
-									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x));
+									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => false));
 									if ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
 									    $va_val[$vs_idno_fld] = BaseRefinery::parsePlaceholder($va_p[$vs_idno_fld], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x));
 									}
@@ -828,12 +828,12 @@
 							&&
 							($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Type"])
 						) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader));
+							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => false));
 						}
 			
 						if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}TypeDefault"])) {
-							if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x)))) {
-								$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader));
+							if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => false)))) {
+								$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => false));
 							}
 						}
 				
@@ -1077,7 +1077,7 @@
 							&&
 							($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipType"])
 						) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader));
+							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => false));
 						}
 			
 						if (
@@ -1085,8 +1085,8 @@
 							&& 
 							($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipTypeDefault"])	
 						) {
-							if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true,  'returnDelimitedValueAt' => $vn_x)))) {
-								$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true));
+							if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true,  'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => false)))) {
+								$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => false));
 							}
 						}
 
@@ -1136,11 +1136,13 @@
 							    
 								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText().']'; }
 					
-								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && ((isset($va_val['media']['media']) && ($va_val['media']['media'])) || $vs_item)) {
+								if ($va_val['media']['media'] || $vs_item) {
+									// Search for files in import directory (or subdirectory of import directory specified by mediaPrefix)
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
 
 								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'], null), 'log' => $o_log]);
 
+									$files_added = 0;
 									foreach($va_files as $vs_file) {
 										if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
 										
@@ -1154,16 +1156,21 @@
 
 					                    $va_media_val['_matchOn'] = $va_match_on;
 							            $va_vals[] = $va_media_val;
+							            $files_added++;
 							        }
-							        $vn_c++;
-							        continue(2);
-								} else {
-								    if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
-								        $va_val['media']['media'] = $vs_item;
-								    } else {
-									    $va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
-									}
+							        if($files_added > 0) {	// if we found matching files we're done
+							        	continue(2);
+							        }
 								}
+								if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
+									// Is the media import item a URL?
+									$va_val['media']['media'] = $vs_item;
+								} else {
+									// If noting else matches, just try to load the item from the import directory using the value as file name
+									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
+								}
+								
+								// Default idno for rperesentation is the file name
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
 							default:
@@ -1210,7 +1217,6 @@
 					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 					if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 					$va_vals[] = $va_val;
-					$vn_c++;
 				}
 			}
 		} else {
@@ -1448,15 +1454,19 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		return $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
 	}
 	# ---------------------------------------------------------------------
-	/**
-	 * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
-	 * @param array $pa_hierarchy_path
-	 * @param int $pn_threshold
-	 * @param array $pa_options
-	 * 		removeParensFromLabels = Remove parens from labels for search and string comparison. This can improve results in specific cases.
-	 * @return bool|string
-	 */
-	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array()) {
+    /**
+     * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
+     *
+     * @param array $pa_hierarchy_path
+     * @param int   $pn_threshold
+     * @param array $pa_options
+     *        removeParensFromLabels = Remove parens from labels for search and string comparison. This can improve results in specific cases.
+     * @param null  $o_service
+     *
+     * @return bool|string
+     * @throws MemoryCacheInvalidParameterException
+     */
+	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array(), $o_service=null) {
 		$vs_cache_key = md5(print_r($pa_hierarchy_path, true));
 		if(MemoryCache::contains($vs_cache_key, 'AATMatches')) {
 			return MemoryCache::fetch($vs_cache_key, 'AATMatches');
@@ -1475,7 +1485,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			$vs_lookup = $vs_bot;
 		}
 
-		$o_service = new WLPlugInformationServiceAAT();
+		if (is_null($o_service)) {
+		    $o_service = new WLPlugInformationServiceAAT();
+        }
 
 		$va_hits = $o_service->lookup(array(), $vs_lookup, array('phrase' => true, 'raw' => true, 'limit' => 2000));
 		if(!is_array($va_hits)) { return false; }
@@ -1525,22 +1537,6 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		}
 
 		return false;
-	}
-	# ---------------------------------------------------------------------
-	/**
-	 *
-	 */
-	function caValidateGoogleSheetsUrl($url) {
-		if (!is_array($parsed_url = parse_url(urldecode($url)))) { return null; }
- 			
-		$tmp = explode('/', $parsed_url['path']);
-		array_pop($tmp); $tmp[] = 'export';
-		$path = join("/", $tmp);
-		$transformed_url = $parsed_url['scheme']."://".$parsed_url['host'].$path."?format=xlsx";
-		if (!isUrl($transformed_url) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file)/d/!', $transformed_url)) {
-			return null;
-		}
-		return $transformed_url;
 	}
 	# ---------------------------------------------------------------------
 	/**

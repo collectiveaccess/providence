@@ -125,7 +125,6 @@
 		$o_config = Configuration::load();
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/');
 		
-		
 		$o_view->setVar('result', $po_result);
 		$o_view->setVar('t_set', caGetOption('set', $pa_options, null));
 		$o_view->setVar('criteria_summary', caGetOption('criteriaSummary', $pa_options, ''));
@@ -133,6 +132,8 @@
 		$vs_table = $po_result->tableName();
 		
 		$vs_type = null;
+		$va_export_config = $va_template_info = null;
+		
 		if (!(bool)$o_config->get('disable_pdf_output') && substr($ps_template, 0, 5) === '_pdf_') {
 			$va_template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $pa_options, 'results'), substr($ps_template, 5));
 			$vs_type = 'pdf';
@@ -188,6 +189,17 @@
 		}
 		
 		if(!$vs_type) { throw new ApplicationException(_t('Invalid export type')); }
+		
+		if(!($filename_stub = caGetOption('filename', $pa_options, null))) { 
+			if(is_array($va_template_info)) {
+				$filename_stub = caGetOption('filename', $va_template_info, 'export_results').'_'.date("Y-m-d");
+			} elseif(is_array($va_export_config)) {
+				$filename_stub = caGetOption('filename', $va_export_config[$vs_table][$ps_template], 'export_results').'_'.date("Y-m-d");
+			} else {
+				$filename_stub = 'export_results'.'_'.date("Y-m-d");
+			}
+		}
+		$filename_stub = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $filename_stub);
 		
 		switch($vs_type) {
 			case 'xlsx':
@@ -332,10 +344,8 @@
 				}
 
 				$o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
-				$vs_filename = caGetOption('filename', $va_export_config[$vs_table][$ps_template], 'export_results');
-				$vs_filename = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $vs_filename);
 				header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-				header('Content-Disposition:inline;filename='.$vs_filename.'_'.date("Y-m-d").'.xlsx');
+				header('Content-Disposition:inline;filename='.$filename_stub.'.xlsx');
 				$o_writer->save('php://output');
 				exit;
 				break;
@@ -411,7 +421,7 @@
 				$vs_filename = caGetOption('filename', $va_export_config[$vs_table][$ps_template], 'export_results');
 				$vs_filename = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $vs_filename);
 				header('Content-type: application/vnd.openxmlformats-officedocument.presentationml.presentation');
-				header('Content-Disposition:inline;filename='.$vs_filename.'_'.date("Y-m-d").'.pptx');
+				header('Content-Disposition:inline;filename='.$filename_stub.'.pptx');
 				
 				$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
 				$o_writer->save('php://output');
@@ -421,7 +431,8 @@
 				//
 				// PDF output
 				//
-				caExportViewAsPDF($o_view, $va_template_info, (($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results')).'_'.date("Y-m-d").'.pdf', []);
+				
+				caExportViewAsPDF($o_view, $va_template_info, $filename_stub, []);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
 				exit;

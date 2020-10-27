@@ -450,6 +450,7 @@ final class ConfigurationCheck {
 	# They appear in the "configuration check" screen under manage -> system configuration.
 	# -------------------------------------------------------
 	public static function mediaDirRecursiveExpensiveCheck() {
+    if ((bool)self::$opo_config->get('dont_do_media_dir_expensive_check')) { return true;}
 		$va_dirs = self::getSubdirectoriesAsArray(self::$opo_config->get("ca_media_root_dir"));
 		$i = 0;
 		foreach($va_dirs as $vs_dir){

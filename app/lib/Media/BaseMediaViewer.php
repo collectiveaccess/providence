@@ -105,7 +105,12 @@
 					$vs_controls .= "</div>";	
 					
 					$o_view->setVar('page', $vn_rep_index);		
+					$o_view->setVar('original_media_url', $t_instance->getMediaUrl('media', 'original', []));
 				}
+			} elseif(is_a($t_instance, 'ca_attribute_values')) {
+				$o_view->setVar('original_media_url', $t_instance->getMediaUrl('value_blob', 'original', []));
+			} elseif(is_a($t_instance, 'ca_site_page_media')) {
+				$o_view->setVar('original_media_url', $t_instance->getMediaUrl('media', 'original', []));
 			}
 			if ($t_subject && $t_instance && ($po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations'))) {
 					if (is_array($va_versions = $po_request->config->getList('ca_object_representation_download_versions'))) {

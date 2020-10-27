@@ -43,23 +43,24 @@ require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Query.php');
 
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
-	protected $opa_index_content_buffer = array();
+	protected $index_content_buffer = [];
 
-	protected $opn_indexing_subject_tablenum = null;
-	protected $opn_indexing_subject_row_id = null;
-	protected $ops_indexing_subject_tablename = null;
+	protected $indexing_subject_tablenum = null;
+	protected $indexing_subject_row_id = null;
+	protected $indexing_subject_tablename = null;
 
 	/**
 	 * @var \Elasticsearch\Client
 	 */
-	protected $opo_client;
+	static protected $client;
 
-	static private $opa_doc_content_buffer = array();
-	static private $opa_update_content_buffer = array();
-	static private $opa_delete_buffer = array();
+	static private $doc_content_buffer = [];
+	static private $update_content_buffer = [];
+	static private $delete_buffer = [];
+	static private $record_cache = [];
 
-	protected $ops_elasticsearch_index_name = '';
-	protected $ops_elasticsearch_base_url = '';
+	protected $elasticsearch_index_name = '';
+	protected $elasticsearch_base_url = '';
 	
 	protected $version;
 	# -------------------------------------------------------
@@ -69,25 +70,20 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
 		// this is useful for multi-instance setups which have the same set of config files for multiple instances
 		if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
-			$this->ops_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
+			$this->elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
 		} else {
-			$this->ops_elasticsearch_base_url = $this->opo_search_config->get('search_elasticsearch_base_url');
+			$this->elasticsearch_base_url = $this->opo_search_config->get('search_elasticsearch_base_url');
 		}
-		$this->ops_elasticsearch_base_url = trim($this->ops_elasticsearch_base_url, "/");   // strip trailing slashes as they cause errors with ElasticSearch 5.x
+		$this->elasticsearch_base_url = trim($this->elasticsearch_base_url, "/");   // strip trailing slashes as they cause errors with ElasticSearch 5.x
 
 		if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
-			$this->ops_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
+			$this->elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
 		} else {
-			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
+			$this->elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
 		}
 		
 		$this->version = (int)$this->opo_search_config->get('elasticsearch_version');
 		if (!in_array($this->version, [2, 5, 6, 7], true)) { $this->version = 5; }
-
-		$this->opo_client = Elasticsearch\ClientBuilder::create()
-			->setHosts([$this->ops_elasticsearch_base_url])
-			->setRetries(2)
-			->build();
 	}
 	# -------------------------------------------------------
 	/**
@@ -95,7 +91,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return string
 	 */
 	protected function getIndexNamePrefix() {
-		return $this->ops_elasticsearch_index_name;
+		return $this->elasticsearch_index_name;
 	}
 	# -------------------------------------------------------
 	/**
@@ -131,19 +127,19 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					// noop -- the exception happens when the index already exists, which is good
 				}
 
+				$type = ($this->version <= 5) ? 'ca' : '_doc';
 				try {
 					$this->setIndexSettings($table);
 
 					$params = [
 						'index' => $index_name,
-						'type' => '_doc',
+						'type' => $type,
 						'update_all_types' => true,
-						'body' => ($this->version >= 7) ? $va_config : ['_doc' => $va_config]
+						'body' => ($this->version >= 7) ? $va_config : [$type => $va_config]
 					];
 					if($this->version < 5) {  $params['ignore_conflicts'] = true; }
 					if($this->version >= 7) {  
 						unset($params['type']); 
-						$params['include_type_name'] = false; 
 					}
 					if($this->version >= 6) {  
 						unset($params['update_all_types']); 
@@ -179,26 +175,31 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldnum);
 		$va_fragment = $o_field->getIndexingFragment($ps_content, $pa_options);
 
+		$type = ($this->version <= 5) ? 'ca' : '_doc';
 		foreach($pa_subject_row_ids as $pn_subject_row_id) {
 			// fetch the record
 			try {
-				$f = [
+				$record = $this->record_cache[$table][$pn_subject_row_id] ?? null;
+				if (is_null($record)){
+					$f = [
 						'index' => $this->getIndexName($table),
-						'type' => '_doc',
+						'type' => $type,
 						'id' => $pn_subject_row_id
-				];
-				$va_record = $this->getClient()->get($f)['_source'];
+					];
+					$va_record = $this->getClient()->get($f)['_source'];
+				}
  			} catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
-				$va_record = array(); // record doesn't exist yet --> the update API will create it
+				$va_record = []; // record doesn't exist yet --> the update API will create it
 			}
+			$this->record_cache[$table][$pn_subject_row_id] = $record;
 
 			$this->addFragmentToUpdateContentBuffer($va_fragment, $va_record, $table, $pn_subject_row_id, $pn_content_row_id);
 		}
 
 		if ((
-				sizeof(self::$opa_doc_content_buffer) +
-				sizeof(self::$opa_update_content_buffer) +
-				sizeof(self::$opa_delete_buffer)
+				sizeof(self::$doc_content_buffer) +
+				sizeof(self::$update_content_buffer) +
+				sizeof(self::$delete_buffer)
 			) > $this->getOption('maxIndexingBufferSize'))
 		{
 			$this->flushContentBuffer();
@@ -227,11 +228,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					$va_values[] = $vm_val;
 					$va_indexes[] = $pn_content_row_id;
 				}
-				self::$opa_update_content_buffer[$ps_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = $va_indexes;
-				self::$opa_update_content_buffer[$ps_table_name][$pn_subject_row_id][$vs_key] = $va_values;
+				self::$update_content_buffer[$ps_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = $va_indexes;
+				self::$update_content_buffer[$ps_table_name][$pn_subject_row_id][$vs_key] = $va_values;
 			} else { // this field wasn't indexed yet -- just add it
-				self::$opa_update_content_buffer[$ps_table_name][$pn_subject_row_id][$vs_key][] = $vm_val;
-				self::$opa_update_content_buffer[$ps_table_name][$pn_subject_row_id][$vs_key.'_content_ids'][] = $pn_content_row_id;
+				self::$update_content_buffer[$ps_table_name][$pn_subject_row_id][$vs_key][] = $vm_val;
+				self::$update_content_buffer[$ps_table_name][$pn_subject_row_id][$vs_key.'_content_ids'][] = $pn_content_row_id;
 			}
 		}
 	}
@@ -241,7 +242,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return \Elasticsearch\Client
 	 */
 	protected function getClient() {
-		return $this->opo_client;
+		if(!self::$client) {
+			self::$client = Elasticsearch\ClientBuilder::create()
+				->setHosts([parse_url($this->elasticsearch_base_url)])
+				->setRetries(3)
+				->build();
+		}
+		return self::$client;
 	}
 	# -------------------------------------------------------
 	public function init() {
@@ -287,12 +294,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			// use scroll API to find all documents in a particular mapping/table and delete them using the bulk API
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
-
+			$type = ($this->version <= 5) ? 'ca' : '_doc';
 			$table = Datamodel::getTableNamr($pn_table_num);
 			$va_search_params = array(
 				'scroll' => '1m',          // how long between scroll requests. should be small!
 				'index' => $this->getIndexName($table),
-				'type' => '_doc',
+				'type' => $type,
 				'body' => array(
 					'query' => array(
 						'match_all' => $this->version >= 5 ? new \stdClass() : []
@@ -306,7 +313,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$vs_scroll_id = $va_tmp['_scroll_id'];   // The response will contain no results, just a _scroll_id
 
 			// Now we loop until the scroll "cursors" are exhausted
-			$va_delete_params = array();
+			$va_delete_params = [];
 			while (\true) {
 
 				$va_response = $this->getClient()->scroll([
@@ -342,7 +349,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 	# -------------------------------------------------------
 	public function setTableNum($pn_table_num) {
-		$this->opn_indexing_subject_tablenum = $pn_table_num;
+		$this->indexing_subject_tablenum = $pn_table_num;
 	}
 	# -------------------------------------------------------
 	public function __destruct() {
@@ -360,7 +367,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $po_rewritten_query
 	 * @return WLPlugSearchEngineElasticSearchResult
 	 */
-	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
+	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=[], $po_rewritten_query=null) {
 		Debug::msg("[ElasticSearch] incoming search query is: {$ps_search_expression}");
 		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($pa_filters, true));
 
@@ -414,10 +421,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param int $pn_subject_row_id
 	 */
 	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
-		$this->opa_index_content_buffer = array();
-		$this->opn_indexing_subject_tablenum = $pn_subject_tablenum;
-		$this->opn_indexing_subject_row_id = $pn_subject_row_id;
-		$this->ops_indexing_subject_tablename = Datamodel::getTableName($pn_subject_tablenum);
+		$this->index_content_buffer = [];
+		$this->indexing_subject_tablenum = $pn_subject_tablenum;
+		$this->indexing_subject_row_id = $pn_subject_row_id;
+		$this->indexing_subject_tablename = Datamodel::getTableName($pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	/**
@@ -438,11 +445,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$va_record = null;
 
 			if(!$this->isReindexing()) {
+				$type = ($this->version <= 5) ? 'ca' : '_doc';
 				try {
 					$va_record = $this->getClient()->get([
-						'index' => $this->getIndexName($this->ops_indexing_subject_tablename),
-						'type' => '_doc',
-						'id' => $this->opn_indexing_subject_row_id
+						'index' => $this->getIndexName($this->indexing_subject_tablename),
+						'type' => $type,
+						'id' => $this->indexing_subject_row_id
 					])['_source'];
 				} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 					$va_record = null;
@@ -451,13 +459,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 			// if the record already exists, do incremental indexing
 			if (is_array($va_record) && (sizeof($va_record) > 0)) {
-				$this->addFragmentToUpdateContentBuffer($va_fragment, $va_record, $this->ops_indexing_subject_tablename, $this->opn_indexing_subject_row_id, $pn_content_row_id);
+				$this->addFragmentToUpdateContentBuffer($va_fragment, $va_record, $this->indexing_subject_tablename, $this->indexing_subject_row_id, $pn_content_row_id);
 			} else { // otherwise create record in index
 				foreach ($va_fragment as $vs_key => $vm_val) {
-					$this->opa_index_content_buffer[$vs_key][] = $vm_val;
+					$this->index_content_buffer[$vs_key][] = $vm_val;
 					// this list basically indexes the values above by content row id. we need that to have a chance
 					// to update indexing for specific values [content row ids] in place
-					$this->opa_index_content_buffer[$vs_key . '_content_ids'][] = $pn_content_row_id;
+					$this->index_content_buffer[$vs_key . '_content_ids'][] = $pn_content_row_id;
 				}
 			}
 		}
@@ -469,21 +477,21 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * We still keep the data local until the document buffer is full.
 	 */
 	public function commitRowIndexing() {
-		if(sizeof($this->opa_index_content_buffer) > 0) {
-			self::$opa_doc_content_buffer[
-				$this->ops_indexing_subject_tablename.'/'.
-				$this->opn_indexing_subject_row_id
-			] = $this->opa_index_content_buffer;
+		if(sizeof($this->index_content_buffer) > 0) {
+			self::$doc_content_buffer[
+				$this->indexing_subject_tablename.'/'.
+				$this->indexing_subject_row_id
+			] = $this->index_content_buffer;
 		}
 
-		unset($this->opn_indexing_subject_tablenum);
-		unset($this->opn_indexing_subject_row_id);
-		unset($this->ops_indexing_subject_tablename);
+		unset($this->indexing_subject_tablenum);
+		unset($this->indexing_subject_row_id);
+		unset($this->indexing_subject_tablename);
 
 		if ((
-				sizeof(self::$opa_doc_content_buffer) +
-				sizeof(self::$opa_update_content_buffer) +
-				sizeof(self::$opa_delete_buffer)
+				sizeof(self::$doc_content_buffer) +
+				sizeof(self::$update_content_buffer) +
+				sizeof(self::$delete_buffer)
 			) > $this->getOption('maxIndexingBufferSize'))
 		{
 			$this->flushContentBuffer();
@@ -515,7 +523,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						])['_source'];
 					} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 						// record is gone?
-						unset(self::$opa_update_content_buffer[$table][$pn_subject_row_id]);
+						unset(self::$update_content_buffer[$table][$pn_subject_row_id]);
 						continue;
 					}
 
@@ -531,24 +539,24 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 								unset($va_indexes[$vn_index]);
 							} else {
 								if(sizeof($va_values) == 1) {
-									$va_values = array();
-									$va_indexes = array();
+									$va_values = [];
+									$va_indexes = [];
 								}
 							}
 
 							// we reindex both value and index arrays here, starting at 0
 							// json_encode seems to treat something like array(1=>'foo') as object/hash, rather than a list .. which is not good
-							self::$opa_update_content_buffer[$table][$pn_subject_row_id][$vs_key] = array_values($va_values);
-							self::$opa_update_content_buffer[$table][$pn_subject_row_id][$vs_key.'_content_ids'] = array_values($va_indexes);
+							self::$update_content_buffer[$table][$pn_subject_row_id][$vs_key] = array_values($va_values);
+							self::$update_content_buffer[$table][$pn_subject_row_id][$vs_key.'_content_ids'] = array_values($va_indexes);
 						}
 					}
 				}
 			}
 
 			if ((
-					sizeof(self::$opa_doc_content_buffer) +
-					sizeof(self::$opa_update_content_buffer) +
-					sizeof(self::$opa_delete_buffer)
+					sizeof(self::$doc_content_buffer) +
+					sizeof(self::$update_content_buffer) +
+					sizeof(self::$delete_buffer)
 				) > $this->getOption('maxIndexingBufferSize'))
 			{
 				$this->flushContentBuffer();
@@ -556,8 +564,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 		} else {
 			// queue record for removal -- also make sure we don't try do any unecessary indexing
-			unset(self::$opa_update_content_buffer[$table][$pn_subject_row_id]);
-			self::$opa_delete_buffer[$table][] = $pn_subject_row_id;
+			unset(self::$update_content_buffer[$table][$pn_subject_row_id]);
+			self::$delete_buffer[$table][] = $pn_subject_row_id;
 		}
 	}
 	# ------------------------------------------------
@@ -568,13 +576,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function flushContentBuffer() {
 		$this->refreshMapping();
 
-		$va_bulk_params = array();
+		$va_bulk_params = [];
 
 		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
 		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
 
 		// delete docs
-		foreach(self::$opa_delete_buffer as $table => $va_rows) {
+		foreach(self::$delete_buffer as $table => $va_rows) {
 			foreach(array_unique($va_rows) as $vn_row_id) {
 				$va_bulk_params['body'][] = array(
 					'delete' => array(
@@ -584,12 +592,14 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				);
 
 				// also make sure we don't do unessecary indexing for this record below
-				unset(self::$opa_update_content_buffer[$table][$vn_row_id]);
+				unset(self::$update_content_buffer[$table][$vn_row_id]);
 			}
 		}
 
+		$type = ($this->version <= 5) ? 'ca' : '_doc';
+			
 		// newly indexed docs
-		foreach(self::$opa_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
+		foreach(self::$doc_content_buffer as $vs_key => $va_doc_content_buffer) {
 			$va_tmp = explode('/', $vs_key);
 			$table = $va_tmp[0];
 			$vn_primary_key = intval($va_tmp[1]);
@@ -597,7 +607,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$f = array(
 				'index' => array(
 					'_index' => $this->getIndexName($table),
-					'_type' => '_doc',
+					'_type' => $type,
 					'_id' => $vn_primary_key
 				)
 			);
@@ -618,13 +628,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		}
 
 		// update existing docs
-		foreach(self::$opa_update_content_buffer as $table => $va_rows) {
+		foreach(self::$update_content_buffer as $table => $va_rows) {
 			foreach($va_rows as $vn_row_id => $va_fragment) {
 
 				$f = array(
 					'update' => array(
 						'_index' => $this->getIndexName($table),
-						'_type' => '_doc',
+						'_type' => $type,
 						'_id' => (int) $vn_row_id
 					)
 				);
@@ -665,7 +675,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
 			if(caIsRunFromCLI() && $this->getIndexNamePrefix() && (!defined('__CollectiveAccess_IS_REINDEXING__') || !__CollectiveAccess_IS_REINDEXING__)) {
-				// TODO: get table list
 				$o_mapping = new ElasticSearch\Mapping();
 			
 				foreach ($o_mapping->get() as $table => $config) {
@@ -674,10 +683,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			}
 		}
 
-		$this->opa_index_content_buffer = array();
-		self::$opa_doc_content_buffer = array();
-		self::$opa_update_content_buffer = array();
-		self::$opa_delete_buffer = array();
+		$this->index_content_buffer = [];
+		self::$doc_content_buffer = [];
+		self::$update_content_buffer = [];
+		self::$delete_buffer = [];
+		self::$record_cache = [];
 	}
 	# -------------------------------------------------------
 	/**
@@ -741,8 +751,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return array - an array of results is returned keyed by primary key id. The array values boolean true. This is done to ensure no duplicate row_ids
 	 *
 	 */
-	public function quickSearch($pn_table_num, $ps_search, $pa_options=array()) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+	public function quickSearch($pn_table_num, $ps_search, $pa_options=[]) {
+		if (!is_array($pa_options)) { $pa_options = []; }
 		$vn_limit = caGetOption('limit', $pa_options, 0);
 
 		$o_result = $this->search($pn_table_num, $ps_search);

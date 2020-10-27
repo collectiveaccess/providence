@@ -897,7 +897,13 @@ class BaseEditorController extends ActionController {
 
                     $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
             
-                    $o_pdf->render($vs_content, array('stream'=> true, 'append' => $media_to_append, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+            		if (!$filename_template = $this->request->config->get($t_subject->tableName().'_summary_file_naming')) {
+            			$filename_template = $this->view->getVar('filename') ? $filename_template : caGetOption('filename', $va_template_info, 'print_summary');
+            		}
+            		if (!($filename = caProcessTemplateForIDs($filename_template, $t_subject->tableName(), [$vn_subject_id]))) {
+            			$filename = 'print_summary';
+            		}
+                    $o_pdf->render($vs_content, ['stream'=> true, 'append' => $media_to_append, 'filename' => "{$filename}.pdf"]);
 
                     $vb_printed_properly = true;
                     break;
@@ -1967,12 +1973,12 @@ class BaseEditorController extends ActionController {
 				throw new ApplicationException(_t('Cannot view media'));
 			}
 
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
 			}
 
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
-			if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+			if(($t_instance->numFiles() > 1) && (caGetMediaClass($vs_mimetype) === 'image') && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
 				$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
 				unset($va_display_info['use_mirador_for_image_list_length_at_least']);
 				unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
@@ -1996,7 +2002,7 @@ class BaseEditorController extends ActionController {
 			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
 			}
 			
@@ -2019,7 +2025,7 @@ class BaseEditorController extends ActionController {
 				}
 			}
 			
-			if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+			if(($t_instance->numFiles() > 1) && (caGetMediaClass($vs_mimetype) === 'image') && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
 				$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
 				unset($va_display_info['use_mirador_for_image_list_length_at_least']);
 				unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
@@ -2046,7 +2052,7 @@ class BaseEditorController extends ActionController {
 			require_once(__CA_MODELS_DIR__."/ca_site_page_media.php");
 			$t_instance = new ca_site_page_media($pn_media_id);
 			
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
 			}
 			
@@ -2093,7 +2099,7 @@ class BaseEditorController extends ActionController {
 			case 'representation':
 				$t_instance = new ca_object_representations($va_identifier['id']);
 				
-				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
 				
@@ -2116,7 +2122,7 @@ class BaseEditorController extends ActionController {
 					}
 				}
 				
-				if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+				if(($t_instance->numFiles() > 1) && (caGetMediaClass($vs_mimetype) === 'image') && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
 					$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
 					unset($va_display_info['use_mirador_for_image_list_length_at_least']);
 					unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
@@ -2132,12 +2138,12 @@ class BaseEditorController extends ActionController {
 				$t_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$t_subject->load($t_attr->get('row_id'));
 				
-				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
 				
 				$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
-				if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+				if(($t_instance->numFiles() > 1) && (caGetMediaClass($vs_mimetype) === 'image') && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
 					$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
 					unset($va_display_info['use_mirador_for_image_list_length_at_least']);
 					unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
@@ -2178,7 +2184,7 @@ class BaseEditorController extends ActionController {
 		switch($va_identifier['type']) {
 			case 'representation':
                 $t_instance = new ca_object_representations($va_identifier['id']);
-                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
                 $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2186,7 +2192,7 @@ class BaseEditorController extends ActionController {
                 break;
 			case 'attribute':
                 $t_instance = new ca_object_representations($va_identifier['id']);
-                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
                 $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2216,7 +2222,7 @@ class BaseEditorController extends ActionController {
 		switch($va_identifier['type']) {
 			case 'representation':
                 $t_instance = new ca_object_representations($va_identifier['id']);
-                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
                 $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2224,7 +2230,7 @@ class BaseEditorController extends ActionController {
                 break;
 			case 'attribute':
                 $t_instance = new ca_object_representations($va_identifier['id']);
-                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
                 $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2462,7 +2468,7 @@ class BaseEditorController extends ActionController {
 				    $va_reps = $t_subject->getRepresentations([$ps_version]);
 				    break;
 			}
-			$vs_idno = $t_subject->get('idno');
+			$vs_idno = $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'));
 	
 			$vb_download_for_record = false;
 			foreach($va_reps as $vn_representation_id => $va_rep) {
@@ -2510,8 +2516,17 @@ class BaseEditorController extends ActionController {
 		
 		if (sizeof($va_file_paths) > 1) {
 			$o_zip = new ZipStream();
+			$names_set = [];
 			foreach($va_file_paths as $vs_path => $vs_name) {
+				if (isset($names_set[$vs_name])) {
+					$names_set[$vs_name]++;
+					$ext = pathinfo($vs_name, PATHINFO_EXTENSION);
+					$vs_name = pathinfo($vs_name, PATHINFO_FILENAME).'-'.$names_set[$vs_name].'.'.$ext;
+				} else {
+					$names_set[$vs_name] = 1;
+				}
 				$o_zip->addFile($vs_path, $vs_name);
+				
 			}
 			$o_view->setVar('zip_stream', $o_zip);
 			$o_view->setVar('archive_name', caGetMediaDownloadArchiveName($t_subject->tableName(), $vn_subject_id, ['extension' => 'zip'])); //preg_replace('![^A-Za-z0-9\.\-]+!', '_', trim($t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), "/")).'.zip');

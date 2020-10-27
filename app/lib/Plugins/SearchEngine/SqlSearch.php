@@ -1418,8 +1418,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									}
 								}
 								
+								$vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num);
 								$vn_intrinsic_type = $t_table->getFieldInfo($vs_intrinsic_field_name, 'FIELD_TYPE');
-								if (($vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num)) && ($vn_intrinsic_type == FT_BIT)) {
+								
+								if ($vs_intrinsic_field_name && ($vn_intrinsic_type == FT_BIT)) {
 									$vb_ft_bit_optimization = true;
 								} elseif($vn_intrinsic_type == FT_HISTORIC_DATERANGE) {
 									$vb_all_numbers = true;
@@ -1620,7 +1622,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											break;
 									}
 
-									$pa_direct_sql_query_params = null;
+									$pa_direct_sql_query_params = array();
 								}
 							}
 						}
@@ -2187,10 +2189,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options, true)) {
 			$t_content = Datamodel::getInstanceByTableNum($pn_content_tablenum, true);
-			if (method_exists($t_content, "getIDNoPlugInInstance") && ($o_idno = $t_content->getIDNoPlugInInstance())) {
-				$va_values = $o_idno->getIndexValues($ps_content);
-				$va_words += $va_values;
+			
+			$va_values = [];
+			if ($delimiters = caGetOption("IDNO_DELIMITERS", $pa_options, false)) {
+				if ($delimiters && !is_array($delimiters)) { $delimiters = [$delimiters]; }
+				if ($delimiters) {
+					$va_values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $delimiters).')!', $ps_content));
+				} 
 			}
+			if (!sizeof($$va_values) && method_exists($t_content, "getIDNoPlugInInstance") && ($o_idno = $t_content->getIDNoPlugInInstance())) {
+				$va_values = $o_idno->getIndexValues($ps_content);
+			}
+			$va_words += $va_values;
 		}
 		
 		$va_literal_content = caGetOption("literalContent", $pa_options, null);

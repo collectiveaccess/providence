@@ -770,7 +770,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 							$va_type_ids[$qr_children->get('item_id')] = true;
 						}
 					}
-					$va_wheres[] = '((cmtr.type_id = ?) OR (cmtr.include_subtypes = 1 AND cmtr.type_id IN (?)))';
+					$va_wheres[] = '((cmtr.type_id IS NULL) OR (cmtr.type_id = ?) OR (cmtr.include_subtypes = 1 AND cmtr.type_id IN (?)))';
 					$va_where_params[] = (int)$vn_type_id;
 					$va_where_params[] = $va_type_ids;
 				}
@@ -780,7 +780,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$qr_tmp = $vo_db->query("
 				SELECT cme.*
 				FROM ca_metadata_elements cme
-				INNER JOIN ca_metadata_type_restrictions AS cmtr ON cme.hier_element_id = cmtr.element_id
+				LEFT JOIN ca_metadata_type_restrictions AS cmtr ON cme.hier_element_id = cmtr.element_id
 				{$vs_wheres}
 			", $va_where_params);
 		} else {

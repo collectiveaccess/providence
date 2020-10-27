@@ -1194,7 +1194,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "{$vs_watch}\n";
 				TooltipManager::add("#caWatchItemButton", _t('Watch/Unwatch this record'));
 
-				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) > 1)) {
 
 					$vs_buf .= "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 
@@ -4904,12 +4904,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		extension = file extension of media being downloaded.
 	 *		original_filename = original filename of media being downloaded.
 	 *		representation_id = Representation_id of media being downloaded.
+	 * @param array $options Options include:
+	 *		mode = Naming mode. Can be idno, idno_and_version, idno_and_rep_id_and_version, original_name. If not set defaults to value in <table>_downloaded_file_naming or _downloaded_file_naming app.conf directive.
 	 *
 	 * @return string File name
 	 */
-	function caGetRepresentationDownloadFileName($table, $data, $options=null) {
+	function caGetRepresentationDownloadFileName(string $table, array $data, ?array $options=null) : string {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = caGetOption('mode', $options, $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming']))) {
 			case 'idno':
 				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
 				break;
@@ -4922,7 +4924,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			case 'original_name':
 			default:
 				if (strpos($mode, "^") !== false) { // template
-				   $filename = caProcessTemplateForIDs($mode, 'ca_object_representations', [$data['representation_id']]);
+				   $filename = preg_replace('!\.[A-Za-z]{1}[A-Za-z0-9]{1,3}$!', '', caProcessTemplateForIDs($mode, 'ca_object_representations', [$data['representation_id']]));
+				   
 				} elseif ($data['original_filename']) {
 					$tmp = explode('.', $data['original_filename']);
 					if (sizeof($tmp) > 1) { 
@@ -4961,15 +4964,16 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caGetMediaDownloadArchiveName($table, $id, $options=null) {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", "downloaded_media_archive_file_naming","{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", 'downloaded_media_archive_file_naming', "{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
 			case 'idno':
-				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
-				break;
+				// Noop - fall through	
 			default:
-				if (strpos($mode, "^") == false) { // use default templte
+				if (strpos($mode, "^") === false) { // use default template
 					$mode = "^{$table}.idno";
 				}
-				$filename = caProcessTemplateForIDs($mode, $table, [$id]);
+				if (!($filename = caProcessTemplateForIDs($mode, $table, [$id]))) {
+					$filename = 'export';
+				}
 				$ext = caGetOption('extension', $options, 'zip');
 				
 				if(!preg_match("!\.{$ext}$!i", $filename)) {

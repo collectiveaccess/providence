@@ -503,6 +503,25 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Remove EXIF Orientation tag using ExifTool
+	 *
+	 * @param string $pfilepath file path
+	 *
+	 * @return bool True on success, false if operation failed
+	 */
+	function caExtractRemoveOrientationTagWithExifTool($filepath){
+		if(!file_exists($filepath)) { return false; }
+		if ($path_to_exif_tool = caExifToolInstalled()) {
+			caExec("{$path_to_exif_tool} -overwrite_original_in_place -P -fast -Orientation= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
+
+			if($return == 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Perform mapping of extracted media metadata to CollectiveAccess bundles.
 	 *
 	 * @param BundlableLabelableBaseModelWithAttributes $po_instance Model instance to insert extracted metadata into
@@ -1017,7 +1036,6 @@
 		// try ZendPDF
 		if(!$o_config->get('dont_use_zendpdf_to_identify_pdfs')) {
 			try {
-				include_once(__CA_LIB_DIR__."/Zend/Pdf.php");
 				$o_pdf = Zend_Pdf::load($ps_filepath);
 			} catch(Exception $e){
 				$o_pdf = null;

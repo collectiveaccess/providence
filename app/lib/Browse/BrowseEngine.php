@@ -368,8 +368,8 @@
 			
 			$purifier = new HTMLPurifier();
 			foreach($pa_row_ids as $vn_i => $vn_row_id) {
-			    $vn_row_id = $purifier->purify(urldecode($vn_row_id)); // sanitize facet values
-				$va_criteria[$ps_facet_name][urldecode($vn_row_id)] = true;
+			    $vn_row_id = str_replace("&amp;", "&", $purifier->purify(rawurldecode($vn_row_id))); // sanitize facet values
+				$va_criteria[$ps_facet_name][$vn_row_id] = true;
 				
 				if (isset($pa_display_strings[$vn_i])) { $va_criteria_display_strings[$ps_facet_name][urldecode($vn_row_id)] = $pa_display_strings[$vn_i]; }
 			}
@@ -648,6 +648,13 @@
 					return urldecode($pn_row_id);
 					break;
 				# -----------------------------------------------------
+				case 'tags':
+					if ($tag = ca_item_tags::find(['tag_id' => $pn_row_id], ['returnAs' => 'firstModelInstance'])) {
+					    return $tag->get('ca_item_tags.tag');
+					}
+					return urldecode($pn_row_id);
+					break;
+				# -----------------------------------------------------
 				case 'checkouts':
 					$vs_status_text = null;
 					$vs_status_code = (isset($va_facet_info['status']) && $va_facet_info['status']) ? $va_facet_info['status'] : $pn_row_id;
@@ -730,6 +737,10 @@
 						return caTruncateStringWithEllipsis($qr_res->getWithTemplate($template), 30, 'end');
 					}
 					return '???';
+					break;
+				# -----------------------------------------------------
+				case 'inHomeLocation':
+					return $pn_row_id ? caGetOption('label_yes', $va_facet_info, _t('In home location')) : caGetOption('label_no', $va_facet_info, _t('Not in home location'));
 					break;
 				# -----------------------------------------------------
 				case 'normalizedLength':
@@ -2149,6 +2160,83 @@
 									if (caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
 									break;
 							# -----------------------------------------------------
+								case 'inHomeLocation':
+									if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, 'ca_objects_location') < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+									if($this->ops_browse_table_name !== 'ca_objects') { return []; }
+									
+									$policy = caGetOption('policy', $va_facet_info, $t_item->getDefaultHistoryTrackingCurrentValuePolicy());
+									
+									if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+									if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item)))) { $va_restrict_to_types = []; }
+									$va_restrict_to_types = array_filter($va_restrict_to_types, "strlen");
+			
+									if (!is_array($va_exclude_types = $va_facet_info['exclude_types'])) { $va_exclude_types = array(); }
+									if (!is_array($va_exclude_types = $this->_convertTypeCodesToIDs($va_exclude_types, array('instance' => $t_rel_item)))) { $va_exclude_types = []; }
+									$va_exclude_types = array_filter($va_exclude_types, "strlen");
+
+									$va_wheres = [];
+									if ($t_item->hasField('deleted')) { 
+										$va_wheres[] = "{$this->ops_browse_table_name}.deleted = 0";
+									}
+									if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
+										$va_wheres[] = "{$this->ops_browse_table_name}.type_id IN (".join(",", $va_restrict_to_types).")";
+									}
+									if (is_array($va_exclude_types) && sizeof($va_exclude_types)) {
+										$va_wheres[] = "{$this->ops_browse_table_name}.type_id NOT IN (".join(",", $va_exclude_types).")";
+									}									
+									if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+										$va_wheres[] = "({$this->ops_browse_table_name}.access IN (".join(',', $pa_options['checkAccess'])."))";
+									}
+									
+									$where_sql = (sizeof($va_wheres)) ? ' AND '.join(' AND ', $va_wheres) : '';
+
+									foreach($va_row_ids as $vn_row_id) {
+									
+										if ($vn_row_id) {	// in home location
+											$vs_sql = "
+												SELECT ca_objects.object_id
+												FROM ca_objects
+												{$vs_relative_to_join}
+												INNER JOIN ca_history_tracking_current_values AS cv ON cv.table_num = 57 AND cv.row_id = ca_objects.object_id
+												WHERE
+													(ca_objects.home_location_id = cv.current_row_id) AND 
+													(cv.current_table_num = 89) AND 
+													(cv.policy = ?) {$where_sql}
+												LIMIT 100000";
+
+												$qr_res = $this->opo_db->query($vs_sql, [$policy]);
+										} else {	// not in home location
+											$vs_sql = "
+												SELECT ca_objects.object_id
+												FROM ca_objects
+												{$vs_relative_to_join}
+												INNER JOIN ca_history_tracking_current_values AS cv ON cv.table_num = 57 AND cv.row_id = ca_objects.object_id
+												WHERE
+													(cv.policy = ?) AND
+													((
+														(ca_objects.home_location_id > 0) AND 
+														(
+															(ca_objects.home_location_id <> cv.current_row_id) AND 
+															(cv.current_table_num = 89)
+														) 
+													)
+													
+													OR (cv.current_table_num <> 89))
+													{$where_sql}
+												LIMIT 100000";
+
+												$qr_res = $this->opo_db->query($vs_sql, [$policy]);
+										} 
+										
+										if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
+										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
+
+										$vn_i++;
+										break;
+									}
+									
+									break;
+							# -----------------------------------------------------
 								case 'fieldList':
 									$vs_field_name = $va_facet_info['field'];
 									$vs_table_name = $this->ops_browse_table_name;
@@ -2411,10 +2499,10 @@
 									$va_wheres[] = "{$vs_browse_table_name}.deleted = 0";
 								}
 								if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
-									$va_wheres[] = "{$va_restrict_to_types}.type_id IN (".join(",", $va_restrict_to_types).")";
+									$va_wheres[] = "{$vs_browse_table_name}.type_id IN (".join(",", $va_restrict_to_types).")";
 								}
 								if (is_array($va_exclude_types) && sizeof($va_exclude_types)) {
-									$va_wheres[] = "{$va_restrict_to_types}.type_id IN (".join(",", $va_exclude_types).")";
+									$va_wheres[] = "{$vs_browse_table_name}.type_id NOT IN (".join(",", $va_exclude_types).")";
 								}
 
 								$vs_sql = "
@@ -2812,7 +2900,7 @@
 
 			// is facet cached?
 			$va_facet_content = null;
-			if (!isset($va_facet_cache) || !is_array($va_facet_cache)) {
+			if (!isset($va_facet_cache) || !is_array($va_facet_cache) || !sizeof($va_facet_cache)) {
 				$va_facet_content = $va_facet_cache = $this->getFacetContent($ps_facet_name, $pa_options);
 				$vb_needs_caching = true;
 			}
@@ -3703,7 +3791,6 @@
 						'INNER JOIN '.(!$vb_is_relative_to_parent ? "{$vs_browse_table_name} ON {$vs_browse_table_name}." : "{$vs_browse_table_name} AS parent ON parent.").$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($vs_browse_table_num)
 					);
 
-					$class = get_class($this);
 
 					$va_wheres = array();
 					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
@@ -3713,12 +3800,15 @@
 							// For facets with the "multiple" option set, we must generate the facet based upon the browse _without_ any options selected
 							// (since they're all potentially valid)
 							array_pop($c);
+							
+							$class = get_class($this);
 							$b = new $class();
 							foreach($c as $f => $x) {
 								$b->addCriteria($f, array_keys($x));
 							}
-							$b->execute();
-							$adj_results = $b->getResults()->getAllFieldValues($t_subject->primaryKey(true));
+							$bc = new BrowseCache();
+							$bc->load($b->getBrowseID());
+							$adj_results = $bc->getResults();
 							if(is_array($adj_results) && (sizeof($adj_results) > 0)) { 
 								$va_results = $adj_results; 
 							}
@@ -4299,6 +4389,77 @@
 					}
 
 					return array();
+					break;
+				# -----------------------------------------------------
+				case 'inHomeLocation':
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
+					$policy = caGetOption('policy', $va_facet_info, $t_item->getDefaultHistoryTrackingCurrentValuePolicy());
+
+					$va_wheres = array();
+					$vs_browse_table_name = $t_subject->tableName();
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
+						$va_wheres[] = "({$vs_browse_table_name}.".$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
+					}
+
+					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+						$va_wheres[] = "({$vs_browse_table_name}.access IN (".join(',', $pa_options['checkAccess'])."))";
+					}
+					if ($t_item->hasField('deleted')) { 
+						$va_wheres[] = "{$vs_browse_table_name}.deleted = 0";
+					}
+					if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
+						$va_wheres[] = "{$vs_browse_table_name}.type_id IN (".join(",", $va_restrict_to_types).")";
+					}
+					if (is_array($va_exclude_types) && sizeof($va_exclude_types)) {
+						$va_wheres[] = "{$vs_browse_table_name}.type_id NOT IN (".join(",", $va_exclude_types).")";
+					}	
+					
+					$labels = [
+						1 => ['id' => 1,'label' => caGetOption('label_yes', $va_facet_info, _t('In home location'))],
+						0 => ['id' => 0,'label' => caGetOption('label_no', $va_facet_info, _t('Not in home location'))]
+					];
+					
+					$where_sql = sizeof($va_wheres) ? ' AND '.join(" AND ", $va_wheres) : '';
+					
+					$va_values = [];
+					foreach($labels as $n => $l) {
+						if ($n > 0) {	// in home location
+							$vs_sql = "
+								SELECT count(*) c
+								FROM ca_objects
+								INNER JOIN ca_history_tracking_current_values AS cv ON cv.table_num = 57 AND cv.row_id = ca_objects.object_id
+								WHERE
+									(ca_objects.home_location_id = cv.current_row_id) AND 
+									(cv.current_table_num = 89) AND 
+									(cv.policy = ?) {$where_sql}
+								LIMIT 100000";
+								$qr_res = $this->opo_db->query($vs_sql, [$policy]);
+						} else {	// not in home location
+							$vs_sql = "
+								SELECT count(*) c
+								FROM ca_objects
+								INNER JOIN ca_history_tracking_current_values AS cv ON cv.table_num = 57 AND cv.row_id = ca_objects.object_id
+								WHERE
+									(cv.policy = ?) AND 
+									((
+										(ca_objects.home_location_id > 0) AND 
+										(
+											(ca_objects.home_location_id <> cv.current_row_id) AND 
+											(cv.current_table_num = 89)
+										) 
+									)
+									
+									OR (cv.current_table_num <> 89))  {$where_sql}
+								LIMIT 100000";
+
+								$qr_res = $this->opo_db->query($vs_sql, [$policy]);
+						} 
+						if ($qr_res->nextRow() && ($c = $qr_res->get('c'))) {
+							$va_values[$n] = array_merge($l, ['content_count' => $c]);
+						}
+					} 
+					
+					return $va_values;
 					break;
 				# -----------------------------------------------------
 				case 'fieldList':

@@ -858,6 +858,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "475px", 'height' => '100px',
 								'label' => _t('Relationship display template'),
 								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+							),
+							'showCurrentOnly' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'showOnSelect' => 'policy',
+								'default' => '0',
+								'label' => _t('Show current only?'),
+								'description' => _t('If checked only current relationships are displayed.')
+							),
+							'policy' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'default' => '__default__',
+								'width' => "275px", 'height' => 1,
+								'useHistoryTrackingReferringPolicyList' => true,
+								'label' => _t('Use history tracking policy'),
+								'description' => ''
 							)
 						);	
 						
@@ -1178,8 +1197,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								_t('Classic') => 'CLASSIC',
 								_t('New UI with batch uploading') => 'NEW_UI'
 							],
-							'default' => '',
-							'multiple' => true,
+							'default' => 'NEW_UI',
+							'multiple' => false,
 							'label' => _t('User interface style'),
 							'description' => _t('')
 						];

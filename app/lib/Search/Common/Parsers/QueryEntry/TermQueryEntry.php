@@ -1,7 +1,5 @@
 <?php
 
-require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Index/Term.php';
-require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryEntry.php';
 
 class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	/**
@@ -73,7 +71,6 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	{
 	    if (strpos($this->_term, '?') !== false || strpos($this->_term, '*') !== false) {
 		if ($this->_fuzzyQuery) {
-			require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php';
 			throw new Zend_Search_Lucene_Search_QueryParserException('Fuzzy search is not supported for terms with wildcards.');
 		}
 
@@ -133,7 +130,6 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    }
 
 	    if ($this->_fuzzyQuery) {
-		require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php';
 		throw new Zend_Search_Lucene_Search_QueryParserException('Fuzzy search is supported only for non-multiple word terms');
 	    }
 
