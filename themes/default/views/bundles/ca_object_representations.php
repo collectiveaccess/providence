@@ -306,6 +306,13 @@
 			</div>
 			<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
 			<br class="clear"/>
+			<?php
+			$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
+			$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
+
+			$vs_element = _t("Maximum upload size is ${upload_max_filesize}");
+			print $vs_element;
+			?>
 		</div>
 		
 		<script type="text/javascript">
@@ -315,6 +322,8 @@
 					fieldNamePrefix: '<?= $id_prefix; ?>',
 					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
 					index: '{n}',
+					maxFilesize: <?= caReturnValueInBytes(ini_get('upload_max_filesize')); ?>,
+					maxFilesizeTxt: "<?= $upload_max_filesize; ?>",
 					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
 					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
