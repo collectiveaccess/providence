@@ -4721,15 +4721,14 @@ if (!$vb_batch) {
 				
 						$va_users_to_set = array();
 						foreach($_REQUEST as $vs_key => $vs_val) { 
+							// any to delete?
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
+								$this->removeCaptionFile((int)$va_matches[1]);
+							}
 							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_locale_id(.*)$!", $vs_key, $va_matches)) {
 								$vn_locale_id = (int)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_locale_id".$va_matches[1], pInteger);
-								$this->addCaptionFile($_FILES["{$vs_placement_code}{$vs_form_prefix}_caption_file".$va_matches[1]]['tmp_name'], $vn_locale_id, array('originalFilename' => $_FILES["{$vs_placement_code}{$vs_form_prefix}_captions_caption_file".$va_matches[1]]['name']));
-							} else {
-								// any to delete?
-								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
-									$this->removeCaptionFile((int)$va_matches[1]);
-								}
-							}
+								$this->addCaptionFile($_FILES["{$vs_placement_code}{$vs_form_prefix}_caption_file".$va_matches[1]]['tmp_name'], $vn_locale_id, array('originalFilename' => $_FILES["{$vs_placement_code}{$vs_form_prefix}_caption_file".$va_matches[1]]['name']));
+							} 
 						}
 						
 						break;
