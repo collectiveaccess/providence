@@ -1255,7 +1255,7 @@ class SearchResult extends BaseObject {
 					if (!sizeof($va_ids)) { return $pa_options['returnAsArray'] ? array() : null; }
 					
 					$vs_hier_pk_fld = $t_instance->primaryKey();
-					$va_hiers = $va_hier_ids = array();
+					$va_hiers = $va_hier_ids = $va_hier_list = array();
 					
 					$vs_hierarchy_direction = isset($pa_options['hierarchyDirection']) ? strtolower($pa_options['hierarchyDirection']) : 'asc';
 
