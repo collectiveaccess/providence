@@ -59,6 +59,7 @@
 		'primaryTable' => $t_subject->tableName(),
 		'primaryID' => $t_subject->getPrimaryKey(),
 		'relatedTable' => $t_item->tableName(),
+		'idPrefix' => $vs_id_prefix
 	);
 
 	$vs_url_string = '';
