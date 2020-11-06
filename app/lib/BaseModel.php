@@ -6349,7 +6349,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			}
 			
 			if ($t = Datamodel::getInstance($t_attr->get('table_num'), true)) {
-				$va_subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
+				$va_subject_config = null;
 				$vs_subject_tablename = $t->tableName();
 			}
 		} else {
