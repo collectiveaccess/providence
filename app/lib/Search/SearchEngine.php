@@ -140,7 +140,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		$ps_search = preg_replace('![\|]([A-Za-z0-9_,;]+[:]{1})!', "/$1", $ps_search);	// allow | to be used in lieu of / as the relationship type separator, as "/" is problematic to encode in GET requests
-		$ps_search = preg_replace('/(?!")\['.caGetBlankLabelText().'\](?!")/i', '"['.caGetBlankLabelText().']"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		$ps_search = preg_replace('/(?!")\['.caGetBlankLabelText($this->ops_tablename).'\](?!")/i', '"['.caGetBlankLabelText($this->ops_tablename).']"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		$ps_search = preg_replace('/(?!")\['._t('SET').'\](?!")/i', '"['._t('SET').']"', $ps_search); // the special [SET] search term, which returns records that have *any* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }

@@ -1134,7 +1134,7 @@
 							        $vs_name = pathinfo($vs_item, PATHINFO_FILENAME);
 							    }
 							    
-								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText().']'; }
+								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText('ca_object_representations').']'; }
 					
 								if ($va_val['media']['media'] || $vs_item) {
 									// Search for files in import directory (or subdirectory of import directory specified by mediaPrefix)
