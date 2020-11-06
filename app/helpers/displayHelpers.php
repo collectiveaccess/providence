@@ -1053,7 +1053,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								$vs_label = $vs_idno;
 								$vb_show_idno = false;
 							} else {
-								$vs_label =  '['.caGetBlankLabelText().']';
+								$vs_label =  '['.caGetBlankLabelText($vs_table_name).']';
 							}
 							break;
 					}
@@ -2069,7 +2069,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		if (!($vs_label = $t_set->getLabelForDisplay())) {
 			if (!($vs_label = $t_set->get('set_code'))) {
-				$vs_label = '['.caGetBlankLabelText().']';
+				$vs_label = '['.caGetBlankLabelText('ca_sets').']';
 			}
 		}
 
@@ -4844,16 +4844,26 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * "blank_label_text" option. If the option is not set the default value of
 	 * "[BLANK]" will be returned.
 	 *
+	 * @param mixed $table Table name of number blank label is to be applied to. If set 
+	 *						table-specific text is set with fallback to general "blank_label_text"
+	 *
 	 * @return string
 	 */
-	$g_blank_label_text = null;
-	function caGetBlankLabelText() {
-		global $g_blank_label_text;
-		if ($g_blank_label_text) { return $g_blank_label_text; }
+	function caGetBlankLabelText($table=null) {
+		if (MemoryCache::contains('blank_label_text_'.$table)) { return MemoryCache::fetch('blank_label_text_'.$table); }
 		$config = Configuration::load();
-		if ($label_text = $config->get('blank_label_text')) {
+		
+		$d = [];
+		if (($table) && ($t = Datamodel::getInstance($table, true))) {
+			$d[] = $t->tableName().'_blank_label_text';
+		}
+
+		$d[] = 'blank_label_text';
+		
+		if ($label_text = $config->get($d)) {
 		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
-			return $g_blank_label_text = _t($label_text);
+		    MemoryCache::save('blank_label_text_'.$table, $l = _t($label_text));
+			return $l;
 		}
 		return $g_blank_label_text = _t('BLANK');
 	}

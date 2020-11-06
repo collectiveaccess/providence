@@ -908,7 +908,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
-		if (!$ps_title) { $ps_title = '['.caGetBlankLabelText().']'; }
+		if (!$ps_title) { $ps_title = '['.caGetBlankLabelText('ca_object_representations').']'; }
 		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
 		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
