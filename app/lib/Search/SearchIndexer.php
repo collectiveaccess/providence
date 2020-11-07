@@ -783,6 +783,7 @@ if (!$for_current_value_reindex) {
 									}
 								}
 
+								// TODO: Undefined variable '$pn_content'
 								$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$pn_content], $va_data);
 								$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, [$pn_content], $va_data);
 							}
@@ -1704,6 +1705,7 @@ if (!$for_current_value_reindex) {
 							}
 
 							if (((isset($pa_data['INDEX_AS_IDNO']) && $pa_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $pa_data, true)) && method_exists($pt_subject, "getIDNoPlugInInstance") && ($o_idno = $pt_subject->getIDNoPlugInInstance())) {
+							    // TODO: Undefined variable '$va_rel_field_info'
 								if (strlen($va_rel_field_info['IDNO_DELIMITERS']) || (is_array($va_rel_field_info['IDNO_DELIMITERS']) && count($va_rel_field_info['IDNO_DELIMITERS']))) {
 									if (!is_array($va_rel_field_info['IDNO_DELIMITERS'])) { $va_rel_field_info['IDNO_DELIMITERS'] = [$va_rel_field_info['IDNO_DELIMITERS']]; }
 									$va_values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $va_rel_field_info['IDNO_DELIMITERS']).')!', $vs_value_to_index));
@@ -1740,6 +1742,7 @@ if (!$for_current_value_reindex) {
 
 						$va_children_ids = $pt_subject->getHierarchyAsList($pn_row_id, array('idsOnly' => true, 'includeSelf' => false));
 
+						// TODO: Undefined variable '$pb_reindex_mode'
 						if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 							// trigger reindexing of children
 							$o_indexer = new SearchIndexer($this->opo_db);
@@ -2251,6 +2254,7 @@ if (!$for_current_value_reindex) {
 													];
 												}
 												foreach($va_element_ids as $vn_element_id) {
+												    // TODO: Undefined variable '$field_num_prefix'
 													$va_dependent_rows[$vs_key]['field_nums']['_ca_attribute_'.$vn_element_id] = $field_num_prefix.$vn_element_id;
 													$va_dependent_rows[$vs_key]['field_names'][$field_num_prefix.$vn_element_id] = '_ca_attribute_'.$vn_element_id;
 													$va_dependent_rows[$vs_key]['indexing_info']['_ca_attribute_'.$vn_element_id] = $va_element_fields_to_index['_ca_attribute_'.$vn_element_id];
@@ -2751,7 +2755,7 @@ if (!$for_current_value_reindex) {
 						}
 
 						if (($pt_rel_instance = Datamodel::getInstanceByTableName($vs_right_table, true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
-							$vs_rel_type_id_fld = "{$va_alias}.type_id";
+							$vs_rel_type_id_fld = "{$vs_alias}.type_id";
 						}
 						
 						$va_joins[] = [$vs_join];
@@ -2974,8 +2978,6 @@ if (!$for_current_value_reindex) {
 				
 				while($qr_res->nextRow()) {
 					$vn_count++;
-
-					$vn_row_id = $qr_res->get($vs_related_pk);
 
 					$vn_rel_type_id = (int)$qr_res->get('rel_type_id');
 					$vn_row_type_id = (int)$qr_res->get('type_id');
