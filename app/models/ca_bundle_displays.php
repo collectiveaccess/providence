@@ -662,7 +662,8 @@ if (!$pb_omit_editing_info) {
                                                     $va_list_item_labels = [];
                                         
                                                     while($qr_list_items->nextHit()) {
-                                                        $va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter]);
+                                                    	if(!($v = trim($qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter])))) { continue; }
+                                                        $va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $v;
                                                     }
                                                     asort($va_list_item_labels);
                                                     $placements[$placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);

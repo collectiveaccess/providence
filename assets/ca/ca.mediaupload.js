@@ -44,7 +44,9 @@ var caUI = caUI || {};
 			uploadTotalMessage: "%count uploaded",
 			uploadTotalMessageClass: "mediaUploadAreaMessageCount",
 			isPrimaryLabel: "Is primary",
-			index: 0
+			index: 0,
+			maxFilesize: null,
+			maxFilesizeTxt: null
 		}, options);
 		
 		jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index).html(that.uploadAreaMessage).on('click', function(e) {
@@ -58,6 +60,19 @@ var caUI = caUI || {};
 			dropZone: jQuery('#' + that.fieldNamePrefix + 'UploadArea' + that.index),
 			fileInput: jQuery('#' + that.fieldNamePrefix + 'UploadFileControl' + that.index),
 			singleFileUploads: false,
+			change: function(e, data) {
+				data.files.map(function (file) {
+					if(options.maxFilesize && file.size > options.maxFilesize ) {
+						jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).show(250);
+						jQuery('#' + that.fieldNamePrefix + 'ProgressStatus' + that.index).html(`file exceeds maximum upload size ${options.maxFilesizeTxt}`);
+						setTimeout(function() {
+							jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).hide(250);
+							jQuery('#' + that.fieldNamePrefix + 'UploadArea' + that.index).show(150);
+						}, 1000);
+						throw `file exceeds maximum upload size ${options.maxFilesizeTxt}`;
+					}
+				});
+			},
 			done: function (e, data) {
 				if (data.result.error) {
 					jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).show(250);

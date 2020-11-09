@@ -90,6 +90,7 @@ class RelatedListController extends BaseSearchController {
 		$vs_interstitial_prefix = $this->getRequest()->getParameter('interstitialPrefix', pString);
 		$vs_primary_table = $this->getRequest()->getParameter('primaryTable', pString);
 		$vn_primary_id = $this->getRequest()->getParameter('primaryID', pInteger);
+		$vs_id_prefix = $this->getRequest()->getParameter('idPrefix', pString);
 		
 		// get request data
 		if ($placement_id = $this->getRequest()->getParameter('placement_id', pInteger)) {
@@ -156,6 +157,7 @@ class RelatedListController extends BaseSearchController {
 		$this->getView()->setVar('relatedRelTable', $vs_related_rel_table);
 		$this->getView()->setVar('primaryTable', $vs_primary_table);
 		$this->getView()->setVar('primaryID', $vn_primary_id);
+		$this->getView()->setVar('idPrefix', $vs_id_prefix);
 
 		// piece the parameters back together to build the string to append to urls for subsequent form submissions
 		$va_additional_search_controller_params = array(
@@ -164,7 +166,8 @@ class RelatedListController extends BaseSearchController {
 			'relatedTable' => $vs_related_table,
 			'relatedRelTable' => $vs_related_rel_table,
 			'primaryTable' => $vs_primary_table,
-			'primaryID' => $vn_primary_id
+			'primaryID' => $vn_primary_id,
+			'idPrefix' => $vs_id_prefix
 		);
 
 		$vs_url_string = '';

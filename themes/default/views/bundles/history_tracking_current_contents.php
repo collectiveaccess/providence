@@ -88,9 +88,6 @@ if (!$this->request->isAjax()) {
 		</div>
 <?php
 			}
-?>
-		</div>
-<?php
 			break;
 		case 'bubbles':
 		default:
