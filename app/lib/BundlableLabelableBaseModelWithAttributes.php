@@ -3853,7 +3853,7 @@ if (!$vb_batch) {
 									}
 								} else {
 									$this->editLabel($va_label['label_id'],
-										array($this->getLabelDisplayField() => '['.caGetBlankLabelText().']'),
+										array($this->getLabelDisplayField() => '['.caGetBlankLabelText($table).']'),
 										$vn_label_locale_id,
 										$vn_label_type_id,
 										true, array('queueIndexing' => true)
@@ -3903,7 +3903,7 @@ if (!$vb_batch) {
 									foreach($va_labels_for_this_locale as $vn_id => $va_labels_by_locale) {
 						 				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
 						 					foreach($va_labels as $vn_i => $va_label) {
-						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['.caGetBlankLabelText().']')) {
+						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['.caGetBlankLabelText($table).']')) {
 						 							$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 						 						}
 						 					}
@@ -3994,7 +3994,7 @@ if (!$vb_batch) {
 									}
 								} else {
 									$this->editLabel($va_label['label_id'],
-										array($this->getLabelDisplayField() => '['.caGetBlankLabelText().']'),
+										array($this->getLabelDisplayField() => '['.caGetBlankLabelText($table).']'),
 										$vn_label_locale_id,
 										$vn_label_type_id,
 										false, array('queueIndexing' => true)
@@ -4167,7 +4167,12 @@ if (!$vb_batch) {
 											if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
 											
 											$t_importer = new ca_data_importers();
-											$t_importer->importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
+											$t_importer->importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, [
+												'logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 
+												'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 
+												'transaction' => $this->getTransaction()],
+												'environment' => ['original_filename' => $vs_original_name, '/original_filename' => $vs_original_name]
+											]); 
 										}
 									}
 									
@@ -4344,7 +4349,12 @@ if (!$vb_batch) {
 											if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
 											
 											$t_importer = new ca_data_importers();
-											$t_importer->importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, ['logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 'transaction' => $this->getTransaction()]]); 
+											$t_importer->importDataFromSource($t_rep->getMediaPath('media', 'original'), $vn_object_representation_mapping_id, [
+												'logLevel' => $po_request->getAppConfig()->get('embedded_metadata_extraction_mapping_log_level'), 
+												'format' => $format, 'forceImportForPrimaryKeys' => [$t_rep->getPrimaryKey(), 
+												'transaction' => $this->getTransaction()],
+												'environment' => ['original_filename' => $vs_original_name, '/original_filename' => $vs_original_name]
+											]); 
 										}
                                     }
                                 }

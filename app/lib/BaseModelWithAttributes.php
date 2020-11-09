@@ -1366,14 +1366,26 @@
 		 * @return array List of types
 		 */ 
 		public function getTypeList($pa_options=null) {
-			$t_list = new ca_lists();
+			$ids_only = $pa_options['idsOnly'];
 			if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 				$pa_options['item_id'] = $this->get('type_id');
 			}
+			$type_list_code = $this->getTypeListCode();
+			$key = caMakeCacheKeyFromOptions($pa_options, $type_list_code);
 			
-			$va_list = $t_list->getItemsForList($this->getTypeListCode(), $pa_options);
-			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
-			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
+			if (CompositeCache::contains($key, 'typeListCodes')) {
+				return CompositeCache::fetch($key, 'typeListCodes');
+			}
+			$t_list = new ca_lists();
+			
+			$va_list = $t_list->getItemsForList($type_list_code, $pa_options);
+			if ($ids_only) { 
+				CompositeCache::save($key, $va_list, 'typeListCodes');
+				return $va_list; 
+			}
+			$va_list = is_array($va_list) ? caExtractValuesByUserLocale($va_list) : [];
+			CompositeCache::save($key, $va_list, 'typeListCodes');
+			return $va_list;
 		}
 		# ------------------------------------------------------------------
 		/**

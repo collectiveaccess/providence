@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,9 +28,8 @@
 	$vo_result 				= $this->getVar('result');
  	$vo_result_context 		= $this->getVar('result_context');
  	
-// 	print $this->render('Search/search_controls_html.php');
  ?>
- 	<div id="resultBox" style="margin-bottom:13px"><!-- override margin from base.css so that the bottom paging controls barely fit -->
+ 	<div id="<?= $this->getVar('idPrefix'); ?>resultBox" style="margin-bottom:13px"><!-- override margin from base.css so that the bottom paging controls barely fit -->
 <?php
 	if($vo_result) {
 		$vs_view = $this->getVar('current_view');

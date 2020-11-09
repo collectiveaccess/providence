@@ -43,10 +43,10 @@ trait SyncableBaseModel {
 		$vs_guid = caGetOption('setGUIDTo', $pa_options, caGenerateGUID());
 
 		/** @var ca_guids $t_guid */
-		$t_guid = Datamodel::getInstance('ca_guids');
+		$t_guid = Datamodel::getInstance('ca_guids', true);
 		$t_guid->setTransaction($this->getTransaction());
 
-		$t_guid->load(array('guid' => $vs_guid));
+		$t_guid->load(['guid' => $vs_guid]);
 
 		$t_guid->setMode(ACCESS_WRITE);
 		$t_guid->set('table_num', $this->tableNum());

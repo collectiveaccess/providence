@@ -270,7 +270,9 @@
 				
 				$r = fopen($this->filepath, "r");
 				$count = 0;
-				while($line = fgetcsv($r, 0, $this->getDelimiter(), $this->getTextMarker())) {
+				$d = $this->getDelimiter();
+				$m = $this->getTextMarker();
+				while($line = fgetcsv($r, 0, $d, $m)) {
 					$count++;
 				}
 				fclose($r);

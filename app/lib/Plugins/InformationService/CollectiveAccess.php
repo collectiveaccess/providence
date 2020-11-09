@@ -90,7 +90,7 @@ $g_information_service_settings_CollectiveAccess = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'default' => '',
-			'width' => 90, 'height' => 3,
+			'width' => 130, 'height' => 4,
 			'label' => _t('Query result label format'),
 			'description' => _t('Display template to format query result labels with.')
 		),
@@ -98,7 +98,7 @@ $g_information_service_settings_CollectiveAccess = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'default' => '',
-			'width' => 90, 'height' => 3,
+			'width' => 130, 'height' => 12,
 			'label' => _t('Detail format'),
 			'description' => _t('Display template to format detailed information blocks with.')
 		)
@@ -147,8 +147,9 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		$vs_sort_field = $t_instance->getLabelTableName().".".$t_instance->getLabelSortField();
 
 		// Create and send a request with basic Auth
+		$u = parse_url($pa_settings['baseURL']);
 		$o_response = $o_client->request("GET", 
-		    $vs_url = '/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']),
+		    $vs_url = $u['path'].'/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']),
 		    ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
 		);
 
@@ -185,8 +186,9 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		}
 
 		// Create and send a request with basic Auth
+		$u = parse_url($pa_settings['baseURL']);
 		$o_response = $o_client->request("GET", 
-		    $vs_url = '/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template),
+		    $vs_url = $u['path'].'/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template),
 		    ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
 		);
 

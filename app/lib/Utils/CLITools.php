@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,8 @@
 
  	require_once(__CA_LIB_DIR__.'/Utils/CLIBaseUtils.php');
 	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+	require_once(__CA_LIB_DIR__."/Import/DataReaders/FMPXMLResultReader.php");
+	require_once(__CA_LIB_DIR__."/Import/DataReaders/PastPerfectXMLReader.php");
  
 	class CLITools extends CLIBaseUtils {
 		# -------------------------------------------------------
@@ -479,12 +481,10 @@
 			switch($input_format) {
 				case 'fmpxml':
 				case 'fmpxmlresult':
-					require_once(__CA_LIB_DIR__."/Import/DataReaders/FMPXMLResultReader.php");
 					$reader = new FMPXMLResultReader();
 					break;
 				case 'pastperfect':
 				case 'pp':
-					require_once(__CA_LIB_DIR__."/Import/DataReaders/PastPerfectXMLReader.php");
 					$reader = new PastPerfectXMLReader();
 					break;
 				default:
@@ -493,6 +493,7 @@
 					} else {
 						CLITools::addMessage(_t("No input format was specified. Defaulting to PastPerfect."));
 					}
+					$reader = new PastPerfectXMLReader();
 					break;
 			}
 			

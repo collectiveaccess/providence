@@ -621,7 +621,7 @@ class ca_item_comments extends BaseModel {
             $label = _t('Item has been deleted'); 
         }
         if(!$label) {
-            $label = '['.caGetBlankLabelText().']';
+            $label = '['.caGetBlankLabelText('ca_item_comments').']';
         }
         
         $res = ['table_num' => $table_num, 'id' => $row_id, 'label' => $label, 'idno' => $idno, 'notes' => $notes];

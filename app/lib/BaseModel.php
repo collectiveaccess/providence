@@ -333,7 +333,7 @@ class BaseModel extends BaseObject {
 	/**
 	 * If set, all field values passed through BaseModel::set() are run through HTML Purifier before being stored
 	 */
-	private $opb_purify_input = true;
+	private $opb_purify_input = false;
 	
 	/**
 	 * Array of model definitions, keyed on table name
@@ -1921,7 +1921,6 @@ class BaseModel extends BaseObject {
 	 * @return bool success state
 	 */
 	public function load($pm_id=null, $pb_use_cache=true) {
-		Timer::start("LOAD");
 		$this->clear();
 		$vs_table_name = $this->tableName();
 		if ($pb_use_cache && is_numeric($pm_id) && isset(BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id]) && is_array(BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id])) {
@@ -1935,7 +1934,6 @@ class BaseModel extends BaseObject {
 		if (is_null($pm_id)) {
 			return false;
 		}
-//Timer::p("LOAD", "[LOAD:1] %time<br>\n");
 		$o_db = $this->getDb();
 
 		if (!is_array($pm_id)) {
@@ -1946,7 +1944,7 @@ class BaseModel extends BaseObject {
 			}
 
 			$vs_sql = "SELECT ".join(',', self::$field_list_for_load[$this->tableName()])." FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ".$pm_id;
-//Timer::p("LOAD", "[LOAD:2] %time<br>\n");
+
 		} else {
 			$va_sql_wheres = array();
 			foreach ($pm_id as $vs_field => $vm_value) {
@@ -1964,7 +1962,6 @@ class BaseModel extends BaseObject {
 					$vs_field = $va_matches[2]; # get field name alone
 				}
 
-//Timer::p("LOAD", "[3] %time<br>\n");
 				if (!$this->hasField($vs_field)) {
 					$this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
 					return false;
@@ -1985,25 +1982,16 @@ class BaseModel extends BaseObject {
 					$va_sql_wheres[] = "($vs_field = $vm_value)";
 				}
 				
-//Timer::p("LOAD", "[4] %time<br>\n");
 			}
-			$vs_sql = "SELECT ".join(',', self::$field_list_for_load[$this->tableName()])." FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";
-			
-//Timer::p("LOAD", "[5] %time<br>\n");
-//print "$vs_sql<br>\n";
-//if ($this->tableName() == 'ca_metadata_elements') { print caPrintStackTrace(); }
+			$vs_sql = "SELECT ".join(',', self::$field_list_for_load[$this->tableName()])." FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";	
 		}
 
-//Timer::p("LOAD", "[LOAD:6s] %time<br>\n");
-//print "$vs_sql<br>\n";
 		try {
 			$qr_res = $o_db->query($vs_sql);
 		} catch (DatabaseException $e) {
 			$this->_processDatabaseException($e, $o_db);
 			return false;	
 		}
-		
-//Timer::p("LOAD", "[LOAD:6e] %time<br>\n");
 
 		if ($qr_res->nextRow()) {
 			foreach($this->FIELDS as $vs_field => $va_attr) {
@@ -2032,8 +2020,6 @@ class BaseModel extends BaseObject {
 						$this->_FIELD_VALUES[$vs_field] = $va_row[$vs_field];
 						break;
 				}
-				
-//Timer::p("LOAD", "[7] %time<br>\n");
 			}
 			
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
@@ -2047,7 +2033,6 @@ class BaseModel extends BaseObject {
 			}
 			$this->opn_instantiated_at = time();
 			
-//Timer::p("LOAD", "[8] %time<br>\n");
 			return true;
 		} else {
 			if (!is_array($pm_id)) {
@@ -5898,16 +5883,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			if (isset($va_attr['LIST']) && $va_attr['LIST']) {
 				$t_list = new ca_lists();
 				$t_list->setTransaction($this->getTransaction());
-				if ($t_list->load(array('list_code' => $va_attr['LIST']))) {
-					$va_items = caExtractValuesByUserLocale($t_list->getItemsForList($va_attr['LIST']));
-					$va_list = array();
-					$vs_list_default = null;
-					foreach($va_items as $vn_item_id => $va_item_info) {
-						if(is_null($vs_list_default) || (isset($va_item_info['is_default']) && $va_item_info['is_default'])) { $vs_list_default = $va_item_info['item_value']; }
-						$va_list[$va_item_info['name_singular']] = $va_item_info['item_value'];
-					}
-					$va_attr['DEFAULT'] = $vs_list_default;
+				$va_items = caExtractValuesByUserLocale($t_list->getItemsForList($va_attr['LIST']));
+				$va_list = [];
+				$vs_list_default = null;
+				foreach($va_items as $vn_item_id => $va_item_info) {
+					if(is_null($vs_list_default) || (isset($va_item_info['is_default']) && $va_item_info['is_default'])) { $vs_list_default = $va_item_info['item_value']; }
+					$va_list[$va_item_info['name_singular']] = $va_item_info['item_value'];
 				}
+				$va_attr['DEFAULT'] = $vs_list_default;
 			}
 			if ((in_array($data_type, array(FT_NUMBER, FT_TEXT))) && (isset($va_list)) && (is_array($va_list)) && (count($va_list) > 0)) { # string; check choice list
 				if (isset($va_attr['DEFAULT']) && !strlen($value)) { 
@@ -6382,7 +6365,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			}
 			
 			if ($t = Datamodel::getInstance($t_attr->get('table_num'), true)) {
-				$va_subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
+				$va_subject_config = null;
 				$vs_subject_tablename = $t->tableName();
 			}
 		} else {

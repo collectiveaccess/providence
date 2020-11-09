@@ -1610,16 +1610,25 @@ function caFileIsIncludable($ps_file) {
 	  * Creates an md5-based cached key from an array of options
 	  *
 	  * @param array $pa_options An options array
-	  * @param string $ps_additional_text Additional text to add to key
+	  * @param string $additional_text Additional text to add to key
+	  * @param array $keys Keys in $options to consider when creating cache key. If omitted all keys in $options are used, except for those with an object value. [Default is null; use all keys]
+	  *
 	  * @return string An MD5 cache key for the options array
 	  */
-	function caMakeCacheKeyFromOptions($pa_options, $ps_additional_text=null) {
-		if (!is_array($pa_options)) { return md5($pa_options.$ps_additional_text); }
-		foreach($pa_options as $vs_key => $vm_value) {
-			if (is_object($vm_value)) { unset($pa_options[$vs_key]); }
+	function caMakeCacheKeyFromOptions($options, $additional_text=null, array $keys=null) {
+		if (!is_array($options)) { return md5($options.$additional_text); }
+		
+		$unused_keys = null;
+		if (is_array($keys)) {
+			$unused_keys = array_flip(array_diff(array_keys($options), $keys));
+		}
+		foreach($options as $key => $value) {
+			if(is_object($value) || ($unused_keys && array_key_exists($key, $unused_keys))) { 
+				unset($options[$key]);
+			}
 		}
 
-		return md5(print_R($pa_options, true).$ps_additional_text);
+		return md5(print_R($options, true).$additional_text);
 	}
 	# ---------------------------------------
 	/**

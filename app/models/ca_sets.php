@@ -1218,7 +1218,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
 
 			$t_item->addLabel(array(
-				'caption' => '['.caGetBlankLabelText().']',
+				'caption' => '['.caGetBlankLabelText('ca_set_items').']',
 			), $g_ui_locale_id);
 			
 			if ($t_item->numErrors()) {
