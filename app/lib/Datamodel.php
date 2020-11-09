@@ -185,12 +185,16 @@ class Datamodel {
 	 * @return array
 	 */
 	static public function getTableNames() {
+		if(CompositeCache::contains('tableNames', 'DatamodelTableName')) {
+			return CompositeCache::fetch('tableNames', 'DatamodelTableName');
+		}
 		$va_table_names = [];
 		foreach(Datamodel::$opo_graph->getNodes() as $vs_key => $va_value) {
 			if (isset($va_value["num"])) {
 				$va_table_names[] = $vs_key;
 			}
 		}
+		CompositeCache::save('tableNames', $va_table_names, 'DatamodelTableName');
 		return $va_table_names;
 	}
 	# --------------------------------------------------------------------------------------------
@@ -206,14 +210,14 @@ class Datamodel {
 		if(is_numeric($ps_table)) { $ps_table = Datamodel::getTableName($ps_table); }
 		if(!$ps_table || !$ps_field) { return null; }
 
-		if(MemoryCache::contains("{$ps_table}/{$ps_field}", 'DatamodelFieldNum')) {
-			return MemoryCache::fetch("{$ps_table}/{$ps_field}", 'DatamodelFieldNum');
+		if(CompositeCache::contains("{$ps_table}/{$ps_field}", 'DatamodelFieldNum')) {
+			return CompositeCache::fetch("{$ps_table}/{$ps_field}", 'DatamodelFieldNum');
 		}
 
 		if ($t_table = Datamodel::getInstanceByTableName($ps_table, true)) {
 			$va_fields = $t_table->getFieldsArray();
 			$vn_field_num = array_search($ps_field, array_keys($va_fields));
-			MemoryCache::save("{$ps_table}/{$ps_field}", $vn_field_num, 'DatamodelFieldNum');
+			CompositeCache::save("{$ps_table}/{$ps_field}", $vn_field_num, 'DatamodelFieldNum');
 			return $vn_field_num;
 		} else {
 			return null;
@@ -232,15 +236,15 @@ class Datamodel {
 		if(is_numeric($ps_table)) { $ps_table = Datamodel::getTableName($ps_table); }
 		if(!$ps_table || !is_int($pn_field_num)) { return null; }
 
-		if(MemoryCache::contains("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName')) {
-			return MemoryCache::fetch("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName');
+		if(CompositeCache::contains("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName')) {
+			return CompositeCache::fetch("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName');
 		}
 
 		if ($t_table = Datamodel::getInstanceByTableName($ps_table, true)) {
 			$va_fields = $t_table->getFieldsArray();
 			$va_field_list = array_keys($va_fields);
 			$vs_field_name = $va_field_list[(int)$pn_field_num];
-			MemoryCache::save("{$ps_table}/{$pn_field_num}", $vs_field_name, 'DatamodelFieldName');
+			CompositeCache::save("{$ps_table}/{$pn_field_num}", $vs_field_name, 'DatamodelFieldName');
 			return $vs_field_name;
 		} else {
 			return null;
@@ -274,10 +278,15 @@ class Datamodel {
 	 * @return bool True if it exists, false if it doesn't
 	 */
 	static public function tableExists($ps_table) {
+		if(CompositeCache::contains($ps_table, 'DatamodelTableExists')) {
+			return CompositeCache::fetch($ps_table, 'DatamodelTableExists');
+		}
 		if(is_numeric($ps_table)) { $ps_table = Datamodel::getTableName($ps_table); }
 		if (Datamodel::$opo_graph->hasNode($ps_table)) {
+			CompositeCache::save($ps_table, true, 'DatamodelTableExists');
 			return true;
 		} else {
+			CompositeCache::save($ps_table, false, 'DatamodelTableExists');
 			return false;
 		}
 	}
@@ -431,8 +440,8 @@ class Datamodel {
 	 */
 	static public function getManyToOneRelations($ps_table, $ps_field=null) {
 		if(!$ps_table) { return null; }
-		if(MemoryCache::contains("{$ps_table}/{$ps_field}", 'DatamodelManyToOneRelations')) {
-			return MemoryCache::fetch("{$ps_table}/{$ps_field}", 'DatamodelManyToOneRelations');
+		if(CompositeCache::contains("{$ps_table}/{$ps_field}", 'DatamodelManyToOneRelations')) {
+			return CompositeCache::fetch("{$ps_table}/{$ps_field}", 'DatamodelManyToOneRelations');
 		}
 		if ($o_table = Datamodel::getInstanceByTableName($ps_table, true)) {
 			$va_related_tables = Datamodel::$opo_graph->getNeighbors($ps_table);
@@ -453,7 +462,7 @@ class Datamodel {
 										"many_table" 		=> $ps_table,
 										"many_table_field" 	=> $va_fields[0]
 									);
-									MemoryCache::save("{$ps_table}/{$ps_field}", $va_many_to_one_relations, 'DatamodelManyToOneRelations');
+									CompositeCache::save("{$ps_table}/{$ps_field}", $va_many_to_one_relations, 'DatamodelManyToOneRelations');
 									return $va_many_to_one_relations;
 								}
 							} else {
@@ -468,10 +477,10 @@ class Datamodel {
 					}
 				}
 			}
-			MemoryCache::save("{$ps_table}/{$ps_field}", $va_many_to_one_relations, 'DatamodelManyToOneRelations');
+			CompositeCache::save("{$ps_table}/{$ps_field}", $va_many_to_one_relations, 'DatamodelManyToOneRelations');
 			return $va_many_to_one_relations;
 		} else {
-			MemoryCache::save("{$ps_table}/{$ps_field}", null, 'DatamodelManyToOneRelations');
+			CompositeCache::save("{$ps_table}/{$ps_field}", null, 'DatamodelManyToOneRelations');
 			return null;
 		}
 	}
@@ -481,8 +490,8 @@ class Datamodel {
 	 */
 	static public function getOneToManyRelations ($ps_table, $ps_many_table=null) {
 		if(!$ps_table) { return null; }
-		if(MemoryCache::contains("{$ps_table}/{$ps_many_table}", 'DatamodelOneToManyRelations')) {
-			return MemoryCache::fetch("{$ps_table}/{$ps_many_table}", 'DatamodelOneToManyRelations');
+		if(CompositeCache::contains("{$ps_table}/{$ps_many_table}", 'DatamodelOneToManyRelations')) {
+			return CompositeCache::fetch("{$ps_table}/{$ps_many_table}", 'DatamodelOneToManyRelations');
 		}
 		if ($o_table = Datamodel::getInstanceByTableName($ps_table, true)) {
 			$va_related_tables = Datamodel::$opo_graph->getNeighbors($ps_table);
@@ -503,7 +512,7 @@ class Datamodel {
 										"many_table" 		=> $vs_related_table,
 										"many_table_field" 	=> $va_fields[1]
 									);
-									MemoryCache::save("{$ps_table}/{$ps_many_table}", $va_one_to_many_relations, 'DatamodelOneToManyRelations');
+									CompositeCache::save("{$ps_table}/{$ps_many_table}", $va_one_to_many_relations, 'DatamodelOneToManyRelations');
 									return $va_one_to_many_relations;
 								}
 							} else {
@@ -518,10 +527,10 @@ class Datamodel {
 					}
 				}
 			}
-			MemoryCache::save("{$ps_table}/{$ps_many_table}", $va_one_to_many_relations, 'DatamodelOneToManyRelations');
+			CompositeCache::save("{$ps_table}/{$ps_many_table}", $va_one_to_many_relations, 'DatamodelOneToManyRelations');
 			return $va_one_to_many_relations;
 		} else {
-			MemoryCache::save("{$ps_table}/{$ps_many_table}", null, 'DatamodelOneToManyRelations');
+			CompositeCache::save("{$ps_table}/{$ps_many_table}", null, 'DatamodelOneToManyRelations');
 			return null;
 		}
 	}
@@ -530,8 +539,8 @@ class Datamodel {
 	 * returns list of many-many relations involving the specific table
 	 */
 	static public function getManyToManyRelations ($ps_table, $ps_table2=null) {
-		if(MemoryCache::contains("{$ps_table}/{$ps_table2}", 'DatamodelManyToManyRelations')) {
-			return MemoryCache::fetch("{$ps_table}/{$ps_table2}", 'DatamodelManyToManyRelations');
+		if(CompositeCache::contains("{$ps_table}/{$ps_table2}", 'DatamodelManyToManyRelations')) {
+			return CompositeCache::fetch("{$ps_table}/{$ps_table2}", 'DatamodelManyToManyRelations');
 		}
 		if ($o_table = Datamodel::getInstanceByTableName($ps_table, true)) {
 			$vs_table_pk = $o_table->primaryKey();
@@ -550,7 +559,7 @@ class Datamodel {
 						foreach($va_many_to_one_relations as $va_right_relation) {
 							if ($ps_table != $va_right_relation["one_table"]) {
 								if ($ps_table2 == $va_right_relation["one_table"]) {
-									MemoryCache::save("{$ps_table}/{$ps_table2}", $va_left_relation["many_table"], 'DatamodelManyToManyRelations');
+									CompositeCache::save("{$ps_table}/{$ps_table2}", $va_left_relation["many_table"], 'DatamodelManyToManyRelations');
 									return $va_left_relation["many_table"];
 								}
 								$va_many_many_relations[] = array(
@@ -567,10 +576,10 @@ class Datamodel {
 					}
 				}
 			}
-			MemoryCache::save("{$ps_table}/{$ps_table2}", $va_many_many_relations, 'DatamodelManyToManyRelations');
+			CompositeCache::save("{$ps_table}/{$ps_table2}", $va_many_many_relations, 'DatamodelManyToManyRelations');
 			return $va_many_many_relations;
 		} else {
-			MemoryCache::save("{$ps_table}/{$ps_table2}", null, 'DatamodelManyToManyRelations');
+			CompositeCache::save("{$ps_table}/{$ps_table2}", null, 'DatamodelManyToManyRelations');
 			return null;
 		}
 	}
@@ -622,12 +631,12 @@ class Datamodel {
 	 *
 	 */
 	static public function getRelationships($ps_left_table, $ps_right_table) {
-		if(MemoryCache::contains("{$ps_left_table}/{$ps_right_table}", 'DatamodelRelationships')) {
-			return MemoryCache::fetch("{$ps_left_table}/{$ps_right_table}", 'DatamodelRelationships');
+		if(CompositeCache::contains("{$ps_left_table}/{$ps_right_table}", 'DatamodelRelationships')) {
+			return CompositeCache::fetch("{$ps_left_table}/{$ps_right_table}", 'DatamodelRelationships');
 		}
 
 		$va_relationships = Datamodel::$opo_graph->getAttribute("relationships", $ps_left_table, $ps_right_table);
-		MemoryCache::save("{$ps_left_table}/{$ps_right_table}", $va_relationships, 'DatamodelRelationships', 3600 * 24 * 30);
+		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $va_relationships, 'DatamodelRelationships', 3600 * 24 * 30);
 		
 		return $va_relationships;
 	}
