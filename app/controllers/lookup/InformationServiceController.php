@@ -83,6 +83,9 @@
 				}
 			}
 			
+			if(!sizeof($va_items)) {
+				$va_items['error'] = ['label' => _t('No matches found'), 'idno' => '', 'url' => ''];
+			}
 			$this->view->setVar('information_service_list', $va_items);
  			return $this->render('ajax_information_service_list_html.php');
 		}
