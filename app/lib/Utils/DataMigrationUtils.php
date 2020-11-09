@@ -908,6 +908,15 @@
 		private static function _getID($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
+			$cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, 
+					['table' => $ps_table, 'label' => $pa_label, 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id, 'locale_id' => $pn_locale_id]),
+					'', ['matchOn', 'matchOnDisplayName', 'ignoreType', 'ignoreParent', 'generateIdnoWithTemplate', 'returnInstance']);
+
+			if (!$pa_options['forceUpdate']) {
+				if(CompositeCache::contains($cache_key, 'DataMigtationUtils_getID')) {
+					return CompositeCache::fetch($cache_key, 'DataMigtationUtils_getID');
+				}
+			}
 			
 			/** @var KLogger $o_log */
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
@@ -1228,6 +1237,7 @@
 				if ($o_log) { $o_log->logInfo(_t("%3Created new %1 %2", $vs_table_display_name, $pa_label[$vs_label_display_fld], $log_reference_str)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					CompositeCache::save($cache_key, $t_instance, 'DataMigtationUtils_getID');
 					return $t_instance;
 				}
 			} else {
@@ -1270,6 +1280,7 @@
 							}
 						}
 						if ($vb_return_instance) {
+							CompositeCache::save($cache_key, $t_instance, 'DataMigtationUtils_getID');
 							return $t_instance;
 						}
 					}
@@ -1277,6 +1288,7 @@
 				if ($o_event) { $o_event->endItem($vn_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 			}
 
+			CompositeCache::save($cache_key, $vn_id, 'DataMigtationUtils_getID');
 			return $vn_id;
 		}
 		# -------------------------------------------------------
