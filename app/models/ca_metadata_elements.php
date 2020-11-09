@@ -337,6 +337,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * @param array $pa_options Options include:
 	 * 		noCache = don't use cached values. Default is false (ie. use cached values)
+	 *
+	 * @TODO: add caching
 	 */
 	static public function getElementsForSet($pn_element_id, $pa_options=null) {
 	    if(!is_numeric($pn_element_id)) { $pn_element_id = self::getElementID($pn_element_id); }
@@ -402,7 +404,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($pa_element_set[$pn_parent_id] as $vn_rank => $va_elements_by_id) {
 			foreach($va_elements_by_id as $vn_element_id => $va_element) {
 				$va_tmp[$vn_element_id] = $va_element;
-				//$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));	// merge keeps keys in the correct order
 				foreach($this->_getSortedElementsForParent($pa_element_set, $vn_element_id) as $k => $v) {
 					if (isset($va_tmp[$k])) { unset($va_tmp[$k]); }
 					$va_tmp[$k] = $v;
@@ -629,12 +630,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# Static
 	# ------------------------------------------------------
 	public static function getAttributeTypes() {
+		if (CompositeCache::contains('attributeTypes')) { 
+			return CompositeCache::fetch('attributeTypes');
+		}
 		$o_types = Configuration::load(__CA_CONF_DIR__."/attribute_types.conf");
 
 		$va_types = $o_types->getList('types');
 		foreach($va_types as $vn_i => $vs_typename) {
 			if ($vs_typename == 'NOT_USED') { unset($va_types[$vn_i]); }
 		}
+		CompositeCache::save('attributeTypes', $va_types);
 		return $va_types;
 	}
 	# ------------------------------------------------------
@@ -1118,14 +1123,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 * @param string|int $pm_element_code_or_id
 	 * @return int
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
-			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
+		if(CompositeCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
 		}
 
 		$vm_return = null;
@@ -1133,7 +1138,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = (int) $t_element->get('datatype');
 		}
 
-		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
+		CompositeCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1141,14 +1146,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get element code for given element_id (or code)
 	 * @param mixed $pm_element_id
 	 * @return string
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementCodeForId($pm_element_id) {
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
-		if(MemoryCache::contains($pm_element_id, 'ElementCodes')) {
-			return MemoryCache::fetch($pm_element_id, 'ElementCodes');
+		if(CompositeCache::contains($pm_element_id, 'ElementCodes')) {
+			return CompositeCache::fetch($pm_element_id, 'ElementCodes');
 		}
 
 		$vm_return = null;
@@ -1158,7 +1163,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = $t_element->get('element_code');
 		}
 
-		MemoryCache::save($pm_element_id, $vm_return, 'ElementCodes');
+		CompositeCache::save($pm_element_id, $vm_return, 'ElementCodes');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1166,14 +1171,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get element label for given element_id (or code)
 	 * @param mixed $pm_element_id
 	 * @return string
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementLabel($pm_element_id) {
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
-		if(MemoryCache::contains($pm_element_id, 'ElementLabels')) {
-			return MemoryCache::fetch($pm_element_id, 'ElementLabels');
+		if(CompositeCache::contains($pm_element_id, 'ElementLabels')) {
+			return CompositeCache::fetch($pm_element_id, 'ElementLabels');
 		}
 
 		$vm_return = null;
@@ -1183,7 +1188,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = $t_element->get('ca_metadata_elements.preferred_labels.name');
 		}
 
-		MemoryCache::save($pm_element_id, $vm_return, 'ElementLabels');
+		CompositeCache::save($pm_element_id, $vm_return, 'ElementLabels');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1191,14 +1196,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get element code for the parent of a given element_id (or code). Returns null if given ID has no parent
 	 * @param mixed $pm_element_id
 	 * @return string|null
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getParentCode($pm_element_id) {
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
-		if(MemoryCache::contains($pm_element_id, 'ElementParentCodes')) {
-			return MemoryCache::fetch($pm_element_id, 'ElementParentCodes');
+		if(CompositeCache::contains($pm_element_id, 'ElementParentCodes')) {
+			return CompositeCache::fetch($pm_element_id, 'ElementParentCodes');
 		}
 
 		$vm_return = null;
@@ -1209,7 +1214,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = $t_parent->get('element_code');
 		}
 
-		MemoryCache::save($pm_element_id, $vm_return, 'ElementParentCodes');
+		CompositeCache::save($pm_element_id, $vm_return, 'ElementParentCodes');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1219,14 +1224,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param array $pa_options Supported options are:
 	 *      noCache = Don't use cache. [Default is false]
 	 * @return int
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementID($pm_element_code_or_id, $pa_options=null) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(!caGetOption('noCache', $pa_options, false) && MemoryCache::contains($pm_element_code_or_id, 'ElementIDs')) {
-			return MemoryCache::fetch($pm_element_code_or_id, 'ElementIDs');
+		if(!caGetOption('noCache', $pa_options, false) && CompositeCache::contains($pm_element_code_or_id, 'ElementIDs')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'ElementIDs');
 		}
 
 		$vm_return = null;
@@ -1236,7 +1241,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = (int) $t_element->getPrimaryKey();
 		}
 
-		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementIDs');
+		CompositeCache::save($pm_element_code_or_id, $vm_return, 'ElementIDs');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1244,14 +1249,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get hier_element id for given element code (or id)
 	 * @param mixed $pm_element_code_or_id
 	 * @return int
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementHierarchyID($pm_element_code_or_id) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementHierarchyIDs')) {
-			return MemoryCache::fetch($pm_element_code_or_id, 'ElementHierarchyIDs');
+		if(CompositeCache::contains($pm_element_code_or_id, 'ElementHierarchyIDs')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'ElementHierarchyIDs');
 		}
 
 		$vm_return = null;
@@ -1261,7 +1266,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = (int) $t_element->get('hier_element_id');
 		}
 
-		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementHierarchyIDs');
+		CompositeCache::save($pm_element_code_or_id, $vm_return, 'ElementHierarchyIDs');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1269,7 +1274,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get element list_id for given element code (or id)
 	 * @param mixed $pm_element_code_or_id
 	 * @return int
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementListID($pm_element_code_or_id) {
 		if(!$pm_element_code_or_id) { return null; }
@@ -1289,14 +1294,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get element settings for given element_id (or code)
 	 * @param mixed $pm_element_id
 	 * @return string
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementSettingsForId($pm_element_id) {
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
-		if(MemoryCache::contains($pm_element_id, 'ElementSettings')) {
-			return MemoryCache::fetch($pm_element_id, 'ElementSettings');
+		if(CompositeCache::contains($pm_element_id, 'ElementSettings')) {
+			return CompositeCache::fetch($pm_element_id, 'ElementSettings');
 		}
 
 		$vm_return = null;
@@ -1306,7 +1311,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = $t_element->getSettings();
 		}
 
-		MemoryCache::save($pm_element_id, $vm_return, 'ElementSettings');
+		CompositeCache::save($pm_element_id, $vm_return, 'ElementSettings');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1315,14 +1320,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 * @param string|int $pm_element_code_or_id
 	 * @return string
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementDefaultValue($pm_element_code_or_id) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDefaultValues')) {
-			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDefaultValues');
+		if(CompositeCache::contains($pm_element_code_or_id, 'ElementDefaultValues')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'ElementDefaultValues');
 		}
 
 		$vm_return = null;
@@ -1333,7 +1338,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		    $vm_return = isset($settings[$default_setting_name]) ? $settings[$default_setting_name] : null;
 		}
 
-		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDefaultValues');
+		CompositeCache::save($pm_element_code_or_id, $vm_return, 'ElementDefaultValues');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1341,27 +1346,27 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get ca_metadata_elements instance for given code or ID
 	 * @param $pm_element_code_or_id
 	 * @return ca_metadata_elements|mixed|null
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getInstance($pm_element_code_or_id) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementInstances')) {
-			return MemoryCache::fetch($pm_element_code_or_id, 'ElementInstances');
+		if(CompositeCache::contains($pm_element_code_or_id, 'ElementInstances')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'ElementInstances');
 		}
 
 		$t_element = new ca_metadata_elements(is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : null);
 
 		if (!($vn_element_id = $t_element->getPrimaryKey())) {
 			if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
-				MemoryCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
-				MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+				CompositeCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
+				CompositeCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
 				return $t_element;
 			}
 		} else {
-			MemoryCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
-			MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+			CompositeCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
+			CompositeCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
 			return $t_element;
 		}
 		return null;
