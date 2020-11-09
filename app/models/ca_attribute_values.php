@@ -262,7 +262,6 @@ class ca_attribute_values extends BaseModel {
 		
 		if ($this->inTransaction()) { $pa_options['transaction'] = $this->getTransaction(); }
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set('attribute_id', $pn_attribute_id);
 		$this->set('element_id', $pa_element_info['element_id']);
 		
