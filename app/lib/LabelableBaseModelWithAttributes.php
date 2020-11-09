@@ -55,7 +55,7 @@
 		 *
 		 * Maximum numbers of cached labels per table
 		 */
-		static $s_label_cache_size = 1024;
+		static $s_label_cache_size = 8192;
 		
 		
 		static $s_labels_by_id_cache = array();
@@ -1787,24 +1787,25 @@
  			if (isset($pa_options['forDisplay']) && $pa_options['forDisplay']) {
  				$pa_options['extractValuesByUserLocale'] = true;
  			}
+ 			$table = $this->tableName();
  			
-			if (($pn_mode == __CA_LABEL_TYPE_ANY__) && (caGetBundleAccessLevel($this->tableName(), 'preferred_labels') == __CA_BUNDLE_ACCESS_NONE__)) {
+			if (($pn_mode == __CA_LABEL_TYPE_ANY__) && (caGetBundleAccessLevel($table, 'preferred_labels') == __CA_BUNDLE_ACCESS_NONE__)) {
 				$pn_mode = __CA_LABEL_TYPE_NONPREFERRED__;
 			}
-			if (($pn_mode == __CA_LABEL_TYPE_ANY__) && (caGetBundleAccessLevel($this->tableName(), 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_NONE__)) {
+			if (($pn_mode == __CA_LABEL_TYPE_ANY__) && (caGetBundleAccessLevel($table, 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_NONE__)) {
 				$pn_mode = __CA_LABEL_TYPE_PREFERRED__; 
 			}
  			
- 			if (($pn_mode == __CA_LABEL_TYPE_PREFERRED__) && (caGetBundleAccessLevel($this->tableName(), 'preferred_labels') == __CA_BUNDLE_ACCESS_NONE__)) {
+ 			if (($pn_mode == __CA_LABEL_TYPE_PREFERRED__) && (caGetBundleAccessLevel($table, 'preferred_labels') == __CA_BUNDLE_ACCESS_NONE__)) {
 				return null;
 			}
-			if (($pn_mode == __CA_LABEL_TYPE_NONPREFERRED__) && (caGetBundleAccessLevel($this->tableName(), 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_NONE__)) {
+			if (($pn_mode == __CA_LABEL_TYPE_NONPREFERRED__) && (caGetBundleAccessLevel($table, 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_NONE__)) {
 				return null;
 			}
  			
  			if (!is_array($pa_options)) { $pa_options = array(); }
- 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('table_name' => $this->tableName(), 'id' => $vn_id, 'mode' => (int)$pn_mode)));
- 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key])) {
+ 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('table_name' => $table, 'id' => $vn_id, 'mode' => (int)$pn_mode)));
+ 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$table][$vn_id][$vs_cache_key])) {
  				return $va_tmp;
  			}
 			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
@@ -1828,15 +1829,15 @@
  			if ($t_label->hasField('is_preferred')) {
  				switch($pn_mode) {
  					case __CA_LABEL_TYPE_PREFERRED__:
- 						$vs_list_code = $this->_CONFIG->get($this->tableName().'_preferred_label_type_list');
+ 						$vs_list_code = $this->_CONFIG->get($table.'_preferred_label_type_list');
  						$vs_label_where_sql .= ' AND (l.is_preferred = 1)';
  						break;
  					case __CA_LABEL_TYPE_NONPREFERRED__:
- 						$vs_list_code = $this->_CONFIG->get($this->tableName().'_nonpreferred_label_type_list');
+ 						$vs_list_code = $this->_CONFIG->get($table.'_nonpreferred_label_type_list');
  						$vs_label_where_sql .= ' AND (l.is_preferred = 0)';
  						break;
  					default:
- 						$vs_list_code = $this->_CONFIG->get($this->tableName().'_preferred_label_type_list');
+ 						$vs_list_code = $this->_CONFIG->get($table.'_preferred_label_type_list');
  						break;
  				}
  				if(!$vs_list_code) {
@@ -1910,11 +1911,11 @@
  				$va_labels = $va_flattened_labels;
  			}
  			
- 			if (is_array(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) && (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) > LabelableBaseModelWithAttributes::$s_label_cache_size)) {
- 				array_splice(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()], 0, ceil(LabelableBaseModelWithAttributes::$s_label_cache_size/2));
+ 			if (is_array(LabelableBaseModelWithAttributes::$s_label_cache[$table]) && (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$table]) > LabelableBaseModelWithAttributes::$s_label_cache_size)) {
+ 				array_splice(LabelableBaseModelWithAttributes::$s_label_cache[$table], 0, ceil(LabelableBaseModelWithAttributes::$s_label_cache_size/2));
  			}
  			
- 			LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key] = $va_labels;
+ 			LabelableBaseModelWithAttributes::$s_label_cache[$table][$vn_id][$vs_cache_key] = $va_labels;
  			
  			return $va_labels;
  		}
