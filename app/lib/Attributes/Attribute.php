@@ -51,7 +51,6 @@ require_once(__CA_LIB_DIR__.'/Attributes/Values/LCSHAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/GeoNamesAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/FileAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/MediaAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/Attributes/Values/TaxonomyAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/InformationServiceAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/FloorplanAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/ColorAttributeValue.php');
