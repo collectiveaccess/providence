@@ -5592,8 +5592,7 @@ if (!$vb_batch) {
  	 * @return array List of related items
  	 */
 	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null, &$pn_count=null) {
-		global $AUTH_CURRENT_USER_ID;
-			Timer::start("REL");	        
+		global $AUTH_CURRENT_USER_ID;    
 		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
 
@@ -5675,7 +5674,6 @@ if (!$vb_batch) {
 		$vs_subject_table_name = $this->tableName();
 		$vs_item_rel_table_name = $vs_rel_item_table_name = null;
 		
-		Timer::p("REL", "[REL:3] %time<br>\n");
 		switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_subject_table_name, $vs_related_table_name)))) {
 			case 3:
 			
@@ -5686,7 +5684,6 @@ if (!$vb_batch) {
 				$vs_rel_item_table_name = $va_path[2];
 				
 				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
-				Timer::p("REL", "[REL:3.1] %time<br>\n");
 				
 				break;
 			case 2:
@@ -5741,7 +5738,6 @@ if (!$vb_batch) {
 			$vs_rel_item_table_name = $va_path[0];
 		}
 
-		Timer::p("REL", "[REL:3x] %time<br>\n");
 		$va_wheres = [];
 		$va_selects = [];
 		$va_joins_post_add = [];
@@ -5765,7 +5761,6 @@ if (!$vb_batch) {
 				$vb_uses_effective_dates = true;
 			}
 
-		Timer::p("REL", "[REL:3y] %time<br>\n");
 			if ($t_rel_item->hasField('is_enabled')) {
 				$va_selects[] = "{$vs_related_table}.is_enabled";
 			}
@@ -5879,7 +5874,6 @@ if (!$vb_batch) {
 			)";
 		}
 
-Timer::p("REL", "[REL:3c] %time<br>\n");
 		if (is_array($pa_get_where)) {
 			foreach($pa_get_where as $vs_fld => $vm_val) {
 				if ($t_rel_item->hasField($vs_fld)) {
@@ -6362,10 +6356,8 @@ Timer::p("REL", "[REL:3c] %time<br>\n");
 				{$vs_order_by}
 			";
 			
-Timer::p("REL", "[REL:3d] %time<br>\n");
 			$qr_res = $o_db->query($vs_sql);
 			
-Timer::p("REL", "[REL:3e] %time<br>\n");
 			if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 			
 			if ($vb_uses_relationship_types)  {
