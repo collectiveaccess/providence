@@ -284,20 +284,36 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 *
 	 * @return string|null
 	 */
-	$g_list_item_ids_for_values = [];
 	function caGetListItemIDForValue($ps_list_code, $ps_value, $pa_options=null) {
-		global $g_list_item_ids_for_values;
+		return array_shift(array_keys(caGetListItemForValue($ps_list_code, $ps_value, $pa_options)));
+	}
+	# ---------------------------------------
+	/**
+	 * Get list item info for value. Can be useful when handling access/status values
+	 * @param string $ps_list_code Code of the list
+	 * @param string $ps_value item_value of the list item in question
+	 * @param array $pa_options Options for ca_lists::getItemFromListByItemValue() plus:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+	 *      checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *
+	 * @return array|null
+	 */
+	$g_list_items_for_values = [];
+	function caGetListItemForValue($ps_list_code, $ps_value, $pa_options=null) {
+		global $g_list_items_for_values;
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_value}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-		    if(isset($g_list_item_ids_for_values[$vs_cache_key])) { return $g_list_item_ids_for_values[$vs_cache_key]; }
+		    if(isset($g_list_items_for_values[$vs_cache_key])) { return $g_list_items_for_values[$vs_cache_key]; }
         }
         
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
 		if ($va_item = $t_list->getItemFromListByItemValue($ps_list_code, $ps_value, $pa_options)) {
-			return $g_list_item_ids_for_values[$vs_cache_key] = array_shift(array_keys($va_item));
+			return $g_list_items_for_values[$vs_cache_key] = $va_item;
 		}
 		return null;
 	}
