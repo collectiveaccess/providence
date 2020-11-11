@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -275,7 +275,6 @@ class BaseXMLDataReader extends BaseDataReader {
 		
 		// Recondition the spec for Xpath
 		$ps_spec = $this->_convertXPathExpression($ps_spec, array('useRootTag' => $this->ops_base_root_tag));
-
 		if (!($o_node_list = @$this->opo_handle_xpath->query($ps_spec))) {
 			return null;
 		}
@@ -284,7 +283,6 @@ class BaseXMLDataReader extends BaseDataReader {
 		foreach($o_node_list as $o_node) {
 			$va_values[] = html_entity_decode(($vs_xml = $this->getInnerXML($o_node)) ? $vs_xml : $o_node->nodeValue, null, 'UTF-8');
 		}
-		
 		if ($vb_return_as_array) { return $va_values; }
 		return join($vs_delimiter, $va_values);
 	}
@@ -400,7 +398,12 @@ class BaseXMLDataReader extends BaseDataReader {
 				(!preg_match("!^\([A-Za-z0-9\-_]+!", $vs_spec_element))		// groups in parens should not get the default namespace applied
 			) {
 				if ($this->ops_xml_namespace_prefix) {
-					$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";
+					
+					if(preg_match("!^(parent|ancestor|ancestor-or-self|attribute|child|descendant|descendant-or-self|following|following-sibling|namespace|preceding|preceding-sibling|self)::(.*)$!", $vs_spec_element, $m)) {	// handle axes
+						$va_tmp[$vn_i]= $m[1].'::'.$this->ops_xml_namespace_prefix.":".$m[2];
+					} else {
+						$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";
+					}
 				}
 			}
 		}
