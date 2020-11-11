@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -129,8 +129,8 @@ class WLPlugInformationServiceEOL extends BaseInformationServicePlugin Implement
 			$o_config = Configuration::load();
 			$vs_eol_keycode = $o_config->get('eol_keycode');
 		}
-
-		if (!preg_match("!^http://eol.org/([\d]+)!", $ps_url, $matches)) { 
+		
+		if (!preg_match("!^http[s]{0,1}://eol.org/[a-z\/]*([\d]+)!i", $ps_url, $matches)) { 
 			throw new ApplicationException(_t('Invalid EOL URL'));
 		}
 		$n = (int)$matches[1];
