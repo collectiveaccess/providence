@@ -8372,7 +8372,8 @@ $pa_options["display_form_field_tips"] = true;
 									'readonly' => $pa_options['readonly'],
 									'restrictTypeListForTable' => $this->tableName(),
 									'limitToItemsWithID' => $va_limit_list ? $va_limit_list : null,
-									'checkAccess' => $pa_options['checkAccess']
+									'checkAccess' => $pa_options['checkAccess'],
+									'width' => $pa_options['width']
 								)
 							);
 							
