@@ -1666,7 +1666,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$value_idno = $v['idno'];
 					$default_value = caGetOption('default', $omit_map, null);
 					if(is_array($omit_map['omit'])) { $omit_map = $omit_map['omit']; }
-					if (!in_array($value_idno, $omit_map, true)) {
+					if (in_array($value_idno, $omit_map, true)) {
 						$pa_options['value']= caGetListItemValueForIdno('access_statuses', $default_value);
 					}
 					foreach($omit_map as $i => $value) {
