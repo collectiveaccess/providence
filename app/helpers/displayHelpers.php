@@ -2881,6 +2881,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		template =
 	 *		relatedItems = 
 	 *		sortOrder = 
+	 *		self_id = ID of record being related to when relationship is to self (Eg. object-object). This id will be omitted from returned items.
 	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
 	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
 	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
@@ -2895,6 +2896,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_rel_pk            			= caGetOption('primaryKey', $pa_options, $pt_rel->primaryKey());
  		$vs_rel_table         			= caGetOption('table', $pa_options, $pt_rel->tableName());
+ 		$self_id         				= caGetOption('self_id', $pa_options, null, ['castTo' => 'int']);
 
 		$o_config = (!isset($pa_options['config']) || !is_object($pa_options['config'])) ? Configuration::load() : $pa_options['config'];
 
@@ -2913,6 +2915,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$po_request = 								caGetOption('request', $pa_options, null);
 		if(!$po_request) { global $g_request; $po_request = $g_request; }
 
+		if($self_id) { $va_exclude[] = $self_id; }
 
 		if (!is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) { $va_display_format = ['^label']; }
 		if (!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) { $vs_display_delimiter = ''; }
