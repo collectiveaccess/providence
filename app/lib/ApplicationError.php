@@ -431,4 +431,3 @@ class ApplicationError {
 		return false;
 	}
 }
-?>

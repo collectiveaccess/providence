@@ -487,11 +487,13 @@ class Mapping {
 			// add config for modified and created, which are always indexed
 			$va_mapping_config[$vs_table]['properties']["modified"] = array(
 				'type' => 'date',
-				'format' => 'date_time_no_millis'
+				'format' => 'date_optional_time',
+				'ignore_malformed' => true
 			);
 			$va_mapping_config[$vs_table]['properties']["created"] = array(
 				'type' => 'date',
-				'format' => 'date_time_no_millis'
+				'format' => 'date_optional_time',
+				'ignore_malformed' => true
 			);
 		}
 		return $va_mapping_config;

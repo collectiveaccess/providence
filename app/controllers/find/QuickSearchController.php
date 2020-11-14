@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@
  	require_once(__CA_LIB_DIR__."/Search/StorageLocationSearch.php");
  	require_once(__CA_LIB_DIR__."/Search/LoanSearch.php");
  	require_once(__CA_LIB_DIR__."/Search/MovementSearch.php");
+ 	require_once(__CA_LIB_DIR__."/Search/ObjectRepresentationSearch.php");
  	require_once(__CA_LIB_DIR__."/Search/TourSearch.php");
  	require_once(__CA_LIB_DIR__."/Search/TourStopSearch.php");
  	require_once(__CA_LIB_DIR__."/Search/QuickSearch.php");
@@ -79,6 +80,7 @@
 			$vs_default_actions["ca_storage_locations"] = ($this->request->user->canDoAction("can_edit_ca_storage_locations") ? "Edit" : "Summary");
 			$vs_default_actions["ca_loans"] = ($this->request->user->canDoAction("can_edit_ca_loans") ? "Edit" : "Summary");
 			$vs_default_actions["ca_movements"] = ($this->request->user->canDoAction("can_edit_ca_movements") ? "Edit" : "Summary");
+			$vs_default_actions["ca_object_representations"] = ($this->request->user->canDoAction("can_edit_ca_object_representations") ? "Edit" : "Summary");
 			$vs_default_actions["ca_tours"] = ($this->request->user->canDoAction("can_edit_ca_tours") ? "Edit" : "Summary");
 			$vs_default_actions["ca_tour_stops"] = ($this->request->user->canDoAction("can_edit_ca_tours") ? "Edit" : "Summary");
 
@@ -195,6 +197,11 @@
 					$o_movement_search = new MovementSearch();
  					if ($ps_type) { $o_movement_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
 					return $o_movement_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
+					break;
+				case 'ca_object_representations':
+					$o_rep_search = new ObjectRepresentationSearch();
+ 					if ($ps_type) { $o_rep_search->setTypeRestrictions([$ps_type], ['includeSubtypes' => false]); }
+					return $o_rep_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_tours':
 					$o_tour_search = new TourSearch();

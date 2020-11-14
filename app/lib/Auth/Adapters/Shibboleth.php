@@ -72,7 +72,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	    
         $map = array_flip($this->auth_config->get('shibboleth_field_map'));
 	    $uid = array_shift($attrs[$map['uid']]);
-	    
+	    if (!$uid) { return false; }
 	    if (ca_users::find(['user_name' => $uid], ['returnAs' => 'count']) > 0) {
 	        return true;
 	    }
@@ -95,6 +95,13 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
             $map = array_flip($this->auth_config->get('shibboleth_field_map'));
             
             $attrs = $this->opo_shibAuth->getAttributes();
+            
+            if(empty($attrs[$map['uid']][0])) { 
+            	throw new ShibbolethException(_t("User id not set."));
+            }
+            if(empty($attrs[$map['email']][0])) { 
+            	throw new ShibbolethException(_t("User email address not set."));
+            }
             return [
                 'user_name' => $username ? $username : $attrs[$map['uid']][0],
 				'email' => $attrs[$map['email']][0],

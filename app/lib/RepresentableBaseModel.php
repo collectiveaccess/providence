@@ -175,7 +175,9 @@
 				
 				if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 					$va_tmp['fetched_from'] = $vs_fetched_from_url;
+					$va_tmp['fetched_original_url'] = $va_info['INPUT']['FETCHED_ORIGINAL_URL'];
 					$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
+					$va_tmp['fetched_by'] = $va_info['INPUT']['FETCHED_BY'];
 				}
 			
 				$va_tmp['num_multifiles'] = $t_rep->numFiles($vn_rep_id);
@@ -586,7 +588,7 @@
 				}
 			
 				if ($t_rep->getPreferredLabelCount() == 0) {
-					$vs_label = (isset($pa_values['name']) && $pa_values['name']) ? $pa_values['name'] : '['.caGetBlankLabelText().']';
+					$vs_label = (isset($pa_values['name']) && $pa_values['name']) ? $pa_values['name'] : '['.caGetBlankLabelText('ca_object_representations').']';
 			
 					$t_rep->addLabel(array('name' => $vs_label), $pn_locale_id, null, true);
 					if ($t_rep->numErrors()) {
@@ -1292,8 +1294,10 @@
 							'md5' => $vs_md5 ? "{$vs_md5}" : "",
 							'typename' => $va_rep_type_list[$va_rep['type_id']]['name_singular'],
 							'fetched_from' => $va_rep['fetched_from'],
-							'fetched_on' => date('c', $va_rep['fetched_on']),
-							'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on'])) : ""
+							'fetched_original_url' => caGetOption('fetched_original_url', $va_rep, null),
+							'fetched_by' => caGetOption('fetched_by', $va_rep, null),
+							'fetched_on' => $va_rep['fetched_on'] ? date('c', $va_rep['fetched_on']): null,
+							'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2 using %3 URL handler", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on']), caGetOption('fetched_by', $va_rep, 'default')) : ""
 						);
 					
 						if (is_array($bundle_data[$va_rep['representation_id']])) {

@@ -39,7 +39,7 @@
 	
 	$vs_display_version = caGetOption('display_version', $va_display, 'tilepic');
 	
-	$vs_title = ($t_instance && ($vs_rep_title = str_replace("[".caGetBlankLabelText()."]", "", $t_instance->get('preferred_labels')))) ? $vs_rep_title : (($vs_subject_title = str_replace("[".caGetBlankLabelText()."]", "", $t_subject->get('preferred_labels'))) ? $vs_subject_title : "???");
+	$vs_title = ($t_instance && ($vs_rep_title = str_replace("[".caGetBlankLabelText('ca_object_representations')."]", "", $t_instance->get('preferred_labels')))) ? $vs_rep_title : (($vs_subject_title = str_replace("[".caGetBlankLabelText($t_subject->tableName())."]", "", $t_subject->get('preferred_labels'))) ? $vs_subject_title : "???");
 	
 	$va_metadata = [
     	["label" => "Title", "value" => $vs_title]

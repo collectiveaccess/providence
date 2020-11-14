@@ -324,7 +324,17 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (in_array(pathinfo(strtolower($ps_filepath), PATHINFO_EXTENSION), ['xls', 'xlsx'])) {
 			$va_excel_types = ['Excel2007' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Excel5' => 'application/vnd.ms-excel', 'Excel2003XML' => 'application/vnd.ms-excel'];
 			foreach ($va_excel_types as $vs_type => $vs_mimetype) {
-				$o_reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($vs_type);
+				switch($vs_type) {
+					case 'Excel2007':
+						$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+						break;
+					case 'Excel5':
+						$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+						break;
+					case 'Excel2003XML':
+						$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xml();
+						break;
+				}
 				if ($o_reader->canRead($ps_filepath)) {
 					return $vs_mimetype;
 				}

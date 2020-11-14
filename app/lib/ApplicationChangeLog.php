@@ -274,7 +274,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 	private function _getChangeLogFromRawData($pa_data, $pn_table_num, $options=null) {
 		//print "<pre>".print_r($pa_data, true)."</pre>\n";	
 		$va_log_output = array();
-		$vs_blank_placeholder = caGetBlankLabelText();
+		$vs_blank_placeholder = caGetBlankLabelText($pn_table_num);
 		$o_tep = new TimeExpressionParser();
 		
 		if (!$options) { $options = []; }

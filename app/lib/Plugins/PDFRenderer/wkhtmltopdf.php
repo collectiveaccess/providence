@@ -91,27 +91,27 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	/**
 	 * Render HTML formatted string as a PDF
 	 *
-	 * @param string $ps_content A fully-formed HTML document to render as a PDF
-	 * @param array $pa_options Options include:
+	 * @param string $content A fully-formed HTML document to render as a PDF
+	 * @param array $options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=output.pdf]
 	 *
 	 * @return string The rendered PDF content
 	 * @seealso wkhtmltopdf::renderFile()
 	 */
-	public function render($ps_content, $pa_options=null) {
+	public function render($content, $options=null) {
 	    // Force backtrack limit high to allow regex on very large strings
 	    // If we don't do this preg_replace will fail silently on large PDFs
 	    ini_set('pcre.backtrack_limit', '100000000');
 	    
 		// Extract header and footer
-		$vs_header = preg_match("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", $ps_content, $va_matches) ? $va_matches[1] : '';
-		$vs_footer = preg_match("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", $ps_content, $va_matches) ? $va_matches[1] : '';
+		$vs_header = preg_match("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", $content, $va_matches) ? $va_matches[1] : '';
+		$vs_footer = preg_match("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", $content, $va_matches) ? $va_matches[1] : '';
 		
-		$ps_content = preg_replace("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", "", $ps_content);
-		$ps_content = preg_replace("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", "", $ps_content);
+		$content = preg_replace("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", "", $content);
+		$content = preg_replace("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", "", $content);
 		
-		file_put_contents($vs_content_path = caMakeGetFilePath("wkhtmltopdf", "html"), $ps_content); 
+		file_put_contents($vs_content_path = caMakeGetFilePath("wkhtmltopdf", "html"), $content); 
 		file_put_contents($vs_header_path = caMakeGetFilePath("wkhtmltopdf", "html"), $vs_header); 
 		file_put_contents($vs_footer_path = caMakeGetFilePath("wkhtmltopdf", "html"), $vs_footer); 
 		$vs_output_path = caMakeGetFilePath("wkhtmltopdf", "pdf", ['useAppTmpDir' => true]);
@@ -119,10 +119,10 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 		caExec($this->ops_wkhtmltopdf_path." --enable-local-file-access  --disable-smart-shrinking --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} --page-size {$this->ops_page_size} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);	
 		
 		$vs_pdf_content = file_get_contents($vs_output_path);
-		if (caGetOption('stream', $pa_options, false)) {
+		if (caGetOption('stream', $options, false)) {
 			header("Cache-Control: private");
    			header("Content-type: application/pdf");
-			header("Content-Disposition: attachment; filename=".caGetOption('filename', $pa_options, 'output.pdf'));
+			header("Content-Disposition: attachment; filename=".caGetOption('filename', $options, 'output.pdf'));
 			print $vs_pdf_content;
 		}
 		
@@ -137,18 +137,18 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	/**
 	 * Render HTML file as a PDF
 	 *
-	 * @param string $ps_file_path Path to fully-formed HTML file to render as a PDF
-	 * @param array $pa_options Options include:
+	 * @param string $file_path Path to fully-formed HTML file to render as a PDF
+	 * @param array $options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=export_results.pdf]
 	 *
 	 * @return string The rendered PDF content
 	 * @seealso wkhtmltopdf::render()
 	 */
-	public function renderFile($ps_file_path, $pa_options=null) {
-		if(!file_exists($ps_file_path)) { return false; }
-		$vs_content = file_get_contents($ps_file_path);	
-		return $this->render($vs_content, $pa_options);
+	public function renderFile($file_path, $options=null) {
+		if(!file_exists($file_path)) { return false; }
+		$vs_content = file_get_contents($file_path);	
+		return $this->render($vs_content, $options);
 	}
 	# ------------------------------------------------
 	/**
@@ -159,17 +159,17 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	 *
 	 * @return bool True on success, false if parameters are invalid
 	 */
-	public function setPage($ps_size, $ps_orientation, $ps_margin_top=0, $ps_margin_right=0, $ps_margin_bottom=0, $ps_margin_left=0) {
-		if (!PDFRenderer::isValidPageSize($ps_size) || !PDFRenderer::isValidOrientation($ps_orientation)) {
+	public function setPage($size, $orientation, $margin_top=0, $margin_right=0, $margin_bottom=0, $margin_left=0) {
+		if (!PDFRenderer::isValidPageSize($size) || !PDFRenderer::isValidOrientation($orientation)) {
 			return false;
 		}
-		$this->ops_page_size = $ps_size;
-		$this->ops_page_orientation = $ps_orientation;
+		$this->ops_page_size = $size;
+		$this->ops_page_orientation = $orientation;
 		
-		$this->ops_margin_top = caConvertMeasurement($ps_margin_top, 'mm').'mm';
-		$this->ops_margin_right = caConvertMeasurement($ps_margin_right, 'mm').'mm';
-		$this->ops_margin_bottom = caConvertMeasurement($ps_margin_bottom, 'mm').'mm';
-		$this->ops_margin_left = caConvertMeasurement($ps_margin_left, 'mm').'mm';
+		$this->ops_margin_top = caConvertMeasurement($margin_top, 'mm').'mm';
+		$this->ops_margin_right = caConvertMeasurement($margin_right, 'mm').'mm';
+		$this->ops_margin_bottom = caConvertMeasurement($margin_bottom, 'mm').'mm';
+		$this->ops_margin_left = caConvertMeasurement($margin_left, 'mm').'mm';
 		
 		return true;
 	}
@@ -180,10 +180,13 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	 * @return array - status info array; 'available' key determines if the plugin should be loaded or not
 	 */
 	public function checkStatus() {
-		$va_status = parent::checkStatus();
-		$va_status['available'] = caWkhtmltopdfInstalled();
+		$config = Configuration::load();
+		$use = $config->get('use_pdf_renderer');
+
+		$status = parent::checkStatus();
+		$status['available'] = (!strlen($use) || (strtolower($use) === 'wkhtmltopdf')) && caWkhtmltopdfInstalled();
 		
-		return $va_status;
+		return $status;
 	}
 	# ------------------------------------------------
 }

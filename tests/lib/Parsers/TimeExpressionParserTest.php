@@ -657,7 +657,32 @@ class TimeExpressionParserTest extends TestCase {
 
 	public function testParseISO8601Date() {
 		$o_tep = new TimeExpressionParser();
-		$vb_res = $o_tep->parse('2009-09-18 21:03');
+		$vb_res = $o_tep->parse('2009-09-18');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getUnixTimestamps();
+
+		$this->assertEquals($va_parse['start'], 1253246400);
+		$this->assertEquals($va_parse['end'], 1253332799);
+		$this->assertEquals($va_parse[0], 1253246400);
+		$this->assertEquals($va_parse[1], 1253332799);
+	}
+	
+	public function testParseISO8601DateMonthOnly() {
+		$o_tep = new TimeExpressionParser();
+		$vb_res = $o_tep->parse('2009-09');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getUnixTimestamps();
+
+		$this->assertEquals($va_parse['start'], 1251777600);
+		$this->assertEquals($va_parse['end'], 1254369599);
+		$this->assertEquals($va_parse[0], 1251777600);
+		$this->assertEquals($va_parse[1], 1254369599);
+	}
+	
+	public function testParseISO8601DateWithTime() {
+		$o_tep = new TimeExpressionParser();
+		
+		$vb_res = $o_tep->parse('2009-09-18 21:03Z');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getUnixTimestamps();
 
@@ -665,6 +690,53 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_parse['end'], 1253322180);
 		$this->assertEquals($va_parse[0], 1253322180);
 		$this->assertEquals($va_parse[1], 1253322180);
+		$vb_res = $o_tep->parse('2009-09-18T21:03Z');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getUnixTimestamps();
+
+		$this->assertEquals($va_parse['start'], 1253322180);
+		$this->assertEquals($va_parse['end'], 1253322180);
+		$this->assertEquals($va_parse[0], 1253322180);
+		$this->assertEquals($va_parse[1], 1253322180);
+	}
+	
+	public function testParseISO8601DateRange() {
+		$o_tep = new TimeExpressionParser();
+	
+		$vb_res = $o_tep->parse('2009-09-18/2010-02-02');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], '2009.091800000000');
+		$this->assertEquals($va_parse['end'], '2010.020223595900');
+		$this->assertEquals($va_parse[0], '2009.091800000000');
+		$this->assertEquals($va_parse[1], '2010.020223595900');
+	}
+	
+	public function testParseISO8601DateRangeMonths() {
+		$o_tep = new TimeExpressionParser();
+		
+		$vb_res = $o_tep->parse('1952-10/1952-11');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], '1952.100100000000');
+		$this->assertEquals($va_parse['end'], '1952.113023595900');
+		$this->assertEquals($va_parse[0], '1952.100100000000');
+		$this->assertEquals($va_parse[1], '1952.113023595900');
+	}
+	
+	public function testParseISO8601DateRangeWithTime() {
+		$o_tep = new TimeExpressionParser();
+		
+		$vb_res = $o_tep->parse('2009-09-18T02:30:02Z/2010-02-02T05:35Z');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], '2009.091802300200');
+		$this->assertEquals($va_parse['end'], '2010.020205350000');
+		$this->assertEquals($va_parse[0], '2009.091802300200');
+		$this->assertEquals($va_parse[1], '2010.020205350000');
 	}
 
 	public function testParseNowDate() {
@@ -1425,6 +1497,31 @@ class TimeExpressionParserTest extends TestCase {
 		$o_tep->setLanguage('de_DE');
 
 		$this->assertEquals($o_tep->getText(), '6. Juni 2009 um 22:55:10');
+	}
+	
+	public function testDateTextOutputFormats() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('6/8/1984');
+		$this->assertEquals($vb_res, true);
+
+		$this->assertEquals($o_tep->getText(), 'June 8 1984');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1984/06/08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1984.06.08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '06/08/1984');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1984-06-08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1984');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'June 8 1984');
+
+		$o_tep->setLanguage('de_DE');
+
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1984/06/08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1984.06.08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '08/06/1984');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1984-06-08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1984');
+		$this->assertEquals($o_tep->getText(), '8. Juni 1984');
 	}
 
 	public function testMYADate() {

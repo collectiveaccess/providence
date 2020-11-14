@@ -1053,7 +1053,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								$vs_label = $vs_idno;
 								$vb_show_idno = false;
 							} else {
-								$vs_label =  '['.caGetBlankLabelText().']';
+								$vs_label =  '['.caGetBlankLabelText($vs_table_name).']';
 							}
 							break;
 					}
@@ -1194,7 +1194,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "{$vs_watch}\n";
 				TooltipManager::add("#caWatchItemButton", _t('Watch/Unwatch this record'));
 
-				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) > 1)) {
 
 					$vs_buf .= "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 
@@ -2069,7 +2069,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		if (!($vs_label = $t_set->getLabelForDisplay())) {
 			if (!($vs_label = $t_set->get('set_code'))) {
-				$vs_label = '['.caGetBlankLabelText().']';
+				$vs_label = '['.caGetBlankLabelText('ca_sets').']';
 			}
 		}
 
@@ -2881,6 +2881,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		template =
 	 *		relatedItems = 
 	 *		sortOrder = 
+	 *		self_id = ID of record being related to when relationship is to self (Eg. object-object). This id will be omitted from returned items.
 	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
 	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
 	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
@@ -2895,6 +2896,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_rel_pk            			= caGetOption('primaryKey', $pa_options, $pt_rel->primaryKey());
  		$vs_rel_table         			= caGetOption('table', $pa_options, $pt_rel->tableName());
+ 		$self_id         				= caGetOption('self_id', $pa_options, null, ['castTo' => 'int']);
 
 		$o_config = (!isset($pa_options['config']) || !is_object($pa_options['config'])) ? Configuration::load() : $pa_options['config'];
 
@@ -2913,6 +2915,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$po_request = 								caGetOption('request', $pa_options, null);
 		if(!$po_request) { global $g_request; $po_request = $g_request; }
 
+		if($self_id) { $va_exclude[] = $self_id; }
 
 		if (!is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) { $va_display_format = ['^label']; }
 		if (!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) { $vs_display_delimiter = ''; }
@@ -4844,16 +4847,26 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * "blank_label_text" option. If the option is not set the default value of
 	 * "[BLANK]" will be returned.
 	 *
+	 * @param mixed $table Table name of number blank label is to be applied to. If set 
+	 *						table-specific text is set with fallback to general "blank_label_text"
+	 *
 	 * @return string
 	 */
-	$g_blank_label_text = null;
-	function caGetBlankLabelText() {
-		global $g_blank_label_text;
-		if ($g_blank_label_text) { return $g_blank_label_text; }
+	function caGetBlankLabelText($table=null) {
+		if (MemoryCache::contains('blank_label_text_'.$table)) { return MemoryCache::fetch('blank_label_text_'.$table); }
 		$config = Configuration::load();
-		if ($label_text = $config->get('blank_label_text')) {
+		
+		$d = [];
+		if (($table) && ($t = Datamodel::getInstance($table, true))) {
+			$d[] = $t->tableName().'_blank_label_text';
+		}
+
+		$d[] = 'blank_label_text';
+		
+		if ($label_text = $config->get($d)) {
 		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
-			return $g_blank_label_text = _t($label_text);
+		    MemoryCache::save('blank_label_text_'.$table, $l = _t($label_text));
+			return $l;
 		}
 		return $g_blank_label_text = _t('BLANK');
 	}
@@ -4904,12 +4917,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		extension = file extension of media being downloaded.
 	 *		original_filename = original filename of media being downloaded.
 	 *		representation_id = Representation_id of media being downloaded.
+	 * @param array $options Options include:
+	 *		mode = Naming mode. Can be idno, idno_and_version, idno_and_rep_id_and_version, original_name. If not set defaults to value in <table>_downloaded_file_naming or _downloaded_file_naming app.conf directive.
 	 *
 	 * @return string File name
 	 */
-	function caGetRepresentationDownloadFileName($table, $data, $options=null) {
+	function caGetRepresentationDownloadFileName(string $table, array $data, ?array $options=null) : string {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = caGetOption('mode', $options, $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming']))) {
 			case 'idno':
 				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
 				break;
@@ -4962,15 +4977,16 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caGetMediaDownloadArchiveName($table, $id, $options=null) {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", "downloaded_media_archive_file_naming","{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", 'downloaded_media_archive_file_naming', "{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
 			case 'idno':
-				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
-				break;
+				// Noop - fall through	
 			default:
-				if (strpos($mode, "^") == false) { // use default templte
+				if (strpos($mode, "^") === false) { // use default template
 					$mode = "^{$table}.idno";
 				}
-				$filename = caProcessTemplateForIDs($mode, $table, [$id]);
+				if (!($filename = caProcessTemplateForIDs($mode, $table, [$id]))) {
+					$filename = 'export';
+				}
 				$ext = caGetOption('extension', $options, 'zip');
 				
 				if(!preg_match("!\.{$ext}$!i", $filename)) {

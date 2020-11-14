@@ -92,6 +92,13 @@ class MediaInfoCoder {
 		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }	
 		
 		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
+		#
 		# Use icon
 		#
 		if ($ps_version && (!$ps_key || (in_array(strtoupper($ps_key), array('WIDTH', 'HEIGHT'))))) {
@@ -140,6 +147,13 @@ class MediaInfoCoder {
 		$vn_page = 1;
 		if (is_array($pa_options) && (isset($pa_options["page"])) && ($pa_options["page"] > 1)) {
 			$vn_page = $pa_options["page"];
+		}
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
 		}
 		
 		#
@@ -192,6 +206,13 @@ class MediaInfoCoder {
 		$vn_page = 1;
 		if (is_array($pa_options) && (isset($pa_options["page"])) && ($pa_options["page"] > 1)) {
 			$vn_page = $pa_options["page"];
+		}
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
 		}
 		
 		#
@@ -261,6 +282,13 @@ class MediaInfoCoder {
 		if (!isset($pa_options["page"]) || ($pa_options["page"] < 1)) { $pa_options["page"] = 1; }
 		
 		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
+		#
 		# Use icon
 		#
 		if (isset($va_media_info[$ps_version]) && isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
@@ -320,6 +348,13 @@ class MediaInfoCoder {
 	public function mediaIsMirrored($ps_version, $pa_options=null) {
 		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) {
 			return false;
@@ -336,6 +371,13 @@ class MediaInfoCoder {
 	 */
 	public function getMediaMirrorStatus($ps_version, $ps_mirror=null, $pa_options=null) {
 		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
 		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) {

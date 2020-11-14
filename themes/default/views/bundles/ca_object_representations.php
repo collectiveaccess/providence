@@ -62,6 +62,7 @@
 	$loaded_sort_direction 	= $this->getVar('sortDirection');
 	
 	$rep_count = $t_subject->getRepresentationCount($settings);
+	$allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 	
 	$errors = $failed_inserts = [];
 	
@@ -176,9 +177,14 @@
 						<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('id' => '{fieldNamePrefix}rel_type_id_{n}', 'name' => '{fieldNamePrefix}rel_type_id_{n}', 'value' => '{rel_type_id}'), $settings)); ?></div>
 <?php
 	} 
+	if ($allow_fetching_from_urls) { 
+?>
+						<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>			
+<?php 
+	} 
 						foreach($bundles_to_edit_proc as $f) {
 							if($f === 'type_id') { // type
-								print $t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+								print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 							} elseif($t_item->hasField($f)) { // intrinsic
 								print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'value' => '{'.$f.'}', 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 							} elseif($t_item->hasElement($f)) {
@@ -256,6 +262,11 @@
 					</div>
 				</div>
 				<div class="mediaUploadEditArea">
+	
+<?php if ($allow_fetching_from_urls) { ?>
+				<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>
+				
+<?php } ?>				
 <?php
     if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
 ?>
@@ -270,7 +281,7 @@
 					if(in_array($f, ['media'])) { continue; }
 					
 					if($f === 'type_id') { // type
-						print $t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 					} elseif($t_item->hasField($f)) { // intrinsic
 						print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 					} elseif($t_item->hasElement($f)) {
@@ -295,6 +306,13 @@
 			</div>
 			<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
 			<br class="clear"/>
+			<?php
+			$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
+			$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
+
+			$vs_element = _t("Maximum upload size is ${upload_max_filesize}");
+			print $vs_element;
+			?>
 		</div>
 		
 		<script type="text/javascript">
@@ -304,6 +322,8 @@
 					fieldNamePrefix: '<?= $id_prefix; ?>',
 					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
 					index: '{n}',
+					maxFilesize: <?= caReturnValueInBytes(ini_get('upload_max_filesize')); ?>,
+					maxFilesizeTxt: "<?= $upload_max_filesize; ?>",
 					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
 					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,

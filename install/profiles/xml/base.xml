@@ -1643,12 +1643,12 @@
         <item idno="socken" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>parrish</name_singular>
-              <name_plural>parrishes</name_plural>
+              <name_singular>parish</name_singular>
+              <name_plural>parishes</name_plural>
             </label>
             <label locale="en_CA" preferred="1">
-              <name_singular>parrish</name_singular>
-              <name_plural>parrishes</name_plural>
+              <name_singular>parish</name_singular>
+              <name_plural>parishes</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
               <name_singular>socken</name_singular>

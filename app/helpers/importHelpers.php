@@ -1134,7 +1134,7 @@
 							        $vs_name = pathinfo($vs_item, PATHINFO_FILENAME);
 							    }
 							    
-								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText().']'; }
+								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText('ca_object_representations').']'; }
 					
 								if ($va_val['media']['media'] || $vs_item) {
 									// Search for files in import directory (or subdirectory of import directory specified by mediaPrefix)
@@ -1537,22 +1537,6 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		}
 
 		return false;
-	}
-	# ---------------------------------------------------------------------
-	/**
-	 *
-	 */
-	function caValidateGoogleSheetsUrl($url) {
-		if (!is_array($parsed_url = parse_url(urldecode($url)))) { return null; }
- 			
-		$tmp = explode('/', $parsed_url['path']);
-		array_pop($tmp); $tmp[] = 'export';
-		$path = join("/", $tmp);
-		$transformed_url = $parsed_url['scheme']."://".$parsed_url['host'].$path."?format=xlsx";
-		if (!isUrl($transformed_url) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file)/d/!', $transformed_url)) {
-			return null;
-		}
-		return $transformed_url;
 	}
 	# ---------------------------------------------------------------------
 	/**

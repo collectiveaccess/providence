@@ -41,5 +41,8 @@
     "ext-iconv": "*",
     "ext-simplexml": "*",
     "phpseclib/phpseclib": "^2.0"
+  },
+  "config": {
+  	"discard-changes": true
   }
 }

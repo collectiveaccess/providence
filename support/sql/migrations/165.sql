@@ -1,13 +1,15 @@
 /*
-	Date: 30 May 2020
+	Date: 19 October 2020
 	Migration: 165
-	Description:    Sql Search Word index with locale
+	Description:    Add deaccession "authorized by" field
 */
 
 /*==========================================================================*/
 
-drop index u_word on ca_sql_search_words;
-create unique index u_word on ca_sql_search_words(word,locale_id);
+ALTER TABLE ca_objects ADD COLUMN deaccession_authorized_by varchar(255) not null default '';
+
+create index i_deaccession_auth_by on ca_objects(deaccession_authorized_by);
+
 
 /*==========================================================================*/
 
