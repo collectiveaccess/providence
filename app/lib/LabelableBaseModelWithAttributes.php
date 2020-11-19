@@ -123,7 +123,7 @@
 		 */ 
 		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-			if ($this->preferredLabelExistsForLocale($pn_locale_id)) { return false; }
+			if ($pb_is_preferred && $this->preferredLabelExistsForLocale($pn_locale_id)) { return false; }
 			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
 			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 			
