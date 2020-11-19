@@ -58,14 +58,19 @@ class MemoryCache {
 	 * @param string $ps_key
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
+	 * @param int $limit Maximum number of items to allow in cache for given namespace. Ignored if namespace is not specified. [Default is null]
+	 *
 	 * @return bool success state
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function save($ps_key, $pm_data, $ps_namespace='default') {
+	public static function save($ps_key, $pm_data, $ps_namespace='default', $limit=null) {
 		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
 
 		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
+		if (($limit > 0) && $ps_namespace && (self::itemCountForNamespace($ps_namespace) > $limit)) {
+			array_splice(self::$opa_caches[$ps_namespace], 0, ceil($limit/2));
+		}
 		self::$opa_caches[$ps_namespace][$ps_key] = $pm_data;
 		return true;
 	}

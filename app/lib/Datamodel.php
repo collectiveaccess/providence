@@ -278,6 +278,7 @@ class Datamodel {
 	 * @return bool True if it exists, false if it doesn't
 	 */
 	static public function tableExists($ps_table) {
+		if(!$ps_table) { return false; }
 		if(CompositeCache::contains($ps_table, 'DatamodelTableExists')) {
 			return CompositeCache::fetch($ps_table, 'DatamodelTableExists');
 		}
