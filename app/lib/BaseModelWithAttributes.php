@@ -902,7 +902,7 @@
 			$t_instance = $this;
 			if ((sizeof($va_tmp) >= 2) && (!$this->hasField($va_tmp[2]))) {
 				if (($va_tmp[1] == 'parent') && ($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
-					$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
+					$t_instance = Datamodel::getInstanceByTableNum($this->tableNum(), true);
 					if (!$t_instance->load($vn_parent_id)) {
 						$t_instance = $this;
 					} else {
@@ -918,7 +918,7 @@
 						$va_data = array();
 						$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 						
-						$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
+						$t_instance = Datamodel::getInstanceByTableNum($this->tableNum(), true);
 						
 						foreach($va_children_ids as $vn_child_id) {
 							if ($t_instance->load($vn_child_id)) {
@@ -1291,8 +1291,15 @@
 		 * @return string - idno (aka "item code") for current row's type or null if no row is loaded or model does not support types
 		 */
 		public function getTypeCode($pn_type_id=null) {
+			if (!$pn_type_id) { $pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD); }
+			if (!$pn_type_id) { return null; }
+			if (MemoryCache::contains($pn_type_id, 'baseModelTypeCodes')) {
+				return MemoryCache::fetch($pn_type_id, 'baseModelTypeCodes');
+			}
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
-				return $t_list_item->get('idno');
+				$v = $t_list_item->get('idno');
+				MemoryCache::save($pn_type_id, $v, 'baseModelTypeCodes');
+				return $v;
 			}
 			return null;
 		}
@@ -1398,8 +1405,11 @@
 			} else {
 				if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
 			}
+			if (MemoryCache::contains($vn_type_id, 'baseModelTypeInstances')) {
+				return MemoryCache::fetch($vn_type_id, 'baseModelTypeInstances');
+			}
 			
-			$t_list_item = new ca_list_items($vn_type_id);
+			MemoryCache::save($vn_type_id, $t_list_item = new ca_list_items($vn_type_id), 'baseModelTypeInstances');
 			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
 		}
 		# ------------------------------------------------------------------
@@ -3217,7 +3227,10 @@
  				$va_codes[$vn_element_id] = $vs_element_code;
  			}
  			if (!is_array(BaseModelWithAttributes::$s_element_label_cache)) { BaseModelWithAttributes::$s_element_label_cache = array(); }
- 			BaseModelWithAttributes::$s_element_label_cache += caExtractValuesByUserLocale($va_element_labels_by_locale);
+ 			if (sizeof(BaseModelWithAttributes::$s_element_label_cache) > 256) { 
+ 				array_splice(BaseModelWithAttributes::$s_element_label_cache, 0, 128);
+ 			}
+ 			BaseModelWithAttributes::$s_element_label_cache = array_merge(BaseModelWithAttributes::$s_element_label_cache, caExtractValuesByUserLocale($va_element_labels_by_locale));
  			
  			if ($pb_include_sub_element_codes && sizeof($va_codes)) {
  				$qr_res = $o_db->query("
@@ -3229,6 +3242,10 @@
 				while($qr_res->nextRow()) {
 					$va_codes[$qr_res->get('element_id')] = $qr_res->get('element_code');
 				}
+ 			}
+ 			if(!is_array(BaseModelWithAttributes::$s_applicable_element_code_cache)) { BaseModelWithAttributes::$s_applicable_element_code_cache = []; }
+ 			if(sizeof(BaseModelWithAttributes::$s_applicable_element_code_cache) > 512) { 
+ 				BaseModelWithAttributes::$s_applicable_element_code_cache  = array_splice(BaseModelWithAttributes::$s_applicable_element_code_cache, 0, 256);
  			}
  			BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)] = $va_codes;
  			return $va_codes;

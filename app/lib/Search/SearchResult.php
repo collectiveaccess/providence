@@ -110,7 +110,7 @@ class SearchResult extends BaseObject {
 	 *		hierarchy_siblings_prefetch_cache_index
 	 *		hierarchy_children_prefetch_cache_index
 	 */
-	static $s_cache_size_limit = 256;
+	static $s_cache_size_limit = 2048;
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;
@@ -173,7 +173,8 @@ class SearchResult extends BaseObject {
 	 * @param string Table name
 	 * @return void
 	 */ 
-	public static function checkCacheSizeLimit($ps_tablename) {
+	public function checkCacheSizeLimit() {
+		if (rand(0,25) !== 12) { return; }	// run every 25th call (or so)
 		foreach ([
 			'prefetch_cache' => &self::$s_prefetch_cache,
 			'instance_cache' => &self::$s_instance_cache,
@@ -195,12 +196,26 @@ class SearchResult extends BaseObject {
 				case 'hierarchy_siblings_prefetch_cache':
 				case 'hierarchy_siblings_prefetch_cache_index':
 				case 'hierarchy_children_prefetch_cache_index':
-					if (is_array($va_cache) && is_array($va_cache[$ps_tablename]) && (sizeof($va_cache[$ps_tablename]) > SearchResult::$s_cache_size_limit)) {
-						$va_cache[$ps_tablename] = [];
+					if (is_array($va_cache)) {
+						foreach(array_keys($va_cache) as $ps_tablename) {
+							if (is_array($va_cache) && is_array($va_cache[$ps_tablename]) && (sizeof($va_cache[$ps_tablename]) > SearchResult::$s_cache_size_limit)) {
+								unset($va_cache[$ps_tablename]);
+							}
+						}
 					}
 					break;
 			}
 			
+		}
+		
+		if (sizeof($this->opa_cached_result_counts) > 100) {
+			$this->opa_cached_result_counts = []; 
+		}
+		if (sizeof($this->opa_row_ids_to_prefetch_cache) > 100) {
+			$this->opa_row_ids_to_prefetch_cache = []; 
+		}
+		if (sizeof($this->opa_template_prefetch_cache) > 100) {
+			$this->opa_template_prefetch_cache = []; 
 		}
 	}
 
@@ -391,7 +406,7 @@ class SearchResult extends BaseObject {
 	public function prefetchHierarchyParents($ps_tablename, $pn_start, $pn_num_rows, $pa_options=null) {
 		if (!$ps_tablename ) { return; }
 		
-		SearchResult::checkCacheSizeLimit($ps_tablename);
+		$this->checkCacheSizeLimit();
 		
 		// get row_ids to fetch
 		if (isset($pa_options['row_ids']) && is_array($pa_options['row_ids'])) {
@@ -628,7 +643,7 @@ class SearchResult extends BaseObject {
 	private function _getRelatedIDsForPrefetch($ps_tablename, $pn_start, $pn_num_rows, &$pa_cache, $t_rel_instance, $va_row_ids, $pa_options) {
 		$this->prefetchRelated($ps_tablename, $pn_start, $pn_num_rows, $pa_options);
 		
-		SearchResult::checkCacheSizeLimit($ps_tablename);
+		$this->checkCacheSizeLimit();
 						
 		$va_base_row_ids = array();
 		$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
@@ -654,6 +669,8 @@ class SearchResult extends BaseObject {
 	 * Because this can be done in a single query it'll presumably be faster than lazy loading lots of rows
 	 */
 	public function prefetch($ps_tablename, $pn_start, $pn_num_rows, $pa_options=null) {
+		$this->checkCacheSizeLimit();
+		
 		if (!$ps_tablename ) { return; }
 		
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
@@ -802,12 +819,13 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	public function prefetchRelated($ps_tablename, $pn_start, $pn_num_rows, $pa_options) {
+		$this->checkCacheSizeLimit();
+		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!method_exists($this->opo_subject_instance, "getRelatedItems")) { return false; }
 		unset($pa_options['request']);
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		
-		SearchResult::checkCacheSizeLimit($this->ops_table_name);
 		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 		
@@ -856,6 +874,7 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	public function prefetchChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
+		$this->checkCacheSizeLimit();
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
 		if (self::$s_timestamp_cache['fetched'][$vs_key]) { return true; }

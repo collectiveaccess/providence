@@ -850,7 +850,8 @@ function caFileIsIncludable($ps_file) {
 	# ----------------------------------------
 	function caSerializeForDatabase($ps_data, $pb_compress=false) {
 		if ($pb_compress && function_exists('gzcompress')) {
-			return gzcompress(serialize($ps_data));
+			$s = serialize($ps_data);
+			return gzcompress($s);
 		} else {
 			return base64_encode(serialize($ps_data));
 		}

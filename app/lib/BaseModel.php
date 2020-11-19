@@ -11823,7 +11823,9 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql;}
 		$va_sql = array_filter($va_sql, function($v) { return strlen($v) > 0; });
 
-		$vs_sql = "SELECT * FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
+	
+		$vs_pk = $t_instance->primaryKey();
+		$vs_sql = "SELECT {$vs_pk} FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {

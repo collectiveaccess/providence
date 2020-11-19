@@ -267,9 +267,8 @@ class ca_attributes extends BaseModel {
 			return false;
 		}
 		$t_attr_val = new ca_attribute_values();
-		$t_attr_val->purify($this->purify());
+		//$t_attr_val->purify($this->purify());
 		$t_attr_val->setTransaction($o_trans);
-		$t_attr_val->setMode(ACCESS_WRITE);
 		
 		$vn_attribute_id = $this->getPrimaryKey();
 		$va_elements = $t_element->getElementsInSet();

@@ -311,7 +311,7 @@ class DisplayTemplateParser {
 	 */
 	static public function parse($ps_template, $pa_options=null) {
 		$vs_cache_key = md5($ps_template);
-		if(isset(DisplayTemplateParser::$template_cache[$vs_cache_key])) { return DisplayTemplateParser::$template_cache[$vs_cache_key]; }
+		//if(isset(DisplayTemplateParser::$template_cache[$vs_cache_key])) { return DisplayTemplateParser::$template_cache[$vs_cache_key]; }
 		
 		$ps_template_original = $ps_template;
 		
@@ -322,8 +322,9 @@ class DisplayTemplateParser {
 		$va_tags = DisplayTemplateParser::_getTags($o_doc->children, array_merge($pa_options, []));
 		$va_units = DisplayTemplateParser::_parseUnits($o_doc->children, [], []);
 		
-		if (!is_array(DisplayTemplateParser::$template_cache)) { DisplayTemplateParser::$template_cache = []; }
-		return DisplayTemplateParser::$template_cache[$vs_cache_key] = [
+		//if (!is_array(DisplayTemplateParser::$template_cache)) { DisplayTemplateParser::$template_cache = []; }
+		//return DisplayTemplateParser::$template_cache[$vs_cache_key] = [
+		return [
 			'original_template' => $ps_template_original, 	// template as passed by caller
 			'template' => $ps_template, 					// full template with compatibility transformations performed and units replaced with placeholders
 			'tags' => $va_tags, 							// all placeholder tags used in template, both replaceable (eg. ^ca_objects.idno) and directive codes (eg. <ifdef code="ca_objects.idno">...</ifdef>
@@ -1070,6 +1071,11 @@ class DisplayTemplateParser {
                 }
 				DisplayTemplateParser::$value_cache[$vs_cache_key] = $va_tag_vals;
 				DisplayTemplateParser::$value_count_cache[$vs_cache_key] = $vn_count = sizeof($va_tag_vals);
+				
+				if (sizeof(DisplayTemplateParser::$value_cache) > 1024) {
+					DisplayTemplateParser::$value_cache = [];
+					DisplayTemplateParser::$value_count_cache = [];
+				}
 			}
 			
 			if(strlen($pn_index)) {

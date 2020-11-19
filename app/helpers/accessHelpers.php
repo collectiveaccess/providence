@@ -303,7 +303,7 @@
 		if(!is_array($pa_options)) { $pa_options = []; }
 		if (!is_array($pa_types)) { $pa_types = $pa_types ? [$pa_types] : []; }
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, $pa_types), "caMakeTypeIDList:{$pm_table_name_or_num}");
-		if (ExternalCache::contains($vs_cache_key, 'listItems')) { return ExternalCache::fetch($vs_cache_key, 'listItems'); }
+		if (CompositeCache::contains($vs_cache_key, 'listItems')) { return CompositeCache::fetch($vs_cache_key, 'listItems'); }
 		if (is_numeric($pm_table_name_or_num)) {
 			$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
 		} else {
@@ -314,7 +314,7 @@
 		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
 		
 		$va_ret = caMakeItemIDList($vs_type_list_code, $pa_types, $pa_options);
-		ExternalCache::save($vs_cache_key, $va_ret, 'listItems');
+		CompositeCache::save($vs_cache_key, $va_ret, 'listItems');
 		return $va_ret;
 	}
 	# ---------------------------------------------------------------------------------------------
@@ -338,7 +338,7 @@
 		if (!is_array($pa_item_idnos)) { $pa_item_idnos = strlen($pa_item_idnos) ? [$pa_item_idnos]: []; }
 		if (!is_array($pa_options)) { $pa_options = []; }
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, $pa_item_idnos), "caMakeItemIDList:{$pm_list_code_or_id}");
-		if (ExternalCache::contains($vs_cache_key, 'listItems')) { return ExternalCache::fetch($vs_cache_key, 'listItems'); }
+		if (CompositeCache::contains($vs_cache_key, 'listItems')) { return CompositeCache::fetch($vs_cache_key, 'listItems'); }
 		
 		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	 	
@@ -375,7 +375,7 @@
 			}
 		}
 		$va_ret = array_keys($va_item_ids);
-		ExternalCache::save($vs_cache_key, $va_ret, 'listItems');
+		CompositeCache::save($vs_cache_key, $va_ret, 'listItems');
 		
 		return $va_ret;
 	}

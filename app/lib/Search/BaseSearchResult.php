@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,7 +41,6 @@
 	class BaseSearchResult extends SearchResult {
 		# -------------------------------------------------------
 		private $opo_list = null;
-		private $opo_datamodel = null;
 		private $opa_locales = null;
 		
 		/**

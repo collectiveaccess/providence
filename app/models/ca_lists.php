@@ -233,13 +233,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected $SUPPORTS_ACL = true;
 	
+	static $s_list_cache_size = 1024;
+	
 	static $s_list_id_cache = array();
 	static $s_list_code_cache = array();
-	static $s_list_item_display_cache = array();			// cache for results of getItemFromListForDisplayByItemID()
-	static $s_item_id_cache = array();						// cache for ca_lists::getItemID()
-	static $s_item_id_to_code_cache = array();				// cache for ca_lists::itemIDsToIDNOs()
-	static $s_item_id_to_value_cache = array();				// cache for ca_lists::itemIDsToItemValues()
-	static $s_code_to_item_id_cache = array();				// cache for ca_lists::IDNOsToItemIDs()
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -530,7 +527,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_list_item = new ca_list_items($pn_item_id);
 		if (!$t_list_item->getPrimaryKey() || ($t_list_item->get('list_id') != $vn_list_id)) { 
-			CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}");
+			CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 			return null; 
 		}
 
@@ -621,7 +618,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if ((isset($pa_options['idsOnly']) && $pa_options['idsOnly'])) {
-				CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}");
+				CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 				return $va_items;
 			}
 			
@@ -647,7 +644,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_items as $vn_item_id => $va_row) {
 					$va_labels[$vn_item_id] = $va_row['name_plural'];
 				}
-				CompositeCache::save($vs_cache_key, $va_labels, "listItems_{$vn_list_id}");
+				CompositeCache::save($vs_cache_key, $va_labels, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 				return $va_labels;
 			}
 		} else {
@@ -713,7 +710,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (is_array($va_items) && (sizeof($va_items) < 10000)) {
-			CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}");
+			CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 		}
 		return $va_items;
 	}
@@ -938,10 +935,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($qr_res->nextRow()) {
 			$row = $qr_res->getRow();
-			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}");
+			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 			return $row;
 		}
-		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}");
+		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 		return null;
 	}
 	# ------------------------------------------------------
@@ -982,10 +979,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_items = array();
 		while($qr_res->nextRow()) {
 			$row = $qr_res->getRow();
-			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}");
+			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 			return $row;
 		}
-		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}");
+		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 		return null;
 	}
 	# ------------------------------------------------------
@@ -1032,7 +1029,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			 $va_items[$pn_item_id][$qr_res->get('locale_id')] = $qr_res->getRow();
 		}
 		
-		CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}");
+		CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 		return $va_items;
 	}
 	# ------------------------------------------------------
@@ -1073,10 +1070,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($qr_res->nextRow()) {
 			$row = $qr_res->getRow();
-			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}");
+			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 			return $row;
 		}
-		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}");
+		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 		return null;
 
 	}	
@@ -1131,7 +1128,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_item = array_shift($va_tmp);
 		$label = $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
 		
-		CompositeCache::save($vs_cache_key, $label, "listItems_{$vn_list_id}");
+		CompositeCache::save($vs_cache_key, $label, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 
 		return $label;
 	}
@@ -1161,9 +1158,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pn_item_id}");
-		
-		if (isset(ca_lists::$s_list_item_display_cache[$vs_cache_key])) {
-			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
+		 
+		if(MemoryCache::contains($vs_cache_key, 'listItemNames')) {
+			$va_items = MemoryCache::fetch($vs_cache_key, 'listItemNames');
 		} else {
 		    $va_params = [(int)$pn_item_id];
 		    $vs_access_sql = '';
@@ -1185,7 +1182,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			while($qr_res->nextRow()) {
 				 $va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
-			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_items;
+			 MemoryCache::save($vs_cache_key, $va_items, 'listItemNames', self::$s_list_cache_size);
 		}
 		
 		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
@@ -1281,7 +1278,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				||
 				($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_singular' => $ps_label_name)), array('returnAs' => 'firstId', 'checkAccess' => caGetOption('checkAccess', $pa_options, null))))
 			) {
-				CompositeCache::save($vs_cache_key, $vn_id, "listItems_{$vn_list_id}");
+				CompositeCache::save($vs_cache_key, $vn_id, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 				return $vn_id;
 			} 
 		}
@@ -1411,7 +1408,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListID($pm_list_name_or_id, $pa_options=null) {
-	   // $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_list_name_or_id);
 		if (ca_lists::$s_list_id_cache[$pm_list_name_or_id]) {
 			return ca_lists::$s_list_id_cache[$pm_list_name_or_id];
 		}
@@ -1995,7 +1991,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_id = $t_items->getPrimaryKey();
 		
 		if ($pm_list_name_or_id && $vn_list_id) {
-			CompositeCache::save("root_for_{$vn_list_id}", $vn_id, "listItems_{$vn_list_id}");
+			CompositeCache::save("root_for_{$vn_list_id}", $vn_id, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
 		}
 		
 		return $vn_id;
@@ -2171,8 +2167,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * 	transaction = transaction to perform database operations within. [Default is null]
 	 */
 	static public function getItemID($pm_list_name_or_id, $ps_idno, $pa_options=null) {
-		if ((!isset($pa_options['noCache']) || !isset($pa_options['noCache'])) && isset(ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno])) {
-			return ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno];
+	 	$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_idno}");
+		if ((!isset($pa_options['noCache']) || !isset($pa_options['noCache'])) && MemoryCache::contains($vs_cache_key, 'listItemIDs')) {
+			return MemoryCache::fetch($vs_cache_key, 'listItemIDs');
 		}
 		if($o_trans = caGetOption('transaction', $pa_options, null)) {
 			$o_db = $o_trans->getDb();
@@ -2187,9 +2184,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if ($qr_res->nextRow()) {
 				$vn_item_id = (int)$qr_res->get('item_id');
 			}
-			ca_lists::$s_item_id_cache[$vn_list_id][$ps_idno] = $vn_item_id;
 		}
-		ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno] = $vn_item_id;
+		MemoryCache::save($vs_cache_key, $vn_item_id, 'listItemIDs', self::$s_list_cache_size);
 		return $vn_item_id;
 	}
 	# ------------------------------------------------------
@@ -2205,8 +2201,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
 	 	
 	 	$vs_cache_key = caMakeCacheKeyFromOptions(['ids' => $pa_ids, 'opts' => $pa_options]);
-	 	if (isset(ca_lists::$s_item_id_to_code_cache[$vs_cache_key])) {
-	 		return ca_lists::$s_item_id_to_code_cache[$vs_cache_key];
+	 	if (MemoryCache::contains($vs_cache_key, 'listItemIdnos')) {
+	 		return MemoryCache::fetch($vs_cache_key, 'listItemIdnos');
 	 	}
 	 	
 	 	$va_ids = $va_non_numerics = array();
@@ -2235,7 +2231,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	while($qr_res->nextRow()) {
 	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
 	 	}
-	 	return ca_lists::$s_item_id_to_code_cache[$vs_cache_key] = $va_item_ids_to_codes + $va_non_numerics;
+	 	return MemoryCache::save($vs_cache_key, $va_item_ids_to_codes + $va_non_numerics, 'listItemIdnos', self::$s_list_cache_size);;
 	}
 	# ------------------------------------------------------
 	/**
@@ -2251,8 +2247,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	
 	 	$vs_cache_key = caMakeCacheKeyFromOptions(['ids' => $pa_ids, 'opts' => $pa_options]);
 	 	
-	 	if (isset(ca_lists::$s_item_id_to_value_cache[$vs_cache_key])) {
-	 		return ca_lists::$s_item_id_to_value_cache[$vs_cache_key];
+	 	if (MemoryCache::contains($vs_cache_key, 'listItemValues')) {
+	 		return MemoryCache::fetch($vs_cache_key, 'listItemValues');
 	 	}
 	 	
 	 	$va_ids = $va_non_numerics = array();
@@ -2281,7 +2277,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	while($qr_res->nextRow()) {
 	 		$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
 	 	}
-	 	return ca_lists::$s_item_id_to_value_cache[$vs_cache_key] = $va_item_ids_to_values + $va_non_numerics;
+	 	return MemoryCache::fetch($vs_cache_key, $va_item_ids_to_values + $va_non_numerics, 'listItemValues', self::$s_list_cache_size);
 	}
 	# ------------------------------------------------------
 	/**
@@ -2297,8 +2293,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	if (!is_array($pa_item_ids) || !sizeof($pa_item_ids)) { return null; }
 	 	
 	 	$vs_cache_key = caMakeCacheKeyFromOptions(['ids' => $pa_ids, 'opts' => $pa_options]);
-	 	if (isset(ca_lists::$s_code_to_item_id_cache[$vs_cache_key])) {
-	 		return ca_lists::$s_code_to_item_id_cache[$vs_cache_key];
+	 	if (MemoryCache::contains($vs_cache_key, 'listItemIDs')) {
+	 		return MemoryCache::fetch($vs_cache_key, 'listItemIDs');
 	 	}
 	 	
 	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
@@ -2325,7 +2321,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	while($qr_res->nextRow()) {
 	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
 	 	}
-	 	return ca_lists::$s_code_to_item_id_cache[$vs_cache_key] = $va_item_ids_to_codes;
+	 	MemoryCache::save($vs_cache_key, $va_item_ids_to_codes, 'listItemIDs', self::$s_list_cache_size);
 	}
 	# ------------------------------------------------------
 	/**
