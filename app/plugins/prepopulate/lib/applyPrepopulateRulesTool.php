@@ -106,6 +106,7 @@ require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
 		 * 
 		 */
 		public function commandApply_Prepopulate_Rules() {
+			define('__CA_DONT_DO_SEARCH_INDEXING__', true);
 			$o_conf = $this->getToolConfig();
 			
             $rules = $o_conf->get('prepopulate_rules');
@@ -119,7 +120,7 @@ require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
 			    if ($qr = $t::find('*', ['returnAs' => 'searchResult'])) {
 			        print CLIProgressBar::start($qr->numHits(), _t('Processing %1', $t));
 			        while($qr->nextHit()) {
-			            print CLIProgressBar::next(1, $qr->get("{$t}.preferred_labels"));
+			            print CLIProgressBar::next(1, "[".caGetMemoryUsage()."] ".$qr->get("{$t}.preferred_labels")." (".$qr->get("{$t}.idno").")\n");
 			            if (!$this->prepopulateInstance->prepopulateFields($qr->getInstance())) {
 			                print "ERROR\n";
 			            }
