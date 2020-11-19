@@ -1200,7 +1200,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => 'NEW_UI',
 							'multiple' => false,
 							'label' => _t('User interface style'),
-							'description' => _t('')
+							'description' => ''
 						];
 						
 						$va_additional_settings['showBundlesForEditing'] = [
