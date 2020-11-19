@@ -96,9 +96,14 @@ class SimpleService {
 
 		$va_get_options = [];
 
-		$pm_id = $po_request->getParameter('id', pString);
-		if(!$t_instance->load($pm_id)) {
-			$t_instance->load(array($t_instance->getProperty('ID_NUMBERING_ID_FIELD') => $pm_id));
+		if ($pm_id = $po_request->getParameter('id', pString)) {
+			if(!$t_instance->load($pm_id)) {
+				$t_instance->load(array($t_instance->getProperty('ID_NUMBERING_ID_FIELD') => $pm_id));
+			}
+		} elseif($guid = $po_request->getParameter('guid', pString)) {
+			if (is_array($info = ca_guids::getInfoForGUID($guid)) && ((int)$info['table_num'] === (int)$t_instance->tableNum())) {
+				$t_instance->load($info['row_id']);
+			}
 		}
 
 		if(!$t_instance->getPrimaryKey()) {
