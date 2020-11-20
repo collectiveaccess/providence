@@ -337,6 +337,9 @@ class ZipFile {
 	}
 	# ----------------------------------------------------------------------
 	public function __destruct() {
+		if($this->_tmp_data) {
+			@fclose($this->_tmp_data);
+		}
 		if ($this->_tmp_data_path) {		// dispose of temporary file
 			@unlink($this->_tmp_data_path);
 		}

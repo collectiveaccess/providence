@@ -72,6 +72,14 @@
 			'label' => _t('Points are directional'),
 			'description' => _t('Check this option to enable setting of directions for point locations. (The default is not to be.)')
 		),
+		'autoDropPin' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Drop pin at search site?'),
+			'description' => _t('Check this option if you want a pin to be placed at the location of geo-searches.')
+		),
 		'doesNotTakeLocale' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
