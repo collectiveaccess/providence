@@ -1352,21 +1352,21 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(CompositeCache::contains($pm_element_code_or_id, 'ElementInstances')) {
-			return CompositeCache::fetch($pm_element_code_or_id, 'ElementInstances');
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementInstances')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementInstances');
 		}
 
 		$t_element = new ca_metadata_elements(is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : null);
 
 		if (!($vn_element_id = $t_element->getPrimaryKey())) {
 			if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
-				CompositeCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
-				CompositeCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+				MemoryCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
+				MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
 				return $t_element;
 			}
 		} else {
-			CompositeCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
-			CompositeCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+			MemoryCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
+			MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
 			return $t_element;
 		}
 		return null;
