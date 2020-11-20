@@ -3937,7 +3937,7 @@ function caFileIsIncludable($ps_file) {
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
 
 		// Move articles to end of string
-		$va_articles = caGetArticlesForLocale($ps_locale);
+		$va_articles = caGetArticlesForLocale($ps_locale) ?: [];
 
 		foreach($va_articles as $vs_article) {
 			if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
