@@ -1,0 +1,3 @@
+files:
+  - source: app/locale/*.pot
+    translation: app/locale/%locale%/messages.po
