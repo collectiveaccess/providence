@@ -978,27 +978,34 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 
 		$output_file_prefix = tempnam($tmp_dir, 'caMultipagePreview');
-
+		@unlink($output_file_prefix);
+		
 		$files = [];
 		$i = 1;
 		
 		$this->handle->setimageindex(0);
+		$num_previews = 0;
 		do {
 			if ($i > 1) { $this->handle->nextImage(); }
-			
-			$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
-			$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
-			
-			$i++;
+			$num_previews++;
 		} while($this->handle->hasnextimage());
 		
 		$this->handle->setimageindex(0);
 		
-		@unlink($output_file_prefix);
-		
-		if(sizeof($files) === 1) { return false; }
-		return $files;
-
+		if ($num_previews > 1) {
+			$i = 0;
+			do {
+				if ($i > 1) { $this->handle->nextImage(); }
+			
+				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
+				$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+			
+				$i++;
+			} while($this->handle->hasnextimage());
+			$this->handle->setimageindex(0);
+			return $files;
+		}
+		return false;
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
