@@ -44,6 +44,7 @@ require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_captions.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_transcriptions.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
@@ -269,6 +270,8 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 );
 
 class ca_object_representations extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -459,6 +462,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['media_filesize'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media filesize'));
 		$this->BUNDLES['media_center_x'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media x-coordinate'));
 		$this->BUNDLES['media_center_y'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media y-coordinate'));
+		
+		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History tracking – current value'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
