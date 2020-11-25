@@ -7730,3 +7730,14 @@ div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
 p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 	cursor: help;
 }
+
+.bundleLabelError code, .notification-error-box code {
+    font-family: monospace, serif;
+    font-size: 1em;
+    padding: 2px;
+    margin: 1px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
+}
