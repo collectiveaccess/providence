@@ -534,7 +534,7 @@ class DisplayTemplateParser {
 				case 'unit':
 					$va_relative_to_tmp = $o_node->relativeTo ? explode(".", $o_node->relativeTo) : [$ps_tablename];
 				
-					if ($va_relative_to_tmp[0] && !($t_rel_instance = Datamodel::getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
+					if ($va_relative_to_tmp[0] && !($t_rel_instance = Datamodel::getInstanceByTableName($va_relative_to_tmp[0], true))) { continue(2); }
 					
 					$vn_last_unit_omit_count = 0;
 					

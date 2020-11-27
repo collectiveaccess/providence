@@ -352,7 +352,7 @@
 					// sort in related table
 					// sort by ranks in specific set
 					$vs_sql = "
-						SELECT {$ps_table}.{$vs_table_pk}, ca_set_items.rank
+						SELECT {$ps_table}.{$vs_table_pk}, ca_set_items.`rank`
 						FROM ca_sets
 						INNER JOIN ca_set_items ON ca_set_items.set_id = ca_sets.set_id
 						INNER JOIN {$ps_table} ON {$ps_table}.{$vs_table_pk} = ca_set_items.row_id

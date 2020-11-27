@@ -523,11 +523,11 @@ class ca_user_groups extends BaseModel {
 		if ($vn_group_id = $this->getPrimaryKey()) {
 			$o_db = $this->getDb();
 			$qr_res = $o_db->query("
-				SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank
+				SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`
 				FROM ca_user_roles wur
 				INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 				WHERE wgxr.group_id = ?
-				ORDER BY wur.rank
+				ORDER BY wur.`rank`
 			", (int)$vn_group_id);
 			
 			$va_roles = array();

@@ -689,7 +689,7 @@
 								$va_values[$vs_search_element.$vs_element_rel_type][] = trim($vs_element_value);
 								$va_booleans["{$vs_search_element}{$vs_element_rel_type}:boolean"][] = isset($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}:boolean"][$vn_j]) ? $pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}:boolean"][$vn_j] : null;
 							}
-							continue;
+							continue(2);
 						}
 						foreach($pa_form_values["{$vs_dotless_element}{$vs_element_rel_type}"] as $vn_j => $vs_element_value) {
 							if(!strlen(trim($vs_element_value))) { continue; }
@@ -731,7 +731,7 @@
 							// noop
 							break;
 						case '_fieldlist_field':
-							if(!strlen(trim($pa_form_values['_fieldlist_value'][$vn_i]))) { continue; }
+							if(!strlen(trim($pa_form_values['_fieldlist_value'][$vn_i]))) { continue(2); }
 							$va_query_elements[$vs_element][] = "(".$va_values['_fieldlist_field'][$vn_i].":".$pa_form_values['_fieldlist_value'][$vn_i].")";
 							break;
 						default:

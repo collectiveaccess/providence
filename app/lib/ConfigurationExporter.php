@@ -859,7 +859,7 @@ final class ConfigurationExporter {
 
 			// screens
 			$vo_screens = $this->opo_dom->createElement("screens");
-			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY rank,screen_id",$qr_uis->get("ui_id"));
+			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY `rank`,screen_id",$qr_uis->get("ui_id"));
 
 			$t_screen = new ca_editor_ui_screens();
 
@@ -1113,7 +1113,7 @@ final class ConfigurationExporter {
 			}
 		}
 
-		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id= ? ORDER BY rank, type_id", [$pn_parent_id]);
+		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id= ? ORDER BY `rank`, type_id", [$pn_parent_id]);
 		if(!$qr_types->numRows() && !$this->opn_modified_after) { return false; }
 
 		while($qr_types->nextRow()) {

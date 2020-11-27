@@ -887,7 +887,7 @@
 										} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
 											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} LIKE ?))";
 										} else {
-											if ($vm_value === '') { continue; }
+											if ($vm_value === '') { break; }
 											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} ?))";
 										}
 								

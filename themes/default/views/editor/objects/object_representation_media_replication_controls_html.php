@@ -37,16 +37,6 @@
 
 	<div id="caRepresentationMediaReplicationControls<?php print $pn_representation_id; ?>" class="caRepresentationMediaReplicationControls">
 <?php	
-		if(is_array($va_available_targets = $t_rep->getAvailableMediaReplicationTargets('media', 'original')) && sizeof($va_available_targets)) {
-		
-			print "<div class='caRepresentationMediaReplicationTargetList'>\n";
-			print _t('Replicate media to %1', $vs_target_list);
-			print "<a href='#' onclick='jQuery(\"#caRepresentationMediaReplicationLoadIcon{$pn_representation_id}\").css(\"display\", \"inline\"); jQuery(\"#caRepresentationMediaReplicationStartControl{$pn_representation_id}\").hide(); jQuery(\"#caRepresentationMediaReplicationControls{$pn_representation_id}\").load(\"".caNavUrl($this->request, '*', '*', 'StartMediaReplication', array('representation_id' => $pn_representation_id))."/target/\" + jQuery(\"#caRepresentationMediaReplicationControls{$pn_representation_id} select[name=target]\").val()); return false;' class='button' id='caRepresentationMediaReplicationStartControl{$pn_representation_id}'>"._t('Start &rsaquo;')."</a>";
-		
-			print "<span id='caRepresentationMediaReplicationLoadIcon{$pn_representation_id}' class='caRepresentationMediaReplicationLoadIcon'>".caBusyIndicatorIcon($this->request)."</span>";
-			print "</div>\n";
-		}
-	
 		if (is_array($va_replications = $t_rep->getUsedMediaReplicationTargets('media', 'original')) && sizeof($va_replications)) {
 			print "<table class='caRepresentationMediaReplicationStatusTable'>\n<thead><tr><th>"._t('Replication target')."</th><th>"._t('Status')."</th></tr></thead>\n";
 			print "<tbody>\n";

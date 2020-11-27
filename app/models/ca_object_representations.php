@@ -424,15 +424,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
 			$vn_rc = parent::update($pa_options);
-
-			// Trigger automatic replication
-			$va_auto_targets = $this->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $this->get('access')));
-			if(is_array($va_auto_targets)) {
-				foreach($va_auto_targets as $vs_target => $va_target_info) {
-					$this->replicateMedia('media', $vs_target);
-				}
-			}
-
 		}
 		
 		return $vn_rc;
@@ -484,7 +475,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					WHERE
 						oxor.representation_id = ? AND oxor.is_primary = 1 AND o_r.deleted = 0
 					ORDER BY
-						oxor.rank, oxor.relation_id
+						oxor.`rank`, oxor.relation_id
 				", (int)$vn_representation_id);
 				while($qr_res->nextRow()) {
 					// nope - force this one to be primary

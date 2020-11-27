@@ -514,7 +514,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_bundle_display_placements
 			WHERE
 				display_id = ?
-			ORDER BY rank
+			ORDER BY `rank`
 		", (int)$vn_display_id);
 		
 		$va_available_bundles = ($pb_settings_only) ? [] : $this->getAvailableBundles(null, $pa_options);

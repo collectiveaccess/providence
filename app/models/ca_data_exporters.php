@@ -393,7 +393,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($vb_order_for_delete_cascade) {
 			$vs_order = "parent_id DESC";
 		} else {
-			$vs_order = "rank ASC";
+			$vs_order = "`rank` ASC";
 		}
 
 		$qr_items = $vo_db->query("
@@ -493,6 +493,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return false;
 			}
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if exporter with code (and optionally table name/num exists
+	 *
+	 * @param string $exporter_code 
+	 * @param mixed $table Optional numeric table number or name
+	 * @param array $options No options are currently supported.
+	 *
+	 * @return bool
+	 */
+	static public function exporterExists($exporter_code, $table=null, $options=null) {
+		$d = ['exporter_code' => $exporter_code];
+		if (!is_null($table)) { $d['table_num'] = Datamodel::getTableName($table); }
+		return (self::find($d, ['returnAs' => 'count']) > 0);
 	}
 	# ------------------------------------------------------
 	/**
@@ -754,7 +769,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					if ($vs_mode == 'Constant') {
 						if(strlen($vs_source)<1) { // ignore constant rows without value
-							continue;
+							continue(2);
 						}
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
@@ -792,12 +807,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings') {
 						if(strlen($vs_source) < 1) { // ignore repitition rows without value
-							continue;
+							continue(2);
 						}
 
 						$va_new_items = array();
 
-						$va_mapping_items_to_repeat = explode(',', $vs_source);
+						$va_mapping_items_to_repeat = preg_split('/[,;]/', $vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
 							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
@@ -963,7 +978,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					switch($vs_k) {
 						case 'replacement_values':
 						case 'original_values':
-							if(sizeof($vs_v)>0) {
+							if(is_array($vs_v) && (sizeof($vs_v)>0)) {
 								$va_item_settings[$vs_k] = join("\n",$vs_v);
 							}
 							break;
@@ -1473,7 +1488,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()) {
-
 		// The variable cache is valid for the whole record export.
 		// It's being modified in ca_data_exporters::processExporterItem
 		// and then reset here if we move on to the next record.
@@ -1762,8 +1776,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_info = array();
 
-			if(is_array($va_related)) {
-				$o_log->logDebug(_t("The current mapping will now be repreated for these items: %1", print_r($va_related,true)));
+			if(is_array($va_related) && sizeof($va_related)) {
+				$o_log->logDebug(_t("The current mapping will now be repeated for these items: %1", print_r($va_related,true)));
 				if(!$vn_new_table_num) { $vn_new_table_num = $pn_table_num; }
 
 				foreach($va_related as $va_rel) {
@@ -1802,7 +1816,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return array();
 			}
 		}
-
+		
 		// if omitIfNotEmpty is set and get() returns a value, we ignore this exporter item and all children
 		if($vs_omit_if_not_empty = $t_exporter_item->getSetting('omitIfNotEmpty')) {
 			if(strlen($t_instance->get($vs_omit_if_not_empty))>0) {
@@ -1935,7 +1949,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					foreach ($va_values as $vo_val) {
 					    if ($vo_val->getElementCode() !== $vs_source)  { continue; }
 					
-						$va_display_val_options = array();
+						$va_display_val_options = is_array($va_get_options) ? $va_get_options : []; 
 						switch($vo_val->getDatatype()) {
 							case __CA_ATTRIBUTE_VALUE_LIST__: //if ($vo_val instanceof ListAttributeValue) {
 								// figure out list_id -- without it we can't pull display values
@@ -2211,7 +2225,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_table_num
 	 * @return BundlableLabelableBaseModelWithAttributes|bool|null
 	 */
-	static public function loadInstanceByID($pn_record_id,$pn_table_num) {
+	static public function loadInstanceByID($pn_record_id,$pn_table_num, $pa_options=null) {
 		if(sizeof(ca_data_exporters::$s_instance_cache)>10) {
 			array_shift(ca_data_exporters::$s_instance_cache);
 		}
@@ -2219,8 +2233,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(isset(ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id])) {
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id];
 		} else {
-			$t_instance = Datamodel::getInstanceByTableNum($pn_table_num);
-			if(!$t_instance->load($pn_record_id)) {
+			if (!($table = Datamodel::getTableName($pn_table_num))) { return false; }
+			
+			$t_instance = null;
+			if (is_numeric($pn_record_id)) {
+				// Try numeric id
+				$t_instance = $table::find($pn_record_id, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
+			}
+			if(!$t_instance) {
+				$t_instance = $table::find([Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD') => $pn_record_id], array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
+			}
+			
+			if (!$t_instance) {
 				return false;
 			}
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id] = $t_instance;

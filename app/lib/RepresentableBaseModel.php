@@ -109,7 +109,7 @@
 			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
 		
 			$qr_reps = $o_db->query($vs_sql = "
-				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank, caoor.relation_id
+				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.`rank`, caoor.relation_id
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 				LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
@@ -119,7 +119,7 @@
 					{$vs_access_sql}
 					{$va_type_restriction_filters['sql']}
 				ORDER BY
-					caoor.rank, caoor.is_primary DESC
+					caoor.`rank`, caoor.is_primary DESC
 				{$vs_limit_sql}
 			", $va_type_restriction_filters['params']);
 			
@@ -329,7 +329,7 @@
 					{$vs_access_sql}
 					{$va_type_restriction_filters['sql']}
 				ORDER BY
-					caoor.rank, caoor.is_primary DESC
+					caoor.`rank`, caoor.is_primary DESC
 			", $va_type_restriction_filters['params']);
 		
 			$va_rep_ids = array();

@@ -4075,7 +4075,7 @@
 										$va_orderbys[] = 'lil.name_plural';
 										break;
 									case __CA_LISTS_SORT_BY_RANK__:	// by rank
-										$va_orderbys[] = 'li.rank';
+										$va_orderbys[] = 'li.`rank`';
 										break;
 									case __CA_LISTS_SORT_BY_VALUE__:	// by value
 										$va_orderbys[] = 'li.item_value';
@@ -4088,13 +4088,13 @@
 
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 							$vs_sql = "
-								SELECT COUNT(*) _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort, li.parent_id
+								SELECT COUNT(*) _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.`rank`, li.idno_sort, li.parent_id
 								FROM ca_list_items li
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 								{$vs_join_sql}
 								WHERE
 									ca_lists.list_code = ?  AND lil.is_preferred = 1 {$vs_where_sql}
-								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort 
+								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.`rank`, li.idno_sort 
 								{$vs_order_by}
 								";
 							//print $vs_sql." [$vs_list_name]";

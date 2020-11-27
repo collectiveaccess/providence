@@ -237,7 +237,7 @@ class ca_user_sorts extends BaseModel {
 		if(!$this->getPrimaryKey()) { return false; }
 
 		if(is_null($pn_rank)) {
-			$qr_max_rank = $this->getDb()->query('SELECT MAX(rank) AS rnk FROM ca_user_sort_items WHERE sort_id=?', $this->getPrimaryKey());
+			$qr_max_rank = $this->getDb()->query('SELECT MAX(`rank`) AS rnk FROM ca_user_sort_items WHERE sort_id=?', $this->getPrimaryKey());
 			if($qr_max_rank->nextRow()) {
 				$pn_rank = (int) $qr_max_rank->get('rnk');
 			}
@@ -246,7 +246,7 @@ class ca_user_sorts extends BaseModel {
 		if(!is_int($pn_rank)) { $pn_rank = 0; }
 
 		$this->getDb()->query(
-			'INSERT INTO ca_user_sort_items (sort_id, bundle_name, rank) VALUES(?, ?, ?)',
+			'INSERT INTO ca_user_sort_items (sort_id, bundle_name, `rank`) VALUES(?, ?, ?)',
 			$this->getPrimaryKey(), $ps_bundle_name, $pn_rank
 		);
 
@@ -273,7 +273,7 @@ class ca_user_sorts extends BaseModel {
 	public function getSortBundles() {
 		if(!$this->getPrimaryKey()) { return false; }
 
-		$qr_sort_bundles = $this->getDb()->query('SELECT * FROM ca_user_sort_items WHERE sort_id=? ORDER BY rank, item_id', $this->getPrimaryKey());
+		$qr_sort_bundles = $this->getDb()->query('SELECT * FROM ca_user_sort_items WHERE sort_id=? ORDER BY `rank`, item_id', $this->getPrimaryKey());
 
 		return $qr_sort_bundles->getAllRows();
 	}
@@ -285,7 +285,7 @@ class ca_user_sorts extends BaseModel {
 	public function getSortBundleNames() {
 		if(!$this->getPrimaryKey()) { return false; }
 
-		$qr_sort_bundles = $this->getDb()->query('SELECT bundle_name,rank FROM ca_user_sort_items WHERE sort_id=? ORDER BY rank, item_id', $this->getPrimaryKey());
+		$qr_sort_bundles = $this->getDb()->query('SELECT bundle_name,`rank` FROM ca_user_sort_items WHERE sort_id=? ORDER BY `rank`, item_id', $this->getPrimaryKey());
 
 		$va_sort_bundle_names = array();
 		while($qr_sort_bundles->nextRow()) {
@@ -296,11 +296,11 @@ class ca_user_sorts extends BaseModel {
 	}
 	# ------------------------------------------------------
 	public function updateBundleNameAtRank($pn_rank, $ps_bundle_name) {
-		$qr_sort_bundles = $this->getDb()->query('SELECT bundle_name FROM ca_user_sort_items WHERE sort_id=? AND rank=?', $this->getPrimaryKey(), $pn_rank);
+		$qr_sort_bundles = $this->getDb()->query('SELECT bundle_name FROM ca_user_sort_items WHERE sort_id=? AND `rank`=?', $this->getPrimaryKey(), $pn_rank);
 		if($qr_sort_bundles->numRows() > 1) {
 			return false;
 		} elseif($qr_sort_bundles->numRows() == 1) {
-			$this->getDb()->query('UPDATE ca_user_sort_items SET bundle_name=? WHERE sort_id=? AND rank=?', $ps_bundle_name, $this->getPrimaryKey(), $pn_rank);
+			$this->getDb()->query('UPDATE ca_user_sort_items SET bundle_name=? WHERE sort_id=? AND `rank`=?', $ps_bundle_name, $this->getPrimaryKey(), $pn_rank);
 		} else {
 			$this->addSortBundle($ps_bundle_name, $pn_rank);
 		}
@@ -329,7 +329,7 @@ class ca_user_sorts extends BaseModel {
 
 		$o_db = new Db();
 
-		$qr_sorts = $o_db->query('SELECT * FROM ca_user_sorts WHERE table_num=? AND deleted=0 ORDER BY rank', $pn_table_num);
+		$qr_sorts = $o_db->query('SELECT * FROM ca_user_sorts WHERE table_num=? AND deleted=0 ORDER BY `rank`', $pn_table_num);
 
 		$va_sorts = array();
 		while($qr_sorts->nextRow()) {
@@ -346,7 +346,7 @@ class ca_user_sorts extends BaseModel {
 	# ------------------------------------------------------
 	public static function getAvailableSortsAsList() {
 		$o_db = new Db();
-		$qr_sorts = $o_db->query('SELECT * FROM ca_user_sorts WHERE deleted=0 ORDER BY table_num, rank');
+		$qr_sorts = $o_db->query('SELECT * FROM ca_user_sorts WHERE deleted=0 ORDER BY table_num, `rank`');
 
 		return $qr_sorts->getAllRows();
 	}

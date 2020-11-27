@@ -1583,7 +1583,7 @@ class SearchIndexer extends SearchBase {
 								$o_indexer->opo_engine->commitRowIndexing();
 							}
 						}
-						continue;
+						break;
 					}
 				}
 				break;

@@ -902,7 +902,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 
 
 		foreach($pa_ids as $i => $vn_id) {
-			$this->getDb()->query("UPDATE ".$this->tableName() . " SET rank=? WHERE relation_id =?", $i, $vn_id);
+			$this->getDb()->query("UPDATE ".$this->tableName() . " SET `rank`=? WHERE relation_id =?", $i, $vn_id);
 		}
 	}
 	# ------------------------------------------------------
