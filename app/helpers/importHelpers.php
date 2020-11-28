@@ -355,6 +355,7 @@
 										$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; });
 									
 										foreach($va_v as $vn_y => $vm_val_to_import) {
+											$vm_val_to_import = preg_replace("![\\]+!", "/", $vm_val_to_import);
 											if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
 												$va_v[$vn_y] = array_shift($va_candidates);
 											} else {
