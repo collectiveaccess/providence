@@ -572,10 +572,10 @@ class ca_item_comments extends BaseModel {
                     continue;
                 }
                 $labels = $t_table->getPreferredDisplayLabelsForIDs(array_values($l));
-                $idnos = $t_table->getFieldValuesForIDs(array_values($l), [$t_table->getProperty('ID_NUMBERING_ID_FIELD')]);
-            
+                $flds = $t_table->getFieldValuesForIDs(array_values($l), [$t_table->getProperty('ID_NUMBERING_ID_FIELD'), 'source_id']);
+      
                 foreach($l as $row_id) {
-                    $row_labels[$item_id] = ['id' => $row_id, 'label' => $labels[$row_id], 'idno' => $idnos[$row_id]];
+                    $row_labels[$row_id] = ['id' => $row_id, 'label' => $labels[$row_id], 'idno' => $flds[$row_id]['idno'], 'source' => $flds[$row_id]['source_id']];
                 }
             }
         }
@@ -636,6 +636,7 @@ class ca_item_comments extends BaseModel {
             $res['name'] = $result->get('ca_item_comments.name');
             $res['email'] = $result->get('ca_item_comments.email');
         }
+        $res['source'] = caGetListItemIdno($data['rowLabels'][$row_id]['source']);
         
         foreach(['ca_item_comments.comment_id', 'ca_item_comments.comment', 'ca_item_comments.created_on', 'ca_item_comments.moderated_on'] as $f) {
             $ft = array_pop(explode('.', $f));
