@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/sql/migrations/VersionUpdate164.php :
+ * support/sql/migrations/VersionUpdate170.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -40,9 +40,9 @@
  require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
  require_once(__CA_MODELS_DIR__.'/ca_locales.php');
  
-	class VersionUpdate164 extends BaseVersionUpdater {
+	class VersionUpdate170 extends BaseVersionUpdater {
 		# -------------------------------------------------------
-		protected $opn_schema_update_to_version_number = 164;
+		protected $opn_schema_update_to_version_number = 170;
 
 		public function updateNullLocales(){
 		    $vs_locale = Configuration::load()->get('locale_default') ? : 'en_US';
