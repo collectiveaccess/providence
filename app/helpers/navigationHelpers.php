@@ -657,7 +657,7 @@
 			
 			$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
 			
-			return "<i class='caIcon fa {$va_icon['class']} {$vs_size}{$vs_opt_class}{$vs_rotate_class}' {$vs_attr}></i>";
+			return "<i class='caIcon far {$va_icon['class']} {$vs_size}{$vs_opt_class}{$vs_rotate_class}' {$vs_attr}></i>";
 		}
 		
 		return '???';
@@ -710,7 +710,7 @@
 				$vs_fa_class = 'fa-download';
 				break;
 			case __CA_NAV_ICON_MAKE_PRIMARY__:
-				$vs_fa_class = 'fa-check-circle-o';
+				$vs_fa_class = 'far fa-check-circle';
 				break;
 			case __CA_NAV_ICON_IS_PRIMARY__:
 				$vs_fa_class = 'fa-check-square';
@@ -723,11 +723,11 @@
 				$vs_ca_class = 'updateIcon'; 
 				break;
 			case __CA_NAV_ICON_LOGIN__:
-				$vs_fa_class = 'fa-check-circle-o';
+				$vs_fa_class = 'far fa-check-circle';
 				$vs_ca_class = 'loginButton';
 				break;
 			case __CA_NAV_ICON_SAVE__:
-				$vs_fa_class = 'fa-check-circle-o';
+				$vs_fa_class = 'fa-check-circle';
 				break;
 			case __CA_NAV_ICON_HELP__:
 				$vs_fa_class = 'fa-life-ring';
@@ -776,7 +776,7 @@
 				$vs_fa_class = 'fa-plus-circle';
 				break;					
 			case __CA_NAV_ICON_COMMIT__:
-				$vs_fa_class = 'fa-check-circle-o';
+				$vs_fa_class = 'fa-check-circle';
 				break;	
 			case __CA_NAV_ICON_SETTINGS__:
 				$vs_fa_class = 'fa-cog';
@@ -791,7 +791,7 @@
 				$vs_fa_class = 'fa-external-link-square';
 				break;	
 			case __CA_NAV_ICON_SETS__:
-				$vs_fa_class = 'fa-clone';
+				$vs_fa_class = 'far fa-clone';
 				break;	
 			case __CA_NAV_ICON_RIGHT_ARROW__:
 				$vs_fa_class = 'fa-chevron-right';
