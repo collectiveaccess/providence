@@ -626,6 +626,43 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Sets the currently selected deaccession display mode. The value can be one of the following:
+		 * 		"show", "hide", "alwaysShow", "alwaysHide"
+		 *
+		 * The deaccesion display mode determines whether all records in a result set are displayed 
+		 * or just non-deaccessioned records.
+		 *
+		 * @param string $deaccession_display_mode 
+		 * 
+		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+		 */
+		public function setCurrentDeaccessionDisplayMode($deaccession_display_mode) {
+			if (!in_array($deaccession_display_mode, ['show', 'hide', 'alwaysShow', 'alwaysHide'])) { 
+				$o_config = Configuration::load();
+				$deaccession_display_mode = $o_config->get($this->ops_table_name."_deaccession_display_mode_in_results"); 
+			}
+			return $this->setContextValue('deaccession_display_mode', $deaccession_display_mode);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Gets the currently selected deaccession display mode.
+		 *
+		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+		 */
+		public function getCurrentDeaccessionDisplayMode() {
+			if (!($deaccession_display_mode = $this->opo_request->getParameter('deaccession', pString, ['forcePurify' => true]))) {
+ 				if ($context = $this->getContext()) {
+					$o_config = Configuration::load();
+					return (in_array(strtolower($context['deaccession_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $context['deaccession_display_mode'] : (($vs_deaccession_display_mode_default = $o_config->get($this->ops_table_name."_deaccession_display_mode_in_results")) ? $vs_deaccession_display_mode_default : "alwaysShow"));
+				}
+			} else {
+				$this->setContextValue('deaccesion_display_mode', $deaccession_display_mode);
+				return $deaccession_display_mode;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns the named parameter, either from the current request, or if it is not present in the
 		 * request, then from the current context. Returns null if the parameter is not set in either.
 		 * The value passed in the request will be used in preference to the context value, and if the 

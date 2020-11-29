@@ -189,7 +189,7 @@
 			if ($vs_facet_group = $this->request->config->get($this->ops_tablename.(($this->opo_browse->numCriteria() < 1) ? '_browse_facet_group' : '_browse_refine_facet_group'))) {
 				$this->opo_browse->setFacetGroup($vs_facet_group);
 			}
- 			$this->opo_browse->execute(array('checkAccess' => $va_access_values, 'no_cache' => !$this->opo_result_context->cacheIsValid(), 'rootRecordsOnly' => $this->view->getVar('hide_children')));
+ 			$this->opo_browse->execute(array('checkAccess' => $va_access_values, 'no_cache' => !$this->opo_result_context->cacheIsValid(), 'rootRecordsOnly' => $this->view->getVar('hide_children'), 'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')));
  			$this->opo_result_context->validateCache();
  			
 			$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
