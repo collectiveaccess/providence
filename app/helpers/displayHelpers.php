@@ -1253,7 +1253,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			
 			
 					
-			if (($vs_table_name == 'ca_objects') && $po_view->request->user->canDoAction("can_set_home_location")) {	
+			if (($t_item->hasField('home_location_id')) && $po_view->request->user->canDoAction("can_set_home_location")) {	
 				$vs_buf .= "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 				
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");

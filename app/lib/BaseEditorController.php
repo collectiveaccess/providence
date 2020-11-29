@@ -2670,12 +2670,13 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function SetHomeLocation($options=null) {
-		$object_id = $this->request->getParameter('object_id', pInteger);
-		if (!($t_subject = ca_objects::find($object_id, ['returnAs' => 'firstModelInstance']))) { 
+		list($vn_subject_id, $t_subject) = $this->_initView();
+		//$object_id = $this->request->getParameter('', pInteger);
+		if (!$t_subject->isLoaded()) { 
 			throw new ApplicationException(_t('Invalid id'));
 		}
 		if (!$this->_checkAccess($t_subject)) { 
-			throw new ApplicationException(_t('Access denied to object'));
+			throw new ApplicationException(_t('Access denied'));
 		}
 		$location_id = $this->request->getParameter('location_id', pInteger);
 		if (!($t_location = ca_storage_locations::find($location_id, ['returnAs' => 'firstModelInstance']))) { 
@@ -2691,7 +2692,7 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$this->view->setVar('response', $resp);
-		$this->render('set_home_location_json.php');
+		$this->render('../generic/set_home_location_json.php');
 	}
 	# -------------------------------------------------------
 	/**
