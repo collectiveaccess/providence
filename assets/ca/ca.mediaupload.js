@@ -156,6 +156,7 @@ var caUI = caUI || {};
 		
 		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).off('click').on('click', function(e) {
 			that.openEditor();
+			e.preventDefault();
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataSaveButton' + that.index).off('click').on('click', function(e) {

@@ -756,7 +756,7 @@ class TimeExpressionParser {
 		
 		
 		// Convert ISO ranges
-		if (preg_match("!^([\d\-:TZ]+)/([\d\-:TZ]+)$!", trim($ps_expression), $matches)) {
+		if (preg_match("!^([\d\-:TZ]{3,20})/([\d\-:TZ]{3,20})$!", trim($ps_expression), $matches)) {
 			$conjunction = array_shift($this->opo_language_settings->getList("rangeConjunctions"));
 			$ps_expression = $matches[1]." {$conjunction} ".$matches[2];
 		}

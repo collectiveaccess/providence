@@ -978,27 +978,34 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 
 		$output_file_prefix = tempnam($tmp_dir, 'caMultipagePreview');
-
+		@unlink($output_file_prefix);
+		
 		$files = [];
 		$i = 1;
 		
 		$this->handle->setimageindex(0);
+		$num_previews = 0;
 		do {
 			if ($i > 1) { $this->handle->nextImage(); }
-			
-			$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
-			$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
-			
-			$i++;
+			$num_previews++;
 		} while($this->handle->hasnextimage());
 		
 		$this->handle->setimageindex(0);
 		
-		@unlink($output_file_prefix);
-		
-		if(sizeof($files) === 1) { return false; }
-		return $files;
-
+		if ($num_previews > 1) {
+			$i = 0;
+			do {
+				if ($i > 1) { $this->handle->nextImage(); }
+			
+				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
+				$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+			
+				$i++;
+			} while($this->handle->hasnextimage());
+			$this->handle->setimageindex(0);
+			return $files;
+		}
+		return false;
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
@@ -1174,15 +1181,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function cleanup() {
-		$this->destruct();
+		$this->__destruct();
 	}
 	# ------------------------------------------------
-	public function destruct() {
+	public function __destruct() {
 		if(is_object($this->handle)) { $this->handle->destroy(); }
 		if(is_object($this->ohandle)) { $this->ohandle->destroy(); }
-		
 		if(is_array($this->tmpfiles_to_delete)) {
-		    foreach($this->tmpfiles_to_delete as $f) {
+		    foreach(array_keys($this->tmpfiles_to_delete) as $f) {
 		        @unlink($f);
 		    }
 		}
@@ -1205,6 +1211,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugGmagick->read()");
 			return false;
 		}
+        $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
+        $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
 		caExec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugGmagick->read()");
@@ -1215,8 +1223,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return false;
 		}
 
-        $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
-        $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
 		return $vs_tmp_name.'.tiff';
 	}
 	# ----------------------------------------------------------------------

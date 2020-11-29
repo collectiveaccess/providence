@@ -69,7 +69,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/mpeg" 						=> "mpeg",
 			"video/mp4" 						=> "m4v",
 			"video/ogg"							=> "ogg",
-			"video/x-matroska"					=> "webm",
+			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
 
@@ -85,7 +85,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"image/png"							=> "png",
 			"video/mp4" 						=> "m4v",
 			"video/ogg"							=> "ogg",
-			"video/x-matroska"					=> "webm",
+			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
 
@@ -149,7 +149,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
 		"video/ogg"							=> "Ogg Theora",
-		"video/x-matroska"					=> "WebM",
+		"video/x-matroska"					=> "Matroska",
 		"video/x-dv"						=> "DIF (DV)"
 	);
 	
