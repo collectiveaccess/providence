@@ -2249,6 +2249,7 @@ if (!$for_current_value_reindex) {
 												}
 												foreach($va_element_ids as $vn_element_id) {
 													$va_dependent_rows[$vs_key]['field_nums']['_ca_attribute_'.$vn_element_id] = 'A'.$vn_element_id;
+													// TODO: Undefined variable '$field_num_prefix'
 													$va_dependent_rows[$vs_key]['field_names'][$field_num_prefix.$vn_element_id] = '_ca_attribute_'.$vn_element_id;
 													$va_dependent_rows[$vs_key]['indexing_info']['_ca_attribute_'.$vn_element_id] = $va_element_fields_to_index['_ca_attribute_'.$vn_element_id];
 												}
