@@ -166,6 +166,14 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Transcribe?'), 'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
 		),
+		'home_location_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object reprsentation.')
+		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
