@@ -42,9 +42,6 @@
 
  	global $_ca_attribute_settings;
  	
- 	$o_config = Configuration::load();
- 	$default_dollar_currency = $o_config->get('default_dollar_currency');
- 	
  	$_ca_attribute_settings['CurrencyAttributeValue'] = array(		// global
 		'minValue' => array(
 			'formatType' => FT_NUMBER,
@@ -81,8 +78,9 @@
 		'dollarCurrency' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
-			'default' => $default_dollar_currency,
+			'default' => '',
 			'options' => [
+				_t('System default') => '',
 				_t('US Dollar (USD)') => 'USD',
 				_t('Canadian Dollar (CDN)') => 'CDN',
 				_t('Australian Dollar (AUD)') => 'AUD'
