@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) YEAR Whirl-I-Gig 2020
+# This file is distributed under the same license as the Providence package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-19 13:47+0100\n"
+"Project-Id-Version: Providence\n"
+"Report-Msgid-Bugs-To: info@collectiveaccess.org\n"
+"POT-Creation-Date: 2020-11-30 11:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -421,7 +421,7 @@ msgstr ""
 #: ../../app/models/ca_list_items.php:77
 #: ../../app/models/ca_movement_labels.php:72
 #: ../../app/models/ca_objects.php:106
-#: ../../app/models/ca_object_representations.php:76
+#: ../../app/models/ca_object_representations.php:77
 #: ../../app/models/ca_object_lot_labels.php:73
 #: ../../app/models/ca_sets.php:112
 #: ../../app/models/ca_storage_location_labels.php:72
@@ -455,7 +455,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:99
 #: ../../app/models/ca_list_items.php:209 ../../app/models/ca_loans.php:91
 #: ../../app/models/ca_objects.php:98
-#: ../../app/models/ca_object_representations.php:219
+#: ../../app/models/ca_object_representations.php:220
 #: ../../app/models/ca_data_import_event_log.php:96
 #: ../../app/models/ca_data_import_events.php:94
 #: ../../app/models/ca_collections.php:100 ../../app/models/ca_tours.php:132
@@ -1135,7 +1135,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:156
 #: ../../app/models/ca_list_items.php:193 ../../app/models/ca_loans.php:148
 #: ../../app/models/ca_objects.php:279
-#: ../../app/models/ca_object_representations.php:195
+#: ../../app/models/ca_object_representations.php:196
 #: ../../app/models/ca_sets.php:148 ../../app/models/ca_collections.php:157
 #: ../../app/models/ca_tours.php:123
 msgid "Status"
@@ -1372,6 +1372,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:410 ../../app/models/ca_object_lots.php:394
 #: ../../app/models/ca_movements.php:362
 #: ../../app/models/ca_occurrences.php:404 ../../app/models/ca_loans.php:389
+#: ../../app/models/ca_object_representations.php:468
 #: ../../app/models/ca_collections.php:428
 #: ../../app/plugins/historyMenu/historyMenuPlugin.php:248
 msgid "History"
@@ -1639,7 +1640,7 @@ msgstr ""
 #: ../../app/models/ca_data_exporter_items.php:524
 #: ../../app/models/ca_data_exporter_items.php:538
 #: ../../app/models/ca_data_exporter_items.php:552
-#: ../../app/models/ca_data_importers.php:400
+#: ../../app/models/ca_data_importers.php:402
 msgid "no"
 msgstr ""
 
@@ -1671,7 +1672,7 @@ msgstr ""
 #: ../../app/models/ca_data_exporter_items.php:523
 #: ../../app/models/ca_data_exporter_items.php:537
 #: ../../app/models/ca_data_exporter_items.php:551
-#: ../../app/models/ca_data_importers.php:399
+#: ../../app/models/ca_data_importers.php:401
 msgid "yes"
 msgstr ""
 
@@ -2519,11 +2520,11 @@ msgstr ""
 msgid "No user interface defined"
 msgstr ""
 
-#: ../../themes/default/views/editor/interstitial/interstitial_html.php:100
+#: ../../themes/default/views/editor/interstitial/interstitial_html.php:108
 msgid "Saved changes to"
 msgstr ""
 
-#: ../../themes/default/views/editor/interstitial/interstitial_html.php:100
+#: ../../themes/default/views/editor/interstitial/interstitial_html.php:108
 #: ../../themes/default/views/find/Results/ajax_results_editable_complex_data_form_html.php:89
 msgid "Edit %1"
 msgstr ""
@@ -3043,7 +3044,7 @@ msgstr ""
 #: ../../app/models/ca_bundle_display_labels.php:88
 #: ../../app/models/ca_movement_labels.php:63
 #: ../../app/models/ca_objects.php:89
-#: ../../app/models/ca_object_representations.php:66
+#: ../../app/models/ca_object_representations.php:67
 #: ../../app/models/ca_data_exporter_items.php:395
 #: ../../app/models/ca_object_lot_labels.php:64
 #: ../../app/models/ca_item_tags.php:57
@@ -3051,7 +3052,7 @@ msgstr ""
 #: ../../app/models/ca_tour_stop_labels.php:63
 #: ../../app/models/ca_collections.php:66
 #: ../../app/models/ca_editor_ui_screen_labels.php:80
-#: ../../app/models/ca_data_importers.php:435
+#: ../../app/models/ca_data_importers.php:437
 #: ../../app/models/ca_item_comments.php:81
 msgid "Locale"
 msgstr ""
@@ -3083,7 +3084,7 @@ msgstr ""
 
 #: ../../themes/default/views/bundles/hierarchy_navigation.php:91
 #: ../../themes/default/views/bundles/hierarchy_location.php:121
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2822
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2826
 msgid "New %1"
 msgstr ""
 
@@ -3520,7 +3521,7 @@ msgstr ""
 #: ../../app/models/ca_items_x_tags.php:89
 #: ../../app/models/ca_list_items.php:171 ../../app/models/ca_loans.php:132
 #: ../../app/models/ca_objects.php:263
-#: ../../app/models/ca_object_representations.php:179
+#: ../../app/models/ca_object_representations.php:180
 #: ../../app/models/ca_sets.php:133
 #: ../../app/models/ca_search_forms_x_user_groups.php:74
 #: ../../app/models/ca_sets_x_users.php:73
@@ -3816,7 +3817,7 @@ msgid "Transcribable?"
 msgstr ""
 
 #: ../../themes/default/views/bundles/ca_object_representations_classic.php:186
-#: ../../app/models/ca_object_representations.php:442
+#: ../../app/models/ca_object_representations.php:445
 msgid "Transcriptions"
 msgstr ""
 
@@ -3855,7 +3856,7 @@ msgstr ""
 #: ../../app/models/ca_attribute_value_multifiles.php:77
 #: ../../app/models/ca_object_representation_multifiles.php:80
 #: ../../app/models/ca_site_page_media.php:110
-#: ../../app/models/ca_object_representations.php:115
+#: ../../app/models/ca_object_representations.php:116
 msgid "Media metadata"
 msgstr ""
 
@@ -4184,7 +4185,7 @@ msgstr ""
 #: ../../app/lib/Utils/CLIUtils/Media.php:477
 #: ../../app/lib/Utils/CLIUtils/Media.php:558
 #: ../../app/models/ca_bundle_displays.php:1583
-#: ../../app/models/ca_object_representations.php:104
+#: ../../app/models/ca_object_representations.php:105
 #: ../../app/plugins/ArtefactsCanada/controllers/ExportController.php:168
 #: ../../app/conf/navigation.conf:4702
 msgid "Media"
@@ -5111,7 +5112,7 @@ msgstr ""
 
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:99
 #: ../../app/lib/BaseModel.php:10444 ../../app/lib/BaseModel.php:10828
-#: ../../app/models/ca_object_representations.php:2293
+#: ../../app/models/ca_object_representations.php:2301
 msgid "Needs moderation"
 msgstr ""
 
@@ -5662,7 +5663,7 @@ msgstr ""
 msgid "Collapse all metadata elements"
 msgstr ""
 
-#: ../../themes/default/views/pageFormat/pageHeader.php:82
+#: ../../themes/default/views/pageFormat/pageHeader.php:84
 msgid ""
 "You have made changes in this form that you have not yet saved. If you "
 "navigate away from this form you will lose your unsaved changes."
@@ -5888,7 +5889,7 @@ msgstr ""
 #: ../../app/models/ca_objects_x_storage_locations.php:236
 #: ../../app/models/ca_movements_x_storage_locations.php:221
 #: ../../app/models/ca_movements_x_storage_locations.php:240
-#: ../../app/models/ca_object_representations.php:2075
+#: ../../app/models/ca_object_representations.php:2083
 #: ../../app/models/ca_data_import_events.php:285
 #: ../../app/models/ca_object_checkouts.php:466
 #: ../../app/models/ca_item_comments.php:349
@@ -6047,7 +6048,7 @@ msgstr ""
 #: ../../app/models/ca_movements.php:353 ../../app/models/ca_places.php:407
 #: ../../app/models/ca_occurrences.php:394 ../../app/models/ca_loans.php:380
 #: ../../app/models/ca_objects.php:580
-#: ../../app/models/ca_object_representations.php:439
+#: ../../app/models/ca_object_representations.php:442
 #: ../../app/models/ca_collections.php:413
 #: ../../app/widgets/recentTags/recentTagsWidget.php:43
 #: ../../app/conf/navigation.conf:4003
@@ -6076,7 +6077,7 @@ msgstr ""
 #: ../../app/models/ca_movements.php:354 ../../app/models/ca_places.php:408
 #: ../../app/models/ca_occurrences.php:395 ../../app/models/ca_loans.php:381
 #: ../../app/models/ca_objects.php:581
-#: ../../app/models/ca_object_representations.php:440
+#: ../../app/models/ca_object_representations.php:443
 #: ../../app/models/ca_collections.php:414
 #: ../../app/widgets/recentComments/recentCommentsWidget.php:41
 #: ../../app/conf/navigation.conf:3977
@@ -6394,7 +6395,7 @@ msgstr ""
 #: ../../app/models/ca_user_representation_annotations.php:619
 #: ../../app/models/ca_set_items.php:385
 #: ../../app/models/ca_representation_annotations.php:641
-#: ../../app/models/ca_object_representations.php:1727
+#: ../../app/models/ca_object_representations.php:1735
 msgid "page"
 msgstr ""
 
@@ -6404,7 +6405,7 @@ msgstr ""
 #: ../../app/models/ca_user_representation_annotations.php:619
 #: ../../app/models/ca_set_items.php:385
 #: ../../app/models/ca_representation_annotations.php:641
-#: ../../app/models/ca_object_representations.php:1727
+#: ../../app/models/ca_object_representations.php:1735
 msgid "pages"
 msgstr ""
 
@@ -6671,7 +6672,7 @@ msgid "%1 related %2"
 msgstr ""
 
 #: ../../app/helpers/displayHelpers.php:1551
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2031
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2035
 msgid "Related %1"
 msgstr ""
 
@@ -8365,62 +8366,62 @@ msgid ""
 "%4 with type %5: %7"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:589
-#: ../../app/helpers/importHelpers.php:595
+#: ../../app/helpers/importHelpers.php:590
+#: ../../app/helpers/importHelpers.php:596
 msgid "[importHelpers:caProcessRefineryRelated] No name specified for table %1"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:675
+#: ../../app/helpers/importHelpers.php:676
 msgid "[importHelpers:caProcessRefineryRelated] List was not specified"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:685
+#: ../../app/helpers/importHelpers.php:686
 msgid "[importHelpers:caProcessRefineryRelated] Invalid table %1"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:815
+#: ../../app/helpers/importHelpers.php:816
 msgid "[%1] Skipped %2 because it was in the skipIfValue list"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1020
+#: ../../app/helpers/importHelpers.php:1021
 msgid "[importHelpers:caGenericImportSplitter] List was not specified"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1036
+#: ../../app/helpers/importHelpers.php:1037
 msgid ""
 "[importHelpers:caGenericImportSplitter] Only media paths can be mapped for "
 "object representations."
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1039
-#: ../../app/helpers/importHelpers.php:1177
-#: ../../app/helpers/importHelpers.php:1209
+#: ../../app/helpers/importHelpers.php:1040
+#: ../../app/helpers/importHelpers.php:1178
+#: ../../app/helpers/importHelpers.php:1210
 msgid "[importHelpers:caGenericImportSplitter] Invalid table %1"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1206
+#: ../../app/helpers/importHelpers.php:1207
 msgid ""
 "[importHelpers:caGenericImportSplitter] Cannot map preferred labels to "
 "object representations. Only media paths can be mapped."
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1318
+#: ../../app/helpers/importHelpers.php:1319
 msgid "Errors"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1319
+#: ../../app/helpers/importHelpers.php:1320
 msgid "Warnings"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1320
+#: ../../app/helpers/importHelpers.php:1321
 msgid "Alerts"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1321
+#: ../../app/helpers/importHelpers.php:1322
 msgid "Informational messages"
 msgstr ""
 
-#: ../../app/helpers/importHelpers.php:1322
+#: ../../app/helpers/importHelpers.php:1323
 msgid "Debugging messages"
 msgstr ""
 
@@ -9341,7 +9342,7 @@ msgstr ""
 #: ../../app/lib/Search/SearchEngine.php:144
 #: ../../app/lib/BaseModelWithAttributes.php:1513
 #: ../../app/lib/Plugins/SearchEngine/SqlSearch.php:972
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2323
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2327
 msgid "SET"
 msgstr ""
 
@@ -9398,13 +9399,13 @@ msgstr ""
 msgid "Index rebuild complete!"
 msgstr ""
 
-#: ../../app/lib/Search/SearchIndexer.php:897
-#: ../../app/lib/Search/SearchIndexer.php:2967
+#: ../../app/lib/Search/SearchIndexer.php:896
+#: ../../app/lib/Search/SearchIndexer.php:2968
 msgid ""
 "SQL error while getting content for index of related fields: %1; SQL was %2"
 msgstr ""
 
-#: ../../app/lib/Search/SearchIndexer.php:2496
+#: ../../app/lib/Search/SearchIndexer.php:2497
 msgid "Invalid _getRelatedRows query: %1"
 msgstr ""
 
@@ -9544,6 +9545,7 @@ msgstr ""
 #: ../../app/lib/BaseLookupController.php:561
 #: ../../app/lib/Service/IIIFService.php:122
 #: ../../app/lib/Service/IIIFService.php:155
+#: ../../app/lib/BaseInterstitialController.php:365
 #: ../../app/lib/Controller/RequestDispatcher.php:247
 #: ../../app/lib/Controller/RequestDispatcher.php:254
 #: ../../app/controllers/lookup/IntrinsicController.php:58
@@ -9749,14 +9751,17 @@ msgid "No media to download for this type of record"
 msgstr ""
 
 #: ../../app/lib/BaseEditorController.php:2588
+#: ../../app/lib/BaseInterstitialController.php:386
 msgid "downloaded_file"
 msgstr ""
 
 #: ../../app/lib/BaseEditorController.php:2601
+#: ../../app/lib/BaseInterstitialController.php:399
 msgid "downloaded_file.%1"
 msgstr ""
 
 #: ../../app/lib/BaseEditorController.php:2606
+#: ../../app/lib/BaseInterstitialController.php:404
 msgid "Invalid file"
 msgstr ""
 
@@ -9827,7 +9832,7 @@ msgid "Related %1 does not exist"
 msgstr ""
 
 #: ../../app/lib/BaseRepresentationRelationship.php:243
-#: ../../app/models/ca_object_representations.php:549
+#: ../../app/models/ca_object_representations.php:557
 msgid "Could not update primary flag for representation: %1"
 msgstr ""
 
@@ -13960,29 +13965,29 @@ msgstr ""
 msgid "Error writing file: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1198
+#: ../../app/lib/Plugins/Media/Gmagick.php:1205
 #: ../../app/lib/Plugins/Media/Imagick.php:460
 msgid ""
 "Could not convert Camera RAW format file because conversion tool (dcraw) is "
 "not installed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1204
+#: ../../app/lib/Plugins/Media/Gmagick.php:1211
 #: ../../app/lib/Plugins/Media/Imagick.php:466
 msgid "Could not copy Camera RAW file to temporary directory"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1211
+#: ../../app/lib/Plugins/Media/Gmagick.php:1218
 #: ../../app/lib/Plugins/Media/Imagick.php:471
 msgid "Camera RAW file conversion failed: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1215
+#: ../../app/lib/Plugins/Media/Gmagick.php:1222
 #: ../../app/lib/Plugins/Media/Imagick.php:475
 msgid "Translation from Camera RAW to TIFF failed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1330
+#: ../../app/lib/Plugins/Media/Gmagick.php:1337
 msgid "Could not read image file: "
 msgstr ""
 
@@ -14618,6 +14623,11 @@ msgstr ""
 
 #: ../../app/lib/Plugins/MediaUrl/InternetArchive.php:45
 msgid "Parses InternetArchive URLs"
+msgstr ""
+
+#: ../../app/lib/Plugins/MediaUrl/YouTubeDL.php:61
+msgid ""
+"Processes audio/video URLs (YouTube, Vimeo and Soundcloud) using YouTube-dl"
 msgstr ""
 
 #: ../../app/lib/Plugins/MediaUrl/_File.php:47
@@ -15504,15 +15514,15 @@ msgstr ""
 msgid "Reads Filemaker Pro DSOResult-format XML files"
 msgstr ""
 
-#: ../../app/lib/Import/DataReaders/ExcelDataReader.php:54
+#: ../../app/lib/Import/DataReaders/ExcelDataReader.php:57
 msgid "Excel XLSX data reader"
 msgstr ""
 
-#: ../../app/lib/Import/DataReaders/ExcelDataReader.php:55
+#: ../../app/lib/Import/DataReaders/ExcelDataReader.php:58
 msgid "Excel XLS/XLSX"
 msgstr ""
 
-#: ../../app/lib/Import/DataReaders/ExcelDataReader.php:56
+#: ../../app/lib/Import/DataReaders/ExcelDataReader.php:59
 msgid "Reads Microsoft Excel XLSX files"
 msgstr ""
 
@@ -15692,61 +15702,61 @@ msgstr ""
 msgid "Exporting deleted metadata element %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:480
-#: ../../app/lib/ConfigurationExporter.php:599
+#: ../../app/lib/ConfigurationExporter.php:484
+#: ../../app/lib/ConfigurationExporter.php:603
 msgid "Exporting changes for element %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:759
+#: ../../app/lib/ConfigurationExporter.php:763
 msgid "Exporting deleted editor %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1128
+#: ../../app/lib/ConfigurationExporter.php:1132
 msgid "Exporting changes for editor %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1185
+#: ../../app/lib/ConfigurationExporter.php:1189
 msgid "Exporting deleted relationship type %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1200
+#: ../../app/lib/ConfigurationExporter.php:1204
 msgid "Exporting changes for relationship type %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1281
-#: ../../app/lib/ConfigurationExporter.php:1460
+#: ../../app/lib/ConfigurationExporter.php:1285
+#: ../../app/lib/ConfigurationExporter.php:1464
 msgid "Exporting deleted role %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1293
+#: ../../app/lib/ConfigurationExporter.php:1297
 msgid "Exporting changes for role %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1409
+#: ../../app/lib/ConfigurationExporter.php:1413
 msgid "Exporting deleted group %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1421
+#: ../../app/lib/ConfigurationExporter.php:1425
 msgid "Exporting changes for group %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1467
+#: ../../app/lib/ConfigurationExporter.php:1471
 msgid "Exporting changes for user login %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1511
+#: ../../app/lib/ConfigurationExporter.php:1515
 msgid "Exporting deleted search form %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1524
+#: ../../app/lib/ConfigurationExporter.php:1528
 msgid "Exporting changes for search form %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1691
+#: ../../app/lib/ConfigurationExporter.php:1695
 msgid "Exporting deleted display %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationExporter.php:1706
+#: ../../app/lib/ConfigurationExporter.php:1710
 msgid "Exporting changes for display %1"
 msgstr ""
 
@@ -17841,7 +17851,7 @@ msgstr ""
 
 #: ../../app/lib/BatchProcessor.php:158 ../../app/lib/BatchProcessor.php:299
 #: ../../app/lib/BatchProcessor.php:425
-#: ../../app/models/ca_data_importers.php:2010
+#: ../../app/models/ca_data_importers.php:2023
 msgid "[%3/%4] Processing %1 (%2)"
 msgstr ""
 
@@ -17947,14 +17957,14 @@ msgid "Error importing %1 from %2: "
 msgstr ""
 
 #: ../../app/lib/BatchProcessor.php:1120 ../../app/lib/BatchProcessor.php:1143
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4188
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4370
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4192
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4374
 msgid "Could not find embedded metadata importer with code %1"
 msgstr ""
 
 #: ../../app/lib/BatchProcessor.php:1130 ../../app/lib/BatchProcessor.php:1153
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4198
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4380
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4202
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4384
 msgid "Using embedded media mapping %1 (format %2)"
 msgstr ""
 
@@ -18323,12 +18333,12 @@ msgstr ""
 msgid "Type id cannot be set after insert"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:938
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:942
 #: ../../app/lib/MetadataAlerts/TriggerTypes/Modification.php:128
 msgid "Preferred labels"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:939
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:943
 #: ../../app/lib/MetadataAlerts/TriggerTypes/Modification.php:129
 #: ../../app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:219
 #: ../../app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:287
@@ -18343,127 +18353,127 @@ msgstr ""
 msgid "Non-preferred labels"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:1357
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:1361
 msgid "REQUIRED"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:1391
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:1395
 msgid "These problems require attention:"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:1447
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:1451
 msgid "Not yet issued"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:1561
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:1565
 msgid "Restricted to types"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2039
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2138
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2043
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2142
 msgid "from related %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2046
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2050
 #: ../../app/models/ca_bundle_displays.php:1015
 msgid "Generic bundle"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2071
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2075
 msgid "alternates from related %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2073
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2077
 msgid "alternates"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2086
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2090
 msgid "Object media representation (%1)"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2088
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2092
 msgid "Object media representation (default)"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2128
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2144
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2132
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2148
 msgid "A list of related %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2150
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2152
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2179
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2154
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2156
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2183
 msgid "A list of %1 %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2160
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2162
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2164
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2166
 msgid "A list of alternate %1 %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2170
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2174
 msgid "A list of related media representations using version \"%1\""
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2172
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2176
 msgid "A list of related media representations using the default version"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2550
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2554
 msgid "Access denied to UI %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2562
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2566
 msgid "Access denied to screen %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3449
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3453
 msgid ""
 "Cannot do dry run save when in transaction. Try again without setting a "
 "transaction."
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3747
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3751
 msgid "Could not move object under collection: %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3862
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3956
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3866
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3960
 msgid "Value <em>%1</em> is already used and duplicates are not allowed"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3867
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3962
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3871
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3966
 msgid "Value <em>%1</em> is not in <em>%2</em>"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3948
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3952
 msgid ""
 "A preferred label for this locale already exists. Only one preferred label "
 "per locale is allowed."
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5378
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5382
 msgid "Invalid rule expression: %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5494
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5498
 msgid "There must be at least %1 relationship for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5494
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5498
 msgid "There must be at least %1 relationships for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5498
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5502
 msgid "There must be no more than %1 relationship for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5498
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5502
 msgid "There must be no more than %1 relationships for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:6869
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:6873
 msgid "Identifier %1 already exists and duplicates are not permitted"
 msgstr ""
 
@@ -19306,7 +19316,7 @@ msgstr ""
 #: ../../app/models/ca_loans_x_entities.php:93
 #: ../../app/models/ca_loans.php:163 ../../app/models/ca_objects.php:294
 #: ../../app/models/ca_user_sort_items.php:69
-#: ../../app/models/ca_object_representations.php:210
+#: ../../app/models/ca_object_representations.php:211
 #: ../../app/models/ca_loans_x_movements.php:93
 #: ../../app/models/ca_user_representation_annotations_x_occurrences.php:92
 #: ../../app/models/ca_data_exporter_items.php:123
@@ -19540,7 +19550,7 @@ msgstr ""
 #: ../../app/models/ca_list_items.php:53 ../../app/models/ca_loans.php:50
 #: ../../app/models/ca_objects.php:59
 #: ../../app/models/ca_user_sort_items.php:46
-#: ../../app/models/ca_object_representations.php:58
+#: ../../app/models/ca_object_representations.php:59
 #: ../../app/models/ca_data_exporter_items.php:49
 #: ../../app/models/ca_ips.php:46 ../../app/models/ca_bookmarks.php:47
 #: ../../app/models/ca_sets.php:58 ../../app/models/ca_item_tags.php:49
@@ -19927,7 +19937,7 @@ msgstr ""
 #: ../../app/models/ca_items_x_tags.php:86
 #: ../../app/models/ca_list_items.php:167 ../../app/models/ca_loans.php:128
 #: ../../app/models/ca_objects.php:259
-#: ../../app/models/ca_object_representations.php:175
+#: ../../app/models/ca_object_representations.php:176
 #: ../../app/models/ca_sets.php:129 ../../app/models/ca_collections.php:137
 #: ../../app/models/ca_tours.php:104 ../../app/models/ca_item_comments.php:176
 msgid "Not accessible to public"
@@ -19946,7 +19956,7 @@ msgstr ""
 #: ../../app/models/ca_items_x_tags.php:87
 #: ../../app/models/ca_list_items.php:168 ../../app/models/ca_loans.php:129
 #: ../../app/models/ca_objects.php:260
-#: ../../app/models/ca_object_representations.php:176
+#: ../../app/models/ca_object_representations.php:177
 #: ../../app/models/ca_sets.php:130 ../../app/models/ca_collections.php:138
 #: ../../app/models/ca_tours.php:105 ../../app/models/ca_item_comments.php:177
 msgid "Accessible to public"
@@ -19966,7 +19976,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:149
 #: ../../app/models/ca_list_items.php:186 ../../app/models/ca_loans.php:141
 #: ../../app/models/ca_objects.php:272
-#: ../../app/models/ca_object_representations.php:188
+#: ../../app/models/ca_object_representations.php:189
 #: ../../app/models/ca_sets.php:141 ../../app/models/ca_collections.php:150
 #: ../../app/models/ca_tours.php:116
 msgid "Newly created"
@@ -19981,7 +19991,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:150
 #: ../../app/models/ca_list_items.php:187 ../../app/models/ca_loans.php:142
 #: ../../app/models/ca_objects.php:273
-#: ../../app/models/ca_object_representations.php:189
+#: ../../app/models/ca_object_representations.php:190
 #: ../../app/models/ca_sets.php:142 ../../app/models/ca_collections.php:151
 #: ../../app/models/ca_tours.php:117
 msgid "Editing in progress"
@@ -19996,7 +20006,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:151
 #: ../../app/models/ca_list_items.php:188 ../../app/models/ca_loans.php:143
 #: ../../app/models/ca_objects.php:274
-#: ../../app/models/ca_object_representations.php:190
+#: ../../app/models/ca_object_representations.php:191
 #: ../../app/models/ca_sets.php:143 ../../app/models/ca_collections.php:152
 #: ../../app/models/ca_tours.php:118
 msgid "Editing complete - pending review"
@@ -20011,7 +20021,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:152
 #: ../../app/models/ca_list_items.php:189 ../../app/models/ca_loans.php:144
 #: ../../app/models/ca_objects.php:275
-#: ../../app/models/ca_object_representations.php:191
+#: ../../app/models/ca_object_representations.php:192
 #: ../../app/models/ca_sets.php:144 ../../app/models/ca_collections.php:153
 #: ../../app/models/ca_tours.php:119
 msgid "Review in progress"
@@ -20026,7 +20036,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:153
 #: ../../app/models/ca_list_items.php:190 ../../app/models/ca_loans.php:145
 #: ../../app/models/ca_objects.php:276
-#: ../../app/models/ca_object_representations.php:192
+#: ../../app/models/ca_object_representations.php:193
 #: ../../app/models/ca_sets.php:145 ../../app/models/ca_collections.php:154
 #: ../../app/models/ca_tours.php:120
 msgid "Completed"
@@ -20047,7 +20057,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:163
 #: ../../app/models/ca_list_items.php:200 ../../app/models/ca_loans.php:155
 #: ../../app/models/ca_objects.php:286
-#: ../../app/models/ca_object_representations.php:202
+#: ../../app/models/ca_object_representations.php:203
 #: ../../app/models/ca_sets.php:169 ../../app/models/ca_lists.php:114
 #: ../../app/models/ca_user_sorts.php:117
 #: ../../app/models/ca_collections.php:164
@@ -20072,7 +20082,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:367
 #: ../../app/models/ca_list_items.php:544 ../../app/models/ca_loans.php:358
 #: ../../app/models/ca_objects.php:551
-#: ../../app/models/ca_object_representations.php:412
+#: ../../app/models/ca_object_representations.php:415
 #: ../../app/models/ca_collections.php:390
 msgid "Related objects"
 msgstr ""
@@ -20096,8 +20106,8 @@ msgstr ""
 #: ../../app/models/ca_list_items.php:546 ../../app/models/ca_loans.php:359
 #: ../../app/models/ca_loans.php:360 ../../app/models/ca_objects.php:552
 #: ../../app/models/ca_objects.php:553
-#: ../../app/models/ca_object_representations.php:413
-#: ../../app/models/ca_object_representations.php:414
+#: ../../app/models/ca_object_representations.php:416
+#: ../../app/models/ca_object_representations.php:417
 #: ../../app/models/ca_collections.php:391
 #: ../../app/models/ca_collections.php:392
 msgid "Related objects list"
@@ -20112,7 +20122,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:370
 #: ../../app/models/ca_list_items.php:547 ../../app/models/ca_loans.php:361
 #: ../../app/models/ca_objects.php:554
-#: ../../app/models/ca_object_representations.php:415
+#: ../../app/models/ca_object_representations.php:418
 #: ../../app/models/ca_collections.php:393
 msgid "Related object representations list"
 msgstr ""
@@ -20126,7 +20136,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:371
 #: ../../app/models/ca_list_items.php:548 ../../app/models/ca_loans.php:362
 #: ../../app/models/ca_objects.php:555
-#: ../../app/models/ca_object_representations.php:416
+#: ../../app/models/ca_object_representations.php:419
 #: ../../app/models/ca_collections.php:394
 msgid "Related entities list"
 msgstr ""
@@ -20140,7 +20150,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:372
 #: ../../app/models/ca_list_items.php:549 ../../app/models/ca_loans.php:363
 #: ../../app/models/ca_objects.php:556
-#: ../../app/models/ca_object_representations.php:417
+#: ../../app/models/ca_object_representations.php:420
 #: ../../app/models/ca_collections.php:395
 msgid "Related places list"
 msgstr ""
@@ -20154,7 +20164,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:373
 #: ../../app/models/ca_list_items.php:550 ../../app/models/ca_loans.php:364
 #: ../../app/models/ca_objects.php:557
-#: ../../app/models/ca_object_representations.php:418
+#: ../../app/models/ca_object_representations.php:421
 #: ../../app/models/ca_collections.php:396
 msgid "Related occurrences list"
 msgstr ""
@@ -20168,7 +20178,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:374
 #: ../../app/models/ca_list_items.php:551 ../../app/models/ca_loans.php:365
 #: ../../app/models/ca_objects.php:558
-#: ../../app/models/ca_object_representations.php:419
+#: ../../app/models/ca_object_representations.php:422
 #: ../../app/models/ca_collections.php:397
 msgid "Related collections list"
 msgstr ""
@@ -20182,7 +20192,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:375
 #: ../../app/models/ca_list_items.php:552 ../../app/models/ca_loans.php:366
 #: ../../app/models/ca_objects.php:559
-#: ../../app/models/ca_object_representations.php:420
+#: ../../app/models/ca_object_representations.php:423
 #: ../../app/models/ca_collections.php:398
 msgid "Related list items list"
 msgstr ""
@@ -20196,7 +20206,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:376
 #: ../../app/models/ca_list_items.php:553 ../../app/models/ca_loans.php:367
 #: ../../app/models/ca_objects.php:560
-#: ../../app/models/ca_object_representations.php:421
+#: ../../app/models/ca_object_representations.php:424
 #: ../../app/models/ca_collections.php:399
 msgid "Related storage locations list"
 msgstr ""
@@ -20210,7 +20220,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:377
 #: ../../app/models/ca_list_items.php:554 ../../app/models/ca_loans.php:368
 #: ../../app/models/ca_objects.php:561
-#: ../../app/models/ca_object_representations.php:422
+#: ../../app/models/ca_object_representations.php:425
 #: ../../app/models/ca_collections.php:400
 msgid "Related loans list"
 msgstr ""
@@ -20224,7 +20234,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:378
 #: ../../app/models/ca_list_items.php:555 ../../app/models/ca_loans.php:369
 #: ../../app/models/ca_objects.php:562
-#: ../../app/models/ca_object_representations.php:423
+#: ../../app/models/ca_object_representations.php:426
 #: ../../app/models/ca_collections.php:401
 msgid "Related movements list"
 msgstr ""
@@ -20238,7 +20248,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:379
 #: ../../app/models/ca_list_items.php:556 ../../app/models/ca_loans.php:370
 #: ../../app/models/ca_objects.php:563
-#: ../../app/models/ca_object_representations.php:424
+#: ../../app/models/ca_object_representations.php:427
 #: ../../app/models/ca_collections.php:402
 msgid "Related object lots list"
 msgstr ""
@@ -20252,7 +20262,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:366
 #: ../../app/models/ca_list_items.php:558 ../../app/models/ca_loans.php:372
 #: ../../app/models/ca_objects.php:564
-#: ../../app/models/ca_object_representations.php:425
+#: ../../app/models/ca_object_representations.php:428
 #: ../../app/models/ca_collections.php:389
 msgid "Related entities"
 msgstr ""
@@ -20266,7 +20276,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:383
 #: ../../app/models/ca_list_items.php:559 ../../app/models/ca_loans.php:373
 #: ../../app/models/ca_objects.php:565
-#: ../../app/models/ca_object_representations.php:426
+#: ../../app/models/ca_object_representations.php:429
 #: ../../app/models/ca_collections.php:403
 msgid "Related places"
 msgstr ""
@@ -20280,7 +20290,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:381
 #: ../../app/models/ca_list_items.php:560 ../../app/models/ca_loans.php:374
 #: ../../app/models/ca_objects.php:566
-#: ../../app/models/ca_object_representations.php:427
+#: ../../app/models/ca_object_representations.php:430
 #: ../../app/models/ca_collections.php:405
 msgid "Related occurrences"
 msgstr ""
@@ -20292,7 +20302,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:382
 #: ../../app/models/ca_list_items.php:561 ../../app/models/ca_loans.php:375
 #: ../../app/models/ca_objects.php:567
-#: ../../app/models/ca_object_representations.php:428
+#: ../../app/models/ca_object_representations.php:431
 #: ../../app/models/ca_collections.php:404
 msgid "Related collections"
 msgstr ""
@@ -20312,7 +20322,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:390
 #: ../../app/models/ca_list_items.php:567 ../../app/models/ca_loans.php:383
 #: ../../app/models/ca_objects.php:576
-#: ../../app/models/ca_object_representations.php:432
+#: ../../app/models/ca_object_representations.php:435
 #: ../../app/models/ca_collections.php:409
 msgid "Related vocabulary terms"
 msgstr ""
@@ -20358,7 +20368,7 @@ msgstr ""
 #: ../../app/models/ca_attribute_value_multifiles.php:70
 #: ../../app/models/ca_object_representation_multifiles.php:73
 #: ../../app/models/ca_site_page_media.php:99
-#: ../../app/models/ca_object_representations.php:104
+#: ../../app/models/ca_object_representations.php:105
 #: ../../app/models/ca_item_comments.php:138
 #: ../../app/models/ca_item_comments.php:148
 #: ../../app/models/ca_item_comments.php:158
@@ -20369,7 +20379,7 @@ msgstr ""
 #: ../../app/models/ca_attribute_value_multifiles.php:84
 #: ../../app/models/ca_object_representation_multifiles.php:87
 #: ../../app/models/ca_site_page_media.php:121
-#: ../../app/models/ca_object_representations.php:126
+#: ../../app/models/ca_object_representations.php:127
 msgid "Media content"
 msgstr ""
 
@@ -21059,7 +21069,7 @@ msgstr ""
 #: ../../app/models/ca_editor_uis.php:95
 #: ../../app/models/ca_data_exporters.php:88
 #: ../../app/models/ca_bundle_displays.php:98
-#: ../../app/models/ca_object_representations.php:51
+#: ../../app/models/ca_object_representations.php:52
 #: ../../app/models/ca_bookmarks.php:76
 #: ../../app/models/ca_search_forms.php:105
 #: ../../app/models/ca_data_importers.php:92
@@ -21818,7 +21828,7 @@ msgstr ""
 #: ../../app/models/ca_bundle_displays.php:1519
 #: ../../app/models/ca_places.php:205 ../../app/models/ca_occurrences.php:186
 #: ../../app/models/ca_loans.php:178 ../../app/models/ca_objects.php:355
-#: ../../app/models/ca_object_representations.php:241
+#: ../../app/models/ca_object_representations.php:242
 #: ../../app/models/ca_collections.php:199
 msgid "Submitted by user"
 msgstr ""
@@ -21828,7 +21838,7 @@ msgstr ""
 #: ../../app/models/ca_movements.php:150 ../../app/models/ca_places.php:205
 #: ../../app/models/ca_occurrences.php:186 ../../app/models/ca_loans.php:178
 #: ../../app/models/ca_objects.php:355
-#: ../../app/models/ca_object_representations.php:241
+#: ../../app/models/ca_object_representations.php:242
 #: ../../app/models/ca_collections.php:199
 msgid "User submitting this object"
 msgstr ""
@@ -21838,7 +21848,7 @@ msgstr ""
 #: ../../app/models/ca_movements.php:158 ../../app/models/ca_places.php:213
 #: ../../app/models/ca_occurrences.php:194 ../../app/models/ca_loans.php:186
 #: ../../app/models/ca_objects.php:363
-#: ../../app/models/ca_object_representations.php:249
+#: ../../app/models/ca_object_representations.php:250
 #: ../../app/models/ca_collections.php:207
 msgid "Submitted for group"
 msgstr ""
@@ -21848,7 +21858,7 @@ msgstr ""
 #: ../../app/models/ca_movements.php:158 ../../app/models/ca_places.php:213
 #: ../../app/models/ca_occurrences.php:194 ../../app/models/ca_loans.php:186
 #: ../../app/models/ca_objects.php:363
-#: ../../app/models/ca_object_representations.php:249
+#: ../../app/models/ca_object_representations.php:250
 #: ../../app/models/ca_collections.php:207
 msgid "Group this object was submitted under"
 msgstr ""
@@ -21858,7 +21868,7 @@ msgstr ""
 #: ../../app/models/ca_movements.php:167 ../../app/models/ca_places.php:222
 #: ../../app/models/ca_occurrences.php:203 ../../app/models/ca_loans.php:195
 #: ../../app/models/ca_objects.php:372
-#: ../../app/models/ca_object_representations.php:258
+#: ../../app/models/ca_object_representations.php:259
 #: ../../app/models/ca_collections.php:216
 msgid "Submission status"
 msgstr ""
@@ -21868,7 +21878,7 @@ msgstr ""
 #: ../../app/models/ca_movements.php:167 ../../app/models/ca_places.php:222
 #: ../../app/models/ca_occurrences.php:203 ../../app/models/ca_loans.php:195
 #: ../../app/models/ca_objects.php:372
-#: ../../app/models/ca_object_representations.php:258
+#: ../../app/models/ca_object_representations.php:259
 #: ../../app/models/ca_collections.php:216
 msgid "Indicates submission status of the object."
 msgstr ""
@@ -21895,7 +21905,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:384
 #: ../../app/models/ca_list_items.php:562 ../../app/models/ca_loans.php:378
 #: ../../app/models/ca_objects.php:568
-#: ../../app/models/ca_object_representations.php:429
+#: ../../app/models/ca_object_representations.php:432
 #: ../../app/models/ca_collections.php:407
 msgid "Related storage locations"
 msgstr ""
@@ -21906,7 +21916,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:385
 #: ../../app/models/ca_list_items.php:564 ../../app/models/ca_loans.php:376
 #: ../../app/models/ca_objects.php:569
-#: ../../app/models/ca_object_representations.php:435
+#: ../../app/models/ca_object_representations.php:438
 #: ../../app/models/ca_collections.php:416
 msgid "Related loans"
 msgstr ""
@@ -21917,7 +21927,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:386
 #: ../../app/models/ca_list_items.php:565 ../../app/models/ca_loans.php:377
 #: ../../app/models/ca_objects.php:570
-#: ../../app/models/ca_object_representations.php:436
+#: ../../app/models/ca_object_representations.php:439
 #: ../../app/models/ca_collections.php:417
 msgid "Related movements"
 msgstr ""
@@ -21926,7 +21936,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:397 ../../app/models/ca_object_lots.php:370
 #: ../../app/models/ca_places.php:404 ../../app/models/ca_occurrences.php:391
 #: ../../app/models/ca_list_items.php:568 ../../app/models/ca_objects.php:577
-#: ../../app/models/ca_object_representations.php:433
+#: ../../app/models/ca_object_representations.php:436
 #: ../../app/models/ca_collections.php:410
 msgid "Related sets"
 msgstr ""
@@ -21935,7 +21945,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:398 ../../app/models/ca_object_lots.php:371
 #: ../../app/models/ca_places.php:405 ../../app/models/ca_occurrences.php:392
 #: ../../app/models/ca_list_items.php:569 ../../app/models/ca_objects.php:578
-#: ../../app/models/ca_object_representations.php:434
+#: ../../app/models/ca_object_representations.php:437
 #: ../../app/models/ca_collections.php:411
 #: ../../app/widgets/recentlyCreated/recentlyCreatedWidget.php:55
 #: ../../app/widgets/recentlyCreated/recentlyCreatedWidget.php:259
@@ -21951,7 +21961,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:397
 #: ../../app/models/ca_list_items.php:574 ../../app/models/ca_loans.php:385
 #: ../../app/models/ca_objects.php:602
-#: ../../app/models/ca_object_representations.php:447
+#: ../../app/models/ca_object_representations.php:450
 #: ../../app/models/ca_collections.php:424
 msgid "References"
 msgstr ""
@@ -21964,7 +21974,9 @@ msgstr ""
 #: ../../app/models/ca_entities.php:408 ../../app/models/ca_object_lots.php:392
 #: ../../app/models/ca_movements.php:360
 #: ../../app/models/ca_occurrences.php:402 ../../app/models/ca_loans.php:387
-#: ../../app/models/ca_objects.php:592 ../../app/models/ca_collections.php:426
+#: ../../app/models/ca_objects.php:592
+#: ../../app/models/ca_object_representations.php:466
+#: ../../app/models/ca_collections.php:426
 msgid "History tracking – current value"
 msgstr ""
 
@@ -21972,7 +21984,9 @@ msgstr ""
 #: ../../app/models/ca_entities.php:409 ../../app/models/ca_object_lots.php:393
 #: ../../app/models/ca_movements.php:361
 #: ../../app/models/ca_occurrences.php:403 ../../app/models/ca_loans.php:388
-#: ../../app/models/ca_objects.php:593 ../../app/models/ca_collections.php:427
+#: ../../app/models/ca_objects.php:593
+#: ../../app/models/ca_object_representations.php:467
+#: ../../app/models/ca_collections.php:427
 msgid "Current history tracking date"
 msgstr ""
 
@@ -21980,6 +21994,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:411 ../../app/models/ca_object_lots.php:395
 #: ../../app/models/ca_movements.php:363
 #: ../../app/models/ca_occurrences.php:405 ../../app/models/ca_loans.php:390
+#: ../../app/models/ca_object_representations.php:469
 #: ../../app/models/ca_collections.php:429
 msgid "Current contents"
 msgstr ""
@@ -22494,7 +22509,7 @@ msgstr ""
 #: ../../app/models/ca_movements.php:175 ../../app/models/ca_places.php:230
 #: ../../app/models/ca_occurrences.php:211 ../../app/models/ca_loans.php:203
 #: ../../app/models/ca_objects.php:380
-#: ../../app/models/ca_object_representations.php:266
+#: ../../app/models/ca_object_representations.php:267
 #: ../../app/models/ca_collections.php:224
 msgid "Submission via form"
 msgstr ""
@@ -22503,14 +22518,14 @@ msgstr ""
 #: ../../app/models/ca_movements.php:175 ../../app/models/ca_places.php:230
 #: ../../app/models/ca_occurrences.php:211 ../../app/models/ca_loans.php:203
 #: ../../app/models/ca_objects.php:380
-#: ../../app/models/ca_object_representations.php:266
+#: ../../app/models/ca_object_representations.php:267
 #: ../../app/models/ca_collections.php:224
 msgid "Indicates what contribute form was used to create the submission."
 msgstr ""
 
 #: ../../app/models/ca_entities.php:389 ../../app/models/ca_occurrences.php:380
 #: ../../app/models/ca_objects.php:574
-#: ../../app/models/ca_object_representations.php:437
+#: ../../app/models/ca_object_representations.php:440
 #: ../../app/models/ca_collections.php:406
 msgid "Related lot"
 msgstr ""
@@ -23045,8 +23060,8 @@ msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:948
 #: ../../app/models/ca_editor_ui_screens.php:1775
-#: ../../app/models/ca_data_importers.php:372
-#: ../../app/models/ca_data_importers.php:381
+#: ../../app/models/ca_data_importers.php:374
+#: ../../app/models/ca_data_importers.php:383
 msgid "."
 msgstr ""
 
@@ -23238,10 +23253,6 @@ msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:1202
 msgid "User interface style"
-msgstr ""
-
-#: ../../app/models/ca_editor_ui_screens.php:1203
-msgid "Style of user interface"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:1217
@@ -24006,32 +24017,32 @@ msgstr ""
 
 #: ../../app/models/ca_site_page_media.php:131
 #: ../../app/models/ca_notifications.php:95
-#: ../../app/models/ca_object_representations.php:136
+#: ../../app/models/ca_object_representations.php:137
 msgid "MD5 hash"
 msgstr ""
 
 #: ../../app/models/ca_site_page_media.php:131
-#: ../../app/models/ca_object_representations.php:136
+#: ../../app/models/ca_object_representations.php:137
 msgid "MD5-generated \"fingerprint\" for this media."
 msgstr ""
 
 #: ../../app/models/ca_site_page_media.php:142
-#: ../../app/models/ca_object_representations.php:147
+#: ../../app/models/ca_object_representations.php:148
 msgid "Original filename"
 msgstr ""
 
 #: ../../app/models/ca_site_page_media.php:142
-#: ../../app/models/ca_object_representations.php:147
+#: ../../app/models/ca_object_representations.php:148
 msgid "The filename of the media at the time of upload."
 msgstr ""
 
 #: ../../app/models/ca_site_page_media.php:153
-#: ../../app/models/ca_object_representations.php:158
+#: ../../app/models/ca_object_representations.php:159
 msgid "Original MIME type"
 msgstr ""
 
 #: ../../app/models/ca_site_page_media.php:153
-#: ../../app/models/ca_object_representations.php:158
+#: ../../app/models/ca_object_representations.php:159
 msgid "The MIME type of the media at the time of upload."
 msgstr ""
 
@@ -24434,7 +24445,7 @@ msgid "Error: Mapping target table %1 is invalid!"
 msgstr ""
 
 #: ../../app/models/ca_data_exporters.php:967
-#: ../../app/models/ca_data_importers.php:1052
+#: ../../app/models/ca_data_importers.php:1054
 msgid "Could not delete existing mapping for %1: %2"
 msgstr ""
 
@@ -25590,17 +25601,17 @@ msgid "Truncate to specified length if value exceeds that length."
 msgstr ""
 
 #: ../../app/models/ca_data_importer_items.php:538
-#: ../../app/models/ca_data_importers.php:412
+#: ../../app/models/ca_data_importers.php:414
 msgid "ignore"
 msgstr ""
 
 #: ../../app/models/ca_data_importer_items.php:539
-#: ../../app/models/ca_data_importers.php:413
+#: ../../app/models/ca_data_importers.php:415
 msgid "stop"
 msgstr ""
 
 #: ../../app/models/ca_data_importer_items.php:541
-#: ../../app/models/ca_data_importers.php:415
+#: ../../app/models/ca_data_importers.php:417
 msgid "Error policy"
 msgstr ""
 
@@ -26481,7 +26492,7 @@ msgid "Indicates the current state of the object record."
 msgstr ""
 
 #: ../../app/models/ca_objects.php:286
-#: ../../app/models/ca_object_representations.php:202
+#: ../../app/models/ca_object_representations.php:203
 msgid "Indicates if the object is deleted or not."
 msgstr ""
 
@@ -26631,52 +26642,52 @@ msgid ""
 "Lower numbers indicate higher priority."
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:50
+#: ../../app/models/ca_object_representations.php:51
 msgid "object representation"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:58
+#: ../../app/models/ca_object_representations.php:59
 msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this representation"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:66
+#: ../../app/models/ca_object_representations.php:67
 msgid "The locale from which the representation originates."
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:76
+#: ../../app/models/ca_object_representations.php:77
 msgid ""
 "Indicates the type of the representation. The type can only be set when "
 "creating a new representation and cannot be changed once the representation "
 "is saved."
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:83
+#: ../../app/models/ca_object_representations.php:84
 msgid "Representation identifier"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:83
+#: ../../app/models/ca_object_representations.php:84
 msgid "A unique alphanumeric identifier for this representation."
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:166
+#: ../../app/models/ca_object_representations.php:167
 msgid "Transcribe?"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:166
+#: ../../app/models/ca_object_representations.php:167
 msgid "Indicates that the representation is a candidate for transcription."
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:179
+#: ../../app/models/ca_object_representations.php:180
 msgid "Indicates if representation is accessible to the public or not. "
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:195
+#: ../../app/models/ca_object_representations.php:196
 msgid "Indicates the current state of the representation."
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:219
+#: ../../app/models/ca_object_representations.php:220
 msgid ""
 "Administrative source of object representation. This value is often used to "
 "indicate the administrative sub-division or legacy database from which the "
@@ -26684,119 +26695,119 @@ msgid ""
 "classification tool if needed."
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:430
+#: ../../app/models/ca_object_representations.php:433
 msgid "Related annotations"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:431
+#: ../../app/models/ca_object_representations.php:434
 msgid "Related user-generated annotations"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:444
+#: ../../app/models/ca_object_representations.php:447
 msgid "Media and preview images"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:445
+#: ../../app/models/ca_object_representations.php:448
 msgid "Captions/subtitles"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:449
+#: ../../app/models/ca_object_representations.php:452
 msgid "Number of transcriptions"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:450
+#: ../../app/models/ca_object_representations.php:453
 msgid "Number of pages"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:451
+#: ../../app/models/ca_object_representations.php:454
 msgid "Number of previews"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:452
+#: ../../app/models/ca_object_representations.php:455
 msgid "Media dimensions"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:453
+#: ../../app/models/ca_object_representations.php:456
 msgid "Media duration"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:454
+#: ../../app/models/ca_object_representations.php:457
 msgid "Media class"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:455
+#: ../../app/models/ca_object_representations.php:458
 msgid "Media format"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:456
+#: ../../app/models/ca_object_representations.php:459
 msgid "Media colorspace"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:457
+#: ../../app/models/ca_object_representations.php:460
 msgid "Media resolution"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:458
+#: ../../app/models/ca_object_representations.php:461
 msgid "Media bit depth"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:459
+#: ../../app/models/ca_object_representations.php:462
 msgid "Media filesize"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:460
+#: ../../app/models/ca_object_representations.php:463
 msgid "Center of media x-coordinate"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:461
+#: ../../app/models/ca_object_representations.php:464
 msgid "Center of media y-coordinate"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:467
+#: ../../app/models/ca_object_representations.php:475
 msgid "No media was specified"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:553
+#: ../../app/models/ca_object_representations.php:561
 msgid "Could not load object-representation link"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:1325
+#: ../../app/models/ca_object_representations.php:1333
 msgid "File is not part of this representation"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:1501
+#: ../../app/models/ca_object_representations.php:1509
 msgid "Caption file is not part of this representation"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:2139
+#: ../../app/models/ca_object_representations.php:2147
 msgid "Transcription id is invalid"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:2145
+#: ../../app/models/ca_object_representations.php:2153
 msgid "Transcription is not part of representation"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:2151
+#: ../../app/models/ca_object_representations.php:2159
 msgid "Transcription was not created by specified user"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:2280
+#: ../../app/models/ca_object_representations.php:2288
 msgid "user at %1"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:2282
+#: ../../app/models/ca_object_representations.php:2290
 msgid "Created %1 by %2"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:2284
+#: ../../app/models/ca_object_representations.php:2292
 msgid "Completed on %1 (%2)"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:2284
+#: ../../app/models/ca_object_representations.php:2292
 msgid "Completed on %1"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:2287
+#: ../../app/models/ca_object_representations.php:2295
 msgid "validated on %1"
 msgstr ""
 
@@ -28162,343 +28173,351 @@ msgid "merge_on_idno"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:348
-msgid "merge_on_idno_with_replace"
+msgid "merge_on_idno_with_skip"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:349
-msgid "overwrite_on_idno"
+msgid "merge_on_idno_with_replace"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:350
-msgid "skip_on_preferred_labels"
+msgid "overwrite_on_idno"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:351
-msgid "merge_on_preferred_labels"
+msgid "skip_on_preferred_labels"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:352
-msgid "merge_on_preferred_labels_with_replace"
+msgid "merge_on_preferred_labels"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:353
-msgid "overwrite_on_preferred_labels"
+msgid "merge_on_preferred_labels_with_replace"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:354
-msgid "merge_on_idno_and_preferred_labels"
+msgid "overwrite_on_preferred_labels"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:355
-msgid "merge_on_idno_and_preferred_labels_with_replace"
+msgid "merge_on_idno_and_preferred_labels"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:356
-msgid "overwrite_on_idno_and_preferred_labels"
+msgid "merge_on_idno_and_preferred_labels_with_replace"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:357
-msgid "skip_on_id"
+msgid "overwrite_on_idno_and_preferred_labels"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:358
-msgid "merge_on_id"
+msgid "skip_on_id"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:359
-msgid "merge_on_id_with_replace"
+msgid "merge_on_id"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:360
-msgid "overwrite_on_id"
+msgid "merge_on_id_with_skip"
+msgstr ""
+
+#: ../../app/models/ca_data_importers.php:361
+msgid "merge_on_id_with_replace"
 msgstr ""
 
 #: ../../app/models/ca_data_importers.php:362
+msgid "overwrite_on_id"
+msgstr ""
+
+#: ../../app/models/ca_data_importers.php:364
 msgid "Existing record policy"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:363
+#: ../../app/models/ca_data_importers.php:365
 msgid ""
 "Determines how existing records are checked for and handled by the import "
 "mapping.  Pending implementation."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:371
+#: ../../app/models/ca_data_importers.php:373
 msgid ""
 "Ignore record type when looking for existing records as specified by the "
 "existing records policy."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:380
+#: ../../app/models/ca_data_importers.php:382
 msgid ""
 "If set data will only be merged with existing records using the existing "
 "records policy. No new records will be created."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:389
+#: ../../app/models/ca_data_importers.php:391
 msgid "Do not do import"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:390
+#: ../../app/models/ca_data_importers.php:392
 msgid ""
 "If set then the mapping will be evaluated but no rows actually imported. "
 "This can be useful when you want to run a refinery over the rows of a data "
 "set but not actually perform the primary import."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:402
+#: ../../app/models/ca_data_importers.php:404
 msgid "Archive data sets?"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:403
+#: ../../app/models/ca_data_importers.php:405
 msgid ""
 "Set to yes to save the data spreadsheet or no to delete it from the server "
 "after import.  Pending implementation."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:416
+#: ../../app/models/ca_data_importers.php:418
 msgid ""
 "Determines how errors are handled for the import.  Options are to ignore the "
 "error, stop the import when an error is encountered and to receive a prompt "
 "when the error is encountered."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:425
+#: ../../app/models/ca_data_importers.php:427
 msgid "Base path"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:426
+#: ../../app/models/ca_data_importers.php:428
 msgid ""
 "For XML data formats, an XPath expression selecting nodes to be treated as "
 "individual records. If left blank, each XML document will be treated as a "
 "single record."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:436
+#: ../../app/models/ca_data_importers.php:438
 msgid ""
 "Set the locale used for all imported data. Leave on \"DEFAULT\" to use the "
 "system default locale. Otherwise set it to a valid locale code (Ex. en_US, "
 "es_MX, fr_CA)."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:445
+#: ../../app/models/ca_data_importers.php:447
 msgid "Source URL"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:446
+#: ../../app/models/ca_data_importers.php:448
 msgid ""
 "URL importer worksheet was fetched from. Will be null if importer was "
 "directly uploaded."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:871
+#: ../../app/models/ca_data_importers.php:873
 msgid "Warning: skipped mapping at row %1 because source was not defined"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:872
+#: ../../app/models/ca_data_importers.php:874
 msgid ""
 "[loadImporterFromFile:%1] Skipped mapping at row %2 because source was not "
 "defined"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:876
+#: ../../app/models/ca_data_importers.php:878
 msgid "Warning: skipped mapping at row %1 because destination was not defined"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:877
+#: ../../app/models/ca_data_importers.php:879
 msgid ""
 "[loadImporterFromFile:%1] Skipped mapping at row %2 because destination was "
 "not defined"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:885
+#: ../../app/models/ca_data_importers.php:887
 msgid ""
 "Warning: invalid json in \"options\" column at line %4  for group %1/source "
 "%2. Json was: %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:886
+#: ../../app/models/ca_data_importers.php:888
 msgid ""
 "[loadImporterFromFile:%1] Invalid json in \"options\" column at line %5  for "
 "group %2/source %3. Json was: %4."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:895
+#: ../../app/models/ca_data_importers.php:897
 msgid "Warning: refinery %1 does not exist"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:896
+#: ../../app/models/ca_data_importers.php:898
 msgid "[loadImporterFromFile:%1] Invalid options for group %2/source %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:901
+#: ../../app/models/ca_data_importers.php:903
 msgid ""
 "invalid json for refinery options at line %4 for group %1/source %2 = %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:902
+#: ../../app/models/ca_data_importers.php:904
 msgid ""
 "[loadImporterFromFile:%1] invalid json for refinery options at line %5 for "
 "group %2/source %3 = %4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1001
+#: ../../app/models/ca_data_importers.php:1003
 msgid "Warning: invalid options for environment %1."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1002
+#: ../../app/models/ca_data_importers.php:1004
 msgid ""
 "[loadImporterFromFile:environment %1] Invalid options for environment value "
 "%1. Options were: %2."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1018
+#: ../../app/models/ca_data_importers.php:1020
 msgid "You must set a code for your mapping!"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1019
+#: ../../app/models/ca_data_importers.php:1021
 msgid "[loadImporterFromFile:%1] You must set a code for your mapping!"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1025
+#: ../../app/models/ca_data_importers.php:1027
 msgid ""
 "It looks like this is a mapping for the data export framework and you're "
 "trying to add it as import mapping!"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1026
+#: ../../app/models/ca_data_importers.php:1028
 msgid ""
 "[loadImporterFromFile:%1] It looks like this is a mapping for the data "
 "export framework and you're trying to add it as import mapping!"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1036
+#: ../../app/models/ca_data_importers.php:1038
 msgid "Mapping target table %1 is invalid\n"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1037
+#: ../../app/models/ca_data_importers.php:1039
 msgid "[loadImporterFromFile:%1] Mapping target table %2 is invalid\n"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1053
+#: ../../app/models/ca_data_importers.php:1055
 msgid "[loadImporterFromFile:%1] Could not delete existing mapping for %2: %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1074
+#: ../../app/models/ca_data_importers.php:1076
 msgid "Error creating mapping: %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1075
-#: ../../app/models/ca_data_importers.php:1084
+#: ../../app/models/ca_data_importers.php:1077
+#: ../../app/models/ca_data_importers.php:1086
 msgid "[loadImporterFromFile:%1] Error creating mapping: %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1083
+#: ../../app/models/ca_data_importers.php:1085
 msgid "Error creating mapping name: %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1092
+#: ../../app/models/ca_data_importers.php:1094
 msgid "Could not save worksheet for future download: %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1093
+#: ../../app/models/ca_data_importers.php:1095
 msgid ""
 "[loadImporterFromFile:%1] Error saving worksheet for future download: %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1100
+#: ../../app/models/ca_data_importers.php:1102
 msgid "Skipped items for %1 because no common grouping could be found"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1101
+#: ../../app/models/ca_data_importers.php:1103
 msgid ""
 "[loadImporterFromFile:%1] Skipped items for %2 because no common grouping "
 "could be found"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1107
+#: ../../app/models/ca_data_importers.php:1109
 msgid "There was an error when adding group %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1108
+#: ../../app/models/ca_data_importers.php:1110
 msgid "[loadImporterFromFile:%1] There was an error when adding group %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1367
+#: ../../app/models/ca_data_importers.php:1369
 msgid "Import of %1 failed because mapping %2 does not exist."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1403
+#: ../../app/models/ca_data_importers.php:1405
 msgid "Set %1 does not exist. Create it and try the import again."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1408
+#: ../../app/models/ca_data_importers.php:1410
 msgid "Set %1 is not the correct type for this import."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1431
+#: ../../app/models/ca_data_importers.php:1433
 msgid "Started import of %1 using mapping %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1445
-#: ../../app/models/ca_data_importers.php:1448
+#: ../../app/models/ca_data_importers.php:1447
+#: ../../app/models/ca_data_importers.php:1450
 msgid "Reading %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1454
+#: ../../app/models/ca_data_importers.php:1456
 msgid "Could not open source %1 (format=%2)"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1462
+#: ../../app/models/ca_data_importers.php:1464
 msgid "Could not read source %1 (format=%2)"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1467
+#: ../../app/models/ca_data_importers.php:1469
 msgid "Finished reading input source at %1 seconds"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1477
+#: ../../app/models/ca_data_importers.php:1479
 msgid "Found %1 rows in input source"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1480
-#: ../../app/models/ca_data_importers.php:1483
+#: ../../app/models/ca_data_importers.php:1482
+#: ../../app/models/ca_data_importers.php:1485
 msgid "Importing from %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1490
+#: ../../app/models/ca_data_importers.php:1492
 msgid "Mapping uses invalid table %1 as target"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1602
+#: ../../app/models/ca_data_importers.php:1601
 msgid "Finished analyzing mapping at %1 seconds"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1644
+#: ../../app/models/ca_data_importers.php:1643
 msgid "Skipped initial row %1 of %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1654
+#: ../../app/models/ca_data_importers.php:1653
 msgid "Started reading row %1 at %2 seconds"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1702
+#: ../../app/models/ca_data_importers.php:1701
 msgid ""
 "Row was skipped using rule \"%1\" with default action because an invalid "
 "action (\"%2\") was specified"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1704
+#: ../../app/models/ca_data_importers.php:1703
 msgid "Row was skipped using rule \"%1\" with action \"%2\""
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1726
+#: ../../app/models/ca_data_importers.php:1725
 msgid ""
 "Expression trigger could not be parsed. Please double-check the syntax! "
 "Expression was: %1 [%2]"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1845
+#: ../../app/models/ca_data_importers.php:1844
 msgid "[%1] Skipped import because forced primary key '%1' does not exist"
 msgstr ""
 
@@ -28508,474 +28527,486 @@ msgid ""
 "%4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1862
-#: ../../app/models/ca_data_importers.php:1894
+#: ../../app/models/ca_data_importers.php:1863
+msgid ""
+"[%1] Skipped import because existing record could not be matched on primary "
+"key %2 for %3 by policy %4"
+msgstr ""
+
+#: ../../app/models/ca_data_importers.php:1867
+#: ../../app/models/ca_data_importers.php:1900
 msgid ""
 "[%1] Could not match existing record on primary key %2 for %3 by policy %4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1871
+#: ../../app/models/ca_data_importers.php:1877
 msgid ""
 "[%1] Skipped import because of existing record matched on primary key %2 for "
 "%3 by policy %4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1886
+#: ../../app/models/ca_data_importers.php:1892
 msgid ""
 "[%1] Could not delete existing record matched on primary key %2 for %3 by "
 "policy %4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1889
+#: ../../app/models/ca_data_importers.php:1895
 msgid ""
 "[%1] Overwrote existing record matched on primary key %2 for %3 by policy %4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1904
+#: ../../app/models/ca_data_importers.php:1910
 msgid ""
 "[%1] Skipped import because of existing record matched on identifier by "
 "policy %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1916
+#: ../../app/models/ca_data_importers.php:1922
 msgid ""
 "[%1] Skipped import because of existing record matched on label by policy %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1932
+#: ../../app/models/ca_data_importers.php:1939
 msgid "[%1] Merged with existing record matched on identifer by policy %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1935
-#: ../../app/models/ca_data_importers.php:1973
+#: ../../app/models/ca_data_importers.php:1943
+msgid ""
+"[%1] Skipped import because existing record could not be matched on "
+"identifier by policy %2 using base criteria %3"
+msgstr ""
+
+#: ../../app/models/ca_data_importers.php:1947
+#: ../../app/models/ca_data_importers.php:1986
 msgid ""
 "[%1] Could not match existing record on identifer by policy %2 using base "
 "criteria %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1947
+#: ../../app/models/ca_data_importers.php:1960
 msgid "[%1] Merged with existing record matched on label by policy %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1950
-#: ../../app/models/ca_data_importers.php:1996
+#: ../../app/models/ca_data_importers.php:1963
+#: ../../app/models/ca_data_importers.php:2009
 msgid ""
 "[%1] Could not match existing record on label values %3 by policy %2 using "
 "base criteria %4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1965
+#: ../../app/models/ca_data_importers.php:1978
 msgid ""
 "[%1] Could not delete existing record matched on identifier by policy %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1968
+#: ../../app/models/ca_data_importers.php:1981
 msgid "[%1] Overwrote existing record matched on identifier by policy %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1988
+#: ../../app/models/ca_data_importers.php:2001
 msgid "[%1] Could not delete existing record matched on label by policy %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:1991
+#: ../../app/models/ca_data_importers.php:2004
 msgid "[%1] Overwrote existing record matched on label by policy %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2003
+#: ../../app/models/ca_data_importers.php:2016
 msgid ""
 "[%1] Skipping because mergeOnly option is set and could not match existing "
 "record by policy %2."
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2007
+#: ../../app/models/ca_data_importers.php:2020
 msgid "Importing %1 [%2]"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2029
+#: ../../app/models/ca_data_importers.php:2042
 msgid "[%1] Skipped group %2 because target %3 is invalid"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2128
+#: ../../app/models/ca_data_importers.php:2141
 msgid ""
 "[%1] Skipped mapping for %2 because at least one value in list (%3) is empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2143
+#: ../../app/models/ca_data_importers.php:2156
 msgid "[%1] Skipped mapping for %2 because all values in list (%3) are empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2152
+#: ../../app/models/ca_data_importers.php:2165
 msgid "[%1] Skipped group %2 because at least one value in list (%3) is empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2167
+#: ../../app/models/ca_data_importers.php:2180
 msgid "[%1] Skipped group %2 because all values in list (%3) are empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2176
+#: ../../app/models/ca_data_importers.php:2189
 msgid "[%1] Skipped row %2 because at least one value in list (%3) is empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2191
+#: ../../app/models/ca_data_importers.php:2204
 msgid "[%1] Skipped row %2 because all values in list (%3) are empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2203
+#: ../../app/models/ca_data_importers.php:2216
 msgid "[%1] Skipped row %2 because value for %3 in group %4 is empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2213
+#: ../../app/models/ca_data_importers.php:2226
 msgid "[%1] Skipped group %2 because value for %3 is empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2223
+#: ../../app/models/ca_data_importers.php:2236
 msgid "[%1] Skipped mapping because value for %2 is empty"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2239
-#: ../../app/models/ca_data_importers.php:2537
+#: ../../app/models/ca_data_importers.php:2252
+#: ../../app/models/ca_data_importers.php:2550
 msgid "[%1] Skipped mapping %2 because value for %3 matches value %4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2256
-#: ../../app/models/ca_data_importers.php:2555
+#: ../../app/models/ca_data_importers.php:2269
+#: ../../app/models/ca_data_importers.php:2568
 msgid ""
 "[%1] Skipped mapping %2 because value %4 for %3 is not in list of values"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2273
-#: ../../app/models/ca_data_importers.php:2481
+#: ../../app/models/ca_data_importers.php:2286
+#: ../../app/models/ca_data_importers.php:2494
 msgid "[%1] Skipped row %2 because value for %3 in group %4 matches value %5"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2290
-#: ../../app/models/ca_data_importers.php:2499
+#: ../../app/models/ca_data_importers.php:2303
+#: ../../app/models/ca_data_importers.php:2512
 msgid ""
 "[%1] Skipped row %2 because value for %3 in group %4 is not in list of values"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2307
-#: ../../app/models/ca_data_importers.php:2594
+#: ../../app/models/ca_data_importers.php:2320
+#: ../../app/models/ca_data_importers.php:2607
 msgid "[%1] Skipped group %2 because value for %3 matches value %4"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2325
-#: ../../app/models/ca_data_importers.php:2612
+#: ../../app/models/ca_data_importers.php:2338
+#: ../../app/models/ca_data_importers.php:2625
 msgid ""
 "[%1] Skipped group %2 because value for %3 matches is not in list of values"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2336
+#: ../../app/models/ca_data_importers.php:2349
 msgid ""
 "[%1] Skipped mapping %2 because there is no replacement value for value %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2398
-#: ../../app/models/ca_data_importers.php:2626
+#: ../../app/models/ca_data_importers.php:2411
+#: ../../app/models/ca_data_importers.php:2639
 msgid "[%1] Skipped mapping because skipIfExpression %2 is true"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2403
-#: ../../app/models/ca_data_importers.php:2577
-#: ../../app/models/ca_data_importers.php:2632
+#: ../../app/models/ca_data_importers.php:2416
+#: ../../app/models/ca_data_importers.php:2590
+#: ../../app/models/ca_data_importers.php:2645
 msgid "[%1] Could not evaluate expression %2: %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2463
+#: ../../app/models/ca_data_importers.php:2476
 msgid "[%1] Skipped mapping %2 because of type restriction for type %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2515
+#: ../../app/models/ca_data_importers.php:2528
 msgid "[%1] Skipped row %2 because skipRowIfExpression %3 is true"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2521
+#: ../../app/models/ca_data_importers.php:2534
 msgid "[%1] Could not evaluate skipRowIfExpression %2: %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2570
+#: ../../app/models/ca_data_importers.php:2583
 msgid "[%1] Skipped group %2 because skipGroupIfExpression %3 is true"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2650
+#: ../../app/models/ca_data_importers.php:2663
 msgid "Reset type to %1 using value in content tree; was %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:2772
+#: ../../app/models/ca_data_importers.php:2785
 msgid "[%1] Invalid refinery %2 specified"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3006
+#: ../../app/models/ca_data_importers.php:3019
 msgid "Finished building content tree for %1 at %2 seconds [%3]"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3007
+#: ../../app/models/ca_data_importers.php:3020
 msgid ""
 "Content tree is\n"
 "%1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3010
+#: ../../app/models/ca_data_importers.php:3023
 msgid "Skipped import of row because dontDoImport was set"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3080
-#: ../../app/models/ca_data_importers.php:3174
+#: ../../app/models/ca_data_importers.php:3093
+#: ../../app/models/ca_data_importers.php:3187
 msgid "While setting mandatory field"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3086
+#: ../../app/models/ca_data_importers.php:3099
 msgid "Exception while performing initial insert"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3088
-#: ../../app/models/ca_data_importers.php:3105
-#: ../../app/models/ca_data_importers.php:3137
-#: ../../app/models/ca_data_importers.php:3176
-#: ../../app/models/ca_data_importers.php:3195
-#: ../../app/models/ca_data_importers.php:3221
-#: ../../app/models/ca_data_importers.php:3776
+#: ../../app/models/ca_data_importers.php:3101
+#: ../../app/models/ca_data_importers.php:3118
+#: ../../app/models/ca_data_importers.php:3150
+#: ../../app/models/ca_data_importers.php:3189
+#: ../../app/models/ca_data_importers.php:3208
+#: ../../app/models/ca_data_importers.php:3234
+#: ../../app/models/ca_data_importers.php:3789
 msgid "Import stopped due to import error policy"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3090
-#: ../../app/models/ca_data_importers.php:3107
-#: ../../app/models/ca_data_importers.php:3139
-#: ../../app/models/ca_data_importers.php:3178
-#: ../../app/models/ca_data_importers.php:3197
-#: ../../app/models/ca_data_importers.php:3223
-#: ../../app/models/ca_data_importers.php:3296
-#: ../../app/models/ca_data_importers.php:3322
-#: ../../app/models/ca_data_importers.php:3357
-#: ../../app/models/ca_data_importers.php:3448
-#: ../../app/models/ca_data_importers.php:3470
-#: ../../app/models/ca_data_importers.php:3778
+#: ../../app/models/ca_data_importers.php:3103
+#: ../../app/models/ca_data_importers.php:3120
+#: ../../app/models/ca_data_importers.php:3152
+#: ../../app/models/ca_data_importers.php:3191
+#: ../../app/models/ca_data_importers.php:3210
+#: ../../app/models/ca_data_importers.php:3236
+#: ../../app/models/ca_data_importers.php:3309
+#: ../../app/models/ca_data_importers.php:3335
+#: ../../app/models/ca_data_importers.php:3370
+#: ../../app/models/ca_data_importers.php:3461
+#: ../../app/models/ca_data_importers.php:3483
+#: ../../app/models/ca_data_importers.php:3791
 msgid "Failed to import %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3101
+#: ../../app/models/ca_data_importers.php:3114
 msgid "[%1] Could not insert new record for %2 (type was %3): "
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3115
+#: ../../app/models/ca_data_importers.php:3128
 msgid "Created idno %1 at %2 seconds [id=%3]"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3129
-#: ../../app/models/ca_data_importers.php:3135
-#: ../../app/models/ca_data_importers.php:3193
-#: ../../app/models/ca_data_importers.php:3219
+#: ../../app/models/ca_data_importers.php:3142
+#: ../../app/models/ca_data_importers.php:3148
+#: ../../app/models/ca_data_importers.php:3206
+#: ../../app/models/ca_data_importers.php:3232
 msgid "While updating matched record"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3134
+#: ../../app/models/ca_data_importers.php:3147
 msgid "[%1] Could not update matched record"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3173
+#: ../../app/models/ca_data_importers.php:3186
 msgid "[%1] Could not remove preferred labels from matched record"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3192
+#: ../../app/models/ca_data_importers.php:3205
 msgid "[%1] Could not remove nonpreferred labels from matched record"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3206
+#: ../../app/models/ca_data_importers.php:3219
 msgid "Updated idno %1 at %2 seconds"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3218
+#: ../../app/models/ca_data_importers.php:3231
 msgid "[%1] Could update idno to %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3233
+#: ../../app/models/ca_data_importers.php:3246
 msgid "Started insert of content tree for idno %1 at %2 seconds [id=%3]"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3239
+#: ../../app/models/ca_data_importers.php:3252
 msgid "Started insert of %1.%2 for idno %3 at %4 seconds [id=%3]"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3289
+#: ../../app/models/ca_data_importers.php:3302
 msgid ""
 "[%1] Could not add preferred label to %2. Record was deleted because no "
 "preferred label could be applied: "
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3294
+#: ../../app/models/ca_data_importers.php:3307
 msgid "Import stopped due to import error policy %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3302
-#: ../../app/models/ca_data_importers.php:3320
-#: ../../app/models/ca_data_importers.php:3355
-#: ../../app/models/ca_data_importers.php:3446
-#: ../../app/models/ca_data_importers.php:3468
-#: ../../app/models/ca_data_importers.php:3549
-#: ../../app/models/ca_data_importers.php:3571
-#: ../../app/models/ca_data_importers.php:3588
-#: ../../app/models/ca_data_importers.php:3604
-#: ../../app/models/ca_data_importers.php:3621
-#: ../../app/models/ca_data_importers.php:3637
-#: ../../app/models/ca_data_importers.php:3653
-#: ../../app/models/ca_data_importers.php:3672
-#: ../../app/models/ca_data_importers.php:3687
-#: ../../app/models/ca_data_importers.php:3703
-#: ../../app/models/ca_data_importers.php:3719
+#: ../../app/models/ca_data_importers.php:3315
+#: ../../app/models/ca_data_importers.php:3333
+#: ../../app/models/ca_data_importers.php:3368
+#: ../../app/models/ca_data_importers.php:3459
+#: ../../app/models/ca_data_importers.php:3481
+#: ../../app/models/ca_data_importers.php:3562
+#: ../../app/models/ca_data_importers.php:3584
+#: ../../app/models/ca_data_importers.php:3601
+#: ../../app/models/ca_data_importers.php:3617
+#: ../../app/models/ca_data_importers.php:3634
+#: ../../app/models/ca_data_importers.php:3650
+#: ../../app/models/ca_data_importers.php:3666
+#: ../../app/models/ca_data_importers.php:3685
+#: ../../app/models/ca_data_importers.php:3700
+#: ../../app/models/ca_data_importers.php:3716
+#: ../../app/models/ca_data_importers.php:3732
 msgid "Import stopped due to mapping error policy"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3317
+#: ../../app/models/ca_data_importers.php:3330
 msgid "[%1] Could not add non-preferred label to %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3347
+#: ../../app/models/ca_data_importers.php:3360
 msgid "[%1] Could not set intrinsic %2 to %3:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3352
+#: ../../app/models/ca_data_importers.php:3365
 msgid "[%1] Could not add intrinsic %2 to %3:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3370
-#: ../../app/models/ca_data_importers.php:3737
-#: ../../app/models/ca_data_importers.php:3877
+#: ../../app/models/ca_data_importers.php:3383
+#: ../../app/models/ca_data_importers.php:3750
+#: ../../app/models/ca_data_importers.php:3890
 msgid "[%1] Could not instantiate related table %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3376
-#: ../../app/models/ca_data_importers.php:3743
-#: ../../app/models/ca_data_importers.php:3883
+#: ../../app/models/ca_data_importers.php:3389
+#: ../../app/models/ca_data_importers.php:3756
+#: ../../app/models/ca_data_importers.php:3896
 msgid "[%1] Related %2 (%3) to related %4 with relationship %5"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3378
-#: ../../app/models/ca_data_importers.php:3745
-#: ../../app/models/ca_data_importers.php:3885
+#: ../../app/models/ca_data_importers.php:3391
+#: ../../app/models/ca_data_importers.php:3758
+#: ../../app/models/ca_data_importers.php:3898
 msgid "[%1] Could not add related %2 (%3) to related %4 with relationship %5:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3379
-#: ../../app/models/ca_data_importers.php:3746
-#: ../../app/models/ca_data_importers.php:3886
+#: ../../app/models/ca_data_importers.php:3392
+#: ../../app/models/ca_data_importers.php:3759
+#: ../../app/models/ca_data_importers.php:3899
 msgid "While adding rel-rel data"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3443
+#: ../../app/models/ca_data_importers.php:3456
 msgid "[%1] Failed to add value for %2; values were %3: "
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3465
+#: ../../app/models/ca_data_importers.php:3478
 msgid "[%1] Update failed: %2"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3480
+#: ../../app/models/ca_data_importers.php:3493
 msgid "Started insert of %1 for idno %2 at %3 seconds [id=%4]"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3540
+#: ../../app/models/ca_data_importers.php:3553
 msgid "Relationship type is missing for ca_objects relationship"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3546
+#: ../../app/models/ca_data_importers.php:3559
 msgid "[%1] Could not add related object with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3568
+#: ../../app/models/ca_data_importers.php:3581
 msgid "[%1] Could not add related object lot %2 with relationship %3:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3585
+#: ../../app/models/ca_data_importers.php:3598
 msgid "[%1] Could not add related entity with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3601
+#: ../../app/models/ca_data_importers.php:3614
 msgid "[%1] Could not add related place with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3618
+#: ../../app/models/ca_data_importers.php:3631
 msgid "[%1] Could not add related collection with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3634
+#: ../../app/models/ca_data_importers.php:3647
 msgid "[%1] Could not add related occurrence with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3650
+#: ../../app/models/ca_data_importers.php:3663
 msgid "[%1] Could not add related storage location with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3669
+#: ../../app/models/ca_data_importers.php:3682
 msgid "[%1] Could not add related list item with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3684
+#: ../../app/models/ca_data_importers.php:3697
 msgid "[%1] Could not add related object representation with:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3700
+#: ../../app/models/ca_data_importers.php:3713
 msgid "[%1] Could not add related loan with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3716
+#: ../../app/models/ca_data_importers.php:3729
 msgid "[%1] Could not add related movement with relationship %2:"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3730
+#: ../../app/models/ca_data_importers.php:3743
 msgid "Error while processing related content: %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3755
+#: ../../app/models/ca_data_importers.php:3768
 msgid "Error while processing related-to-related content: %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3762
+#: ../../app/models/ca_data_importers.php:3775
 msgid "Finished inserting content tree for %1 at %2 seconds into database"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3773
+#: ../../app/models/ca_data_importers.php:3786
 msgid "[%1] Could not add default label"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3789
+#: ../../app/models/ca_data_importers.php:3802
 msgid "[%1] Imported %2 as %3 "
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3790
+#: ../../app/models/ca_data_importers.php:3803
 msgid "Imported %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3794
+#: ../../app/models/ca_data_importers.php:3807
 msgid "Could not add imported item %1 to set %2: %3"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3803
+#: ../../app/models/ca_data_importers.php:3816
 msgid ""
 "Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3805
+#: ../../app/models/ca_data_importers.php:3818
 msgid "Import complete"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3809
+#: ../../app/models/ca_data_importers.php:3822
 msgid "Import completed"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3830
+#: ../../app/models/ca_data_importers.php:3843
 msgid "Rollback successful import run in \"dry run\" mode"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3862
+#: ../../app/models/ca_data_importers.php:3875
 msgid ""
 "Could not create object-collection hierarchy child record relationship: %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:3869
+#: ../../app/models/ca_data_importers.php:3882
 msgid "Could not create hierarchy child record for %1"
 msgstr ""
 
-#: ../../app/models/ca_data_importers.php:4007
+#: ../../app/models/ca_data_importers.php:4020
 msgid ""
 "Replaced value \"%1\" (%2) with \"%3\" (%4) for %5 using replacement values"
 msgstr ""
@@ -33810,374 +33841,380 @@ msgstr ""
 msgid "Successfully loaded base profile %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:576
+#: ../../install/inc/Installer.php:582
 msgid "Processing list with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:583
+#: ../../install/inc/Installer.php:589
 msgid "List %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:585
+#: ../../install/inc/Installer.php:591
 msgid "%1 is a new list"
 msgstr ""
 
-#: ../../install/inc/Installer.php:591
+#: ../../install/inc/Installer.php:597
 msgid "Deleting list %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:622
+#: ../../install/inc/Installer.php:628
 msgid "Successfully inserted or updated list %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:671
+#: ../../install/inc/Installer.php:677
 msgid "Processing list item with idno %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:674
+#: ../../install/inc/Installer.php:680
 msgid "List item with idno %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:676
+#: ../../install/inc/Installer.php:682
 msgid "Deleting list item with idno %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:684
+#: ../../install/inc/Installer.php:690
 msgid "List item with idno %1 is a new item"
 msgstr ""
 
-#: ../../install/inc/Installer.php:696
+#: ../../install/inc/Installer.php:702
 msgid "Successfully updated/inserted list item with idno %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:751
+#: ../../install/inc/Installer.php:757
 msgid "Successfully nuked all type restrictions for element %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:791
+#: ../../install/inc/Installer.php:797
 msgid "Successfully added type restriction %1 for element %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:804
+#: ../../install/inc/Installer.php:810
 msgid "Processing metadata element with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:812
+#: ../../install/inc/Installer.php:818
 msgid "Metadata element with code %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:814
+#: ../../install/inc/Installer.php:820
 msgid "Metadata element with code %1 is new"
 msgstr ""
 
-#: ../../install/inc/Installer.php:820
+#: ../../install/inc/Installer.php:826
 msgid "Deleting metadata element with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:857
+#: ../../install/inc/Installer.php:863
 msgid "Successfully inserted/updated metadata element with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:968
+#: ../../install/inc/Installer.php:974
 msgid "Processing user interface with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:976
+#: ../../install/inc/Installer.php:982
 msgid "User interface with code %1 is new"
 msgstr ""
 
-#: ../../install/inc/Installer.php:978
+#: ../../install/inc/Installer.php:984
 msgid "User interface with code %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:984
+#: ../../install/inc/Installer.php:990
 msgid "Deleting user interface with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1006
+#: ../../install/inc/Installer.php:1012
 msgid "Successfully inserted/updated user interface with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1022
+#: ../../install/inc/Installer.php:1028
 msgid ""
 "Successfully nuked all type restrictions for user interface with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1041 ../../install/inc/Installer.php:1065
+#: ../../install/inc/Installer.php:1047 ../../install/inc/Installer.php:1071
 msgid "Successfully added type restriction %1 for user interface with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1074
+#: ../../install/inc/Installer.php:1080
 msgid "Processing screen with code %1 for user interface with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1085
+#: ../../install/inc/Installer.php:1091
 msgid "Screen with code %1 for user interface with code %2 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1087
+#: ../../install/inc/Installer.php:1093
 msgid "Screen with code %1 for user interface with code %2 is new"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1091
+#: ../../install/inc/Installer.php:1097
 msgid "Deleting screen with code %1 for user interface with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1113
+#: ../../install/inc/Installer.php:1119
 msgid ""
 "Successfully updated/inserted screen with code %1 for user interface with "
 "code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1125
+#: ../../install/inc/Installer.php:1131
 msgid ""
 "Successfully nuked all bundle placements for screen with code %1 for user "
 "interface with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1227
+#: ../../install/inc/Installer.php:1233
 msgid ""
 "Adding bundle %1 with code %2 for screen with code %3 and user interface "
 "with code %4"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1242
+#: ../../install/inc/Installer.php:1248
 msgid ""
 "Successfully nuked all type restrictions for screen with code %1 for user "
 "interface with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1263 ../../install/inc/Installer.php:1285
+#: ../../install/inc/Installer.php:1269 ../../install/inc/Installer.php:1291
 msgid ""
 "Successfully added type restriction %1 for screen with code %2 for user "
 "interface with code %3"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1392
+#: ../../install/inc/Installer.php:1398
 msgid "Processing relationship types for table %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1452
+#: ../../install/inc/Installer.php:1458
 msgid "Processing relationship type with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1463
+#: ../../install/inc/Installer.php:1469
 msgid "Relationship type with code %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1465
+#: ../../install/inc/Installer.php:1471
 msgid "Relationship type with code %1 is new"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1469
+#: ../../install/inc/Installer.php:1475
 msgid "Deleting relationship type with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1502
+#: ../../install/inc/Installer.php:1508
 msgid "Adding left type restriction %1 for relationship type with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1532
+#: ../../install/inc/Installer.php:1538
 msgid "Adding right type restriction %1 for relationship type with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1553
+#: ../../install/inc/Installer.php:1559
 msgid "Successfully updated/inserted relationship type with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1587
+#: ../../install/inc/Installer.php:1593
 msgid "Processing user role with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1590
+#: ../../install/inc/Installer.php:1596
 msgid "User role with code %1 is new"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1593
+#: ../../install/inc/Installer.php:1599
 msgid "User role with code %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1599
+#: ../../install/inc/Installer.php:1605
 msgid "Deleting user role with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1614
+#: ../../install/inc/Installer.php:1620
 msgid "Role actions for user role with code %1 are: %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1628
+#: ../../install/inc/Installer.php:1634
 msgid "Successfully updated/inserted user role with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1635
+#: ../../install/inc/Installer.php:1641
 msgid ""
 "Successfully nuked all bundle level access control items for user role with "
 "code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1648
+#: ../../install/inc/Installer.php:1654
 msgid ""
 "Added bundle level access control item for user role with code %1: table %2, "
 "bundle %3, access %4"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1657
+#: ../../install/inc/Installer.php:1663
 msgid ""
 "Successfully nuked all type level access control items for user role with "
 "code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1670
+#: ../../install/inc/Installer.php:1676
 msgid ""
 "Added type level access control item for user role with code %1: table %2, "
 "type %3, access %4"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1679
+#: ../../install/inc/Installer.php:1685
 msgid ""
 "Successfully nuked all source level access control items for user role with "
 "code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1693
+#: ../../install/inc/Installer.php:1699
 msgid ""
 "Added source level access control item for user role with code %1: table %2, "
 "source %3, access %4"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1736
+#: ../../install/inc/Installer.php:1742
 msgid "Processing display with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1741
+#: ../../install/inc/Installer.php:1747
 msgid "Display with code %1 is new"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1744
+#: ../../install/inc/Installer.php:1750
 msgid "Display with code %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1751
+#: ../../install/inc/Installer.php:1757
 msgid "Deleting display with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1771
+#: ../../install/inc/Installer.php:1777
 msgid "Successfully updated/inserted display with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1787
+#: ../../install/inc/Installer.php:1793
 msgid "Successfully nuked all type restrictions for display with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1800
+#: ../../install/inc/Installer.php:1806
 msgid ""
 "Added type restriction with code %1 and type %2 for display with code %3"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1809
+#: ../../install/inc/Installer.php:1815
 msgid "Added type restriction with type %1 for display with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1888
+#: ../../install/inc/Installer.php:1894
 msgid "Successfully nuked all placements for display with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1904
+#: ../../install/inc/Installer.php:1910
 msgid "Added bundle placement %1 with code %2 for display with code %3"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1948
+#: ../../install/inc/Installer.php:1954
 msgid "Processing search form with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1952
+#: ../../install/inc/Installer.php:1958
 msgid "Search form with code %1 is new"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1954
+#: ../../install/inc/Installer.php:1960
 msgid "Search form with code %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1959
+#: ../../install/inc/Installer.php:1965
 msgid "Deleting search form with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1980
+#: ../../install/inc/Installer.php:1986
 msgid "Successfully updated/inserted form with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:1996
+#: ../../install/inc/Installer.php:2002
 msgid "Successfully nuked all type restrictions for form with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2009
+#: ../../install/inc/Installer.php:2015
 msgid "Added type restriction with code %1 and type %2 for form with code %3"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2018
+#: ../../install/inc/Installer.php:2024
 msgid "Added type restriction with type %1 for form with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2097
+#: ../../install/inc/Installer.php:2103
 msgid "Successfully nuked all placements for form with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2113
+#: ../../install/inc/Installer.php:2119
 msgid "Added bundle placement %1 with code %2 for form with code %3"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2314
+#: ../../install/inc/Installer.php:2320
 msgid "Processing metadata alert with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2318
+#: ../../install/inc/Installer.php:2324
 msgid "Metadata alert with code %1 is new"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2320
+#: ../../install/inc/Installer.php:2326
 msgid "Metadata alert with code %1 already exists"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2325
+#: ../../install/inc/Installer.php:2331
 msgid "Deleting metadata alert with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2345
+#: ../../install/inc/Installer.php:2351
 msgid "Successfully updated/inserted metadata alert with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2361
+#: ../../install/inc/Installer.php:2367
 msgid ""
 "Successfully nuked all type restrictions for metadata alert with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2374
+#: ../../install/inc/Installer.php:2380
 msgid ""
 "Added type restriction with code %1 and type %2 for metadata alert with code "
 "%3"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2383
+#: ../../install/inc/Installer.php:2389
 msgid "Added type restriction with type %1 for metadata alert with code %2"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2460
+#: ../../install/inc/Installer.php:2466
 msgid "Successfully nuked all triggers for metadata alert with code %1"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2472
+#: ../../install/inc/Installer.php:2478
 msgid ""
 "Skipped trigger %1 for metadata alert %2 because element code %3 is invalid"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2510
+#: ../../install/inc/Installer.php:2516
 msgid ""
 "Skipped setting %1 for trigger %2 on metadata alert %3 because value %4 is "
 "invalid"
 msgstr ""
 
-#: ../../install/inc/Installer.php:2521
+#: ../../install/inc/Installer.php:2527
 msgid "Added trigger %1 for metadata alert %3"
+msgstr ""
+
+#: ../../install/inc/Installer.php:2607
+msgid ""
+"Failed to lookup type id for type restriction %1 in element %2 as could not "
+"retrieve type record. "
 msgstr ""
 
 #: ../../install/inc/page1.php:40
