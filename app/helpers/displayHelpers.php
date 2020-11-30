@@ -968,7 +968,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 							if ($inspector_current_value = $t_item->getCurrentValueForDisplay()) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$inspector_current_value}".(($is_home) ? ' '._t('[HOME]') : '')."</div>"; }
 						}
 																	
-						if ((!$is_home || !$inspector_current_value) && $t_item->hasField('home_location_id') && ($home_location_id = $t_item->get('home_location_id')) && ($t_home_loc = ca_storage_locations::find($home_location_id, ['returnAs' => 'firstModelInstance']))) {
+						if ((!$is_home || !$inspector_current_value) && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && ($home_location_id = $t_item->get('home_location_id')) && ($t_home_loc = ca_storage_locations::find($home_location_id, ['returnAs' => 'firstModelInstance']))) {
 							if (!($template = $po_view->request->config->get('inspector_home_location_display_template'))) { $template = '^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_'; }
 							$vs_buf .= "<div class='inspectorCurrentLocation'><strong>"._t('Home location').":</strong><br/>".$t_home_loc->getWithTemplate($template)."</div>"; 
 						}
@@ -1251,7 +1251,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
 			
-			if (($t_item->hasField('home_location_id')) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
+			if (caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
 				$vs_buf .= "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 				
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
@@ -3444,14 +3444,45 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	}
 	# ---------------------------------------
 	/** 
-	 * Used by ca_objects bundle
+	 * Check if home location functionality is enabled for a given table and, optionally, type
+	 *
+	 * @param string $table 
+	 * @param mixed $type Type code or type_id
+	 *
+	 * @return bool
 	 */
-	function caReturnToHomeLocationControlForRelatedObjectBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
-		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
-		if(!is_array($policies) || !sizeof($policies)) { return ''; }
-		if (!$ps_policy) { $ps_policy = ca_objects::getDefaultHistoryTrackingCurrentValuePolicy(); }
+	function caHomeLocationsEnabled(string $table, $type=null, array $options=null) {
+		if(!in_array($table, ['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_collections'], true)) { return false; }
+		$o_config = Configuration::load();
+		if($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+		if($type && is_numeric($type) && ($t_instance = Datamodel::getInstance($table, true))) {	
+			// Try converting numeric type to type code
+			$type = $t_instance->getTypeCodeForID((int)$type);
+			if($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+		}
+		if(caGetOption('enableIfAnyTypeSet', $options, false) && ($t_instance = Datamodel::getInstance($table, true))) {
+			if(is_array($types = array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList()))) {
+				foreach($types as $type) {
+					if((bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+				}
+			}
+		}
 		
-		$settings = ca_objects::policy2bundleconfig(['policy' => $ps_policy]);
+		if((bool)$o_config->get("{$table}_enable_home_location")) { return true; }
+		
+		return false;
+	}
+	# ---------------------------------------
+	/** 
+	 * Used by ca_objects, ca_collections and ca_object_lots bundles
+	 */
+	function caReturnToHomeLocationControlForRelatedBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
+		$target = $pt_related->tableName();
+		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
+		if(!is_array($policies) || !sizeof($policies)) { return ''; }
+		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }
+		
+		$settings = $target::policy2bundleconfig(['policy' => $ps_policy]);
 		$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
 		
 		$vs_buf = "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_button' class='editorBundleReturnToHomeControl'>".
@@ -3474,7 +3505,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				}
 				function caReturnToHomeLocation{$ps_id_prefix}() {
 					var interstitials = ".json_encode($interstitials).";
-					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy': '{$ps_policy}'};
+					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy': '{$ps_policy}', 'target': '{$target}'};
 					for(var i in interstitials) {
 						data[interstitials[i]] = jQuery('#{$ps_id_prefix}_ca_storage_locations__' + interstitials[i]).val();
 					}
@@ -3497,7 +3528,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								setTimeout(function() { 
 									caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
 									caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
-									caBundleUpdateManager.reloadBundle('ca_objects'); 
+									caBundleUpdateManager.reloadBundle('{$target}'); 
 								}, 3000);
 							}
 					}, 'json');
