@@ -340,10 +340,15 @@
 				$ps_deaccession_display_mode = 'hide';
 			}
 			
-			$this->view->setVar('deaccession_display_mode', $ps_deaccession_display_mode);				
-			$this->view->setVar('hide_deaccession', $pb_hide_deaccessioned = in_array(strtolower($ps_deaccession_display_mode), ['hide', 'alwayshide']));			
-			$this->view->setVar('show_deaccession_display_mode_control', !in_array(strtolower($vs_deaccession_display_mode_default), ['alwaysshow', 'alwayshide']));
- 		
+			if (!$this->request->user->canDoAction('can_access_deaccessioned_'.$this->ops_tablename)) {
+				$this->view->setVar('deaccession_display_mode', 'alwayshide');				
+				$this->view->setVar('hide_deaccession', true);			
+				$this->view->setVar('show_deaccession_display_mode_control', false);
+			} else {
+				$this->view->setVar('deaccession_display_mode', $ps_deaccession_display_mode);				
+				$this->view->setVar('hide_deaccession', $pb_hide_deaccessioned = in_array(strtolower($ps_deaccession_display_mode), ['hide', 'alwayshide']));			
+				$this->view->setVar('show_deaccession_display_mode_control', !in_array(strtolower($vs_deaccession_display_mode_default), ['alwaysshow', 'alwayshide']));
+			}
  			$this->opo_result_context->setCurrentDeaccessionDisplayMode($ps_deaccession_display_mode);
  			
  			$this->opo_result_context->saveContext();
