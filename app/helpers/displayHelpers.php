@@ -3593,7 +3593,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
 				$vs_user_currency = 'USD';
 			}
-			$vs_user_currency = caGetCurrencySymbol($vs_user_currency);
+			$vs_user_currency = caGetCurrencySymbol($vs_user_currency, $va_tmp[1]);
 
 			// Parse out tags and optional sub-elements from template
 			//		we have to pull each sub-element separately

@@ -42,6 +42,9 @@
 
  	global $_ca_attribute_settings;
  	
+ 	$o_config = Configuration::load();
+ 	$default_dollar_currency = $o_config->get('default_dollar_currency');
+ 	
  	$_ca_attribute_settings['CurrencyAttributeValue'] = array(		// global
 		'minValue' => array(
 			'formatType' => FT_NUMBER,
@@ -74,6 +77,19 @@
 			'width' => 5, 'height' => 1,
 			'label' => _t('Height of data entry field in user interface'),
 			'description' => _t('Height, in characters, of the field when displayed in a user interface.')
+		),
+		'dollarCurrency' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => $default_dollar_currency,
+			'options' => [
+				_t('US Dollar (USD)') => 'USD',
+				_t('Canadian Dollar (CDN)') => 'CDN',
+				_t('Australian Dollar (AUD)') => 'AUD'
+			],
+			'width' => 40, 'height' => 1,
+			'label' => _t('Use currency for "$"'),
+			'description' => _t('Currency indicated for values using the "$" character.')
 		),
 		'doesNotTakeLocale' => array(
 			'formatType' => FT_NUMBER,
@@ -181,7 +197,7 @@
 		public function getDisplayValue($pa_options=null) {
 			if (caGetOption('returnAsDecimalWithCurrencySpecifier', $pa_options, false)) {
 				if (!$this->ops_currency_specifier) { return null; }
-				return caGetCurrencySymbol($this->ops_currency_specifier).' '.$this->opn_value;
+				return caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()).' '.$this->opn_value;
 			}
 			if(Zend_Registry::isRegistered("Zend_Locale")) {
 				$o_locale = Zend_Registry::get('Zend_Locale');
@@ -206,9 +222,9 @@
  			}
 
  			// insert currency which is not locale-dependent in our case
- 			$vs_val = str_replace('%', caGetCurrencySymbol($this->ops_currency_specifier), $vs_decimal_with_placeholder);
+ 			$vs_val = str_replace('%', caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()), $vs_decimal_with_placeholder);
  			if (($vs_to_currency = caGetOption('displayCurrencyConversion', $pa_options, false)) && ($this->ops_currency_specifier != $vs_to_currency)) {
- 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue(caGetCurrencySymbol($this->ops_currency_specifier).' '.$this->opn_value, $vs_to_currency)).")";
+ 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue(caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()).' '.$this->opn_value, $vs_to_currency)).")";
  			}
  			return $vs_val;
 		}
@@ -217,7 +233,7 @@
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
- 				array('minValue', 'maxValue', 'mustNotBeBlank')
+ 				array('minValue', 'maxValue', 'mustNotBeBlank', 'dollarCurrency')
  			);
  			
  			if (strlen($ps_value) == 0) {
@@ -262,7 +278,7 @@
 			switch($vs_currency_specifier) {
 				case '$':
 					$o_config = Configuration::load();
-					$vs_currency_specifier = ($vs_dollars_are_this = $o_config->get('default_dollar_currency')) ? $vs_dollars_are_this : 'USD';
+					$vs_currency_specifier = ($vs_dollars_are_this = caGetOption('dollarCurrency', $va_settings, $o_config->get('default_dollar_currency'))) ? $vs_dollars_are_this : 'USD';
 					break;
 				case '¥':
 					$vs_currency_specifier = 'JPY';
