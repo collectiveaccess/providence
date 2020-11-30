@@ -7576,8 +7576,14 @@ div.changeLogSearchResultsPagination {
 }
 
 div.checklist {
+    display: grid;
+}
+
+div.checklistItem {
     font-weight: normal;
-    line-height: 2em;
+    margin-right: 10px;
+    width: 100px;
+    
 }
 
 /* Statistics dashboard */
