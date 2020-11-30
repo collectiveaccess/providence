@@ -345,6 +345,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				_t('none') => 'none',
 				_t('skip_on_idno') => 'skip_on_idno',
 				_t('merge_on_idno') => 'merge_on_idno',
+				_t('merge_on_idno_with_skip') => 'merge_on_idno_with_skip',
 				_t('merge_on_idno_with_replace') => 'merge_on_idno_with_replace',
 				_t('overwrite_on_idno') => 'overwrite_on_idno',
 				_t('skip_on_preferred_labels') => 'skip_on_preferred_labels',
@@ -356,6 +357,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				_t('overwrite_on_idno_and_preferred_labels') => 'overwrite_on_idno_and_preferred_labels',
 				_t('skip_on_id') => 'skip_on_id',
 				_t('merge_on_id') => 'merge_on_id',
+				_t('merge_on_id_with_skip') => 'merge_on_id_with_skip',
 				_t('merge_on_id_with_replace') => 'merge_on_id_with_replace',
 				_t('overwrite_on_id') => 'overwrite_on_id'
 			),
@@ -1523,15 +1525,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$vs_import_error_policy = 'ignore';
 		}
 		
+		
+		$existing_record_policy_setting_info = $t_mapping->getSettingInfo('existingRecordPolicy');
+		
 		if (!in_array(	
 			$vs_existing_record_policy = $t_mapping->getSetting('existingRecordPolicy'),
-			array(
-				'none', 'skip_on_idno', 'skip_on_preferred_labels',
-				'merge_on_idno', 'merge_on_preferred_labels', 'merge_on_idno_and_preferred_labels',
-				'merge_on_idno_with_replace', 'merge_on_preferred_labels_with_replace', 'merge_on_idno_and_preferred_labels_with_replace',
-			 	'overwrite_on_idno', 'overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels', 
-			 	'merge_on_id', 'merge_on_id_with_replace', 'skip_on_id', 'overwrite_on_id'
-			)
+			array_keys($existing_record_policy_setting_info['options'])
 		)) {
 			$vs_existing_record_policy = 'none';
 		}		
@@ -1852,6 +1851,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					switch($vs_existing_record_policy) {
 						case 'merge_on_id':
 						case 'merge_on_id_with_replace':
+						case 'merge_on_id_with_skip':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", 
 								[[$t_subject->primaryKey() => $vn_mapped_primary_key_value],
 								['returnAs' => 'ids', 'purifyWithFallback' => $purify_input, 'transaction' => $o_trans]]
@@ -1861,7 +1861,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
 								break;
 							} else {
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+								if($vs_existing_record_policy === 'merge_on_id_with_skip') {
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because existing record could not be matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+									$this->num_records_skipped++;
+									continue(2);	// skip 
+								} else {
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+								}
 							}
 							break;
 						case 'skip_on_id':
@@ -1924,6 +1930,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						case 'merge_on_idno':
 						case 'merge_on_idno_and_preferred_labels_with_replace':
 						case 'merge_on_idno_with_replace':
+						case 'merge_on_idno_with_skip':
 							if (!$vb_idno_is_template) {
 								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
 									array_merge($va_base_criteria, array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno)),
@@ -1934,7 +1941,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy)); }
 									break;
 								} else {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+									if($vs_existing_record_policy === 'merge_on_idno_with_skip') {
+										if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because existing record could not be matched on identifier by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+										$this->num_records_skipped++;
+										continue(2);	// skip 
+									} else {
+										if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+									}
 								}
 							}
 							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels

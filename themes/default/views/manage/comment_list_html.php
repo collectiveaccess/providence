@@ -83,7 +83,7 @@
 					<tr>
 						<td>
 <?php
-						print !$d['id'] ? $d['label'] : caEditorLink($this->request, $d['label'], '', $d['table_num'], $d['row_id'])." ({$d['idno']})";
+						print !$d['id'] ? $d['label'] : caEditorLink($this->request, $d['label'], '', $d['table_num'], $d['id'])." ({$d['idno']})<br/>Source: {$d['source']}";
 ?>
 						</td>
 						<td>

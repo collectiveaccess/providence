@@ -45,6 +45,8 @@
 		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
+		
+        <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 <?php
 	print AssetLoadManager::getLoadHTML($this->request);
 	print MetaTagManager::getHTML();
@@ -91,7 +93,6 @@
 			</style>
 			<![endif]-->
 		<!-- super fish end menus -->	
-        <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 	</head>	
 	<body>
 		<div align="center">

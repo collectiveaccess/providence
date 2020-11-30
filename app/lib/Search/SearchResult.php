@@ -2465,7 +2465,7 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
-		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
+		if (!$pa_options['returnAllLocales'] && !$vb_return_value_id) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
 		if ($pa_options['returnWithStructure']) { 
 			return is_array($va_return_values) ? $va_return_values : []; 
 		}

@@ -295,7 +295,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
 			$type = ($this->version <= 5) ? 'ca' : '_doc';
-			$table = Datamodel::getTableNamr($pn_table_num);
+			$table = Datamodel::getTableName($pn_table_num);
 			$va_search_params = array(
 				'scroll' => '1m',          // how long between scroll requests. should be small!
 				'index' => $this->getIndexName($table),
