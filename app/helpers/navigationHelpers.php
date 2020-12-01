@@ -657,7 +657,7 @@
 			
 			$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
 			
-			return "<i class='caIcon far {$va_icon['class']} {$vs_size}{$vs_opt_class}{$vs_rotate_class}' {$vs_attr}></i>";
+			return "<i class='caIcon {$va_icon['class']} {$vs_size}{$vs_opt_class}{$vs_rotate_class}' {$vs_attr}></i>";
 		}
 		
 		return '???';
@@ -674,217 +674,217 @@
 		$vs_ca_class = '';
 		switch($pn_type) {
 			case __CA_NAV_ICON_ADD__:
-				$vs_fa_class = 'fa-plus-circle';	
+				$vs_fa_class = 'fas fa-plus-circle';	
 				break;
 			case __CA_NAV_ICON_DELETE__:
-				$vs_fa_class = 'fa fa-times';
+				$vs_fa_class = 'fas fa-times';
 				$vs_ca_class = 'deleteIcon'; 
 				break;
 			case __CA_NAV_ICON_CANCEL__:
-				$vs_fa_class = 'fa-minus-circle';
+				$vs_fa_class = 'fas fa-minus-circle';
 				$vs_ca_class = 'cancelIcon';
 				break;			
 			case __CA_NAV_ICON_EDIT__:
-				$vs_fa_class = 'fa-file';
+				$vs_fa_class = 'far fa-file';
 				$vs_ca_class = 'editIcon'; 
 				break;		
 			case __CA_NAV_ICON_EDIT_TEXT__:
-				$vs_fa_class = 'fa-edit';
+				$vs_fa_class = 'far fa-edit';
 				$vs_ca_class = 'editTextIcon'; 
 				break;
 			case __CA_NAV_ICON_BATCH_EDIT__:
-				$vs_fa_class = 'fa-magic';
+				$vs_fa_class = 'far fa-magic';
 				$vs_ca_class = 'batchIcon'; 
 				break;
 			case __CA_NAV_ICON_ALERT__:
-				$vs_fa_class = 'fa-exclamation-triangle';
+				$vs_fa_class = 'far fa-exclamation-triangle';
 				break;
 			case __CA_NAV_ICON_SEARCH__:
-				$vs_fa_class = 'fa-search';
+				$vs_fa_class = 'far fa-search';
 				break;
 			case __CA_NAV_ICON_INFO__:
-				$vs_fa_class = 'fa-info-circle';
+				$vs_fa_class = 'fas fa-info-circle';
 				$vs_ca_class = 'infoIcon';
 				break;
 			case __CA_NAV_ICON_DOWNLOAD__:
-				$vs_fa_class = 'fa-download';
+				$vs_fa_class = 'fas fa-download';
 				break;
 			case __CA_NAV_ICON_MAKE_PRIMARY__:
-				$vs_fa_class = 'far fa-check-circle';
+				$vs_fa_class = 'far far fa-check-circle';
 				break;
 			case __CA_NAV_ICON_IS_PRIMARY__:
-				$vs_fa_class = 'fa-check-square';
+				$vs_fa_class = 'far fa-check-square';
 				break;
 			case __CA_NAV_ICON_APPROVE__:
-				$vs_fa_class = 'fa-thumbs-o-up';
+				$vs_fa_class = 'far fa-thumbs-o-up';
 				break;	
 			case __CA_NAV_ICON_UPDATE__:
-				$vs_fa_class = 'fa-refresh';
+				$vs_fa_class = 'far fa-refresh';
 				$vs_ca_class = 'updateIcon'; 
 				break;
 			case __CA_NAV_ICON_LOGIN__:
-				$vs_fa_class = 'far fa-check-circle';
+				$vs_fa_class = 'far far fa-check-circle';
 				$vs_ca_class = 'loginButton';
 				break;
 			case __CA_NAV_ICON_SAVE__:
-				$vs_fa_class = 'fa-check-circle';
+				$vs_fa_class = 'far fa-check-circle';
 				break;
 			case __CA_NAV_ICON_HELP__:
-				$vs_fa_class = 'fa-life-ring';
+				$vs_fa_class = 'far fa-life-ring';
 				break;
 			case __CA_NAV_ICON_GO__:
-				$vs_fa_class = 'fa-chevron-circle-right';
+				$vs_fa_class = 'fas fa-chevron-circle-right';
 				$vs_ca_class = 'hierarchyIcon';
 				break;
 			case __CA_NAV_ICON_DEL_BUNDLE__:
-				$vs_fa_class = 'fa-times-circle';
+				$vs_fa_class = 'fas fa-times-circle';
 				break;
 			case __CA_NAV_ICON_CLOSE__:
-				$vs_fa_class = 'fa-times';
+				$vs_fa_class = 'fas fa-times';
 				break;
 			case __CA_NAV_ICON_WATCH__:
-				$vs_fa_class = 'fa-eye';
+				$vs_fa_class = 'far fa-eye';
 				break;
 			case __CA_NAV_ICON_UNWATCH__:
-				$vs_fa_class = 'fa-eye caIconRed';
+				$vs_fa_class = 'far fa-eye caIconRed';
 				break;
 			case __CA_NAV_ICON_ZOOM_IN__:
-				$vs_fa_class = 'fa-search-plus';
+				$vs_fa_class = 'far fa-search-plus';
 				break;
 			case __CA_NAV_ICON_ZOOM_OUT__:
-				$vs_fa_class = 'fa-search-minus';
+				$vs_fa_class = 'far fa-search-minus';
 				break;
 			case __CA_NAV_ICON_MAGNIFY__:
-				$vs_fa_class = 'fa-search';
+				$vs_fa_class = 'far fa-search';
 				break;
 			case __CA_NAV_ICON_OVERVIEW__:
-				$vs_fa_class = 'fa-picture-o';
+				$vs_fa_class = 'far fa-picture-o';
 				break;
 			case __CA_NAV_ICON_PAN__:
-				$vs_fa_class = 'fa-arrows';
+				$vs_fa_class = 'far fa-arrows';
 				break;
 			case __CA_NAV_ICON_CHANGE__:
-				$vs_fa_class = 'fa-retweet';
+				$vs_fa_class = 'fas far fa-retweet';
 				break;
 			case __CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__:
-				$vs_fa_class = 'fa-paperclip';
+				$vs_fa_class = 'far fa-paperclip';
 				break;
 			case __CA_NAV_ICON_COLLAPSE__:
-				$vs_fa_class = 'fa-minus-circle';
+				$vs_fa_class = 'fas fa-minus-circle';
 				break;
 			case __CA_NAV_ICON_EXPAND__:
-				$vs_fa_class = 'fa-plus-circle';
+				$vs_fa_class = 'fas fa-plus-circle';
 				break;					
 			case __CA_NAV_ICON_COMMIT__:
-				$vs_fa_class = 'fa-check-circle';
+				$vs_fa_class = 'far fa-check-circle';
 				break;	
 			case __CA_NAV_ICON_SETTINGS__:
-				$vs_fa_class = 'fa-cog';
+				$vs_fa_class = 'far fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fa-sliders';
+				$vs_fa_class = 'far fa-sliders';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
-				$vs_fa_class = 'fa-download';
+				$vs_fa_class = 'fas fa-download';
 				break;
 			case __CA_NAV_ICON_EXPORT_SMALL__:
-				$vs_fa_class = 'fa-external-link-square';
+				$vs_fa_class = 'far fa-external-link-square';
 				break;	
 			case __CA_NAV_ICON_SETS__:
-				$vs_fa_class = 'far fa-clone';
+				$vs_fa_class = 'far far fa-clone';
 				break;	
 			case __CA_NAV_ICON_RIGHT_ARROW__:
-				$vs_fa_class = 'fa-chevron-right';
+				$vs_fa_class = 'fas fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_VISUALIZE__:
-				$vs_fa_class = 'fa-line-chart';
+				$vs_fa_class = 'far fa-line-chart';
 				break;	
 			case __CA_NAV_ICON_ADD_WIDGET__:
-				$vs_fa_class = 'fa-plus-circle';
+				$vs_fa_class = 'fas fa-plus-circle';
 				break;	
 			case __CA_NAV_ICON_DUPLICATE__:
-				$vs_fa_class = 'fa-files-o';
+				$vs_fa_class = 'far fa-files-o';
 				break;	
 			case __CA_NAV_ICON_CHILD__:
-				$vs_fa_class = 'fa-child';
+				$vs_fa_class = 'fas far fa-child';
 				break;	
 			case __CA_NAV_ICON_SCROLL_RT__:
-				$vs_fa_class = 'fa-chevron-right';
+				$vs_fa_class = 'fas fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_SCROLL_LT__:
-				$vs_fa_class = 'fa-chevron-left';
+				$vs_fa_class = 'fas fa-chevron-left';
 				break;	
 			case __CA_NAV_ICON_MOVE__:
-				$vs_fa_class = 'fa-truck';
+				$vs_fa_class = 'far fa-truck';
 				break;	
 			case __CA_NAV_ICON_IMAGE__:
-				$vs_fa_class = 'fa-file-image-o';
+				$vs_fa_class = 'far fa-file-image-o';
 				break;	
 			case __CA_NAV_ICON_DOT__:
-				$vs_fa_class = 'fa-dot-circle-o';
+				$vs_fa_class = 'far fa-dot-circle-o';
 				break;	
 			case __CA_NAV_ICON_PDF__:
-				$vs_fa_class = 'fa-file-pdf-o';
+				$vs_fa_class = 'far fa-file-pdf-o';
 				break;	
 			case __CA_NAV_ICON_SET_CENTER__:
-				$vs_fa_class = 'fa-bullseye';
+				$vs_fa_class = 'far fa-bullseye';
 				break;	
 			case __CA_NAV_ICON_VISIBILITY_TOGGLE__:
- 				$vs_fa_class = 'fa-arrow-circle-up';
+ 				$vs_fa_class = 'far fa-arrow-circle-up';
  				break;
 			case __CA_NAV_ICON_UP__:
- 				$vs_fa_class = 'fa-arrow-circle-up';
+ 				$vs_fa_class = 'far fa-arrow-circle-up';
  				break;	
 			case __CA_NAV_ICON_DOWN__:
- 				$vs_fa_class = 'fa-arrow-circle-down';
+ 				$vs_fa_class = 'far fa-arrow-circle-down';
  				break;				
  			case __CA_NAV_ICON_FOLDER__:
- 				$vs_fa_class = 'fa-folder';	
+ 				$vs_fa_class = 'far fa-folder';	
  				break;				
  			case __CA_NAV_ICON_FOLDER_OPEN__:
- 				$vs_fa_class = 'fa-folder-open';	
+ 				$vs_fa_class = 'far fa-folder-open';	
  				break;							
  			case __CA_NAV_ICON_FILE__:
- 				$vs_fa_class = 'fa-file';	
+ 				$vs_fa_class = 'far fa-file';	
  				break;		
  			case __CA_NAV_ICON_CLOCK__:
- 				$vs_fa_class = 'fa-clock-o';	
+ 				$vs_fa_class = 'far fa-clock-o';	
  				break;				
  			case __CA_NAV_ICON_SPINNER__:
- 				$vs_fa_class = 'fa fa-cog fa-spin';	
+ 				$vs_fa_class = 'far fa-cog far fa-spin';	
  				break;								
  			case __CA_NAV_ICON_HIER__:
- 				$vs_fa_class = 'fa fa-sitemap';
+ 				$vs_fa_class = 'far fa-sitemap';
  				break;	
 			case __CA_NAV_ICON_SPREADSHEET__:
-				$vs_fa_class = 'fa-table';
+				$vs_fa_class = 'far fa-table';
 				break;	
 			case __CA_NAV_ICON_VERTICAL_ARROWS__:
-				$vs_fa_class = 'fa-arrows-v';
+				$vs_fa_class = 'far fa-arrows-v';
 				break;
 			case __CA_NAV_ICON_MEDIA_METADATA__:
-				$vs_fa_class = 'fa-file-audio-o';
+				$vs_fa_class = 'far fa-file-audio-o';
 				break;					
 			case __CA_NAV_ICON_EXTRACT__:
-				$vs_fa_class = 'fa-scissors';
+				$vs_fa_class = 'far fa-scissors';
 				break;					
 			case __CA_NAV_ICON_ROTATE__:
-				$vs_fa_class = 'fa-undo';
+				$vs_fa_class = 'far fa-undo';
 				break;
 			case __CA_NAV_ICON_NUKE__:
-				$vs_fa_class = 'fa-bomb';
+				$vs_fa_class = 'far fa-bomb';
 				break;
 			case __CA_NAV_ICON_FULL_RESULTS__:
-				$vs_fa_class = 'fa-bars';
+				$vs_fa_class = 'far fa-bars';
 				break;
 			case __CA_NAV_ICON_EXPORT_SMALL__:
-				$vs_fa_class = 'fa-external-link-square';
+				$vs_fa_class = 'far fa-external-link-square';
 				break;
 			case __CA_NAV_ICON_HOME__:
-				$vs_fa_class = 'fa-home';
+				$vs_fa_class = 'far fa-home';
 				break;	
 			case __CA_NAV_ICON_CROSSHAIRS__:
-				$vs_fa_class = 'fa-crosshairs';
+				$vs_fa_class = 'far fa-crosshairs';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
