@@ -881,7 +881,7 @@
 				$vs_fa_class = 'far fa-external-link-square';
 				break;
 			case __CA_NAV_ICON_HOME__:
-				$vs_fa_class = 'far fa-home';
+				$vs_fa_class = 'fas fa-home';
 				break;	
 			case __CA_NAV_ICON_CROSSHAIRS__:
 				$vs_fa_class = 'far fa-crosshairs';
