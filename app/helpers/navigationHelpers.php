@@ -830,13 +830,13 @@
 				$vs_fa_class = 'far fa-bullseye';
 				break;	
 			case __CA_NAV_ICON_VISIBILITY_TOGGLE__:
- 				$vs_fa_class = 'far fa-arrow-circle-up';
+ 				$vs_fa_class = 'fas fa-arrow-circle-up';
  				break;
 			case __CA_NAV_ICON_UP__:
- 				$vs_fa_class = 'far fa-arrow-circle-up';
+ 				$vs_fa_class = 'fas fa-arrow-circle-up';
  				break;	
 			case __CA_NAV_ICON_DOWN__:
- 				$vs_fa_class = 'far fa-arrow-circle-down';
+ 				$vs_fa_class = 'fas fa-arrow-circle-down';
  				break;				
  			case __CA_NAV_ICON_FOLDER__:
  				$vs_fa_class = 'far fa-folder';	
