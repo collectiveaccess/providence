@@ -7581,7 +7581,7 @@ div.checklist {
 
 div.checklistItem {
     font-weight: normal;
-    margin: 2px;
+    margin: 2px 2px 2px 5px;
     min-width: 100px;
     max-width: 160px;
     white-space: nowrap
