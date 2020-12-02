@@ -46,6 +46,14 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	 */
 	public function __construct() {
 		global $g_information_service_settings_AAT;
+		$g_information_service_settings_AAT['additionalFilter'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Additional search filter'),
+			'description' => _t('Additional search filter. For example to limit to children of a particular term enter "gvp:broaderExtended aat:300312238"')
+		];
 
 		WLPlugInformationServiceAAT::$s_settings = $g_information_service_settings_AAT;
 		parent::__construct();
@@ -113,8 +121,12 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	}
 
 	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
+		$vs_additional_filter = $pa_options['settings']['additionalFilter'] ?? null;
+		if ($vs_additional_filter){
+			$vs_additional_filter = "$vs_additional_filter ;";
+		}
 		$vs_query = urlencode( 'SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull {
-	?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme aat: ;
+	?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme aat: ; ' . $vs_additional_filter . '
 	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
 	{?ID gvp:parentStringAbbrev ?Parents}
 	{?ID gvp:parentString ?ParentsFull}
