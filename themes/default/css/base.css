@@ -7581,9 +7581,14 @@ div.checklist {
 
 div.checklistItem {
     font-weight: normal;
-    margin-right: 10px;
-    width: 100px;
+    margin: 2px;
+    min-width: 100px;
+    max-width: 160px;
+    white-space: nowrap
     
+}
+div.checklistItem input {
+	margin-right: 4px;
 }
 
 /* Statistics dashboard */
