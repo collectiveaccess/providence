@@ -341,7 +341,7 @@ function caFileIsIncludable($ps_file) {
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
-		if(!file_exists($dir)) { return []; }
+		if(!file_exists($dir) || !is_dir($dir)) { return []; }
 		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
