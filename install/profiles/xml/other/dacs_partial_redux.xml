@@ -3,7 +3,7 @@
   xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1"
   infoUrl="http://wiki.collectiveaccess.org/index.php?title=DACS_profile">
   <profileName>DACS/EAD Compliant Collection Table 2016 (Partial Profile)</profileName>
-  <profileDescription>Use this profile in conjuction with a complete project profile if you want a system with a Collectoin table that is compliant with DACS and EAD.  Make sure to set "ca_objects_x_collections_hierarchy_enabled" and "ca_collections_show_add_child_control_in_inspector" to 1 in /app/conf/app.conf</profileDescription>
+  <profileDescription>Use this profile in conjuction with a complete project profile if you want a system with a Collection table that is compliant with DACS and EAD.  Make sure to set "ca_objects_x_collections_hierarchy_enabled" and "ca_collections_show_add_child_control_in_inspector" to 1 in /app/conf/app.conf</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
   </locales>
