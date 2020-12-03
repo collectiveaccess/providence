@@ -1252,7 +1252,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_item_ids = $qr_res->getAllFieldValues('item_id');
 			
 			// Set the ranks of the newly created links
-			$this->getDb()->query("UPDATE ca_set_items SET rank = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
+			$this->getDb()->query("UPDATE ca_set_items SET `rank` = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
 				$vn_set_id, $vn_table_num, $vn_type_id, $va_row_ids
 			));
 
@@ -1435,7 +1435,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
 		
 		$o_db = new Db();
-		$qr_res = $o_db->query("SELECT row_id, item_id, rank FROM ca_set_items WHERE set_id = ? AND deleted = 0 ORDER BY rank", [$pn_set_id]);
+		$qr_res = $o_db->query("SELECT row_id, item_id, `rank` FROM ca_set_items WHERE set_id = ? AND deleted = 0 ORDER BY `rank`", [$pn_set_id]);
 	
 		$va_ranks = [];
 		
@@ -1549,10 +1549,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
 			if($vb_treat_row_ids_as_rids) {
 				$va_tmp = explode("_", $vn_row_id);
-				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
 				$va_updated_item_ids[$va_tmp[1]] = 1;
 			} else {
-				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
 			}
 		}
 		
@@ -1710,7 +1710,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		// get row labels
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.rank,
+				casi.set_id, casi.item_id, casi.row_id, casi.`rank`,
 				rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
 			FROM ca_set_items casi
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
@@ -1718,7 +1718,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			WHERE
 				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} AND casi.deleted = 0
 			ORDER BY 
-				casi.rank ASC
+				casi.`rank` ASC
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
 		
@@ -1754,7 +1754,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.rank, casi.vars,
+				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.vars,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
 				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
 				{$vs_rep_select}
@@ -1766,7 +1766,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			WHERE
 				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql}  AND casi.deleted = 0
 			ORDER BY 
-				casi.rank ASC
+				casi.`rank` ASC
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
 
@@ -2268,7 +2268,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				(casi.set_id = ?) AND (caxor.is_primary = 1) AND (o.deleted = 0) AND (casi.deleted = 0)
 				{$vs_access_sql}
 			ORDER BY 
-				casi.rank ASC
+				casi.`rank` ASC
 		", (int)$vn_set_id);
 		
 		$va_reps = array();

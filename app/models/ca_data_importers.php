@@ -2024,7 +2024,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							if (isset($va_item['settings']['skipIfExpression']) && strlen(trim($va_item['settings']['skipIfExpression']))) {
 								try {
-									if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipIfExpression'], $va_row_with_replacements)) {
+								    if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipIfExpression'], $va_row_with_replacements)) {
 										$o_log->logInfo(_t('[%1] Skipped mapping because skipIfExpression %2 is true', $vs_idno, $va_item['settings']['skipIfExpression']));
 										continue(2);
 									}
@@ -2033,14 +2033,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 						
-							if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
-								continue; 
-							}
+							//if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
+							//	continue; 
+							//}
 					
 							if($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) { 
 								continue; 
 							}
 							if (is_null($vm_val)) { continue; }
+							
 					
 							// Get mapping error policy
 							$vb_item_error_policy_is_default = false;
@@ -2181,14 +2182,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$vm_val = mb_substr($vm_val, 0, $vn_max_length);
 							}
 						
-						
 							if (in_array('preferred_labels', $va_item_dest) || in_array('nonpreferred_labels', $va_item_dest)) {	
 								if (isset($va_item['settings']['truncateLongLabels']) && $va_item['settings']['truncateLongLabels']) {
 									$va_group_buf[$vn_c]['_truncateLongLabels'] = true;
 								}
 							}
-							
 							switch($vs_item_terminal) {
+							    case 'type_id':
+							        if(($vs_target_table == $vs_subject_table_name) && (sizeof($va_item_dest) == 2)) {
+                                        $vs_type = $vm_val;
+                                    }
+							        break; 
 								case 'preferred_labels':
 								case 'nonpreferred_labels':
 									if ($t_instance = Datamodel::getInstance($vs_target_table, true)) {

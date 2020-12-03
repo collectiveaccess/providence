@@ -2300,61 +2300,6 @@ class BaseEditorController extends ActionController {
 		$this->render('object_representation_process_media_json.php');
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function MediaReplicationControls($pt_representation=null) {
-		if ($pt_representation) {
-			$pn_representation_id = $pt_representation->getPrimaryKey();
-			$t_rep = $pt_representation;
-		} else {
-			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-			$t_rep = new ca_object_representations($pn_representation_id);
-		}
-		$this->view->setVar('target_list', $t_rep->getAvailableMediaReplicationTargetsAsHTMLFormElement('target', 'media'));
-		$this->view->setVar('representation_id', $pn_representation_id);
-		$this->view->setVar('t_representation', $t_rep);
-
-		$this->render('object_representation_media_replication_controls_html.php');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function StartMediaReplication() {
-		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-		$ps_target = $this->request->getParameter('target', pString);
-		$t_rep = new ca_object_representations($pn_representation_id);
-
-		$this->view->setVar('target_list', $t_rep->getAvailableMediaReplicationTargetsAsHTMLFormElement('target', 'media'));
-		$this->view->setVar('representation_id', $pn_representation_id);
-		$this->view->setVar('t_representation', $t_rep);
-		$this->view->setVar('selected_target', $ps_target);
-
-		$t_rep->replicateMedia('media', $ps_target);
-
-		$this->MediaReplicationControls($t_rep);
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function RemoveMediaReplication() {
-		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-		$ps_target = $this->request->getParameter('target', pString);
-		$ps_key = urldecode($this->request->getParameter('key', pString));
-		$t_rep = new ca_object_representations($pn_representation_id);
-
-		$this->view->setVar('target_list', $t_rep->getAvailableMediaReplicationTargetsAsHTMLFormElement('target', 'media'));
-		$this->view->setVar('representation_id', $pn_representation_id);
-		$this->view->setVar('t_representation', $t_rep);
-		$this->view->setVar('selected_target', $ps_target);
-
-		$t_rep->removeMediaReplication('media', $ps_target, $ps_key);
-
-		$this->MediaReplicationControls($t_rep);
-	}
-	# -------------------------------------------------------
 	# File download
 	# -------------------------------------------------------
 	/**

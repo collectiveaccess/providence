@@ -636,6 +636,13 @@
 					return urldecode($pn_row_id);
 					break;
 				# -----------------------------------------------------
+				case 'tags':
+					if ($tag = ca_item_tags::find(['tag_id' => $pn_row_id], ['returnAs' => 'firstModelInstance'])) {
+					    return $tag->get('ca_item_tags.tag');
+					}
+					return urldecode($pn_row_id);
+					break;
+				# -----------------------------------------------------
 				case 'checkouts':
 					$vs_status_text = null;
 					$vs_status_code = (isset($va_facet_info['status']) && $va_facet_info['status']) ? $va_facet_info['status'] : $pn_row_id;
@@ -2049,6 +2056,55 @@
 								if (caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
 								break;
 							# -----------------------------------------------------
+							case 'tags':
+								$vs_field_name = $va_facet_info['field'];
+								$vs_table_name = $this->ops_browse_table_name;
+
+								if ($va_facet_info['relative_to']) {
+									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
+										$vs_relative_to_join = join("\n", $va_relative_to_join);
+										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+										$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+										$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+									}
+								}
+
+								foreach($va_row_ids as $vn_row_id) {
+									$vn_row_id = urldecode($vn_row_id);
+									if ($vn_i == 0) {
+										$vs_sql = "
+											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											FROM ".$this->ops_browse_table_name."
+											INNER JOIN ca_items_x_tags ON ca_items_x_tags.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_items_x_tags.table_num = ".$t_item->tableNum()."
+											INNER JOIN ca_item_tags ON ca_item_tags.tag_id = ca_items_x_tags.tag_id
+											{$vs_relative_to_join}
+											WHERE
+												(ca_item_tags.tag_id = ?)";
+
+										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+									} else {
+										$vs_sql = "
+											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											FROM ".$this->ops_browse_table_name."
+											INNER JOIN ca_items_x_tags ON ca_items_x_tags.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_items_x_tags.table_num = ".$t_item->tableNum()."
+											INNER JOIN ca_item_tags ON ca_item_tags.tag_id = ca_items_x_tags.tag_id
+											{$vs_relative_to_join}
+											WHERE
+												(ca_item_tags.tag_id = ?)";
+
+										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+
+									}
+									
+									if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
+									$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
+
+									if (!caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
+								}
+								if (caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
+								break;
+							# -----------------------------------------------------
 							case 'checkouts':
 								$vs_field_name = $va_facet_info['field'];
 								$vs_table_name = $this->ops_browse_table_name;
@@ -2171,20 +2227,23 @@
 
 								$qr_res = $this->opo_db->query($vs_sql, [$va_row_ids]);
 							
-								$va_wheres[] = "{$vs_browse_table_name}.{$idno_fld} IN (?)";
-								$vs_sql = "
-										SELECT {$vs_browse_table_name}.".$t_item->primaryKey()."
-										FROM {$vs_browse_table_name}
-										{$vs_relative_to_join}
-										".((sizeof($va_wheres) > 0) ? " WHERE ".join(" AND ", $va_wheres) : "")."
-										";
+							    if(is_array($idno_list = $qr_res->getAllFieldValues($idno_fld)) && (sizeof($idno_list) > 0)) {
+							
+                                    $va_wheres[] = "{$vs_browse_table_name}.{$idno_fld} IN (?)";
+                                    $vs_sql = "
+                                            SELECT {$vs_browse_table_name}.".$t_item->primaryKey()."
+                                            FROM {$vs_browse_table_name}
+                                            {$vs_relative_to_join}
+                                            ".((sizeof($va_wheres) > 0) ? " WHERE ".join(" AND ", $va_wheres) : "")."
+                                            ";
 
-								$qr_res = $this->opo_db->query($vs_sql, [$qr_res->getAllFieldValues($idno_fld)]);
-								
-								if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
-								$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($vs_browse_table_name.'.'.$t_item->primaryKey()));
-
-								$vn_i++;
+                                    $qr_res = $this->opo_db->query($vs_sql, [$idno_list]);
+                                
+                                    if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
+                                    $va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($vs_browse_table_name.'.'.$t_item->primaryKey()));
+                                    
+								    $vn_i++;
+                                }
 								break;
 							# -----------------------------------------------------
 							default:
@@ -4016,7 +4075,7 @@
 										$va_orderbys[] = 'lil.name_plural';
 										break;
 									case __CA_LISTS_SORT_BY_RANK__:	// by rank
-										$va_orderbys[] = 'li.rank';
+										$va_orderbys[] = 'li.`rank`';
 										break;
 									case __CA_LISTS_SORT_BY_VALUE__:	// by value
 										$va_orderbys[] = 'li.item_value';
@@ -4029,13 +4088,13 @@
 
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 							$vs_sql = "
-								SELECT COUNT(*) _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort, li.parent_id
+								SELECT COUNT(*) _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.`rank`, li.idno_sort, li.parent_id
 								FROM ca_list_items li
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 								{$vs_join_sql}
 								WHERE
 									ca_lists.list_code = ?  AND lil.is_preferred = 1 {$vs_where_sql}
-								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.rank, li.idno_sort 
+								GROUP BY lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.`rank`, li.idno_sort 
 								{$vs_order_by}
 								";
 							//print $vs_sql." [$vs_list_name]";
@@ -4602,6 +4661,131 @@
 									$vb_single_value_is_present = true;
 								}
 							}
+						}
+
+						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+							return array();
+						}
+						return $va_values;
+					}
+
+
+					return array();
+					break;
+				# -----------------------------------------------------
+				case 'tags':
+					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
+
+					$va_joins = array();
+					$va_wheres = array();
+					$vs_where_sql = '';
+
+					$va_facet_values = null;
+
+					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
+					}
+
+					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+					}
+
+					if ($vs_browse_type_limit_sql) {
+						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
+					}
+
+					if ($t_item->hasField('deleted')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+					}
+
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+						}
+					}
+					
+					if (isset($va_facet_info['moderated'])) {
+						$va_wheres[] = (bool)$va_facet_info['moderated'] ? "(ca_items_x_tags.moderated_on > 0)" : "(ca_items_x_tags.moderated_on IS NULL)";
+					}
+
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
+					}
+
+					$vs_join_sql = join("\n", $va_joins);
+
+					if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
+						$vs_where_sql = '('.$vs_where_sql.')';
+					}
+
+					if ($vb_check_availability_only) {
+						$vs_sql = "
+							SELECT 1
+							FROM {$vs_browse_table_name}
+							INNER JOIN ca_items_x_tags ON ca_items_x_tags.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND ca_items_x_tags.table_num = {$vs_browse_table_num}
+							{$vs_join_sql}
+							WHERE
+								{$vs_where_sql}
+							LIMIT 2";
+
+						$qr_res = $this->opo_db->query($vs_sql);
+
+						if ($qr_res->nextRow()) {
+							return ((int)$qr_res->numRows() > 0) ? true : false;
+						}
+						return false;
+					} else {
+						$vs_pk = $t_item->primaryKey();
+						$vs_sql = "
+							SELECT COUNT(*) _count, ca_items_x_tags.tag_id, ca_item_tags.tag
+							FROM {$vs_browse_table_name}
+							INNER JOIN ca_items_x_tags ON ca_items_x_tags.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND ca_items_x_tags.table_num = {$vs_browse_table_num}
+							INNER JOIN ca_item_tags ON ca_items_x_tags.tag_id = ca_item_tags.tag_id
+							{$vs_join_sql}
+							WHERE
+								{$vs_where_sql}
+							GROUP BY ca_item_tags.tag_id
+							ORDER BY ca_item_tags.tag
+						";
+
+						$qr_res = $this->opo_db->query($vs_sql);
+
+						$va_values = array();
+						while($qr_res->nextRow()) {
+								$tag_id = $qr_res->get('tag_id');
+								$tag = $qr_res->get('tag');
+								if ($va_criteria[$tag_id]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+
+                                $va_values[$tag_id] = array(
+                                    'id' => $tag_id,
+                                    'label' => $tag,
+                                    'content_count' => $qr_res->get('_count')
+                                );
+								if (!is_null($vs_single_value) && ($tag_id == $vs_single_value)) {
+									$vb_single_value_is_present = true;
+								}
+							
 						}
 
 						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
@@ -5305,7 +5489,7 @@
                             $va_params[] = $va_container_ids[$vs_container_code];
                         }
 						$vs_sql = "
-							SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2, ca_attributes.attribute_id
+							SELECT COUNT(*) _count, ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2, ca_attribute_values.value_longtext1, ca_attribute_values.value_longtext2
 							FROM ca_attributes
 							{$vs_join_sql}
 							WHERE

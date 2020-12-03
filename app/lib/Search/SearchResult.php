@@ -720,7 +720,7 @@ class SearchResult extends BaseObject {
 						$va_fields[] = $va_rel['many_table'].'.type_id rel_type_id';
 					}
 					if ($t_link->hasField('rank')) { 
-						$va_order_bys[] = $t_link->tableName().'.rank';
+						$va_order_bys[] = $t_link->tableName().'.`rank`';
 					}
 				} else {
 					if (($va_rels = Datamodel::getOneToManyRelations($vs_right_table)) && is_array($va_rels[$vs_left_table])) {
@@ -2364,9 +2364,13 @@ class SearchResult extends BaseObject {
 			}
 		} else {
 			// is blank
+			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
+			
 			if ($pa_options['returnWithStructure'] && $pa_options['returnBlankValues']) {
-				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = '';
-			}	
+				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
+			} elseif ($default_value) {
+			    $va_return_values[(int)$vn_id][null][null][] = $default_value;	
+			}
 		}
 		
 		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -197,7 +197,7 @@
  			// we also replace the weird multibyte nonsense Zend uses as placeholder with something more reasonable so that
  			// whatever we output here isn't rejected if thrown into parseValue() again
  			if(substr($vs_decimal_with_placeholder,0,2)=="¤") { // '¤' has length 2
- 				$vs_decimal_with_placeholder = str_replace("¤", '% ', $vs_decimal_with_placeholder);
+ 				$vs_decimal_with_placeholder = preg_replace("!¤[^\d]*!u", '% ', $vs_decimal_with_placeholder);
  			} elseif(substr($vs_decimal_with_placeholder, -2)=="¤") { // placeholder at the end
  				$vs_decimal_with_placeholder = preg_replace("![^\d\,\.]!", "", $vs_decimal_with_placeholder)." %";
  			}
@@ -354,4 +354,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

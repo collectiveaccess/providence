@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -545,7 +545,7 @@ class SearchEngine extends SearchBase {
 		$vs_fld = $po_term->getTerm()->field;
 		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
 			// if field is access point then do rewrite
-			$va_fld_tmp = explode("/", mb_strtolower($vs_fld));
+			$va_fld_tmp = preg_split("![/\|]+!", mb_strtolower($vs_fld));
 			$vs_fld_lc = $va_fld_tmp[0];
 			$vs_rel_types = isset($va_fld_tmp[1]) ? $va_fld_tmp[1] : null;
 			
@@ -615,7 +615,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a label? Rewrite the field for that.
-		$va_tmp = explode('/', $vs_fld);
+		$va_tmp = preg_split('![/\|]+!', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
@@ -677,7 +677,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a labels? Rewrite the field for that.
-		$va_tmp = explode('/', $vs_fld);
+		$va_tmp = preg_split('![/\|]+!', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
@@ -1182,7 +1182,7 @@ class SearchEngine extends SearchBase {
 			$va_field_list = SearchEngine::_getFieldList($o_parsed_query);
 			
 			foreach($va_field_list as $vs_field) {
-				$va_tmp = explode('/', $vs_field);
+				$va_tmp = preg_split('![/\|]+!', $vs_field);
 				
 				if (sizeof($va_tmp) > 1) {
 					$vs_rel_type = $va_tmp[1];

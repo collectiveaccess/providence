@@ -4337,10 +4337,6 @@
 				CLIUtils::addError(_t('Set %1 does not exist', $vs_add_to_set));
 				return false;
 			}
-			if ($t_set && ((int)$t_set->get('table_num') !== (int)$t_mapping->get('table_num'))) {
-				CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
-				return false;
-			}
 			
 			$vn_user_id = null;
 			if ($vs_user_name = $po_opts->getOption('username')) {

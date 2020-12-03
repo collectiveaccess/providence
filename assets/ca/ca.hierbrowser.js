@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,9 +64,12 @@ var caUI = caUI || {};
 			defaultItemID: null,	// set to default value to show when no initItemID is set; note that initItemID is an ID to open with *and select.* defaultItemID merely specifies an item to open with, but not select.
 			useAsRootID: null,		// if set to an item_id, that is used at the root of the display hierarchy
 
+			excludeItemIDs: [],		// Skip items with ids in this list
+
 			className: 'hierarchyBrowserLevel',
 			classNameSelected: 'hierarchyBrowserLevelSelected',
 			classNameContainer: 'hierarchyBrowserContainer',
+			classNameContainerReadOnly: 'hierarchyBrowserContainerReadOnly',
 
 			currentSelectionDisplayID: '',
 			currentSelectionDisplayFormat: '%1',
@@ -124,6 +127,8 @@ var caUI = caUI || {};
 		
 		
 		that.useAsRootID = parseInt(that.useAsRootID);
+		
+		that.excludeItemIDs = that.excludeItemIDs.map(x => x + "");		// force all ids to string to ensure comparisons work (item ids from service are strings)
 
 		if (!that.levelDataUrl) {
 			alert("No level data url specified for " + that.name + "!");
@@ -141,7 +146,7 @@ var caUI = caUI || {};
 				jQuery('#' + that.container).append("<div class='" + that.classNameContainer + "' id='" + that.container + "_select_container'></div>");
 			}
 		}
-
+		jQuery('#' + that.container).append("<div class='" + that.classNameContainerReadOnly + "' id='" + that.container + "_readonly'></div>");
 		if (that.typeMenuID) {
 			jQuery('#' + that.typeMenuID).hide();
 		}
@@ -155,6 +160,7 @@ var caUI = caUI || {};
 		// @param int item_id The database id of the item to be used as the root of the hierarchy. If omitted the useAsRootID option value is used, or if that is not available whatever root the server decides to use.
 		//
 		that.setUpHierarchy = function(item_id) {
+			that.isReadOnly(that.readOnly, false);
 			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : 0, 1, null, true); return; }
 			that.levelDivs = [];
 			that.levelLists = [];
@@ -202,6 +208,21 @@ var caUI = caUI || {};
 					jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
 				}
 			});
+			
+		
+		}
+		// --------------------------------------------------------------------------------
+		// 
+		//
+		// @param bool
+		//
+		that.isReadOnly = function(readonly, animate=true) {
+			if (readonly !== null) {
+				that.readOnly = readonly;
+				
+				that.readOnly ? jQuery("#" + that.container + "_readonly").fadeIn(animate ? 500 : 0) : jQuery("#" + that.container + "_readonly").fadeOut(animate ? 500 : 0);
+			}
+			return that.readOnly;
 		}
 		// --------------------------------------------------------------------------------
 		// Clears hierarchy level display
@@ -426,6 +447,11 @@ var caUI = caUI || {};
 						if (!item) { continue; }
 						if (!item.name) { item.name = '??? ' + item['item_id']; }
 						if (item['item_id']) {
+							if (that.excludeItemIDs && (Array.isArray(that.excludeItemIDs)) && (that.excludeItemIDs.length > 0) && (that.excludeItemIDs.indexOf(item['item_id']) >= 0)) {
+								
+							console.log(that.excludeItemIDs, item);
+								continue;
+							}
 							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
 								that.selectedItemIDs[0] = item['item_id'];
 							}
@@ -435,7 +461,7 @@ var caUI = caUI || {};
 							if (that.uiStyle == 'horizontal') {
 								var moreButton = '';
 								if (that.editButtonIcon) {
-									if ((item.children > 0) || (level == 0)){
+									if ((item.children > 0) || ((level == 0) && (item.children == null))){
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' >" + that.editButtonIcon + "</a></div>";
 									} else {
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren'>" + that.disabledButtonIcon + "</a></div>";
@@ -541,26 +567,26 @@ var caUI = caUI || {};
 								}
 
 								// hierarchy forward navigation
-								if (!that.readOnly) {
-									jQuery('#' + newLevelListID + " li:last a:first").click(function() {
-										var l = jQuery(this).parent().parent().parent().parent().data('level');
-										var item_id = jQuery(this).data('item_id');
-										var has_children = jQuery(this).data('has_children');
-										that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, jQuery(this).data('item'));
+								
+								jQuery('#' + newLevelListID + " li:last a:first").click(function() {
+									if (that.readOnly) { return false; }
+									var l = jQuery(this).parent().parent().parent().parent().data('level');
+									var item_id = jQuery(this).data('item_id');
+									var has_children = jQuery(this).data('has_children');
+									that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, jQuery(this).data('item'));
 
-										// scroll to new level
-										that.setUpHierarchyLevel(l + 1, item_id, 0, undefined, true);
-										jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
+									// scroll to new level
+									that.setUpHierarchyLevel(l + 1, item_id, 0, undefined, true);
+									jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
 
-										return false;
-									});
-								}
+									return false;
+								});
 
-								if (that.readOnly) {
-									jQuery('#' + newLevelListID + " li:first a").click(function() {
-										return false;
-									});
-								}
+								// if (that.readOnly) {
+// 									jQuery('#' + newLevelListID + " li:first a").click(function() {
+// 										return false;
+// 									});
+// 								}
 
 								if ((that.allowExtractionFromHierarchy) && (that.extractFromHierarchyButtonIcon)) {
 									jQuery('#' + newLevelListID + ' #hierBrowser_' + that.name + '_extract').unbind('click.extract').bind('click.extract', function() {

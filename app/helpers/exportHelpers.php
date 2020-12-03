@@ -335,9 +335,10 @@
 				}
 
 				$o_writer = new PHPExcel_Writer_Excel2007($workbook);
-
+				$vs_filename = caGetOption('filename', $va_export_config[$vs_table][$ps_template], 'export_results');
+				$vs_filename = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $vs_filename);
 				header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-				header('Content-Disposition:inline;filename=Export.xlsx ');
+				header('Content-Disposition:inline;filename='.$vs_filename.'_'.date("Y-m-d").'.xlsx');
 				$o_writer->save('php://output');
 				exit;
 				break;
@@ -410,8 +411,10 @@
 				}
 
 				
+				$vs_filename = caGetOption('filename', $va_export_config[$vs_table][$ps_template], 'export_results');
+				$vs_filename = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $vs_filename);
 				header('Content-type: application/vnd.openxmlformats-officedocument.presentationml.presentation');
-				header('Content-Disposition:inline;filename=Export.pptx ');
+				header('Content-Disposition:inline;filename='.$vs_filename.'_'.date("Y-m-d").'.pptx');
 				
 				$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
 				$o_writer->save('php://output');
@@ -421,7 +424,7 @@
 				//
 				// PDF output
 				//
-				caExportViewAsPDF($o_view, $va_template_info, ($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results.pdf'), []);
+				caExportViewAsPDF($o_view, $va_template_info, (($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results')).'_'.date("Y-m-d").'.pdf', []);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
 		

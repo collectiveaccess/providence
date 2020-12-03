@@ -36,6 +36,7 @@
 /* ]]> */
 </script>
 <div class="sectionBox">
+<?php
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 

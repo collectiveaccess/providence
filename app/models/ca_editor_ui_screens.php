@@ -378,7 +378,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_editor_ui_bundle_placements
 			WHERE
 				screen_id = ?
-			ORDER BY rank
+			ORDER BY `rank`
 		", (int)$vn_screen_id);
 		
 		$va_available_bundles = ($pb_settings_only) ? array() : $this->getAvailableBundles();
@@ -709,7 +709,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						
 						break;
 					} else {
-						if (!($t_rel = Datamodel::getInstanceByTableName($vs_bundle, true))) { continue; }
+						if (!($t_rel = Datamodel::getInstanceByTableName($vs_bundle, true))) { continue(2); }
 						$va_path = array_keys(Datamodel::getPath($t_instance->tableName(), $vs_bundle));
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(

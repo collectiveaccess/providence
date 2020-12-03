@@ -2085,7 +2085,6 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 */
  	private function relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $pa_options=null) {
  		ExternalCache::flush("objectHistory");
- 		return true;
  		if(!$pn_rel_id) { return true; }	// null record means we are batch deleting so go ahead and recalculate
  		
  		if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }

@@ -542,7 +542,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 									$vs_condition = "{$vs_select}.val() === '" . $va_item['item_id'] . "'";
 									break;
 								default:
-									continue;
+									continue(2);
 							}
 						
 							if (sizeof($ids) > 0) {

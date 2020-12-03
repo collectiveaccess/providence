@@ -476,8 +476,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	private function _getElementIDForAccessPoint($pn_subject_tablenum, $ps_access_point) {
-		$va_tmp = explode('/', $ps_access_point);
-		list($vs_table, $vs_field, $vs_subfield) = explode('.', $va_tmp[0]);
+		$va_tmp = preg_split('![/\|]+!', $ps_access_point);
+		list($vs_table, $vs_field, $vs_subfield, $vs_subsubfield, $vs_subsubsubfield) = explode('.', $va_tmp[0]);
 		
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
 		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : null;

@@ -1,35 +1,34 @@
 # *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
 
 # List month names; used whenever name of month needs to be displayed
-monthList = [january, february, march, april, may, june, july, august, september, october, november, december]
+monthList = [janeiro, fevereiro, março, abril, maio, junho, julho, agosto, setembro, outubro, novembro, dezembro]
 
 # *** the following list of months is for display and *SHOULD* be capitalized where appropriate
-monthListDisplay = [January, February, March, April, May, June, July, August, September, October, November, December]
+monthListDisplay = [Janeiro, Fevereiro, Março, Abril, Maio, Junho, Julho, Agosto, Setembro, Outubro, Novembro, Dezembro]
 
 # Hash table mapping acceptable month names to the display names defined in 'monthList'
 monthTable = {
-	jan = january, jan. = january,
-	feb = february, feb. = february,
-	mar = march, mar. = march,
-	apr = april, apr. = april,
-	ma = may,
-	jun = june, jun. = june,
-	jul = july, jul. = july,
-	aug = august, aug. = august,
-	sep = september, sep. = september,
-	sept = september, sept. = september,
-	oct = october, oct. = october,
-	nov = november, nov. = november,
-	dec = december, dec. = december
+	jan = janeiro, jan. = janeiro,
+	fev = fevereiro, fev. = fevereiro,
+	mar = março, mar. = março,
+	abr = abril, abr. = abril,
+	mai = maio,
+	jun = junho, jun. = junho,
+	jul = julho, jul. = julho,
+	ago = agosto, ago. = agosto,
+	set = setembro, set. = setembro,
+	out = outubro, out. = outubro,
+	nov = novembro, nov. = novembro,
+	dez = dezembro, dez. = dezembro
 }
 
 # List of day names, starting with Sunday
-dayListDisplay = [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+dayListDisplay = [Domingo, Segunda-Feira, Terça-Feira, Quarta-Feira, Quinta-Feira, Sexta-Feira, Sábado]
 
-rangePreConjunctions = [from, between]
-rangeConjunctions = [–, -, to, and, .., through, or]
+rangePreConjunctions = [desde, entre]
+rangeConjunctions = [–, -, até, e, ..]
 
-dateTimeConjunctions = [at,@]
+dateTimeConjunctions = [at, @ , às]
 
 dateDelimiters = [/,-,.]
 timeDelimiters = [:,.]
@@ -42,10 +41,10 @@ meridianTable = {
 	p.m. = pm
 }
 
-dateCircaIndicator = [circa, c, c., ca, ca., about, early, late, mid]
-dateProbablyIndicator = [probably, possibly]
+dateCircaIndicator = [circa, por volta de, início, final, meados]
+dateProbablyIndicator = [provávelmente, possivelmente]
 dateUncertaintyIndicator = [~]
-dateUncertaintyYearIndicator = [y]
+dateUncertaintyYearIndicator = [a, y]
 dateUncertaintyDayIndicator = [d]
 
 # What to use to indicate a geological date ("millions of years ago")
@@ -54,55 +53,43 @@ dateMYA = [mya]
 # What to use to indicate radiocarbon dates ("before present")
 dateBP = [bp]
 
-dateADIndicator = CE
-dateBCIndicator = BCE
+dateADIndicator = dc
+dateBCIndicator = ac
 ADBCTable = {
-	ad = CE,
-	a.d. = CE,
-	AD = CE,
-	bc = BCE,
-	b.c. = BCE,
-	BC = BCE,
-	c.e. = CE,
-	b.c.e. = BCE,
-	ce = CE,
-	bce = BCE
+	d.c. = dc,
+	a.c = ac
 }
 
-nowDate = [now]
-todayDate = [today]
-yesterdayDate = [yesterday]
-tomorrowDate = [tomorrow]
+nowDate = [agora, now]
+todayDate = [hoje]
+yesterdayDate = [ontem]
+tomorrowDate = [amanhã]
 undatedDate = [undated, unknown]
 
-presentDate = [present, ?, ??, ???, ????]
-beforeQualifier = [before, prior to]
-earlyQualifier = [early]
-midQualifier = [mid, middle]
-lateQualifier = [late]
-diedQualifier = [d., d, died]
-afterQualifier = [after, later than]
-bornQualifier = [b., b, born]
+presentDate = [presente, ?, ??, ???, ????]
+beforeQualifier = [antes, anterior a]
+earlyQualifier = [início]
+midQualifier = [meados]
+lateQualifier = [final]
+diedQualifier = [morte, m.]
+afterQualifier = [depois, posterior a]
+bornQualifier = [nascimento, n.]
 
 # Text to indicate century (as in "20th century")
-centuryIndicator = [century, cent]
+centuryIndicator = [século, séc]
 
 # Text to indicate decade (as in "1920s")
 decadeIndicator = [s]
 
 # list of numeric suffixes, starting with the one for zero
 # (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
-ordinalSuffixes = [th, st, nd, rd]
-ordinalSuffixDefault = th
-ordinalSuffixExceptions = {
-	11 = th,
-	12 = th,
-	13 = th
-}
+ordinalSuffixes =
+ordinalSuffixDefault =
+ordinalSuffixExceptions = {}
 
 # in delimited dates (ex. 12/10/2009) is the first number a month or a day?
 # set to "0" for European style dates (day comes first); "1" for American-style dates (month comes first)
-monthComesFirstInDelimitedDate = 1
+monthComesFirstInDelimitedDate = 0
 
 # character(s) to append to day in full (not delimited) date
 # eg. in the date "1. February 2009", "." is the daySuffix
@@ -110,13 +97,13 @@ monthComesFirstInDelimitedDate = 1
 daySuffix = 
 
 # Definite articles
-definiteArticles = [the]
+definiteArticles = [o, a, os, as]
 
 # Indefinite articles
-indefiniteArticles = [a, an]
+indefiniteArticles = [um, uma]
 
 # Seasons
-winterSeason = [winter]
-springSeason = [spring]
-summerSeason = [summer]
-autumnSeason = [autumn, fall]
+winterSeason = [Inverno]
+springSeason = [Primavera]
+summerSeason = [Verão, Estio]
+autumnSeason = [Outono]

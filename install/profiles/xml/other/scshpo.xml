@@ -1,0 +1,4215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
+  <profileName>[Custom] SHPO Historic Properties Database</profileName>
+  <profileDescription>Use this profile if you want a system that is compliant with cataloguing SHPO collected historic property information.</profileDescription>
+  <locales>
+    <locale lang="en" country="US">English</locale>
+  </locales>
+  <lists>
+    <list code="object_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="historicproperty" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Historic Property</name_singular>
+              <name_plural>Historic Property</name_plural>
+            </label>
+          </labels>
+        </item>
+          <item idno="district" enabled="1" default="0">
+            <labels>
+              <label locale="en_US" preferred="1">
+                <name_singular>Historic District</name_singular>
+                <name_plural>Historic District</name_plural>
+              </label>
+            </labels>
+          </item>
+        <item idno="survey" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Historic Resources Survey</name_singular>
+              <name_plural>Historic Resources Survey</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="place_hierarchies" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Place hierarchies</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="shpo" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>SHPO Place Authority</name_singular>
+              <name_plural>SHPO Place Authority</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="place_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Place sources</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="cdwa" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>SHPO Place Sources</name_singular>
+              <name_plural>SHPO Place Sources</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="collection_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Collection Types</name>
+        </label>
+      </labels>
+      <items>
+          <item idno="scdah" enabled="1" default="1">
+            <labels>
+              <label locale="en_US" preferred="1">
+                <name_singular>SC Department of Archives and History Collection</name_singular>
+                <name_plural>SC Department of Archives and History Collections</name_plural>
+              </label>
+            </labels>
+          </item>
+        </items>
+    </list>
+    <list code="collection_sources" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Collection Source</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="source" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>South Carolina Department of Archives and History</name_singular>
+              <name_plural>South Carolina Department of Archives and History</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="NR_designations" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>National Register Designations</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="eligible" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>eligible</name_singular>
+              <name_plural>eligible</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="not_eligible" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>not eligible</name_singular>
+              <name_plural>not eligible</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="contributes_e" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>contributes to eligible district</name_singular>
+              <name_plural>contributes to eligible district</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="contributes_l" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>contributes to listed district</name_singular>
+              <name_plural>contributes to listed district</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="listed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>listed</name_singular>
+              <name_plural>listed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ownerobj" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>determined eligible/owner objection</name_singular>
+              <name_plural>determined eligible/owner objection</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="removed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>removed from National Register</name_singular>
+              <name_plural>removed from National Register</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="uses" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Property Uses</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="default" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="agriculture" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Agriculture/Subsistence</name_singular>
+              <name_plural>Agriculture/Subsistence</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="commerce" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Commerce/Trade</name_singular>
+              <name_plural>Commerce/Trade</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="defense" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Defense</name_singular>
+              <name_plural>Defense</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="education" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Education</name_singular>
+              <name_plural>Education</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="funerary" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Funerary</name_singular>
+              <name_plural>Funerary</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="government" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Government</name_singular>
+              <name_plural>Government</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="healthcare" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Healthcare</name_singular>
+              <name_plural>Healthcare</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="industry" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Industry/Processing/Extraction</name_singular>
+              <name_plural>Industry/Processing/Extraction</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="landscape" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Landscape</name_singular>
+              <name_plural>Landscape</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="recreation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Recreation &amp; Culture</name_singular>
+              <name_plural>Recreation &amp; Culture</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="religion" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Religion</name_singular>
+              <name_plural>Religion</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="residential" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Residential/Domestic</name_singular>
+              <name_plural>Residential/Domestic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="social" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Social</name_singular>
+              <name_plural>Social</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="transportation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Transportation</name_singular>
+              <name_plural>Transportation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="unknown" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Unknown</name_singular>
+              <name_plural>Uknown</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vacant" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Vacant/Not In Use</name_singular>
+              <name_plural>Vacant/Not In Use</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="progress" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Work In Progress</name_singular>
+              <name_plural>Work In Progress</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="wallmaterials" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Exterior Walls</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="default" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="weatherboard" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Weatherboard</name_singular>
+              <name_plural>Weatherboard</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="weatherboard2" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Beaded Weatherboard</name_singular>
+              <name_plural>Beaded Weatherboard</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="shiplap" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Shiplap</name_singular>
+              <name_plural>Shiplap</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="flushboard" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Flushboard</name_singular>
+              <name_plural>Flushboard</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="shingle" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood Shingle</name_singular>
+              <name_plural>Wood Shingles</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stucco" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stucco</name_singular>
+              <name_plural>Stucco</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tabby" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tabby</name_singular>
+              <name_plural>Tabby</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="brick" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Brick</name_singular>
+              <name_plural>Brick</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="brick2" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Brick Veneer</name_singular>
+              <name_plural>Brick Veneer</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stone" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stone Veneer</name_singular>
+              <name_plural>Stone Veneer</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cast" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cast-stone</name_singular>
+              <name_plural>Cast-stone</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="marble" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Marble</name_singular>
+              <name_plural>Marble</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="asphalt" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Asphalt Roll</name_singular>
+              <name_plural>Asphalt Roll</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="synthetic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Synthetic Siding</name_singular>
+              <name_plural>Synthetic Siding</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="asbestos" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Asbestos Shingle</name_singular>
+              <name_plural>Asbestos Shingles</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="glass" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pigmented Structural Glass</name_singular>
+              <name_plural>Pigmented Structural Glass</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="foundation" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Foundation</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="default" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="visibility" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Not Visible</name_singular>
+              <name_plural>Not Visible</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="brick" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Brick Pier</name_singular>
+              <name_plural>Brick Piers</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="brick2" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Brick Pier with Fill</name_singular>
+              <name_plural>Brick Piers with Fill</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="brick3" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Brick</name_singular>
+              <name_plural>Brick</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stucco" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stuccoed Masonry</name_singular>
+              <name_plural>Stuccoed Masonry</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stone" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stone Pier</name_singular>
+              <name_plural>Stone Piers</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stone2" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stone</name_singular>
+              <name_plural>Stone</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="concrete" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Concrete Block</name_singular>
+              <name_plural>Concrete Blocks</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="slab" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Slab Construction</name_singular>
+              <name_plural>Slab Construction</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="basement" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Basement</name_singular>
+              <name_plural>Basement</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="basement2" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Raised Basement</name_singular>
+              <name_plural>Raised Basement</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="collections" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Collection Numbers</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="S108042" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>S108042</name_singular>
+              <name_plural>S108042</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="S108043" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>S108043</name_singular>
+              <name_plural>S108043</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="ownership" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Ownership</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="default" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="private" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Private</name_singular>
+              <name_plural>Private</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="corporate" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Corporate</name_singular>
+              <name_plural>Corporate</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="city" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>City</name_singular>
+              <name_plural>City</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="county" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>County</name_singular>
+              <name_plural>County</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="state" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>State</name_singular>
+              <name_plural>State</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="federal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Federal</name_singular>
+              <name_plural>Federal</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Unknown/Other</name_singular>
+              <name_plural>Unknown/Other</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="surveys" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Survey Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="compliance" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Compliance</name_singular>
+              <name_plural>Compliance</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="regional" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Regional</name_singular>
+              <name_plural>Regional</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="thematic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Thematic</name_singular>
+              <name_plural>Thematic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="county" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>County</name_singular>
+              <name_plural>County</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="city" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>City</name_singular>
+              <name_plural>City</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="area" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Area</name_singular>
+              <name_plural>Area</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="core" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Core Property Shapes</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="rectangular" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Rectangular</name_singular>
+              <name_plural>Rectangular</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="square" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Square</name_singular>
+              <name_plural>Square</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="l" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>L</name_singular>
+              <name_plural>L</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="t" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>T</name_singular>
+              <name_plural>T</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="u" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>U</name_singular>
+              <name_plural>U</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="h" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>H</name_singular>
+              <name_plural>H</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="octagonal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Octagonal</name_singular>
+              <name_plural>Octagonal</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="irregular" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Irregular</name_singular>
+              <name_plural>Irregular</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="category" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Property Categories</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="building" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Building</name_singular>
+              <name_plural>Building</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="site" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Site</name_singular>
+              <name_plural>Site</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="structure" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Structure</name_singular>
+              <name_plural>Structure</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="object" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Object</name_singular>
+              <name_plural>Object</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="form" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Architectural Form</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="aframe" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>A-Frame</name_singular>
+              <name_plural>A-Frame</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="american" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>American Small House/FHA House/Minimal Traditional</name_singular>
+              <name_plural>American Small House/FHA House/Minimal Traditional</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="apartment" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Apartment</name_singular>
+              <name_plural>Apartment</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="barn" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Barn</name_singular>
+              <name_plural>Barn</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bridgetruss" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bridge-truss</name_singular>
+              <name_plural>Bridge-truss</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bridgearch" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bridge-arch</name_singular>
+              <name_plural>Bridge-arch</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bridgemove" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bridge-moveable</name_singular>
+              <name_plural>Bridge-moveable</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bridgebeam" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bridge-beam</name_singular>
+              <name_plural>Bridge-beam</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bridgecable" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bridge-suspension/cable stayed</name_singular>
+              <name_plural>Bridge-suspension/cable stayed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bridgecovered" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bridge-covered</name_singular>
+              <name_plural>Bridge-covered</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bungalow" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bungalow</name_singular>
+              <name_plural>Bungalow</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="central" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Central Hall</name_singular>
+              <name_plural>Central Hall</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cruciform" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Cruciform</name_singular>
+              <name_plural>Cruciform</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dog" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dog Trot</name_singular>
+              <name_plural>Dog Trot</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="double" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Double Pen</name_singular>
+              <name_plural>Double Pen</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="factory" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Factory</name_singular>
+              <name_plural>Factory</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="foursquare" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Foursquare/Four over Four</name_singular>
+              <name_plural>Foursquare/Four over Four</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gable" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gable-Front-and-Wing/Gabled-Ell/Cross-Wing/Upright and Wing</name_singular>
+              <name_plural>Gable-Front-and-Wing/Gabled-Ell/Cross-Wing/Upright and Wing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gas" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gas Station</name_singular>
+              <name_plural>Gas Station</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="georgian" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Georgian Plan</name_singular>
+              <name_plural>Georgian Plan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hall" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hall-and-Parlor</name_singular>
+              <name_plural>Hall-and-Parlor</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="highrise" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Highrise</name_singular>
+              <name_plural>Highrise</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hotel" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hotel</name_singular>
+              <name_plural>Hotel</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ihouse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>I-House</name_singular>
+              <name_plural>I-House</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="kit" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kit</name_singular>
+              <name_plural>Kit</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lustron" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lustron</name_singular>
+              <name_plural>Lustron</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="motel" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Motel</name_singular>
+              <name_plural>Motel</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="palladian" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Palladian Plan/Five Part Plan</name_singular>
+              <name_plural>Palladian Plan/Five Part Plan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="parking" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Parking Structure</name_singular>
+              <name_plural>Parking Structure</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="prefab" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Prefabricated/Modular</name_singular>
+              <name_plural>Prefabricated/Modular</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pyramid" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pyramid Roof/Western Cottage/Plains Cottage</name_singular>
+              <name_plural>Pyramid Roof/Western Cottage/Plains Cottage</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ranch" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ranch</name_singular>
+              <name_plural>Ranch</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="roadside" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Roadside</name_singular>
+              <name_plural>Roadside</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="row" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Row House</name_singular>
+              <name_plural>Row House</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="saddlebag" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Saddlebag</name_singular>
+              <name_plural>Saddlebag</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="saltbox" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Saltbox/New England Large</name_singular>
+              <name_plural>Saltbox/New England Large</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="shopping" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Shopping Center</name_singular>
+              <name_plural>Shopping Center</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="shotgun" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Shotgun</name_singular>
+              <name_plural>Shotgun</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="single" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Single Pen</name_singular>
+              <name_plural>Single Pen</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="skyscraper" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Skyscraper</name_singular>
+              <name_plural>Skyscraper</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="split" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Split Foyer/Raised Ranch</name_singular>
+              <name_plural>Split Foyer/Raised Ranch</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="splitlevel" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Split Level (Tri-level)</name_singular>
+              <name_plural>Split Level (Tri-level)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stadium" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stadium</name_singular>
+              <name_plural>Stadium</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="suburban" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Suburban Office Park/Complex</name_singular>
+              <name_plural>Suburban Office Park/Complex</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tidewater" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tidewater/Raised Cottage</name_singular>
+              <name_plural>Tidewater/Raised Cottage</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="townhouse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Townhouse</name_singular>
+              <name_plural>Townhouse</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tplan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>T-Plan</name_singular>
+              <name_plural>T-Plan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="style" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Architectural Style</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="adamesque" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Adamesque</name_singular>
+              <name_plural>Adamesque</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="artdeco" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Art Deco</name_singular>
+              <name_plural>Art Deco</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="artnouveau" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Art Nouveau</name_singular>
+              <name_plural>Art Nouveau</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="baltimore" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Baltimore</name_singular>
+              <name_plural>Baltimore</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bascule" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bascule</name_singular>
+              <name_plural>Bascule</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="basement" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Basement</name_singular>
+              <name_plural>Basement</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="beauxarts" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Beaux Arts</name_singular>
+              <name_plural>Beaux Arts</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bollman" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bollman</name_singular>
+              <name_plural>Bollman</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bowstring" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bowstring</name_singular>
+              <name_plural>Bowstring</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="brutalism" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Brutalism</name_singular>
+              <name_plural>Brutalism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="burr" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Burr</name_singular>
+              <name_plural>Burr</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="camelback" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Camelback</name_singular>
+              <name_plural>Camelback</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="carpenter" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Carpenter Gothic</name_singular>
+              <name_plural>Carpenter Gothic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="chateausque" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chateauesque</name_singular>
+              <name_plural>Chateauesque</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="classical" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Classical Revival</name_singular>
+              <name_plural>Classical Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="neoclassical" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Neo-Classical</name_singular>
+              <name_plural>Neo-Classical</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="collegiate" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Collegiate Gothic</name_singular>
+              <name_plural>Collegiate Gothic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="colonial" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Colonial Revival</name_singular>
+              <name_plural>Colonial Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="commercial1" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Commercial Italianate</name_singular>
+              <name_plural>Commercial Italianate</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="commercial2" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Commercial Style</name_singular>
+              <name_plural>Commercial Style</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="chicago" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chicago Style</name_singular>
+              <name_plural>Chicago Style</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="corporatemod" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Corporate Modernism</name_singular>
+              <name_plural>Corporate Modernism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="corporatepostmod" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Corporate Postmodernism</name_singular>
+              <name_plural>Corporate Postmodernism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="craftsman" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Craftsman</name_singular>
+              <name_plural>Craftsman</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dairy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dairy</name_singular>
+              <name_plural>Dairy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="deconstructivism" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Deconstructivism</name_singular>
+              <name_plural>Deconstructivism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dutch" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dutch Colonial Revival</name_singular>
+              <name_plural>Dutch Colonial Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dutch2" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dutch Colonial</name_singular>
+              <name_plural>Dutch Colonial</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="flemish" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Flemish Colonial</name_singular>
+              <name_plural>Flemish Colonial</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="earlyclassical" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Early Classical/Jeffersonian Classicism</name_singular>
+              <name_plural>Early Classical/Jeffersonian Classicism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="eclectic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Eclectic Period Revival</name_singular>
+              <name_plural>Eclectic Period Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="elizabethan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Elizabethan</name_singular>
+              <name_plural>Elizabethan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="elizabethanrevival" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Elizabethan Revival</name_singular>
+              <name_plural>Elizabethan Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="egyptian" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Egyptian Revival</name_singular>
+              <name_plural>Egyptian Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="english" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>English</name_singular>
+              <name_plural>English</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="englishcol" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>English Colonial/Georgian</name_singular>
+              <name_plural>English Colonial/Georgian</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="englishgoth" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>English Gothic</name_singular>
+              <name_plural>English Gothic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="federal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Federal Classicism</name_singular>
+              <name_plural>Federal Classicism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="fink" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fink</name_singular>
+              <name_plural>Fink</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="folk" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Folk Victorian</name_singular>
+              <name_plural>Folk Victorian</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="frenchcol" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>French Colonial</name_singular>
+              <name_plural>French Colonial</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="frenchren" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>French Renaissance Revival</name_singular>
+              <name_plural>French Renaissance Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="georgiancot" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Georgian Cottage</name_singular>
+              <name_plural>Georgian Cottage</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="georgianrev" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Georgian Revival</name_singular>
+              <name_plural>Georgian Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="googie" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Googie/Populuxe</name_singular>
+              <name_plural>Googie/Populuxe</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gothicrevival" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gothic Revival</name_singular>
+              <name_plural>Gothic Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="greek" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Greek Revival</name_singular>
+              <name_plural>Greek Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hveclectic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>High Victorian Eclectic</name_singular>
+              <name_plural>High Victorian Eclectic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hvgothic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>High Victorian Gothic</name_singular>
+              <name_plural>High Victorian Gothic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="howe" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Howe</name_singular>
+              <name_plural>Howe</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="international" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>International</name_singular>
+              <name_plural>International</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="italianrenrev" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Italian Renaissance Revival</name_singular>
+              <name_plural>Italian Renaissance Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="italianate" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Italianate</name_singular>
+              <name_plural>Italianate</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="italianvilla" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Italian Villa</name_singular>
+              <name_plural>Italian Villa</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="jacobean" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Jacobean</name_singular>
+              <name_plural>Jacobean</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="jacobeanrev" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Jacobean Revival</name_singular>
+              <name_plural>Jacobean Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="kingpost" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>King Post</name_singular>
+              <name_plural>King Post</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lategothic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Late Gothic Revival</name_singular>
+              <name_plural>Late Gothic Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="latevictorian" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Late Victorian Commercial</name_singular>
+              <name_plural>Late Victorian Commercial</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lift" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lift</name_singular>
+              <name_plural>Lift</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="luten" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Luten</name_singular>
+              <name_plural>Luten</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="medrevival" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mediterranean Revival</name_singular>
+              <name_plural>Mediterranean Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="mexican" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mexican Baroque</name_singular>
+              <name_plural>Mexican Baroque</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="miesian" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Miesian</name_singular>
+              <name_plural>Miesian</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="mission" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mission/Spanish Colonial Revival</name_singular>
+              <name_plural>Mission/Spanish Colonial Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="modern" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Modern</name_singular>
+              <name_plural>Modern</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="moorish" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Moorish Revival</name_singular>
+              <name_plural>Moorish Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="neoformalism" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Neo-Formalism</name_singular>
+              <name_plural>Neo-Formalism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="neogrec" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Neo Grec</name_singular>
+              <name_plural>Neo Grec</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="neomed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Neo-Mediterranean</name_singular>
+              <name_plural>Neo-Mediterranean</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="neomod" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Neo-Modernism</name_singular>
+              <name_plural>Neo-Modernism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="neotraditional" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Neo-Traditional</name_singular>
+              <name_plural>Neo-Traditional</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="neotudor" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Neo-Tudor</name_singular>
+              <name_plural>Neo-Tudor</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="newformal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>New Formalism</name_singular>
+              <name_plural>New Formalism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="octagon" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Octagon</name_singular>
+              <name_plural>Octagon</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="openspandrel" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Open Spandrel</name_singular>
+              <name_plural>Open Spandrel</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="organic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Organic</name_singular>
+              <name_plural>Organic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="oriental" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Oriental Revival</name_singular>
+              <name_plural>Oriental Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="parker" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Parker</name_singular>
+              <name_plural>Parker</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pennsylvania" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pennsylvania</name_singular>
+              <name_plural>Pennsylvania</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="plains" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Plain(s) Commercial Style</name_singular>
+              <name_plural>Plain(s) Commercial Style</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="post" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Post Modern</name_singular>
+              <name_plural>Post Modern</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="postmedenglish" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Post-medieval English</name_singular>
+              <name_plural>Post-medieval English</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="prairie" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Prairie</name_singular>
+              <name_plural>Prairie</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pratt" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pratt</name_singular>
+              <name_plural>Pratt</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="queen" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Queen Anne</name_singular>
+              <name_plural>Queen Anne</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="queenpost" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Queen Post</name_singular>
+              <name_plural>Queen Post</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="renaissancerev" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Renaissance Revival</name_singular>
+              <name_plural>Renaissance Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="richardson" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Richardson Romanesque</name_singular>
+              <name_plural>Richardson Romanesque</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="romanesque" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Romanesque</name_singular>
+              <name_plural>Romanesque</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="round" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Round/Polygonal</name_singular>
+              <name_plural>Round/Polygonal</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="rustic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Rustic</name_singular>
+              <name_plural>Rustic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="secondempire" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Second Empire</name_singular>
+              <name_plural>Second Empire</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="secondgothic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Second Gothic Revival</name_singular>
+              <name_plural>Second Gothic Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="secondmod" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Second Modernism</name_singular>
+              <name_plural>Second Modernism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="shingle" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Shingle Style</name_singular>
+              <name_plural>Shingle Style</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spanish" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spanish Colonial</name_singular>
+              <name_plural>Spanish Colonial</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stick" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stick/Eastlake</name_singular>
+              <name_plural>Stick/Eastlake</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="streamline" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Streamline Moderne</name_singular>
+              <name_plural>Streamline Moderne</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stripped" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Stripped Classical</name_singular>
+              <name_plural>Stripped Classical</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sullivanesque" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sullivanesque</name_singular>
+              <name_plural>Sullivanesque</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="swing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Swing</name_singular>
+              <name_plural>Swing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="swisschalet" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Swiss Chalet</name_singular>
+              <name_plural>Swiss Chalet</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="swiss" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Swiss</name_singular>
+              <name_plural>Swiss</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="three" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Three Gable</name_singular>
+              <name_plural>Three Gable</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="town" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Town Lattice</name_singular>
+              <name_plural>Town Lattice</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="transverse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Transverse Frame</name_singular>
+              <name_plural>Transverse Frame</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tudor" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tudor Revival</name_singular>
+              <name_plural>Tudor Revival</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="warren" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Warren</name_singular>
+              <name_plural>Warren</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="whipple" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Whipple</name_singular>
+              <name_plural>Whipple</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wpa" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>WPA Rustic</name_singular>
+              <name_plural>WPA Rustic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wrightian" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wrightian</name_singular>
+              <name_plural>Wrightian</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+  </lists>
+  <elementSets>
+    <metadataElement code="Control_No" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Control Number</name>
+              <description>A unique id assigned to a surveyed historic property. It is composed of the status/county number/site number.</description>
+            </label>
+          </labels>
+          <documentationUrl></documentationUrl>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+          <typeRestrictions>
+            <restriction code="r1">
+              <table>ca_objects</table>
+              <type>historicproperty</type>
+              <settings>
+                <setting name="minAttributesPerRow">0</setting>
+                <setting name="maxAttributesPerRow">200</setting>
+                <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+            </restriction>
+          </typeRestrictions>
+        </metadataElement>
+    <metadataElement code="tax_no" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Tax Number</name>
+              <description>A property tax number assigned by the county in which the historic property resides.</description>
+            </label>
+          </labels>
+          <documentationUrl></documentationUrl>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+          <typeRestrictions>
+            <restriction code="r1">
+              <table>ca_objects</table>
+              <type>historicproperty</type>
+              <settings>
+                <setting name="minAttributesPerRow">0</setting>
+                <setting name="maxAttributesPerRow">200</setting>
+                <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+            </restriction>
+          </typeRestrictions>
+        </metadataElement>
+    <metadataElement code="HistoricalUse" datatype="List" list="uses">
+              <labels>
+                <label locale="en_US">
+                  <name>Historical Use</name>
+                  <description>Denotes the original or past use of the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="CurrentUse" datatype="List" list="uses">
+              <labels>
+                <label locale="en_US">
+                  <name>Current Use</name>
+                  <description>Denotes the current use of the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="NRDesignation" datatype="List" list="NR_designations">
+              <labels>
+                <label locale="en_US">
+                  <name>National Register Designation</name>
+                  <description>Denotes the designation of the property/site in the National Register of Historic Places.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="ArchitectBuilder_na" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Architect/Builder</name>
+                  <description>Gives the name of the architect(s) and/or builder(s).</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="stories" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Stories</name>
+                  <description>Gives the number of stories/floors the historic property is tall.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="ConstructionMethod" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Construction Method</name>
+                  <description>Describes the method with which the property was constructed.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="ExteriorWalls" datatype="List" list="wallmaterials">
+              <labels>
+                <label locale="en_US">
+                  <name>Exterior Walls</name>
+                  <description>Describes the composition and appearance of the exterior walls.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="Foundation" datatype="List" list="foundation">
+              <labels>
+                <label locale="en_US">
+                  <name>Foundation</name>
+                  <description>Describes the composition and appearance of the foundation of the property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="RoofShape" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Roof Shape</name>
+                  <description>Describes the shape of the roof.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="RoofMaterials" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Roof Materials</name>
+                  <description>Denotes the materials used to construct the roof.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="PorchWidth" datatype="Length">
+              <labels>
+                <label locale="en_US">
+                  <name>Porch Width</name>
+                  <description>Denotes the width of the porch if one is present at the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="PorchShape" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Porch Shape</name>
+                  <description>Describes the shape of the porch if one is present at the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="SignificantArchFeatures" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Significant Architectural Features</name>
+                  <description>Describes any signficant architectural features of the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">10</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="Alterations" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Alterations</name>
+                  <description>Describes any alterations made to the historic property over time.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="HistoricalInformation" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Historical Information</name>
+                  <description>A detailed description of any background or historical information about the property, its use, or its inhabitants.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="InfoSource" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Historical Information Source</name>
+                  <description>Citations for the source(s) of historical information regarding the property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="NRSiteLink" datatype="Url">
+              <labels>
+                <label locale="en_US">
+                  <name>National Register Site Listing</name>
+                  <description>A hyperlink that leads the user to the SCDAH's National Registry website for a listed site.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="Ownership" datatype="List" list="ownership">
+              <labels>
+                <label locale="en_US">
+                  <name>Ownership</name>
+                  <description>Denotes the current ownership status of the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="CoreShape" datatype="List" list="core">
+              <labels>
+                <label locale="en_US">
+                  <name>Core Property Shape</name>
+                  <description>Describes the core shape of the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="PropertyCategory" datatype="List" list="category">
+              <labels>
+                <label locale="en_US">
+                  <name>Historic Property Category</name>
+                  <description>Denotes the type of historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="ArchitectureForm_Type" datatype="List" list="form">
+              <labels>
+                <label locale="en_US">
+                  <name>Architectural Form</name>
+                  <description>Denotes the architectural form of the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="ArchitectureStyle_Type" datatype="List" list="style">
+              <labels>
+                <label locale="en_US">
+                  <name>Architectural Style</name>
+                  <description>Denotes the architectural style of the historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+              <typeRestrictions>
+                <restriction code="r1">
+                  <table>ca_objects</table>
+                  <type>historicproperty</type>
+                  <settings>
+                    <setting name="minAttributesPerRow">0</setting>
+                    <setting name="maxAttributesPerRow">200</setting>
+                    <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                  </settings>
+                </restriction>
+              </typeRestrictions>
+            </metadataElement>
+    <metadataElement code="Address" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Street Address</name>
+          <description>The street Address of the historic property or district.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="Vicinity" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Location Description</name>
+          <description>Use this field for general directions that denote a property location. e.g., 3 miles past the cotton farm. Do not use this field if a specific address is provided.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="CityTown" datatype="Places">
+      <labels>
+        <label locale="en_US">
+          <name>City</name>
+          <description>Denotes the city/town/village in which a property is located.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">60</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="County" datatype="Places">
+      <labels>
+        <label locale="en_US">
+          <name>County</name>
+          <description>Denotes the county in which a property is located.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">60</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="Quad_na" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Quadrant Name</name>
+          <description>The name of the quadrant in which the property is located.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="ConstructionDates" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Date Constructed</name>
+          <description>The date/date range during which the property was built.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="AlterationDates" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Date Altered</name>
+          <description>The date/date range during which the property was altered.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="SignificanceDates" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Date of Significance</name>
+          <description>The date/date range during which the property was significant.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="historic_survey" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Historic Resources Survey</name>
+              <description>Metadata describing the historic resources survey under which the historic property was recorded.</description>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="Recordedby_Na" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Recorded By</name>
+                  <description>The name of the individual or group who completed the historic resources survey for this historic property.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="SurveyType" datatype="List" list="surveys">
+              <labels>
+                <label locale="en_US">
+                  <name>Survey Type</name>
+                  <description>Denotes the type of historical properties survey that was conducted.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="listWidth">40</setting>
+                <setting name="listHeight">200px</setting>
+                <setting name="maxcolumns">20</setting>
+                <setting name="render">"select"</setting>
+                <setting name="requireValue">1</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="ReportBox_No" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Report Location</name>
+                  <description>Denotes the archival box location of the survey report.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInSort">1</setting>
+                <setting name="canBeUsedInSearchForm">1</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+          <typeRestrictions>
+            <restriction code="r1">
+              <table>ca_objects</table>
+              <type>historicproperty</type>
+              <settings>
+                <setting name="minAttributesPerRow">0</setting>
+                <setting name="maxAttributesPerRow">200</setting>
+                <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+            </restriction>
+            <restriction code="r3">
+              <table>ca_objects</table>
+              <type>survey</type>
+              <settings>
+                <setting name="minAttributesPerRow">0</setting>
+                <setting name="maxAttributesPerRow">200</setting>
+                <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+            </restriction>
+          </typeRestrictions>
+        </metadataElement>
+    <metadataElement code="digitization_information" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Digital Object Information</name>
+              <description>Metadata describing the digital representation of the historic property site survey card.</description>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="filename_id" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>File Name</name>
+                  <description>The string of characters that indentify a computer file. Do not include the file extension in this field.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="date_digitized" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Date Digitized</name>
+                  <description>The date on which the site survey card was digitized by the SCDAH.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="useDatePicker">1</setting>
+                <setting name="mustNotBeBlank">0</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="file_format" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>File Format</name>
+                  <description>The file extension of the digitized file. E.g. JPG, TIFF, PDF.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="DPI" datatype="Integer">
+              <labels>
+                <label locale="en_US">
+                  <name>DPI</name>
+                  <description>Dots per inch (DPI) measurement of the digitized site survey card. Only enter the number. E.g., for 600 DPI, only enter 600.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="digitizer_na" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Digitized By</name>
+                  <description>The name of staff member, intern, or volunteer who digitized the site survey card.</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="scannerused_na" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Scanner</name>
+                  <description>The name of the scanner used. E.g., "ScanSnap ix500"</description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+                <setting name="canBeUsedInDisplay">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+          <typeRestrictions>
+            <restriction code="r1">
+              <table>ca_objects</table>
+              <type>historicproperty</type>
+              <settings>
+                <setting name="minAttributesPerRow">0</setting>
+                <setting name="maxAttributesPerRow">200</setting>
+                <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+            </restriction>
+            <restriction code="r3">
+              <table>ca_objects</table>
+              <type>survey</type>
+              <settings>
+                <setting name="minAttributesPerRow">0</setting>
+                <setting name="maxAttributesPerRow">200</setting>
+                <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+            </restriction>
+          </typeRestrictions>
+        </metadataElement>
+    <metadataElement code="NRDesignation_District" datatype="List" list="NR_designations">
+      <labels>
+        <label locale="en_US">
+          <name>National Register Designation</name>
+          <description>Denotes the designation of a district in the National Register of Historic Places.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="listWidth">30</setting>
+        <setting name="listHeight">200px</setting>
+        <setting name="maxcolumns">20</setting>
+        <setting name="render">"select"</setting>
+        <setting name="requireValue">1</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="NRSiteLink_District" datatype="Url">
+      <labels>
+        <label locale="en_US">
+          <name>National Register Site Listing</name>
+          <description>A hyperlink that leads the user to the SCDAH's National Registry website for a listed district.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>district</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>        
+    <metadataElement code="cataloghyperlink" datatype="Url">
+      <labels>
+        <label locale="en_US">
+          <name>Catalog Hyperlink</name>
+          <description>A hyperlink that leads the user to the SCDAH's catalog listing for an archival collection.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>survey</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r6">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="archivalcollectionnumber" datatype="List" list="collections">
+      <labels>
+        <label locale="en_US">
+          <name>Archival Collection Number</name>
+          <description>Number of the unique collection in the SC Department of Archives and History.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="listWidth">20</setting>
+        <setting name="listHeight">200px</setting>
+        <setting name="maxcolumns">20</setting>
+        <setting name="render">"select"</setting>
+        <setting name="requireValue">1</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>survey</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r6">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="Recorded_Date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Date Recorded</name>
+          <description>The date this historic property was recorded in the historic resources survey.</description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="useDatePicker">1</setting>
+        <setting name="mustNotBeBlank">1</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>historicproperty</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>survey</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">200</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+  </elementSets>
+  <userInterfaces>
+    <userInterface code="objects_ui" type="ca_objects">
+      <labels>
+        <label locale="en_US">
+          <name>Historic Property Editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="hp_info" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Information</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Site Number</setting>
+                <setting name="add_label" locale="en_US">Add Site Number</setting>
+              </settings>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+            <placement code="ca_attribute_Recorded_Date">
+              <bundle>ca_attribute_Recorded_Date</bundle>
+            </placement>
+            <placement code="ca_attribute_Control_No">
+              <bundle>ca_attribute_Control_No</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Control Number</setting>
+                <setting name="add_label" locale="en_US">Add Control Number</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_tax_no">
+              <bundle>ca_attribute_tax_no</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Tax Number</setting>
+                <setting name="add_label" locale="en_US">Add Tax Number</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Historic Name</setting>
+                <setting name="add_label" locale="en_US">Add Historic Name</setting>
+                <setting name="minAttributesPerRow">0</setting>
+                <setting name="maxAttributesPerRow">200</setting>
+              </settings>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Current Name</setting>
+                <setting name="add_label" locale="en_US">Add Current Name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_PropertyCategory">
+              <bundle>ca_attribute_PropertyCategory</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Property Category</setting>
+                <setting name="add_label" locale="en_US">Add Property Category</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_Ownership">
+              <bundle>ca_attribute_Ownership</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Ownership</setting>
+                <setting name="add_label" locale="en_US">Add Ownership</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_NRDesignation">
+              <bundle>ca_attribute_NRDesignation</bundle>
+              <settings>
+                <setting name="label" locale="en_US">National Register Designation</setting>
+                <setting name="add_label" locale="en_US">National Register Designation</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_NRSiteLink">
+              <bundle>ca_attribute_NRSiteLink</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="location" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Location</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_Address">
+              <bundle>ca_attribute_Address</bundle>
+            </placement>
+            <placement code="ca_attribute_Vicinity">
+              <bundle>ca_attribute_Vicinity</bundle>
+            </placement>
+            <placement code="ca_attribute_CityTown">
+              <bundle>ca_attribute_CityTown</bundle>
+            </placement>
+            <placement code="ca_attribute_County">
+              <bundle>ca_attribute_County</bundle>
+            </placement>
+            <placement code="ca_attribute_Quad_na">
+              <bundle>ca_attribute_Quad_na</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="description" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Property Description</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_HistoricalUse">
+              <bundle>ca_attribute_HistoricalUse</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Historic Use</setting>
+                <setting name="add_label" locale="en_US">Add Historic Use</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_CurrentUse">
+              <bundle>ca_attribute_CurrentUse</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Current Use</setting>
+                <setting name="add_label" locale="en_US">Add Current Use</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_ArchitectBuilder">
+              <bundle>ca_attribute_ArchitectBuilder</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Architect/Builder</setting>
+                <setting name="add_label" locale="en_US">Add Architect/Builder</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_ConstructionMethod">
+              <bundle>ca_attribute_ConstructionMethod</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Construction Method</setting>
+                <setting name="add_label" locale="en_US">Add Construction Method</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_stories">
+              <bundle>ca_attribute_stories</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Number of Stories</setting>
+                <setting name="add_label" locale="en_US">Add Number of Stories</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_ExteriorWalls">
+              <bundle>ca_attribute_ExteriorWalls</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Exterior Walls Material</setting>
+                <setting name="add_label" locale="en_US">Add Exterior Walls Material</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_Foundation">
+              <bundle>ca_attribute_Foundation</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Foundation Materials</setting>
+                <setting name="add_label" locale="en_US">Add Foundation Materials</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_RoofMaterials">
+              <bundle>ca_attribute_RoofMaterials</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Roof Materials</setting>
+                <setting name="add_label" locale="en_US">Add Roof Materials</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_RoofShape">
+              <bundle>ca_attribute_RoofShape</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Roof Shape</setting>
+                <setting name="add_label" locale="en_US">Add Roof Shape</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_PorchWidth">
+              <bundle>ca_attribute_PorchWidth</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Porch Width</setting>
+                <setting name="add_label" locale="en_US">Add Porch Width</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_PorchShape">
+              <bundle>ca_attribute_PorchShape</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Porch Shape</setting>
+                <setting name="add_label" locale="en_US">Add Porch Shape</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_CoreShape">
+              <bundle>ca_attribute_CoreShape</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Core Shape</setting>
+                <setting name="add_label" locale="en_US">Add Core Shape</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_ArchitectureForm_Type">
+              <bundle>ca_attribute_ArchitectureForm_Type</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Form</setting>
+                <setting name="add_label" locale="en_US">Add Form</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_ArchitectureStyle_Type">
+              <bundle>ca_attribute_ArchitectureStyle_Type</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Style</setting>
+                <setting name="add_label" locale="en_US">Add Style</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_SignificantArchFeatures">
+              <bundle>ca_attribute_SignificantArchFeatures</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Significant Architectural Features</setting>
+                <setting name="add_label" locale="en_US">Add Significant Architectural Features</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_Alterations">
+              <bundle>ca_attribute_Alterations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alterations</setting>
+                <setting name="add_label" locale="en_US">Add Alterations</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="background" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Background Information</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_HistoricalInformation">
+              <bundle>ca_attribute_HistoricalInformation</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Historical Information</setting>
+                <setting name="add_label" locale="en_US">Add Historical Information</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_InfoSource">
+              <bundle>ca_attribute_InfoSource</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Historical Information Source</setting>
+                <setting name="add_label" locale="en_US">Add Historical Information Source</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="dates" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Dates</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_ConstructionDates">
+              <bundle>ca_attribute_ConstructionDates</bundle>
+            </placement>
+            <placement code="ca_attribute_AlterationDates">
+              <bundle>ca_attribute_AlterationDates</bundle>
+            </placement>
+            <placement code="ca_attribute_SignificanceDates">
+              <bundle>ca_attribute_SignificanceDates</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="digitization" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Administrative Metadata</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_digitization_information">
+              <bundle>ca_attribute_digitization_information</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_occurrences">
+              <bundle>ca_occurrences</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="objects_district_ui" type="ca_objects">
+      <labels>
+        <label locale="en_US">
+          <name>Historic District Editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="District" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Information</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">District Name</setting>
+                <setting name="add_label" locale="en_US">Add District Name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_NRDesignation_District">
+              <bundle>ca_attribute_NRDesignation_District</bundle>
+            </placement>
+            <placement code="ca_attribute_NRSiteLink_District">
+              <bundle>ca_attribute_NRSiteLink_District</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_occurrences">
+              <bundle>ca_occurrences</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="objects_survey_ui" type="ca_objects">
+      <labels>
+        <label locale="en_US">
+          <name>Historic Resources Survey Editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="Survey" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Information</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Historic Resources Survey Title</setting>
+                <setting name="add_label" locale="en_US">Add Historic Resources Survey Title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_Recorded_Date">
+              <bundle>ca_attribute_Recorded_Date</bundle>
+            </placement>
+            <placement code="ca_attribute_historic_survey">
+              <bundle>ca_attribute_historic_survey</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_occurrences">
+              <bundle>ca_occurrences</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="places_ui" type="ca_places">
+      <labels>
+        <label locale="en_US">
+          <name>Place editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Name</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="location" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Location</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate names</setting>
+                <setting name="add_label" locale="en_US">Add alternate name</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="collections_ui" type="ca_collections">
+      <labels>
+        <label locale="en_US">
+          <name>Standard collection editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic_collection" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_archivalcollectionnumber">
+              <bundle>ca_attribute_archivalcollectionnumber</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Collection Title</setting>
+              </settings>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Collection Citation</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_cataloghyperlink">
+              <bundle>ca_attribute_cataloghyperlink</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_occurrences">
+              <bundle>ca_occurrences</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+  </userInterfaces>
+  <relationshipTypes>
+    <relationshipTable name="ca_objects_x_objects">
+      <types>
+        <type code="historicproperty" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="district" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>includes</typename>
+              <typename_reverse>is within</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="survey" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>includes</typename>
+              <typename_reverse>is included in</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_objects_x_collections">
+      <types>
+        <type code="collection" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is contained in the archival collection</typename>
+              <typename_reverse>includes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_objects_x_places">
+      <types>
+        <type code="place" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is at</typename>
+              <typename_reverse>holds</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+  </relationshipTypes>
+</profile>

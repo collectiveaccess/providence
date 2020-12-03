@@ -78,6 +78,11 @@ define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  		static $s_attribute_types = array();
  		
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *s
+ 		 * @param array $pa_values
+ 		 */
  		public function __construct($pa_values=null) {
  			$this->opa_values = array();
  			
@@ -86,6 +91,11 @@ define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  			}
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 * @param array $pa_values
+ 		 */
  		public function setInfo($pa_values) {
  			foreach($pa_values as $vs_key => $vs_val) {
  				if (!in_array($vs_key, array('attribute_id', 'element_id', 'locale_id', 'table_num', 'row_id'))) { continue; }
@@ -95,12 +105,22 @@ define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  			return true;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 * @param array $pa_rows
+ 		 */
  		public function addValuesFromRows($pa_rows) {
  			foreach($pa_rows as $va_row) {
  				$this->addValueFromRow($va_row);
  			}
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 * @param array $pa_row
+ 		 */
  		public function addValueFromRow($pa_row) {
  			if ($t_value = Attribute::getValueInstance($pa_row['datatype'], $pa_row)) {
  				$this->opa_values[] = $t_value;
@@ -109,36 +129,60 @@ define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  			return false;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function addValues($pa_values) {
  			array_merge($this->opa_values, $pa_values);
  			
  			return $this->numValues();
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function getLocaleID() {
  			return $this->opn_locale_id;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function getAttributeID() {
  			return $this->opn_attribute_id;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function getElementID() {
  			return $this->opn_element_id;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function getTableNum() {
  			return $this->opn_table_num;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function getRowID() {
  			return $this->opn_row_id;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function getValues() {
  			return $this->opa_values;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function getDisplayValues($pb_index_with_element_ids=false, $pa_options=null) {
  			if (!is_array($this->opa_values)) { return null; }
  			
@@ -168,6 +212,9 @@ define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  			return Attribute::$s_attribute_types = $o_attribute_types->getList('types');
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		static public function renderDataType($pa_element_info,$pa_options=null) {
  			$vs_element = Attribute::getValueInstance($pa_element_info['datatype']);
  			if(method_exists($vs_element,'renderDataType')) {
@@ -176,11 +223,17 @@ define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  			return false;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		static public function getValueDefault($pa_element_info) {
  			$vs_element = Attribute::getValueInstance($pa_element_info['datatype']);
  			return ($vs_element) ? $vs_element->getDefaultValueSetting() : null;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		static public function getValueInstance($pn_datatype, $pa_value_array=null, $pb_use_cache=false) {
  			if ($pb_use_cache && Attribute::$s_instance_cache[$pn_datatype]) {
  				$o_attr = Attribute::$s_instance_cache[$pn_datatype];
@@ -202,6 +255,13 @@ define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  			return null;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return field name to use for sorting of a given attribute data type
+ 		 *
+ 		 * @param int $pn_datatype
+ 		 *
+ 		 * @return string The ca_attribute_values field to use for sorting
+ 		 */
  		static public function getSortFieldForDatatype($pn_datatype) {
  			if ($t_instance = Attribute::getValueInstance($pn_datatype, null, true)) {
  				return $t_instance->sortField();
@@ -209,6 +269,23 @@ define("__CA_ATTRIBUTE_VALUE_OBJECTLOTS__", 30);
  			return null;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return name of setting containing the default value for a given attribute data type
+ 		 *
+ 		 * @param int $pn_datatype
+ 		 *
+ 		 * @return string The setting name, or null if default values are not supported for the data type
+ 		 */
+ 		static public function getValueDefaultSettingForDatatype($pn_datatype) {
+ 			if ($t_instance = Attribute::getValueInstance($pn_datatype, null, true)) {
+ 				return $t_instance->getDefaultValueSetting();
+ 			}
+ 			return null;
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		static public function valueHTMLFormElement($pn_datatype, $pa_element_info, $pa_options=null) {
  			if ($o_value = Attribute::getValueInstance($pn_datatype)) {
  				return $o_value->htmlFormElement($pa_element_info, $pa_options);	

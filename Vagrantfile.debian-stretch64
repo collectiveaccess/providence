@@ -34,12 +34,11 @@ Vagrant.configure(2) do |config|
   # provision vars:
   path_to_setup="/vagrant/setup.php"
   path_to_external_apps="/vagrant/app/conf/local/external_applications.conf"
-  path_to_pawtucket2='/vagrant/pawtucket2/'
   mysql_root_password="mysqlr00tp4ssw0rd"
   mysql_ca_db="collectiveaccess"
   mysql_ca_user="causer"
   mysql_ca_password="c4p4ssw0rd"
-
+  
   # install required sw:
   apt-get -q -y install apache2 curl htop screen vim apachetop vnstat
   apt-get -q -y install php7.0 libapache2-mod-php7.0 php7.0-curl php7.0-mysql php7.0-xml 
@@ -80,15 +79,6 @@ Vagrant.configure(2) do |config|
   # create & configure external_applications.conf
   if [[ ! -f /vagrant/app/conf/local/external_applications.conf ]]; then cp /vagrant/app/conf/external_applications.conf /vagrant/app/conf/local/external_applications.conf; sed -i 's|/usr/local/bin/qt-faststart|/usr/bin/qt-faststart|g' ${path_to_external_apps}; sed -i 's/pdf2txt\.py/pdf2txt/g' ${path_to_external_apps}; sed -i 's|/usr/local/bin/phantomjs|/usr/bin/phantomjs|g' ${path_to_external_apps}; fi
   
-  # if pawtucket2 directory: configure.
-  if [ -f ${path_to_pawtucket2}index.php ]; then
-    chown -R vagrant:www-data /vagrant/pawtucket2/app/tmp/
-    chmod -R 775 /vagrant/pawtucket2/app/tmp/
-    chown -R vagrant:www-data /vagrant/pawtucket2/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer
-    chmod -R 775 /vagrant/pawtucket2/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer
-    ln -fs /vagrant/media/ /vagrant/pawtucket2/media
-    if [[ ! -f ${path_to_pawtucket2}setup.php ]]; then cp ${path_to_pawtucket2}setup.php-dist ${path_to_pawtucket2}setup.php; sed -i "s/my_database_user/${mysql_ca_user}/g" ${path_to_pawtucket2}setup.php; sed -i "s/my_database_password/${mysql_ca_password}/g" ${path_to_pawtucket2}setup.php; sed -i "s/name_of_my_database/${mysql_ca_db}/g" ${path_to_pawtucket2}setup.php; sed -i "s/INSTALLS\_\_\'\, false/INSTALLS\_\_\'\, true/g" ${path_to_pawtucket2}setup.php; fi
-  fi
   systemctl restart apache2
   systemctl restart mysql
   touch /var/lock/vagrant-provision

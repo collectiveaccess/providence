@@ -46,7 +46,7 @@ var caUI = caUI || {};
             inchDecimalPrecision: 2,
             feetDecimalPrecision: 1,
             mileDecimalPrecision: 1,
-            millimeterDecimalPrecision: 0,
+            mmDecimalPrecision: 0,
             centimeterDecimalPrecision: 1,
             meterDecimalPrecision: 1,
             kilometerDecimalPrecision: 1
@@ -553,7 +553,7 @@ var caUI = caUI || {};
                         v = that.centimeterDecimalPrecision;
                         break;
                     case 'mm':
-                        v = that.millimeterDecimalPrecision;
+                        v = that.mmDecimalPrecision;
                         break;
                     case 'in':
                         v = that.inchDecimalPrecision;

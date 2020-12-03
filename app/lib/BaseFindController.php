@@ -200,8 +200,16 @@
 						continue;
 					}
 
-					// can't sort on related tables!?
-					if ($va_tmp[0] != $this->ops_tablename) { continue; }
+					if ($va_tmp[0] != $this->ops_tablename) { 
+					    // Sort on related tables
+						if (($t_rel = Datamodel::getInstance($va_tmp[0], true)) && method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
+                            $va_display_list[$vn_i]['is_sortable'] = true; 
+                            $types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
+                            
+                            $va_display_list[$vn_i]['bundle_sort'] = "{$va_tmp[0]}.preferred_labels.".$t_rel->getLabelSortField().((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
+                        }
+						continue; 
+					}
 					
 					if ($t_instance->hasField($va_tmp[1])) {
 						if($t_instance->getFieldInfo($va_tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors

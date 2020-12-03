@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -304,7 +304,7 @@ class View extends BaseObject {
 			}
 		}
 		if (!$pb_dont_do_var_replacement && $vb_output) {
-			$va_compile = $this->compile($vs_path.'/'.$ps_filename, false, $pa_options);
+			$va_compile = $this->compile(($vs_path ? "{$vs_path}/" : "").$ps_filename, false, $pa_options);
 			
 			$va_vars = $this->getAllVars();
 			
