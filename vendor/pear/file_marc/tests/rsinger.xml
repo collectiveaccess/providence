@@ -1,0 +1,41 @@
+<record xmlns="http://www.loc.gov/MARC21/slim">
+  <leader>00488nam a2200193   4500</leader>
+  <controlfield tag="001">vtls002817361</controlfield>
+  <controlfield tag="003">WlAbNL</controlfield>
+  <controlfield tag="005">20060313054800.0</controlfield>
+  <controlfield tag="008">060313                       ||  | ||| d</controlfield>
+  <datafield tag="016" ind1=" " ind2=" ">
+    <subfield code="a">FREPO</subfield>
+  </datafield>
+  <datafield tag="020" ind1=" " ind2=" ">
+    <subfield code="a">0751712035</subfield>
+  </datafield>
+  <datafield tag="035" ind1=" " ind2=" ">
+    <subfield code="a">(WlAbNL)LLGCb13197045</subfield>
+  </datafield>
+  <datafield tag="039" ind1=" " ind2="9">
+    <subfield code="y">200603130548</subfield>
+    <subfield code="z">load</subfield>
+  </datafield>
+  <datafield tag="040" ind1=" " ind2=" ">
+    <subfield code="a">CA</subfield>
+  </datafield>
+  <datafield tag="245" ind1="1" ind2="0">
+    <subfield code="a">Financial Reporting.\ Paper 2.5</subfield>
+  </datafield>
+  <datafield tag="250" ind1=" " ind2=" ">
+    <subfield code="a">3rd 2003</subfield>
+  </datafield>
+  <datafield tag="260" ind1=" " ind2=" ">
+    <subfield code="b">BPP Publishing Ltd</subfield>
+  </datafield>
+  <datafield tag="949" ind1=" " ind2=" ">
+    <subfield code="A">VIRTUAITEM</subfield>
+    <subfield code="D">2200000</subfield>
+    <subfield code="X">1</subfield>
+    <subfield code="6">0627390</subfield>
+  </datafield>
+  <datafield tag="999" ind1=" " ind2=" ">
+    <subfield code="a">VIRTUA50             </subfield>
+  </datafield>
+</record>

@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<meta name="generator" content=
+"HTML Tidy for Linux/x86 (vers 1 September 2005), see www.w3.org">
+<title>File_MARC package for PHP</title>
+</head>
+<body>
+<h1>File_MARC package for PHP</h1>
+<p>Hey, welcome to the File_MARC package for PHP. If you don't know
+what MARC is, then you probably don't need this package -- but you
+can find out more about MARC at <a href=
+"http://loc.gov/marc/">Library of Congress: MARC standards</a>.</p>
+<h2>Requirements</h2>
+<p>The basic requirement for File_MARC is PHP 5 with a working PEAR installer. The PEAR installer will install any dependencies for you.</p>
+</p>
+
+<h2>Installation</h2>
+<p>Install the File_MARC package using the PEAR installer. You have to append <tt>-alpha</tt> to the package name as I have not yet created a stable release.</p>
+<pre>
+# pear install File_MARC-alpha
+</pre>
+
+<h2>Documentation</h2>
+<p>Read the <a href="docs/">File_MARC API documentation</a>.</p>
+<h3>Highlighted source files</h3>
+<ul>
+<li><a href="highlight_MARC.php">MARC.php (package
+source)</a></li>
+<li><a href="highlight_read.php">read.php
+(example)</a></li>
+<li><a href="highlight_subfields.php">subfields.php
+(example)</a></li>
+<li><a href="highlight_marc_yaz.php">marc_yaz.php
+(example)</a></li>
+</ul>
+
+<h2><a name="download">Download</a></h2>
+<p>Current release: <a href="http://download.pear.php.net/package/File_MARC-0.1.0.tgz">0.1.0-alpha</a> is hosted at PEAR.</p>
+
+<h2>Comments</h2>
+<p>Comments are welcome by email at <a href="mailto:dbs@php.net">dbs@php.net</a>.</p>
+
+<h2>Future directions</h2>
+<ul>
+<li>More user-oriented documentation</li>
+<li>Make <tt>MARC_Record-&gt;appendField()</tt> append the field to
+the end of the corresponding [0-9]xx range to keep records
+conformant with LOC guidelines</li>
+<li>Enable sorting the MARC fields</li>
+<li>Add levels of MARC standards compliance for error
+modes (e.g. only one 1XX field per bibliographic record)</li>
+<li>Add semantic shortcuts for a given record based on the fixed fields
+values (e.g. <tt>$record-&gt;getLanguage()</tt> or the like).</li>
+<li>Enable reading from and writing to MARCXML format.</li>
+</ul>
+<h2><a name="previous">Previous releases</a></h2>
+<ul>
+<li><a href= "File_MARC-0.0.8.tgz">File_MARC-0.0.8.tgz</a></li>
+<li><a href= "File_MARC-0.0.7.tgz">File_MARC-0.0.7.tgz</a></li>
+<li><a href= "File_MARC-0.0.6.tgz">File_MARC-0.0.6.tgz</a></li>
+<li><a href= "File_MARC-0.0.5.tgz">File_MARC-0.0.5.tgz</a></li>
+<li><a href= "File_MARC-0.0.4.tgz">File_MARC-0.0.4.tgz</a></li>
+<li><a href= "File_MARC-0.0.3a.tgz">File_MARC-0.0.3a.tgz</a></li>
+<li><a href= "MARC-0.0.2-alpha.tar.gz">MARC-0.0.2-alpha.tar.gz</a></li>
+<li><a href= "MARC-0.0.1-alpha.tar.gz">MARC-0.0.1-alpha.tar.gz</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<phpunit>
+  <testsuites>
+    <testsuite name="PHPT tests">
+      <directory suffix=".phpt">tests</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

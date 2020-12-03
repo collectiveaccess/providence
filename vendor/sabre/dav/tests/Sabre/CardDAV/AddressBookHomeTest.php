@@ -1,0 +1,131 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sabre\CardDAV;
+
+use Sabre\DAV\MkCol;
+
+class AddressBookHomeTest extends \PHPUnit\Framework\TestCase
+{
+    /**
+     * @var Sabre\CardDAV\AddressBookHome
+     */
+    protected $s;
+    protected $backend;
+
+    public function setup(): void
+    {
+        $this->backend = new Backend\Mock();
+        $this->s = new AddressBookHome(
+            $this->backend,
+            'principals/user1'
+        );
+    }
+
+    public function testGetName()
+    {
+        $this->assertEquals('user1', $this->s->getName());
+    }
+
+    public function testSetName()
+    {
+        $this->expectException('Sabre\DAV\Exception\MethodNotAllowed');
+        $this->s->setName('user2');
+    }
+
+    public function testDelete()
+    {
+        $this->expectException('Sabre\DAV\Exception\MethodNotAllowed');
+        $this->s->delete();
+    }
+
+    public function testGetLastModified()
+    {
+        $this->assertNull($this->s->getLastModified());
+    }
+
+    public function testCreateFile()
+    {
+        $this->expectException('Sabre\DAV\Exception\MethodNotAllowed');
+        $this->s->createFile('bla');
+    }
+
+    public function testCreateDirectory()
+    {
+        $this->expectException('Sabre\DAV\Exception\MethodNotAllowed');
+        $this->s->createDirectory('bla');
+    }
+
+    public function testGetChild()
+    {
+        $child = $this->s->getChild('book1');
+        $this->assertInstanceOf('Sabre\\CardDAV\\AddressBook', $child);
+        $this->assertEquals('book1', $child->getName());
+    }
+
+    public function testGetChild404()
+    {
+        $this->expectException('Sabre\DAV\Exception\NotFound');
+        $this->s->getChild('book2');
+    }
+
+    public function testGetChildren()
+    {
+        $children = $this->s->getChildren();
+        $this->assertEquals(2, count($children));
+        $this->assertInstanceOf('Sabre\\CardDAV\\AddressBook', $children[0]);
+        $this->assertEquals('book1', $children[0]->getName());
+    }
+
+    public function testCreateExtendedCollection()
+    {
+        $resourceType = [
+            '{'.Plugin::NS_CARDDAV.'}addressbook',
+            '{DAV:}collection',
+        ];
+        $this->s->createExtendedCollection('book2', new MkCol($resourceType, ['{DAV:}displayname' => 'a-book 2']));
+
+        $this->assertEquals([
+            'id' => 'book2',
+            'uri' => 'book2',
+            '{DAV:}displayname' => 'a-book 2',
+            'principaluri' => 'principals/user1',
+        ], $this->backend->addressBooks[2]);
+    }
+
+    public function testCreateExtendedCollectionInvalid()
+    {
+        $this->expectException('Sabre\DAV\Exception\InvalidResourceType');
+        $resourceType = [
+            '{DAV:}collection',
+        ];
+        $this->s->createExtendedCollection('book2', new MkCol($resourceType, ['{DAV:}displayname' => 'a-book 2']));
+    }
+
+    public function testACLMethods()
+    {
+        $this->assertEquals('principals/user1', $this->s->getOwner());
+        $this->assertNull($this->s->getGroup());
+        $this->assertEquals([
+            [
+                'privilege' => '{DAV:}all',
+                'principal' => '{DAV:}owner',
+                'protected' => true,
+            ],
+        ], $this->s->getACL());
+    }
+
+    public function testSetACL()
+    {
+        $this->expectException('Sabre\DAV\Exception\Forbidden');
+        $this->s->setACL([]);
+    }
+
+    public function testGetSupportedPrivilegeSet()
+    {
+        $this->assertNull(
+            $this->s->getSupportedPrivilegeSet()
+        );
+    }
+}
