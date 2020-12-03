@@ -15,7 +15,7 @@ Version 1.7.9 is a maintenance release with bug fixes and support for MySQL 8.0 
 
 ### Installation
 
-First make sure your server meets all of the [requirements](https://docs.collectiveaccess.org/wiki/Requirements). Then follow the [installation instructions](https://docs.collectiveaccess.org/wiki/Installing_Providence). 
+First make sure your server meets all of the [requirements](https://manual.collectiveaccess.org/setup/systemReq.html). Then follow the [installation instructions](https://manual.collectiveaccess.org/setup/Installation.html). 
 
 
 ### Updating from a previous version
