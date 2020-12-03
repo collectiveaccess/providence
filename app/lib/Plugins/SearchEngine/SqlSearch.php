@@ -1501,11 +1501,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					if ($vb_is_blank_search) {
 						$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (swi.word_id = 0))";
 						
-						if (!sizeof($va_sql_where)) { continue; }
+						if (!sizeof($va_sql_where)) { continue(2); }
 						$vs_sql_where = join(' OR ', $va_sql_where);
 					} elseif ($vb_is_not_blank_search) {
 						$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (swi.word_id > 0))";
-						if (!sizeof($va_sql_where)) { continue; }
+						if (!sizeof($va_sql_where)) { continue(2); }
 						$vs_sql_where = join(' OR ', $va_sql_where);
 					} elseif (!$vs_direct_sql_query) {
 						if (sizeof($va_ft_terms)) {
@@ -1546,7 +1546,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							}
 						}
 						
-						if (!sizeof($va_sql_where)) { continue; }
+						if (!sizeof($va_sql_where)) { continue(2); }
 						$vs_sql_where = join(' OR ', $va_sql_where);
 					} else {
 						$va_ft_terms = $va_ft_like_terms = $va_ft_like_terms = array();

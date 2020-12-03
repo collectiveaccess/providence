@@ -1455,7 +1455,7 @@
 											foreach($va_value as $vs_f => $vs_v) {
 												switch($vn_datatype) {			
 													case __CA_ATTRIBUTE_VALUE_LIST__:
-														if ($vs_f != 'item_id') { continue; }
+														if ($vs_f != 'item_id') { continue(2); }
 
 														// Include sub-items
 														$t_list_item = new ca_list_items();

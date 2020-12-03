@@ -26,11 +26,6 @@
     "league/flysystem-webdav": ">=1.0.0",
     "league/flysystem-ziparchive": ">=1.0.0",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
-    "league/climate": ">=1.0.0",
-    "okta/sdk": ">=1.0.0",
-    "okta/jwt-verifier": "^0.2.1",
-    "spomky-labs/jose": "^7.1",
-    "opis/json-schema": "^1.0",
-    "onelogin/php-saml": ">=2.0"
+    "league/climate": ">=1.0.0"
   }
 }
