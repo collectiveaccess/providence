@@ -5,14 +5,14 @@ dist: trusty
 addons:
   apt:
     packages:
-    - mysql-server-5.6
-    - mysql-client-core-5.6
-    - mysql-client-5.6
+    - mysql-server-5.5
+    - mysql-client-core-5.7
+    - mysql-client-5.7
     
 php:
-  - 7.0
-  - 7.1
   - 7.2
+  - 7.3
+  - 7.4
 
 
 env:
@@ -28,6 +28,7 @@ install:
   - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
   # Create setup.php
   - ln -s .travis.setup.php setup.php
+  - composer self-update
   - composer update
   # Install the testing profile
   - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=support@collectiveaccess.org > install.log
