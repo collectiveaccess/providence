@@ -1,13 +1,13 @@
 language: php
-sudo: required
-dist: trusty
+os: linux
+dist: bionic
 
 addons:
   apt:
     packages:
-    - mysql-server-5.7
-    - mysql-client-core-5.7
-    - mysql-client-5.7
+      - mysql-server-5.7
+      - mysql-client-core-5.7
+      - mysql-client-5.7
     
 php:
   - 7.2
