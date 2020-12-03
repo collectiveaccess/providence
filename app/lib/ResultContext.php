@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -268,7 +268,7 @@
 		 * @return array - the result list as set
 		 */
 		public function setResultList($pa_result_list) {
-			$this->setSearchHistory(sizeof($pa_result_list));
+			$this->setSearchHistory(is_array($pa_result_list) ? sizeof($pa_result_list) : 0);
 			return $this->setContextValue('result_list', $pa_result_list);
 		}
 		# ------------------------------------------------------------------
@@ -508,7 +508,7 @@
 				if (isset($va_context['type_id']) && ($va_context['type_id'] != $pn_type_id)) {
 					$pb_type_restriction_has_changed = true;
 				}
-				$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
+				$_GET['type_id'] = $pn_type_id;								// push type_id into globals so breadcrumb trail can pick it up
 				return $pn_type_id;
 			}
 			return null;
@@ -524,7 +524,11 @@
 		 * @return int - type_id as set
 		 */
 		public function setTypeRestriction($pn_type_id) {
-			return $this->setContextValue('type_id', $pn_type_id);
+			$t = $this->ops_table_name;
+			if ($t::typeCodeForID($pn_type_id)) {	// make sure type is valid for current table
+				return $this->setContextValue('type_id', $pn_type_id);
+			} 
+			return null;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -534,12 +538,35 @@
 		 *
 		 * @return int Display_id of ca_bundle_displays row to use
 		 */
-		public function getCurrentBundleDisplay($pn_type_id=null) {
+		public function getCurrentBundleDisplay($pn_type_id=null, $ps_show_in=null) {
 			if (!strlen($pn_display_id = htmlspecialchars($this->opo_request->getParameter('display_id', pString, ['forcePurify' => true])))) { 
  				if ($va_context = $this->getContext()) {
 					$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"];
 				}
- 				if (!$pn_display_id) { $pn_display_id = null; }
+ 				if (!$pn_display_id) { 
+ 					// Try to guess
+ 					require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
+ 					$t_display = new ca_bundle_displays();
+ 					if (is_array($displays = $t_display->getBundleDisplays(['table' => $this->tableName(), 'restrictToTypes' => $pn_type_id ? [$pn_type_id] : null]))) {
+ 						if ($ps_show_in) {
+ 							foreach($displays as $id => $d) {
+ 								$d = array_shift($d);
+ 								if (($show_in_setting = caGetOption('show_only_in', $d['settings'], null, ['castTo' => 'array'])) && (sizeof($show_in_setting) > 0)) {
+ 									if(sizeof(array_filter($show_in_setting, function($v) use($ps_show_in) { return preg_match("!{$ps_show_in}!", $v); })) > 0) {
+ 										$pn_display_id = $id;
+ 										break;
+ 									}
+ 								} else {
+ 									$pn_display_id = $id;
+ 									break;
+ 								}
+ 							}
+ 						} else {
+ 							$pn_display_id = array_shift(array_keys($displays));
+ 						}
+ 					}
+ 					if (!$pn_display_id) { $pn_display_id = null; }
+ 				}
  				return $pn_display_id;
  			} else {
  				// page set by request param so set context
@@ -614,7 +641,7 @@
 					return $va_context['param_'.$ps_param] ? $va_context['param_'.$ps_param] : null;
 				}
 			} else {
-				if (!isset($_REQUEST[$ps_param]) && !$this->opo_request->getParameter($ps_param, pString, ['forcePurify' => true])) {
+				if (!isset($_REQUEST[$ps_param]) && (!$this->opo_request || !$this->opo_request->getParameter($ps_param, pString, ['forcePurify' => true]))) {
 					if ($va_context = $this->getContext()) {
 						if (is_array($va_context['param_'.$ps_param])) {
 							return $va_context['param_'.$ps_param];
@@ -711,6 +738,26 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns a URL to the results screen of a given type for a table
+		 *
+		 * @param $request = the current request
+		 * @param $table_name_or_num = the name or number of the table 
+		 * @param $find_type = type of find interface to return results for, as defined in find_navigation.conf
+		 * @param $options = no options are currently supported
+		 *
+		 * @return string - a URL that will link back to results for the specified find type
+		 */
+		static public function getResultsUrl($request, $table_name_or_num, $find_type, $options=null) {
+			if (!($table_name = Datamodel::getTableName($table_name_or_num))) { return null; }
+			$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && (__CA_APP_TYPE__ == 'PAWTUCKET')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
+			$find_nav = $o_find_navigation->getAssoc($table_name);
+			print_R($find_nav);
+			if(is_null($nav = caGetOption($find_type, $find_nav, null))) { return null; }
+			
+			return caNavUrl($request, trim($nav['module_path']), trim($nav['controller']), trim($nav['action']), []);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns a URL to the results screen for the last find
 		 *
 		 * @param $po_request - the current request
@@ -724,8 +771,9 @@
 			
 			$vs_last_find = ResultContext::getLastFind($po_request, $pm_table_name_or_num);
 			$va_tmp = explode('/', $vs_last_find);
-			
-			$o_find_navigation = Configuration::load((defined('__CA_THEME_DIR__') ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
+
+			$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && (__CA_APP_TYPE__ == 'PAWTUCKET')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
+
 			$va_find_nav = $o_find_navigation->getAssoc($vs_table_name);
 			$va_nav = $va_find_nav[$va_tmp[0]];
 			if (!$va_nav) { return false; }
