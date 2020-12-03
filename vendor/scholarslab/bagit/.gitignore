@@ -1,7 +1,0 @@
-.DS_Store
-.*.sw*
-*~$
-build/
-dist/
-vendor/
-composer.lock
