@@ -171,7 +171,7 @@ class Zend_Feed_Builder implements Zend_Feed_Builder_Interface
      * );
      * </code>
      *
-     * @param  array $data
+     * @param array $data
      * @return void
      */
     public function __construct(array $data)
@@ -208,9 +208,9 @@ class Zend_Feed_Builder implements Zend_Feed_Builder_Interface
     /**
      * Create the Zend_Feed_Builder_Header instance
      *
-     * @param  array $data
-     * @throws Zend_Feed_Builder_Exception
+     * @param array $data
      * @return void
+     * @throws Zend_Feed_Builder_Exception
      */
     protected function _createHeader(array $data)
     {
@@ -286,10 +286,12 @@ class Zend_Feed_Builder implements Zend_Feed_Builder_Interface
                     throw new Zend_Feed_Builder_Exception("you have to define $mandatory property of your textInput");
                 }
             }
-            $this->_header->setTextInput($data['textInput']['title'],
-                                         $data['textInput']['description'],
-                                         $data['textInput']['name'],
-                                         $data['textInput']['link']);
+            $this->_header->setTextInput(
+                $data['textInput']['title'],
+                $data['textInput']['description'],
+                $data['textInput']['name'],
+                $data['textInput']['link']
+            );
         }
         if (isset($data['skipHours'])) {
             $this->_header->setSkipHours($data['skipHours']);
@@ -336,9 +338,9 @@ class Zend_Feed_Builder implements Zend_Feed_Builder_Interface
     /**
      * Create the array of article entries
      *
-     * @param  array $data
-     * @throws Zend_Feed_Builder_Exception
+     * @param array $data
      * @return void
+     * @throws Zend_Feed_Builder_Exception
      */
     protected function _createEntries(array $data)
     {

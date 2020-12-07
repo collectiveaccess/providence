@@ -294,21 +294,21 @@ class Zend_Service_Ebay_Finding_Search_Item extends Zend_Service_Ebay_Finding_Ab
         parent::_init();
         $ns = Zend_Service_Ebay_Finding::XMLNS_FINDING;
 
-        $this->autoPay               = $this->_query(".//$ns:autoPay[1]", 'boolean');
-        $this->charityId             = $this->_query(".//$ns:charityId[1]", 'integer');
-        $this->country               = $this->_query(".//$ns:country[1]", 'string');
-        $this->distance              = $this->_query(".//$ns:distance[1]", 'float');
+        $this->autoPay = $this->_query(".//$ns:autoPay[1]", 'boolean');
+        $this->charityId = $this->_query(".//$ns:charityId[1]", 'integer');
+        $this->country = $this->_query(".//$ns:country[1]", 'string');
+        $this->distance = $this->_query(".//$ns:distance[1]", 'float');
         $this->galleryPlusPictureURL = $this->_query(".//$ns:galleryPlusPictureURL", 'string', true);
-        $this->galleryURL            = $this->_query(".//$ns:galleryURL[1]", 'string');
-        $this->globalId              = $this->_query(".//$ns:globalId[1]", 'string');
-        $this->itemId                = $this->_query(".//$ns:itemId[1]", 'string');
-        $this->location              = $this->_query(".//$ns:location[1]", 'string');
-        $this->paymentMethod         = $this->_query(".//$ns:paymentMethod", 'string', true);
-        $this->postalCode            = $this->_query(".//$ns:postalCode[1]", 'string');
-        $this->productId             = $this->_query(".//$ns:productId[1]", 'string');
-        $this->subtitle              = $this->_query(".//$ns:subtitle[1]", 'string');
-        $this->title                 = $this->_query(".//$ns:title[1]", 'string');
-        $this->viewItemURL           = $this->_query(".//$ns:viewItemURL[1]", 'string');
+        $this->galleryURL = $this->_query(".//$ns:galleryURL[1]", 'string');
+        $this->globalId = $this->_query(".//$ns:globalId[1]", 'string');
+        $this->itemId = $this->_query(".//$ns:itemId[1]", 'string');
+        $this->location = $this->_query(".//$ns:location[1]", 'string');
+        $this->paymentMethod = $this->_query(".//$ns:paymentMethod", 'string', true);
+        $this->postalCode = $this->_query(".//$ns:postalCode[1]", 'string');
+        $this->productId = $this->_query(".//$ns:productId[1]", 'string');
+        $this->subtitle = $this->_query(".//$ns:subtitle[1]", 'string');
+        $this->title = $this->_query(".//$ns:title[1]", 'string');
+        $this->viewItemURL = $this->_query(".//$ns:viewItemURL[1]", 'string');
 
         $this->_attributes['distance'] = array(
             'unit' => $this->_query(".//$ns:distance[1]/@unit[1]", 'string')
@@ -382,8 +382,8 @@ class Zend_Service_Ebay_Finding_Search_Item extends Zend_Service_Ebay_Finding_Ab
     }
 
     /**
-     * @param  Zend_Service_Ebay_Finding $proxy
-     * @param  Zend_Config|array         $options
+     * @param Zend_Service_Ebay_Finding $proxy
+     * @param Zend_Config|array $options
      * @return Zend_Service_Ebay_Finding_Response_Items
      */
     public function findItemsByProduct(Zend_Service_Ebay_Finding $proxy, $options = null)

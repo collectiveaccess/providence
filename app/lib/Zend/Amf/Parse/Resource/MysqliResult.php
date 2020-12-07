@@ -65,34 +65,34 @@ class Zend_Amf_Parse_Resource_MysqliResult
 
     // Build an associative array for a type look up
     static $mysqli_to_php = array(
-        "MYSQLI_TYPE_DECIMAL"     => 'float',
-        "MYSQLI_TYPE_NEWDECIMAL"  => 'float',
-        "MYSQLI_TYPE_BIT"         => 'integer',
-        "MYSQLI_TYPE_TINYINT"     => 'integer',
-        "MYSQLI_TYPE_SMALLINT"    => 'integer',
-        "MYSQLI_TYPE_MEDIUMINT"   => 'integer',
-        "MYSQLI_TYPE_BIGINT"      => 'integer',
-        "MYSQLI_TYPE_INTEGER"     => 'integer',
-        "MYSQLI_TYPE_FLOAT"       => 'float',
-        "MYSQLI_TYPE_DOUBLE"      => 'float',
-        "MYSQLI_TYPE_NULL"        => 'null',
-        "MYSQLI_TYPE_TIMESTAMP"   => 'string',
-        "MYSQLI_TYPE_INT24"       => 'integer',
-        "MYSQLI_TYPE_DATE"        => 'string',
-        "MYSQLI_TYPE_TIME"        => 'string',
-        "MYSQLI_TYPE_DATETIME"    => 'string',
-        "MYSQLI_TYPE_YEAR"        => 'string',
-        "MYSQLI_TYPE_NEWDATE"     => 'string',
-        "MYSQLI_TYPE_ENUM"        => 'string',
-        "MYSQLI_TYPE_SET"         => 'string',
-        "MYSQLI_TYPE_TINYBLOB"    => 'object',
-        "MYSQLI_TYPE_MEDIUMBLOB"  => 'object',
-        "MYSQLI_TYPE_LONGBLOB"    => 'object',
-        "MYSQLI_TYPE_BLOB"        => 'object',
-        "MYSQLI_TYPE_CHAR"        => 'string',
-        "MYSQLI_TYPE_VARCHAR"     => 'string',
-        "MYSQLI_TYPE_GEOMETRY"    => 'object',
-        "MYSQLI_TYPE_BIT"         => 'integer',
+        "MYSQLI_TYPE_DECIMAL" => 'float',
+        "MYSQLI_TYPE_NEWDECIMAL" => 'float',
+        "MYSQLI_TYPE_BIT" => 'integer',
+        "MYSQLI_TYPE_TINYINT" => 'integer',
+        "MYSQLI_TYPE_SMALLINT" => 'integer',
+        "MYSQLI_TYPE_MEDIUMINT" => 'integer',
+        "MYSQLI_TYPE_BIGINT" => 'integer',
+        "MYSQLI_TYPE_INTEGER" => 'integer',
+        "MYSQLI_TYPE_FLOAT" => 'float',
+        "MYSQLI_TYPE_DOUBLE" => 'float',
+        "MYSQLI_TYPE_NULL" => 'null',
+        "MYSQLI_TYPE_TIMESTAMP" => 'string',
+        "MYSQLI_TYPE_INT24" => 'integer',
+        "MYSQLI_TYPE_DATE" => 'string',
+        "MYSQLI_TYPE_TIME" => 'string',
+        "MYSQLI_TYPE_DATETIME" => 'string',
+        "MYSQLI_TYPE_YEAR" => 'string',
+        "MYSQLI_TYPE_NEWDATE" => 'string',
+        "MYSQLI_TYPE_ENUM" => 'string',
+        "MYSQLI_TYPE_SET" => 'string',
+        "MYSQLI_TYPE_TINYBLOB" => 'object',
+        "MYSQLI_TYPE_MEDIUMBLOB" => 'object',
+        "MYSQLI_TYPE_LONGBLOB" => 'object',
+        "MYSQLI_TYPE_BLOB" => 'object',
+        "MYSQLI_TYPE_CHAR" => 'string',
+        "MYSQLI_TYPE_VARCHAR" => 'string',
+        "MYSQLI_TYPE_GEOMETRY" => 'object',
+        "MYSQLI_TYPE_BIT" => 'integer',
     );
 
     /**
@@ -101,25 +101,25 @@ class Zend_Amf_Parse_Resource_MysqliResult
      * @param resource $resource
      * @return array
      */
-    public function parse($resource) {
-
+    public function parse($resource)
+    {
         $result = array();
         $fieldcnt = mysqli_num_fields($resource);
 
 
         $fields_transform = array();
 
-        for($i=0;$i<$fieldcnt;$i++) {
+        for ($i = 0; $i < $fieldcnt; $i++) {
             $finfo = mysqli_fetch_field_direct($resource, $i);
 
-            if(isset(self::$mysqli_type[$finfo->type])) {
+            if (isset(self::$mysqli_type[$finfo->type])) {
                 $fields_transform[$finfo->name] = self::$mysqli_to_php[self::$mysqli_type[$finfo->type]];
             }
         }
 
-        while($row = mysqli_fetch_assoc($resource)) {
-            foreach($fields_transform as $fieldname => $fieldtype) {
-               settype($row[$fieldname], $fieldtype);
+        while ($row = mysqli_fetch_assoc($resource)) {
+            foreach ($fields_transform as $fieldname => $fieldtype) {
+                settype($row[$fieldname], $fieldtype);
             }
             $result[] = $row;
         }

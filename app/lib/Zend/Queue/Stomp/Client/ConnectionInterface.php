@@ -32,16 +32,16 @@
 interface Zend_Queue_Stomp_Client_ConnectionInterface
 {
     /**
-     * @param  string  $scheme ['tcp', 'udp']
-     * @param  string  host
-     * @param  integer port
-     * @param  string  class - create a connection with this class; class must support Zend_Queue_Stomp_Client_Connection_Interface
+     * @param string $scheme ['tcp', 'udp']
+     * @param string  host
+     * @param integer port
+     * @param string  class - create a connection with this class; class must support Zend_Queue_Stomp_Client_Connection_Interface
      * @return boolean
      */
     public function open($scheme, $host, $port);
 
     /**
-     * @param  boolean $destructor
+     * @param boolean $destructor
      * @return void
      */
     public function close($destructor = false);
@@ -59,7 +59,7 @@ interface Zend_Queue_Stomp_Client_ConnectionInterface
      *
      * example: $response = $client->write($frame)->read();
      *
-     * @param  Zend_Queue_Stomp_FrameInterface $frame
+     * @param Zend_Queue_Stomp_FrameInterface $frame
      * @return $this
      */
     public function write(Zend_Queue_Stomp_FrameInterface $frame);
@@ -82,7 +82,7 @@ interface Zend_Queue_Stomp_Client_ConnectionInterface
      *
      * This must be a Zend_Queue_Stomp_FrameInterface.
      *
-     * @param  string $class
+     * @param string $class
      * @return Zend_Queue_Stomp_Client_ConnectionInterface;
      */
     public function setFrameClass($class);

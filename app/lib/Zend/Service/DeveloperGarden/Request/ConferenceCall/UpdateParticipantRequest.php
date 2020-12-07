@@ -73,15 +73,18 @@ class Zend_Service_DeveloperGarden_Request_ConferenceCall_UpdateParticipantReque
      * @param integer $action
      * @param Zend_Service_DeveloperGarden_ConferenceCall_ParticipantDetail $participant
      */
-    public function __construct($environment, $conferenceId, $participantId,
+    public function __construct(
+        $environment,
+        $conferenceId,
+        $participantId,
         $action = null,
         Zend_Service_DeveloperGarden_ConferenceCall_ParticipantDetail $participant = null
     ) {
         parent::__construct($environment);
         $this->setConferenceId($conferenceId)
-             ->setParticipantId($participantId)
-             ->setAction($action)
-             ->setParticipant($participant);
+            ->setParticipantId($participantId)
+            ->setAction($action)
+            ->setParticipant($participant);
     }
 
     /**

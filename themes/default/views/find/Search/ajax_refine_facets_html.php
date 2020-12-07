@@ -1,4 +1,4 @@
-<?php 
+<?php
 /* ----------------------------------------------------------------------
  * themes/default/views/find/Search/ajax_refine_facets_html.php 
  * ----------------------------------------------------------------------
@@ -25,23 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$o_browse 				= $this->getVar('browse');
-	$va_available_facets 	= $o_browse->getInfoForAvailableFacets();
-	$va_criteria 			= $o_browse->getCriteriaWithLabels();
-	$va_facet_info 			= $o_browse->getInfoForFacets();
-	
-	
-	if (sizeof($va_available_facets)) {
-		print "<div class='startBrowsingBy'>"._t('Filter results by')."</div>";
-		$c = 0;
-		foreach($va_available_facets as $vs_facet_code => $va_facet_info) {
-			$c++;
-?>		
-			<a href='#' onclick='$("#searchRefineBox").slideUp(200); caUIBrowsePanel.showBrowsePanel("<?php print $vs_facet_code;?>")'><?php print $va_facet_info['label_plural'];?></a>
-<?php		
-		}
-	} else {
-		print "<div class='startBrowsingBy'>"._t('No applicable filters')."</div>";
-	}
-	
+
+$o_browse = $this->getVar('browse');
+$va_available_facets = $o_browse->getInfoForAvailableFacets();
+$va_criteria = $o_browse->getCriteriaWithLabels();
+$va_facet_info = $o_browse->getInfoForFacets();
+
+
+if (sizeof($va_available_facets)) {
+    print "<div class='startBrowsingBy'>" . _t('Filter results by') . "</div>";
+    $c = 0;
+    foreach ($va_available_facets as $vs_facet_code => $va_facet_info) {
+        $c++;
+        ?>
+        <a href='#'
+           onclick='$("#searchRefineBox").slideUp(200); caUIBrowsePanel.showBrowsePanel("<?php print $vs_facet_code; ?>")'><?php print $va_facet_info['label_plural']; ?></a>
+        <?php
+    }
+} else {
+    print "<div class='startBrowsingBy'>" . _t('No applicable filters') . "</div>";
+}

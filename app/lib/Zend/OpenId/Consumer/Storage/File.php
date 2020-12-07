@@ -76,37 +76,41 @@ class Zend_OpenId_Consumer_Storage_File extends Zend_OpenId_Consumer_Storage
                 require_once 'Zend/OpenId/Exception.php';
                 throw new Zend_OpenId_Exception(
                     'Cannot access storage directory ' . $dir,
-                    Zend_OpenId_Exception::ERROR_STORAGE);
+                    Zend_OpenId_Exception::ERROR_STORAGE
+                );
             }
         }
-        if (($f = fopen($this->_dir.'/assoc.lock', 'w+')) === null) {
+        if (($f = fopen($this->_dir . '/assoc.lock', 'w+')) === null) {
             /**
              * @see Zend_OpenId_Exception
              */
             require_once 'Zend/OpenId/Exception.php';
             throw new Zend_OpenId_Exception(
                 'Cannot create a lock file in the directory ' . $dir,
-                Zend_OpenId_Exception::ERROR_STORAGE);
+                Zend_OpenId_Exception::ERROR_STORAGE
+            );
         }
         fclose($f);
-        if (($f = fopen($this->_dir.'/discovery.lock', 'w+')) === null) {
+        if (($f = fopen($this->_dir . '/discovery.lock', 'w+')) === null) {
             /**
              * @see Zend_OpenId_Exception
              */
             require_once 'Zend/OpenId/Exception.php';
             throw new Zend_OpenId_Exception(
                 'Cannot create a lock file in the directory ' . $dir,
-                Zend_OpenId_Exception::ERROR_STORAGE);
+                Zend_OpenId_Exception::ERROR_STORAGE
+            );
         }
         fclose($f);
-        if (($f = fopen($this->_dir.'/nonce.lock', 'w+')) === null) {
+        if (($f = fopen($this->_dir . '/nonce.lock', 'w+')) === null) {
             /**
              * @see Zend_OpenId_Exception
              */
             require_once 'Zend/OpenId/Exception.php';
             throw new Zend_OpenId_Exception(
                 'Cannot create a lock file in the directory ' . $dir,
-                Zend_OpenId_Exception::ERROR_STORAGE);
+                Zend_OpenId_Exception::ERROR_STORAGE
+            );
         }
         fclose($f);
     }
@@ -436,12 +440,12 @@ class Zend_OpenId_Consumer_Storage_File extends Zend_OpenId_Consumer_Storage
      * The function checks the uniqueness of openid.response_nonce
      *
      * @param string $provider openid.openid_op_endpoint field from authentication response
-     * @param  string $nonce openid.response_nonce field from authentication response
+     * @param string $nonce openid.response_nonce field from authentication response
      * @return bool
      */
     public function isUniqueNonce($provider, $nonce)
     {
-        $name = $this->_dir . '/nonce_' . md5($provider.';'.$nonce);
+        $name = $this->_dir . '/nonce_' . md5($provider . ';' . $nonce);
         $lock = @fopen($this->_dir . '/nonce.lock', 'w+');
         if ($lock === false) {
             return false;
@@ -456,7 +460,7 @@ class Zend_OpenId_Consumer_Storage_File extends Zend_OpenId_Consumer_Storage
                 fclose($lock);
                 return false;
             }
-            fwrite($f, $provider.';'.$nonce);
+            fwrite($f, $provider . ';' . $nonce);
             fclose($f);
             fclose($lock);
             return true;
@@ -471,7 +475,7 @@ class Zend_OpenId_Consumer_Storage_File extends Zend_OpenId_Consumer_Storage
      *
      * @param mixed $date date of expired data
      */
-    public function purgeNonces($date=null)
+    public function purgeNonces($date = null)
     {
         $lock = @fopen($this->_dir . '/nonce.lock', 'w+');
         if ($lock !== false) {
@@ -480,7 +484,7 @@ class Zend_OpenId_Consumer_Storage_File extends Zend_OpenId_Consumer_Storage
         try {
             if (!is_int($date) && !is_string($date)) {
                 $nonceFiles = glob($this->_dir . '/nonce_*');
-                foreach ((array) $nonceFiles as $name) {
+                foreach ((array)$nonceFiles as $name) {
                     @unlink($name);
                 }
                 unset($nonceFiles);
@@ -491,7 +495,7 @@ class Zend_OpenId_Consumer_Storage_File extends Zend_OpenId_Consumer_Storage
                     $time = $date;
                 }
                 $nonceFiles = glob($this->_dir . '/nonce_*');
-                foreach ((array) $nonceFiles as $name) {
+                foreach ((array)$nonceFiles as $name) {
                     if (filemtime($name) < $time) {
                         @unlink($name);
                     }

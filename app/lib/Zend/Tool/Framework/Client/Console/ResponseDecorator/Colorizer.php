@@ -31,38 +31,38 @@ class Zend_Tool_Framework_Client_Console_ResponseDecorator_Colorizer
 
     protected $_colorOptions = array(
         // blacks
-        'black'     => '30m',
-        'hiBlack'   => '1;30m',
-        'bgBlack'   => '40m',
+        'black' => '30m',
+        'hiBlack' => '1;30m',
+        'bgBlack' => '40m',
         // reds
-        'red'       => '31m',
-        'hiRed'     => '1;31m',
-        'bgRed'     => '41m',
+        'red' => '31m',
+        'hiRed' => '1;31m',
+        'bgRed' => '41m',
         // greens
-        'green'     => '32m',
-        'hiGreen'   => '1;32m',
-        'bgGreen'   => '42m',
+        'green' => '32m',
+        'hiGreen' => '1;32m',
+        'bgGreen' => '42m',
         // yellows
-        'yellow'    => '33m',
-        'hiYellow'  => '1;33m',
-        'bgYellow'  => '43m',
+        'yellow' => '33m',
+        'hiYellow' => '1;33m',
+        'bgYellow' => '43m',
         // blues
-        'blue'      => '34m',
-        'hiBlue'    => '1;34m',
-        'bgBlue'    => '44m',
+        'blue' => '34m',
+        'hiBlue' => '1;34m',
+        'bgBlue' => '44m',
         // magentas
-        'magenta'   => '35m',
+        'magenta' => '35m',
         'hiMagenta' => '1;35m',
         'bgMagenta' => '45m',
         // cyans
-        'cyan'      => '36m',
-        'hiCyan'    => '1;36m',
-        'bgCyan'    => '46m',
+        'cyan' => '36m',
+        'hiCyan' => '1;36m',
+        'bgCyan' => '46m',
         // whites
-        'white'     => '37m',
-        'hiWhite'   => '1;37m',
-        'bgWhite'   => '47m'
-        );
+        'white' => '37m',
+        'hiWhite' => '1;37m',
+        'bgWhite' => '47m'
+    );
 
     public function getName()
     {

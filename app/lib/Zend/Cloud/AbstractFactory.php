@@ -41,8 +41,8 @@ class Zend_Cloud_AbstractFactory
     /**
      * Get an individual adapter instance
      *
-     * @param  string $adapterOption
-     * @param  array|Zend_Config $options
+     * @param string $adapterOption
+     * @param array|Zend_Config $options
      * @return null|Zend_Cloud_DocumentService_Adapter|Zend_Cloud_QueueService_Adapter|Zend_Cloud_StorageService_Adapter
      */
     protected static function _getAdapter($adapterOption, $options)

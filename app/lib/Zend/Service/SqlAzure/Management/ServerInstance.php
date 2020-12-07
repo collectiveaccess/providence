@@ -31,29 +31,29 @@ require_once 'Zend/Service/SqlAzure/Management/ServiceEntityAbstract.php';
  * @subpackage Management
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * 
+ *
  * @property string $Name               The name of the server.
  * @property string $DnsName            The DNS name of the server.
  * @property string $AdministratorLogin The administrator login.
  * @property string $Location           The location of the server in Windows Azure.
  */
 class Zend_Service_SqlAzure_Management_ServerInstance
-	extends Zend_Service_SqlAzure_Management_ServiceEntityAbstract
-{    
+    extends Zend_Service_SqlAzure_Management_ServiceEntityAbstract
+{
     /**
      * Constructor
-     * 
-     * @param string $name               The name of the server.
+     *
+     * @param string $name The name of the server.
      * @param string $administratorLogin The administrator login.
-     * @param string $location           The location of the server in Windows Azure.
-	 */
-    public function __construct($name, $administratorLogin, $location) 
-    {	        
+     * @param string $location The location of the server in Windows Azure.
+     */
+    public function __construct($name, $administratorLogin, $location)
+    {
         $this->_data = array(
-            'name'               => $name,
-            'dnsname'            => $name . '.database.windows.net',
+            'name' => $name,
+            'dnsname' => $name . '.database.windows.net',
             'administratorlogin' => $administratorLogin,
-            'location'           => $location       
+            'location' => $location
         );
     }
 }

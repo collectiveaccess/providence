@@ -48,7 +48,7 @@ class Zend_Auth_Adapter_Http_Resolver_File implements Zend_Auth_Adapter_Http_Res
     /**
      * Constructor
      *
-     * @param  string $path Complete filename where the credentials are stored
+     * @param string $path Complete filename where the credentials are stored
      * @return void
      */
     public function __construct($path = '')
@@ -61,9 +61,9 @@ class Zend_Auth_Adapter_Http_Resolver_File implements Zend_Auth_Adapter_Http_Res
     /**
      * Set the path to the credentials file
      *
-     * @param  string $path
-     * @throws Zend_Auth_Adapter_Http_Resolver_Exception
+     * @param string $path
      * @return Zend_Auth_Adapter_Http_Resolver_File Provides a fluent interface
+     * @throws Zend_Auth_Adapter_Http_Resolver_Exception
      */
     public function setFile($path)
     {
@@ -104,11 +104,11 @@ class Zend_Auth_Adapter_Http_Resolver_File implements Zend_Auth_Adapter_Http_Res
      * authentication realm, and the password or hash, each delimited by
      * colons.
      *
-     * @param  string $username Username
-     * @param  string $realm    Authentication Realm
-     * @throws Zend_Auth_Adapter_Http_Resolver_Exception
+     * @param string $username Username
+     * @param string $realm Authentication Realm
      * @return string|false User's shared secret, if the user is found in the
      *         realm, false otherwise.
+     * @throws Zend_Auth_Adapter_Http_Resolver_Exception
      */
     public function resolve($username, $realm)
     {
@@ -118,13 +118,17 @@ class Zend_Auth_Adapter_Http_Resolver_File implements Zend_Auth_Adapter_Http_Res
              */
             require_once 'Zend/Auth/Adapter/Http/Resolver/Exception.php';
             throw new Zend_Auth_Adapter_Http_Resolver_Exception('Username is required');
-        } else if (!ctype_print($username) || strpos($username, ':') !== false) {
-            /**
-             * @see Zend_Auth_Adapter_Http_Resolver_Exception
-             */
-            require_once 'Zend/Auth/Adapter/Http/Resolver/Exception.php';
-            throw new Zend_Auth_Adapter_Http_Resolver_Exception('Username must consist only of printable characters, '
-                                                              . 'excluding the colon');
+        } else {
+            if (!ctype_print($username) || strpos($username, ':') !== false) {
+                /**
+                 * @see Zend_Auth_Adapter_Http_Resolver_Exception
+                 */
+                require_once 'Zend/Auth/Adapter/Http/Resolver/Exception.php';
+                throw new Zend_Auth_Adapter_Http_Resolver_Exception(
+                    'Username must consist only of printable characters, '
+                    . 'excluding the colon'
+                );
+            }
         }
         if (empty($realm)) {
             /**
@@ -132,13 +136,17 @@ class Zend_Auth_Adapter_Http_Resolver_File implements Zend_Auth_Adapter_Http_Res
              */
             require_once 'Zend/Auth/Adapter/Http/Resolver/Exception.php';
             throw new Zend_Auth_Adapter_Http_Resolver_Exception('Realm is required');
-        } else if (!ctype_print($realm) || strpos($realm, ':') !== false) {
-            /**
-             * @see Zend_Auth_Adapter_Http_Resolver_Exception
-             */
-            require_once 'Zend/Auth/Adapter/Http/Resolver/Exception.php';
-            throw new Zend_Auth_Adapter_Http_Resolver_Exception('Realm must consist only of printable characters, '
-                                                              . 'excluding the colon.');
+        } else {
+            if (!ctype_print($realm) || strpos($realm, ':') !== false) {
+                /**
+                 * @see Zend_Auth_Adapter_Http_Resolver_Exception
+                 */
+                require_once 'Zend/Auth/Adapter/Http/Resolver/Exception.php';
+                throw new Zend_Auth_Adapter_Http_Resolver_Exception(
+                    'Realm must consist only of printable characters, '
+                    . 'excluding the colon.'
+                );
+            }
         }
 
         // Open file, read through looking for matching credentials

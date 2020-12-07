@@ -43,9 +43,9 @@ class Zend_Filter_NormalizedToLocalized implements Zend_Filter_Interface
      * Set options
      */
     protected $_options = array(
-        'locale'      => null,
+        'locale' => null,
         'date_format' => null,
-        'precision'   => null
+        'precision' => null
     );
 
     /**
@@ -77,7 +77,7 @@ class Zend_Filter_NormalizedToLocalized implements Zend_Filter_Interface
     /**
      * Sets options to use
      *
-     * @param  array $options (Optional) Options to use
+     * @param array $options (Optional) Options to use
      * @return Zend_Filter_LocalizedToNormalized
      */
     public function setOptions(array $options = null)
@@ -91,7 +91,7 @@ class Zend_Filter_NormalizedToLocalized implements Zend_Filter_Interface
      *
      * Normalizes the given input
      *
-     * @param  string $value Value to normalized
+     * @param string $value Value to normalized
      * @return string|array The normalized value
      */
     public function filter($value)
@@ -100,10 +100,14 @@ class Zend_Filter_NormalizedToLocalized implements Zend_Filter_Interface
             require_once 'Zend/Date.php';
             $date = new Zend_Date($value, $this->_options['locale']);
             return $date->toString($this->_options['date_format']);
-        } else if ($this->_options['precision'] === 0) {
-            return Zend_Locale_Format::toInteger($value, $this->_options);
-        } else if ($this->_options['precision'] === null) {
-            return Zend_Locale_Format::toFloat($value, $this->_options);
+        } else {
+            if ($this->_options['precision'] === 0) {
+                return Zend_Locale_Format::toInteger($value, $this->_options);
+            } else {
+                if ($this->_options['precision'] === null) {
+                    return Zend_Locale_Format::toFloat($value, $this->_options);
+                }
+            }
         }
 
         return Zend_Locale_Format::toNumber($value, $this->_options);

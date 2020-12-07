@@ -112,8 +112,8 @@ class Zend_Gdata_Geo_Extension_GeoRssWhere extends Zend_Gdata_Extension
     /**
      * Get the value for this element's point attribute.
      *
-     * @see setPoint
      * @return Zend_Gdata_Geo_Extension_GmlPoint The requested attribute.
+     * @see setPoint
      */
     public function getPoint()
     {

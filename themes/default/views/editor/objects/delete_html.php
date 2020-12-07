@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/editor/objects/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_object = $this->getVar('t_subject');
-	$vn_object_id = $this->getVar('subject_id');
+$t_object = $this->getVar('t_subject');
+$vn_object_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_object, $this->getVar('subject_name'), 'editor/objects', 'ObjectEditor', 'Edit/'.$this->request->getActionExtra(), array('object_id' => $vn_object_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_object,
+            $this->getVar('subject_name'),
+            'editor/objects',
+            'ObjectEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('object_id' => $vn_object_id)
+        );
+    }
+    ?>
 </div>

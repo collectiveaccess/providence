@@ -26,35 +26,57 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
-require_once(__CA_LIB_DIR__."/ConfigurationExporter.php");
+require_once(__CA_APP_DIR__ . "/helpers/configurationHelpers.php");
+require_once(__CA_LIB_DIR__ . "/ConfigurationExporter.php");
 
-class ExportConfigurationController extends ActionController {
+class ExportConfigurationController extends ActionController
+{
 
-	# ------------------------------------------------	
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
-		
-		if (!$this->request->isLoggedIn()) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 			return;
-		}	
-	}
-	# ------------------------------------------------
-	public function Index(){
-		$this->render('export_configuration_landing_html.php');
-	}
-	# ------------------------------------------------
-	public function Export(){
-		set_time_limit(3600);
-		$vs_xml = ConfigurationExporter::exportConfigurationAsXML($this->request->config->get('app_name'), _t('Profile created on %1 by %2', caGetLocalizedDate(), $this->request->user->get('fname').' '.$this->request->user->get('lname')), 'base', '');
-		
-		$this->view->setVar('profile', $vs_xml);
-		$this->view->setVar('profile_file_name', $this->request->config->get('app_name').'_config.xml');
-		$this->render('export_configuration_binary.php');
-		
-		return;
-	}
-	# ------------------------------------------------
+    # ------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+
+        if (!$this->request->isLoggedIn()) {
+            $this->response->setRedirect(
+                $this->request->config->get('error_display_url') . '/n/2320?r=' . urlencode(
+                    $this->request->getFullUrlPath()
+                )
+            );
+            return;
+        }
+    }
+
+    # ------------------------------------------------
+    public function Index()
+    {
+        $this->render('export_configuration_landing_html.php');
+    }
+
+    # ------------------------------------------------
+    public function Export()
+    {
+        set_time_limit(3600);
+        $vs_xml = ConfigurationExporter::exportConfigurationAsXML(
+            $this->request->config->get('app_name'),
+            _t(
+                'Profile created on %1 by %2',
+                caGetLocalizedDate(),
+                $this->request->user->get(
+                    'fname'
+                ) . ' ' . $this->request->user->get('lname')
+            ),
+            'base',
+            ''
+        );
+
+        $this->view->setVar('profile', $vs_xml);
+        $this->view->setVar('profile_file_name', $this->request->config->get('app_name') . '_config.xml');
+        $this->render('export_configuration_binary.php');
+
+        return;
+    }
+    # ------------------------------------------------
 }
+
 ?>

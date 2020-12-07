@@ -81,9 +81,9 @@ class Zend_Amf_Value_MessageBody
     /**
      * Constructor
      *
-     * @param  string $targetUri
-     * @param  string $responseUri
-     * @param  string $data
+     * @param string $targetUri
+     * @param string $responseUri
+     * @param string $data
      * @return void
      */
     public function __construct($targetUri, $responseUri, $data)
@@ -106,7 +106,7 @@ class Zend_Amf_Value_MessageBody
     /**
      * Set target Uri
      *
-     * @param  string $targetUri
+     * @param string $targetUri
      * @return Zend_Amf_Value_MessageBody
      */
     public function setTargetUri($targetUri)
@@ -114,7 +114,7 @@ class Zend_Amf_Value_MessageBody
         if (null === $targetUri) {
             $targetUri = '';
         }
-        $this->_targetUri = (string) $targetUri;
+        $this->_targetUri = (string)$targetUri;
         return $this;
     }
 
@@ -131,7 +131,7 @@ class Zend_Amf_Value_MessageBody
     /**
      * Set response Uri
      *
-     * @param  string $responseUri
+     * @param string $responseUri
      * @return Zend_Amf_Value_MessageBody
      */
     public function setResponseUri($responseUri)
@@ -156,7 +156,7 @@ class Zend_Amf_Value_MessageBody
     /**
      * Set response data
      *
-     * @param  mixed $data
+     * @param mixed $data
      * @return Zend_Amf_Value_MessageBody
      */
     public function setData($data)
@@ -168,7 +168,7 @@ class Zend_Amf_Value_MessageBody
     /**
      * Set reply method
      *
-     * @param  string $methodName
+     * @param string $methodName
      * @return Zend_Amf_Value_MessageBody
      */
     public function setReplyMethod($methodName)

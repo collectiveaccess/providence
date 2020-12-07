@@ -32,8 +32,9 @@
  */
 class Zend_Pdf_Resource_ImageFactory
 {
-    public static function factory($filename) {
-        if(!is_file($filename)) {
+    public static function factory($filename)
+    {
+        if (!is_file($filename)) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception("Cannot create image resource. File not found.");
         }
@@ -63,7 +64,9 @@ class Zend_Pdf_Resource_ImageFactory
                 break;
             default:
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception("Cannot create image resource. File extension not known or unsupported type.");
+                throw new Zend_Pdf_Exception(
+                    "Cannot create image resource. File extension not known or unsupported type."
+                );
                 break;
         }
     }

@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print json_encode($this->getVar('facet_list'));
+
+print json_encode($this->getVar('facet_list'));

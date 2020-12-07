@@ -26,27 +26,35 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-require_once(__CA_LIB_DIR__.'/BaseQuickAddController.php');
+require_once(__CA_MODELS_DIR__ . '/ca_sets.php');
+require_once(__CA_LIB_DIR__ . '/BaseQuickAddController.php');
 
-class SetQuickAddController extends BaseQuickAddController {
-	# -------------------------------------------------------
-	protected $ops_table_name = 'ca_sets';		// name of "subject" table (what we're editing)
-	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
-	}
+class SetQuickAddController extends BaseQuickAddController
+{
+    # -------------------------------------------------------
+    protected $ops_table_name = 'ca_sets';        // name of "subject" table (what we're editing)
 
-	public function Save($pa_options=null) {
-		$vn_rc = parent::Save($pa_options);
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
 
-		$va_response = $this->getView()->getVar('response');
+    public function Save($pa_options = null)
+    {
+        $vn_rc = parent::Save($pa_options);
 
-		if(is_array($va_response) && isset($va_response['id']) && ($va_response['id'] > 0)) {
-			$t_set = Datamodel::getInstance('ca_sets', true);
-			$t_set->getDb()->query('UPDATE ca_sets SET user_id=? WHERE set_id=?', $this->getRequest()->getUserID(), $va_response['id']);
-		}
-		return $vn_rc;
-	}
-	# -------------------------------------------------------
+        $va_response = $this->getView()->getVar('response');
+
+        if (is_array($va_response) && isset($va_response['id']) && ($va_response['id'] > 0)) {
+            $t_set = Datamodel::getInstance('ca_sets', true);
+            $t_set->getDb()->query(
+                'UPDATE ca_sets SET user_id=? WHERE set_id=?',
+                $this->getRequest()->getUserID(),
+                $va_response['id']
+            );
+        }
+        return $vn_rc;
+    }
+    # -------------------------------------------------------
 }

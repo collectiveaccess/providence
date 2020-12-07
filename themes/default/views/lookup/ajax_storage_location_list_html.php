@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * lookup/ajax_storage_location_list_html.php : 
  * ----------------------------------------------------------------------
@@ -25,5 +26,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	print json_encode($this->getVar('storage_location_list'));
+print json_encode($this->getVar('storage_location_list'));
 ?>

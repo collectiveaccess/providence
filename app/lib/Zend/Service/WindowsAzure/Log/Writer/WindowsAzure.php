@@ -72,16 +72,17 @@ class Zend_Service_WindowsAzure_Log_Writer_WindowsAzure
 
     /**
      * @param Zend_Service_Service_WindowsAzure_Storage_Table|Zend_Service_WindowsAzure_Storage_Table $tableStorageConnection
-     * @param string                                                                                  $tableName
-     * @param bool                                                                                    $createTable create the Windows Azure table for logging if it does not exist
-     * @param bool                                                                                    $bufferMessages
+     * @param string $tableName
+     * @param bool $createTable create the Windows Azure table for logging if it does not exist
+     * @param bool $bufferMessages
      * @throws Zend_Service_Log_Exception
      */
     public function __construct(
         Zend_Service_WindowsAzure_Storage_Table $tableStorageConnection,
-        $tableName, $createTable = true, $bufferMessages = true
-    )
-    {
+        $tableName,
+        $createTable = true,
+        $bufferMessages = true
+    ) {
         if ($tableStorageConnection == null) {
             require_once 'Zend/Service/Log/Exception.php';
             throw new Zend_Service_Log_Exception(
@@ -97,7 +98,7 @@ class Zend_Service_WindowsAzure_Log_Writer_WindowsAzure
         }
 
         $this->_tableStorageConnection = $tableStorageConnection;
-        $this->_tableName              = $tableName;
+        $this->_tableName = $tableName;
 
         // create the logging table if it does not exist. It will add some overhead, so it's optional
         if ($createTable) {
@@ -127,7 +128,8 @@ class Zend_Service_WindowsAzure_Log_Writer_WindowsAzure
             $this->_tableStorageConnection->startBatch();
             foreach ($this->_messageBuffer as $logEntity) {
                 $this->_tableStorageConnection->insertEntity(
-                    $this->_tableName, $logEntity
+                    $this->_tableName,
+                    $logEntity
                 );
             }
             $this->_tableStorageConnection->commit();
@@ -137,7 +139,7 @@ class Zend_Service_WindowsAzure_Log_Writer_WindowsAzure
     /**
      * Create a new instance of Zend_Service_Log_Writer_WindowsAzure
      *
-     * @param  array $config
+     * @param array $config
      * @return Zend_Service_Log_Writer_WindowsAzure
      * @throws Zend_Service_Log_Exception
      */
@@ -146,10 +148,11 @@ class Zend_Service_WindowsAzure_Log_Writer_WindowsAzure
         $config = self::_parseConfig($config);
         $config = array_merge(
             array(
-                 'connection' => null,
-                 'tableName' => null,
-                 'createTable' => true,
-            ), $config
+                'connection' => null,
+                'tableName' => null,
+                'createTable' => true,
+            ),
+            $config
         );
 
         return new self(
@@ -166,18 +169,18 @@ class Zend_Service_WindowsAzure_Log_Writer_WindowsAzure
      */
     public function setFormatter(
         Zend_Service_Log_Formatter_Interface $formatter
-    )
-    {
+    ) {
         require_once 'Zend/Service/Log/Exception.php';
         throw new Zend_Service_Log_Exception(
-            get_class($this) . ' does not support formatting');
+            get_class($this) . ' does not support formatting'
+        );
     }
 
     /**
      * Write a message to the table storage. If buffering is activated, then messages will just be
      * added to an internal buffer.
      *
-     * @param  array $event
+     * @param array $event
      * @return void
      * @todo   format the event using a formatted, not in this method
      */
@@ -189,7 +192,8 @@ class Zend_Service_WindowsAzure_Log_Writer_WindowsAzure
             $this->_messageBuffer[] = $logEntity;
         } else {
             $this->_tableStorageConnection->insertEntity(
-                $this->_tableName, $logEntity
+                $this->_tableName,
+                $logEntity
             );
         }
     }

@@ -47,9 +47,9 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Constructor
      *
-     * @param  string $title title of the feed
-     * @param  string $link canonical url of the feed
-     * @param  string $charset charset of the textual data
+     * @param string $title title of the feed
+     * @param string $link canonical url of the feed
+     * @param string $charset charset of the textual data
      * @return void
      */
     public function __construct($title, $link, $charset = 'utf-8')
@@ -58,19 +58,19 @@ class Zend_Feed_Builder_Header extends ArrayObject
         $this->offsetSet('link', $link);
         $this->offsetSet('charset', $charset);
         $this->setLastUpdate(time())
-             ->setGenerator('Zend_Feed');
+            ->setGenerator('Zend_Feed');
     }
 
     /**
      * Read only properties accessor
      *
-     * @param  string $name property to read
+     * @param string $name property to read
      * @return mixed
      */
     public function __get($name)
     {
         if (!$this->offsetExists($name)) {
-            return NULL;
+            return null;
         }
 
         return $this->offsetGet($name);
@@ -79,8 +79,8 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Write properties accessor
      *
-     * @param string $name  name of the property to set
-     * @param mixed  $value value to set
+     * @param string $name name of the property to set
+     * @param mixed $value value to set
      * @return void
      */
     public function __set($name, $value)
@@ -91,7 +91,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Isset accessor
      *
-     * @param  string $key
+     * @param string $key
      * @return boolean
      */
     public function __isset($key)
@@ -102,7 +102,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Unset accessor
      *
-     * @param  string $key
+     * @param string $key
      * @return void
      */
     public function __unset($key)
@@ -115,7 +115,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Timestamp of the update date
      *
-     * @param  int $lastUpdate
+     * @param int $lastUpdate
      * @return Zend_Feed_Builder_Header
      */
     public function setLastUpdate($lastUpdate)
@@ -127,7 +127,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Timestamp of the publication date
      *
-     * @param  int $published
+     * @param int $published
      * @return Zend_Feed_Builder_Header
      */
     public function setPublishedDate($published)
@@ -139,7 +139,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Short description of the feed
      *
-     * @param  string $description
+     * @param string $description
      * @return Zend_Feed_Builder_Header
      */
     public function setDescription($description)
@@ -151,7 +151,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Sets the author of the feed
      *
-     * @param  string $author
+     * @param string $author
      * @return Zend_Feed_Builder_Header
      */
     public function setAuthor($author)
@@ -163,7 +163,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Sets the author's email
      *
-     * @param  string $email
+     * @param string $email
      * @return Zend_Feed_Builder_Header
      * @throws Zend_Feed_Builder_Exception
      */
@@ -188,7 +188,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Sets the copyright notice
      *
-     * @param  string $copyright
+     * @param string $copyright
      * @return Zend_Feed_Builder_Header
      */
     public function setCopyright($copyright)
@@ -200,7 +200,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Sets the image of the feed
      *
-     * @param  string $image
+     * @param string $image
      * @return Zend_Feed_Builder_Header
      */
     public function setImage($image)
@@ -212,7 +212,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Sets the generator of the feed
      *
-     * @param  string $generator
+     * @param string $generator
      * @return Zend_Feed_Builder_Header
      */
     public function setGenerator($generator)
@@ -224,7 +224,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Sets the language of the feed
      *
-     * @param  string $language
+     * @param string $language
      * @return Zend_Feed_Builder_Header
      */
     public function setLanguage($language)
@@ -237,7 +237,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
      * Email address for person responsible for technical issues
      * Ignored if atom is used
      *
-     * @param  string $webmaster
+     * @param string $webmaster
      * @return Zend_Feed_Builder_Header
      * @throws Zend_Feed_Builder_Exception
      */
@@ -263,7 +263,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
      * How long in minutes a feed can be cached before refreshing
      * Ignored if atom is used
      *
-     * @param  int $ttl
+     * @param int $ttl
      * @return Zend_Feed_Builder_Header
      * @throws Zend_Feed_Builder_Exception
      */
@@ -289,7 +289,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
      * PICS rating for the feed
      * Ignored if atom is used
      *
-     * @param  string $rating
+     * @param string $rating
      * @return Zend_Feed_Builder_Header
      */
     public function setRating($rating)
@@ -302,9 +302,9 @@ class Zend_Feed_Builder_Header extends ArrayObject
      * Cloud to be notified of updates of the feed
      * Ignored if atom is used
      *
-     * @param  string|Zend_Uri_Http $uri
-     * @param  string               $procedure procedure to call, e.g. myCloud.rssPleaseNotify
-     * @param  string               $protocol  protocol to use, e.g. soap or xml-rpc
+     * @param string|Zend_Uri_Http $uri
+     * @param string $procedure procedure to call, e.g. myCloud.rssPleaseNotify
+     * @param string $protocol protocol to use, e.g. soap or xml-rpc
      * @return Zend_Feed_Builder_Header
      * @throws Zend_Feed_Builder_Exception
      */
@@ -323,9 +323,14 @@ class Zend_Feed_Builder_Header extends ArrayObject
         if (!$uri->getPort()) {
             $uri->setPort(80);
         }
-        $this->offsetSet('cloud', array('uri' => $uri,
-                                        'procedure' => $procedure,
-                                        'protocol' => $protocol));
+        $this->offsetSet(
+            'cloud',
+            array(
+                'uri' => $uri,
+                'procedure' => $procedure,
+                'protocol' => $protocol
+            )
+        );
         return $this;
     }
 
@@ -333,18 +338,23 @@ class Zend_Feed_Builder_Header extends ArrayObject
      * A text input box that can be displayed with the feed
      * Ignored if atom is used
      *
-     * @param  string $title       the label of the Submit button in the text input area
-     * @param  string $description explains the text input area
-     * @param  string $name        the name of the text object in the text input area
-     * @param  string $link        the URL of the CGI script that processes text input requests
+     * @param string $title the label of the Submit button in the text input area
+     * @param string $description explains the text input area
+     * @param string $name the name of the text object in the text input area
+     * @param string $link the URL of the CGI script that processes text input requests
      * @return Zend_Feed_Builder_Header
      */
     public function setTextInput($title, $description, $name, $link)
     {
-        $this->offsetSet('textInput', array('title' => $title,
-                                            'description' => $description,
-                                            'name' => $name,
-                                            'link' => $link));
+        $this->offsetSet(
+            'textInput',
+            array(
+                'title' => $title,
+                'description' => $description,
+                'name' => $name,
+                'link' => $link
+            )
+        );
         return $this;
     }
 
@@ -352,7 +362,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
      * Hint telling aggregators which hours they can skip
      * Ignored if atom is used
      *
-     * @param  array $hours list of hours in 24 format
+     * @param array $hours list of hours in 24 format
      * @return Zend_Feed_Builder_Header
      * @throws Zend_Feed_Builder_Exception
      */
@@ -382,7 +392,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
      * Hint telling aggregators which days they can skip
      * Ignored if atom is used
      *
-     * @param  array $days list of days to skip, e.g. Monday
+     * @param array $days list of days to skip, e.g. Monday
      * @return Zend_Feed_Builder_Header
      * @throws Zend_Feed_Builder_Exception
      */
@@ -412,7 +422,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
     /**
      * Sets the iTunes rss extension
      *
-     * @param  Zend_Feed_Builder_Header_Itunes $itunes
+     * @param Zend_Feed_Builder_Header_Itunes $itunes
      * @return Zend_Feed_Builder_Header
      */
     public function setITunes(Zend_Feed_Builder_Header_Itunes $itunes)

@@ -79,17 +79,17 @@ class Zend_Gdata_Extension_Where extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'label':
-            $this->_label = $attribute->nodeValue;
-            break;
-        case 'rel':
-            $this->_rel = $attribute->nodeValue;
-            break;
-        case 'valueString':
-            $this->_valueString = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'label':
+                $this->_label = $attribute->nodeValue;
+                break;
+            case 'rel':
+                $this->_rel = $attribute->nodeValue;
+                break;
+            case 'valueString':
+                $this->_valueString = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 
@@ -103,14 +103,14 @@ class Zend_Gdata_Extension_Where extends Zend_Gdata_Extension
     {
         $absoluteNodeName = $child->namespaceURI . ':' . $child->localName;
         switch ($absoluteNodeName) {
-        case $this->lookupNamespace('gd') . ':' . 'entryLink':
-            $entryLink = new Zend_Gdata_Extension_EntryLink();
-            $entryLink->transferFromDOM($child);
-            $this->_entryLink = $entryLink;
-            break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
+            case $this->lookupNamespace('gd') . ':' . 'entryLink':
+                $entryLink = new Zend_Gdata_Extension_EntryLink();
+                $entryLink->transferFromDOM($child);
+                $this->_entryLink = $entryLink;
+                break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
         }
     }
 
@@ -118,8 +118,7 @@ class Zend_Gdata_Extension_Where extends Zend_Gdata_Extension
     {
         if ($this->_valueString != null) {
             return $this->_valueString;
-        }
-        else {
+        } else {
             return parent::__toString();
         }
     }

@@ -62,8 +62,8 @@ class Zend_Service_Technorati_KeyInfoResult
      * Constructs a new object from DOM Element.
      * Parses given Key element from $dom and sets API key string.
      *
-     * @param   DomElement $dom the ReST fragment for this object
-     * @param   string $apiKey  the API Key string
+     * @param DomElement $dom the ReST fragment for this object
+     * @param string $apiKey the API Key string
      */
     public function __construct(DomDocument $dom, $apiKey = null)
     {
@@ -71,8 +71,8 @@ class Zend_Service_Technorati_KeyInfoResult
         // $this->_xpath = new DOMXPath($dom);
         $xpath = new DOMXPath($dom);
 
-        $this->_apiQueries   = (int) $xpath->query('/tapi/document/result/apiqueries/text()')->item(0)->data;
-        $this->_maxQueries   = (int) $xpath->query('/tapi/document/result/maxqueries/text()')->item(0)->data;
+        $this->_apiQueries = (int)$xpath->query('/tapi/document/result/apiqueries/text()')->item(0)->data;
+        $this->_maxQueries = (int)$xpath->query('/tapi/document/result/maxqueries/text()')->item(0)->data;
         $this->setApiKey($apiKey);
     }
 
@@ -82,7 +82,8 @@ class Zend_Service_Technorati_KeyInfoResult
      *
      * @return  string  API Key string
      */
-    public function getApiKey() {
+    public function getApiKey()
+    {
         return $this->_apiKey;
     }
 
@@ -91,7 +92,8 @@ class Zend_Service_Technorati_KeyInfoResult
      *
      * @return  int     number of queries sent today
      */
-    public function getApiQueries() {
+    public function getApiQueries()
+    {
         return $this->_apiQueries;
     }
 
@@ -100,7 +102,8 @@ class Zend_Service_Technorati_KeyInfoResult
      *
      * @return  int     maximum number of available queries per day
      */
-    public function getMaxQueries() {
+    public function getMaxQueries()
+    {
         return $this->_maxQueries;
     }
 
@@ -108,10 +111,11 @@ class Zend_Service_Technorati_KeyInfoResult
     /**
      * Sets API Key string.
      *
-     * @param   string $apiKey  the API Key
+     * @param string $apiKey the API Key
      * @return  Zend_Service_Technorati_KeyInfoResult $this instance
      */
-    public function setApiKey($apiKey) {
+    public function setApiKey($apiKey)
+    {
         $this->_apiKey = $apiKey;
         return $this;
     }

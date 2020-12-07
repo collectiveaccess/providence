@@ -64,7 +64,7 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     /**
      * Constructor
      *
-     * @param  string $strXmlDocument The XML Token provided by the client
+     * @param string $strXmlDocument The XML Token provided by the client
      * @return void
      */
     public function __construct($strXmlDocument)
@@ -76,7 +76,7 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     /**
      * Sets the InfoCard component Adapter to use
      *
-     * @param  Zend_InfoCard_Adapter_Interface $a
+     * @param Zend_InfoCard_Adapter_Interface $a
      * @return Zend_Auth_Adapter_InfoCard Provides a fluent interface
      */
     public function setAdapter(Zend_InfoCard_Adapter_Interface $a)
@@ -108,7 +108,7 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     /**
      * Sets the InfoCard public key cipher object to use
      *
-     * @param  Zend_InfoCard_Cipher_PKI_Interface $cipherObj
+     * @param Zend_InfoCard_Cipher_PKI_Interface $cipherObj
      * @return Zend_Auth_Adapter_InfoCard Provides a fluent interface
      */
     public function setPKICipherObject(Zend_InfoCard_Cipher_PKI_Interface $cipherObj)
@@ -130,7 +130,7 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     /**
      * Sets the InfoCard symmetric cipher object to use
      *
-     * @param  Zend_InfoCard_Cipher_Symmetric_Interface $cipherObj
+     * @param Zend_InfoCard_Cipher_Symmetric_Interface $cipherObj
      * @return Zend_Auth_Adapter_InfoCard Provides a fluent interface
      */
     public function setSymCipherObject(Zend_InfoCard_Cipher_Symmetric_Interface $cipherObj)
@@ -142,9 +142,9 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     /**
      * Remove a Certificate Pair by Key ID from the search list
      *
-     * @param  string $key_id The Certificate Key ID returned from adding the certificate pair
-     * @throws Zend_InfoCard_Exception
+     * @param string $key_id The Certificate Key ID returned from adding the certificate pair
      * @return Zend_Auth_Adapter_InfoCard Provides a fluent interface
+     * @throws Zend_InfoCard_Exception
      */
     public function removeCertificatePair($key_id)
     {
@@ -155,25 +155,29 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     /**
      * Add a Certificate Pair to the list of certificates searched by the component
      *
-     * @param  string $private_key_file    The path to the private key file for the pair
-     * @param  string $public_key_file     The path to the certificate / public key for the pair
-     * @param  string $type                (optional) The URI for the type of key pair this is (default RSA with OAEP padding)
-     * @param  string $password            (optional) The password for the private key file if necessary
-     * @throws Zend_InfoCard_Exception
+     * @param string $private_key_file The path to the private key file for the pair
+     * @param string $public_key_file The path to the certificate / public key for the pair
+     * @param string $type (optional) The URI for the type of key pair this is (default RSA with OAEP padding)
+     * @param string $password (optional) The password for the private key file if necessary
      * @return string A key ID representing this key pair in the component
+     * @throws Zend_InfoCard_Exception
      */
-    public function addCertificatePair($private_key_file, $public_key_file, $type = Zend_InfoCard_Cipher::ENC_RSA_OAEP_MGF1P, $password = null)
-    {
+    public function addCertificatePair(
+        $private_key_file,
+        $public_key_file,
+        $type = Zend_InfoCard_Cipher::ENC_RSA_OAEP_MGF1P,
+        $password = null
+    ) {
         return $this->_infoCard->addCertificatePair($private_key_file, $public_key_file, $type, $password);
     }
 
     /**
      * Return a Certificate Pair from a key ID
      *
-     * @param  string $key_id The Key ID of the certificate pair in the component
-     * @throws Zend_InfoCard_Exception
+     * @param string $key_id The Key ID of the certificate pair in the component
      * @return array An array containing the path to the private/public key files,
      *               the type URI and the password if provided
+     * @throws Zend_InfoCard_Exception
      */
     public function getCertificatePair($key_id)
     {
@@ -183,7 +187,7 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     /**
      * Set the XML Token to be processed
      *
-     * @param  string $strXmlToken The XML token to process
+     * @param string $strXmlToken The XML token to process
      * @return Zend_Auth_Adapter_InfoCard Provides a fluent interface
      */
     public function setXmlToken($strXmlToken)
@@ -211,15 +215,19 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     {
         try {
             $claims = $this->_infoCard->process($this->getXmlToken());
-        } catch(Exception $e) {
-            return new Zend_Auth_Result(Zend_Auth_Result::FAILURE , null, array('Exception Thrown',
-                                                                                $e->getMessage(),
-                                                                                $e->getTraceAsString(),
-                                                                                serialize($e)));
+        } catch (Exception $e) {
+            return new Zend_Auth_Result(
+                Zend_Auth_Result::FAILURE, null, array(
+                                             'Exception Thrown',
+                                             $e->getMessage(),
+                                             $e->getTraceAsString(),
+                                             serialize($e)
+                                         )
+            );
         }
 
-        if(!$claims->isValid()) {
-            switch($claims->getCode()) {
+        if (!$claims->isValid()) {
+            switch ($claims->getCode()) {
                 case Zend_infoCard_Claims::RESULT_PROCESSING_FAILURE:
                     return new Zend_Auth_Result(
                         Zend_Auth_Result::FAILURE,

@@ -25,14 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request			= $this->getVar('request');
+
+$po_request = $this->getVar('request');
 ?>
 
 <div class="dashboardWidgetContentContainer">
-	<ul>
-		<li><a href="https://www.collectiveaccess.org"><?php print _t("Project website"); ?>: https://www.collectiveaccess.org</a></li>
-		<li><a href="https://docs.collectiveaccess.org"><?php print _t("Documentation"); ?>: https://docs.collectiveaccess.org</a></li>
-		<li><a href="https://support.collectiveaccess.org"><?php print _t("Forum"); ?>: https://support.collectiveaccess.org</a></li>
-	</ul>
+    <ul>
+        <li><a href="https://www.collectiveaccess.org"><?php print _t("Project website"); ?>:
+                https://www.collectiveaccess.org</a></li>
+        <li><a href="https://docs.collectiveaccess.org"><?php print _t("Documentation"); ?>:
+                https://docs.collectiveaccess.org</a></li>
+        <li><a href="https://support.collectiveaccess.org"><?php print _t("Forum"); ?>:
+                https://support.collectiveaccess.org</a></li>
+    </ul>
 </div>

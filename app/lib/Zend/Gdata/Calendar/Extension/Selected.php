@@ -82,20 +82,22 @@ class Zend_Gdata_Calendar_Extension_Selected extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'value':
-            if ($attribute->nodeValue == "true") {
-                $this->_value = true;
-            }
-            else if ($attribute->nodeValue == "false") {
-                $this->_value = false;
-            }
-            else {
-                require_once 'Zend/Gdata/App/InvalidArgumentException.php';
-                throw new Zend_Gdata_App_InvalidArgumentException("Expected 'true' or 'false' for gCal:selected#value.");
-            }
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'value':
+                if ($attribute->nodeValue == "true") {
+                    $this->_value = true;
+                } else {
+                    if ($attribute->nodeValue == "false") {
+                        $this->_value = false;
+                    } else {
+                        require_once 'Zend/Gdata/App/InvalidArgumentException.php';
+                        throw new Zend_Gdata_App_InvalidArgumentException(
+                            "Expected 'true' or 'false' for gCal:selected#value."
+                        );
+                    }
+                }
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

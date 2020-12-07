@@ -362,7 +362,9 @@ class Zend_Tool_Framework_Registry implements Zend_Tool_Framework_Registry_Inter
             return $this->{'get' . $name}();
         } else {
             require_once 'Zend/Tool/Framework/Registry/Exception.php';
-            throw new Zend_Tool_Framework_Registry_Exception('Property ' . $name . ' was not located in this registry.');
+            throw new Zend_Tool_Framework_Registry_Exception(
+                'Property ' . $name . ' was not located in this registry.'
+            );
         }
     }
 
@@ -379,7 +381,9 @@ class Zend_Tool_Framework_Registry implements Zend_Tool_Framework_Registry_Inter
             return;
         } else {
             require_once 'Zend/Tool/Framework/Registry/Exception.php';
-            throw new Zend_Tool_Framework_Registry_Exception('Property ' . $name . ' was not located in this registry.');
+            throw new Zend_Tool_Framework_Registry_Exception(
+                'Property ' . $name . ' was not located in this registry.'
+            );
         }
     }
 
@@ -409,7 +413,9 @@ class Zend_Tool_Framework_Registry implements Zend_Tool_Framework_Registry_Inter
     {
         if (!$this->isObjectRegistryEnablable($object)) {
             require_once 'Zend/Tool/Framework/Registry/Exception.php';
-            throw new Zend_Tool_Framework_Registry_Exception('Object provided is not registry enablable, check first with Zend_Tool_Framework_Registry::isObjectRegistryEnablable()');
+            throw new Zend_Tool_Framework_Registry_Exception(
+                'Object provided is not registry enablable, check first with Zend_Tool_Framework_Registry::isObjectRegistryEnablable()'
+            );
         }
 
         $object->setRegistry($this);

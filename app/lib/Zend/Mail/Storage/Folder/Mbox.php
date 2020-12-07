@@ -102,7 +102,7 @@ class Zend_Mail_Storage_Folder_Mbox extends Zend_Mail_Storage_Mbox implements Ze
 
         $this->_buildFolderTree($this->_rootdir);
         $this->selectFolder(!empty($params->folder) ? $params->folder : 'INBOX');
-        $this->_has['top']      = true;
+        $this->_has['top'] = true;
         $this->_has['uniqueid'] = false;
     }
 
@@ -206,7 +206,7 @@ class Zend_Mail_Storage_Folder_Mbox extends Zend_Mail_Storage_Mbox implements Ze
 
         try {
             $this->_openMboxFile($this->_rootdir . $folder->getGlobalName());
-        } catch(Zend_Mail_Storage_Exception $e) {
+        } catch (Zend_Mail_Storage_Exception $e) {
             // check what went wrong
             if (!$folder->isSelectable()) {
                 /**
@@ -221,8 +221,10 @@ class Zend_Mail_Storage_Folder_Mbox extends Zend_Mail_Storage_Mbox implements Ze
              * @see Zend_Mail_Storage_Exception
              */
             require_once 'Zend/Mail/Storage/Exception.php';
-            throw new Zend_Mail_Storage_Exception('seems like the mbox file has vanished, I\'ve rebuild the ' .
-                                                         'folder tree, search for an other folder and try again', 0, $e);
+            throw new Zend_Mail_Storage_Exception(
+                'seems like the mbox file has vanished, I\'ve rebuild the ' .
+                'folder tree, search for an other folder and try again', 0, $e
+            );
         }
     }
 

@@ -33,4 +33,5 @@ require_once 'Zend/Service/ReCaptcha/Exception.php';
  * @version    $Id: Exception.php 24593 2012-01-05 20:35:02Z matthew $
  */
 class Zend_Service_ReCaptcha_MailHide_Exception extends Zend_Service_ReCaptcha_Exception
-{}
+{
+}

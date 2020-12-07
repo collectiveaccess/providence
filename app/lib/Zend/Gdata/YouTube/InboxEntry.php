@@ -117,19 +117,23 @@ class Zend_Gdata_YouTube_InboxEntry extends Zend_Gdata_Media_Entry
         $element = parent::getDOM($doc, $majorVersion, $minorVersion);
         if ($this->_description != null) {
             $element->appendChild(
-                $this->_description->getDOM($element->ownerDocument));
+                $this->_description->getDOM($element->ownerDocument)
+            );
         }
         if ($this->_rating != null) {
             $element->appendChild(
-                $this->_rating->getDOM($element->ownerDocument));
+                $this->_rating->getDOM($element->ownerDocument)
+            );
         }
         if ($this->_statistics != null) {
             $element->appendChild(
-                $this->_statistics->getDOM($element->ownerDocument));
+                $this->_statistics->getDOM($element->ownerDocument)
+            );
         }
         if ($this->_comments != null) {
             $element->appendChild(
-                $this->_comments->getDOM($element->ownerDocument));
+                $this->_comments->getDOM($element->ownerDocument)
+            );
         }
         return $element;
     }
@@ -173,16 +177,18 @@ class Zend_Gdata_YouTube_InboxEntry extends Zend_Gdata_Media_Entry
     /**
      * Get the yt:description
      *
-     * @throws Zend_Gdata_App_VersionException
      * @return Zend_Gdata_YouTube_Extension_Description|null
+     * @throws Zend_Gdata_App_VersionException
      */
     public function getDescription()
     {
         if ($this->getMajorProtocolVersion() == 2) {
             require_once 'Zend/Gdata/App/VersionException.php';
-            throw new Zend_Gdata_App_VersionException('The getDescription ' .
+            throw new Zend_Gdata_App_VersionException(
+                'The getDescription ' .
                 ' method is only supported in version 1 of the YouTube ' .
-                'API.');
+                'API.'
+            );
         } else {
             return $this->_description;
         }
@@ -193,16 +199,18 @@ class Zend_Gdata_YouTube_InboxEntry extends Zend_Gdata_Media_Entry
      *
      * @param Zend_Gdata_YouTube_Extension_Description $description The
      *        description.
-     * @throws Zend_Gdata_App_VersionException
      * @return Zend_Gdata_YouTube_InboxEntry Provides a fluent interface
+     * @throws Zend_Gdata_App_VersionException
      */
     public function setDescription($description = null)
     {
         if ($this->getMajorProtocolVersion() == 2) {
             require_once 'Zend/Gdata/App/VersionException.php';
-            throw new Zend_Gdata_App_VersionException('The setDescription ' .
+            throw new Zend_Gdata_App_VersionException(
+                'The setDescription ' .
                 ' method is only supported in version 1 of the YouTube ' .
-                'API.');
+                'API.'
+            );
         } else {
             $this->_description = $description;
             return $this;

@@ -79,8 +79,8 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
      * if $signs array is omitted then all subqueries are required
      * it differs from addSubquery() behavior, but should never be used
      *
-     * @param array $subqueries    Array of Zend_Search_Search_Query objects
-     * @param array $signs    Array of signs.  Sign is boolean|null.
+     * @param array $subqueries Array of Zend_Search_Search_Query objects
+     * @param array $signs Array of signs.  Sign is boolean|null.
      * @return void
      */
     public function __construct($subqueries = null, $signs = null)
@@ -91,7 +91,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
             $this->_signs = null;
             // Check if all subqueries are required
             if (is_array($signs)) {
-                foreach ($signs as $sign ) {
+                foreach ($signs as $sign) {
                     if ($sign !== true) {
                         $this->_signs = $signs;
                         break;
@@ -110,11 +110,12 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
      *     FALSE - subquery is prohibited
      *     NULL  - subquery is neither prohibited, nor required
      *
-     * @param  Zend_Search_Lucene_Search_Query $subquery
-     * @param  boolean|null $sign
+     * @param Zend_Search_Lucene_Search_Query $subquery
+     * @param boolean|null $sign
      * @return void
      */
-    public function addSubquery(Zend_Search_Lucene_Search_Query $subquery, $sign=null) {
+    public function addSubquery(Zend_Search_Lucene_Search_Query $subquery, $sign = null)
+    {
         if ($sign !== true || $this->_signs !== null) {       // Skip, if all subqueries are required
             if ($this->_signs === null) {                     // Check, If all previous subqueries are required
                 $this->_signs = array();
@@ -140,8 +141,10 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
         $query->setBoost($this->getBoost());
 
         foreach ($this->_subqueries as $subqueryId => $subquery) {
-            $query->addSubquery($subquery->rewrite($index),
-                                ($this->_signs === null)?  true : $this->_signs[$subqueryId]);
+            $query->addSubquery(
+                $subquery->rewrite($index),
+                ($this->_signs === null) ? true : $this->_signs[$subqueryId]
+            );
         }
 
         return $query;
@@ -156,12 +159,12 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
     public function optimize(Zend_Search_Lucene_Interface $index)
     {
         $subqueries = array();
-        $signs      = array();
+        $signs = array();
 
         // Optimize all subqueries
         foreach ($this->_subqueries as $id => $subquery) {
             $subqueries[] = $subquery->optimize($index);
-            $signs[]      = ($this->_signs === null)? true : $this->_signs[$id];
+            $signs[] = ($this->_signs === null) ? true : $this->_signs[$id];
         }
 
         // Remove insignificant subqueries
@@ -237,7 +240,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
             }
 
             $optimizedQuery = clone reset($subqueries);
-            $optimizedQuery->setBoost($optimizedQuery->getBoost()*$this->getBoost());
+            $optimizedQuery->setBoost($optimizedQuery->getBoost() * $this->getBoost());
 
             return $optimizedQuery;
         }
@@ -248,118 +251,122 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
         $optimizedQuery->setBoost($this->getBoost());
 
 
-        $terms        = array();
-        $tsigns       = array();
+        $terms = array();
+        $tsigns = array();
         $boostFactors = array();
 
         // Try to decompose term and multi-term subqueries
         foreach ($subqueries as $id => $subquery) {
             if ($subquery instanceof Zend_Search_Lucene_Search_Query_Term) {
-                $terms[]        = $subquery->getTerm();
-                $tsigns[]       = $signs[$id];
+                $terms[] = $subquery->getTerm();
+                $tsigns[] = $signs[$id];
                 $boostFactors[] = $subquery->getBoost();
 
                 // remove subquery from a subqueries list
                 unset($subqueries[$id]);
                 unset($signs[$id]);
-           } else if ($subquery instanceof Zend_Search_Lucene_Search_Query_MultiTerm) {
-                $subTerms = $subquery->getTerms();
-                $subSigns = $subquery->getSigns();
+            } else {
+                if ($subquery instanceof Zend_Search_Lucene_Search_Query_MultiTerm) {
+                    $subTerms = $subquery->getTerms();
+                    $subSigns = $subquery->getSigns();
 
-                if ($signs[$id] === true) {
-                    // It's a required multi-term subquery.
-                    // Something like '... +(+term1 -term2 term3 ...) ...'
+                    if ($signs[$id] === true) {
+                        // It's a required multi-term subquery.
+                        // Something like '... +(+term1 -term2 term3 ...) ...'
 
-                    // Multi-term required subquery can be decomposed only if it contains
-                    // required terms and doesn't contain prohibited terms:
-                    // ... +(+term1 term2 ...) ... => ... +term1 term2 ...
-                    //
-                    // Check this
-                    $hasRequired   = false;
-                    $hasProhibited = false;
-                    if ($subSigns === null) {
-                        // All subterms are required
-                        $hasRequired = true;
-                    } else {
-                        foreach ($subSigns as $sign) {
-                            if ($sign === true) {
-                                $hasRequired   = true;
-                            } else if ($sign === false) {
-                                $hasProhibited = true;
-                                break;
+                        // Multi-term required subquery can be decomposed only if it contains
+                        // required terms and doesn't contain prohibited terms:
+                        // ... +(+term1 term2 ...) ... => ... +term1 term2 ...
+                        //
+                        // Check this
+                        $hasRequired = false;
+                        $hasProhibited = false;
+                        if ($subSigns === null) {
+                            // All subterms are required
+                            $hasRequired = true;
+                        } else {
+                            foreach ($subSigns as $sign) {
+                                if ($sign === true) {
+                                    $hasRequired = true;
+                                } else {
+                                    if ($sign === false) {
+                                        $hasProhibited = true;
+                                        break;
+                                    }
+                                }
                             }
                         }
-                    }
-                    // Continue if subquery has prohibited terms or doesn't have required terms
-                    if ($hasProhibited  ||  !$hasRequired) {
-                        continue;
-                    }
+                        // Continue if subquery has prohibited terms or doesn't have required terms
+                        if ($hasProhibited || !$hasRequired) {
+                            continue;
+                        }
 
-                    foreach ($subTerms as $termId => $term) {
-                        $terms[]        = $term;
-                        $tsigns[]       = ($subSigns === null)? true : $subSigns[$termId];
-                        $boostFactors[] = $subquery->getBoost();
-                    }
+                        foreach ($subTerms as $termId => $term) {
+                            $terms[] = $term;
+                            $tsigns[] = ($subSigns === null) ? true : $subSigns[$termId];
+                            $boostFactors[] = $subquery->getBoost();
+                        }
 
-                    // remove subquery from a subqueries list
-                    unset($subqueries[$id]);
-                    unset($signs[$id]);
+                        // remove subquery from a subqueries list
+                        unset($subqueries[$id]);
+                        unset($signs[$id]);
+                    } else { // $signs[$id] === null  ||  $signs[$id] === false
+                        // It's an optional or prohibited multi-term subquery.
+                        // Something like '... (+term1 -term2 term3 ...) ...'
+                        // or
+                        // something like '... -(+term1 -term2 term3 ...) ...'
 
-                } else { // $signs[$id] === null  ||  $signs[$id] === false
-                    // It's an optional or prohibited multi-term subquery.
-                    // Something like '... (+term1 -term2 term3 ...) ...'
-                    // or
-                    // something like '... -(+term1 -term2 term3 ...) ...'
-
-                    // Multi-term optional and required subqueries can be decomposed
-                    // only if all terms are optional.
-                    //
-                    // Check if all terms are optional.
-                    $onlyOptional = true;
-                    if ($subSigns === null) {
-                        // All subterms are required
-                        $onlyOptional = false;
-                    } else {
-                        foreach ($subSigns as $sign) {
-                            if ($sign !== null) {
-                                $onlyOptional = false;
-                                break;
+                        // Multi-term optional and required subqueries can be decomposed
+                        // only if all terms are optional.
+                        //
+                        // Check if all terms are optional.
+                        $onlyOptional = true;
+                        if ($subSigns === null) {
+                            // All subterms are required
+                            $onlyOptional = false;
+                        } else {
+                            foreach ($subSigns as $sign) {
+                                if ($sign !== null) {
+                                    $onlyOptional = false;
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    // Continue if non-optional terms are presented in this multi-term subquery
-                    if (!$onlyOptional) {
-                        continue;
-                    }
+                        // Continue if non-optional terms are presented in this multi-term subquery
+                        if (!$onlyOptional) {
+                            continue;
+                        }
 
-                    foreach ($subTerms as $termId => $term) {
-                        $terms[]  = $term;
-                        $tsigns[] = ($signs[$id] === null)? null  /* optional */ :
-                                                            false /* prohibited */;
-                        $boostFactors[] = $subquery->getBoost();
-                    }
+                        foreach ($subTerms as $termId => $term) {
+                            $terms[] = $term;
+                            $tsigns[] = ($signs[$id] === null) ? null  /* optional */ :
+                                false /* prohibited */
+                            ;
+                            $boostFactors[] = $subquery->getBoost();
+                        }
 
-                    // remove subquery from a subqueries list
-                    unset($subqueries[$id]);
-                    unset($signs[$id]);
+                        // remove subquery from a subqueries list
+                        unset($subqueries[$id]);
+                        unset($signs[$id]);
+                    }
                 }
             }
         }
 
 
         // Check, if there are no decomposed subqueries
-        if (count($terms) == 0 ) {
+        if (count($terms) == 0) {
             // return prepared candidate
             return $optimizedQuery;
         }
 
 
         // Check, if all subqueries have been decomposed and all terms has the same boost factor
-        if (count($subqueries) == 0  &&  count(array_unique($boostFactors)) == 1) {
+        if (count($subqueries) == 0 && count(array_unique($boostFactors)) == 1) {
             require_once 'Zend/Search/Lucene/Search/Query/MultiTerm.php';
             $optimizedQuery = new Zend_Search_Lucene_Search_Query_MultiTerm($terms, $tsigns);
-            $optimizedQuery->setBoost(reset($boostFactors)*$this->getBoost());
+            $optimizedQuery->setBoost(reset($boostFactors) * $this->getBoost());
 
             return $optimizedQuery;
         }
@@ -369,10 +376,10 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
         // several subqueries
 
         // Separate prohibited terms
-        $prohibitedTerms        = array();
+        $prohibitedTerms = array();
         foreach ($terms as $id => $term) {
             if ($tsigns[$id] === false) {
-                $prohibitedTerms[]        = $term;
+                $prohibitedTerms[] = $term;
 
                 unset($terms[$id]);
                 unset($tsigns[$id]);
@@ -386,54 +393,58 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
             $clause->setBoost(reset($boostFactors));
 
             $subqueries[] = $clause;
-            $signs[]      = reset($tsigns);
+            $signs[] = reset($tsigns);
 
             // Clear terms list
             $terms = array();
-        } else if (count($terms) > 1  &&  count(array_unique($boostFactors)) == 1) {
-            require_once 'Zend/Search/Lucene/Search/Query/MultiTerm.php';
-            $clause = new Zend_Search_Lucene_Search_Query_MultiTerm($terms, $tsigns);
-            $clause->setBoost(reset($boostFactors));
+        } else {
+            if (count($terms) > 1 && count(array_unique($boostFactors)) == 1) {
+                require_once 'Zend/Search/Lucene/Search/Query/MultiTerm.php';
+                $clause = new Zend_Search_Lucene_Search_Query_MultiTerm($terms, $tsigns);
+                $clause->setBoost(reset($boostFactors));
 
-            $subqueries[] = $clause;
-            // Clause sign is 'required' if clause contains required terms. 'Optional' otherwise.
-            $signs[]      = (in_array(true, $tsigns))? true : null;
+                $subqueries[] = $clause;
+                // Clause sign is 'required' if clause contains required terms. 'Optional' otherwise.
+                $signs[] = (in_array(true, $tsigns)) ? true : null;
 
-            // Clear terms list
-            $terms = array();
+                // Clear terms list
+                $terms = array();
+            }
         }
 
         if (count($prohibitedTerms) == 1) {
             // (boost factors are not significant for prohibited clauses)
             require_once 'Zend/Search/Lucene/Search/Query/Term.php';
             $subqueries[] = new Zend_Search_Lucene_Search_Query_Term(reset($prohibitedTerms));
-            $signs[]      = false;
+            $signs[] = false;
 
             // Clear prohibited terms list
             $prohibitedTerms = array();
-        } else if (count($prohibitedTerms) > 1) {
-            // prepare signs array
-            $prohibitedSigns = array();
-            foreach ($prohibitedTerms as $id => $term) {
-                // all prohibited term are grouped as optional into multi-term query
-                $prohibitedSigns[$id] = null;
+        } else {
+            if (count($prohibitedTerms) > 1) {
+                // prepare signs array
+                $prohibitedSigns = array();
+                foreach ($prohibitedTerms as $id => $term) {
+                    // all prohibited term are grouped as optional into multi-term query
+                    $prohibitedSigns[$id] = null;
+                }
+
+                // (boost factors are not significant for prohibited clauses)
+                require_once 'Zend/Search/Lucene/Search/Query/MultiTerm.php';
+                $subqueries[] = new Zend_Search_Lucene_Search_Query_MultiTerm($prohibitedTerms, $prohibitedSigns);
+                // Clause sign is 'prohibited'
+                $signs[] = false;
+
+                // Clear terms list
+                $prohibitedTerms = array();
             }
-
-            // (boost factors are not significant for prohibited clauses)
-            require_once 'Zend/Search/Lucene/Search/Query/MultiTerm.php';
-            $subqueries[] = new Zend_Search_Lucene_Search_Query_MultiTerm($prohibitedTerms, $prohibitedSigns);
-            // Clause sign is 'prohibited'
-            $signs[]      = false;
-
-            // Clear terms list
-            $prohibitedTerms = array();
         }
 
         /** @todo Group terms with the same boost factors together */
 
         // Check, that all terms are processed
         // Replace candidate for optimized query
-        if (count($terms) == 0  &&  count($prohibitedTerms) == 0) {
+        if (count($terms) == 0 && count($prohibitedTerms) == 0) {
             $optimizedQuery = new Zend_Search_Lucene_Search_Query_Boolean($subqueries, $signs);
             $optimizedQuery->setBoost($this->getBoost());
         }
@@ -489,21 +500,27 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
             $this->_resVector = array();
         }
 
-        $resVectors      = array();
+        $resVectors = array();
         $resVectorsSizes = array();
-        $resVectorsIds   = array(); // is used to prevent arrays comparison
+        $resVectorsIds = array(); // is used to prevent arrays comparison
         foreach ($this->_subqueries as $subqueryId => $subquery) {
-            $resVectors[]      = $subquery->matchedDocs();
+            $resVectors[] = $subquery->matchedDocs();
             $resVectorsSizes[] = count(end($resVectors));
-            $resVectorsIds[]   = $subqueryId;
+            $resVectorsIds[] = $subqueryId;
         }
         // sort resvectors in order of subquery cardinality increasing
-        array_multisort($resVectorsSizes, SORT_ASC, SORT_NUMERIC,
-                        $resVectorsIds,   SORT_ASC, SORT_NUMERIC,
-                        $resVectors);
+        array_multisort(
+            $resVectorsSizes,
+            SORT_ASC,
+            SORT_NUMERIC,
+            $resVectorsIds,
+            SORT_ASC,
+            SORT_NUMERIC,
+            $resVectors
+        );
 
         foreach ($resVectors as $nextResVector) {
-            if($this->_resVector === null) {
+            if ($this->_resVector === null) {
                 $this->_resVector = $nextResVector;
             } else {
                 //$this->_resVector = array_intersect_key($this->_resVector, $nextResVector);
@@ -537,18 +554,18 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
      */
     private function _calculateNonConjunctionResult()
     {
-        $requiredVectors      = array();
+        $requiredVectors = array();
         $requiredVectorsSizes = array();
-        $requiredVectorsIds   = array(); // is used to prevent arrays comparison
+        $requiredVectorsIds = array(); // is used to prevent arrays comparison
 
         $optional = array();
 
         foreach ($this->_subqueries as $subqueryId => $subquery) {
             if ($this->_signs[$subqueryId] === true) {
                 // required
-                $requiredVectors[]      = $subquery->matchedDocs();
+                $requiredVectors[] = $subquery->matchedDocs();
                 $requiredVectorsSizes[] = count(end($requiredVectors));
-                $requiredVectorsIds[]   = $subqueryId;
+                $requiredVectorsIds[] = $subqueryId;
             } elseif ($this->_signs[$subqueryId] === false) {
                 // prohibited
                 // Do nothing. matchedDocs() may include non-matching id's
@@ -562,13 +579,19 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
         }
 
         // sort resvectors in order of subquery cardinality increasing
-        array_multisort($requiredVectorsSizes, SORT_ASC, SORT_NUMERIC,
-                        $requiredVectorsIds,   SORT_ASC, SORT_NUMERIC,
-                        $requiredVectors);
+        array_multisort(
+            $requiredVectorsSizes,
+            SORT_ASC,
+            SORT_NUMERIC,
+            $requiredVectorsIds,
+            SORT_ASC,
+            SORT_NUMERIC,
+            $requiredVectors
+        );
 
         $required = null;
         foreach ($requiredVectors as $nextResVector) {
-            if($required === null) {
+            if ($required === null) {
                 $required = $nextResVector;
             } else {
                 //$required = array_intersect_key($required, $nextResVector);
@@ -612,8 +635,10 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
     public function _conjunctionScore($docId, Zend_Search_Lucene_Interface $reader)
     {
         if ($this->_coord === null) {
-            $this->_coord = $reader->getSimilarity()->coord(count($this->_subqueries),
-                                                            count($this->_subqueries) );
+            $this->_coord = $reader->getSimilarity()->coord(
+                count($this->_subqueries),
+                count($this->_subqueries)
+            );
         }
 
         $score = 0;
@@ -667,7 +692,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
             }
 
             // is required, but doen't match
-            if ($this->_signs[$subqueryId] === true &&  $subscore == 0) {
+            if ($this->_signs[$subqueryId] === true && $subscore == 0) {
                 return 0;
             }
 
@@ -699,7 +724,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
         }
 
         foreach ($this->_subqueries as $subqueryId => $subquery) {
-            if ($this->_signs == null  ||  $this->_signs[$subqueryId] === true) {
+            if ($this->_signs == null || $this->_signs[$subqueryId] === true) {
                 // Subquery is required
                 $subquery->execute($reader, $docsFilter);
             } else {
@@ -713,7 +738,6 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
             $this->_calculateNonConjunctionResult();
         }
     }
-
 
 
     /**
@@ -758,7 +782,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
         $terms = array();
 
         foreach ($this->_subqueries as $id => $subquery) {
-            if ($this->_signs === null  ||  $this->_signs[$id] !== false) {
+            if ($this->_signs === null || $this->_signs[$id] !== false) {
                 $terms = array_merge($terms, $subquery->getQueryTerms());
             }
         }
@@ -769,12 +793,12 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
     /**
      * Query specific matches highlighting
      *
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter  Highlighter object (also contains doc for highlighting)
+     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter Highlighter object (also contains doc for highlighting)
      */
     protected function _highlightMatches(Zend_Search_Lucene_Search_Highlighter_Interface $highlighter)
     {
         foreach ($this->_subqueries as $id => $subquery) {
-            if ($this->_signs === null  ||  $this->_signs[$id] !== false) {
+            if ($this->_signs === null || $this->_signs[$id] !== false) {
                 $subquery->_highlightMatches($highlighter);
             }
         }
@@ -798,8 +822,10 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
 
             if ($this->_signs === null || $this->_signs[$id] === true) {
                 $query .= '+';
-            } else if ($this->_signs[$id] === false) {
-                $query .= '-';
+            } else {
+                if ($this->_signs[$id] === false) {
+                    $query .= '-';
+                }
             }
 
             $query .= '(' . $subquery->__toString() . ')';

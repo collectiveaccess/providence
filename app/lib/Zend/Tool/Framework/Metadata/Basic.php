@@ -43,22 +43,22 @@ class Zend_Tool_Framework_Metadata_Basic
     /**#@+
      * Search constants
      */
-    const ATTRIBUTES_ALL        = 'attributesAll';
-    const ATTRIBUTES_NO_PARENT  = 'attributesParent';
+    const ATTRIBUTES_ALL = 'attributesAll';
+    const ATTRIBUTES_NO_PARENT = 'attributesParent';
     /**#@-*/
 
     /**#@+
      * @var string
      */
-    protected $_type        = 'Basic';
-    protected $_name        = null;
-    protected $_value       = null;
+    protected $_type = 'Basic';
+    protected $_name = null;
+    protected $_value = null;
     /**#@-*/
 
     /**
      * @var mixed
      */
-    protected $_reference   = null;
+    protected $_reference = null;
 
     /**
      * Constructor - allows for the setting of options
@@ -193,12 +193,12 @@ class Zend_Tool_Framework_Metadata_Basic
         $metadataPairValues = array();
 
         foreach (get_object_vars($this) as $varName => $varValue) {
-            if ($type == self::ATTRIBUTES_NO_PARENT && ($thisReflection->getProperty($varName)->getDeclaringClass()->getName() == 'Zend_Tool_Framework_Metadata_Basic')) {
+            if ($type == self::ATTRIBUTES_NO_PARENT && ($thisReflection->getProperty($varName)->getDeclaringClass(
+                    )->getName() == 'Zend_Tool_Framework_Metadata_Basic')) {
                 continue;
             }
 
             if ($stringRepresentationOfNonScalars) {
-
                 if (is_object($varValue)) {
                     $varValue = '(object)';
                 }
@@ -206,7 +206,6 @@ class Zend_Tool_Framework_Metadata_Basic
                 if ($varValue === null) {
                     $varValue = '(null)';
                 }
-
             }
 
             $metadataPairValues[ltrim($varName, '_')] = $varValue;
@@ -222,6 +221,8 @@ class Zend_Tool_Framework_Metadata_Basic
      */
     public function __toString()
     {
-        return 'Type: ' . $this->_type . ', Name: ' . $this->_name . ', Value: ' . (is_array($this->_value) ? http_build_query($this->_value) : (string) $this->_value);
+        return 'Type: ' . $this->_type . ', Name: ' . $this->_name . ', Value: ' . (is_array(
+                $this->_value
+            ) ? http_build_query($this->_value) : (string)$this->_value);
     }
 }

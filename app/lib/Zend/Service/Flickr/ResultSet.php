@@ -82,8 +82,8 @@ class Zend_Service_Flickr_ResultSet implements SeekableIterator
     /**
      * Parse the Flickr Result Set
      *
-     * @param  DOMDocument         $dom
-     * @param  Zend_Service_Flickr $flickr
+     * @param DOMDocument $dom
+     * @param Zend_Service_Flickr $flickr
      * @return void
      */
     public function __construct(DOMDocument $dom, Zend_Service_Flickr $flickr)
@@ -94,14 +94,14 @@ class Zend_Service_Flickr_ResultSet implements SeekableIterator
 
         $photos = $xpath->query('//photos')->item(0);
 
-        $page    = $photos->getAttribute('page');
-        $pages   = $photos->getAttribute('pages');
+        $page = $photos->getAttribute('page');
+        $pages = $photos->getAttribute('pages');
         $perPage = $photos->getAttribute('perpage');
-        $total   = $photos->getAttribute('total');
+        $total = $photos->getAttribute('total');
 
-        $this->totalResultsReturned  = ($page == $pages || $pages == 0) ? ($total - ($page - 1) * $perPage) : (int) $perPage;
-        $this->firstResultPosition   = ($page - 1) * $perPage + 1;
-        $this->totalResultsAvailable = (int) $total;
+        $this->totalResultsReturned = ($page == $pages || $pages == 0) ? ($total - ($page - 1) * $perPage) : (int)$perPage;
+        $this->firstResultPosition = ($page - 1) * $perPage + 1;
+        $this->totalResultsAvailable = (int)$total;
 
         if ($total > 0) {
             $this->_results = $xpath->query('//photo');
@@ -161,13 +161,13 @@ class Zend_Service_Flickr_ResultSet implements SeekableIterator
     /**
      * Implements SeekableIterator::seek()
      *
-     * @param  int $index
-     * @throws OutOfBoundsException
+     * @param int $index
      * @return void
+     * @throws OutOfBoundsException
      */
     public function seek($index)
     {
-        $indexInt = (int) $index;
+        $indexInt = (int)$index;
         if ($indexInt >= 0 && (null === $this->_results || $indexInt < $this->_results->length)) {
             $this->_currentIndex = $indexInt;
         } else {

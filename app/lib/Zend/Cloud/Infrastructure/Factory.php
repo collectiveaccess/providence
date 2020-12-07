@@ -12,7 +12,7 @@ require_once 'Zend/Cloud/AbstractFactory.php';
 
 /**
  * Factory for infrastructure adapters
- * 
+ *
  * @package    Zend_Cloud
  * @subpackage Infrastructure
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
@@ -41,7 +41,7 @@ class Zend_Cloud_Infrastructure_Factory extends Zend_Cloud_AbstractFactory
     /**
      * Retrieve an adapter instance
      *
-     * @param  array $options
+     * @param array $options
      * @return void
      */
     public static function getAdapter($options = array())
@@ -50,15 +50,20 @@ class Zend_Cloud_Infrastructure_Factory extends Zend_Cloud_AbstractFactory
 
         if (!$adapter) {
             require_once 'Zend/Cloud/Infrastructure/Exception.php';
-            throw new Zend_Cloud_Infrastructure_Exception(sprintf(
-                'Class must be specified using the "%s" key',
-                self::INFRASTRUCTURE_ADAPTER_KEY
-            ));
+            throw new Zend_Cloud_Infrastructure_Exception(
+                sprintf(
+                    'Class must be specified using the "%s" key',
+                    self::INFRASTRUCTURE_ADAPTER_KEY
+                )
+            );
         } elseif (!$adapter instanceof self::$_adapterInterface) {
             require_once 'Zend/Cloud/Infrastructure/Exception.php';
-            throw new Zend_Cloud_Infrastructure_Exception(sprintf(
-                'Adapter must implement "%s"', self::$_adapterInterface
-            ));
+            throw new Zend_Cloud_Infrastructure_Exception(
+                sprintf(
+                    'Adapter must implement "%s"',
+                    self::$_adapterInterface
+                )
+            );
         }
         return $adapter;
     }

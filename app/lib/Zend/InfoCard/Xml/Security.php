@@ -82,55 +82,59 @@ class Zend_InfoCard_Xml_Security
     /**
      * Validates the signature of a provided XML block
      *
-     * @param  string $strXMLInput An XML block containing a Signature
+     * @param string $strXMLInput An XML block containing a Signature
      * @return bool True if the signature validated, false otherwise
      * @throws Zend_InfoCard_Xml_Security_Exception
      */
     static public function validateXMLSignature($strXMLInput)
     {
-        if(!extension_loaded('openssl')) {
+        if (!extension_loaded('openssl')) {
             require_once 'Zend/InfoCard/Xml/Security/Exception.php';
-            throw new Zend_InfoCard_Xml_Security_Exception("You must have the openssl extension installed to use this class");
+            throw new Zend_InfoCard_Xml_Security_Exception(
+                "You must have the openssl extension installed to use this class"
+            );
         }
 
         $sxe = simplexml_load_string($strXMLInput);
 
-        if(!isset($sxe->Signature)) {
+        if (!isset($sxe->Signature)) {
             require_once 'Zend/InfoCard/Xml/Security/Exception.php';
             throw new Zend_InfoCard_Xml_Security_Exception("Could not identify XML Signature element");
         }
 
-        if(!isset($sxe->Signature->SignedInfo)) {
+        if (!isset($sxe->Signature->SignedInfo)) {
             require_once 'Zend/InfoCard/Xml/Security/Exception.php';
             throw new Zend_InfoCard_Xml_Security_Exception("Signature is missing a SignedInfo block");
         }
 
-        if(!isset($sxe->Signature->SignatureValue)) {
+        if (!isset($sxe->Signature->SignatureValue)) {
             require_once 'Zend/InfoCard/Xml/Security/Exception.php';
             throw new Zend_InfoCard_Xml_Security_Exception("Signature is missing a SignatureValue block");
         }
 
-        if(!isset($sxe->Signature->KeyInfo)) {
+        if (!isset($sxe->Signature->KeyInfo)) {
             require_once 'Zend/InfoCard/Xml/Security/Exception.php';
             throw new Zend_InfoCard_Xml_Security_Exception("Signature is missing a KeyInfo block");
         }
 
-        if(!isset($sxe->Signature->KeyInfo->KeyValue)) {
+        if (!isset($sxe->Signature->KeyInfo->KeyValue)) {
             require_once 'Zend/InfoCard/Xml/Security/Exception.php';
             throw new Zend_InfoCard_Xml_Security_Exception("Signature is missing a KeyValue block");
         }
 
-        switch((string)$sxe->Signature->SignedInfo->CanonicalizationMethod['Algorithm']) {
+        switch ((string)$sxe->Signature->SignedInfo->CanonicalizationMethod['Algorithm']) {
             case self::CANONICAL_METHOD_C14N_EXC:
                 $cMethod = (string)$sxe->Signature->SignedInfo->CanonicalizationMethod['Algorithm'];
                 break;
             default:
                 require_once 'Zend/InfoCard/Xml/Security/Exception.php';
-                throw new Zend_InfoCard_Xml_Security_Exception("Unknown or unsupported CanonicalizationMethod Requested");
+                throw new Zend_InfoCard_Xml_Security_Exception(
+                    "Unknown or unsupported CanonicalizationMethod Requested"
+                );
                 break;
         }
 
-        switch((string)$sxe->Signature->SignedInfo->SignatureMethod['Algorithm']) {
+        switch ((string)$sxe->Signature->SignedInfo->SignatureMethod['Algorithm']) {
             case self::SIGNATURE_METHOD_SHA1:
                 $sMethod = (string)$sxe->Signature->SignedInfo->SignatureMethod['Algorithm'];
                 break;
@@ -140,7 +144,7 @@ class Zend_InfoCard_Xml_Security
                 break;
         }
 
-        switch((string)$sxe->Signature->SignedInfo->Reference->DigestMethod['Algorithm']) {
+        switch ((string)$sxe->Signature->SignedInfo->Reference->DigestMethod['Algorithm']) {
             case self::DIGEST_METHOD_SHA1:
                 $dMethod = (string)$sxe->Signature->SignedInfo->Reference->DigestMethod['Algorithm'];
                 break;
@@ -166,7 +170,7 @@ class Zend_InfoCard_Xml_Security
 
         $transformer = new Zend_InfoCard_Xml_Security_Transform();
 
-        foreach($sxe->Signature->SignedInfo->Reference->Transforms->children() as $transform) {
+        foreach ($sxe->Signature->SignedInfo->Reference->Transforms->children() as $transform) {
             $transformer->addTransform((string)$transform['Algorithm']);
         }
 
@@ -174,37 +178,41 @@ class Zend_InfoCard_Xml_Security
 
         $transformed_xml_binhash = pack("H*", sha1($transformed_xml));
 
-        if(!self::_secureStringCompare($transformed_xml_binhash, $dValue)) {
+        if (!self::_secureStringCompare($transformed_xml_binhash, $dValue)) {
             require_once 'Zend/InfoCard/Xml/Security/Exception.php';
-            throw new Zend_InfoCard_Xml_Security_Exception("Locally Transformed XML does not match XML Document. Cannot Verify Signature");
+            throw new Zend_InfoCard_Xml_Security_Exception(
+                "Locally Transformed XML does not match XML Document. Cannot Verify Signature"
+            );
         }
 
         $public_key = null;
 
-        switch(true) {
+        switch (true) {
             case isset($sxe->Signature->KeyInfo->KeyValue->X509Certificate):
 
                 $certificate = (string)$sxe->Signature->KeyInfo->KeyValue->X509Certificate;
 
 
                 $pem = "-----BEGIN CERTIFICATE-----\n" .
-                       wordwrap($certificate, 64, "\n", true) .
-                       "\n-----END CERTIFICATE-----";
+                    wordwrap($certificate, 64, "\n", true) .
+                    "\n-----END CERTIFICATE-----";
 
                 $public_key = openssl_pkey_get_public($pem);
 
-                if(!$public_key) {
+                if (!$public_key) {
                     require_once 'Zend/InfoCard/Xml/Security/Exception.php';
-                    throw new Zend_InfoCard_Xml_Security_Exception("Unable to extract and prcoess X509 Certificate from KeyValue");
+                    throw new Zend_InfoCard_Xml_Security_Exception(
+                        "Unable to extract and prcoess X509 Certificate from KeyValue"
+                    );
                 }
 
                 break;
             case isset($sxe->Signature->KeyInfo->KeyValue->RSAKeyValue):
 
-                if(!isset($sxe->Signature->KeyInfo->KeyValue->RSAKeyValue->Modulus) ||
-                   !isset($sxe->Signature->KeyInfo->KeyValue->RSAKeyValue->Exponent)) {
-                       require_once 'Zend/InfoCard/Xml/Security/Exception.php';
-                       throw new Zend_InfoCard_Xml_Security_Exception("RSA Key Value not in Modulus/Exponent form");
+                if (!isset($sxe->Signature->KeyInfo->KeyValue->RSAKeyValue->Modulus) ||
+                    !isset($sxe->Signature->KeyInfo->KeyValue->RSAKeyValue->Exponent)) {
+                    require_once 'Zend/InfoCard/Xml/Security/Exception.php';
+                    throw new Zend_InfoCard_Xml_Security_Exception("RSA Key Value not in Modulus/Exponent form");
                 }
 
                 $modulus = base64_decode((string)$sxe->Signature->KeyInfo->KeyValue->RSAKeyValue->Modulus);
@@ -212,12 +220,14 @@ class Zend_InfoCard_Xml_Security
 
                 $pem_public_key = self::_getPublicKeyFromModExp($modulus, $exponent);
 
-                $public_key = openssl_pkey_get_public ($pem_public_key);
+                $public_key = openssl_pkey_get_public($pem_public_key);
 
                 break;
             default:
                 require_once 'Zend/InfoCard/Xml/Security/Exception.php';
-                throw new Zend_InfoCard_Xml_Security_Exception("Unable to determine or unsupported representation of the KeyValue block");
+                throw new Zend_InfoCard_Xml_Security_Exception(
+                    "Unable to determine or unsupported representation of the KeyValue block"
+                );
         }
 
         $transformer = new Zend_InfoCard_Xml_Security_Transform();
@@ -230,7 +240,7 @@ class Zend_InfoCard_Xml_Security
 
         $canonical_signedinfo = $transformer->applyTransforms($sxe->Signature->SignedInfo->asXML());
 
-        if(@openssl_verify($canonical_signedinfo, $signatureValue, $public_key)) {
+        if (@openssl_verify($canonical_signedinfo, $signatureValue, $public_key)) {
             return (string)$sxe->Signature->SignedInfo->Reference['URI'];
         }
 
@@ -247,16 +257,16 @@ class Zend_InfoCard_Xml_Security
      */
     static protected function _getPublicKeyFromModExp($modulus, $exponent)
     {
-        $modulusInteger  = self::_encodeValue($modulus, self::ASN_TYPE_INTEGER);
+        $modulusInteger = self::_encodeValue($modulus, self::ASN_TYPE_INTEGER);
         $exponentInteger = self::_encodeValue($exponent, self::ASN_TYPE_INTEGER);
-        $modExpSequence  = self::_encodeValue($modulusInteger . $exponentInteger, self::ASN_TYPE_SEQUENCE);
+        $modExpSequence = self::_encodeValue($modulusInteger . $exponentInteger, self::ASN_TYPE_SEQUENCE);
         $modExpBitString = self::_encodeValue($modExpSequence, self::ASN_TYPE_BITSTRING);
 
-        $binRsaKeyIdentifier = pack( "H*", self::RSA_KEY_IDENTIFIER );
+        $binRsaKeyIdentifier = pack("H*", self::RSA_KEY_IDENTIFIER);
 
         $publicKeySequence = self::_encodeValue($binRsaKeyIdentifier . $modExpBitString, self::ASN_TYPE_SEQUENCE);
 
-        $publicKeyInfoBase64 = base64_encode( $publicKeySequence );
+        $publicKeyInfoBase64 = base64_encode($publicKeySequence);
 
         $publicKeyString = "-----BEGIN PUBLIC KEY-----\n";
         $publicKeyString .= wordwrap($publicKeyInfoBase64, 64, "\n", true);
@@ -277,9 +287,9 @@ class Zend_InfoCard_Xml_Security
     static protected function _encodeValue($data, $type)
     {
         // Null pad some data when we get it (integer values > 128 and bitstrings)
-        if( (($type == self::ASN_TYPE_INTEGER) && (ord($data) > 0x7f)) ||
+        if ((($type == self::ASN_TYPE_INTEGER) && (ord($data) > 0x7f)) ||
             ($type == self::ASN_TYPE_BITSTRING)) {
-                $data = "\0$data";
+            $data = "\0$data";
         }
 
         $len = strlen($data);
@@ -287,7 +297,7 @@ class Zend_InfoCard_Xml_Security
         // encode the value based on length of the string
         // I'm fairly confident that this is by no means a complete implementation
         // but it is enough for our purposes
-        switch(true) {
+        switch (true) {
             case ($len < 128):
                 return sprintf("%c%c%s", $type, $len, $data);
             case ($len < 0x0100):

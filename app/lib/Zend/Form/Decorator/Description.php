@@ -64,12 +64,12 @@ class Zend_Form_Decorator_Description extends Zend_Form_Decorator_Abstract
     /**
      * Set HTML tag with which to surround description
      *
-     * @param  string $tag
+     * @param string $tag
      * @return Zend_Form_Decorator_Description
      */
     public function setTag($tag)
     {
-        $this->_tag = (string) $tag;
+        $this->_tag = (string)$tag;
         return $this;
     }
 
@@ -116,12 +116,12 @@ class Zend_Form_Decorator_Description extends Zend_Form_Decorator_Abstract
     /**
      * Set whether or not to escape description
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_Form_Decorator_Description
      */
     public function setEscape($flag)
     {
-        $this->_escape = (bool) $flag;
+        $this->_escape = (bool)$flag;
         return $this;
     }
 
@@ -147,13 +147,13 @@ class Zend_Form_Decorator_Description extends Zend_Form_Decorator_Abstract
     /**
      * Render a description
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function render($content)
     {
         $element = $this->getElement();
-        $view    = $element->getView();
+        $view = $element->getView();
         if (null === $view) {
             return $content;
         }
@@ -171,11 +171,11 @@ class Zend_Form_Decorator_Description extends Zend_Form_Decorator_Abstract
 
         $separator = $this->getSeparator();
         $placement = $this->getPlacement();
-        $tag       = $this->getTag();
-        $class     = $this->getClass();
-        $escape    = $this->getEscape();
+        $tag = $this->getTag();
+        $class = $this->getClass();
+        $escape = $this->getEscape();
 
-        $options   = $this->getOptions();
+        $options = $this->getOptions();
 
         if ($escape) {
             $description = $view->escape($description);

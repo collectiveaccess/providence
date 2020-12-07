@@ -45,7 +45,7 @@ class Zend_View_Helper_BaseUrl extends Zend_View_Helper_Abstract
      *
      * $file is appended to the base url for simplicity
      *
-     * @param  string|null $file
+     * @param string|null $file
      * @return string
      */
     public function baseUrl($file = null)
@@ -64,7 +64,7 @@ class Zend_View_Helper_BaseUrl extends Zend_View_Helper_Abstract
     /**
      * Set BaseUrl
      *
-     * @param  string $base
+     * @param string $base
      * @return Zend_View_Helper_BaseUrl
      */
     public function setBaseUrl($base)
@@ -97,7 +97,7 @@ class Zend_View_Helper_BaseUrl extends Zend_View_Helper_Abstract
     /**
      * Remove Script filename from baseurl
      *
-     * @param  string $url
+     * @param string $url
      * @return string
      */
     protected function _removeScriptName($url)

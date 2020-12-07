@@ -53,7 +53,7 @@ class Zend_Tool_Project_Context_Zf_TestPHPUnitConfigFile extends Zend_Tool_Proje
     {
         return 'TestPHPUnitConfigFile';
     }
-    
+
     public function getContents()
     {
         return <<<EOS

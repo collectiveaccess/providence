@@ -63,7 +63,7 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
             $args = func_get_args();
 
             $options = array(
-            	'rootElement' => array_shift($args)
+                'rootElement' => array_shift($args)
             );
 
             if (count($args)) {
@@ -87,15 +87,15 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
         $this->setEncoding($options['encoding']);
 
         if (array_key_exists('elementMap', $options)) {
-            $this->_elementMap  = $options['elementMap'];
+            $this->_elementMap = $options['elementMap'];
         }
     }
 
     /**
-	 * Factory for Zend_Log_Formatter_Xml classe
-	 *
-	 * @param array|Zend_Config $options
-	 * @return Zend_Log_Formatter_Xml
+     * Factory for Zend_Log_Formatter_Xml classe
+     *
+     * @param array|Zend_Config $options
+     * @return Zend_Log_Formatter_Xml
      */
     public static function factory($options)
     {
@@ -115,19 +115,19 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
     /**
      * Set encoding
      *
-     * @param  string $value
+     * @param string $value
      * @return Zend_Log_Formatter_Xml
      */
     public function setEncoding($value)
     {
-        $this->_encoding = (string) $value;
+        $this->_encoding = (string)$value;
         return $this;
     }
 
     /**
      * Formats data into a single line to be written by the writer.
      *
-     * @param  array    $event    event data
+     * @param array $event event data
      * @return string             formatted line to write to the log
      */
     public function format($event)
@@ -146,11 +146,11 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
         $elt = $dom->appendChild(new DOMElement($this->_rootElement));
 
         foreach ($dataToInsert as $key => $value) {
-            if (empty($value) 
-                || is_scalar($value) 
-                || (is_object($value) && method_exists($value,'__toString'))
+            if (empty($value)
+                || is_scalar($value)
+                || (is_object($value) && method_exists($value, '__toString'))
             ) {
-                if($key == "message") {
+                if ($key == "message") {
                     $value = htmlspecialchars($value, ENT_COMPAT, $enc);
                 }
                 $elt->appendChild(new DOMElement($key, (string)$value));

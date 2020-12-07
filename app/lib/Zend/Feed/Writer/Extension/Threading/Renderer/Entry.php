@@ -68,15 +68,17 @@ class Zend_Feed_Writer_Extension_Threading_Renderer_Entry
      */
     protected function _appendNamespaces()
     {
-        $this->getRootElement()->setAttribute('xmlns:thr',
-            'http://purl.org/syndication/thread/1.0');
+        $this->getRootElement()->setAttribute(
+            'xmlns:thr',
+            'http://purl.org/syndication/thread/1.0'
+        );
     }
 
     /**
      * Set comment link
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setCommentLink(DOMDocument $dom, DOMElement $root)
@@ -100,8 +102,8 @@ class Zend_Feed_Writer_Extension_Threading_Renderer_Entry
     /**
      * Set comment feed links
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setCommentFeedLinks(DOMDocument $dom, DOMElement $root)
@@ -113,7 +115,7 @@ class Zend_Feed_Writer_Extension_Threading_Renderer_Entry
         foreach ($links as $link) {
             $flink = $this->_dom->createElement('link');
             $flink->setAttribute('rel', 'replies');
-            $flink->setAttribute('type', 'application/'. $link['type'] .'+xml');
+            $flink->setAttribute('type', 'application/' . $link['type'] . '+xml');
             $flink->setAttribute('href', $link['uri']);
             $count = $this->getDataContainer()->getCommentCount();
             if ($count !== null) {
@@ -127,8 +129,8 @@ class Zend_Feed_Writer_Extension_Threading_Renderer_Entry
     /**
      * Set entry comment count
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setCommentCount(DOMDocument $dom, DOMElement $root)

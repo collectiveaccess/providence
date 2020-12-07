@@ -38,10 +38,10 @@ class Zend_Filter_StripNewlines implements Zend_Filter_Interface
      *
      * Returns $value without newline control characters
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
-    public function filter ($value)
+    public function filter($value)
     {
         return str_replace(array("\n", "\r"), '', $value);
     }

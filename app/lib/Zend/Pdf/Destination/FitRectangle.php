@@ -51,11 +51,11 @@ class Zend_Pdf_Destination_FitRectangle extends Zend_Pdf_Destination_Explicit
     /**
      * Create destination object
      *
-     * @param Zend_Pdf_Page|integer $page  Page object or page number
-     * @param float $left    Left edge of displayed page
-     * @param float $bottom  Bottom edge of displayed page
-     * @param float $right   Right edge of displayed page
-     * @param float $top     Top edge of displayed page
+     * @param Zend_Pdf_Page|integer $page Page object or page number
+     * @param float $left Left edge of displayed page
+     * @param float $bottom Bottom edge of displayed page
+     * @param float $right Right edge of displayed page
+     * @param float $top Top edge of displayed page
      * @return Zend_Pdf_Destination_FitRectangle
      * @throws Zend_Pdf_Exception
      */
@@ -65,11 +65,13 @@ class Zend_Pdf_Destination_FitRectangle extends Zend_Pdf_Destination_Explicit
 
         if ($page instanceof Zend_Pdf_Page) {
             $destinationArray->items[] = $page->getPageDictionary();
-        } else if (is_integer($page)) {
-            $destinationArray->items[] = new Zend_Pdf_Element_Numeric($page);
         } else {
-            require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception('Page entry must be a Zend_Pdf_Page object or a page number.');
+            if (is_integer($page)) {
+                $destinationArray->items[] = new Zend_Pdf_Element_Numeric($page);
+            } else {
+                require_once 'Zend/Pdf/Exception.php';
+                throw new Zend_Pdf_Exception('Page entry must be a Zend_Pdf_Page object or a page number.');
+            }
         }
 
         $destinationArray->items[] = new Zend_Pdf_Element_Name('FitR');

@@ -57,13 +57,13 @@ class Zend_Service_Ebay_Finding_Category extends Zend_Service_Ebay_Finding_Abstr
         parent::_init();
         $ns = Zend_Service_Ebay_Finding::XMLNS_FINDING;
 
-        $this->categoryId   = $this->_query(".//$ns:categoryId[1]", 'string');
+        $this->categoryId = $this->_query(".//$ns:categoryId[1]", 'string');
         $this->categoryName = $this->_query(".//$ns:categoryName[1]", 'string');
     }
 
     /**
-     * @param  Zend_Service_Ebay_Finding $proxy
-     * @param  Zend_Config|array         $options
+     * @param Zend_Service_Ebay_Finding $proxy
+     * @param Zend_Config|array $options
      * @return Zend_Service_Ebay_Finding_Response_Items
      */
     public function findItems(Zend_Service_Ebay_Finding $proxy, $options = null)

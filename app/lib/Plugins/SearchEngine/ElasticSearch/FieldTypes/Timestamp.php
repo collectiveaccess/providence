@@ -32,110 +32,128 @@
 
 namespace ElasticSearch\FieldTypes;
 
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php');
 
-class Timestamp extends FieldType {
+class Timestamp extends FieldType
+{
 
-	/**
-	 * Field name
-	 * @var string
-	 */
-	protected $ops_field_name;
+    /**
+     * Field name
+     * @var string
+     */
+    protected $ops_field_name;
 
-	/**
-	 * Timestamp constructor.
-	 * @param string $ops_field_name
-	 */
-	public function __construct($ops_field_name) {
-		$this->ops_field_name = $ops_field_name;
-	}
+    /**
+     * Timestamp constructor.
+     * @param string $ops_field_name
+     */
+    public function __construct($ops_field_name)
+    {
+        $this->ops_field_name = $ops_field_name;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getFieldName() {
-		return $this->ops_field_name;
-	}
+    /**
+     * @return string
+     */
+    public function getFieldName()
+    {
+        return $this->ops_field_name;
+    }
 
-	/**
-	 * @param string $ops_field_name
-	 */
-	public function setFieldName($ops_field_name) {
-		$this->ops_field_name = $ops_field_name;
-	}
+    /**
+     * @param string $ops_field_name
+     */
+    public function setFieldName($ops_field_name)
+    {
+        $this->ops_field_name = $ops_field_name;
+    }
 
-	/**
-	 * @param mixed $pm_content
-	 * @param array $pa_options
-	 * @return array
-	 */
-	public function getIndexingFragment($pm_content, $pa_options) {
-		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
+    /**
+     * @param mixed $pm_content
+     * @param array $pa_options
+     * @return array
+     */
+    public function getIndexingFragment($pm_content, $pa_options)
+    {
+        if (is_array($pm_content)) {
+            $pm_content = serialize($pm_content);
+        }
 
-		return array(
-			str_replace('.', '/', $this->getFieldName()) => $pm_content
-		);
-	}
+        return array(
+            str_replace('.', '/', $this->getFieldName()) => $pm_content
+        );
+    }
 
-	/**
-	 * @param \Zend_Search_Lucene_Index_Term $po_term
-	 * @return \Zend_Search_Lucene_Index_Term
-	 */
-	public function getRewrittenTerm($po_term) {
-		return $po_term;
-	}
+    /**
+     * @param \Zend_Search_Lucene_Index_Term $po_term
+     * @return \Zend_Search_Lucene_Index_Term
+     */
+    public function getRewrittenTerm($po_term)
+    {
+        return $po_term;
+    }
 
-	/**
-	 * @param \Zend_Search_Lucene_Search_Query_Phrase $po_query
-	 * @return array
-	 */
-	public function getFiltersForPhraseQuery($po_query) {
-		$va_terms = $va_return = array();
-		$vs_fld = null;
-		foreach($po_query->getQueryTerms() as $o_term) {
-			$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
-			$vs_fld = str_replace('\\', '', $o_term->field);
-			$va_terms[] = $o_term->text;
-		}
+    /**
+     * @param \Zend_Search_Lucene_Search_Query_Phrase $po_query
+     * @return array
+     */
+    public function getFiltersForPhraseQuery($po_query)
+    {
+        $va_terms = $va_return = array();
+        $vs_fld = null;
+        foreach ($po_query->getQueryTerms() as $o_term) {
+            $o_term = caRewriteElasticSearchTermFieldSpec($o_term);
+            $vs_fld = str_replace('\\', '', $o_term->field);
+            $va_terms[] = $o_term->text;
+        }
 
-		$va_parsed_values = caGetISODates(join(' ', $va_terms));
+        $va_parsed_values = caGetISODates(join(' ', $va_terms));
 
-		$va_return[] = array(
-			'range' => array(
-				$vs_fld => array(
-					'lte' => $va_parsed_values['end'],
-				)));
+        $va_return[] = array(
+            'range' => array(
+                $vs_fld => array(
+                    'lte' => $va_parsed_values['end'],
+                )
+            )
+        );
 
-		$va_return[] = array(
-			'range' => array(
-				$vs_fld => array(
-					'gte' => $va_parsed_values['start'],
-				)));
+        $va_return[] = array(
+            'range' => array(
+                $vs_fld => array(
+                    'gte' => $va_parsed_values['start'],
+                )
+            )
+        );
 
-		return $va_return;
-	}
+        return $va_return;
+    }
 
-	/**
-	 * @param \Zend_Search_Lucene_Index_Term $po_term
-	 * @return array
-	 */
-	function getFiltersForTerm($po_term) {
-		$va_return = array();
-		$va_parsed_values = caGetISODates($po_term->text);
-		$vs_fld = str_replace('\\', '', $po_term->field);
+    /**
+     * @param \Zend_Search_Lucene_Index_Term $po_term
+     * @return array
+     */
+    function getFiltersForTerm($po_term)
+    {
+        $va_return = array();
+        $va_parsed_values = caGetISODates($po_term->text);
+        $vs_fld = str_replace('\\', '', $po_term->field);
 
-		$va_return[] = array(
-			'range' => array(
-				$vs_fld => array(
-					'lte' => $va_parsed_values['end'],
-				)));
+        $va_return[] = array(
+            'range' => array(
+                $vs_fld => array(
+                    'lte' => $va_parsed_values['end'],
+                )
+            )
+        );
 
-		$va_return[] = array(
-			'range' => array(
-				$vs_fld => array(
-					'gte' => $va_parsed_values['start'],
-				)));
+        $va_return[] = array(
+            'range' => array(
+                $vs_fld => array(
+                    'gte' => $va_parsed_values['start'],
+                )
+            )
+        );
 
-		return $va_return;
-	}
+        return $va_return;
+    }
 }

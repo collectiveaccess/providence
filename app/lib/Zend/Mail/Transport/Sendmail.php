@@ -69,7 +69,7 @@ class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
     /**
      * Constructor.
      *
-     * @param  string|array|Zend_Config $parameters OPTIONAL (Default: null)
+     * @param string|array|Zend_Config $parameters OPTIONAL (Default: null)
      * @return void
      */
     public function __construct($parameters = null)
@@ -103,10 +103,11 @@ class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
                 $this->recipients,
                 $this->_mail->getSubject(),
                 $this->body,
-                $this->header);
+                $this->header
+            );
             restore_error_handler();
         } else {
-            if(!is_string($this->parameters)) {
+            if (!is_string($this->parameters)) {
                 /**
                  * @see Zend_Mail_Transport_Exception
                  *
@@ -125,7 +126,8 @@ class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
                 $this->_mail->getSubject(),
                 $this->body,
                 $this->header,
-                $this->parameters);
+                $this->parameters
+            );
             restore_error_handler();
         }
 
@@ -147,7 +149,7 @@ class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
      * prevent duplicate header entries.
      *
      * @access  protected
-     * @param   array $headers
+     * @param array $headers
      * @return  void
      * @throws  Zend_Mail_Transport_Exception
      */
@@ -204,11 +206,11 @@ class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
     /**
      * Temporary error handler for PHP native mail().
      *
-     * @param int    $errno
+     * @param int $errno
      * @param string $errstr
      * @param string $errfile
      * @param string $errline
-     * @param array  $errcontext
+     * @param array $errcontext
      * @return true
      */
     public function _handleMailErrors($errno, $errstr, $errfile = null, $errline = null, array $errcontext = null)

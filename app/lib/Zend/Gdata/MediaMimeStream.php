@@ -22,13 +22,13 @@
  */
 
 /**
-*  @see Zend_Gdata_MimeFile
-*/
+ * @see Zend_Gdata_MimeFile
+ */
 require_once 'Zend/Gdata/MimeFile.php';
 
 /**
-* @see Zend_Gdata_MimeBodyString
-*/
+ * @see Zend_Gdata_MimeBodyString
+ */
 require_once 'Zend/Gdata/MimeBodyString.php';
 
 
@@ -88,17 +88,21 @@ class Zend_Gdata_MediaMimeStream
      * @throws Zend_Gdata_App_IOException If the file cannot be read or does
      *         not exist. Also if mbstring.func_overload has been set > 1.
      */
-    public function __construct($xmlString = null, $filePath = null,
-        $fileContentType = null)
-    {
+    public function __construct(
+        $xmlString = null,
+        $filePath = null,
+        $fileContentType = null
+    ) {
         if (!file_exists($filePath) || !is_readable($filePath)) {
             require_once 'Zend/Gdata/App/IOException.php';
-            throw new Zend_Gdata_App_IOException('File to be uploaded at ' .
-                $filePath . ' does not exist or is not readable.');
+            throw new Zend_Gdata_App_IOException(
+                'File to be uploaded at ' .
+                $filePath . ' does not exist or is not readable.'
+            );
         }
 
-        $this->_fileHandle = fopen($filePath, 'rb', TRUE);
-        $this->_boundaryString = '=_' . md5(microtime(1) . rand(1,20));
+        $this->_fileHandle = fopen($filePath, 'rb', true);
+        $this->_boundaryString = '=_' . md5(microtime(1) . rand(1, 20));
         $entry = $this->wrapEntry($xmlString, $fileContentType);
         $closingBoundary = new Zend_Gdata_MimeBodyString("\r\n--{$this->_boundaryString}--\r\n");
         $file = new Zend_Gdata_MimeFile($this->_fileHandle);
@@ -106,8 +110,7 @@ class Zend_Gdata_MediaMimeStream
 
         $fileSize = filesize($filePath);
         $this->_totalSize = $entry->getSize() + $fileSize
-          + $closingBoundary->getSize();
-
+            + $closingBoundary->getSize();
     }
 
     /**
@@ -135,20 +138,20 @@ class Zend_Gdata_MediaMimeStream
      */
     public function read($bytesRequested)
     {
-        if($this->_currentPart >= count($this->_parts)) {
-          return FALSE;
+        if ($this->_currentPart >= count($this->_parts)) {
+            return false;
         }
 
         $activePart = $this->_parts[$this->_currentPart];
         $buffer = $activePart->read($bytesRequested);
 
-        while(strlen($buffer) < $bytesRequested) {
-          $this->_currentPart += 1;
-          $nextBuffer = $this->read($bytesRequested - strlen($buffer));
-          if($nextBuffer === FALSE) {
-            break;
-          }
-          $buffer .= $nextBuffer;
+        while (strlen($buffer) < $bytesRequested) {
+            $this->_currentPart += 1;
+            $nextBuffer = $this->read($bytesRequested - strlen($buffer));
+            if ($nextBuffer === false) {
+                break;
+            }
+            $buffer .= $nextBuffer;
         }
 
         return $buffer;

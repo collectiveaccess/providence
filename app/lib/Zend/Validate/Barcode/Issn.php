@@ -53,7 +53,7 @@ class Zend_Validate_Barcode_Issn extends Zend_Validate_Barcode_AdapterAbstract
     /**
      * Allows X on length of 8 chars
      *
-     * @param  string $value The barcode to check for allowed characters
+     * @param string $value The barcode to check for allowed characters
      * @return boolean
      */
     public function checkChars($value)
@@ -70,7 +70,7 @@ class Zend_Validate_Barcode_Issn extends Zend_Validate_Barcode_AdapterAbstract
     /**
      * Validates the checksum
      *
-     * @param  string $value The barcode to check the checksum for
+     * @param string $value The barcode to check the checksum for
      * @return boolean
      */
     public function checksum($value)
@@ -88,16 +88,16 @@ class Zend_Validate_Barcode_Issn extends Zend_Validate_Barcode_AdapterAbstract
      * Validates the checksum ()
      * ISSN implementation (reversed mod11)
      *
-     * @param  string $value The barcode to validate
+     * @param string $value The barcode to validate
      * @return boolean
      */
     protected function _issn($value)
     {
         $checksum = substr($value, -1, 1);
-        $values   = str_split(substr($value, 0, -1));
-        $check    = 0;
-        $multi    = 8;
-        foreach($values as $token) {
+        $values = str_split(substr($value, 0, -1));
+        $check = 0;
+        $multi = 8;
+        foreach ($values as $token) {
             if ($token == 'X') {
                 $token = 10;
             }
@@ -107,11 +107,13 @@ class Zend_Validate_Barcode_Issn extends Zend_Validate_Barcode_AdapterAbstract
         }
 
         $check %= 11;
-        $check  = 11 - $check;
+        $check = 11 - $check;
         if ($check == $checksum) {
             return true;
-        } else if (($check == 10) && ($checksum == 'X')) {
-            return true;
+        } else {
+            if (($check == 10) && ($checksum == 'X')) {
+                return true;
+            }
         }
 
         return false;

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/SMS/BaseSMSPlugIn.php : 
+ * app/lib/Plugins/SMS/BaseSMSPlugIn.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -29,41 +29,41 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
-    
-include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugSMS.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
 
-abstract class BaseSMSPlugIn Extends WLPlug {
-	// properties for this plugin instance
-	protected $properties = array(
-		
-	);
-	
-	// app config
-	protected $opo_config;
-	
-	// map item list
+/**
+ *
+ */
 
-	// plugin info
-	protected $info = array(
-		"NAME" => "BaseSMSPlugin",
-		"PROPERTIES" => array(
-			
-		)
-	);
-	
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct() {
-		$this->opo_config = Configuration::load();
-	}
-	# ------------------------------------------------
+include_once(__CA_LIB_DIR__ . "/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugSMS.php");
+include_once(__CA_LIB_DIR__ . "/Configuration.php");
+
+abstract class BaseSMSPlugIn Extends WLPlug
+{
+    // properties for this plugin instance
+    protected $properties = array();
+
+    // app config
+    protected $opo_config;
+
+    // map item list
+
+    // plugin info
+    protected $info = array(
+        "NAME" => "BaseSMSPlugin",
+        "PROPERTIES" => array()
+    );
+
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->opo_config = Configuration::load();
+    }
+    # ------------------------------------------------
 }
+
 ?>

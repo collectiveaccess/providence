@@ -65,30 +65,32 @@ class Zend_Validate_InArray extends Zend_Validate_Abstract
     /**
      * Sets validator options
      *
-     * @param  array|Zend_Config $haystack
+     * @param array|Zend_Config $haystack
      * @return void
      */
     public function __construct($options)
     {
         if ($options instanceof Zend_Config) {
             $options = $options->toArray();
-        } else if (!is_array($options)) {
-            require_once 'Zend/Validate/Exception.php';
-            throw new Zend_Validate_Exception('Array expected as parameter');
         } else {
-            $count = func_num_args();
-            $temp  = array();
-            if ($count > 1) {
-                $temp['haystack'] = func_get_arg(0);
-                $temp['strict']   = func_get_arg(1);
-                $options = $temp;
+            if (!is_array($options)) {
+                require_once 'Zend/Validate/Exception.php';
+                throw new Zend_Validate_Exception('Array expected as parameter');
             } else {
-                $temp = func_get_arg(0);
-                if (!array_key_exists('haystack', $options)) {
-                    $options = array();
-                    $options['haystack'] = $temp;
-                } else {
+                $count = func_num_args();
+                $temp = array();
+                if ($count > 1) {
+                    $temp['haystack'] = func_get_arg(0);
+                    $temp['strict'] = func_get_arg(1);
                     $options = $temp;
+                } else {
+                    $temp = func_get_arg(0);
+                    if (!array_key_exists('haystack', $options)) {
+                        $options = array();
+                        $options['haystack'] = $temp;
+                    } else {
+                        $options = $temp;
+                    }
                 }
             }
         }
@@ -116,7 +118,7 @@ class Zend_Validate_InArray extends Zend_Validate_Abstract
     /**
      * Sets the haystack option
      *
-     * @param  mixed $haystack
+     * @param mixed $haystack
      * @return Zend_Validate_InArray Provides a fluent interface
      */
     public function setHaystack(array $haystack)
@@ -138,12 +140,12 @@ class Zend_Validate_InArray extends Zend_Validate_Abstract
     /**
      * Sets the strict option
      *
-     * @param  boolean $strict
+     * @param boolean $strict
      * @return Zend_Validate_InArray Provides a fluent interface
      */
     public function setStrict($strict)
     {
-        $this->_strict = (boolean) $strict;
+        $this->_strict = (boolean)$strict;
         return $this;
     }
 
@@ -160,12 +162,12 @@ class Zend_Validate_InArray extends Zend_Validate_Abstract
     /**
      * Sets the recursive option
      *
-     * @param  boolean $recursive
+     * @param boolean $recursive
      * @return Zend_Validate_InArray Provides a fluent interface
      */
     public function setRecursive($recursive)
     {
-        $this->_recursive = (boolean) $recursive;
+        $this->_recursive = (boolean)$recursive;
         return $this;
     }
 
@@ -175,7 +177,7 @@ class Zend_Validate_InArray extends Zend_Validate_Abstract
      * Returns true if and only if $value is contained in the haystack option. If the strict
      * option is true, then the type of $value is also checked.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return boolean
      */
     public function isValid($value)
@@ -183,13 +185,15 @@ class Zend_Validate_InArray extends Zend_Validate_Abstract
         $this->_setValue($value);
         if ($this->getRecursive()) {
             $iterator = new RecursiveIteratorIterator(new RecursiveArrayIterator($this->_haystack));
-            foreach($iterator as $element) {
+            foreach ($iterator as $element) {
                 if ($this->_strict) {
                     if ($element === $value) {
                         return true;
                     }
-                } else if ($element == $value) {
-                    return true;
+                } else {
+                    if ($element == $value) {
+                        return true;
+                    }
                 }
             }
         } else {

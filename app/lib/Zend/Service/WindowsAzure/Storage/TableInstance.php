@@ -31,30 +31,30 @@ require_once 'Zend/Service/WindowsAzure/Storage/StorageEntityAbstract.php';
  * @subpackage Storage
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * 
- * @property string  $Id              Id
- * @property string  $Name            Name
- * @property string  $Href            Href
- * @property string  $Updated         Updated
+ *
+ * @property string $Id              Id
+ * @property string $Name            Name
+ * @property string $Href            Href
+ * @property string $Updated         Updated
  */
 class Zend_Service_WindowsAzure_Storage_TableInstance
-	extends Zend_Service_WindowsAzure_Storage_StorageEntityAbstract
+    extends Zend_Service_WindowsAzure_Storage_StorageEntityAbstract
 {
     /**
      * Constructor
-     * 
-     * @param string  $id              Id
-     * @param string  $name            Name
-     * @param string  $href            Href
-     * @param string  $updated         Updated
+     *
+     * @param string $id Id
+     * @param string $name Name
+     * @param string $href Href
+     * @param string $updated Updated
      */
-    public function __construct($id, $name, $href, $updated) 
-    {	        
+    public function __construct($id, $name, $href, $updated)
+    {
         $this->_data = array(
-            'id'               => $id,
-            'name'             => $name,
-            'href'             => $href,
-            'updated'          => $updated
+            'id' => $id,
+            'name' => $name,
+            'href' => $href,
+            'updated' => $updated
         );
     }
 }

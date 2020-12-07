@@ -164,9 +164,9 @@ class Zend_Search_Lucene_Search_Query_Term extends Zend_Search_Lucene_Search_Que
     {
         if (isset($this->_docVector[$docId])) {
             return $reader->getSimilarity()->tf($this->_termFreqs[$docId]) *
-                   $this->_weight->getValue() *
-                   $reader->norm($docId, $this->_term->field) *
-                   $this->getBoost();
+                $this->_weight->getValue() *
+                $reader->norm($docId, $this->_term->field) *
+                $this->getBoost();
         } else {
             return 0;
         }
@@ -195,7 +195,7 @@ class Zend_Search_Lucene_Search_Query_Term extends Zend_Search_Lucene_Search_Que
     /**
      * Query specific matches highlighting
      *
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter  Highlighter object (also contains doc for highlighting)
+     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter Highlighter object (also contains doc for highlighting)
      */
     protected function _highlightMatches(Zend_Search_Lucene_Search_Highlighter_Interface $highlighter)
     {

@@ -197,44 +197,44 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
     {
         $absoluteNodeName = $child->namespaceURI . ':' . $child->localName;
         switch ($absoluteNodeName) {
-        case $this->lookupNamespace('gd') . ':' . 'feedLink':
-            $feedLink = new Zend_Gdata_Extension_FeedLink();
-            $feedLink->transferFromDOM($child);
-            $this->_feedLink[] = $feedLink;
-            break;
-        case $this->lookupNamespace('media') . ':' . 'thumbnail':
-            $mediaThumbnail = new Zend_Gdata_Media_Extension_MediaThumbnail();
-            $mediaThumbnail->transferFromDOM($child);
-            $this->_mediaThumbnail = $mediaThumbnail;
-            break;
-        case $this->lookupNamespace('yt') . ':' . 'countHint':
-            $countHint = new Zend_Gdata_YouTube_Extension_CountHint();
-            $countHint->transferFromDOM($child);
-            $this->_countHint = $countHint;
-            break;
-        case $this->lookupNamespace('yt') . ':' . 'playlistTitle':
-            $playlistTitle = new Zend_Gdata_YouTube_Extension_PlaylistTitle();
-            $playlistTitle->transferFromDOM($child);
-            $this->_playlistTitle = $playlistTitle;
-            break;
-        case $this->lookupNamespace('yt') . ':' . 'playlistId':
-            $playlistId = new Zend_Gdata_YouTube_Extension_PlaylistId();
-            $playlistId->transferFromDOM($child);
-            $this->_playlistId = $playlistId;
-            break;
-        case $this->lookupNamespace('yt') . ':' . 'queryString':
-            $queryString = new Zend_Gdata_YouTube_Extension_QueryString();
-            $queryString->transferFromDOM($child);
-            $this->_queryString = $queryString;
-            break;
-        case $this->lookupNamespace('yt') . ':' . 'username':
-            $username = new Zend_Gdata_YouTube_Extension_Username();
-            $username->transferFromDOM($child);
-            $this->_username = $username;
-            break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
+            case $this->lookupNamespace('gd') . ':' . 'feedLink':
+                $feedLink = new Zend_Gdata_Extension_FeedLink();
+                $feedLink->transferFromDOM($child);
+                $this->_feedLink[] = $feedLink;
+                break;
+            case $this->lookupNamespace('media') . ':' . 'thumbnail':
+                $mediaThumbnail = new Zend_Gdata_Media_Extension_MediaThumbnail();
+                $mediaThumbnail->transferFromDOM($child);
+                $this->_mediaThumbnail = $mediaThumbnail;
+                break;
+            case $this->lookupNamespace('yt') . ':' . 'countHint':
+                $countHint = new Zend_Gdata_YouTube_Extension_CountHint();
+                $countHint->transferFromDOM($child);
+                $this->_countHint = $countHint;
+                break;
+            case $this->lookupNamespace('yt') . ':' . 'playlistTitle':
+                $playlistTitle = new Zend_Gdata_YouTube_Extension_PlaylistTitle();
+                $playlistTitle->transferFromDOM($child);
+                $this->_playlistTitle = $playlistTitle;
+                break;
+            case $this->lookupNamespace('yt') . ':' . 'playlistId':
+                $playlistId = new Zend_Gdata_YouTube_Extension_PlaylistId();
+                $playlistId->transferFromDOM($child);
+                $this->_playlistId = $playlistId;
+                break;
+            case $this->lookupNamespace('yt') . ':' . 'queryString':
+                $queryString = new Zend_Gdata_YouTube_Extension_QueryString();
+                $queryString->transferFromDOM($child);
+                $this->_queryString = $queryString;
+                break;
+            case $this->lookupNamespace('yt') . ':' . 'username':
+                $username = new Zend_Gdata_YouTube_Extension_Username();
+                $username->transferFromDOM($child);
+                $this->_username = $username;
+                break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
         }
     }
 
@@ -253,7 +253,6 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
     /**
      * Get the feed link property for this entry.
      *
-     * @see setFeedLink
      * @param string $rel (optional) The rel value of the link to be found.
      *          If null, the array of links is returned.
      * @return mixed If $rel is specified, a Zend_Gdata_Extension_FeedLink
@@ -262,6 +261,7 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
      *          $rel is null or not specified, an array of all available
      *          feed links for this entry is returned, or null if no feed
      *          links are set.
+     * @see setFeedLink
      */
     public function getFeedLink($rel = null)
     {
@@ -280,17 +280,19 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
     /**
      * Get the playlist title for a 'playlist' subscription.
      *
-     * @throws Zend_Gdata_App_VersionException
      * @return Zend_Gdata_YouTube_Extension_PlaylistId
+     * @throws Zend_Gdata_App_VersionException
      */
     public function getPlaylistId()
     {
         if (($this->getMajorProtocolVersion() == null) ||
-           ($this->getMajorProtocolVersion() == 1)) {
+            ($this->getMajorProtocolVersion() == 1)) {
             require_once 'Zend/Gdata/App/VersionException.php';
-            throw new Zend_Gdata_App_VersionException('The getPlaylistId ' .
+            throw new Zend_Gdata_App_VersionException(
+                'The getPlaylistId ' .
                 ' method is only supported as of version 2 of the YouTube ' .
-                'API.');
+                'API.'
+            );
         } else {
             return $this->_playlistId;
         }
@@ -301,17 +303,19 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
      *
      * @param Zend_Gdata_YouTube_Extension_PlaylistId $id The id of
      *        the playlist to which to subscribe to.
-     * @throws Zend_Gdata_App_VersionException
      * @return Zend_Gdata_YouTube_SubscriptionEntry Provides a fluent interface
+     * @throws Zend_Gdata_App_VersionException
      */
     public function setPlaylistId($id = null)
     {
         if (($this->getMajorProtocolVersion() == null) ||
-           ($this->getMajorProtocolVersion() == 1)) {
+            ($this->getMajorProtocolVersion() == 1)) {
             require_once 'Zend/Gdata/App/VersionException.php';
-            throw new Zend_Gdata_App_VersionException('The setPlaylistTitle ' .
+            throw new Zend_Gdata_App_VersionException(
+                'The setPlaylistTitle ' .
                 ' method is only supported as of version 2 of the YouTube ' .
-                'API.');
+                'API.'
+            );
         } else {
             $this->_playlistId = $id;
             return $this;
@@ -344,17 +348,19 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
     /**
      * Get the playlist title for a 'playlist' subscription.
      *
-     * @throws Zend_Gdata_App_VersionException
      * @return Zend_Gdata_YouTube_Extension_PlaylistTitle
+     * @throws Zend_Gdata_App_VersionException
      */
     public function getPlaylistTitle()
     {
         if (($this->getMajorProtocolVersion() == null) ||
-           ($this->getMajorProtocolVersion() == 1)) {
+            ($this->getMajorProtocolVersion() == 1)) {
             require_once 'Zend/Gdata/App/VersionException.php';
-            throw new Zend_Gdata_App_VersionException('The getPlaylistTitle ' .
+            throw new Zend_Gdata_App_VersionException(
+                'The getPlaylistTitle ' .
                 ' method is only supported as of version 2 of the YouTube ' .
-                'API.');
+                'API.'
+            );
         } else {
             return $this->_playlistTitle;
         }
@@ -365,17 +371,19 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
      *
      * @param Zend_Gdata_YouTube_Extension_PlaylistTitle $title The title of
      *        the playlist to which to subscribe to.
-     * @throws Zend_Gdata_App_VersionException
      * @return Zend_Gdata_YouTube_SubscriptionEntry Provides a fluent interface
+     * @throws Zend_Gdata_App_VersionException
      */
     public function setPlaylistTitle($title = null)
     {
         if (($this->getMajorProtocolVersion() == null) ||
-           ($this->getMajorProtocolVersion() == 1)) {
+            ($this->getMajorProtocolVersion() == 1)) {
             require_once 'Zend/Gdata/App/VersionException.php';
-            throw new Zend_Gdata_App_VersionException('The setPlaylistTitle ' .
+            throw new Zend_Gdata_App_VersionException(
+                'The setPlaylistTitle ' .
                 ' method is only supported as of version 2 of the YouTube ' .
-                'API.');
+                'API.'
+            );
         } else {
             $this->_playlistTitle = $title;
             return $this;
@@ -385,17 +393,19 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
     /**
      * Get the counthint for a subscription.
      *
-     * @throws Zend_Gdata_App_VersionException
      * @return Zend_Gdata_YouTube_Extension_CountHint
+     * @throws Zend_Gdata_App_VersionException
      */
     public function getCountHint()
     {
         if (($this->getMajorProtocolVersion() == null) ||
-           ($this->getMajorProtocolVersion() == 1)) {
+            ($this->getMajorProtocolVersion() == 1)) {
             require_once 'Zend/Gdata/App/VersionException.php';
-            throw new Zend_Gdata_App_VersionException('The getCountHint ' .
+            throw new Zend_Gdata_App_VersionException(
+                'The getCountHint ' .
                 ' method is only supported as of version 2 of the YouTube ' .
-                'API.');
+                'API.'
+            );
         } else {
             return $this->_countHint;
         }
@@ -404,17 +414,19 @@ class Zend_Gdata_YouTube_SubscriptionEntry extends Zend_Gdata_Entry
     /**
      * Get the thumbnail for a subscription.
      *
-     * @throws Zend_Gdata_App_VersionException
      * @return Zend_Gdata_Media_Extension_MediaThumbnail
+     * @throws Zend_Gdata_App_VersionException
      */
     public function getMediaThumbnail()
     {
         if (($this->getMajorProtocolVersion() == null) ||
-           ($this->getMajorProtocolVersion() == 1)) {
+            ($this->getMajorProtocolVersion() == 1)) {
             require_once 'Zend/Gdata/App/VersionException.php';
-            throw new Zend_Gdata_App_VersionException('The getMediaThumbnail ' .
+            throw new Zend_Gdata_App_VersionException(
+                'The getMediaThumbnail ' .
                 ' method is only supported as of version 2 of the YouTube ' .
-                'API.');
+                'API.'
+            );
         } else {
             return $this->_mediaThumbnail;
         }

@@ -44,9 +44,9 @@ class Zend_Filter_LocalizedToNormalized implements Zend_Filter_Interface
      * @var array
      */
     protected $_options = array(
-        'locale'      => null,
+        'locale' => null,
         'date_format' => null,
-        'precision'   => null
+        'precision' => null
     );
 
     /**
@@ -78,7 +78,7 @@ class Zend_Filter_LocalizedToNormalized implements Zend_Filter_Interface
     /**
      * Sets options to use
      *
-     * @param  array $options (Optional) Options to use
+     * @param array $options (Optional) Options to use
      * @return Zend_Filter_LocalizedToNormalized
      */
     public function setOptions(array $options = null)
@@ -92,19 +92,23 @@ class Zend_Filter_LocalizedToNormalized implements Zend_Filter_Interface
      *
      * Normalizes the given input
      *
-     * @param  string $value Value to normalized
+     * @param string $value Value to normalized
      * @return string|array The normalized value
      */
     public function filter($value)
     {
         if (Zend_Locale_Format::isNumber($value, $this->_options)) {
             return Zend_Locale_Format::getNumber($value, $this->_options);
-        } else if (($this->_options['date_format'] === null) && (strpos($value, ':') !== false)) {
-            // Special case, no date format specified, detect time input
-            return Zend_Locale_Format::getTime($value, $this->_options);
-        } else if (Zend_Locale_Format::checkDateFormat($value, $this->_options)) {
-            // Detect date or time input
-            return Zend_Locale_Format::getDate($value, $this->_options);
+        } else {
+            if (($this->_options['date_format'] === null) && (strpos($value, ':') !== false)) {
+                // Special case, no date format specified, detect time input
+                return Zend_Locale_Format::getTime($value, $this->_options);
+            } else {
+                if (Zend_Locale_Format::checkDateFormat($value, $this->_options)) {
+                    // Detect date or time input
+                    return Zend_Locale_Format::getDate($value, $this->_options);
+                }
+            }
         }
 
         return $value;

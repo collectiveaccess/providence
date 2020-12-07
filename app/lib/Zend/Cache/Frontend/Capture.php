@@ -52,7 +52,7 @@ class Zend_Cache_Frontend_Capture extends Zend_Cache_Core
     /**
      * Start the cache
      *
-     * @param  string  $id Cache id
+     * @param string $id Cache id
      * @return mixed True if the cache is hit (false else) with $echoData=true (default) ; string else (datas)
      */
     public function start($id, array $tags, $extension = null)
@@ -69,7 +69,7 @@ class Zend_Cache_Frontend_Capture extends Zend_Cache_Core
      * callback for output buffering
      * (shouldn't really be called manually)
      *
-     * @param  string $data Buffered output
+     * @param string $data Buffered output
      * @return string Data to send to browser
      */
     public function _flush($data)

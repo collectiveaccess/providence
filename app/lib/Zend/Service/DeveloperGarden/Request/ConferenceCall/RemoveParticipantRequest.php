@@ -61,7 +61,7 @@ class Zend_Service_DeveloperGarden_Request_ConferenceCall_RemoveParticipantReque
     {
         parent::__construct($environment);
         $this->setConferenceId($conferenceId)
-             ->setParticipantId($participantId);
+            ->setParticipantId($participantId);
     }
 
     /**

@@ -46,7 +46,8 @@ class Zend_Cloud_Exception extends Zend_Exception
         parent::__construct($message, $code, $clientException);
     }
 
-    public function getClientException() {
+    public function getClientException()
+    {
         return $this->_getPrevious();
     }
 }

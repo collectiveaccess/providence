@@ -20,7 +20,7 @@
 
 /**
  * Locate files containing PHP classes, interfaces, or abstracts
- * 
+ *
  * @package    Zend_File
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    New BSD {@link http://framework.zend.com/license/new-bsd}
@@ -29,11 +29,11 @@ class Zend_File_ClassFileLocator extends FilterIterator
 {
     /**
      * Create an instance of the locator iterator
-     * 
-     * Expects either a directory, or a DirectoryIterator (or its recursive variant) 
+     *
+     * Expects either a directory, or a DirectoryIterator (or its recursive variant)
      * instance.
-     * 
-     * @param  string|DirectoryIterator $dirOrIterator 
+     *
+     * @param string|DirectoryIterator $dirOrIterator
      * @return void
      */
     public function __construct($dirOrIterator = '.')
@@ -70,7 +70,7 @@ class Zend_File_ClassFileLocator extends FilterIterator
 
     /**
      * Filter for files containing PHP classes, interfaces, or abstracts
-     * 
+     *
      * @return bool
      */
     public function accept()
@@ -94,9 +94,9 @@ class Zend_File_ClassFileLocator extends FilterIterator
         }
 
         $contents = file_get_contents($file->getRealPath());
-        $tokens   = token_get_all($contents);
-        $count    = count($tokens);
-        $i        = 0;
+        $tokens = token_get_all($contents);
+        $count = count($tokens);
+        $i = 0;
         while ($i < $count) {
             $token = $tokens[$i];
 
@@ -112,7 +112,7 @@ class Zend_File_ClassFileLocator extends FilterIterator
                 case T_NAMESPACE:
                     // Namespace found; grab it for later
                     $namespace = '';
-                    $done      = false;
+                    $done = false;
                     do {
                         ++$i;
                         $token = $tokens[$i];

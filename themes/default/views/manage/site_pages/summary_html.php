@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/manage/site_places/summary_html.php : 
  * ----------------------------------------------------------------------
@@ -25,13 +26,13 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_item 				= $this->getVar('t_subject');
-	$vn_item_id 			= $this->getVar('subject_id');
+$t_item = $this->getVar('t_subject');
+$vn_item_id = $this->getVar('subject_id');
 ?>
-<div id="summary" style="clear: both;">
-	<h1><?php print _t('Page preview'); ?></h1>
-	<div class="divide"></div>
-	
-	<?php print $t_item->render($this->getVar('controller')); ?>
-</div><!-- end summary -->
+    <div id="summary" style="clear: both;">
+        <h1><?php print _t('Page preview'); ?></h1>
+        <div class="divide"></div>
+
+        <?php print $t_item->render($this->getVar('controller')); ?>
+    </div><!-- end summary -->
 <?php

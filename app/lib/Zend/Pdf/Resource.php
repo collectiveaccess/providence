@@ -68,7 +68,7 @@ abstract class Zend_Pdf_Resource
     {
         if ($resource instanceof Zend_Pdf_Element_Object) {
             $this->_objectFactory = $resource->getFactory();
-            $this->_resource      = $resource;
+            $this->_resource = $resource;
 
             return;
         }
@@ -77,9 +77,9 @@ abstract class Zend_Pdf_Resource
 
         $this->_objectFactory = Zend_Pdf_ElementFactory::createFactory(1);
         if ($resource instanceof Zend_Pdf_Element) {
-            $this->_resource  = $this->_objectFactory->newObject($resource);
+            $this->_resource = $this->_objectFactory->newObject($resource);
         } else {
-            $this->_resource  = $this->_objectFactory->newStreamObject($resource);
+            $this->_resource = $this->_objectFactory->newStreamObject($resource);
         }
     }
 
@@ -89,7 +89,7 @@ abstract class Zend_Pdf_Resource
      */
     public function __clone()
     {
-        /** @todo implementation*/
+        /** @todo implementation */
 
 //        $factory = Zend_Pdf_ElementFactory::createFactory(1);
 //        $processed = array();
@@ -115,14 +115,14 @@ abstract class Zend_Pdf_Resource
      * Clone resource, extract it and dependent objects from the current document,
      * so it can be used within other docs.
      *
-     * @internal
      * @param Zend_Pdf_ElementFactory_Interface $factory
      * @param array $processed
      * @return Zend_Pdf_Page
+     * @internal
      */
     public function cloneResource($factory, &$processed)
     {
-        /** @todo implementation*/
+        /** @todo implementation */
 
 //        // Clone dictionary object.
 //        // Do it explicitly to prevent sharing page attributes between different
@@ -144,8 +144,8 @@ abstract class Zend_Pdf_Resource
      * Get resource.
      * Used to reference resource in an internal PDF data structures (resource dictionaries)
      *
-     * @internal
      * @return Zend_Pdf_Element_Object
+     * @internal
      */
     public function getResource()
     {
@@ -155,8 +155,8 @@ abstract class Zend_Pdf_Resource
     /**
      * Get factory.
      *
-     * @internal
      * @return Zend_Pdf_ElementFactory_Interface
+     * @internal
      */
     public function getFactory()
     {

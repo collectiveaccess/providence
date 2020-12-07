@@ -46,7 +46,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
     /**
      * Constructor.
      *
-     * @param  array $data
+     * @param array $data
      * @return void
      */
     public function __construct(array $data)
@@ -114,7 +114,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      */
     public function valid()
     {
-        return (current($this->_data)!==false);
+        return (current($this->_data) !== false);
     }
 
     /**
@@ -150,7 +150,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      * Returns a child with a given RDN.
      * Implements ArrayAccess.
      *
-     * @param  string $rdn
+     * @param string $rdn
      * @return Zend_Ldap_node
      */
     public function offsetGet($rdn)
@@ -166,7 +166,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      * Checks whether a given rdn exists.
      * Implements ArrayAccess.
      *
-     * @param  string $rdn
+     * @param string $rdn
      * @return boolean
      */
     public function offsetExists($rdn)
@@ -178,20 +178,24 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      * Does nothing.
      * Implements ArrayAccess.
      *
-     * @param  string $name
+     * @param string $name
      * @return null
      */
-    public function offsetUnset($name) { }
+    public function offsetUnset($name)
+    {
+    }
 
     /**
      * Does nothing.
      * Implements ArrayAccess.
      *
-     * @param  string $name
-     * @param  mixed $value
+     * @param string $name
+     * @param mixed $value
      * @return null
      */
-    public function offsetSet($name, $value) { }
+    public function offsetSet($name, $value)
+    {
+    }
 
     /**
      * Get all children as an array

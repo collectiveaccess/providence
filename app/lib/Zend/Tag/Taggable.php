@@ -53,7 +53,7 @@ interface Zend_Tag_Taggable
     /**
      * Get a parameter
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function getParam($name);

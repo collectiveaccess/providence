@@ -142,14 +142,14 @@ class Zend_Service_Ebay_Finding_Error_Data extends Zend_Service_Ebay_Finding_Abs
         parent::_init();
         $ns = Zend_Service_Ebay_Finding::XMLNS_FINDING;
 
-        $this->category    = $this->_query(".//$ns:category[1]", 'string');
-        $this->domain      = $this->_query(".//$ns:domain[1]", 'string');
-        $this->errorId     = $this->_query(".//$ns:errorId[1]", 'integer');
+        $this->category = $this->_query(".//$ns:category[1]", 'string');
+        $this->domain = $this->_query(".//$ns:domain[1]", 'string');
+        $this->errorId = $this->_query(".//$ns:errorId[1]", 'integer');
         $this->exceptionId = $this->_query(".//$ns:exceptionId[1]", 'string');
-        $this->message     = $this->_query(".//$ns:message[1]", 'string');
-        $this->parameter   = $this->_query(".//$ns:parameter", 'string', true);
-        $this->severity    = $this->_query(".//$ns:severity[1]", 'string');
-        $this->subdomain   = $this->_query(".//$ns:subdomain[1]", 'string');
+        $this->message = $this->_query(".//$ns:message[1]", 'string');
+        $this->parameter = $this->_query(".//$ns:parameter", 'string', true);
+        $this->severity = $this->_query(".//$ns:severity[1]", 'string');
+        $this->subdomain = $this->_query(".//$ns:subdomain[1]", 'string');
 
         $this->_attributes['parameter'] = array(
             'name' => $this->_query(".//$ns:parameter/@name", 'string', true)

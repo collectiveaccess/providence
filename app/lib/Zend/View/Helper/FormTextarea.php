@@ -86,18 +86,18 @@ class Zend_View_Helper_FormTextarea extends Zend_View_Helper_FormElement
         // Make sure that there are 'rows' and 'cols' values
         // as required by the spec.  noted by Orjan Persson.
         if (empty($attribs['rows'])) {
-            $attribs['rows'] = (int) $this->rows;
+            $attribs['rows'] = (int)$this->rows;
         }
         if (empty($attribs['cols'])) {
-            $attribs['cols'] = (int) $this->cols;
+            $attribs['cols'] = (int)$this->cols;
         }
 
         // build the element
         $xhtml = '<textarea name="' . $this->view->escape($name) . '"'
-                . ' id="' . $this->view->escape($id) . '"'
-                . $disabled
-                . $this->_htmlAttribs($attribs) . '>'
-                . $this->view->escape($value) . '</textarea>';
+            . ' id="' . $this->view->escape($id) . '"'
+            . $disabled
+            . $this->_htmlAttribs($attribs) . '>'
+            . $this->view->escape($value) . '</textarea>';
 
         return $xhtml;
     }

@@ -39,7 +39,7 @@ class Zend_Filter_Decompress extends Zend_Filter_Compress
      *
      * Decompresses the content $value with the defined settings
      *
-     * @param  string $value Content to decompress
+     * @param string $value Content to decompress
      * @return string The decompressed content
      */
     public function filter($value)

@@ -37,7 +37,7 @@ class Zend_Validate_File_IsCompressed extends Zend_Validate_File_MimeType
     /**
      * @const string Error constants
      */
-    const FALSE_TYPE   = 'fileIsCompressedFalseType';
+    const FALSE_TYPE = 'fileIsCompressedFalseType';
     const NOT_DETECTED = 'fileIsCompressedNotDetected';
     const NOT_READABLE = 'fileIsCompressedNotReadable';
 
@@ -45,7 +45,7 @@ class Zend_Validate_File_IsCompressed extends Zend_Validate_File_MimeType
      * @var array Error message templates
      */
     protected $_messageTemplates = array(
-        self::FALSE_TYPE   => "File '%value%' is not compressed, '%type%' detected",
+        self::FALSE_TYPE => "File '%value%' is not compressed, '%type%' detected",
         self::NOT_DETECTED => "The mimetype of file '%value%' could not be detected",
         self::NOT_READABLE => "File '%value%' is not readable or does not exist",
     );
@@ -53,7 +53,7 @@ class Zend_Validate_File_IsCompressed extends Zend_Validate_File_MimeType
     /**
      * Sets validator options
      *
-     * @param  string|array|Zend_Config $compression
+     * @param string|array|Zend_Config $compression
      * @return void
      */
     public function __construct($mimetype = array())
@@ -62,9 +62,9 @@ class Zend_Validate_File_IsCompressed extends Zend_Validate_File_MimeType
             $mimetype = $mimetype->toArray();
         }
 
-        $temp    = array();
+        $temp = array();
         // http://de.wikipedia.org/wiki/Liste_von_Dateiendungen
-            $default = array(
+        $default = array(
             'application/arj',
             'application/gnutar',
             'application/lha',
@@ -125,14 +125,14 @@ class Zend_Validate_File_IsCompressed extends Zend_Validate_File_MimeType
      * Throws an error of the given type
      * Duplicates parent method due to OOP Problem with late static binding in PHP 5.2
      *
-     * @param  string $file
-     * @param  string $errorType
+     * @param string $file
+     * @param string $errorType
      * @return false
      */
     protected function _throw($file, $errorType)
     {
         $this->_value = $file['name'];
-        switch($errorType) {
+        switch ($errorType) {
             case Zend_Validate_File_MimeType::FALSE_TYPE :
                 $errorType = self::FALSE_TYPE;
                 break;

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/MediaReplication/BaseMediaReplicationPlugIn.php : 
+ * app/lib/Plugins/MediaReplication/BaseMediaReplicationPlugIn.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -29,14 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
-    
-include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMediaReplication.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
+
+/**
+ *
+ */
+
+include_once(__CA_LIB_DIR__ . "/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugMediaReplication.php");
+include_once(__CA_LIB_DIR__ . "/Configuration.php");
 
 define('__CA_MEDIA_REPLICATION_STATUS_UNKNOWN__', 0);
 define('__CA_MEDIA_REPLICATION_STATUS_UPLOADING__', 1);
@@ -44,56 +44,64 @@ define('__CA_MEDIA_REPLICATION_STATUS_PROCESSING__', 2);
 define('__CA_MEDIA_REPLICATION_STATUS_COMPLETE__', 3);
 define('__CA_MEDIA_REPLICATION_STATUS_ERROR__', 4);
 
-abstract class BaseMediaReplicationPlugIn Extends WLPlug {
-	# ------------------------------------------------
-	// app config
-	protected $opo_config;
-	
-	// map item list
+abstract class BaseMediaReplicationPlugIn Extends WLPlug
+{
+    # ------------------------------------------------
+    // app config
+    protected $opo_config;
 
-	// plugin info
-	protected $info = array(
-		"NAME" => "BaseMediaReplicationPlugin",
-		"PROPERTIES" => array(
-			
-		)
-	);
-	
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct() {
-		$this->opo_config = Configuration::load();
-	}
-	# ------------------------------------------------
-	/**
-	 * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
-	 */
-	abstract public function initiateReplication($ps_filepath, $pa_data, $pa_options=null);
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	abstract public function getReplicationStatus($ps_request_token);
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	abstract public function getReplicationErrors($ps_request_token);
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	abstract public function getReplicationInfo($ps_request_token);
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function removeReplication($ps_key, $pa_options=null) {
-		// Override to implement
-		return null;
-	}
-	# ------------------------------------------------
+    // map item list
+
+    // plugin info
+    protected $info = array(
+        "NAME" => "BaseMediaReplicationPlugin",
+        "PROPERTIES" => array()
+    );
+
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->opo_config = Configuration::load();
+    }
+    # ------------------------------------------------
+
+    /**
+     * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
+     */
+    abstract public function initiateReplication($ps_filepath, $pa_data, $pa_options = null);
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    abstract public function getReplicationStatus($ps_request_token);
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    abstract public function getReplicationErrors($ps_request_token);
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    abstract public function getReplicationInfo($ps_request_token);
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function removeReplication($ps_key, $pa_options = null)
+    {
+        // Override to implement
+        return null;
+    }
+    # ------------------------------------------------
 }
+
 ?>

@@ -31,14 +31,14 @@ require_once 'Zend/Dojo/View/Helper/ComboBox.php';
  * @subpackage View
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
-  */
+ */
 class Zend_Dojo_View_Helper_FilteringSelect extends Zend_Dojo_View_Helper_ComboBox
 {
     /**
      * Dijit being used
      * @var string
      */
-    protected $_dijit  = 'dijit.form.FilteringSelect';
+    protected $_dijit = 'dijit.form.FilteringSelect';
 
     /**
      * Dojo module to use
@@ -49,15 +49,20 @@ class Zend_Dojo_View_Helper_FilteringSelect extends Zend_Dojo_View_Helper_ComboB
     /**
      * dijit.form.FilteringSelect
      *
-     * @param  int $id
-     * @param  mixed $value
-     * @param  array $params  Parameters to use for dijit creation
-     * @param  array $attribs HTML attributes
-     * @param  array|null $options Select options
+     * @param int $id
+     * @param mixed $value
+     * @param array $params Parameters to use for dijit creation
+     * @param array $attribs HTML attributes
+     * @param array|null $options Select options
      * @return string
      */
-    public function filteringSelect($id, $value = null, array $params = array(), array $attribs = array(), array $options = null)
-    {
+    public function filteringSelect(
+        $id,
+        $value = null,
+        array $params = array(),
+        array $attribs = array(),
+        array $options = null
+    ) {
         return $this->comboBox($id, $value, $params, $attribs, $options);
     }
 }

@@ -82,7 +82,7 @@ class Zend_Feed_Writer_Renderer_RendererAbstract
     /**
      * Constructor
      *
-     * @param  mixed $container
+     * @param mixed $container
      * @return void
      */
     public function __construct($container)
@@ -135,7 +135,7 @@ class Zend_Feed_Writer_Renderer_RendererAbstract
     /**
      * Set feed encoding
      *
-     * @param  string $enc
+     * @param string $enc
      * @return Zend_Feed_Writer_Renderer_RendererAbstract
      */
     public function setEncoding($enc)
@@ -157,14 +157,16 @@ class Zend_Feed_Writer_Renderer_RendererAbstract
     /**
      * Indicate whether or not to ignore exceptions
      *
-     * @param  bool $bool
+     * @param bool $bool
      * @return Zend_Feed_Writer_Renderer_RendererAbstract
      */
     public function ignoreExceptions($bool = true)
     {
         if (!is_bool($bool)) {
             require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception('Invalid parameter: $bool. Should be TRUE or FALSE (defaults to TRUE if null)');
+            throw new Zend_Feed_Exception(
+                'Invalid parameter: $bool. Should be TRUE or FALSE (defaults to TRUE if null)'
+            );
         }
         $this->_ignoreExceptions = $bool;
         return $this;

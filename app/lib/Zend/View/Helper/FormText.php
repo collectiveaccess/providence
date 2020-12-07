@@ -66,12 +66,12 @@ class Zend_View_Helper_FormText extends Zend_View_Helper_FormElement
         }
 
         $xhtml = '<input type="text"'
-                . ' name="' . $this->view->escape($name) . '"'
-                . ' id="' . $this->view->escape($id) . '"'
-                . ' value="' . $this->view->escape($value) . '"'
-                . $disabled
-                . $this->_htmlAttribs($attribs)
-                . $this->getClosingBracket();
+            . ' name="' . $this->view->escape($name) . '"'
+            . ' id="' . $this->view->escape($id) . '"'
+            . ' value="' . $this->view->escape($value) . '"'
+            . $disabled
+            . $this->_htmlAttribs($attribs)
+            . $this->getClosingBracket();
 
         return $xhtml;
     }

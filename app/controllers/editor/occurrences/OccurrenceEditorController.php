@@ -25,25 +25,30 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
- 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
- 	
- 
- 	class OccurrenceEditorController extends BaseEditorController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_occurrences';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		public function info($pa_parameters) {
- 			parent::info($pa_parameters);
- 			return $this->render('widget_occurrence_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+
+require_once(__CA_MODELS_DIR__ . "/ca_occurrences.php");
+require_once(__CA_LIB_DIR__ . "/BaseEditorController.php");
+
+
+class OccurrenceEditorController extends BaseEditorController
+{
+    # -------------------------------------------------------
+    protected $ops_table_name = 'ca_occurrences';        // name of "subject" table (what we're editing)
+
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+    # -------------------------------------------------------
+    # Sidebar info handler
+    # -------------------------------------------------------
+    public function info($pa_parameters)
+    {
+        parent::info($pa_parameters);
+        return $this->render('widget_occurrence_info_html.php', true);
+    }
+    # -------------------------------------------------------
+}
+
+?>

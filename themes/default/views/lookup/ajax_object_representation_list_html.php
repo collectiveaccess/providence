@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * lookup/ajax_object_representation_list_html.php : 
  * ----------------------------------------------------------------------
@@ -25,5 +26,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('object_representation_list'));
+print json_encode($this->getVar('object_representation_list'));
 ?>

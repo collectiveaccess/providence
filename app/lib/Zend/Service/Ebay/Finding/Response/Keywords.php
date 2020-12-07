@@ -62,8 +62,8 @@ class Zend_Service_Ebay_Finding_Response_Keywords extends Zend_Service_Ebay_Find
     }
 
     /**
-     * @param  Zend_Service_Ebay_Finding $proxy
-     * @param  Zend_Config|array         $options
+     * @param Zend_Service_Ebay_Finding $proxy
+     * @param Zend_Config|array $options
      * @return Zend_Service_Ebay_Finding_Response_Items
      */
     public function findItems(Zend_Service_Ebay_Finding $proxy, $options = null)

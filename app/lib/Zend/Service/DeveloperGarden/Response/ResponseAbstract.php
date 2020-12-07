@@ -52,8 +52,8 @@ abstract class Zend_Service_DeveloperGarden_Response_ResponseAbstract
     /**
      * parse the token data and throws exceptions
      *
-     * @throws Zend_Service_DeveloperGarden_Response_Exception
      * @return Zend_Service_DeveloperGarden_Response_ResponseAbstract
+     * @throws Zend_Service_DeveloperGarden_Response_Exception
      */
     public function parse()
     {
@@ -95,7 +95,7 @@ abstract class Zend_Service_DeveloperGarden_Response_ResponseAbstract
     public function isValid()
     {
         return ($this->errorCode === null
-             || $this->errorCode == '0000');
+            || $this->errorCode == '0000');
     }
 
     /**
@@ -106,6 +106,6 @@ abstract class Zend_Service_DeveloperGarden_Response_ResponseAbstract
     public function hasError()
     {
         return ($this->errorCode !== null
-                && $this->errorCode != '0000');
+            && $this->errorCode != '0000');
     }
 }

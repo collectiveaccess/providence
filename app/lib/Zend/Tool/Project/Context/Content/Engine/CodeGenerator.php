@@ -51,7 +51,7 @@ class Zend_Tool_Project_Context_Content_Engine_CodeGenerator
      */
     public function __construct(Zend_Tool_Framework_Client_Storage $storage, $contentPrefix)
     {
-        $this->_storage       = $storage;
+        $this->_storage = $storage;
         $this->_contentPrefix = $contentPrefix;
     }
 
@@ -77,7 +77,9 @@ class Zend_Tool_Project_Context_Content_Engine_CodeGenerator
      */
     public function getContent(Zend_Tool_Project_Context_Interface $context, $method, $parameters)
     {
-        $streamUri = $this->_storage->getStreamUri($this->_contentPrefix . '/' . $context->getName() . '/' . $method . '.php');
+        $streamUri = $this->_storage->getStreamUri(
+            $this->_contentPrefix . '/' . $context->getName() . '/' . $method . '.php'
+        );
 
         if (method_exists($context, 'getCodeGenerator')) {
             $codeGenerator = $context->getCodeGenerator();
@@ -88,7 +90,9 @@ class Zend_Tool_Project_Context_Content_Engine_CodeGenerator
         $codeGenerator = include $streamUri;
 
         if (!$codeGenerator instanceof Zend_CodeGenerator_Abstract) {
-            throw new Zend_Tool_Project_Exception('Custom file at ' . $streamUri . ' did not return the $codeGenerator object.');
+            throw new Zend_Tool_Project_Exception(
+                'Custom file at ' . $streamUri . ' did not return the $codeGenerator object.'
+            );
         }
 
         return $codeGenerator->generate();

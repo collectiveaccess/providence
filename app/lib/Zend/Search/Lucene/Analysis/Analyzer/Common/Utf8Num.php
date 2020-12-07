@@ -32,7 +32,6 @@ require_once 'Zend/Search/Lucene/Analysis/Analyzer/Common.php';
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-
 class Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num extends Zend_Search_Lucene_Analysis_Analyzer_Common
 {
     /**
@@ -68,14 +67,14 @@ class Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num extends Zend_Search_Lu
      */
     public function reset()
     {
-        $this->_position     = 0;
+        $this->_position = 0;
         $this->_bytePosition = 0;
 
         // convert input into UTF-8
-        if (strcasecmp($this->_encoding, 'utf8' ) != 0  &&
-            strcasecmp($this->_encoding, 'utf-8') != 0 ) {
-                $this->_input = iconv($this->_encoding, 'UTF-8', $this->_input);
-                $this->_encoding = 'UTF-8';
+        if (strcasecmp($this->_encoding, 'utf8') != 0 &&
+            strcasecmp($this->_encoding, 'utf-8') != 0) {
+            $this->_input = iconv($this->_encoding, 'UTF-8', $this->_input);
+            $this->_encoding = 'UTF-8';
         }
     }
 
@@ -93,7 +92,7 @@ class Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num extends Zend_Search_Lu
         }
 
         do {
-            if (! preg_match('/[\p{L}\p{N}]+/u', $this->_input, $match, PREG_OFFSET_CAPTURE, $this->_bytePosition)) {
+            if (!preg_match('/[\p{L}\p{N}]+/u', $this->_input, $match, PREG_OFFSET_CAPTURE, $this->_bytePosition)) {
                 // It covers both cases a) there are no matches (preg_match(...) === 0)
                 // b) error occured (preg_match(...) === FALSE)
                 return null;
@@ -107,15 +106,19 @@ class Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num extends Zend_Search_Lu
 
             // character position of the matched word in the input stream
             $startPos = $this->_position +
-                        iconv_strlen(substr($this->_input,
-                                            $this->_bytePosition,
-                                            $binStartPos - $this->_bytePosition),
-                                     'UTF-8');
+                iconv_strlen(
+                    substr(
+                        $this->_input,
+                        $this->_bytePosition,
+                        $binStartPos - $this->_bytePosition
+                    ),
+                    'UTF-8'
+                );
             // character postion of the end of matched word in the input stream
             $endPos = $startPos + iconv_strlen($matchedWord, 'UTF-8');
 
             $this->_bytePosition = $binStartPos + strlen($matchedWord);
-            $this->_position     = $endPos;
+            $this->_position = $endPos;
 
             $token = $this->normalize(new Zend_Search_Lucene_Analysis_Token($matchedWord, $startPos, $endPos));
         } while ($token === null); // try again if token is skipped

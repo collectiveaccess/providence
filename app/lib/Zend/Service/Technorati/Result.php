@@ -65,7 +65,7 @@ abstract class Zend_Service_Technorati_Result
      * Properties are automatically fetched from XML
      * according to array of $_fields to be read.
      *
-     * @param   DomElement $result  the ReST fragment for this object
+     * @param DomElement $result the ReST fragment for this object
      */
     public function __construct(DomElement $dom)
     {
@@ -79,11 +79,11 @@ abstract class Zend_Service_Technorati_Result
         $this->_fields = array_merge($this->_fields, $fields);
 
         // add results to appropriate fields
-        foreach($this->_fields as $phpName => $xmlName) {
+        foreach ($this->_fields as $phpName => $xmlName) {
             $query = "./$xmlName/text()";
             $node = $this->_xpath->query($query, $this->_dom);
             if ($node->length == 1) {
-                $this->{$phpName} = (string) $node->item(0)->data;
+                $this->{$phpName} = (string)$node->item(0)->data;
             }
         }
     }

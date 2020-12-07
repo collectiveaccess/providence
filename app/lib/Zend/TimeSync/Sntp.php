@@ -51,8 +51,8 @@ class Zend_TimeSync_Sntp extends Zend_TimeSync_Protocol
     /**
      * Class constructor, sets the timeserver and port number
      *
-     * @param string  $timeserver Timeserver to connect to
-     * @param integer $port       Port of the timeserver when it differs from the default port
+     * @param string $timeserver Timeserver to connect to
+     * @param integer $port Port of the timeserver when it differs from the default port
      */
     public function __construct($timeserver, $port)
     {
@@ -79,7 +79,7 @@ class Zend_TimeSync_Sntp extends Zend_TimeSync_Protocol
      */
     protected function _read()
     {
-        $result       = fread($this->_socket, 49);
+        $result = fread($this->_socket, 49);
         $this->_delay = (($this->_delay - time()) / 2);
 
         return $result;
@@ -88,7 +88,7 @@ class Zend_TimeSync_Sntp extends Zend_TimeSync_Protocol
     /**
      * Writes data to to the timeserver
      *
-     * @param  string $data Data to write to the timeserver
+     * @param string $data Data to write to the timeserver
      * @return void
      */
     protected function _write($data)
@@ -101,13 +101,13 @@ class Zend_TimeSync_Sntp extends Zend_TimeSync_Protocol
     /**
      * Extracts the data returned from the timeserver
      *
-     * @param  string $result Data to extract
+     * @param string $result Data to extract
      * @return integer
      */
     protected function _extract($result)
     {
-        $dec   = hexdec('7fffffff');
-        $time  = abs(($dec - hexdec(bin2hex($result))) - $dec);
+        $dec = hexdec('7fffffff');
+        $time = abs(($dec - hexdec(bin2hex($result))) - $dec);
         $time -= 2208988800;
         // Socket delay
         $time -= $this->_delay;

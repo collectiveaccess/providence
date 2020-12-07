@@ -45,7 +45,7 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      * Log message
      */
     const TAGS_UNSUPPORTED_BY_CLEAN_OF_XCACHE_BACKEND = 'Zend_Cache_Backend_Xcache::clean() : tags are unsupported by the Xcache backend';
-    const TAGS_UNSUPPORTED_BY_SAVE_OF_XCACHE_BACKEND =  'Zend_Cache_Backend_Xcache::save() : tags are unsupported by the Xcache backend';
+    const TAGS_UNSUPPORTED_BY_SAVE_OF_XCACHE_BACKEND = 'Zend_Cache_Backend_Xcache::save() : tags are unsupported by the Xcache backend';
 
     /**
      * Available options
@@ -66,9 +66,9 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
     /**
      * Constructor
      *
-     * @param  array $options associative array of options
-     * @throws Zend_Cache_Exception
+     * @param array $options associative array of options
      * @return void
+     * @throws Zend_Cache_Exception
      */
     public function __construct(array $options = array())
     {
@@ -83,14 +83,16 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      *
      * WARNING $doNotTestCacheValidity=true is unsupported by the Xcache backend
      *
-     * @param  string  $id                     cache id
-     * @param  boolean $doNotTestCacheValidity if set to true, the cache validity won't be tested
+     * @param string $id cache id
+     * @param boolean $doNotTestCacheValidity if set to true, the cache validity won't be tested
      * @return string cached datas (or false)
      */
     public function load($id, $doNotTestCacheValidity = false)
     {
         if ($doNotTestCacheValidity) {
-            $this->_log("Zend_Cache_Backend_Xcache::load() : \$doNotTestCacheValidity=true is unsupported by the Xcache backend");
+            $this->_log(
+                "Zend_Cache_Backend_Xcache::load() : \$doNotTestCacheValidity=true is unsupported by the Xcache backend"
+            );
         }
         $tmp = xcache_get($id);
         if (is_array($tmp)) {
@@ -102,7 +104,7 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
     /**
      * Test if a cache is available or not (for the given id)
      *
-     * @param  string $id cache id
+     * @param string $id cache id
      * @return mixed false (a cache is not available) or "last modified" timestamp (int) of the available cache record
      */
     public function test($id)
@@ -141,7 +143,7 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
     /**
      * Remove a cache record
      *
-     * @param  string $id cache id
+     * @param string $id cache id
      * @return boolean true if no problem
      */
     public function remove($id)
@@ -159,10 +161,10 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
      * 'notMatchingTag' => unsupported
      * 'matchingAnyTag' => unsupported
      *
-     * @param  string $mode clean mode
-     * @param  array  $tags array of tags
-     * @throws Zend_Cache_Exception
+     * @param string $mode clean mode
+     * @param array $tags array of tags
      * @return boolean true if no problem
+     * @throws Zend_Cache_Exception
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
     {
@@ -184,7 +186,7 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
                 }
 
                 $cnt = xcache_count(XC_TYPE_VAR);
-                for ($i=0; $i < $cnt; $i++) {
+                for ($i = 0; $i < $cnt; $i++) {
                     xcache_clear_cache(XC_TYPE_VAR, $i);
                 }
 
@@ -195,7 +197,9 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
                 return true;
                 break;
             case Zend_Cache::CLEANING_MODE_OLD:
-                $this->_log("Zend_Cache_Backend_Xcache::clean() : CLEANING_MODE_OLD is unsupported by the Xcache backend");
+                $this->_log(
+                    "Zend_Cache_Backend_Xcache::clean() : CLEANING_MODE_OLD is unsupported by the Xcache backend"
+                );
                 break;
             case Zend_Cache::CLEANING_MODE_MATCHING_TAG:
             case Zend_Cache::CLEANING_MODE_NOT_MATCHING_TAG:

@@ -60,7 +60,7 @@ interface Zend_Markup_Parser_ParserInterface
      * )
      * </code>
      *
-     * @param  string $value
+     * @param string $value
      * @return array
      */
     public function parse($value);

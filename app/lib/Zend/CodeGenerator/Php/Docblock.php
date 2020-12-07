@@ -155,7 +155,7 @@ class Zend_CodeGenerator_Php_Docblock extends Zend_CodeGenerator_Php_Abstract
             throw new Zend_CodeGenerator_Php_Exception(
                 'setTag() expects either an array of method options or an '
                 . 'instance of Zend_CodeGenerator_Php_Docblock_Tag'
-                );
+            );
         }
 
         $this->_tags[] = $tag;
@@ -183,7 +183,7 @@ class Zend_CodeGenerator_Php_Docblock extends Zend_CodeGenerator_Php_Abstract
             return $this->_docCommentize($this->getSourceContent());
         }
 
-        $output  = '';
+        $output = '';
         if (null !== ($sd = $this->getShortDescription())) {
             $output .= $sd . self::LINE_FEED . self::LINE_FEED;
         }

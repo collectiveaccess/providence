@@ -69,7 +69,7 @@ class Zend_Tool_Project_Context_Zf_FormFile extends Zend_Tool_Project_Context_Zf
     {
         return array(
             'formName' => $this->getFormName()
-            );
+        );
     }
 
     /**
@@ -89,25 +89,30 @@ class Zend_Tool_Project_Context_Zf_FormFile extends Zend_Tool_Project_Context_Zf
 
     public function getContents()
     {
-
         $className = $this->getFullClassName($this->_formName, 'Form');
 
-        $codeGenFile = new Zend_CodeGenerator_Php_File(array(
-            'fileName' => $this->getPath(),
-            'classes' => array(
-                new Zend_CodeGenerator_Php_Class(array(
-                    'name' => $className,
-                    'extendedClass' => 'Zend_Form',
-                    'methods' => array(
-                        new Zend_CodeGenerator_Php_Method(array(
-                            'name' => 'init',
-                            'body' => '/* Form Elements & Other Definitions Here ... */',
-                            ))
-                        )
+        $codeGenFile = new Zend_CodeGenerator_Php_File(
+            array(
+                'fileName' => $this->getPath(),
+                'classes' => array(
+                    new Zend_CodeGenerator_Php_Class(
+                        array(
+                            'name' => $className,
+                            'extendedClass' => 'Zend_Form',
+                            'methods' => array(
+                                new Zend_CodeGenerator_Php_Method(
+                                    array(
+                                        'name' => 'init',
+                                        'body' => '/* Form Elements & Other Definitions Here ... */',
+                                    )
+                                )
+                            )
 
-                    ))
+                        )
+                    )
                 )
-            ));
+            )
+        );
         return $codeGenFile->generate();
     }
 }

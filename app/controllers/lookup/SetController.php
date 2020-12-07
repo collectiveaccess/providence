@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/SetController.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class SetController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_sets';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'set';
- 		protected $ops_search_class = 'SetSearch';
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once(__CA_LIB_DIR__ . "/BaseLookupController.php");
+
+class SetController extends BaseLookupController
+{
+    # -------------------------------------------------------
+    protected $opb_uses_hierarchy_browser = false;
+    protected $ops_table_name = 'ca_sets';        // name of "subject" table (what we're editing)
+    protected $ops_name_singular = 'set';
+    protected $ops_search_class = 'SetSearch';
+    # -------------------------------------------------------
+}
+
+?>

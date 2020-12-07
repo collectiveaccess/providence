@@ -49,7 +49,7 @@ class Zend_Config_Writer_Ini extends Zend_Config_Writer_FileAbstract
     /**
      * Set the nest separator
      *
-     * @param  string $filename
+     * @param string $filename
      * @return Zend_Config_Writer_Ini
      */
     public function setNestSeparator($separator)
@@ -65,10 +65,10 @@ class Zend_Config_Writer_Ini extends Zend_Config_Writer_FileAbstract
      * If set to true, the INI file is rendered without sections completely
      * into the global namespace of the INI file.
      *
-     * @param  bool $withoutSections
+     * @param bool $withoutSections
      * @return Zend_Config_Writer_Ini
      */
-    public function setRenderWithoutSections($withoutSections=true)
+    public function setRenderWithoutSections($withoutSections = true)
     {
         $this->_renderWithoutSections = (bool)$withoutSections;
         return $this;
@@ -77,37 +77,39 @@ class Zend_Config_Writer_Ini extends Zend_Config_Writer_FileAbstract
     /**
      * Render a Zend_Config into a INI config string.
      *
-     * @since 1.10
      * @return string
+     * @since 1.10
      */
     public function render()
     {
-        $iniString   = '';
-        $extends     = $this->_config->getExtends();
+        $iniString = '';
+        $extends = $this->_config->getExtends();
         $sectionName = $this->_config->getSectionName();
 
-        if($this->_renderWithoutSections == true) {
+        if ($this->_renderWithoutSections == true) {
             $iniString .= $this->_addBranch($this->_config);
-        } else if (is_string($sectionName)) {
-            $iniString .= '[' . $sectionName . ']' . "\n"
-                       .  $this->_addBranch($this->_config)
-                       .  "\n";
         } else {
-            $config = $this->_sortRootElements($this->_config);
-            foreach ($config as $sectionName => $data) {
-                if (!($data instanceof Zend_Config)) {
-                    $iniString .= $sectionName
-                               .  ' = '
-                               .  $this->_prepareValue($data)
-                               .  "\n";
-                } else {
-                    if (isset($extends[$sectionName])) {
-                        $sectionName .= ' : ' . $extends[$sectionName];
-                    }
+            if (is_string($sectionName)) {
+                $iniString .= '[' . $sectionName . ']' . "\n"
+                    . $this->_addBranch($this->_config)
+                    . "\n";
+            } else {
+                $config = $this->_sortRootElements($this->_config);
+                foreach ($config as $sectionName => $data) {
+                    if (!($data instanceof Zend_Config)) {
+                        $iniString .= $sectionName
+                            . ' = '
+                            . $this->_prepareValue($data)
+                            . "\n";
+                    } else {
+                        if (isset($extends[$sectionName])) {
+                            $sectionName .= ' : ' . $extends[$sectionName];
+                        }
 
-                    $iniString .= '[' . $sectionName . ']' . "\n"
-                               .  $this->_addBranch($data)
-                               .  "\n";
+                        $iniString .= '[' . $sectionName . ']' . "\n"
+                            . $this->_addBranch($data)
+                            . "\n";
+                    }
                 }
             }
         }
@@ -118,7 +120,7 @@ class Zend_Config_Writer_Ini extends Zend_Config_Writer_FileAbstract
     /**
      * Add a branch to an INI string recursively
      *
-     * @param  Zend_Config $config
+     * @param Zend_Config $config
      * @return void
      */
     protected function _addBranch(Zend_Config $config, $parents = array())
@@ -132,9 +134,9 @@ class Zend_Config_Writer_Ini extends Zend_Config_Writer_FileAbstract
                 $iniString .= $this->_addBranch($value, $group);
             } else {
                 $iniString .= implode($this->_nestSeparator, $group)
-                           .  ' = '
-                           .  $this->_prepareValue($value)
-                           .  "\n";
+                    . ' = '
+                    . $this->_prepareValue($value)
+                    . "\n";
             }
         }
 
@@ -144,7 +146,7 @@ class Zend_Config_Writer_Ini extends Zend_Config_Writer_FileAbstract
     /**
      * Prepare a value for INI
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return string
      */
     protected function _prepareValue($value)
@@ -154,7 +156,7 @@ class Zend_Config_Writer_Ini extends Zend_Config_Writer_FileAbstract
         } elseif (is_bool($value)) {
             return ($value ? 'true' : 'false');
         } elseif (strpos($value, '"') === false) {
-            return '"' . $value .  '"';
+            return '"' . $value . '"';
         } else {
             /** @see Zend_Config_Exception */
             require_once 'Zend/Config/Exception.php';
@@ -167,7 +169,7 @@ class Zend_Config_Writer_Ini extends Zend_Config_Writer_FileAbstract
      * on the top of config.
      *
      * @see    http://framework.zend.com/issues/browse/ZF-6289
-     * @param  Zend_Config
+     * @param Zend_Config
      * @return Zend_Config
      */
     protected function _sortRootElements(Zend_Config $config)

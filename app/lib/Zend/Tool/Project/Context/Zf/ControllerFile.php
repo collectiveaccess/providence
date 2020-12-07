@@ -70,7 +70,7 @@ class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Cont
     {
         return array(
             'controllerName' => $this->getControllerName()
-            );
+        );
     }
 
     /**
@@ -101,39 +101,47 @@ class Zend_Tool_Project_Context_Zf_ControllerFile extends Zend_Tool_Project_Cont
     public function getContents()
     {
         $filter = new Zend_Filter_Word_DashToCamelCase();
-        
+
         $className = ($this->_moduleName) ? $filter->filter(ucfirst($this->_moduleName)) . '_' : '';
         $className .= ucfirst($this->_controllerName) . 'Controller';
 
-        $codeGenFile = new Zend_CodeGenerator_Php_File(array(
-            'fileName' => $this->getPath(),
-            'classes' => array(
-                new Zend_CodeGenerator_Php_Class(array(
-                    'name' => $className,
-                    'extendedClass' => 'Zend_Controller_Action',
-                    'methods' => array(
-                        new Zend_CodeGenerator_Php_Method(array(
-                            'name' => 'init',
-                            'body' => '/* Initialize action controller here */',
-                            ))
+        $codeGenFile = new Zend_CodeGenerator_Php_File(
+            array(
+                'fileName' => $this->getPath(),
+                'classes' => array(
+                    new Zend_CodeGenerator_Php_Class(
+                        array(
+                            'name' => $className,
+                            'extendedClass' => 'Zend_Controller_Action',
+                            'methods' => array(
+                                new Zend_CodeGenerator_Php_Method(
+                                    array(
+                                        'name' => 'init',
+                                        'body' => '/* Initialize action controller here */',
+                                    )
+                                )
+                            )
                         )
-                    ))
+                    )
                 )
-            ));
+            )
+        );
 
 
         if ($className == 'ErrorController') {
-
-            $codeGenFile = new Zend_CodeGenerator_Php_File(array(
-                'fileName' => $this->getPath(),
-                'classes' => array(
-                    new Zend_CodeGenerator_Php_Class(array(
-                        'name' => $className,
-                        'extendedClass' => 'Zend_Controller_Action',
-                        'methods' => array(
-                            new Zend_CodeGenerator_Php_Method(array(
-                                'name' => 'errorAction',
-                                'body' => <<<EOS
+            $codeGenFile = new Zend_CodeGenerator_Php_File(
+                array(
+                    'fileName' => $this->getPath(),
+                    'classes' => array(
+                        new Zend_CodeGenerator_Php_Class(
+                            array(
+                                'name' => $className,
+                                'extendedClass' => 'Zend_Controller_Action',
+                                'methods' => array(
+                                    new Zend_CodeGenerator_Php_Method(
+                                        array(
+                                            'name' => 'errorAction',
+                                            'body' => <<<EOS
 \$errors = \$this->_getParam('error_handler');
 
 if (!\$errors || !\$errors instanceof ArrayObject) {
@@ -171,10 +179,12 @@ if (\$this->getInvokeArg('displayExceptions') == true) {
 
 \$this->view->request   = \$errors->request;
 EOS
-                                )),
-                            new Zend_CodeGenerator_Php_Method(array(
-                                'name' => 'getLog',
-                                'body' => <<<EOS
+                                        )
+                                    ),
+                                    new Zend_CodeGenerator_Php_Method(
+                                        array(
+                                            'name' => 'getLog',
+                                            'body' => <<<EOS
 \$bootstrap = \$this->getInvokeArg('bootstrap');
 if (!\$bootstrap->hasResource('Log')) {
     return false;
@@ -182,12 +192,14 @@ if (!\$bootstrap->hasResource('Log')) {
 \$log = \$bootstrap->getResource('Log');
 return \$log;
 EOS
-                                )),
+                                        )
+                                    ),
+                                )
                             )
-                        ))
+                        )
                     )
-                ));
-
+                )
+            );
         }
 
         // store the generator into the registry so that the addAction command can use the same object later

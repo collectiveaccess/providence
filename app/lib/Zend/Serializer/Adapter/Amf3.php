@@ -47,15 +47,15 @@ class Zend_Serializer_Adapter_Amf3 extends Zend_Serializer_Adapter_AdapterAbstra
     /**
      * Serialize a PHP value to AMF3 format
      *
-     * @param  mixed $value
-     * @param  array $opts
+     * @param mixed $value
+     * @param array $opts
      * @return string
      * @throws Zend_Serializer_Exception
      */
     public function serialize($value, array $opts = array())
     {
-        try  {
-            $stream     = new Zend_Amf_Parse_OutputStream();
+        try {
+            $stream = new Zend_Amf_Parse_OutputStream();
             $serializer = new Zend_Amf_Parse_Amf3_Serializer($stream);
             $serializer->writeTypeMarker($value);
             return $stream->getStream();
@@ -68,15 +68,15 @@ class Zend_Serializer_Adapter_Amf3 extends Zend_Serializer_Adapter_AdapterAbstra
     /**
      * Deserialize an AMF3 value to PHP
      *
-     * @param  mixed $value
-     * @param  array $opts
+     * @param mixed $value
+     * @param array $opts
      * @return string
      * @throws Zend_Serializer_Exception
      */
     public function unserialize($value, array $opts = array())
     {
         try {
-            $stream       = new Zend_Amf_Parse_InputStream($value);
+            $stream = new Zend_Amf_Parse_InputStream($value);
             $deserializer = new Zend_Amf_Parse_Amf3_Deserializer($stream);
             return $deserializer->readTypeMarker();
         } catch (Exception $e) {

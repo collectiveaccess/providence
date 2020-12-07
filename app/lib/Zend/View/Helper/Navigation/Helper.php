@@ -34,7 +34,7 @@ interface Zend_View_Helper_Navigation_Helper
     /**
      * Sets navigation container the helper should operate on by default
      *
-     * @param  Zend_Navigation_Container $container  [optional] container to
+     * @param Zend_Navigation_Container $container [optional] container to
      *                                               operate on. Default is
      *                                               null, which indicates that
      *                                               the container should be
@@ -54,7 +54,7 @@ interface Zend_View_Helper_Navigation_Helper
     /**
      * Sets translator to use in helper
      *
-     * @param  mixed $translator                   [optional] translator.
+     * @param mixed $translator [optional] translator.
      *                                             Expects an object of type
      *                                             {@link Zend_Translate_Adapter}
      *                                             or {@link Zend_Translate},
@@ -74,7 +74,7 @@ interface Zend_View_Helper_Navigation_Helper
     /**
      * Sets ACL to use when iterating pages
      *
-     * @param  Zend_Acl $acl                       [optional] ACL instance
+     * @param Zend_Acl $acl [optional] ACL instance
      * @return Zend_View_Helper_Navigation_Helper  fluent interface, returns
      *                                             self
      */
@@ -91,14 +91,14 @@ interface Zend_View_Helper_Navigation_Helper
     /**
      * Sets ACL role to use when iterating pages
      *
-     * @param  mixed $role                         [optional] role to set.
+     * @param mixed $role [optional] role to set.
      *                                             Expects a string, an
      *                                             instance of type
      *                                             {@link Zend_Acl_Role_Interface},
      *                                             or null. Default is null.
-     * @throws Zend_View_Exception                 if $role is invalid
      * @return Zend_View_Helper_Navigation_Helper  fluent interface, returns
      *                                             self
+     * @throws Zend_View_Exception                 if $role is invalid
      */
     public function setRole($role = null);
 
@@ -112,7 +112,7 @@ interface Zend_View_Helper_Navigation_Helper
     /**
      * Sets whether ACL should be used
      *
-     * @param  bool $useAcl                        [optional] whether ACL
+     * @param bool $useAcl [optional] whether ACL
      *                                             should be used. Default is
      *                                             true.
      * @return Zend_View_Helper_Navigation_Helper  fluent interface, returns
@@ -137,7 +137,7 @@ interface Zend_View_Helper_Navigation_Helper
     /**
      * Render invisible items?
      *
-     * @param  bool $renderInvisible                       [optional] boolean flag
+     * @param bool $renderInvisible [optional] boolean flag
      * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface
      *                                                     returns self
      */
@@ -146,7 +146,7 @@ interface Zend_View_Helper_Navigation_Helper
     /**
      * Sets whether translator should be used
      *
-     * @param  bool $useTranslator                 [optional] whether
+     * @param bool $useTranslator [optional] whether
      *                                             translator should be used.
      *                                             Default is true.
      * @return Zend_View_Helper_Navigation_Helper  fluent interface, returns
@@ -199,7 +199,7 @@ interface Zend_View_Helper_Navigation_Helper
     /**
      * Renders helper
      *
-     * @param  Zend_Navigation_Container $container  [optional] container to
+     * @param Zend_Navigation_Container $container [optional] container to
      *                                               render. Default is null,
      *                                               which indicates that the
      *                                               helper should render the

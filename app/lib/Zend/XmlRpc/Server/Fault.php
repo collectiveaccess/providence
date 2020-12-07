@@ -73,13 +73,13 @@ class Zend_XmlRpc_Server_Fault extends Zend_XmlRpc_Fault
     public function __construct(Exception $e)
     {
         $this->_exception = $e;
-        $code             = 404;
-        $message          = 'Unknown error';
-        $exceptionClass   = get_class($e);
+        $code = 404;
+        $message = 'Unknown error';
+        $exceptionClass = get_class($e);
 
         foreach (array_keys(self::$_faultExceptionClasses) as $class) {
             if ($e instanceof $class) {
-                $code    = $e->getCode();
+                $code = $e->getCode();
                 $message = $e->getMessage();
                 break;
             }
@@ -115,7 +115,7 @@ class Zend_XmlRpc_Server_Fault extends Zend_XmlRpc_Fault
     public static function attachFaultException($classes)
     {
         if (!is_array($classes)) {
-            $classes = (array) $classes;
+            $classes = (array)$classes;
         }
 
         foreach ($classes as $class) {
@@ -134,7 +134,7 @@ class Zend_XmlRpc_Server_Fault extends Zend_XmlRpc_Fault
     public static function detachFaultException($classes)
     {
         if (!is_array($classes)) {
-            $classes = (array) $classes;
+            $classes = (array)$classes;
         }
 
         foreach ($classes as $class) {
@@ -160,8 +160,7 @@ class Zend_XmlRpc_Server_Fault extends Zend_XmlRpc_Fault
     {
         if (!is_string($class)
             || !class_exists($class)
-            || !is_callable(array($class, 'observe')))
-        {
+            || !is_callable(array($class, 'observe'))) {
             return false;
         }
 

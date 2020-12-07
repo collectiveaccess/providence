@@ -38,11 +38,11 @@ class Zend_Measure_Temperature extends Zend_Measure_Abstract
 {
     const STANDARD = 'KELVIN';
 
-    const CELSIUS    = 'CELSIUS';
+    const CELSIUS = 'CELSIUS';
     const FAHRENHEIT = 'FAHRENHEIT';
-    const RANKINE    = 'RANKINE';
-    const REAUMUR    = 'REAUMUR';
-    const KELVIN     = 'KELVIN';
+    const RANKINE = 'RANKINE';
+    const REAUMUR = 'REAUMUR';
+    const KELVIN = 'KELVIN';
 
     /**
      * Calculations for all temperature units
@@ -50,11 +50,11 @@ class Zend_Measure_Temperature extends Zend_Measure_Abstract
      * @var array
      */
     protected $_units = array(
-        'CELSIUS'    => array(array('' => '1', '+' => '273.15'),'°C'),
-        'FAHRENHEIT' => array(array('' => '1', '-' => '32', '/' => '1.8', '+' => '273.15'),'°F'),
-        'RANKINE'    => array(array('' => '1', '/' => '1.8'),'°R'),
-        'REAUMUR'    => array(array('' => '1', '*' => '1.25', '+' => '273.15'),'°r'),
-        'KELVIN'     => array(1,'°K'),
-        'STANDARD'   => 'KELVIN'
+        'CELSIUS' => array(array('' => '1', '+' => '273.15'), '°C'),
+        'FAHRENHEIT' => array(array('' => '1', '-' => '32', '/' => '1.8', '+' => '273.15'), '°F'),
+        'RANKINE' => array(array('' => '1', '/' => '1.8'), '°R'),
+        'REAUMUR' => array(array('' => '1', '*' => '1.25', '+' => '273.15'), '°r'),
+        'KELVIN' => array(1, '°K'),
+        'STANDARD' => 'KELVIN'
     );
 }

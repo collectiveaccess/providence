@@ -36,7 +36,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     /**
      * Placement constants
      */
-    const APPEND  = 'APPEND';
+    const APPEND = 'APPEND';
     const PREPEND = 'PREPEND';
 
     /**
@@ -65,7 +65,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     /**
      * Constructor
      *
-     * @param  array|Zend_Config $options
+     * @param array|Zend_Config $options
      * @return void
      */
     public function __construct($options = null)
@@ -80,7 +80,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     /**
      * Set options
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_Form_Decorator_Abstract
      */
     public function setOptions(array $options)
@@ -92,7 +92,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     /**
      * Set options from config object
      *
-     * @param  Zend_Config $config
+     * @param Zend_Config $config
      * @return Zend_Form_Decorator_Abstract
      */
     public function setConfig(Zend_Config $config)
@@ -103,25 +103,25 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     /**
      * Set option
      *
-     * @param  string $key
-     * @param  mixed $value
+     * @param string $key
+     * @param mixed $value
      * @return Zend_Form_Decorator_Abstract
      */
     public function setOption($key, $value)
     {
-        $this->_options[(string) $key] = $value;
+        $this->_options[(string)$key] = $value;
         return $this;
     }
 
     /**
      * Get option
      *
-     * @param  string $key
+     * @param string $key
      * @return mixed
      */
     public function getOption($key)
     {
-        $key = (string) $key;
+        $key = (string)$key;
         if (isset($this->_options[$key])) {
             return $this->_options[$key];
         }
@@ -169,7 +169,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     /**
      * Set current form element
      *
-     * @param  Zend_Form_Element|Zend_Form $element
+     * @param Zend_Form_Element|Zend_Form $element
      * @return Zend_Form_Decorator_Abstract
      * @throws Zend_Form_Decorator_Exception on invalid element type
      */
@@ -177,8 +177,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     {
         if ((!$element instanceof Zend_Form_Element)
             && (!$element instanceof Zend_Form)
-            && (!$element instanceof Zend_Form_DisplayGroup))
-        {
+            && (!$element instanceof Zend_Form_DisplayGroup)) {
             require_once 'Zend/Form/Decorator/Exception.php';
             throw new Zend_Form_Decorator_Exception('Invalid element type passed to decorator');
         }
@@ -233,7 +232,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     {
         $separator = $this->_separator;
         if (null !== ($separatorOpt = $this->getOption('separator'))) {
-            $separator = $this->_separator = (string) $separatorOpt;
+            $separator = $this->_separator = (string)$separatorOpt;
             $this->removeOption('separator');
         }
         return $separator;
@@ -242,7 +241,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     /**
      * Decorate content and/or element
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      * @throws Zend_Form_Decorator_Exception when unimplemented
      */

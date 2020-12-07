@@ -124,11 +124,14 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
      * @param array $invokeArgs Any additional invocation arguments
      * @return void
      */
-    public function __construct(Zend_Controller_Request_Abstract $request, Zend_Controller_Response_Abstract $response, array $invokeArgs = array())
-    {
+    public function __construct(
+        Zend_Controller_Request_Abstract $request,
+        Zend_Controller_Response_Abstract $response,
+        array $invokeArgs = array()
+    ) {
         $this->setRequest($request)
-             ->setResponse($response)
-             ->_setInvokeArgs($invokeArgs);
+            ->setResponse($response)
+            ->_setInvokeArgs($invokeArgs);
         $this->_helper = new Zend_Controller_Action_HelperBroker($this);
         $this->init();
     }
@@ -172,8 +175,8 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
         }
 
         $request = $this->getRequest();
-        $module  = $request->getModuleName();
-        $dirs    = $this->getFrontController()->getControllerDirectory();
+        $module = $request->getModuleName();
+        $dirs = $this->getFrontController()->getControllerDirectory();
         if (empty($module) || !isset($dirs[$module])) {
             $module = $this->getFrontController()->getDispatcher()->getDefaultModule();
         }
@@ -200,11 +203,11 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
      * By default, the rendered contents are appended to the response. You may
      * specify the named body content segment to set by specifying a $name.
      *
-     * @see Zend_Controller_Response_Abstract::appendBody()
-     * @param  string|null $action Defaults to action registered in request object
-     * @param  string|null $name Response object named path segment to use; defaults to null
-     * @param  bool $noController  Defaults to false; i.e. use controller name as subdir in which to search for view script
+     * @param string|null $action Defaults to action registered in request object
+     * @param string|null $name Response object named path segment to use; defaults to null
+     * @param bool $noController Defaults to false; i.e. use controller name as subdir in which to search for view script
      * @return void
+     * @see Zend_Controller_Response_Abstract::appendBody()
      */
     public function render($action = null, $name = null, $noController = false)
     {
@@ -212,7 +215,7 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
             return $this->_helper->viewRenderer->render($action, $name, $noController);
         }
 
-        $view   = $this->initView();
+        $view = $this->initView();
         $script = $this->getViewScript($action, $noController);
 
         $this->getResponse()->appendBody(
@@ -233,8 +236,8 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
      * By default, the rendered contents are appended to the response. You may
      * specify the named body content segment to set by specifying a $name.
      *
-     * @param  string $script
-     * @param  string $name
+     * @param string $script
+     * @param string $name
      * @return void
      */
     public function renderScript($script, $name = null)
@@ -255,8 +258,8 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
      *
      * Used by render() to determine the path to the view script.
      *
-     * @param  string $action Defaults to action registered in request object
-     * @param  bool $noController  Defaults to false; i.e. use controller name as subdir in which to search for view script
+     * @param string $action Defaults to action registered in request object
+     * @param bool $noController Defaults to false; i.e. use controller name as subdir in which to search for view script
      * @return string
      * @throws Zend_Controller_Exception with bad $action
      */
@@ -282,7 +285,7 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
             $dispatcher = Zend_Controller_Front::getInstance()->getDispatcher();
             $wordDelimiters = $dispatcher->getWordDelimiter();
             $pathDelimiters = $dispatcher->getPathDelimiter();
-            $this->_delimiters = array_unique(array_merge($wordDelimiters, (array) $pathDelimiters));
+            $this->_delimiters = array_unique(array_merge($wordDelimiters, (array)$pathDelimiters));
         }
 
         $action = str_replace($this->_delimiters, '-', $action);
@@ -381,7 +384,7 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
     /**
      * Get a helper by name
      *
-     * @param  string $helperName
+     * @param string $helperName
      * @return Zend_Controller_Action_Helper_Abstract
      */
     public function getHelper($helperName)
@@ -392,7 +395,7 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
     /**
      * Get a clone of a helper by name
      *
-     * @param  string $helperName
+     * @param string $helperName
      * @return Zend_Controller_Action_Helper_Abstract
      */
     public function getHelperCopy($helperName)
@@ -472,8 +475,8 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
      * overridden to implement magic (dynamic) actions, or provide run-time
      * dispatching.
      *
-     * @param  string $methodName
-     * @param  array $args
+     * @param string $methodName
+     * @param array $args
      * @return void
      * @throws Zend_Controller_Action_Exception
      */
@@ -482,10 +485,14 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
         require_once 'Zend/Controller/Action/Exception.php';
         if ('Action' == substr($methodName, -6)) {
             $action = substr($methodName, 0, strlen($methodName) - 6);
-            throw new Zend_Controller_Action_Exception(sprintf('Action "%s" does not exist and was not trapped in __call()', $action), 404);
+            throw new Zend_Controller_Action_Exception(
+                sprintf('Action "%s" does not exist and was not trapped in __call()', $action), 404
+            );
         }
 
-        throw new Zend_Controller_Action_Exception(sprintf('Method "%s" does not exist and was not trapped in __call()', $methodName), 500);
+        throw new Zend_Controller_Action_Exception(
+            sprintf('Method "%s" does not exist and was not trapped in __call()', $methodName), 500
+        );
     }
 
     /**
@@ -511,7 +518,9 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
                 // preDispatch() didn't change the action, so we can continue
                 if ($this->getInvokeArg('useCaseSensitiveActions') || in_array($action, $this->_classMethods)) {
                     if ($this->getInvokeArg('useCaseSensitiveActions')) {
-                        trigger_error('Using case sensitive actions without word separators is deprecated; please do not rely on this "feature"');
+                        trigger_error(
+                            'Using case sensitive actions without word separators is deprecated; please do not rely on this "feature"'
+                        );
                     }
                     $this->$action();
                 } else {
@@ -546,8 +555,10 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
      * object to use
      * @return Zend_Controller_Response_Abstract
      */
-    public function run(Zend_Controller_Request_Abstract $request = null, Zend_Controller_Response_Abstract $response = null)
-    {
+    public function run(
+        Zend_Controller_Request_Abstract $request = null,
+        Zend_Controller_Response_Abstract $response = null
+    ) {
         if (null !== $request) {
             $this->setRequest($request);
         } else {
@@ -600,7 +611,7 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
     public function getParam($paramName, $default = null)
     {
         $value = $this->getRequest()->getParam($paramName);
-         if ((null === $value || '' === $value) && (null !== $default)) {
+        if ((null === $value || '' === $value) && (null !== $default)) {
             $value = $default;
         }
 
@@ -763,7 +774,7 @@ abstract class Zend_Controller_Action implements Zend_Controller_Action_Interfac
         }
 
         $request->setActionName($action)
-                ->setDispatched(false);
+            ->setDispatched(false);
     }
 
     /**

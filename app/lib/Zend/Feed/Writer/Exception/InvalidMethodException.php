@@ -38,4 +38,5 @@ require_once 'Zend/Feed/Exception.php';
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Feed_Writer_Exception_InvalidMethodException extends Zend_Exception
-{}
+{
+}

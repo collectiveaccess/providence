@@ -69,23 +69,29 @@ class Zend_Tool_Project_Context_Zf_DbTableFile extends Zend_Tool_Project_Context
     {
         $className = $this->getFullClassName($this->_dbTableName, 'Model_DbTable');
 
-        $codeGenFile = new Zend_CodeGenerator_Php_File(array(
-            'fileName' => $this->getPath(),
-            'classes' => array(
-                new Zend_CodeGenerator_Php_Class(array(
-                    'name' => $className,
-                    'extendedClass' => 'Zend_Db_Table_Abstract',
-                    'properties' => array(
-                        new Zend_CodeGenerator_Php_Property(array(
-                            'name' => '_name',
-                            'visibility' => Zend_CodeGenerator_Php_Property::VISIBILITY_PROTECTED,
-                            'defaultValue' => $this->_actualTableName
-                            ))
-                        ),
+        $codeGenFile = new Zend_CodeGenerator_Php_File(
+            array(
+                'fileName' => $this->getPath(),
+                'classes' => array(
+                    new Zend_CodeGenerator_Php_Class(
+                        array(
+                            'name' => $className,
+                            'extendedClass' => 'Zend_Db_Table_Abstract',
+                            'properties' => array(
+                                new Zend_CodeGenerator_Php_Property(
+                                    array(
+                                        'name' => '_name',
+                                        'visibility' => Zend_CodeGenerator_Php_Property::VISIBILITY_PROTECTED,
+                                        'defaultValue' => $this->_actualTableName
+                                    )
+                                )
+                            ),
 
-                    ))
+                        )
+                    )
                 )
-            ));
+            )
+        );
         return $codeGenFile->generate();
     }
 

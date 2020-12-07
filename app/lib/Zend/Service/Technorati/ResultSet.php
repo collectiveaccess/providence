@@ -112,8 +112,8 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
     /**
      * Parses the search response and retrieves the results for iteration.
      *
-     * @param   DomDocument $dom    the ReST fragment for this object
-     * @param   array $options      query options as associative array
+     * @param DomDocument $dom the ReST fragment for this object
+     * @param array $options query options as associative array
      */
     public function __construct(DomDocument $dom, $options = array())
     {
@@ -147,14 +147,14 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      * This method is called once each time a new instance is created
      * or a serialized object is unserialized.
      *
-     * @param   DomDocument $dom the ReST fragment for this object
-     * @param   array $options   query options as associative array
+     * @param DomDocument $dom the ReST fragment for this object
+     * @param array $options query options as associative array
      *      * @return  void
      */
     protected function _init(DomDocument $dom, $options = array())
     {
-        $this->_dom     = $dom;
-        $this->_xpath   = new DOMXPath($dom);
+        $this->_dom = $dom;
+        $this->_xpath = new DOMXPath($dom);
 
         $this->_results = $this->_xpath->query("//item");
     }
@@ -166,7 +166,7 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      */
     public function totalResults()
     {
-        return (int) $this->_totalResultsReturned;
+        return (int)$this->_totalResultsReturned;
     }
 
 
@@ -177,7 +177,7 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      */
     public function totalResultsAvailable()
     {
-        return (int) $this->_totalResultsAvailable;
+        return (int)$this->_totalResultsAvailable;
     }
 
     /**
@@ -223,13 +223,13 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
     /**
      * Implement SeekableIterator::seek().
      *
-     * @param   int $index
+     * @param int $index
      * @return  void
      * @throws  OutOfBoundsException
      */
     public function seek($index)
     {
-        $indexInt = (int) $index;
+        $indexInt = (int)$index;
         if ($indexInt >= 0 && $indexInt < $this->_results->length) {
             $this->_currentIndex = $indexInt;
         } else {
@@ -265,8 +265,9 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      *
      * @return void
      */
-    public function __sleep() {
-        $this->_xml     = $this->getXml();
+    public function __sleep()
+    {
+        $this->_xml = $this->getXml();
         $vars = array_keys(get_object_vars($this));
         return array_diff($vars, array('_dom', '_xpath'));
     }
@@ -280,7 +281,8 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      *
      * @return void
      */
-    public function __wakeup() {
+    public function __wakeup()
+    {
         $dom = new DOMDocument();
         $dom->loadXml($this->_xml);
         $this->_init($dom);

@@ -67,15 +67,15 @@ class Zend_Service_DeveloperGarden_IpLocation_IpAddress
     public function __construct($ip, $version = 4)
     {
         $this->setIp($ip)
-             ->setVersion($version);
+            ->setVersion($version);
     }
 
     /**
      * sets new ip address
      *
      * @param string $ip
-     * @throws Zend_Service_DeveloperGarden_Exception
      * @return Zend_Service_DeveloperGarden_IpLocation_IpAddress
+     * @throws Zend_Service_DeveloperGarden_Exception
      */
     public function setIp($ip)
     {
@@ -104,8 +104,8 @@ class Zend_Service_DeveloperGarden_IpLocation_IpAddress
      * sets new ip version
      *
      * @param integer $version
-     * @throws Zend_Service_DeveloperGarden_Exception
      * @return Zend_Service_DeveloperGarden_IpLocation_IpAddress
+     * @throws Zend_Service_DeveloperGarden_Exception
      */
     public function setVersion($version)
     {

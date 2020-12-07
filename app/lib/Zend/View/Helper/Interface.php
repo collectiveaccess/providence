@@ -32,7 +32,7 @@ interface Zend_View_Helper_Interface
     /**
      * Set the View object
      *
-     * @param  Zend_View_Interface $view
+     * @param Zend_View_Interface $view
      * @return Zend_View_Helper_Interface
      */
     public function setView(Zend_View_Interface $view);

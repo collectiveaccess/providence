@@ -30,170 +30,190 @@
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */
+/**
+ *
+ */
 
 
-require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
+require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
 
 use GuzzleHttp\Client;
 
 global $g_information_service_settings_CollectiveAccess;
 $g_information_service_settings_CollectiveAccess = array(
-		'baseURL' => array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'default' => '',
-			'width' => 90, 'height' => 1,
-			'label' => _t('Lookup URL'),
-			'description' => _t('URL used to query the information service.')
-		),
-		'table' => array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_SELECT,
-			'default' => '',
-			'options' => array(
-				_t('objects') => 'ca_objects',
-				_t('lots') => 'ca_object_lots',
-				_t('entities') => 'ca_entities',
-				_t('places') => 'ca_places',
-				_t('occurrences') => 'ca_occurrences',
-				_t('collections') => 'ca_collections',
-				_t('storage locations') => 'ca_storage_locations',
-				_t('loans') => 'ca_loans',
-				_t('movements') => 'ca_movements',
-				_t('list items') => 'ca_list_items'
-			),
-			'width' => 50, 'height' => 1,
-			'label' => _t('Item type'),
-			'description' => _t('Type of item to query for.')
-		),
-		'user_name' => array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'default' => '',
-			'width' => 30, 'height' => 1,
-			'label' => _t('User name'),
-			'description' => _t('User name to authenticate with on remote system.')
-		),
-		'password' => array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_PASSWORD,
-			'default' => '',
-			'width' => 30, 'height' => 1,
-			'label' => _t('Password'),
-			'description' => _t('Password to authenticate with on remote system.')
-		),
-		'labelFormat' => array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'default' => '',
-			'width' => 90, 'height' => 3,
-			'label' => _t('Query result label format'),
-			'description' => _t('Display template to format query result labels with.')
-		),
-		'detailFormat' => array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'default' => '',
-			'width' => 90, 'height' => 3,
-			'label' => _t('Detail format'),
-			'description' => _t('Display template to format detailed information blocks with.')
-		)
+    'baseURL' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'default' => '',
+        'width' => 90,
+        'height' => 1,
+        'label' => _t('Lookup URL'),
+        'description' => _t('URL used to query the information service.')
+    ),
+    'table' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_SELECT,
+        'default' => '',
+        'options' => array(
+            _t('objects') => 'ca_objects',
+            _t('lots') => 'ca_object_lots',
+            _t('entities') => 'ca_entities',
+            _t('places') => 'ca_places',
+            _t('occurrences') => 'ca_occurrences',
+            _t('collections') => 'ca_collections',
+            _t('storage locations') => 'ca_storage_locations',
+            _t('loans') => 'ca_loans',
+            _t('movements') => 'ca_movements',
+            _t('list items') => 'ca_list_items'
+        ),
+        'width' => 50,
+        'height' => 1,
+        'label' => _t('Item type'),
+        'description' => _t('Type of item to query for.')
+    ),
+    'user_name' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'default' => '',
+        'width' => 30,
+        'height' => 1,
+        'label' => _t('User name'),
+        'description' => _t('User name to authenticate with on remote system.')
+    ),
+    'password' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_PASSWORD,
+        'default' => '',
+        'width' => 30,
+        'height' => 1,
+        'label' => _t('Password'),
+        'description' => _t('Password to authenticate with on remote system.')
+    ),
+    'labelFormat' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'default' => '',
+        'width' => 90,
+        'height' => 3,
+        'label' => _t('Query result label format'),
+        'description' => _t('Display template to format query result labels with.')
+    ),
+    'detailFormat' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'default' => '',
+        'width' => 90,
+        'height' => 3,
+        'label' => _t('Detail format'),
+        'description' => _t('Display template to format detailed information blocks with.')
+    )
 );
 
-class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlugin Implements IWLPlugInformationService {
-	# ------------------------------------------------
-	static $s_settings;
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct() {
-		global $g_information_service_settings_CollectiveAccess;
+class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlugin Implements IWLPlugInformationService
+{
+    # ------------------------------------------------
+    static $s_settings;
+    # ------------------------------------------------
 
-		WLPlugInformationServiceCollectiveAccess::$s_settings = $g_information_service_settings_CollectiveAccess;
-		parent::__construct();
-		$this->info['NAME'] = 'CollectiveAccess';
+    /**
+     *
+     */
+    public function __construct()
+    {
+        global $g_information_service_settings_CollectiveAccess;
 
-		$this->description = _t('Provides access to data services in remote CollectiveAccess databases');
-	}
-	# ------------------------------------------------
-	/**
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceCollectiveAccess::$s_settings;
-	}
-	# ------------------------------------------------
-	# Data
-	# ------------------------------------------------
-	/**
-	 * Perform lookup on CollectiveAccess-based data service
-	 *
-	 * @param array $pa_settings Plugin settings values
-	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options (none defined yet)
-	 */
-	public function lookup($pa_settings, $ps_search, $pa_options=null) {
-		$o_client = new \GuzzleHttp\Client(['base_uri' => $pa_settings['baseURL']]);
+        WLPlugInformationServiceCollectiveAccess::$s_settings = $g_information_service_settings_CollectiveAccess;
+        parent::__construct();
+        $this->info['NAME'] = 'CollectiveAccess';
 
-		// Get sort field
-		$t_instance = Datamodel::getInstanceByTableName($pa_settings['table'], true);
-		$vs_sort_field = $t_instance->getLabelTableName().".".$t_instance->getLabelSortField();
+        $this->description = _t('Provides access to data services in remote CollectiveAccess databases');
+    }
+    # ------------------------------------------------
 
-		// Create and send a request with basic Auth
-		$o_response = $o_client->request("GET", 
-		    $vs_url = '/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']),
-		    ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
-		);
+    /**
+     * Get all settings settings defined by this plugin as an array
+     *
+     * @return array
+     */
+    public function getAvailableSettings()
+    {
+        return WLPlugInformationServiceCollectiveAccess::$s_settings;
+    }
+    # ------------------------------------------------
+    # Data
+    # ------------------------------------------------
+    /**
+     * Perform lookup on CollectiveAccess-based data service
+     *
+     * @param array $pa_settings Plugin settings values
+     * @param string $ps_search The expression with which to query the remote data service
+     * @param array $pa_options Lookup options (none defined yet)
+     */
+    public function lookup($pa_settings, $ps_search, $pa_options = null)
+    {
+        $o_client = new \GuzzleHttp\Client(['base_uri' => $pa_settings['baseURL']]);
 
-		// Get the response body as JSON
-		$va_data = json_decode($o_response->getBody(), true);
+        // Get sort field
+        $t_instance = Datamodel::getInstanceByTableName($pa_settings['table'], true);
+        $vs_sort_field = $t_instance->getLabelTableName() . "." . $t_instance->getLabelSortField();
 
-		$vs_pk = $t_instance->primaryKey();
-		if (isset($va_data['results']) && is_array($va_data['results'])) {
-			foreach($va_data['results'] as $vs_k => $va_result) {
-				$va_data['results'][$vs_k]['label'] = $va_result['display_label'];
-				unset($va_result['display_label']);
-				$va_data['results'][$vs_k]['url'] = $pa_settings['baseURL'].'/service.php/item/'.$pa_settings['table'].'/id/'.$va_result[$vs_pk];
-			}
-		}
+        // Create and send a request with basic Auth
+        $o_response = $o_client->request(
+            "GET",
+            $vs_url = '/service.php/find/' . $pa_settings['table'] . '?q=' . urlencode(
+                    $ps_search
+                ) . '&sort=' . $vs_sort_field . '&template=' . urlencode($pa_settings['labelFormat']),
+            ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
+        );
 
-		return $va_data;
-	}
-	# ------------------------------------------------
-	/**
-	 * Fetch details about a specific item from a CollectiveAccess-based data service
-	 *
-	 * @param array $pa_settings Plugin settings values
-	 * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
-	 * @return array An array of data from the data server defining the item.
-	 */
-	public function getExtendedInformation($pa_settings, $ps_url) {
-		$o_client = new \GuzzleHttp\Client(['base_uri' => $pa_settings['baseURL']]);
+        // Get the response body as JSON
+        $va_data = json_decode($o_response->getBody(), true);
 
-		$va_tmp = explode("/", $ps_url);
-		$ps_id = array_pop($va_tmp);
+        $vs_pk = $t_instance->primaryKey();
+        if (isset($va_data['results']) && is_array($va_data['results'])) {
+            foreach ($va_data['results'] as $vs_k => $va_result) {
+                $va_data['results'][$vs_k]['label'] = $va_result['display_label'];
+                unset($va_result['display_label']);
+                $va_data['results'][$vs_k]['url'] = $pa_settings['baseURL'] . '/service.php/item/' . $pa_settings['table'] . '/id/' . $va_result[$vs_pk];
+            }
+        }
 
-		if (!($vs_template = $pa_settings['detailFormat'])) {		// if no detailFormat options is set default to just outputting preferred labels
-			$vs_template = '^'.$pa_settings['table'].".preferred_labels";
-		}
+        return $va_data;
+    }
+    # ------------------------------------------------
 
-		// Create and send a request with basic Auth
-		$o_response = $o_client->request("GET", 
-		    $vs_url = '/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template),
-		    ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
-		);
+    /**
+     * Fetch details about a specific item from a CollectiveAccess-based data service
+     *
+     * @param array $pa_settings Plugin settings values
+     * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
+     * @return array An array of data from the data server defining the item.
+     */
+    public function getExtendedInformation($pa_settings, $ps_url)
+    {
+        $o_client = new \GuzzleHttp\Client(['base_uri' => $pa_settings['baseURL']]);
 
-		// Get the response as JSON
-		$va_data = json_decode($o_response->getBody(), true);
+        $va_tmp = explode("/", $ps_url);
+        $ps_id = array_pop($va_tmp);
 
-		return $va_data;
-	}
-	# ------------------------------------------------
+        if (!($vs_template = $pa_settings['detailFormat'])) {        // if no detailFormat options is set default to just outputting preferred labels
+            $vs_template = '^' . $pa_settings['table'] . ".preferred_labels";
+        }
+
+        // Create and send a request with basic Auth
+        $o_response = $o_client->request(
+            "GET",
+            $vs_url = '/service.php/item/' . $pa_settings['table'] . '/id/' . urlencode(
+                    $ps_id
+                ) . '?format=import&flatten=locales&template=' . urlencode($vs_template),
+            ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
+        );
+
+        // Get the response as JSON
+        $va_data = json_decode($o_response->getBody(), true);
+
+        return $va_data;
+    }
+    # ------------------------------------------------
 }

@@ -70,22 +70,24 @@ class Zend_Service_Twitter_Response
      * Assigns the HTTP response to a property, as well as the body
      * representation. It then attempts to decode the body as JSON.
      *
-     * @param  Zend_Http_Response $httpResponse
+     * @param Zend_Http_Response $httpResponse
      * @throws Zend_Service_Twitter_Exception if unable to decode JSON response
      */
     public function __construct(Zend_Http_Response $httpResponse)
     {
         $this->httpResponse = $httpResponse;
-        $this->rawBody      = $httpResponse->getBody();
+        $this->rawBody = $httpResponse->getBody();
         try {
             $jsonBody = Zend_Json::decode($this->rawBody, Zend_Json::TYPE_OBJECT);
             $this->jsonBody = $jsonBody;
         } catch (Zend_Json_Exception $e) {
             require_once 'Zend/Service/Twitter/Exception.php';
-            throw new Zend_Service_Twitter_Exception(sprintf(
-                'Unable to decode response from twitter: %s',
-                $e->getMessage()
-            ), 0, $e);
+            throw new Zend_Service_Twitter_Exception(
+                sprintf(
+                    'Unable to decode response from twitter: %s',
+                    $e->getMessage()
+                ), 0, $e
+            );
         }
     }
 
@@ -95,7 +97,7 @@ class Zend_Service_Twitter_Response
      * If a named property exists within the JSON response returned,
      * proxies to it. Otherwise, returns null.
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function __get($name)

@@ -45,8 +45,8 @@ class Zend_Service_ShortUrl_TinyUrlCom extends Zend_Service_ShortUrl_AbstractSho
      * This function shortens long url
      *
      * @param string $url URL to Shorten
-     * @throws Zend_Service_ShortUrl_Exception When URL is not valid
      * @return string New URL
+     * @throws Zend_Service_ShortUrl_Exception When URL is not valid
      */
     public function shorten($url)
     {
@@ -66,8 +66,8 @@ class Zend_Service_ShortUrl_TinyUrlCom extends Zend_Service_ShortUrl_AbstractSho
      * Reveals target for short URL
      *
      * @param string $shortenedUrl URL to reveal target of
-     * @throws Zend_Service_ShortUrl_Exception When URL is not valid or is not shortened by this service
      * @return string
+     * @throws Zend_Service_ShortUrl_Exception When URL is not valid or is not shortened by this service
      */
     public function unshorten($shortenedUrl)
     {
@@ -80,8 +80,8 @@ class Zend_Service_ShortUrl_TinyUrlCom extends Zend_Service_ShortUrl_AbstractSho
         $this->setHttpClient(new Zend_Http_Client());
 
         $this->getHttpClient()
-             ->setCookie('preview', 1)
-             ->setUri($shortenedUrl);
+            ->setCookie('preview', 1)
+            ->setUri($shortenedUrl);
 
         //get response
         $response = $this->getHttpClient()->request();

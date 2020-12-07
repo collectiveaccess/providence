@@ -8,7 +8,7 @@ insert_final_newline = true
 
 [*.{js,php}]
 charset = utf-8
-indent_style = tab
+indent_style = space
 
 [{*.yml}]
 indent_style = space

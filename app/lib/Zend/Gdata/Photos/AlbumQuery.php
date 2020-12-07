@@ -69,19 +69,19 @@ class Zend_Gdata_Photos_AlbumQuery extends Zend_Gdata_Photos_UserQuery
      *          clear.
      * @return Zend_Gdata_Photos_AlbumQuery The query object.
      */
-     public function setAlbumName($value)
-     {
-         $this->_albumId = null;
-         $this->_albumName = $value;
+    public function setAlbumName($value)
+    {
+        $this->_albumId = null;
+        $this->_albumName = $value;
 
-         return $this;
-     }
+        return $this;
+    }
 
     /**
      * Get the album name which is to be returned.
      *
-     * @see setAlbumName
      * @return string The name of the album to retrieve.
+     * @see setAlbumName
      */
     public function getAlbumName()
     {
@@ -100,19 +100,19 @@ class Zend_Gdata_Photos_AlbumQuery extends Zend_Gdata_Photos_UserQuery
      *          clear.
      * @return Zend_Gdata_Photos_AlbumQuery The query object.
      */
-     public function setAlbumId($value)
-     {
-         $this->_albumName = null;
-         $this->_albumId = $value;
+    public function setAlbumId($value)
+    {
+        $this->_albumName = null;
+        $this->_albumId = $value;
 
-         return $this;
-     }
+        return $this;
+    }
 
     /**
      * Get the album ID which is to be returned.
      *
-     * @see setAlbum
      * @return string The ID of the album to retrieve.
+     * @see setAlbum
      */
     public function getAlbumId()
     {
@@ -136,11 +136,13 @@ class Zend_Gdata_Photos_AlbumQuery extends Zend_Gdata_Photos_UserQuery
         } elseif ($this->getAlbumName() !== null && $this->getAlbumId() !== null) {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'AlbumName and AlbumId cannot both be non-null');
+                'AlbumName and AlbumId cannot both be non-null'
+            );
         } else {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'AlbumName and AlbumId cannot both be null');
+                'AlbumName and AlbumId cannot both be null'
+            );
         }
         $uri .= $incomingUri;
         return parent::getQueryUrl($uri);

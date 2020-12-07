@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/administrate/setup/list_item_editor_delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_item = $this->getVar('t_subject');
-	$vn_type_id = $this->getVar('subject_id');
+$t_item = $this->getVar('t_subject');
+$vn_type_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_item, $this->getVar('subject_name'), 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Edit/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_item,
+            $this->getVar('subject_name'),
+            'administrate/setup/relationship_type_editor',
+            'RelationshipTypeEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('type_id' => $vn_type_id)
+        );
+    }
+    ?>
 </div>

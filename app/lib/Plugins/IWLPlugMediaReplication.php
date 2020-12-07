@@ -25,33 +25,35 @@
  *
  * ----------------------------------------------------------------------
  */
-	
-	interface IWLPlugMediaReplication {
-		# -------------------------------------------------------
-		/**
-		 * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
-		 */
-		public function initiateReplication($ps_filepath, $pa_data, $pa_options=null);
-		
-		/**
-		 *
-		 */
-		public function getReplicationStatus($ps_request_token, $pa_options=null);
-		
-		/**
-		 *
-		 */
-		public function getReplicationErrors($ps_request_token);
-		
-		/**
-		 *
-		 */
-		public function getReplicationInfo($ps_request_token, $pa_options=null);
-		
-		/**
-		 *
-		 */
-		public function removeReplication($ps_key, $pa_options=null);
-		# -------------------------------------------------------
-	}
+
+interface IWLPlugMediaReplication
+{
+    # -------------------------------------------------------
+    /**
+     * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
+     */
+    public function initiateReplication($ps_filepath, $pa_data, $pa_options = null);
+
+    /**
+     *
+     */
+    public function getReplicationStatus($ps_request_token, $pa_options = null);
+
+    /**
+     *
+     */
+    public function getReplicationErrors($ps_request_token);
+
+    /**
+     *
+     */
+    public function getReplicationInfo($ps_request_token, $pa_options = null);
+
+    /**
+     *
+     */
+    public function removeReplication($ps_key, $pa_options = null);
+    # -------------------------------------------------------
+}
+
 ?>

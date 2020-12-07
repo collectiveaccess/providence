@@ -52,10 +52,10 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * @var array
      */
     protected $_config = array(
-        'dbname'       => null,
-        'username'     => null,
-        'password'     => null,
-        'persistent'   => false
+        'dbname' => null,
+        'username' => null,
+        'password' => null,
+        'persistent' => false
     );
 
     /**
@@ -70,12 +70,12 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
+        Zend_Db::INT_TYPE => Zend_Db::INT_TYPE,
         Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'BINARY_DOUBLE'      => Zend_Db::FLOAT_TYPE,
-        'BINARY_FLOAT'       => Zend_Db::FLOAT_TYPE,
-        'NUMBER'             => Zend_Db::FLOAT_TYPE,
+        Zend_Db::FLOAT_TYPE => Zend_Db::FLOAT_TYPE,
+        'BINARY_DOUBLE' => Zend_Db::FLOAT_TYPE,
+        'BINARY_FLOAT' => Zend_Db::FLOAT_TYPE,
+        'NUMBER' => Zend_Db::FLOAT_TYPE,
     );
 
     /**
@@ -116,7 +116,9 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
              * @see Zend_Db_Adapter_Oracle_Exception
              */
             require_once 'Zend/Db/Adapter/Oracle/Exception.php';
-            throw new Zend_Db_Adapter_Oracle_Exception('The OCI8 extension is required for this adapter but the extension is not loaded');
+            throw new Zend_Db_Adapter_Oracle_Exception(
+                'The OCI8 extension is required for this adapter but the extension is not loaded'
+            );
         }
 
         $this->_setExecuteMode(OCI_COMMIT_ON_SUCCESS);
@@ -124,10 +126,11 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
         $connectionFuncName = ($this->_config['persistent'] == true) ? 'oci_pconnect' : 'oci_connect';
 
         $this->_connection = @$connectionFuncName(
-                $this->_config['username'],
-                $this->_config['password'],
-                $this->_config['dbname'],
-                $this->_config['charset']);
+            $this->_config['username'],
+            $this->_config['password'],
+            $this->_config['dbname'],
+            $this->_config['charset']
+        );
 
         // check the connection
         if (!$this->_connection) {
@@ -146,10 +149,10 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      */
     public function isConnected()
     {
-        return ((bool) (is_resource($this->_connection)
-                    && (get_resource_type($this->_connection) == 'oci8 connection'
-                     || get_resource_type($this->_connection) == 'oci8 persistent connection')));
-        }
+        return ((bool)(is_resource($this->_connection)
+            && (get_resource_type($this->_connection) == 'oci8 connection'
+                || get_resource_type($this->_connection) == 'oci8 persistent connection')));
+    }
 
     /**
      * Force the connection to close.
@@ -172,7 +175,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      */
     public function setLobAsString($lobAsString)
     {
-        $this->_lobAsString = (bool) $lobAsString;
+        $this->_lobAsString = (bool)$lobAsString;
         return $this;
     }
 
@@ -187,7 +190,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
             // if never set by user, we use driver option if it exists otherwise false
             if (isset($this->_config['driver_options']) &&
                 isset($this->_config['driver_options']['lob_as_string'])) {
-                $this->_lobAsString = (bool) $this->_config['driver_options']['lob_as_string'];
+                $this->_lobAsString = (bool)$this->_config['driver_options']['lob_as_string'];
             } else {
                 $this->_lobAsString = false;
             }
@@ -220,7 +223,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     /**
      * Quote a raw string.
      *
-     * @param string $value     Raw string
+     * @param string $value Raw string
      * @return string           Quoted string
      */
     protected function _quote($value)
@@ -257,7 +260,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     public function lastSequenceId($sequenceName)
     {
         $this->_connect();
-        $sql = 'SELECT '.$this->quoteIdentifier($sequenceName, true).'.CURRVAL FROM dual';
+        $sql = 'SELECT ' . $this->quoteIdentifier($sequenceName, true) . '.CURRVAL FROM dual';
         $value = $this->fetchOne($sql);
         return $value;
     }
@@ -273,7 +276,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     public function nextSequenceId($sequenceName)
     {
         $this->_connect();
-        $sql = 'SELECT '.$this->quoteIdentifier($sequenceName, true).'.NEXTVAL FROM dual';
+        $sql = 'SELECT ' . $this->quoteIdentifier($sequenceName, true) . '.NEXTVAL FROM dual';
         $value = $this->fetchOne($sql);
         return $value;
     }
@@ -291,8 +294,8 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * Oracle does not support IDENTITY columns, so if the sequence is not
      * specified, this method returns null.
      *
-     * @param string $tableName   OPTIONAL Name of table.
-     * @param string $primaryKey  OPTIONAL Name of primary key column.
+     * @param string $tableName OPTIONAL Name of table.
+     * @param string $primaryKey OPTIONAL Name of primary key column.
      * @return string
      */
     public function lastInsertId($tableName = null, $primaryKey = null)
@@ -346,11 +349,11 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * PRIMARY_POSITION => integer; position of column in primary key
      * IDENTITY         => integer; true if column is auto-generated with unique values
      *
-     * @todo Discover integer unsigned property.
-     *
      * @param string $tableName
      * @param string $schemaName OPTIONAL
      * @return array
+     * @todo Discover integer unsigned property.
+     *
      */
     public function describeTable($tableName, $schemaName = null)
     {
@@ -371,7 +374,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
             }
             $sql .= ' ORDER BY TC.COLUMN_ID';
         } else {
-            $subSql="SELECT AC.OWNER, AC.TABLE_NAME, ACC.COLUMN_NAME, AC.CONSTRAINT_TYPE, ACC.POSITION
+            $subSql = "SELECT AC.OWNER, AC.TABLE_NAME, ACC.COLUMN_NAME, AC.CONSTRAINT_TYPE, ACC.POSITION
                 from ALL_CONSTRAINTS AC, ALL_CONS_COLUMNS ACC
                   WHERE ACC.CONSTRAINT_NAME = AC.CONSTRAINT_NAME
                     AND ACC.TABLE_NAME = AC.TABLE_NAME
@@ -383,7 +386,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
                 $subSql .= ' AND UPPER(ACC.OWNER) = UPPER(:SCNAME)';
                 $bind[':SCNAME'] = $schemaName;
             }
-            $sql="SELECT TC.TABLE_NAME, TC.OWNER, TC.COLUMN_NAME, TC.DATA_TYPE,
+            $sql = "SELECT TC.TABLE_NAME, TC.OWNER, TC.COLUMN_NAME, TC.DATA_TYPE,
                     TC.DATA_DEFAULT, TC.NULLABLE, TC.COLUMN_ID, TC.DATA_LENGTH,
                     TC.DATA_SCALE, TC.DATA_PRECISION, CC.CONSTRAINT_TYPE, CC.POSITION
                 FROM ALL_TAB_COLUMNS TC, ($subSql) CC
@@ -402,18 +405,18 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
          */
         $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
 
-        $table_name      = 0;
-        $owner           = 1;
-        $column_name     = 2;
-        $data_type       = 3;
-        $data_default    = 4;
-        $nullable        = 5;
-        $column_id       = 6;
-        $data_length     = 7;
-        $data_scale      = 8;
-        $data_precision  = 9;
+        $table_name = 0;
+        $owner = 1;
+        $column_name = 2;
+        $data_type = 3;
+        $data_default = 4;
+        $nullable = 5;
+        $column_id = 6;
+        $data_length = 7;
+        $data_scale = 8;
+        $data_precision = 9;
         $constraint_type = 10;
-        $position        = 11;
+        $position = 11;
 
         $desc = array();
         foreach ($result as $key => $row) {
@@ -427,20 +430,20 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
                 $identity = false;
             }
             $desc[$this->foldCase($row[$column_name])] = array(
-                'SCHEMA_NAME'      => $this->foldCase($row[$owner]),
-                'TABLE_NAME'       => $this->foldCase($row[$table_name]),
-                'COLUMN_NAME'      => $this->foldCase($row[$column_name]),
-                'COLUMN_POSITION'  => $row[$column_id],
-                'DATA_TYPE'        => $row[$data_type],
-                'DEFAULT'          => $row[$data_default],
-                'NULLABLE'         => (bool) ($row[$nullable] == 'Y'),
-                'LENGTH'           => $row[$data_length],
-                'SCALE'            => $row[$data_scale],
-                'PRECISION'        => $row[$data_precision],
-                'UNSIGNED'         => null, // @todo
-                'PRIMARY'          => $primary,
+                'SCHEMA_NAME' => $this->foldCase($row[$owner]),
+                'TABLE_NAME' => $this->foldCase($row[$table_name]),
+                'COLUMN_NAME' => $this->foldCase($row[$column_name]),
+                'COLUMN_POSITION' => $row[$column_id],
+                'DATA_TYPE' => $row[$data_type],
+                'DEFAULT' => $row[$data_default],
+                'NULLABLE' => (bool)($row[$nullable] == 'Y'),
+                'LENGTH' => $row[$data_length],
+                'SCALE' => $row[$data_scale],
+                'PRECISION' => $row[$data_precision],
+                'UNSIGNED' => null, // @todo
+                'PRIMARY' => $primary,
                 'PRIMARY_POSITION' => $primaryPosition,
-                'IDENTITY'         => $identity
+                'IDENTITY' => $identity
             );
         }
         return $desc;
@@ -495,11 +498,11 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     /**
      * Set the fetch mode.
      *
-     * @todo Support FETCH_CLASS and FETCH_INTO.
-     *
      * @param integer $mode A fetch mode.
      * @return void
      * @throws Zend_Db_Adapter_Oracle_Exception
+     * @todo Support FETCH_CLASS and FETCH_INTO.
+     *
      */
     public function setFetchMode($mode)
     {
@@ -569,7 +572,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
                     " . $sql . "
                 ) z1
             ) z2
-            WHERE z2.\"zend_db_rownum\" BETWEEN " . ($offset+1) . " AND " . ($offset+$count);
+            WHERE z2.\"zend_db_rownum\" BETWEEN " . ($offset + 1) . " AND " . ($offset + $count);
         return $limit_sql;
     }
 
@@ -579,7 +582,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      */
     private function _setExecuteMode($mode)
     {
-        switch($mode) {
+        switch ($mode) {
             case OCI_COMMIT_ON_SUCCESS:
             case OCI_DEFAULT:
             case OCI_DESCRIBE_ONLY:

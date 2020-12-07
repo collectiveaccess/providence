@@ -62,7 +62,9 @@ abstract class Zend_Pdf_Destination_Explicit extends Zend_Pdf_Destination
     {
         if ($destinationArray->getType() != Zend_Pdf_Element::TYPE_ARRAY) {
             require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception('Explicit destination resource Array must be a direct or an indirect array object.');
+            throw new Zend_Pdf_Exception(
+                'Explicit destination resource Array must be a direct or an indirect array object.'
+            );
         }
 
         $this->_destinationArray = $destinationArray;
@@ -112,8 +114,8 @@ abstract class Zend_Pdf_Destination_Explicit extends Zend_Pdf_Destination
     /**
      * Get resource
      *
-     * @internal
      * @return Zend_Pdf_Element
+     * @internal
      */
     public function getResource()
     {

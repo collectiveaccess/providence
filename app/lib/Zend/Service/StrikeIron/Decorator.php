@@ -47,13 +47,13 @@ class Zend_Service_StrikeIron_Decorator
     /**
      * Class constructor
      *
-     * @param object       $object  Object to decorate
-     * @param null|string  $name    Name of the object
+     * @param object $object Object to decorate
+     * @param null|string $name Name of the object
      */
     public function __construct($object, $name = null)
     {
         $this->_object = $object;
-        $this->_name   = $name;
+        $this->_name = $name;
     }
 
     /**
@@ -62,14 +62,14 @@ class Zend_Service_StrikeIron_Decorator
      * If the property is not found in the decorated object, return
      * NULL as a convenience feature to avoid notices.
      *
-     * @param  string $property  Property name to retrieve
+     * @param string $property Property name to retrieve
      * @return mixed             Value of property or NULL
      */
     public function __get($property)
     {
         $result = null;
 
-        if (! isset($this->_object->$property)) {
+        if (!isset($this->_object->$property)) {
             $property = $this->_inflect($property);
         }
 
@@ -85,8 +85,8 @@ class Zend_Service_StrikeIron_Decorator
      * be used when the SOAPClient returns a custom PHP object via
      * its classmap option so no inflection is done.
      *
-     * @param string  $method  Name of method called
-     * @param array   $args    Arguments for method
+     * @param string $method Name of method called
+     * @param array $args Arguments for method
      */
     public function __call($method, $args)
     {
@@ -98,7 +98,7 @@ class Zend_Service_StrikeIron_Decorator
      * style.  The default implementation here only inflects the case
      * of the first letter, e.g. from "fooBar" to "FooBar".
      *
-     * @param  string $property  Property name to inflect
+     * @param string $property Property name to inflect
      * @return string            Inflected property name
      */
     protected function _inflect($property)
@@ -110,7 +110,7 @@ class Zend_Service_StrikeIron_Decorator
      * Decorate a value returned by the result object.  The default
      * implementation here only decorates child objects.
      *
-     * @param  mixed  $result  Value to decorate
+     * @param mixed $result Value to decorate
      * @return mixed           Decorated result
      */
     protected function _decorate($result)

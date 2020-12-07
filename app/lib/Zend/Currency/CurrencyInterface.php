@@ -33,7 +33,7 @@ interface Zend_Currency_CurrencyInterface
      * Returns the actual exchange rate
      *
      * @param string $from Short Name of the base currency
-     * @param string $to   Short Name of the currency to exchange to
+     * @param string $to Short Name of the currency to exchange to
      */
     public function getRate($from, $to);
 }

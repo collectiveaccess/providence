@@ -48,7 +48,7 @@ abstract class Zend_Application_Module_Bootstrap
     /**
      * Constructor
      *
-     * @param  Zend_Application|Zend_Application_Bootstrap_Bootstrapper $application
+     * @param Zend_Application|Zend_Application_Bootstrap_Bootstrapper $application
      * @return void
      */
     public function __construct($application)
@@ -67,9 +67,11 @@ abstract class Zend_Application_Module_Bootstrap
         }
 
         if ($application->hasOption('resourceloader')) {
-            $this->setOptions(array(
-                'resourceloader' => $application->getOption('resourceloader')
-            ));
+            $this->setOptions(
+                array(
+                    'resourceloader' => $application->getOption('resourceloader')
+                )
+            );
         }
         $this->initResourceLoader();
 

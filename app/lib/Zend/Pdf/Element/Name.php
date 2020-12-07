@@ -51,11 +51,11 @@ class Zend_Pdf_Element_Name extends Zend_Pdf_Element
     public function __construct($val)
     {
         settype($val, 'string');
-        if (strpos($val,"\x00") !== false) {
+        if (strpos($val, "\x00") !== false) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Null character is not allowed in PDF Names');
         }
-        $this->value   = (string)$val;
+        $this->value = (string)$val;
     }
 
 
@@ -85,40 +85,39 @@ class Zend_Pdf_Element_Name extends Zend_Pdf_Element
 
             switch ($inStr[$count]) {
                 case '(':
-                // fall through to next case
+                    // fall through to next case
                 case ')':
-                // fall through to next case
+                    // fall through to next case
                 case '<':
-                // fall through to next case
+                    // fall through to next case
                 case '>':
-                // fall through to next case
+                    // fall through to next case
                 case '[':
-                // fall through to next case
+                    // fall through to next case
                 case ']':
-                // fall through to next case
+                    // fall through to next case
                 case '{':
-                // fall through to next case
+                    // fall through to next case
                 case '}':
-                // fall through to next case
+                    // fall through to next case
                 case '/':
-                // fall through to next case
+                    // fall through to next case
                 case '%':
-                // fall through to next case
+                    // fall through to next case
                 case '\\':
-                // fall through to next case
+                    // fall through to next case
                 case '#':
                     $outStr .= sprintf('#%02X', $nextCode);
                     break;
 
                 default:
-                    if ($nextCode >= 33 && $nextCode <= 126 ) {
+                    if ($nextCode >= 33 && $nextCode <= 126) {
                         // Visible ASCII symbol
                         $outStr .= $inStr[$count];
                     } else {
                         $outStr .= sprintf('#%02X', $nextCode);
                     }
             }
-
         }
 
         return $outStr;
@@ -136,12 +135,12 @@ class Zend_Pdf_Element_Name extends Zend_Pdf_Element
         $outStr = '';
 
         for ($count = 0; $count < strlen($inStr); $count++) {
-            if ($inStr[$count] != '#' )  {
+            if ($inStr[$count] != '#') {
                 $outStr .= $inStr[$count];
             } else {
                 // Escape sequence
-                $outStr .= chr(base_convert(substr($inStr, $count+1, 2), 16, 10 ));
-                $count +=2;
+                $outStr .= chr(base_convert(substr($inStr, $count + 1, 2), 16, 10));
+                $count += 2;
             }
         }
         return $outStr;

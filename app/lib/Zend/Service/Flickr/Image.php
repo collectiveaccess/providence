@@ -62,15 +62,15 @@ class Zend_Service_Flickr_Image
     /**
      * Parse given Flickr Image element
      *
-     * @param  DOMElement $image
+     * @param DOMElement $image
      * @return void
      */
     public function __construct(DOMElement $image)
     {
-        $this->uri      = (string) $image->getAttribute('source');
-        $this->clickUri = (string) $image->getAttribute('url');
-        $this->height   = (int) $image->getAttribute('height');
-        $this->width    = (int) $image->getAttribute('width');
+        $this->uri = (string)$image->getAttribute('source');
+        $this->clickUri = (string)$image->getAttribute('url');
+        $this->height = (int)$image->getAttribute('height');
+        $this->width = (int)$image->getAttribute('width');
     }
 }
 

@@ -118,12 +118,23 @@ class Zend_Service_Yahoo_VideoResult extends Zend_Service_Yahoo_Result
     /**
      * Initializes the video result
      *
-     * @param  DOMElement $result
+     * @param DOMElement $result
      * @return void
      */
     public function __construct(DOMElement $result)
     {
-        $this->_fields = array('Summary', 'RefererUrl', 'FileSize', 'FileFormat', 'Height', 'Width', 'Duration', 'Channels', 'Streaming', 'Thumbnail');
+        $this->_fields = array(
+            'Summary',
+            'RefererUrl',
+            'FileSize',
+            'FileFormat',
+            'Height',
+            'Width',
+            'Duration',
+            'Channels',
+            'Streaming',
+            'Thumbnail'
+        );
 
         parent::__construct($result);
 

@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/views/editor/representation_annotations/log_html.php : 
  * ----------------------------------------------------------------------
@@ -25,18 +26,20 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_representation_annotation = $this->getVar('t_subject');
-	$vn_annotation_id = $this->getVar('subject_id');
+$t_representation_annotation = $this->getVar('t_subject');
+$vn_annotation_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	print caFormControlBox(
-		'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caLog\').caFilterTable(this.value); return false;" size="20"/></div>', 
-		'', 
-		''
-	); 
-		
-	print $this->getVar('log');
-?>
-	<div class="editorBottomPadding"><!-- empty --></div>
+    <?php
+    print caFormControlBox(
+        '<div class="list-filter">' . _t(
+            'Filter'
+        ) . ': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caLog\').caFilterTable(this.value); return false;" size="20"/></div>',
+        '',
+        ''
+    );
+
+    print $this->getVar('log');
+    ?>
+    <div class="editorBottomPadding"><!-- empty --></div>
 </div>

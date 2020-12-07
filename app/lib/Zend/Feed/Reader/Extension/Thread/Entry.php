@@ -58,8 +58,8 @@ class Zend_Feed_Reader_Extension_Thread_Entry
     /**
      * Get the entry data specified by name
      *
-     * @param  string $name
-     * @param  string $type
+     * @param string $name
+     * @param string $type
      * @return mixed|null
      */
     protected function _getData($name)

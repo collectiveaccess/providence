@@ -43,12 +43,12 @@ class Zend_Dojo_Form_Element_CurrencyTextBox extends Zend_Dojo_Form_Element_Numb
     /**
      * Set currency
      *
-     * @param  string $currency
+     * @param string $currency
      * @return Zend_Dojo_Form_Element_CurrencyTextBox
      */
     public function setCurrency($currency)
     {
-        $this->setDijitParam('currency', (string) $currency);
+        $this->setDijitParam('currency', (string)$currency);
         return $this;
     }
 
@@ -67,16 +67,18 @@ class Zend_Dojo_Form_Element_CurrencyTextBox extends Zend_Dojo_Form_Element_Numb
      *
      * Casts to string, uppercases, and trims to three characters.
      *
-     * @param  string $symbol
+     * @param string $symbol
      * @return Zend_Dojo_Form_Element_CurrencyTextBox
      */
     public function setSymbol($symbol)
     {
-        $symbol = strtoupper((string) $symbol);
+        $symbol = strtoupper((string)$symbol);
         $length = strlen($symbol);
         if (3 > $length) {
             require_once 'Zend/Form/Element/Exception.php';
-            throw new Zend_Form_Element_Exception('Invalid symbol provided; please provide ISO 4217 alphabetic currency code');
+            throw new Zend_Form_Element_Exception(
+                'Invalid symbol provided; please provide ISO 4217 alphabetic currency code'
+            );
         }
         if (3 < $length) {
             $symbol = substr($symbol, 0, 3);
@@ -99,12 +101,12 @@ class Zend_Dojo_Form_Element_CurrencyTextBox extends Zend_Dojo_Form_Element_Numb
     /**
      * Set whether currency is fractional
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_Dojo_Form_Element_CurrencyTextBox
      */
     public function setFractional($flag)
     {
-        $this->setConstraint('fractional', (bool) $flag);
+        $this->setConstraint('fractional', (bool)$flag);
         return $this;
     }
 

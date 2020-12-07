@@ -46,9 +46,14 @@ class Zend_Gdata_App_Extension_Link extends Zend_Gdata_App_Extension
     protected $_title = null;
     protected $_length = null;
 
-    public function __construct($href = null, $rel = null, $type = null,
-            $hrefLang = null, $title = null, $length = null)
-    {
+    public function __construct(
+        $href = null,
+        $rel = null,
+        $type = null,
+        $hrefLang = null,
+        $title = null,
+        $length = null
+    ) {
         parent::__construct();
         $this->_href = $href;
         $this->_rel = $rel;
@@ -85,26 +90,26 @@ class Zend_Gdata_App_Extension_Link extends Zend_Gdata_App_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'href':
-            $this->_href = $attribute->nodeValue;
-            break;
-        case 'rel':
-            $this->_rel = $attribute->nodeValue;
-            break;
-        case 'type':
-            $this->_type = $attribute->nodeValue;
-            break;
-        case 'hreflang':
-            $this->_hrefLang = $attribute->nodeValue;
-            break;
-        case 'title':
-            $this->_title = $attribute->nodeValue;
-            break;
-        case 'length':
-            $this->_length = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'href':
+                $this->_href = $attribute->nodeValue;
+                break;
+            case 'rel':
+                $this->_rel = $attribute->nodeValue;
+                break;
+            case 'type':
+                $this->_type = $attribute->nodeValue;
+                break;
+            case 'hreflang':
+                $this->_hrefLang = $attribute->nodeValue;
+                break;
+            case 'title':
+                $this->_title = $attribute->nodeValue;
+                break;
+            case 'length':
+                $this->_length = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

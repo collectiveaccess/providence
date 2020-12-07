@@ -101,7 +101,7 @@ class Zend_Service_DeveloperGarden_Client_Soap extends Zend_Soap_Client
      * Perform a SOAP call but first check for adding STS Token or fetch one
      *
      * @param string $name
-     * @param array  $arguments
+     * @param array $arguments
      * @return mixed
      */
     public function __call($name, $arguments)

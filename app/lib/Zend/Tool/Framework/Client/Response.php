@@ -168,8 +168,8 @@ class Zend_Tool_Framework_Client_Response
      * @param Zend_Tool_Framework_Client_Response_ContentDecorator_Interface $contentDecorator
      * @return unknown
      */
-    public function addContentDecorator(Zend_Tool_Framework_Client_Response_ContentDecorator_Interface $contentDecorator)
-    {
+    public function addContentDecorator(Zend_Tool_Framework_Client_Response_ContentDecorator_Interface $contentDecorator
+    ) {
         $decoratorName = strtolower($contentDecorator->getName());
         $this->_decorators[$decoratorName] = $contentDecorator;
         return $this;
@@ -192,7 +192,7 @@ class Zend_Tool_Framework_Client_Response
      */
     public function __toString()
     {
-        return (string) implode('', $this->_content);
+        return (string)implode('', $this->_content);
     }
 
     /**
@@ -217,7 +217,6 @@ class Zend_Tool_Framework_Client_Response
         }
 
         return $content;
-
     }
 
 }

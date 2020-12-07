@@ -172,7 +172,7 @@ class Zend_Registry extends ArrayObject
      * Returns TRUE if the $index is a named value in the registry,
      * or FALSE if $index was not found in the registry.
      *
-     * @param  string $index
+     * @param string $index
      * @return boolean
      */
     public static function isRegistered($index)

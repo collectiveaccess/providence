@@ -30,7 +30,7 @@ interface Zend_Feed_Reader_EntryInterface
     /**
      * Get the specified author
      *
-     * @param  int $index
+     * @param int $index
      * @return string|null
      */
     public function getAuthor($index = 0);
@@ -87,7 +87,7 @@ interface Zend_Feed_Reader_EntryInterface
     /**
      * Get a specific link
      *
-     * @param  int $index
+     * @param int $index
      * @return string
      */
     public function getLink($index = 0);

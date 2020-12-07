@@ -77,7 +77,7 @@ class Zend_Service_DeveloperGarden_SendSms
      *
      */
     protected $_classMap = array(
-        'sendSMSResponse'      => 'Zend_Service_DeveloperGarden_Response_SendSms_SendSMSResponse',
+        'sendSMSResponse' => 'Zend_Service_DeveloperGarden_Response_SendSms_SendSMSResponse',
         'sendFlashSMSResponse' => 'Zend_Service_DeveloperGarden_Response_SendSms_SendFlashSMSResponse'
     );
 
@@ -96,9 +96,9 @@ class Zend_Service_DeveloperGarden_SendSms
     {
         $request = new Zend_Service_DeveloperGarden_Request_SendSms_SendSMS($this->getEnvironment());
         $request->setNumber($number)
-                ->setMessage($message)
-                ->setOriginator($originator)
-                ->setAccount($account);
+            ->setMessage($message)
+            ->setOriginator($originator)
+            ->setAccount($account);
         return $request;
     }
 
@@ -117,9 +117,9 @@ class Zend_Service_DeveloperGarden_SendSms
     {
         $request = new Zend_Service_DeveloperGarden_Request_SendSms_SendFlashSMS($this->getEnvironment());
         $request->setNumber($number)
-                ->setMessage($message)
-                ->setOriginator($originator)
-                ->setAccount($account);
+            ->setMessage($message)
+            ->setOriginator($originator)
+            ->setAccount($account);
         return $request;
     }
 
@@ -145,7 +145,8 @@ class Zend_Service_DeveloperGarden_SendSms
             case 2 :
                 $response = $client->sendFlashSms($request);
                 break;
-            default : {
+            default :
+            {
                 require_once 'Zend/Service/DeveloperGarden/Client/Exception.php';
                 throw new Zend_Service_DeveloperGarden_Client_Exception('Unknown SMS Type');
             }

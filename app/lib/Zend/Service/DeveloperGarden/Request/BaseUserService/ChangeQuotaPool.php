@@ -54,7 +54,7 @@ class Zend_Service_DeveloperGarden_Request_BaseUserService_ChangeQuotaPool
     public function __construct($moduleId = null, $quotaMax = 0)
     {
         $this->setModuleId($moduleId)
-             ->setQuotaMax($quotaMax);
+            ->setQuotaMax($quotaMax);
     }
 
     /**

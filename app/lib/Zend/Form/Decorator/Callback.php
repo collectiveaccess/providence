@@ -59,7 +59,7 @@ class Zend_Form_Decorator_Callback extends Zend_Form_Decorator_Abstract
     /**
      * Set callback
      *
-     * @param  callback $callback
+     * @param callback $callback
      * @return Zend_Form_Decorator_Callback
      * @throws Zend_Form_Exception
      */
@@ -100,7 +100,7 @@ class Zend_Form_Decorator_Callback extends Zend_Form_Decorator_Abstract
      * value of callback and either appends, prepends, or replaces passed in
      * content.
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function render($content)

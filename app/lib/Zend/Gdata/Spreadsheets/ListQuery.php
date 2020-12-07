@@ -239,8 +239,6 @@ class Zend_Gdata_Spreadsheets_ListQuery extends Zend_Gdata_Query
      */
     public function getReverse()
     {
-
-
         if (array_key_exists('reverse', $this->_params)) {
             return $this->_params['reverse'];
         } else {
@@ -254,39 +252,38 @@ class Zend_Gdata_Spreadsheets_ListQuery extends Zend_Gdata_Query
      */
     public function getQueryUrl()
     {
-
         $uri = $this->_defaultFeedUri;
 
         if ($this->_spreadsheetKey != null) {
-            $uri .= '/'.$this->_spreadsheetKey;
+            $uri .= '/' . $this->_spreadsheetKey;
         } else {
             require_once 'Zend/Gdata/App/Exception.php';
             throw new Zend_Gdata_App_Exception('A spreadsheet key must be provided for list queries.');
         }
 
         if ($this->_worksheetId != null) {
-            $uri .= '/'.$this->_worksheetId;
+            $uri .= '/' . $this->_worksheetId;
         } else {
             require_once 'Zend/Gdata/App/Exception.php';
             throw new Zend_Gdata_App_Exception('A worksheet id must be provided for list queries.');
         }
 
         if ($this->_visibility != null) {
-            $uri .= '/'.$this->_visibility;
+            $uri .= '/' . $this->_visibility;
         } else {
             require_once 'Zend/Gdata/App/Exception.php';
             throw new Zend_Gdata_App_Exception('A visibility must be provided for list queries.');
         }
 
         if ($this->_projection != null) {
-            $uri .= '/'.$this->_projection;
+            $uri .= '/' . $this->_projection;
         } else {
             require_once 'Zend/Gdata/App/Exception.php';
             throw new Zend_Gdata_App_Exception('A projection must be provided for list queries.');
         }
 
         if ($this->_rowId != null) {
-            $uri .= '/'.$this->_rowId;
+            $uri .= '/' . $this->_rowId;
         }
 
         $uri .= $this->getQueryString();

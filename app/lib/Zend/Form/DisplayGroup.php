@@ -27,7 +27,7 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id: DisplayGroup.php 25093 2012-11-07 20:08:05Z rob $
  */
-class Zend_Form_DisplayGroup implements Iterator,Countable
+class Zend_Form_DisplayGroup implements Iterator, Countable
 {
     /**
      * Group attributes
@@ -115,9 +115,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Constructor
      *
-     * @param  string $name
-     * @param  Zend_Loader_PluginLoader $loader
-     * @param  array|Zend_Config $options
+     * @param string $name
+     * @param Zend_Loader_PluginLoader $loader
+     * @param array|Zend_Config $options
      * @return void
      */
     public function __construct($name, Zend_Loader_PluginLoader $loader, $options = null)
@@ -150,14 +150,18 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set options
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_Form_DisplayGroup
      */
     public function setOptions(array $options)
     {
         $forbidden = array(
-            'Options', 'Config', 'PluginLoader', 'View',
-            'Translator', 'Attrib'
+            'Options',
+            'Config',
+            'PluginLoader',
+            'View',
+            'Translator',
+            'Attrib'
         );
         foreach ($options as $key => $value) {
             $normalized = ucfirst($key);
@@ -179,7 +183,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set options from config object
      *
-     * @param  Zend_Config $config
+     * @param Zend_Config $config
      * @return Zend_Form_DisplayGroup
      */
     public function setConfig(Zend_Config $config)
@@ -190,13 +194,13 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set group attribute
      *
-     * @param  string $key
-     * @param  mixed $value
+     * @param string $key
+     * @param mixed $value
      * @return Zend_Form_DisplayGroup
      */
     public function setAttrib($key, $value)
     {
-        $key = (string) $key;
+        $key = (string)$key;
         $this->_attribs[$key] = $value;
         return $this;
     }
@@ -204,7 +208,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Add multiple form attributes at once
      *
-     * @param  array $attribs
+     * @param array $attribs
      * @return Zend_Form_DisplayGroup
      */
     public function addAttribs(array $attribs)
@@ -220,7 +224,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      *
      * Overwrites any previously set attributes.
      *
-     * @param  array $attribs
+     * @param array $attribs
      * @return Zend_Form_DisplayGroup
      */
     public function setAttribs(array $attribs)
@@ -232,12 +236,12 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Retrieve a single form attribute
      *
-     * @param  string $key
+     * @param string $key
      * @return mixed
      */
     public function getAttrib($key)
     {
-        $key = (string) $key;
+        $key = (string)$key;
         if (!isset($this->_attribs[$key])) {
             return null;
         }
@@ -258,7 +262,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Remove attribute
      *
-     * @param  string $key
+     * @param string $key
      * @return bool
      */
     public function removeAttrib($key)
@@ -285,7 +289,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set form object to which the display group is attached
      *
-     * @param  Zend_Form $form
+     * @param Zend_Form $form
      * @return Zend_Form_DisplayGroup
      */
     public function setForm(Zend_Form $form)
@@ -314,18 +318,18 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Filter a name to only allow valid variable characters
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     public function filterName($value)
     {
-        return preg_replace('/[^a-zA-Z0-9_\x7f-\xff]/', '', (string) $value);
+        return preg_replace('/[^a-zA-Z0-9_\x7f-\xff]/', '', (string)$value);
     }
 
     /**
      * Set group name
      *
-     * @param  string $name
+     * @param string $name
      * @return Zend_Form_DisplayGroup
      */
     public function setName($name)
@@ -333,7 +337,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
         $name = $this->filtername($name);
         if (('0' !== $name) && empty($name)) {
             require_once 'Zend/Form/Exception.php';
-            throw new Zend_Form_Exception('Invalid name provided; must contain only valid variable characters and be non-empty');
+            throw new Zend_Form_Exception(
+                'Invalid name provided; must contain only valid variable characters and be non-empty'
+            );
         }
 
         $this->_name = $name;
@@ -394,12 +400,12 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set group legend
      *
-     * @param  string $legend
+     * @param string $legend
      * @return Zend_Form_DisplayGroup
      */
     public function setLegend($legend)
     {
-        return $this->setAttrib('legend', (string) $legend);
+        return $this->setAttrib('legend', (string)$legend);
     }
 
     /**
@@ -415,12 +421,12 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set description
      *
-     * @param  string $value
+     * @param string $value
      * @return Zend_Form_DisplayGroup
      */
     public function setDescription($value)
     {
-        $this->_description = (string) $value;
+        $this->_description = (string)$value;
         return $this;
     }
 
@@ -437,12 +443,12 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set group order
      *
-     * @param  int $order
+     * @param int $order
      * @return Zend_Form_Element
      */
     public function setOrder($order)
     {
-        $this->_order = (int) $order;
+        $this->_order = (int)$order;
         return $this;
     }
 
@@ -461,7 +467,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Add element to stack
      *
-     * @param  Zend_Form_Element $element
+     * @param Zend_Form_Element $element
      * @return Zend_Form_DisplayGroup
      */
     public function addElement(Zend_Form_Element $element)
@@ -480,7 +486,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Add multiple elements at once
      *
-     * @param  array $elements
+     * @param array $elements
      * @return Zend_Form_DisplayGroup
      * @throws Zend_Form_Exception if any element is not a Zend_Form_Element
      */
@@ -489,7 +495,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
         foreach ($elements as $element) {
             if (!$element instanceof Zend_Form_Element) {
                 require_once 'Zend/Form/Exception.php';
-                throw new Zend_Form_Exception('elements passed via array to addElements() must be Zend_Form_Elements only');
+                throw new Zend_Form_Exception(
+                    'elements passed via array to addElements() must be Zend_Form_Elements only'
+                );
             }
             $this->addElement($element);
         }
@@ -499,7 +507,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set multiple elements at once (overwrites)
      *
-     * @param  array $elements
+     * @param array $elements
      * @return Zend_Form_DisplayGroup
      */
     public function setElements(array $elements)
@@ -511,12 +519,12 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Retrieve element
      *
-     * @param  string $name
+     * @param string $name
      * @return Zend_Form_Element|null
      */
     public function getElement($name)
     {
-        $name = (string) $name;
+        $name = (string)$name;
         if (isset($this->_elements[$name])) {
             return $this->_elements[$name];
         }
@@ -536,12 +544,12 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Remove a single element
      *
-     * @param  string $name
+     * @param string $name
      * @return boolean
      */
     public function removeElement($name)
     {
-        $name = (string) $name;
+        $name = (string)$name;
         if (array_key_exists($name, $this->_elements)) {
             unset($this->_elements[$name]);
             $this->_groupUpdated = true;
@@ -568,7 +576,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set plugin loader
      *
-     * @param  Zend_Loader_PluginLoader $loader
+     * @param Zend_Loader_PluginLoader $loader
      * @return Zend_Form_DisplayGroup
      */
     public function setPluginLoader(Zend_Loader_PluginLoader $loader)
@@ -590,8 +598,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Add a prefix path for the plugin loader
      *
-     * @param  string $prefix
-     * @param  string $path
+     * @param string $prefix
+     * @param string $path
      * @return Zend_Form_DisplayGroup
      */
     public function addPrefixPath($prefix, $path)
@@ -603,7 +611,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Add several prefix paths at once
      *
-     * @param  array $spec
+     * @param array $spec
      * @return Zend_Form_DisplayGroup
      */
     public function addPrefixPaths(array $spec)
@@ -635,12 +643,12 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set flag to disable loading default decorators
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_Form_Element
      */
     public function setDisableLoadDefaultDecorators($flag)
     {
-        $this->_disableLoadDefaultDecorators = (bool) $flag;
+        $this->_disableLoadDefaultDecorators = (bool)$flag;
         return $this;
     }
 
@@ -668,9 +676,9 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
         $decorators = $this->getDecorators();
         if (empty($decorators)) {
             $this->addDecorator('FormElements')
-                 ->addDecorator('HtmlTag', array('tag' => 'dl'))
-                 ->addDecorator('Fieldset')
-                 ->addDecorator('DtDdWrapper');
+                ->addDecorator('HtmlTag', array('tag' => 'dl'))
+                ->addDecorator('Fieldset')
+                ->addDecorator('DtDdWrapper');
         }
         return $this;
     }
@@ -678,8 +686,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Instantiate a decorator based on class name or class name fragment
      *
-     * @param  string $name
-     * @param  null|array $options
+     * @param string $name
+     * @param null|array $options
      * @return Zend_Form_Decorator_Interface
      */
     protected function _getDecorator($name, $options = null)
@@ -697,8 +705,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Add a decorator for rendering the group
      *
-     * @param  string|Zend_Form_Decorator_Interface $decorator
-     * @param  array|Zend_Config $options Options with which to initialize decorator
+     * @param string|Zend_Form_Decorator_Interface $decorator
+     * @param array|Zend_Config $options Options with which to initialize decorator
      * @return Zend_Form_DisplayGroup
      */
     public function addDecorator($decorator, $options = null)
@@ -706,10 +714,10 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
         if ($decorator instanceof Zend_Form_Decorator_Interface) {
             $name = get_class($decorator);
         } elseif (is_string($decorator)) {
-            $name      = $decorator;
+            $name = $decorator;
             $decorator = array(
                 'decorator' => $name,
-                'options'   => $options,
+                'options' => $options,
             );
         } elseif (is_array($decorator)) {
             foreach ($decorator as $name => $spec) {
@@ -722,14 +730,16 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
             if (is_string($spec)) {
                 $decorator = array(
                     'decorator' => $spec,
-                    'options'   => $options,
+                    'options' => $options,
                 );
             } elseif ($spec instanceof Zend_Form_Decorator_Interface) {
                 $decorator = $spec;
             }
         } else {
             require_once 'Zend/Form/Exception.php';
-            throw new Zend_Form_Exception('Invalid decorator provided to addDecorator; must be string or Zend_Form_Decorator_Interface');
+            throw new Zend_Form_Exception(
+                'Invalid decorator provided to addDecorator; must be string or Zend_Form_Decorator_Interface'
+            );
         }
 
         $this->_decorators[$name] = $decorator;
@@ -740,7 +750,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Add many decorators at once
      *
-     * @param  array $decorators
+     * @param array $decorators
      * @return Zend_Form_DisplayGroup
      */
     public function addDecorators(array $decorators)
@@ -754,7 +764,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
                     $this->addDecorator($decoratorInfo);
                 }
             } elseif (is_array($decoratorInfo)) {
-                $argc    = count($decoratorInfo);
+                $argc = count($decoratorInfo);
                 $options = array();
                 if (isset($decoratorInfo['decorator'])) {
                     $decorator = $decoratorInfo['decorator'];
@@ -767,7 +777,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
                         case (0 == $argc):
                             break;
                         case (1 <= $argc):
-                            $decorator  = array_shift($decoratorInfo);
+                            $decorator = array_shift($decoratorInfo);
                         case (2 <= $argc):
                             $options = array_shift($decoratorInfo);
                         default:
@@ -787,7 +797,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Overwrite all decorators
      *
-     * @param  array $decorators
+     * @param array $decorators
      * @return Zend_Form_DisplayGroup
      */
     public function setDecorators(array $decorators)
@@ -799,7 +809,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Retrieve a registered decorator
      *
-     * @param  string $name
+     * @param string $name
      * @return false|Zend_Form_Decorator_Abstract
      */
     public function getDecorator($name)
@@ -846,7 +856,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Remove a single decorator
      *
-     * @param  string $name
+     * @param string $name
      * @return bool
      */
     public function removeDecorator($name)
@@ -879,7 +889,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set view
      *
-     * @param  Zend_View_Interface $view
+     * @param Zend_View_Interface $view
      * @return Zend_Form_DisplayGroup
      */
     public function setView(Zend_View_Interface $view = null)
@@ -941,7 +951,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Set translator object
      *
-     * @param  Zend_Translate|Zend_Translate_Adapter|null $translator
+     * @param Zend_Translate|Zend_Translate_Adapter|null $translator
      * @return Zend_Form_DisplayGroup
      */
     public function setTranslator($translator = null)
@@ -983,18 +993,18 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      */
     public function hasTranslator()
     {
-        return (bool) $this->getTranslator();
+        return (bool)$this->getTranslator();
     }
 
     /**
      * Indicate whether or not translation should be disabled
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_Form_DisplayGroup
      */
     public function setDisableTranslator($flag)
     {
-        $this->_translatorDisabled = (bool) $flag;
+        $this->_translatorDisabled = (bool)$flag;
         return $this;
     }
 
@@ -1013,8 +1023,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      *
      * Call renderDecoratorName() to render a specific decorator.
      *
-     * @param  string $method
-     * @param  array $args
+     * @param string $method
+     * @param array $args
      * @return string
      * @throws Zend_Form_Exception for invalid decorator or invalid method call
      */
@@ -1145,8 +1155,8 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
     /**
      * Lazy-load a decorator
      *
-     * @param  array $decorator Decorator type and options
-     * @param  mixed $name Decorator name or alias
+     * @param array $decorator Decorator type and options
+     * @param mixed $name Decorator name or alias
      * @return Zend_Form_Decorator_Interface
      */
     protected function _loadDecorator(array $decorator, $name)
@@ -1158,10 +1168,10 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
 
         $instance = $this->_getDecorator($decorator['decorator'], $decorator['options']);
         if ($sameName) {
-            $newName            = get_class($instance);
-            $decoratorNames     = array_keys($this->_decorators);
-            $order              = array_flip($decoratorNames);
-            $order[$newName]    = $order[$name];
+            $newName = get_class($instance);
+            $decoratorNames = array_keys($this->_decorators);
+            $order = array_flip($decoratorNames);
+            $order[$newName] = $order[$name];
             $decoratorsExchange = array();
             unset($order[$name]);
             asort($order);

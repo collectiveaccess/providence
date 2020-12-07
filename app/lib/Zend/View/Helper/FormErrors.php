@@ -45,23 +45,23 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
     /**#@+
      * @var string Element block start/end tags and separator
      */
-    protected $_htmlElementEnd       = '</li></ul>';
-    protected $_htmlElementStart     = '<ul%s><li>';
+    protected $_htmlElementEnd = '</li></ul>';
+    protected $_htmlElementStart = '<ul%s><li>';
     protected $_htmlElementSeparator = '</li><li>';
     /**#@-*/
 
     /**
      * Render form errors
      *
-     * @param  string|array $errors Error(s) to render
-     * @param  array $options
+     * @param string|array $errors Error(s) to render
+     * @param array $options
      * @return string
      */
     public function formErrors($errors, array $options = null)
     {
         $escape = true;
         if (isset($options['escape'])) {
-            $escape = (bool) $options['escape'];
+            $escape = (bool)$options['escape'];
             unset($options['escape']);
         }
 
@@ -82,7 +82,7 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
         $start = $this->getElementStart();
         if (strstr($start, '%s')) {
             $attribs = $this->_htmlAttribs($options);
-            $start   = sprintf($start, $attribs);
+            $start = sprintf($start, $attribs);
         }
 
         if ($escape) {
@@ -91,9 +91,9 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
             }
         }
 
-        $html  = $start
-               . implode($this->getElementSeparator(), (array) $errors)
-               . $this->getElementEnd();
+        $html = $start
+            . implode($this->getElementSeparator(), (array)$errors)
+            . $this->getElementEnd();
 
         return $html;
     }
@@ -101,12 +101,12 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
     /**
      * Set end string for displaying errors
      *
-     * @param  string $string
+     * @param string $string
      * @return Zend_View_Helper_FormErrors
      */
     public function setElementEnd($string)
     {
-        $this->_htmlElementEnd = (string) $string;
+        $this->_htmlElementEnd = (string)$string;
         return $this;
     }
 
@@ -123,12 +123,12 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
     /**
      * Set separator string for displaying errors
      *
-     * @param  string $string
+     * @param string $string
      * @return Zend_View_Helper_FormErrors
      */
     public function setElementSeparator($string)
     {
-        $this->_htmlElementSeparator = (string) $string;
+        $this->_htmlElementSeparator = (string)$string;
         return $this;
     }
 
@@ -145,12 +145,12 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
     /**
      * Set start string for displaying errors
      *
-     * @param  string $string
+     * @param string $string
      * @return Zend_View_Helper_FormErrors
      */
     public function setElementStart($string)
     {
-        $this->_htmlElementStart = (string) $string;
+        $this->_htmlElementStart = (string)$string;
         return $this;
     }
 

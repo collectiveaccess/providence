@@ -29,5 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
+
 ?>
-<div><?php print $this->render($this->getVar('viewer').".php"); ?></div>	
+<div><?php print $this->render($this->getVar('viewer') . ".php"); ?></div>

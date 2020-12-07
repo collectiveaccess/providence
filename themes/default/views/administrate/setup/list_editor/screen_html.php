@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/views/administrate/setup/list_editor_screen_html.php : 
  * ----------------------------------------------------------------------
@@ -25,37 +26,69 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_list 			= $this->getVar('t_subject');
-	$vn_list_id 		= $this->getVar('subject_id');
+$t_list = $this->getVar('t_subject');
+$vn_list_id = $this->getVar('subject_id');
 
-	$vb_can_edit	 	= $t_list->isSaveable($this->request);
-	$vb_can_delete		= $t_list->isDeletable($this->request);
-	
-	if ($vb_can_edit) {
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ListEditorForm').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup/list_editor', 'ListEditor', 'Edit/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)), 
-			'', 
-			((intval($vn_list_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup/list_editor', 'ListEditor', 'Delete/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)) : ''
-		);
-	}
-?>
-	<div class="sectionBox">
-<?php
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/list_id/'.$vn_list_id, 'ListEditorForm', null, 'POST', 'multipart/form-data');
-			
-			$va_form_elements = $t_list->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'ListEditorForm'), $va_bundle_list);
-			
-			print join("\n", $va_form_elements);
-			
-			if ($vb_can_edit) { print $vs_control_box; }
-?>
-			<input type='hidden' name='list_id' value='<?php print $vn_list_id; ?>'/>
-		</form>
-	</div>
+$vb_can_edit = $t_list->isSaveable($this->request);
+$vb_can_delete = $t_list->isDeletable($this->request);
 
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
-	<?php print caEditorFieldList($this->request, $t_list, $va_bundle_list); ?>
+if ($vb_can_edit) {
+    print $vs_control_box = caFormControlBox(
+        caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ListEditorForm') . ' ' .
+        caFormNavButton(
+            $this->request,
+            __CA_NAV_ICON_CANCEL__,
+            _t("Cancel"),
+            '',
+            'administrate/setup/list_editor',
+            'ListEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('list_id' => $vn_list_id)
+        ),
+        '',
+        ((intval($vn_list_id) > 0) && $vb_can_delete) ? caNavButton(
+            $this->request,
+            __CA_NAV_ICON_DELETE__,
+            _t("Delete"),
+            '',
+            'administrate/setup/list_editor',
+            'ListEditor',
+            'Delete/' . $this->request->getActionExtra(),
+            array('list_id' => $vn_list_id)
+        ) : ''
+    );
+}
+?>
+<div class="sectionBox">
+    <?php
+    print caFormTag(
+        $this->request,
+        'Save/' . $this->request->getActionExtra() . '/list_id/' . $vn_list_id,
+        'ListEditorForm',
+        null,
+        'POST',
+        'multipart/form-data'
+    );
+
+    $va_form_elements = $t_list->getBundleFormHTMLForScreen(
+        $this->request->getActionExtra(),
+        array(
+            'request' => $this->request,
+            'formName' => 'ListEditorForm'
+        ),
+        $va_bundle_list
+    );
+
+    print join("\n", $va_form_elements);
+
+    if ($vb_can_edit) {
+        print $vs_control_box;
+    }
+    ?>
+    <input type='hidden' name='list_id' value='<?php print $vn_list_id; ?>'/>
+    </form>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>
+
+<?php print caEditorFieldList($this->request, $t_list, $va_bundle_list); ?>

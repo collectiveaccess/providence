@@ -30,63 +30,71 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php');
 
 /**
  * Class LabelTemplateTest
  * Note: Requires testing profile!
  */
-class LabelTemplateTest extends BaseTestWithData {
-	# -------------------------------------------------------
-	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
-	 */
-	private $opt_object = null;
-	# -------------------------------------------------------
-	public function setUp() {
-		// don't forget to call parent so that the request is set up
-		parent::setUp();
+class LabelTemplateTest extends BaseTestWithData
+{
+    # -------------------------------------------------------
+    /**
+     * @var BundlableLabelableBaseModelWithAttributes
+     */
+    private $opt_object = null;
 
-		/**
-		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
-		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
-		 */
-		$vn_test_record = $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "My test image",
-				)
-			),
-			'nonpreferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "Alternate title for test image",
-					"type_id" => 'alt'
-				),
-				array(
-					"locale" => "en_US",
-					"name" => "Use for title for test image",
-					"type_id" => 'uf'
-				)
-			),
-		));
+    # -------------------------------------------------------
+    public function setUp()
+    {
+        // don't forget to call parent so that the request is set up
+        parent::setUp();
 
-		$this->assertGreaterThan(0, $vn_test_record);
+        /**
+         * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+         * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+         */
+        $vn_test_record = $this->addTestRecord(
+            'ca_objects',
+            array(
+                'intrinsic_fields' => array(
+                    'type_id' => 'image',
+                ),
+                'preferred_labels' => array(
+                    array(
+                        "locale" => "en_US",
+                        "name" => "My test image",
+                    )
+                ),
+                'nonpreferred_labels' => array(
+                    array(
+                        "locale" => "en_US",
+                        "name" => "Alternate title for test image",
+                        "type_id" => 'alt'
+                    ),
+                    array(
+                        "locale" => "en_US",
+                        "name" => "Use for title for test image",
+                        "type_id" => 'uf'
+                    )
+                ),
+            )
+        );
 
-		$this->opt_object = new ca_objects($vn_test_record);
-	}
-	# -------------------------------------------------------
-	public function testGets() {
-		$this->assertEquals(
-			'Alternate title for test image (alternate)<br />Use for title for test image (use for)',
-			$this->opt_object->getWithTemplate(
-				'<unit relativeTo="ca_objects.nonpreferred_labels" delimiter="<br />">^ca_objects.nonpreferred_labels.name (^ca_objects.nonpreferred_labels.type_id)</unit>'
-			)
-		);
-	}
-	# -------------------------------------------------------
+        $this->assertGreaterThan(0, $vn_test_record);
+
+        $this->opt_object = new ca_objects($vn_test_record);
+    }
+
+    # -------------------------------------------------------
+    public function testGets()
+    {
+        $this->assertEquals(
+            'Alternate title for test image (alternate)<br />Use for title for test image (use for)',
+            $this->opt_object->getWithTemplate(
+                '<unit relativeTo="ca_objects.nonpreferred_labels" delimiter="<br />">^ca_objects.nonpreferred_labels.name (^ca_objects.nonpreferred_labels.type_id)</unit>'
+            )
+        );
+    }
+    # -------------------------------------------------------
 }

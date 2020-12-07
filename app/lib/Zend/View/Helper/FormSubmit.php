@@ -69,12 +69,12 @@ class Zend_View_Helper_FormSubmit extends Zend_View_Helper_FormElement
 
         // Render the button.
         $xhtml = '<input type="submit"'
-               . ' name="' . $this->view->escape($name) . '"'
-               . $id
-               . ' value="' . $this->view->escape($value) . '"'
-               . $disabled
-               . $this->_htmlAttribs($attribs)
-               . $this->getClosingBracket();
+            . ' name="' . $this->view->escape($name) . '"'
+            . $id
+            . ' value="' . $this->view->escape($value) . '"'
+            . $disabled
+            . $this->_htmlAttribs($attribs)
+            . $this->getClosingBracket();
 
         return $xhtml;
     }

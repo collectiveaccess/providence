@@ -43,12 +43,12 @@ class Zend_Dojo_Form_Element_TextBox extends Zend_Dojo_Form_Element_Dijit
     /**
      * Set lowercase flag
      *
-     * @param  bool $lowercase
+     * @param bool $lowercase
      * @return Zend_Dojo_Form_Element_TextBox
      */
     public function setLowercase($flag)
     {
-        $this->setDijitParam('lowercase', (bool) $flag);
+        $this->setDijitParam('lowercase', (bool)$flag);
         return $this;
     }
 
@@ -68,12 +68,12 @@ class Zend_Dojo_Form_Element_TextBox extends Zend_Dojo_Form_Element_Dijit
     /**
      * Set propercase flag
      *
-     * @param  bool $propercase
+     * @param bool $propercase
      * @return Zend_Dojo_Form_Element_TextBox
      */
     public function setPropercase($flag)
     {
-        $this->setDijitParam('propercase', (bool) $flag);
+        $this->setDijitParam('propercase', (bool)$flag);
         return $this;
     }
 
@@ -93,12 +93,12 @@ class Zend_Dojo_Form_Element_TextBox extends Zend_Dojo_Form_Element_Dijit
     /**
      * Set uppercase flag
      *
-     * @param  bool $uppercase
+     * @param bool $uppercase
      * @return Zend_Dojo_Form_Element_TextBox
      */
     public function setUppercase($flag)
     {
-        $this->setDijitParam('uppercase', (bool) $flag);
+        $this->setDijitParam('uppercase', (bool)$flag);
         return $this;
     }
 
@@ -118,12 +118,12 @@ class Zend_Dojo_Form_Element_TextBox extends Zend_Dojo_Form_Element_Dijit
     /**
      * Set trim flag
      *
-     * @param  bool $trim
+     * @param bool $trim
      * @return Zend_Dojo_Form_Element_TextBox
      */
     public function setTrim($flag)
     {
-        $this->setDijitParam('trim', (bool) $flag);
+        $this->setDijitParam('trim', (bool)$flag);
         return $this;
     }
 
@@ -143,12 +143,12 @@ class Zend_Dojo_Form_Element_TextBox extends Zend_Dojo_Form_Element_Dijit
     /**
      * Set maxLength
      *
-     * @param  int $length
+     * @param int $length
      * @return Zend_Dojo_Form_Element_TextBox
      */
     public function setMaxLength($length)
     {
-        $this->setDijitParam('maxLength', (int) $length);
+        $this->setDijitParam('maxLength', (int)$length);
         return $this;
     }
 

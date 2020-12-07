@@ -50,6 +50,6 @@ class Zend_Service_DeveloperGarden_Response_SmsValidation_GetValidatedNumbersRes
      */
     public function getNumbers()
     {
-        return (array) $this->validatedNumbers;
+        return (array)$this->validatedNumbers;
     }
 }

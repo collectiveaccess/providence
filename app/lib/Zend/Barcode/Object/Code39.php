@@ -106,9 +106,9 @@ class Zend_Barcode_Object_Code39 extends Zend_Barcode_Object_ObjectAbstract
      */
     protected function _calculateBarcodeWidth()
     {
-        $quietZone       = $this->getQuietZone();
+        $quietZone = $this->getQuietZone();
         $characterLength = (6 * $this->_barThinWidth + 3 * $this->_barThickWidth + 1) * $this->_factor;
-        $encodedData     = strlen($this->getText()) * $characterLength - $this->_factor;
+        $encodedData = strlen($this->getText()) * $characterLength - $this->_factor;
         return $quietZone + $encodedData + $quietZone;
     }
 
@@ -152,18 +152,18 @@ class Zend_Barcode_Object_Code39 extends Zend_Barcode_Object_ObjectAbstract
      */
     protected function _prepareBarcode()
     {
-        $text         = str_split($this->getText());
+        $text = str_split($this->getText());
         $barcodeTable = array();
         foreach ($text as $char) {
             $barcodeChar = str_split($this->_codingMap[$char]);
-            $visible     = true;
+            $visible = true;
             foreach ($barcodeChar as $c) {
                 /* visible, width, top, length */
-                $width          = $c ? $this->_barThickWidth : $this->_barThinWidth;
-                $barcodeTable[] = array((int) $visible, $width, 0, 1);
-                $visible = ! $visible;
+                $width = $c ? $this->_barThickWidth : $this->_barThinWidth;
+                $barcodeTable[] = array((int)$visible, $width, 0, 1);
+                $visible = !$visible;
             }
-            $barcodeTable[] = array(0 , $this->_barThinWidth);
+            $barcodeTable[] = array(0, $this->_barThinWidth);
         }
         return $barcodeTable;
     }
@@ -171,14 +171,14 @@ class Zend_Barcode_Object_Code39 extends Zend_Barcode_Object_ObjectAbstract
     /**
      * Get barcode checksum
      *
-     * @param  string $text
+     * @param string $text
      * @return int
      */
     public function getChecksum($text)
     {
         $this->_checkText($text);
-        $text     = str_split($text);
-        $charset  = array_flip(array_keys($this->_codingMap));
+        $text = str_split($text);
+        $charset = array_flip(array_keys($this->_codingMap));
         $checksum = 0;
         foreach ($text as $character) {
             $checksum += $charset[$character];

@@ -73,9 +73,9 @@ class Zend_Config_Json extends Zend_Config
      * Note that the keys in $section will override any keys of the same
      * name in the sections that have been included via "_extends".
      *
-     * @param  string  $json     JSON file or string to process
-     * @param  mixed   $section Section to process
-     * @param  boolean $options Whether modifiacations are allowed at runtime
+     * @param string $json JSON file or string to process
+     * @param mixed $section Section to process
+     * @param boolean $options Whether modifiacations are allowed at runtime
      * @throws Zend_Config_Exception When JSON text is not set or cannot be loaded
      * @throws Zend_Config_Exception When section $sectionName cannot be found in $json
      */
@@ -94,15 +94,15 @@ class Zend_Config_Json extends Zend_Config
                 switch (strtolower($key)) {
                     case 'allow_modifications':
                     case 'allowmodifications':
-                        $allowModifications = (bool) $value;
+                        $allowModifications = (bool)$value;
                         break;
                     case 'skip_extends':
                     case 'skipextends':
-                        $this->_skipExtends = (bool) $value;
+                        $this->_skipExtends = (bool)$value;
                         break;
                     case 'ignore_constants':
                     case 'ignoreconstants':
-                        $this->_ignoreConstants = (bool) $value;
+                        $this->_ignoreConstants = (bool)$value;
                         break;
                     default:
                         break;
@@ -177,11 +177,11 @@ class Zend_Config_Json extends Zend_Config
      * Helper function to process each element in the section and handle
      * the "_extends" inheritance attribute.
      *
-     * @param  array            $data Data array to process
-     * @param  string           $section Section to process
-     * @param  array            $config  Configuration which was parsed yet
-     * @throws Zend_Config_Exception When $section cannot be found
+     * @param array $data Data array to process
+     * @param string $section Section to process
+     * @param array $config Configuration which was parsed yet
      * @return array
+     * @throws Zend_Config_Exception When $section cannot be found
      */
     protected function _processExtends(array $data, $section, array $config = array())
     {
@@ -190,7 +190,7 @@ class Zend_Config_Json extends Zend_Config
             throw new Zend_Config_Exception(sprintf('Section "%s" cannot be found', $section));
         }
 
-        $thisSection  = $data[$section];
+        $thisSection = $data[$section];
 
         if (is_array($thisSection) && isset($thisSection[self::EXTENDS_NAME])) {
             if (is_array($thisSection[self::EXTENDS_NAME])) {
@@ -213,7 +213,7 @@ class Zend_Config_Json extends Zend_Config
     /**
      * Replace any constants referenced in a string with their values
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     protected function _replaceConstants($value)

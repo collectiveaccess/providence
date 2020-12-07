@@ -47,7 +47,7 @@ class Zend_Pdf_Action_URI extends Zend_Pdf_Action
      * Object constructor
      *
      * @param Zend_Pdf_Element_Dictionary $dictionary
-     * @param SplObjectStorage            $processedActions  list of already processed action dictionaries, used to avoid cyclic references
+     * @param SplObjectStorage $processedActions list of already processed action dictionaries, used to avoid cyclic references
      * @throws Zend_Pdf_Exception
      */
     public function __construct(Zend_Pdf_Element $dictionary, SplObjectStorage $processedActions)
@@ -79,8 +79,8 @@ class Zend_Pdf_Action_URI extends Zend_Pdf_Action
     /**
      * Create new Zend_Pdf_Action_URI object using specified uri
      *
-     * @param string  $uri    The URI to resolve, encoded in 7-bit ASCII
-     * @param boolean $isMap  A flag specifying whether to track the mouse position when the URI is resolved
+     * @param string $uri The URI to resolve, encoded in 7-bit ASCII
+     * @param boolean $isMap A flag specifying whether to track the mouse position when the URI is resolved
      * @return Zend_Pdf_Action_URI
      */
     public static function create($uri, $isMap = false)
@@ -89,9 +89,9 @@ class Zend_Pdf_Action_URI extends Zend_Pdf_Action
 
         $dictionary = new Zend_Pdf_Element_Dictionary();
         $dictionary->Type = new Zend_Pdf_Element_Name('Action');
-        $dictionary->S    = new Zend_Pdf_Element_Name('URI');
+        $dictionary->S = new Zend_Pdf_Element_Name('URI');
         $dictionary->Next = null;
-        $dictionary->URI  = new Zend_Pdf_Element_String($uri);
+        $dictionary->URI = new Zend_Pdf_Element_String($uri);
         if ($isMap) {
             $dictionary->IsMap = new Zend_Pdf_Element_Boolean(true);
         }
@@ -102,7 +102,7 @@ class Zend_Pdf_Action_URI extends Zend_Pdf_Action
     /**
      * Set URI to resolve
      *
-     * @param string $uri   The uri to resolve, encoded in 7-bit ASCII.
+     * @param string $uri The uri to resolve, encoded in 7-bit ASCII.
      * @return Zend_Pdf_Action_URI
      */
     public function setUri($uri)
@@ -133,7 +133,7 @@ class Zend_Pdf_Action_URI extends Zend_Pdf_Action
      * performed should be transformed from device space to user space and then offset
      * relative to the upper-left corner of the annotation rectangle.
      *
-     * @param boolean $isMap  A flag specifying whether to track the mouse position when the URI is resolved
+     * @param boolean $isMap A flag specifying whether to track the mouse position when the URI is resolved
      * @return Zend_Pdf_Action_URI
      */
     public function setIsMap($isMap)
@@ -161,7 +161,7 @@ class Zend_Pdf_Action_URI extends Zend_Pdf_Action
      */
     public function getIsMap()
     {
-        return $this->_actionDictionary->IsMap !== null  &&
-               $this->_actionDictionary->IsMap->value;
+        return $this->_actionDictionary->IsMap !== null &&
+            $this->_actionDictionary->IsMap->value;
     }
 }

@@ -37,13 +37,13 @@ class Zend_Cloud_QueueService_MessageSet implements Countable, IteratorAggregate
     /**
      * Constructor
      *
-     * @param  array $messages
+     * @param array $messages
      * @return void
      */
     public function __construct(array $messages)
     {
         $this->_messageCount = count($messages);
-        $this->_messages     = new ArrayIterator($messages);
+        $this->_messages = new ArrayIterator($messages);
     }
 
     /**

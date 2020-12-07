@@ -26,11 +26,19 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_role = $this->getVar('t_role');
-	$vn_role_id = $this->getVar('role_id');
+$t_role = $this->getVar('t_role');
+$vn_role_id = $this->getVar('role_id');
 ?>
 <div class="sectionBox">
-<?php
-	print caDeleteWarningBox($this->request, $t_role, $t_role->getName(), 'administrate/access', 'roles', 'ListRoles', array('role_id' => $vn_role_id));
-?>
+    <?php
+    print caDeleteWarningBox(
+        $this->request,
+        $t_role,
+        $t_role->getName(),
+        'administrate/access',
+        'roles',
+        'ListRoles',
+        array('role_id' => $vn_role_id)
+    );
+    ?>
 </div>

@@ -69,13 +69,13 @@ class Zend_Amf_Value_MessageHeader
      * @param misc $content
      * @param integer $length
      */
-    public function __construct($name, $mustRead, $data, $length=null)
+    public function __construct($name, $mustRead, $data, $length = null)
     {
-        $this->name     = $name;
-        $this->mustRead = (bool) $mustRead;
-        $this->data     = $data;
+        $this->name = $name;
+        $this->mustRead = (bool)$mustRead;
+        $this->data = $data;
         if (null !== $length) {
-            $this->length = (int) $length;
+            $this->length = (int)$length;
         }
     }
 }

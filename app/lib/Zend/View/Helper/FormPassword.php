@@ -76,12 +76,12 @@ class Zend_View_Helper_FormPassword extends Zend_View_Helper_FormElement
 
         // render the element
         $xhtml = '<input type="password"'
-                . ' name="' . $this->view->escape($name) . '"'
-                . ' id="' . $this->view->escape($id) . '"'
-                . $valueString
-                . $disabled
-                . $this->_htmlAttribs($attribs)
-                . $this->getClosingBracket();
+            . ' name="' . $this->view->escape($name) . '"'
+            . ' id="' . $this->view->escape($id) . '"'
+            . $valueString
+            . $disabled
+            . $this->_htmlAttribs($attribs)
+            . $this->getClosingBracket();
 
         return $xhtml;
     }

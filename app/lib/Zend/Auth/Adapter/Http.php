@@ -154,7 +154,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Constructor
      *
-     * @param  array $config Configuration settings:
+     * @param array $config Configuration settings:
      *    'accept_schemes' => 'basic'|'digest'|'basic digest'
      *    'realm' => <string>
      *    'digest_domains' => <string> Space-delimited list of URIs
@@ -162,8 +162,8 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
      *    'use_opaque' => <bool> Whether to send the opaque value in the header
      *    'alogrithm' => <string> See $_supportedAlgos. Default: MD5
      *    'proxy_auth' => <bool> Whether to do authentication as a Proxy
-     * @throws Zend_Auth_Adapter_Exception
      * @return void
+     * @throws Zend_Auth_Adapter_Exception
      */
     public function __construct(array $config)
     {
@@ -172,10 +172,10 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
-            throw new Zend_Auth_Adapter_Exception(__CLASS__  . ' requires the \'hash\' extension');
+            throw new Zend_Auth_Adapter_Exception(__CLASS__ . ' requires the \'hash\' extension');
         }
 
-        $this->_request  = null;
+        $this->_request = null;
         $this->_response = null;
         $this->_ieNoOpaque = false;
 
@@ -195,8 +195,10 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
-            throw new Zend_Auth_Adapter_Exception('No supported schemes given in \'accept_schemes\'. Valid values: '
-                                                . implode(', ', $this->_supportedSchemes));
+            throw new Zend_Auth_Adapter_Exception(
+                'No supported schemes given in \'accept_schemes\'. Valid values: '
+                . implode(', ', $this->_supportedSchemes)
+            );
         }
 
         // Double-quotes are used to delimit the realm string in the HTTP header,
@@ -209,8 +211,10 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
-            throw new Zend_Auth_Adapter_Exception('Config key \'realm\' is required, and must contain only printable '
-                                                . 'characters, excluding quotation marks and colons');
+            throw new Zend_Auth_Adapter_Exception(
+                'Config key \'realm\' is required, and must contain only printable '
+                . 'characters, excluding quotation marks and colons'
+            );
         } else {
             $this->_realm = $config['realm'];
         }
@@ -223,8 +227,10 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
                  * @see Zend_Auth_Adapter_Exception
                  */
                 require_once 'Zend/Auth/Adapter/Exception.php';
-                throw new Zend_Auth_Adapter_Exception('Config key \'digest_domains\' is required, and must contain '
-                                                    . 'only printable characters, excluding quotation marks');
+                throw new Zend_Auth_Adapter_Exception(
+                    'Config key \'digest_domains\' is required, and must contain '
+                    . 'only printable characters, excluding quotation marks'
+                );
             } else {
                 $this->_domains = $config['digest_domains'];
             }
@@ -235,14 +241,16 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
                  * @see Zend_Auth_Adapter_Exception
                  */
                 require_once 'Zend/Auth/Adapter/Exception.php';
-                throw new Zend_Auth_Adapter_Exception('Config key \'nonce_timeout\' is required, and must be an '
-                                                    . 'integer');
+                throw new Zend_Auth_Adapter_Exception(
+                    'Config key \'nonce_timeout\' is required, and must be an '
+                    . 'integer'
+                );
             } else {
-                $this->_nonceTimeout = (int) $config['nonce_timeout'];
+                $this->_nonceTimeout = (int)$config['nonce_timeout'];
             }
 
             // We use the opaque value unless explicitly told not to
-            if (isset($config['use_opaque']) && false == (bool) $config['use_opaque']) {
+            if (isset($config['use_opaque']) && false == (bool)$config['use_opaque']) {
                 $this->_useOpaque = false;
             } else {
                 $this->_useOpaque = true;
@@ -256,7 +264,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         }
 
         // Don't be a proxy unless explicitly told to do so
-        if (isset($config['proxy_auth']) && true == (bool) $config['proxy_auth']) {
+        if (isset($config['proxy_auth']) && true == (bool)$config['proxy_auth']) {
             $this->_imaProxy = true;  // I'm a Proxy
         } else {
             $this->_imaProxy = false;
@@ -266,7 +274,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Setter for the _basicResolver property
      *
-     * @param  Zend_Auth_Adapter_Http_Resolver_Interface $resolver
+     * @param Zend_Auth_Adapter_Http_Resolver_Interface $resolver
      * @return Zend_Auth_Adapter_Http Provides a fluent interface
      */
     public function setBasicResolver(Zend_Auth_Adapter_Http_Resolver_Interface $resolver)
@@ -289,7 +297,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Setter for the _digestResolver property
      *
-     * @param  Zend_Auth_Adapter_Http_Resolver_Interface $resolver
+     * @param Zend_Auth_Adapter_Http_Resolver_Interface $resolver
      * @return Zend_Auth_Adapter_Http Provides a fluent interface
      */
     public function setDigestResolver(Zend_Auth_Adapter_Http_Resolver_Interface $resolver)
@@ -312,7 +320,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Setter for the Request object
      *
-     * @param  Zend_Controller_Request_Http $request
+     * @param Zend_Controller_Request_Http $request
      * @return Zend_Auth_Adapter_Http Provides a fluent interface
      */
     public function setRequest(Zend_Controller_Request_Http $request)
@@ -335,7 +343,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Setter for the Response object
      *
-     * @param  Zend_Controller_Response_Http $response
+     * @param Zend_Controller_Response_Http $response
      * @return Zend_Auth_Adapter_Http Provides a fluent interface
      */
     public function setResponse(Zend_Controller_Response_Http $response)
@@ -358,8 +366,8 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Authenticate
      *
-     * @throws Zend_Auth_Adapter_Exception
      * @return Zend_Auth_Result
+     * @throws Zend_Auth_Adapter_Exception
      */
     public function authenticate()
     {
@@ -369,8 +377,10 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
-            throw new Zend_Auth_Adapter_Exception('Request and Response objects must be set before calling '
-                                                . 'authenticate()');
+            throw new Zend_Auth_Adapter_Exception(
+                'Request and Response objects must be set before calling '
+                . 'authenticate()'
+            );
         }
 
         if ($this->_imaProxy) {
@@ -410,7 +420,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
                 break;
             case 'digest':
                 $result = $this->_digestAuth($authHeader);
-            break;
+                break;
             default:
                 /**
                  * @see Zend_Auth_Adapter_Exception
@@ -480,11 +490,11 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     protected function _digestHeader()
     {
         $wwwauth = 'Digest realm="' . $this->_realm . '", '
-                 . 'domain="' . $this->_domains . '", '
-                 . 'nonce="' . $this->_calcNonce() . '", '
-                 . ($this->_useOpaque ? 'opaque="' . $this->_calcOpaque() . '", ' : '')
-                 . 'algorithm="' . $this->_algo . '", '
-                 . 'qop="' . implode(',', $this->_supportedQops) . '"';
+            . 'domain="' . $this->_domains . '", '
+            . 'nonce="' . $this->_calcNonce() . '", '
+            . ($this->_useOpaque ? 'opaque="' . $this->_calcOpaque() . '", ' : '')
+            . 'algorithm="' . $this->_algo . '", '
+            . 'qop="' . implode(',', $this->_supportedQops) . '"';
 
         return $wwwauth;
     }
@@ -492,7 +502,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Basic Authentication
      *
-     * @param  string $header Client's Authorization header
+     * @param string $header Client's Authorization header
      * @throws Zend_Auth_Adapter_Exception
      * @return Zend_Auth_Result
      */
@@ -510,8 +520,10 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
-            throw new Zend_Auth_Adapter_Exception('A basicResolver object must be set before doing Basic '
-                                                . 'authentication');
+            throw new Zend_Auth_Adapter_Exception(
+                'A basicResolver object must be set before doing Basic '
+                . 'authentication'
+            );
         }
 
         // Decode the Authorization header
@@ -539,7 +551,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
 
         $password = $this->_basicResolver->resolve($creds[0], $this->_realm);
         if ($password && $this->_secureStringCompare($password, $creds[1])) {
-            $identity = array('username'=>$creds[0], 'realm'=>$this->_realm);
+            $identity = array('username' => $creds[0], 'realm' => $this->_realm);
             return new Zend_Auth_Result(Zend_Auth_Result::SUCCESS, $identity);
         } else {
             return $this->_challengeClient();
@@ -549,7 +561,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Digest Authentication
      *
-     * @param  string $header Client's Authorization header
+     * @param string $header Client's Authorization header
      * @throws Zend_Auth_Adapter_Exception
      * @return Zend_Auth_Result Valid auth result only on successful auth
      */
@@ -567,7 +579,9 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
-            throw new Zend_Auth_Adapter_Exception('A digestResolver object must be set before doing Digest authentication');
+            throw new Zend_Auth_Adapter_Exception(
+                'A digestResolver object must be set before doing Digest authentication'
+            );
         }
 
         $data = $this->_parseDigestAuth($header);
@@ -636,12 +650,12 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         // Calculate the server's version of the request-digest. This must
         // match $data['response']. See RFC 2617, section 3.2.2.1
         $message = $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $ha2;
-        $digest  = hash('md5', $ha1 . ':' . $message);
+        $digest = hash('md5', $ha1 . ':' . $message);
 
         // If our digest matches the client's let them in, otherwise return
         // a 401 code and exit to prevent access to the protected resource.
         if ($this->_secureStringCompare($digest, $data['response'])) {
-            $identity = array('username'=>$data['username'], 'realm'=>$data['realm']);
+            $identity = array('username' => $data['username'], 'realm' => $data['realm']);
             return new Zend_Auth_Result(Zend_Auth_Result::SUCCESS, $identity);
         } else {
             return $this->_challengeClient();
@@ -690,7 +704,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     /**
      * Parse Digest Authorization header
      *
-     * @param  string $header Client's Authorization: HTTP header
+     * @param string $header Client's Authorization: HTTP header
      * @return array|false Data elements from header, or false if any part of
      *         the header is invalid
      */
@@ -703,8 +717,8 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         // 400 code.
         $ret = preg_match('/username="([^"]+)"/', $header, $temp);
         if (!$ret || empty($temp[1])
-                  || !ctype_print($temp[1])
-                  || strpos($temp[1], ':') !== false) {
+            || !ctype_print($temp[1])
+            || strpos($temp[1], ':') !== false) {
             $data['username'] = '::invalid::';
         } else {
             $data['username'] = $temp[1];
@@ -773,7 +787,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         // if it can easily be overridden by the client?
         $ret = preg_match('/algorithm="?(' . $this->_algo . ')"?/', $header, $temp);
         if ($ret && !empty($temp[1])
-                 && in_array($temp[1], $this->_supportedAlgos)) {
+            && in_array($temp[1], $this->_supportedAlgos)) {
             $data['algorithm'] = $temp[1];
         } else {
             $data['algorithm'] = 'MD5';  // = $this->_algo; ?
@@ -796,7 +810,6 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         if ($this->_useOpaque) {
             $ret = preg_match('/opaque="([^"]+)"/', $header, $temp);
             if (!$ret || empty($temp[1])) {
-
                 // Big surprise: IE isn't RFC 2617-compliant.
                 if (false !== strpos($this->_request->getHeader('User-Agent'), 'MSIE')) {
                     $temp[1] = '';

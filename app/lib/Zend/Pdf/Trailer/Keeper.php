@@ -55,14 +55,15 @@ class Zend_Pdf_Trailer_Keeper extends Zend_Pdf_Trailer
      * @param Zend_Pdf_Element_Reference_Context $context
      * @param Zend_Pdf_Trailer $prev
      */
-    public function __construct(Zend_Pdf_Element_Dictionary $dict,
-                                Zend_Pdf_Element_Reference_Context $context,
-                                Zend_Pdf_Trailer $prev = null)
-    {
+    public function __construct(
+        Zend_Pdf_Element_Dictionary $dict,
+        Zend_Pdf_Element_Reference_Context $context,
+        Zend_Pdf_Trailer $prev = null
+    ) {
         parent::__construct($dict);
 
         $this->_context = $context;
-        $this->_prev    = $prev;
+        $this->_prev = $prev;
     }
 
     /**
@@ -120,8 +121,8 @@ class Zend_Pdf_Trailer_Keeper extends Zend_Pdf_Trailer
      * Get header of free objects list
      * Returns object number of last free object
      *
-     * @throws Zend_Pdf_Exception
      * @return integer
+     * @throws Zend_Pdf_Exception
      */
     public function getLastFreeObject()
     {

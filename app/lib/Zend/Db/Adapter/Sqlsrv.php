@@ -51,9 +51,9 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
      * @var array
      */
     protected $_config = array(
-        'dbname'       => null,
-        'username'     => null,
-        'password'     => null,
+        'dbname' => null,
+        'username' => null,
+        'password' => null,
     );
 
     /**
@@ -82,19 +82,19 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
+        Zend_Db::INT_TYPE => Zend_Db::INT_TYPE,
         Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INT'                => Zend_Db::INT_TYPE,
-        'SMALLINT'           => Zend_Db::INT_TYPE,
-        'TINYINT'            => Zend_Db::INT_TYPE,
-        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-        'FLOAT'              => Zend_Db::FLOAT_TYPE,
-        'MONEY'              => Zend_Db::FLOAT_TYPE,
-        'NUMERIC'            => Zend_Db::FLOAT_TYPE,
-        'REAL'               => Zend_Db::FLOAT_TYPE,
-        'SMALLMONEY'         => Zend_Db::FLOAT_TYPE,
+        Zend_Db::FLOAT_TYPE => Zend_Db::FLOAT_TYPE,
+        'INT' => Zend_Db::INT_TYPE,
+        'SMALLINT' => Zend_Db::INT_TYPE,
+        'TINYINT' => Zend_Db::INT_TYPE,
+        'BIGINT' => Zend_Db::BIGINT_TYPE,
+        'DECIMAL' => Zend_Db::FLOAT_TYPE,
+        'FLOAT' => Zend_Db::FLOAT_TYPE,
+        'MONEY' => Zend_Db::FLOAT_TYPE,
+        'NUMERIC' => Zend_Db::FLOAT_TYPE,
+        'REAL' => Zend_Db::FLOAT_TYPE,
+        'SMALLMONEY' => Zend_Db::FLOAT_TYPE,
     );
 
     /**
@@ -122,12 +122,14 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
              * @see Zend_Db_Adapter_Sqlsrv_Exception
              */
             require_once 'Zend/Db/Adapter/Sqlsrv/Exception.php';
-            throw new Zend_Db_Adapter_Sqlsrv_Exception('The Sqlsrv extension is required for this adapter but the extension is not loaded');
+            throw new Zend_Db_Adapter_Sqlsrv_Exception(
+                'The Sqlsrv extension is required for this adapter but the extension is not loaded'
+            );
         }
 
         $serverName = $this->_config['host'];
         if (isset($this->_config['port'])) {
-            $port        = (integer) $this->_config['port'];
+            $port = (integer)$this->_config['port'];
             $serverName .= ', ' . $port;
         }
 
@@ -135,11 +137,10 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
             'Database' => $this->_config['dbname'],
         );
 
-        if (isset($this->_config['username']) && isset($this->_config['password']))
-        {
+        if (isset($this->_config['username']) && isset($this->_config['password'])) {
             $connectionInfo += array(
-                'UID'      => $this->_config['username'],
-                'PWD'      => $this->_config['password'],
+                'UID' => $this->_config['username'],
+                'PWD' => $this->_config['password'],
             );
         }
         // else - windows authentication
@@ -179,19 +180,23 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
     protected function _checkRequiredOptions(array $config)
     {
         // we need at least a dbname
-        if (! array_key_exists('dbname', $config)) {
+        if (!array_key_exists('dbname', $config)) {
             /** @see Zend_Db_Adapter_Exception */
             require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception("Configuration array must have a key for 'dbname' that names the database instance");
+            throw new Zend_Db_Adapter_Exception(
+                "Configuration array must have a key for 'dbname' that names the database instance"
+            );
         }
 
-        if (! array_key_exists('password', $config) && array_key_exists('username', $config)) {
+        if (!array_key_exists('password', $config) && array_key_exists('username', $config)) {
             /**
              * @see Zend_Db_Adapter_Exception
              */
             require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception("Configuration array must have a key for 'password' for login credentials.
-                                                If Windows Authentication is desired, both keys 'username' and 'password' should be ommited from config.");
+            throw new Zend_Db_Adapter_Exception(
+                "Configuration array must have a key for 'password' for login credentials.
+                                                If Windows Authentication is desired, both keys 'username' and 'password' should be ommited from config."
+            );
         }
 
         if (array_key_exists('password', $config) && !array_key_exists('username', $config)) {
@@ -199,8 +204,10 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
              * @see Zend_Db_Adapter_Exception
              */
             require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception("Configuration array must have a key for 'username' for login credentials.
-                                                If Windows Authentication is desired, both keys 'username' and 'password' should be ommited from config.");
+            throw new Zend_Db_Adapter_Exception(
+                "Configuration array must have a key for 'username' for login credentials.
+                                                If Windows Authentication is desired, both keys 'username' and 'password' should be ommited from config."
+            );
         }
     }
 
@@ -217,8 +224,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
         $sql = null;
 
         // Default transaction level in sql server
-        if ($level === null)
-        {
+        if ($level === null) {
             $level = SQLSRV_TXN_READ_COMMITTED;
         }
 
@@ -240,7 +246,9 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
                 break;
             default:
                 require_once 'Zend/Db/Adapter/Sqlsrv/Exception.php';
-                throw new Zend_Db_Adapter_Sqlsrv_Exception("Invalid transaction isolation level mode '$level' specified");
+                throw new Zend_Db_Adapter_Sqlsrv_Exception(
+                    "Invalid transaction isolation level mode '$level' specified"
+                );
         }
 
         if (!sqlsrv_query($this->_connection, "SET TRANSACTION ISOLATION LEVEL $sql;")) {
@@ -259,7 +267,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
     public function isConnected()
     {
         return (is_resource($this->_connection)
-                && (get_resource_type($this->_connection) == 'SQL Server Connection')
+            && (get_resource_type($this->_connection) == 'SQL Server Connection')
         );
     }
 
@@ -303,7 +311,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
     /**
      * Quote a raw string.
      *
-     * @param string $value     Raw string
+     * @param string $value Raw string
      * @return string           Quoted string
      */
     protected function _quote($value)
@@ -327,24 +335,24 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
      * returns the last value generated for such a column, and the table name
      * argument is disregarded.
      *
-     * @param string $tableName   OPTIONAL Name of table.
-     * @param string $primaryKey  OPTIONAL Name of primary key column.
+     * @param string $tableName OPTIONAL Name of table.
+     * @param string $primaryKey OPTIONAL Name of primary key column.
      * @return string
      */
     public function lastInsertId($tableName = null, $primaryKey = null)
     {
         if ($tableName) {
             $tableName = $this->quote($tableName);
-            $sql       = 'SELECT IDENT_CURRENT (' . $tableName . ') as Current_Identity';
-            return (string) $this->fetchOne($sql);
+            $sql = 'SELECT IDENT_CURRENT (' . $tableName . ') as Current_Identity';
+            return (string)$this->fetchOne($sql);
         }
 
         if ($this->_lastInsertId > 0) {
-            return (string) $this->_lastInsertId;
+            return (string)$this->_lastInsertId;
         }
 
         $sql = $this->_lastInsertSQL;
-        return (string) $this->fetchOne($sql);
+        return (string)$this->fetchOne($sql);
     }
 
     /**
@@ -371,13 +379,13 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
 
         // build the statement
         $sql = "INSERT INTO "
-             . $this->quoteIdentifier($table, true)
-             . ' (' . implode(', ', $cols) . ') '
-             . 'VALUES (' . implode(', ', $vals) . ')'
-             . ' ' . $this->_lastInsertSQL;
+            . $this->quoteIdentifier($table, true)
+            . ' (' . implode(', ', $cols) . ') '
+            . 'VALUES (' . implode(', ', $vals) . ')'
+            . ' ' . $this->_lastInsertSQL;
 
         // execute the statement and return the number of affected rows
-        $stmt   = $this->query($sql, array_values($bind));
+        $stmt = $this->query($sql, array_values($bind));
         $result = $stmt->rowCount();
 
         $stmt->nextRowset();
@@ -423,21 +431,21 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
      * PRIMARY_POSITION => integer; position of column in primary key
      * IDENTITY         => integer; true if column is auto-generated with unique values
      *
-     * @todo Discover integer unsigned property.
-     *
      * @param string $tableName
      * @param string $schemaName OPTIONAL
      * @return array
+     * @todo Discover integer unsigned property.
+     *
      */
     public function describeTable($tableName, $schemaName = null)
     {
         /**
          * Discover metadata information about this table.
          */
-        $sql    = "exec sp_columns @table_name = " . $this->quoteIdentifier($tableName, true);
-        $stmt   = $this->query($sql);
+        $sql = "exec sp_columns @table_name = " . $this->quoteIdentifier($tableName, true);
+        $stmt = $this->query($sql);
         $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
-        
+
         // ZF-7698
         $stmt->closeCursor();
 
@@ -445,47 +453,47 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
             return array();
         }
 
-        $owner           = 1;
-        $table_name      = 2;
-        $column_name     = 3;
-        $type_name       = 5;
-        $precision       = 6;
-        $length          = 7;
-        $scale           = 8;
-        $nullable        = 10;
-        $column_def      = 12;
+        $owner = 1;
+        $table_name = 2;
+        $column_name = 3;
+        $type_name = 5;
+        $precision = 6;
+        $length = 7;
+        $scale = 8;
+        $nullable = 10;
+        $column_def = 12;
         $column_position = 16;
 
         /**
          * Discover primary key column(s) for this table.
          */
         $tableOwner = $result[0][$owner];
-        $sql        = "exec sp_pkeys @table_owner = " . $tableOwner
-                    . ", @table_name = " . $this->quoteIdentifier($tableName, true);
-        $stmt       = $this->query($sql);
+        $sql = "exec sp_pkeys @table_owner = " . $tableOwner
+            . ", @table_name = " . $this->quoteIdentifier($tableName, true);
+        $stmt = $this->query($sql);
 
         $primaryKeysResult = $stmt->fetchAll(Zend_Db::FETCH_NUM);
-        $primaryKeyColumn  = array();
+        $primaryKeyColumn = array();
 
         // Per http://msdn.microsoft.com/en-us/library/ms189813.aspx,
         // results from sp_keys stored procedure are:
         // 0=TABLE_QUALIFIER 1=TABLE_OWNER 2=TABLE_NAME 3=COLUMN_NAME 4=KEY_SEQ 5=PK_NAME
 
         $pkey_column_name = 3;
-        $pkey_key_seq     = 4;
+        $pkey_key_seq = 4;
         foreach ($primaryKeysResult as $pkeysRow) {
             $primaryKeyColumn[$pkeysRow[$pkey_column_name]] = $pkeysRow[$pkey_key_seq];
         }
 
         $desc = array();
-        $p    = 1;
+        $p = 1;
         foreach ($result as $key => $row) {
             $identity = false;
-            $words    = explode(' ', $row[$type_name], 2);
+            $words = explode(' ', $row[$type_name], 2);
             if (isset($words[0])) {
                 $type = $words[0];
                 if (isset($words[1])) {
-                    $identity = (bool) preg_match('/identity/', $words[1]);
+                    $identity = (bool)preg_match('/identity/', $words[1]);
                 }
             }
 
@@ -497,20 +505,20 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
             }
 
             $desc[$this->foldCase($row[$column_name])] = array(
-                'SCHEMA_NAME'      => null, // @todo
-                'TABLE_NAME'       => $this->foldCase($row[$table_name]),
-                'COLUMN_NAME'      => $this->foldCase($row[$column_name]),
-                'COLUMN_POSITION'  => (int) $row[$column_position],
-                'DATA_TYPE'        => $type,
-                'DEFAULT'          => $row[$column_def],
-                'NULLABLE'         => (bool) $row[$nullable],
-                'LENGTH'           => $row[$length],
-                'SCALE'            => $row[$scale],
-                'PRECISION'        => $row[$precision],
-                'UNSIGNED'         => null, // @todo
-                'PRIMARY'          => $isPrimary,
+                'SCHEMA_NAME' => null, // @todo
+                'TABLE_NAME' => $this->foldCase($row[$table_name]),
+                'COLUMN_NAME' => $this->foldCase($row[$column_name]),
+                'COLUMN_POSITION' => (int)$row[$column_position],
+                'DATA_TYPE' => $type,
+                'DEFAULT' => $row[$column_def],
+                'NULLABLE' => (bool)$row[$nullable],
+                'LENGTH' => $row[$length],
+                'SCALE' => $row[$scale],
+                'PRECISION' => $row[$precision],
+                'UNSIGNED' => null, // @todo
+                'PRIMARY' => $isPrimary,
                 'PRIMARY_POSITION' => $primaryPosition,
-                'IDENTITY'         => $identity,
+                'IDENTITY' => $identity,
             );
         }
 
@@ -562,11 +570,11 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
     /**
      * Set the fetch mode.
      *
-     * @todo Support FETCH_CLASS and FETCH_INTO.
-     *
      * @param integer $mode A fetch mode.
      * @return void
      * @throws Zend_Db_Adapter_Sqlsrv_Exception
+     * @todo Support FETCH_CLASS and FETCH_INTO.
+     *
      */
     public function setFetchMode($mode)
     {
@@ -597,8 +605,8 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
      * @return string
      * @throws Zend_Db_Adapter_Sqlsrv_Exception
      */
-     public function limit($sql, $count, $offset = 0)
-     {
+    public function limit($sql, $count, $offset = 0)
+    {
         $count = intval($count);
         if ($count <= 0) {
             require_once 'Zend/Db/Adapter/Exception.php';
@@ -633,8 +641,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
 
             if ($count == PHP_INT_MAX) {
                 $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl WHERE \"ZEND_DB_ROWNUM\" >= $start";
-            }
-            else {
+            } else {
                 $end = $offset + $count;
                 $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl WHERE \"ZEND_DB_ROWNUM\" BETWEEN $start AND $end";
             }

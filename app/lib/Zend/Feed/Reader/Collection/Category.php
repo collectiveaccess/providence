@@ -31,7 +31,7 @@ require_once 'Zend/Feed/Reader/Collection/CollectionAbstract.php';
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Feed_Reader_Collection_Category
-extends Zend_Feed_Reader_Collection_CollectionAbstract
+    extends Zend_Feed_Reader_Collection_CollectionAbstract
 {
 
     /**
@@ -42,7 +42,8 @@ extends Zend_Feed_Reader_Collection_CollectionAbstract
      *
      * @return array
      */
-    public function getValues() {
+    public function getValues()
+    {
         $categories = array();
         foreach ($this->getIterator() as $element) {
             if (isset($element['label']) && !empty($element['label'])) {

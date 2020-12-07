@@ -74,9 +74,9 @@ abstract class Zend_Measure_Abstract
     /**
      * Zend_Measure_Abstract is an abstract class for the different measurement types
      *
-     * @param  mixed       $value  Value as string, integer, real or float
-     * @param  int         $type   OPTIONAL a measure type f.e. Zend_Measure_Length::METER
-     * @param  Zend_Locale $locale OPTIONAL a Zend_Locale Type
+     * @param mixed $value Value as string, integer, real or float
+     * @param int $type OPTIONAL a measure type f.e. Zend_Measure_Length::METER
+     * @param Zend_Locale $locale OPTIONAL a Zend_Locale Type
      * @throws Zend_Measure_Exception
      */
     public function __construct($value, $type = null, $locale = null)
@@ -113,7 +113,7 @@ abstract class Zend_Measure_Abstract
      * Sets a new locale for the value representation
      *
      * @param string|Zend_Locale $locale (Optional) New locale to set
-     * @param boolean            $check  False, check but don't set; True, set the new locale
+     * @param boolean $check False, check but don't set; True, set the new locale
      * @return Zend_Measure_Abstract
      */
     public function setLocale($locale = null, $check = false)
@@ -132,14 +132,14 @@ abstract class Zend_Measure_Abstract
         if (!Zend_Locale::isLocale($locale, true, false)) {
             if (!Zend_Locale::isLocale($locale, false, false)) {
                 require_once 'Zend/Measure/Exception.php';
-                throw new Zend_Measure_Exception("Language (" . (string) $locale . ") is unknown");
+                throw new Zend_Measure_Exception("Language (" . (string)$locale . ") is unknown");
             }
 
             $locale = new Zend_Locale($locale);
         }
 
         if (!$check) {
-            $this->_locale = (string) $locale;
+            $this->_locale = (string)$locale;
         }
         return $this;
     }
@@ -147,7 +147,7 @@ abstract class Zend_Measure_Abstract
     /**
      * Returns the internal value
      *
-     * @param integer            $round  (Optional) Rounds the value to an given precision,
+     * @param integer $round (Optional) Rounds the value to an given precision,
      *                                              Default is -1 which returns without rounding
      * @param string|Zend_Locale $locale (Optional) Locale for number representation
      * @return integer|string
@@ -171,11 +171,11 @@ abstract class Zend_Measure_Abstract
     /**
      * Set a new value
      *
-     * @param  integer|string      $value   Value as string, integer, real or float
-     * @param  string              $type    OPTIONAL A measure type f.e. Zend_Measure_Length::METER
-     * @param  string|Zend_Locale  $locale  OPTIONAL Locale for parsing numbers
-     * @throws Zend_Measure_Exception
+     * @param integer|string $value Value as string, integer, real or float
+     * @param string $type OPTIONAL A measure type f.e. Zend_Measure_Length::METER
+     * @param string|Zend_Locale $locale OPTIONAL Locale for parsing numbers
      * @return Zend_Measure_Abstract
+     * @throws Zend_Measure_Exception
      */
     public function setValue($value, $type = null, $locale = null)
     {
@@ -200,7 +200,7 @@ abstract class Zend_Measure_Abstract
 
         try {
             $value = Zend_Locale_Format::getNumber($value, array('locale' => $locale));
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             require_once 'Zend/Measure/Exception.php';
             throw new Zend_Measure_Exception($e->getMessage(), $e->getCode(), $e);
         }
@@ -223,9 +223,9 @@ abstract class Zend_Measure_Abstract
     /**
      * Set a new type, and convert the value
      *
-     * @param  string $type New type to set
-     * @throws Zend_Measure_Exception
+     * @param string $type New type to set
      * @return Zend_Measure_Abstract
+     * @throws Zend_Measure_Exception
      */
     public function setType($type)
     {
@@ -287,8 +287,8 @@ abstract class Zend_Measure_Abstract
             }
 
             $slength = strlen($value);
-            $length  = 0;
-            for($i = 1; $i <= $slength; ++$i) {
+            $length = 0;
+            for ($i = 1; $i <= $slength; ++$i) {
                 if ($value[$slength - $i] != '0') {
                     $length = 26 - $i;
                     break;
@@ -296,7 +296,7 @@ abstract class Zend_Measure_Abstract
             }
 
             $this->_value = Zend_Locale_Math::round($value, $length);
-            $this->_type  = $type;
+            $this->_type = $type;
         }
         return $this;
     }
@@ -304,12 +304,12 @@ abstract class Zend_Measure_Abstract
     /**
      * Compare if the value and type is equal
      *
-     * @param  Zend_Measure_Abstract $object object to compare
+     * @param Zend_Measure_Abstract $object object to compare
      * @return boolean
      */
     public function equals($object)
     {
-        if ((string) $object == $this->toString()) {
+        if ((string)$object == $this->toString()) {
             return true;
         }
 
@@ -319,8 +319,8 @@ abstract class Zend_Measure_Abstract
     /**
      * Returns a string representation
      *
-     * @param  integer            $round  (Optional) Runds the value to an given exception
-     * @param  string|Zend_Locale $locale (Optional) Locale to set for the number
+     * @param integer $round (Optional) Runds the value to an given exception
+     * @param string|Zend_Locale $locale (Optional) Locale to set for the number
      * @return string
      */
     public function toString($round = -1, $locale = null)
@@ -355,9 +355,9 @@ abstract class Zend_Measure_Abstract
     /**
      * Alias function for setType returning the converted unit
      *
-     * @param  string             $type   Constant Type
-     * @param  integer            $round  (Optional) Rounds the value to a given precision
-     * @param  string|Zend_Locale $locale (Optional) Locale to set for the number
+     * @param string $type Constant Type
+     * @param integer $round (Optional) Rounds the value to a given precision
+     * @param string|Zend_Locale $locale (Optional) Locale to set for the number
      * @return string
      */
     public function convertTo($type, $round = 2, $locale = null)
@@ -369,13 +369,13 @@ abstract class Zend_Measure_Abstract
     /**
      * Adds an unit to another one
      *
-     * @param  Zend_Measure_Abstract $object object of same unit type
+     * @param Zend_Measure_Abstract $object object of same unit type
      * @return Zend_Measure_Abstract
      */
     public function add($object)
     {
         $object->setType($this->getType());
-        $value  = $this->getValue(-1) + $object->getValue(-1);
+        $value = $this->getValue(-1) + $object->getValue(-1);
 
         $this->setValue($value, $this->getType(), $this->_locale);
         return $this;
@@ -384,13 +384,13 @@ abstract class Zend_Measure_Abstract
     /**
      * Substracts an unit from another one
      *
-     * @param  Zend_Measure_Abstract $object object of same unit type
+     * @param Zend_Measure_Abstract $object object of same unit type
      * @return Zend_Measure_Abstract
      */
     public function sub($object)
     {
         $object->setType($this->getType());
-        $value  = $this->getValue(-1) - $object->getValue(-1);
+        $value = $this->getValue(-1) - $object->getValue(-1);
 
         $this->setValue($value, $this->getType(), $this->_locale);
         return $this;
@@ -399,18 +399,20 @@ abstract class Zend_Measure_Abstract
     /**
      * Compares two units
      *
-     * @param  Zend_Measure_Abstract $object object of same unit type
+     * @param Zend_Measure_Abstract $object object of same unit type
      * @return boolean
      */
     public function compare($object)
     {
         $object->setType($this->getType());
-        $value  = $this->getValue(-1) - $object->getValue(-1);
+        $value = $this->getValue(-1) - $object->getValue(-1);
 
         if ($value < 0) {
             return -1;
-        } else if ($value > 0) {
-            return 1;
+        } else {
+            if ($value > 0) {
+                return 1;
+            }
         }
 
         return 0;

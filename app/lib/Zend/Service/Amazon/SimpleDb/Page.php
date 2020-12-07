@@ -44,13 +44,13 @@ class Zend_Service_Amazon_SimpleDb_Page
     /**
      * Constructor
      *
-     * @param  string $data
-     * @param  string|null $token
+     * @param string $data
+     * @param string|null $token
      * @return void
      */
     public function __construct($data, $token = null)
     {
-        $this->_data  = $data;
+        $this->_data = $data;
         $this->_token = $token;
     }
 
@@ -92,6 +92,6 @@ class Zend_Service_Amazon_SimpleDb_Page
     public function __toString()
     {
         return "Page with token: " . $this->_token
-             . "\n and data: " . $this->_data;
+            . "\n and data: " . $this->_data;
     }
 }

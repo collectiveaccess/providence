@@ -85,24 +85,24 @@ abstract class Zend_Gdata_App_Extension_Person extends Zend_Gdata_App_Extension
     {
         $absoluteNodeName = $child->namespaceURI . ':' . $child->localName;
         switch ($absoluteNodeName) {
-        case $this->lookupNamespace('atom') . ':' . 'name':
-            $name = new Zend_Gdata_App_Extension_Name();
-            $name->transferFromDOM($child);
-            $this->_name = $name;
-            break;
-        case $this->lookupNamespace('atom') . ':' . 'email':
-            $email = new Zend_Gdata_App_Extension_Email();
-            $email->transferFromDOM($child);
-            $this->_email = $email;
-            break;
-        case $this->lookupNamespace('atom') . ':' . 'uri':
-            $uri = new Zend_Gdata_App_Extension_Uri();
-            $uri->transferFromDOM($child);
-            $this->_uri = $uri;
-            break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
+            case $this->lookupNamespace('atom') . ':' . 'name':
+                $name = new Zend_Gdata_App_Extension_Name();
+                $name->transferFromDOM($child);
+                $this->_name = $name;
+                break;
+            case $this->lookupNamespace('atom') . ':' . 'email':
+                $email = new Zend_Gdata_App_Extension_Email();
+                $email->transferFromDOM($child);
+                $this->_email = $email;
+                break;
+            case $this->lookupNamespace('atom') . ':' . 'uri':
+                $uri = new Zend_Gdata_App_Extension_Uri();
+                $uri->transferFromDOM($child);
+                $this->_uri = $uri;
+                break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
         }
     }
 

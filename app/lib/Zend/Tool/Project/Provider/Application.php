@@ -36,7 +36,7 @@ class Zend_Tool_Project_Provider_Application
     /**
      *
      * @param string $classNamePrefix Prefix of classes
-     * @param bool   $force
+     * @param bool $force
      */
     public function changeClassNamePrefix($classNamePrefix /* , $force = false */)
     {
@@ -71,13 +71,16 @@ class Zend_Tool_Project_Provider_Application
         if ($originalClassNamePrefix !== $classNamePrefix) {
             $response->appendContent(
                 'Note: the name provided "' . $originalClassNamePrefix . '" was'
-                    . ' altered to "' . $classNamePrefix . '" for correctness.',
+                . ' altered to "' . $classNamePrefix . '" for correctness.',
                 array('color' => 'yellow')
-                );
+            );
         }
 
         // note to the user
-        $response->appendContent('Note: All existing models will need to be altered to this new namespace by hand', array('color' => 'yellow'));
+        $response->appendContent(
+            'Note: All existing models will need to be altered to this new namespace by hand',
+            array('color' => 'yellow')
+        );
         $response->appendContent('application.ini updated with new appnamespace ' . $classNamePrefix);
 
         // store profile

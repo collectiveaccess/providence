@@ -91,18 +91,18 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
     /**
      * Create Amazon client.
      *
-     * @param  string $access_key       Override the default Access Key
-     * @param  string $secret_key       Override the default Secret Key
-     * @param  string $region           Sets the AWS Region
+     * @param string $access_key Override the default Access Key
+     * @param string $secret_key Override the default Secret Key
+     * @param string $region Sets the AWS Region
      * @return void
      */
-    public function __construct($accessKey=null, $secretKey=null, $region=null)
+    public function __construct($accessKey = null, $secretKey = null, $region = null)
     {
-        if(!$region) {
+        if (!$region) {
             $region = self::$_defaultRegion;
         } else {
             // make rue the region is valid
-            if(!empty($region) && !in_array(strtolower($region), self::$_validEc2Regions, true)) {
+            if (!empty($region) && !in_array(strtolower($region), self::$_validEc2Regions, true)) {
                 require_once 'Zend/Service/Amazon/Exception.php';
                 throw new Zend_Service_Amazon_Exception('Invalid Amazon Ec2 Region');
             }
@@ -121,7 +121,7 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
      */
     public static function setRegion($region)
     {
-        if(in_array(strtolower($region), self::$_validEc2Regions, true)) {
+        if (in_array(strtolower($region), self::$_validEc2Regions, true)) {
             self::$_defaultRegion = $region;
         } else {
             require_once 'Zend/Service/Amazon/Exception.php';
@@ -142,7 +142,7 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
     /**
      * Sends a HTTP request to the queue service using Zend_Http_Client
      *
-     * @param  array $params List of parameters to send with the request
+     * @param array $params List of parameters to send with the request
      * @return Zend_Service_Amazon_Ec2_Response
      * @throws Zend_Service_Amazon_Ec2_Exception
      */
@@ -157,17 +157,17 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
             $request = self::getHttpClient();
             $request->resetParameters();
 
-            $request->setConfig(array(
-                'timeout' => $this->_httpTimeout
-            ));
+            $request->setConfig(
+                array(
+                    'timeout' => $this->_httpTimeout
+                )
+            );
 
             $request->setUri($url);
             $request->setMethod(Zend_Http_Client::POST);
             $request->setParameterPost($params);
 
             $httpResponse = $request->request();
-            
-
         } catch (Zend_Http_Client_Exception $zhce) {
             $message = 'Error in request to AWS service: ' . $zhce->getMessage();
             throw new Zend_Service_Amazon_Ec2_Exception($message, $zhce->getCode(), $zhce);
@@ -199,12 +199,12 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
      */
     protected function addRequiredParameters(array $parameters)
     {
-        $parameters['AWSAccessKeyId']   = $this->_getAccessKey();
+        $parameters['AWSAccessKeyId'] = $this->_getAccessKey();
         $parameters['SignatureVersion'] = $this->_ec2SignatureVersion;
-        $parameters['Timestamp']        = gmdate('Y-m-d\TH:i:s\Z');
-        $parameters['Version']          = $this->_ec2ApiVersion;
-        $parameters['SignatureMethod']  = $this->_ec2SignatureMethod;
-        $parameters['Signature']        = $this->signParameters($parameters);
+        $parameters['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z');
+        $parameters['Version'] = $this->_ec2ApiVersion;
+        $parameters['SignatureMethod'] = $this->_ec2SignatureMethod;
+        $parameters['Signature'] = $this->signParameters($parameters);
 
         return $parameters;
     }
@@ -224,8 +224,8 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
      *    values before constructing this string. Do not use any separator
      *    characters when appending strings.
      *
-     * @param array  $parameters the parameters for which to get the signature.
-     * @param string $secretKey  the secret key to use to sign the parameters.
+     * @param array $parameters the parameters for which to get the signature.
+     * @param string $secretKey the secret key to use to sign the parameters.
      *
      * @return string the signed data.
      */
@@ -239,7 +239,7 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
         unset($paramaters['Signature']);
 
         $arrData = array();
-        foreach($paramaters as $key => $value) {
+        foreach ($paramaters as $key => $value) {
             $arrData[] = $key . '=' . str_replace("%7E", "~", rawurlencode($value));
         }
 
@@ -265,13 +265,12 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
     private function checkForErrors(Zend_Service_Amazon_Ec2_Response $response)
     {
         $xpath = new DOMXPath($response->getDocument());
-        $list  = $xpath->query('//Error');
+        $list = $xpath->query('//Error');
         if ($list->length > 0) {
-            $node    = $list->item(0);
-            $code    = $xpath->evaluate('string(Code/text())', $node);
+            $node = $list->item(0);
+            $code = $xpath->evaluate('string(Code/text())', $node);
             $message = $xpath->evaluate('string(Message/text())', $node);
             throw new Zend_Service_Amazon_Ec2_Exception($message, 0, $code);
         }
-
     }
 }

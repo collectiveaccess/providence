@@ -21,7 +21,7 @@
 
 require_once 'Zend/Feed/Writer/Feed/FeedAbstract.php';
 
- /**
+/**
  * @category   Zend
  * @package    Zend_Feed_Writer
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
@@ -155,7 +155,9 @@ class Zend_Feed_Writer_Deleted
             || !is_string($by['name'])
         ) {
             require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception('Invalid parameter: author array must include a "name" key with a non-empty string value');
+            throw new Zend_Feed_Exception(
+                'Invalid parameter: author array must include a "name" key with a non-empty string value'
+            );
         }
         $author['name'] = $by['name'];
         if (isset($by['email'])) {
@@ -171,7 +173,9 @@ class Zend_Feed_Writer_Deleted
                 || !Zend_Uri::check($by['uri'])
             ) {
                 require_once 'Zend/Feed/Exception.php';
-                throw new Zend_Feed_Exception('Invalid parameter: "uri" array value must be a non-empty string and valid URI/IRI');
+                throw new Zend_Feed_Exception(
+                    'Invalid parameter: "uri" array value must be a non-empty string and valid URI/IRI'
+                );
             }
             $author['uri'] = $by['uri'];
         }

@@ -58,7 +58,7 @@ class Zend_Barcode_Object_Code25interleaved extends Zend_Barcode_Object_Code25
      */
     public function setWithBearerBars($value)
     {
-        $this->_withBearerBars = (bool) $value;
+        $this->_withBearerBars = (bool)$value;
         return $this;
     }
 
@@ -77,11 +77,11 @@ class Zend_Barcode_Object_Code25interleaved extends Zend_Barcode_Object_Code25
      */
     protected function _calculateBarcodeWidth()
     {
-        $quietZone       = $this->getQuietZone();
-        $startCharacter  = (4 * $this->_barThinWidth) * $this->_factor;
+        $quietZone = $this->getQuietZone();
+        $startCharacter = (4 * $this->_barThinWidth) * $this->_factor;
         $characterLength = (3 * $this->_barThinWidth + 2 * $this->_barThickWidth) * $this->_factor;
-        $encodedData     = strlen($this->getText()) * $characterLength;
-        $stopCharacter   = ($this->_barThickWidth + 2 * $this->_barThinWidth) * $this->_factor;
+        $encodedData = strlen($this->getText()) * $characterLength;
+        $stopCharacter = ($this->_barThickWidth + 2 * $this->_barThinWidth) * $this->_factor;
         return $quietZone + $startCharacter + $encodedData + $stopCharacter + $quietZone;
     }
 
@@ -108,26 +108,26 @@ class Zend_Barcode_Object_Code25interleaved extends Zend_Barcode_Object_Code25
             $char2 = substr($text, $i + 1, 1);
 
             // Interleave
-            for ($ibar = 0; $ibar < 5; $ibar ++) {
+            for ($ibar = 0; $ibar < 5; $ibar++) {
                 // Draws char1 bar (fore color)
                 $barWidth = (substr($this->_codingMap[$char1], $ibar, 1))
-                          ? $this->_barThickWidth
-                          : $this->_barThinWidth;
+                    ? $this->_barThickWidth
+                    : $this->_barThinWidth;
 
                 $barcodeTable[] = array(1, $barWidth, 0, 1);
 
                 // Left space corresponding to char2 (background color)
                 $barWidth = (substr($this->_codingMap[$char2], $ibar, 1))
-                          ? $this->_barThickWidth
-                          : $this->_barThinWidth;
-                $barcodeTable[] = array(0, $barWidth, 0 , 1);
+                    ? $this->_barThickWidth
+                    : $this->_barThinWidth;
+                $barcodeTable[] = array(0, $barWidth, 0, 1);
             }
         }
 
         // Stop character (100)
-        $barcodeTable[] = array(1 , $this->_barThickWidth, 0, 1);
-        $barcodeTable[] = array(0 , $this->_barThinWidth,  0, 1);
-        $barcodeTable[] = array(1 , $this->_barThinWidth,  0, 1);
+        $barcodeTable[] = array(1, $this->_barThickWidth, 0, 1);
+        $barcodeTable[] = array(0, $this->_barThinWidth, 0, 1);
+        $barcodeTable[] = array(1, $this->_barThinWidth, 0, 1);
         return $barcodeTable;
     }
 
@@ -142,17 +142,19 @@ class Zend_Barcode_Object_Code25interleaved extends Zend_Barcode_Object_Code25
             return;
         }
 
-        $width  = $this->_barThickWidth * $this->_factor;
+        $width = $this->_barThickWidth * $this->_factor;
         $point1 = $this->_rotate(-1, -1);
         $point2 = $this->_rotate($this->_calculateWidth() - 1, -1);
         $point3 = $this->_rotate($this->_calculateWidth() - 1, $width - 1);
         $point4 = $this->_rotate(-1, $width - 1);
-        $this->_addPolygon(array(
-            $point1,
-            $point2,
-            $point3,
-            $point4,
-        ));
+        $this->_addPolygon(
+            array(
+                $point1,
+                $point2,
+                $point3,
+                $point4,
+            )
+        );
         $point1 = $this->_rotate(
             0,
             0 + $this->_barHeight * $this->_factor - 1
@@ -169,11 +171,13 @@ class Zend_Barcode_Object_Code25interleaved extends Zend_Barcode_Object_Code25
             0,
             0 + $this->_barHeight * $this->_factor - $width
         );
-        $this->_addPolygon(array(
-            $point1,
-            $point2,
-            $point3,
-            $point4,
-        ));
+        $this->_addPolygon(
+            array(
+                $point1,
+                $point2,
+                $point3,
+                $point4,
+            )
+        );
     }
 }

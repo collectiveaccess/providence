@@ -121,8 +121,8 @@ class Zend_Gdata_Gapps_EmailListRecipientEntry extends Zend_Gdata_Entry
     /**
      * Get the value of the who property for this object.
      *
-     * @see setWho
      * @return Zend_Gdata_Extension_Who The requested object.
+     * @see setWho
      */
     public function getWho()
     {

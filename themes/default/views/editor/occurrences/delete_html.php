@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/editor/occurrences/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_occurrence = $this->getVar('t_subject');
-	$vn_occurrence_id = $this->getVar('subject_id');
+$t_occurrence = $this->getVar('t_subject');
+$vn_occurrence_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_occurrence, $this->getVar('subject_name'), 'editor/occurrences', 'OccurrenceEditor', 'Edit/'.$this->request->getActionExtra(), array('occurrence_id' => $vn_occurrence_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_occurrence,
+            $this->getVar('subject_name'),
+            'editor/occurrences',
+            'OccurrenceEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('occurrence_id' => $vn_occurrence_id)
+        );
+    }
+    ?>
 </div>

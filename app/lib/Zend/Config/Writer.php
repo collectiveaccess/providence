@@ -60,7 +60,7 @@ abstract class Zend_Config_Writer
     /**
      * Set options via a Zend_Config instance
      *
-     * @param  Zend_Config $config
+     * @param Zend_Config $config
      * @return Zend_Config_Writer
      */
     public function setConfig(Zend_Config $config)
@@ -73,7 +73,7 @@ abstract class Zend_Config_Writer
     /**
      * Set options via an array
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_Config_Writer
      */
     public function setOptions(array $options)

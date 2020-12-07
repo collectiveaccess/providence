@@ -66,10 +66,10 @@ class Zend_Gdata_App_LoggingHttpClientAdapterSocket extends Zend_Http_Client_Ada
     /**
      * Connect to the remote server
      *
-     * @param string  $host
-     * @param int     $port
+     * @param string $host
+     * @param int $port
      * @param boolean $secure
-     * @param int     $timeout
+     * @param int $timeout
      */
     public function connect($host, $port = 80, $secure = false)
     {
@@ -80,11 +80,11 @@ class Zend_Gdata_App_LoggingHttpClientAdapterSocket extends Zend_Http_Client_Ada
     /**
      * Send request to the remote server
      *
-     * @param string        $method
+     * @param string $method
      * @param Zend_Uri_Http $uri
-     * @param string        $http_ver
-     * @param array         $headers
-     * @param string        $body
+     * @param string $http_ver
+     * @param array $headers
+     * @param string $body
      * @return string Request as string
      */
     public function write($method, $uri, $http_ver = '1.1', $headers = array(), $body = '')

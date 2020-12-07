@@ -87,7 +87,7 @@ class Zend_Tool_Project_Context_Zf_ViewControllerScriptsDirectory extends Zend_T
     {
         return array(
             'forControllerName' => $this->_forControllerName
-            );
+        );
     }
 
     /**

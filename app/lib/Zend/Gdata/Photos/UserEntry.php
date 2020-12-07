@@ -141,7 +141,8 @@ class Zend_Gdata_Photos_UserEntry extends Zend_Gdata_Entry
 
         $category = new Zend_Gdata_App_Extension_Category(
             'http://schemas.google.com/photos/2007#user',
-            'http://schemas.google.com/g/2005#kind');
+            'http://schemas.google.com/g/2005#kind'
+        );
         $this->setCategory(array($category));
     }
 
@@ -228,8 +229,8 @@ class Zend_Gdata_Photos_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value for this element's gphoto:nickname attribute.
      *
-     * @see setGphotoNickname
      * @return string The requested attribute.
+     * @see setGphotoNickname
      */
     public function getGphotoNickname()
     {
@@ -251,8 +252,8 @@ class Zend_Gdata_Photos_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value for this element's gphoto:thumbnail attribute.
      *
-     * @see setGphotoThumbnail
      * @return string The requested attribute.
+     * @see setGphotoThumbnail
      */
     public function getGphotoThumbnail()
     {
@@ -274,8 +275,8 @@ class Zend_Gdata_Photos_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value for this element's gphoto:quotacurrent attribute.
      *
-     * @see setGphotoQuotaCurrent
      * @return string The requested attribute.
+     * @see setGphotoQuotaCurrent
      */
     public function getGphotoQuotaCurrent()
     {
@@ -297,8 +298,8 @@ class Zend_Gdata_Photos_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value for this element's gphoto:quotalimit attribute.
      *
-     * @see setGphotoQuotaLimit
      * @return string The requested attribute.
+     * @see setGphotoQuotaLimit
      */
     public function getGphotoQuotaLimit()
     {
@@ -320,8 +321,8 @@ class Zend_Gdata_Photos_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value for this element's gphoto:maxPhotosPerAlbum attribute.
      *
-     * @see setGphotoMaxPhotosPerAlbum
      * @return string The requested attribute.
+     * @see setGphotoMaxPhotosPerAlbum
      */
     public function getGphotoMaxPhotosPerAlbum()
     {
@@ -343,8 +344,8 @@ class Zend_Gdata_Photos_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value for this element's gphoto:user attribute.
      *
-     * @see setGphotoUser
      * @return string The requested attribute.
+     * @see setGphotoUser
      */
     public function getGphotoUser()
     {

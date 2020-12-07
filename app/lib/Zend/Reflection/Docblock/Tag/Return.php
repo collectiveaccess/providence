@@ -38,7 +38,7 @@ class Zend_Reflection_Docblock_Tag_Return extends Zend_Reflection_Docblock_Tag
     /**
      * Constructor
      *
-     * @param  string $tagDocblockLine
+     * @param string $tagDocblockLine
      * @return \Zend_Reflection_Docblock_Tag_Return
      */
     public function __construct($tagDocblockLine)

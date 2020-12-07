@@ -45,7 +45,7 @@ class Zend_Filter_Compress_Bz2 extends Zend_Filter_Compress_CompressAbstract
      */
     protected $_options = array(
         'blocksize' => 4,
-        'archive'   => null,
+        'archive' => null,
     );
 
     /**
@@ -85,7 +85,7 @@ class Zend_Filter_Compress_Bz2 extends Zend_Filter_Compress_CompressAbstract
             throw new Zend_Filter_Exception('Blocksize must be between 0 and 9');
         }
 
-        $this->_options['blocksize'] = (int) $blocksize;
+        $this->_options['blocksize'] = (int)$blocksize;
         return $this;
     }
 
@@ -107,14 +107,14 @@ class Zend_Filter_Compress_Bz2 extends Zend_Filter_Compress_CompressAbstract
      */
     public function setArchive($archive)
     {
-        $this->_options['archive'] = (string) $archive;
+        $this->_options['archive'] = (string)$archive;
         return $this;
     }
 
     /**
      * Compresses the given content
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function compress($content)
@@ -145,7 +145,7 @@ class Zend_Filter_Compress_Bz2 extends Zend_Filter_Compress_CompressAbstract
     /**
      * Decompresses the given content
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function decompress($content)

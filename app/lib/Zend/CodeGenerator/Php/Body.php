@@ -58,7 +58,7 @@ class Zend_CodeGenerator_Php_Body extends Zend_CodeGenerator_Abstract
      */
     public function getContent()
     {
-        return (string) $this->_content;
+        return (string)$this->_content;
     }
 
     /**

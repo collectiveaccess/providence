@@ -59,7 +59,7 @@ class Zend_Tool_Project_Context_Content_Engine_Phtml
     /**
      * hasContext()
      *
-     * @param Zend_Tool_Project_Context_Interface  $context
+     * @param Zend_Tool_Project_Context_Interface $context
      * @param string $method
      * @return string
      */
@@ -77,7 +77,9 @@ class Zend_Tool_Project_Context_Content_Engine_Phtml
      */
     public function getContent(Zend_Tool_Project_Context_Interface $context, $method, $parameters)
     {
-        $streamUri = $this->_storage->getStreamUri($this->_contentPrefix . '/' . $context->getName() . '/' . $method . '.phtml');
+        $streamUri = $this->_storage->getStreamUri(
+            $this->_contentPrefix . '/' . $context->getName() . '/' . $method . '.phtml'
+        );
 
         ob_start();
         include $streamUri;

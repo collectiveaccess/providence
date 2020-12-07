@@ -44,7 +44,7 @@ class Zend_Form_Decorator_PrepareElements extends Zend_Form_Decorator_FormElemen
     /**
      * Render form elements
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function render($content)
@@ -61,15 +61,15 @@ class Zend_Form_Decorator_PrepareElements extends Zend_Form_Decorator_FormElemen
 
     protected function _recursivelyPrepareForm(Zend_Form $form)
     {
-        $belongsTo      = ($form instanceof Zend_Form) ? $form->getElementsBelongTo() : null;
+        $belongsTo = ($form instanceof Zend_Form) ? $form->getElementsBelongTo() : null;
         $elementContent = '';
-        $separator      = $this->getSeparator();
-        $translator     = $form->getTranslator();
-        $view           = $form->getView();
+        $separator = $this->getSeparator();
+        $translator = $form->getTranslator();
+        $view = $form->getView();
 
         foreach ($form as $item) {
             $item->setView($view)
-                 ->setTranslator($translator);
+                ->setTranslator($translator);
             if ($item instanceof Zend_Form_Element) {
                 $item->setBelongsTo($belongsTo);
             } elseif (!empty($belongsTo) && ($item instanceof Zend_Form)) {

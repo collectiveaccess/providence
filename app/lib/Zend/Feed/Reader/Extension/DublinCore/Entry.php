@@ -236,7 +236,7 @@ class Zend_Feed_Reader_Extension_DublinCore_Entry
             return $this->_data['date'];
         }
 
-        $d    = null;
+        $d = null;
         $date = $this->_xpath->evaluate('string(' . $this->getXpathPrefix() . '/dc11:date)');
 
         if (!$date) {

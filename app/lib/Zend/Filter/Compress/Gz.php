@@ -45,8 +45,8 @@ class Zend_Filter_Compress_Gz extends Zend_Filter_Compress_CompressAbstract
      * @var array
      */
     protected $_options = array(
-        'level'   => 9,
-        'mode'    => 'compress',
+        'level' => 9,
+        'mode' => 'compress',
         'archive' => null,
     );
 
@@ -87,7 +87,7 @@ class Zend_Filter_Compress_Gz extends Zend_Filter_Compress_CompressAbstract
             throw new Zend_Filter_Exception('Level must be between 0 and 9');
         }
 
-        $this->_options['level'] = (int) $level;
+        $this->_options['level'] = (int)$level;
         return $this;
     }
 
@@ -135,14 +135,14 @@ class Zend_Filter_Compress_Gz extends Zend_Filter_Compress_CompressAbstract
      */
     public function setArchive($archive)
     {
-        $this->_options['archive'] = (string) $archive;
+        $this->_options['archive'] = (string)$archive;
         return $this;
     }
 
     /**
      * Compresses the given content
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function compress($content)
@@ -158,10 +158,12 @@ class Zend_Filter_Compress_Gz extends Zend_Filter_Compress_CompressAbstract
             gzwrite($file, $content);
             gzclose($file);
             $compressed = true;
-        } else if ($this->_options['mode'] == 'deflate') {
-            $compressed = gzdeflate($content, $this->getLevel());
         } else {
-            $compressed = gzcompress($content, $this->getLevel());
+            if ($this->_options['mode'] == 'deflate') {
+                $compressed = gzdeflate($content, $this->getLevel());
+            } else {
+                $compressed = gzcompress($content, $this->getLevel());
+            }
         }
 
         if (!$compressed) {
@@ -175,13 +177,13 @@ class Zend_Filter_Compress_Gz extends Zend_Filter_Compress_CompressAbstract
     /**
      * Decompresses the given content
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function decompress($content)
     {
         $archive = $this->getArchive();
-        $mode    = $this->getMode();
+        $mode = $this->getMode();
         if (file_exists($content)) {
             $archive = $content;
         }
@@ -195,17 +197,19 @@ class Zend_Filter_Compress_Gz extends Zend_Filter_Compress_CompressAbstract
 
             fseek($handler, -4, SEEK_END);
             $packet = fread($handler, 4);
-            $bytes  = unpack("V", $packet);
-            $size   = end($bytes);
+            $bytes = unpack("V", $packet);
+            $size = end($bytes);
             fclose($handler);
 
-            $file       = gzopen($archive, 'r');
+            $file = gzopen($archive, 'r');
             $compressed = gzread($file, $size);
             gzclose($file);
-        } else if ($mode == 'deflate') {
-            $compressed = gzinflate($content);
         } else {
-            $compressed = gzuncompress($content);
+            if ($mode == 'deflate') {
+                $compressed = gzinflate($content);
+            } else {
+                $compressed = gzuncompress($content);
+            }
         }
 
         if (!$compressed) {

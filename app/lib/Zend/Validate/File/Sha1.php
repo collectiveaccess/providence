@@ -38,16 +38,16 @@ class Zend_Validate_File_Sha1 extends Zend_Validate_File_Hash
      * @const string Error constants
      */
     const DOES_NOT_MATCH = 'fileSha1DoesNotMatch';
-    const NOT_DETECTED   = 'fileSha1NotDetected';
-    const NOT_FOUND      = 'fileSha1NotFound';
+    const NOT_DETECTED = 'fileSha1NotDetected';
+    const NOT_FOUND = 'fileSha1NotFound';
 
     /**
      * @var array Error message templates
      */
     protected $_messageTemplates = array(
         self::DOES_NOT_MATCH => "File '%value%' does not match the given sha1 hashes",
-        self::NOT_DETECTED   => "A sha1 hash could not be evaluated for the given file",
-        self::NOT_FOUND      => "File '%value%' is not readable or does not exist",
+        self::NOT_DETECTED => "A sha1 hash could not be evaluated for the given file",
+        self::NOT_FOUND => "File '%value%' is not readable or does not exist",
     );
 
     /**
@@ -62,7 +62,7 @@ class Zend_Validate_File_Sha1 extends Zend_Validate_File_Hash
      *
      * $hash is the hash we accept for the file $file
      *
-     * @param  string|array $options
+     * @param string|array $options
      * @return void
      */
     public function __construct($options)
@@ -92,13 +92,13 @@ class Zend_Validate_File_Sha1 extends Zend_Validate_File_Hash
     /**
      * Sets the sha1 hash for one or multiple files
      *
-     * @param  string|array $options
+     * @param string|array $options
      * @return Zend_Validate_File_Hash Provides a fluent interface
      */
     public function setHash($options)
     {
         if (!is_array($options)) {
-            $options = (array) $options;
+            $options = (array)$options;
         }
 
         $options['algorithm'] = 'sha1';
@@ -109,7 +109,7 @@ class Zend_Validate_File_Sha1 extends Zend_Validate_File_Hash
     /**
      * Sets the sha1 hash for one or multiple files
      *
-     * @param  string|array $options
+     * @param string|array $options
      * @return Zend_Validate_File_Hash Provides a fluent interface
      */
     public function setSha1($options)
@@ -121,13 +121,13 @@ class Zend_Validate_File_Sha1 extends Zend_Validate_File_Hash
     /**
      * Adds the sha1 hash for one or multiple files
      *
-     * @param  string|array $options
+     * @param string|array $options
      * @return Zend_Validate_File_Hash Provides a fluent interface
      */
     public function addHash($options)
     {
         if (!is_array($options)) {
-            $options = (array) $options;
+            $options = (array)$options;
         }
 
         $options['algorithm'] = 'sha1';
@@ -138,7 +138,7 @@ class Zend_Validate_File_Sha1 extends Zend_Validate_File_Hash
     /**
      * Adds the sha1 hash for one or multiple files
      *
-     * @param  string|array $options
+     * @param string|array $options
      * @return Zend_Validate_File_Hash Provides a fluent interface
      */
     public function addSha1($options)
@@ -152,8 +152,8 @@ class Zend_Validate_File_Sha1 extends Zend_Validate_File_Hash
      *
      * Returns true if and only if the given file confirms the set hash
      *
-     * @param  string $value Filename to check for hash
-     * @param  array  $file  File data from Zend_File_Transfer
+     * @param string $value Filename to check for hash
+     * @param array $file File data from Zend_File_Transfer
      * @return boolean
      */
     public function isValid($value, $file = null)

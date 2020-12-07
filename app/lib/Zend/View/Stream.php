@@ -66,7 +66,7 @@ class Zend_View_Stream
     public function stream_open($path, $mode, $options, &$opened_path)
     {
         // get the view script source
-        $path        = str_replace('zend.view://', '', $path);
+        $path = str_replace('zend.view://', '', $path);
         $this->_data = file_get_contents($path);
 
         /**
@@ -82,8 +82,8 @@ class Zend_View_Stream
          * Convert <?= ?> to long-form <?php echo ?> and <? ?> to <?php ?>
          *
          */
-        $this->_data = preg_replace('/\<\?\=/',          "<?php echo ",  $this->_data);
-        $this->_data = preg_replace('/<\?(?!xml|php)/s', '<?php ',       $this->_data);
+        $this->_data = preg_replace('/\<\?\=/', "<?php echo ", $this->_data);
+        $this->_data = preg_replace('/<\?(?!xml|php)/s', '<?php ', $this->_data);
 
         /**
          * file_get_contents() won't update PHP's stat cache, so we grab a stat
@@ -151,7 +151,7 @@ class Zend_View_Stream
         switch ($whence) {
             case SEEK_SET:
                 if ($offset < strlen($this->_data) && $offset >= 0) {
-                $this->_pos = $offset;
+                    $this->_pos = $offset;
                     return true;
                 } else {
                     return false;

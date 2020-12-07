@@ -26,31 +26,35 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/BaseLookupController.php");
-require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
+require_once(__CA_LIB_DIR__ . "/BaseLookupController.php");
+require_once(__CA_APP_DIR__ . '/helpers/libraryServicesHelpers.php');
 
-class ObjectLibraryServicesController extends BaseLookupController {
-	# -------------------------------------------------------
-	protected $opb_uses_hierarchy_browser = true;
-	protected $ops_table_name = 'ca_objects';		// name of "subject" table (what we're editing)
-	protected $ops_name_singular = 'object';
-	protected $ops_search_class = 'ObjectSearch';
-	# -------------------------------------------------------
-	public function Get($pa_additional_query_params=null, $pa_options=null) {
+class ObjectLibraryServicesController extends BaseLookupController
+{
+    # -------------------------------------------------------
+    protected $opb_uses_hierarchy_browser = true;
+    protected $ops_table_name = 'ca_objects';        // name of "subject" table (what we're editing)
+    protected $ops_name_singular = 'object';
+    protected $ops_search_class = 'ObjectSearch';
 
-		$o_library_conf = caGetLibraryServicesConfiguration();
-		$va_restrict_to_circulation_statuses = $o_library_conf->get('restrict_to_circulation_statuses');
-		if($va_restrict_to_circulation_statuses && is_array($va_restrict_to_circulation_statuses) && (sizeof($o_library_conf->get('restrict_to_circulation_statuses')) > 0)) {
-			$va_status_ids = [];
+    # -------------------------------------------------------
+    public function Get($pa_additional_query_params = null, $pa_options = null)
+    {
+        $o_library_conf = caGetLibraryServicesConfiguration();
+        $va_restrict_to_circulation_statuses = $o_library_conf->get('restrict_to_circulation_statuses');
+        if ($va_restrict_to_circulation_statuses && is_array($va_restrict_to_circulation_statuses) && (sizeof(
+                    $o_library_conf->get('restrict_to_circulation_statuses')
+                ) > 0)) {
+            $va_status_ids = [];
 
-			foreach($va_restrict_to_circulation_statuses as $vs_status) {
-				$va_status_ids[] = caGetListItemID('object_circulation_statuses', $vs_status);
-			}
+            foreach ($va_restrict_to_circulation_statuses as $vs_status) {
+                $va_status_ids[] = caGetListItemID('object_circulation_statuses', $vs_status);
+            }
 
-			$pa_options['filters'][] = array("ca_objects.circulation_status_id", "IN", join(',', $va_status_ids));
-		}
+            $pa_options['filters'][] = array("ca_objects.circulation_status_id", "IN", join(',', $va_status_ids));
+        }
 
-		return parent::Get($pa_additional_query_params, $pa_options);
-	}
-	# -------------------------------------------------------
+        return parent::Get($pa_additional_query_params, $pa_options);
+    }
+    # -------------------------------------------------------
 }

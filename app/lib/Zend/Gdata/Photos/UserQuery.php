@@ -92,8 +92,8 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
     /**
      * Gets the format of data in returned in Atom feeds.
      *
-     * @see setProjection
      * @return string projection
+     * @see setProjection
      */
     public function getProjection()
     {
@@ -116,8 +116,8 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
     /**
      * Gets the type of data in returned in queries.
      *
-     * @see setType
      * @return string type
+     * @see setType
      */
     public function getType()
     {
@@ -132,20 +132,20 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
      * @param string $value The user to retrieve, or null for the default
      *          user.
      */
-     public function setUser($value)
-     {
-         if ($value !== null) {
-             $this->_user = $value;
-         } else {
-             $this->_user = Zend_Gdata_Photos::DEFAULT_USER;
-         }
-     }
+    public function setUser($value)
+    {
+        if ($value !== null) {
+            $this->_user = $value;
+        } else {
+            $this->_user = Zend_Gdata_Photos::DEFAULT_USER;
+        }
+    }
 
     /**
      * Get the user which is to be returned.
      *
-     * @see setUser
      * @return string The visibility to retrieve.
+     * @see setUser
      */
     public function getUser()
     {
@@ -162,21 +162,21 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
      * @param string $value The visibility to filter by, or null to use the
      *          default value.
      */
-     public function setAccess($value)
-     {
-         if ($value !== null) {
-             $this->_params['access'] = $value;
-         } else {
-             unset($this->_params['access']);
-         }
-     }
+    public function setAccess($value)
+    {
+        if ($value !== null) {
+            $this->_params['access'] = $value;
+        } else {
+            unset($this->_params['access']);
+        }
+    }
 
     /**
      * Get the visibility filter for entries returned.
      *
-     * @see setAccess
      * @return string The visibility to filter by, or null for the default
      *          user.
+     * @see setAccess
      */
     public function getAccess()
     {
@@ -194,21 +194,21 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
      * @param string $value The tag to filter by, or null if no
      *          filter is to be applied.
      */
-     public function setTag($value)
-     {
-         if ($value !== null) {
-             $this->_params['tag'] = $value;
-         } else {
-             unset($this->_params['tag']);
-         }
-     }
+    public function setTag($value)
+    {
+        if ($value !== null) {
+            $this->_params['tag'] = $value;
+        } else {
+            unset($this->_params['tag']);
+        }
+    }
 
     /**
      * Get the tag filter for entries returned.
      *
-     * @see setTag
      * @return string The tag to filter by, or null if no filter
      *          is to be applied.
+     * @see setTag
      */
     public function getTag()
     {
@@ -226,21 +226,21 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
      * @param string $value The kind to filter by, or null if no
      *          filter is to be applied.
      */
-     public function setKind($value)
-     {
-         if ($value !== null) {
-             $this->_params['kind'] = $value;
-         } else {
-             unset($this->_params['kind']);
-         }
-     }
+    public function setKind($value)
+    {
+        if ($value !== null) {
+            $this->_params['kind'] = $value;
+        } else {
+            unset($this->_params['kind']);
+        }
+    }
 
     /**
      * Get the kind of entries to be returned.
      *
-     * @see setKind
      * @return string The kind to filter by, or null if no filter
      *          is to be applied.
+     * @see setKind
      */
     public function getKind()
     {
@@ -258,21 +258,21 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
      * @param string $value The image size to filter by, or null if no
      *          filter is to be applied.
      */
-     public function setImgMax($value)
-     {
-         if ($value !== null) {
-             $this->_params['imgmax'] = $value;
-         } else {
-             unset($this->_params['imgmax']);
-         }
-     }
+    public function setImgMax($value)
+    {
+        if ($value !== null) {
+            $this->_params['imgmax'] = $value;
+        } else {
+            unset($this->_params['imgmax']);
+        }
+    }
 
     /**
      * Get the maximum image size filter for entries returned.
      *
-     * @see setImgMax
      * @return string The image size size to filter by, or null if no filter
      *          is to be applied.
+     * @see setImgMax
      */
     public function getImgMax()
     {
@@ -290,21 +290,21 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
      * @param string $value The thumbnail size to filter by, or null if no
      *          filter is to be applied.
      */
-     public function setThumbsize($value)
-     {
-         if ($value !== null) {
-             $this->_params['thumbsize'] = $value;
-         } else {
-             unset($this->_params['thumbsize']);
-         }
-     }
+    public function setThumbsize($value)
+    {
+        if ($value !== null) {
+            $this->_params['thumbsize'] = $value;
+        } else {
+            unset($this->_params['thumbsize']);
+        }
+    }
 
     /**
      * Get the thumbnail size filter for entries returned.
      *
-     * @see setThumbsize
      * @return string The thumbnail size to filter by, or null if no filter
      *          is to be applied.
+     * @see setThumbsize
      */
     public function getThumbsize()
     {
@@ -327,7 +327,8 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
         } else {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'Type must be feed or entry, not null');
+                'Type must be feed or entry, not null'
+            );
         }
 
         if ($this->getProjection() !== null) {
@@ -335,7 +336,8 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
         } else {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'Projection must not be null');
+                'Projection must not be null'
+            );
         }
 
         if ($this->getUser() !== null) {
@@ -344,7 +346,8 @@ class Zend_Gdata_Photos_UserQuery extends Zend_Gdata_Query
             // Should never occur due to setter behavior
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'User must not be null');
+                'User must not be null'
+            );
         }
 
         $uri .= $incomingUri;

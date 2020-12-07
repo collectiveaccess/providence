@@ -30,4 +30,5 @@ require_once 'Zend/Exception.php';
  * @version    $Id: Exception.php 24593 2012-01-05 20:35:02Z matthew $
  */
 class Zend_Log_Exception extends Zend_Exception
-{}
+{
+}

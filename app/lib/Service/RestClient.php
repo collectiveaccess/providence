@@ -30,25 +30,29 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-  
-require_once(__CA_LIB_DIR__."/Zend/Rest/Client.php");
+/**
+ *
+ */
 
-class RestClient extends Zend_Rest_Client {
-	# -------------------------------------------------------
-	/**
-	 * @param string $ps_url The url to connect to
-	 * @param array $ps_options An array of options:
-	 *		timeout = the number of seconds to wait for a response before throwing an exception. Default is 30 seconds.
-	 */
-	public function  __construct($ps_uri = null, $pa_options=null) {
-		self::getHttpClient()->setCookieJar(true);
-		self::getHttpClient()->setConfig(array(
-			"timeout" => (isset($pa_options['timeout']) && ((int)$pa_options['timeout'] > 0)) ? (int)$pa_options['timeout'] : 30
-		));
-		parent::__construct($ps_uri);
-	}
-	# -------------------------------------------------------
+require_once(__CA_LIB_DIR__ . "/Zend/Rest/Client.php");
+
+class RestClient extends Zend_Rest_Client
+{
+    # -------------------------------------------------------
+    /**
+     * @param string $ps_url The url to connect to
+     * @param array $ps_options An array of options:
+     *        timeout = the number of seconds to wait for a response before throwing an exception. Default is 30 seconds.
+     */
+    public function __construct($ps_uri = null, $pa_options = null)
+    {
+        self::getHttpClient()->setCookieJar(true);
+        self::getHttpClient()->setConfig(
+            array(
+                "timeout" => (isset($pa_options['timeout']) && ((int)$pa_options['timeout'] > 0)) ? (int)$pa_options['timeout'] : 30
+            )
+        );
+        parent::__construct($ps_uri);
+    }
+    # -------------------------------------------------------
 }

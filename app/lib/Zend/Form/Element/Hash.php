@@ -70,8 +70,8 @@ class Zend_Form_Element_Hash extends Zend_Form_Element_Xhtml
      * Creates session namespace for CSRF token, and adds validator for CSRF
      * token.
      *
-     * @param  string|array|Zend_Config $spec
-     * @param  array|Zend_Config $options
+     * @param string|array|Zend_Config $spec
+     * @param array|Zend_Config $options
      * @return void
      */
     public function __construct($spec, $options = null)
@@ -79,14 +79,14 @@ class Zend_Form_Element_Hash extends Zend_Form_Element_Xhtml
         parent::__construct($spec, $options);
 
         $this->setAllowEmpty(false)
-             ->setRequired(true)
-             ->initCsrfValidator();
+            ->setRequired(true)
+            ->initCsrfValidator();
     }
 
     /**
      * Set session object
      *
-     * @param  Zend_Session_Namespace $session
+     * @param Zend_Session_Namespace $session
      * @return Zend_Form_Element_Hash
      */
     public function setSession($session)
@@ -135,12 +135,12 @@ class Zend_Form_Element_Hash extends Zend_Form_Element_Xhtml
     /**
      * Salt for CSRF token
      *
-     * @param  string $salt
+     * @param string $salt
      * @return Zend_Form_Element_Hash
      */
     public function setSalt($salt)
     {
-        $this->_salt = (string) $salt;
+        $this->_salt = (string)$salt;
         return $this;
     }
 
@@ -184,12 +184,12 @@ class Zend_Form_Element_Hash extends Zend_Form_Element_Xhtml
     /**
      * Set timeout for CSRF session token
      *
-     * @param  int $ttl
+     * @param int $ttl
      * @return Zend_Form_Element_Hash
      */
     public function setTimeout($ttl)
     {
-        $this->_timeout = (int) $ttl;
+        $this->_timeout = (int)$ttl;
         return $this;
     }
 
@@ -229,7 +229,7 @@ class Zend_Form_Element_Hash extends Zend_Form_Element_Xhtml
     /**
      * Render CSRF token in form
      *
-     * @param  Zend_View_Interface $view
+     * @param Zend_View_Interface $view
      * @return string
      */
     public function render(Zend_View_Interface $view = null)
@@ -249,10 +249,10 @@ class Zend_Form_Element_Hash extends Zend_Form_Element_Xhtml
     protected function _generateHash()
     {
         $this->_hash = md5(
-            mt_rand(1,1000000)
-            .  $this->getSalt()
-            .  $this->getName()
-            .  mt_rand(1,1000000)
+            mt_rand(1, 1000000)
+            . $this->getSalt()
+            . $this->getName()
+            . mt_rand(1, 1000000)
         );
         $this->setValue($this->_hash);
     }

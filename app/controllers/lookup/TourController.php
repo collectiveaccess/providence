@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/ToursController.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class TourController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = true;
- 		protected $ops_table_name = 'ca_tours';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'tour';
- 		protected $ops_search_class = 'TourSearch';
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once(__CA_LIB_DIR__ . "/BaseLookupController.php");
+
+class TourController extends BaseLookupController
+{
+    # -------------------------------------------------------
+    protected $opb_uses_hierarchy_browser = true;
+    protected $ops_table_name = 'ca_tours';        // name of "subject" table (what we're editing)
+    protected $ops_name_singular = 'tour';
+    protected $ops_search_class = 'TourSearch';
+    # -------------------------------------------------------
+}
+
+?>

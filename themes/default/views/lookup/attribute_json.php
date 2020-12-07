@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * lookup/attribute_json.php :
  * ----------------------------------------------------------------------
@@ -25,5 +26,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	header("Content-type: application/json");
-	print json_encode($this->getVar('value_list'));
+header("Content-type: application/json");
+print json_encode($this->getVar('value_list'));

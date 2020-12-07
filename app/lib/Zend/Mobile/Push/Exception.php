@@ -32,4 +32,5 @@ require_once 'Zend/Mobile/Exception.php';
  * @version    $Id$
  */
 class Zend_Mobile_Push_Exception extends Zend_Mobile_Exception
-{}
+{
+}

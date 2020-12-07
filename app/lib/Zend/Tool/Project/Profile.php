@@ -87,7 +87,7 @@ class Zend_Tool_Project_Profile extends Zend_Tool_Project_Profile_Resource_Conta
         return new RecursiveIteratorIterator(
             new Zend_Tool_Project_Profile_Iterator_EnabledResourceFilter($this),
             RecursiveIteratorIterator::SELF_FIRST
-            );
+        );
     }
 
     /**
@@ -151,21 +151,27 @@ class Zend_Tool_Project_Profile extends Zend_Tool_Project_Profile_Resource_Conta
         // if no data is supplied, need either a projectProfileFile or a projectDirectory
         if (!isset($this->_attributes['projectProfileFile']) && !isset($this->_attributes['projectDirectory'])) {
             require_once 'Zend/Tool/Project/Exception.php';
-            throw new Zend_Tool_Project_Exception('loadFromFile() must have at least "projectProfileFile" or "projectDirectory" set.');
+            throw new Zend_Tool_Project_Exception(
+                'loadFromFile() must have at least "projectProfileFile" or "projectDirectory" set.'
+            );
         }
 
         if (isset($this->_attributes['projectProfileFile'])) {
             $projectProfileFilePath = $this->_attributes['projectProfileFile'];
             if (!file_exists($projectProfileFilePath)) {
                 require_once 'Zend/Tool/Project/Exception.php';
-                throw new Zend_Tool_Project_Exception('"projectProfileFile" was supplied but file was not found at location ' . $projectProfileFilePath);
+                throw new Zend_Tool_Project_Exception(
+                    '"projectProfileFile" was supplied but file was not found at location ' . $projectProfileFilePath
+                );
             }
             $this->_attributes['projectDirectory'] = dirname($projectProfileFilePath);
         } else {
             $projectProfileFilePath = rtrim($this->_attributes['projectDirectory'], '/\\') . '/.zfproject.xml';
             if (!file_exists($projectProfileFilePath)) {
                 require_once 'Zend/Tool/Project/Exception.php';
-                throw new Zend_Tool_Project_Exception('"projectDirectory" was supplied but no profile file file was not found at location ' . $projectProfileFilePath);
+                throw new Zend_Tool_Project_Exception(
+                    '"projectDirectory" was supplied but no profile file file was not found at location ' . $projectProfileFilePath
+                );
             }
             $this->_attributes['projectProfileFile'] = $projectProfileFilePath;
         }
@@ -227,9 +233,11 @@ class Zend_Tool_Project_Profile extends Zend_Tool_Project_Profile_Resource_Conta
             $string .= $resource->getName() . PHP_EOL;
             $rii = new RecursiveIteratorIterator($resource, RecursiveIteratorIterator::SELF_FIRST);
             foreach ($rii as $item) {
-                $string .= str_repeat('  ', $rii->getDepth()+1) . $item->getName()
-                        . ((count($attributes = $item->getAttributes()) > 0) ? ' [' . http_build_query($attributes) . ']' : '')
-                        . PHP_EOL;
+                $string .= str_repeat('  ', $rii->getDepth() + 1) . $item->getName()
+                    . ((count($attributes = $item->getAttributes()) > 0) ? ' [' . http_build_query(
+                            $attributes
+                        ) . ']' : '')
+                    . PHP_EOL;
             }
         }
         return $string;

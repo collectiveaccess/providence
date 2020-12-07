@@ -44,7 +44,7 @@ class Zend_Gdata_YouTube_Extension_Duration extends Zend_Gdata_Extension
 
     /**
      * Constructs a new Zend_Gdata_YouTube_Extension_Duration object.
-     * @param bool $seconds(optional) The seconds value of the element.
+     * @param bool $seconds (optional) The seconds value of the element.
      */
     public function __construct($seconds = null)
     {
@@ -82,11 +82,11 @@ class Zend_Gdata_YouTube_Extension_Duration extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'seconds':
-            $this->_seconds = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'seconds':
+                $this->_seconds = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

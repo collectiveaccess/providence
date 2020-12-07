@@ -66,12 +66,12 @@ class Zend_View_Helper_FormReset extends Zend_View_Helper_FormElement
 
         // Render button
         $xhtml = '<input type="reset"'
-               . ' name="' . $this->view->escape($name) . '"'
-               . ' id="' . $this->view->escape($id) . '"'
-               . $disabled;
+            . ' name="' . $this->view->escape($name) . '"'
+            . ' id="' . $this->view->escape($id) . '"'
+            . $disabled;
 
         // add a value if one is given
-        if (! empty($value)) {
+        if (!empty($value)) {
             $xhtml .= ' value="' . $this->view->escape($value) . '"';
         }
 

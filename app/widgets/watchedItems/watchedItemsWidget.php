@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * watchedItemsWidget.php : 
  * ----------------------------------------------------------------------
@@ -25,54 +26,66 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/IWidget.php');
- 	require_once(__CA_MODELS_DIR__."/ca_watch_list.php");
- 
-	class watchedItemsWidget extends BaseWidget implements IWidget {
-		# -------------------------------------------------------
-		private $opo_config;
-		# -------------------------------------------------------
-		public function __construct($ps_widget_path, $pa_settings) {
-			$this->title = _t('Your Watched Items');
-			$this->description = _t('Get a list of your watched items.');
-			parent::__construct($ps_widget_path, $pa_settings);
-			
-			$this->opo_config = Configuration::load($ps_widget_path.'/conf/watchedItemsWidget.conf');
-		}
-		# -------------------------------------------------------
-		/**
-		 * Override checkStatus() to return true
-		 */
-		public function checkStatus() {
-			return array(
-				'description' => $this->getDescription(),
-				'errors' => array(),
-				'warnings' => array(),
-				'available' => ((bool)$this->opo_config->get('enabled'))
-			);
-		}
-		# -------------------------------------------------------
-		public function renderWidget($ps_widget_id, &$pa_settings) {
-			parent::renderWidget($ps_widget_id, $pa_settings);
-			
-			$this->opo_view->setVar('request', $this->getRequest());
-			$t_watch_list = new ca_watch_list();
-			$va_watched_items = $t_watch_list->getWatchedItems($this->request->user->get("user_id"), null, ['request' => $this->getRequest()]);
-			$this->opo_view->setVar("watched_items", $va_watched_items);
-			
-			return $this->opo_view->render('main_html.php');
-		}
-		# -------------------------------------------------------
-		/**
-		 * Get widget user actions
-		 */
-		static public function getRoleActionList() {
-			return array();
-		}
-		# -------------------------------------------------------
-	}
-	
-	BaseWidget::$s_widget_settings['watchedItemsWidget'] = array(		
-	);
+require_once(__CA_LIB_DIR__ . '/BaseWidget.php');
+require_once(__CA_LIB_DIR__ . '/IWidget.php');
+require_once(__CA_MODELS_DIR__ . "/ca_watch_list.php");
+
+class watchedItemsWidget extends BaseWidget implements IWidget
+{
+    # -------------------------------------------------------
+    private $opo_config;
+
+    # -------------------------------------------------------
+    public function __construct($ps_widget_path, $pa_settings)
+    {
+        $this->title = _t('Your Watched Items');
+        $this->description = _t('Get a list of your watched items.');
+        parent::__construct($ps_widget_path, $pa_settings);
+
+        $this->opo_config = Configuration::load($ps_widget_path . '/conf/watchedItemsWidget.conf');
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Override checkStatus() to return true
+     */
+    public function checkStatus()
+    {
+        return array(
+            'description' => $this->getDescription(),
+            'errors' => array(),
+            'warnings' => array(),
+            'available' => ((bool)$this->opo_config->get('enabled'))
+        );
+    }
+
+    # -------------------------------------------------------
+    public function renderWidget($ps_widget_id, &$pa_settings)
+    {
+        parent::renderWidget($ps_widget_id, $pa_settings);
+
+        $this->opo_view->setVar('request', $this->getRequest());
+        $t_watch_list = new ca_watch_list();
+        $va_watched_items = $t_watch_list->getWatchedItems(
+            $this->request->user->get("user_id"),
+            null,
+            ['request' => $this->getRequest()]
+        );
+        $this->opo_view->setVar("watched_items", $va_watched_items);
+
+        return $this->opo_view->render('main_html.php');
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Get widget user actions
+     */
+    static public function getRoleActionList()
+    {
+        return array();
+    }
+    # -------------------------------------------------------
+}
+
+BaseWidget::$s_widget_settings['watchedItemsWidget'] = array();
 ?>

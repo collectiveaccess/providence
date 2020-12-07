@@ -133,7 +133,7 @@ class Zend_Service_ReCaptcha_MailHide extends Zend_Service_ReCaptcha
     /**
      * Set email validator
      *
-     * @param  Zend_Validate_Interface $validator
+     * @param Zend_Validate_Interface $validator
      * @return Zend_Service_ReCaptcha_MailHide
      */
     public function setEmailValidator(Zend_Validate_Interface $validator)
@@ -154,7 +154,9 @@ class Zend_Service_ReCaptcha_MailHide extends Zend_Service_ReCaptcha
             /** @see Zend_Service_ReCaptcha_MailHide_Exception */
             require_once 'Zend/Service/ReCaptcha/MailHide/Exception.php';
 
-            throw new Zend_Service_ReCaptcha_MailHide_Exception('Use of the Zend_Service_ReCaptcha_MailHide component requires the mcrypt extension to be enabled in PHP');
+            throw new Zend_Service_ReCaptcha_MailHide_Exception(
+                'Use of the Zend_Service_ReCaptcha_MailHide component requires the mcrypt extension to be enabled in PHP'
+            );
         }
     }
 
@@ -186,11 +188,11 @@ class Zend_Service_ReCaptcha_MailHide extends Zend_Service_ReCaptcha
     public function getDefaultOptions()
     {
         return array(
-            'encoding'       => 'UTF-8',
-            'linkTitle'      => 'Reveal this e-mail address',
+            'encoding' => 'UTF-8',
+            'linkTitle' => 'Reveal this e-mail address',
             'linkHiddenText' => '...',
-            'popupWidth'     => 500,
-            'popupHeight'    => 300,
+            'popupWidth' => 500,
+            'popupHeight' => 300,
         );
     }
 
@@ -235,10 +237,12 @@ class Zend_Service_ReCaptcha_MailHide extends Zend_Service_ReCaptcha
         /* Decide on how much of the local part we want to reveal */
         if (strlen($emailParts[0]) <= 4) {
             $emailParts[0] = substr($emailParts[0], 0, 1);
-        } else if (strlen($emailParts[0]) <= 6) {
-            $emailParts[0] = substr($emailParts[0], 0, 3);
         } else {
-            $emailParts[0] = substr($emailParts[0], 0, 4);
+            if (strlen($emailParts[0]) <= 6) {
+                $emailParts[0] = substr($emailParts[0], 0, 3);
+            } else {
+                $emailParts[0] = substr($emailParts[0], 0, 4);
+            }
         }
 
         $this->_emailLocalPart = $emailParts[0];
@@ -314,17 +318,17 @@ class Zend_Service_ReCaptcha_MailHide extends Zend_Service_ReCaptcha
         /* Genrate the HTML used to represent the email address */
         $html = htmlentities($this->getEmailLocalPart(), ENT_COMPAT, $enc)
             . '<a href="'
-                . htmlentities($url, ENT_COMPAT, $enc)
-                . '" onclick="window.open(\''
-                    . htmlentities($url, ENT_COMPAT, $enc)
-                    . '\', \'\', \'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width='
-                    . $this->_options['popupWidth']
-                    . ',height='
-                    . $this->_options['popupHeight']
-                . '\'); return false;" title="'
-                . $this->_options['linkTitle']
-                . '">' . $this->_options['linkHiddenText'] . '</a>@'
-                . htmlentities($this->getEmailDomainPart(), ENT_COMPAT, $enc);
+            . htmlentities($url, ENT_COMPAT, $enc)
+            . '" onclick="window.open(\''
+            . htmlentities($url, ENT_COMPAT, $enc)
+            . '\', \'\', \'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width='
+            . $this->_options['popupWidth']
+            . ',height='
+            . $this->_options['popupHeight']
+            . '\'); return false;" title="'
+            . $this->_options['linkTitle']
+            . '">' . $this->_options['linkHiddenText'] . '</a>@'
+            . htmlentities($this->getEmailDomainPart(), ENT_COMPAT, $enc);
 
         return $html;
     }
@@ -343,9 +347,19 @@ class Zend_Service_ReCaptcha_MailHide extends Zend_Service_ReCaptcha
         $emailPadded = str_pad($this->_email, strlen($this->_email) + $numPad, chr($numPad));
 
         /* Encrypt the email */
-        $emailEncrypted = mcrypt_encrypt(self::ENCRYPTION_CIPHER, $this->_privateKeyPacked, $emailPadded, self::ENCRYPTION_MODE, self::ENCRYPTION_IV);
+        $emailEncrypted = mcrypt_encrypt(
+            self::ENCRYPTION_CIPHER,
+            $this->_privateKeyPacked,
+            $emailPadded,
+            self::ENCRYPTION_MODE,
+            self::ENCRYPTION_IV
+        );
 
         /* Return the url */
-        return self::MAILHIDE_SERVER . '?k=' . $this->_publicKey . '&c=' . strtr(base64_encode($emailEncrypted), '+/', '-_');
+        return self::MAILHIDE_SERVER . '?k=' . $this->_publicKey . '&c=' . strtr(
+                base64_encode($emailEncrypted),
+                '+/',
+                '-_'
+            );
     }
 }

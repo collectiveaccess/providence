@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/manage/metadata_alert_rules/delete_html.php :
  * ----------------------------------------------------------------------
@@ -25,16 +26,31 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_rule = $this->getVar('t_subject');
-	$vn_rule_id = $this->getVar('subject_id');
+$t_rule = $this->getVar('t_subject');
+$vn_rule_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_rule, $this->getVar('subject_name'), 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit/'.$this->request->getActionExtra(), array('rule_id' => $vn_rule_id));
-	} else {
-		print "<div align='center'>".caNavLink($this->request, _t('Back to metadata alert rule list'), 'button', 'manage', 'MetadataAlerts', 'ListAlerts')."</div>";
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_rule,
+            $this->getVar('subject_name'),
+            'manage/metadata_alert_rules',
+            'MetadataAlertRuleEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('rule_id' => $vn_rule_id)
+        );
+    } else {
+        print "<div align='center'>" . caNavLink(
+                $this->request,
+                _t('Back to metadata alert rule list'),
+                'button',
+                'manage',
+                'MetadataAlerts',
+                'ListAlerts'
+            ) . "</div>";
+    }
+    ?>
 </div>

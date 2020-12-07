@@ -50,7 +50,7 @@ class Zend_Mail_Message_File extends Zend_Mail_Part_File implements Zend_Mail_Me
      * In addition to the parameters of Zend_Mail_Part::__construct() this constructor supports:
      * - flags array with flags for message, keys are ignored, use constants defined in Zend_Mail_Storage
      *
-     * @param  string $rawMessage  full message with or without headers
+     * @param string $rawMessage full message with or without headers
      * @throws Zend_Mail_Exception
      */
     public function __construct(array $params)

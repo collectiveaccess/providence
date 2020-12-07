@@ -25,15 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vn_exporter_count 	= $this->getVar('exporter_count');
+
+$vn_exporter_count = $this->getVar('exporter_count');
 ?>
 <h3 class='export'><?php print _t('Your data exporters'); ?>:
-<div><?php
-	if ($vn_exporter_count == 1) {
-		print "<div>"._t("1 mapping is available for export")."<div>";
-	} else {
-		print "<div>"._t("%1 mappings are available for export", $vn_exporter_count)."</div>";
-	}
-?></div>
+    <div><?php
+        if ($vn_exporter_count == 1) {
+            print "<div>" . _t("1 mapping is available for export") . "<div>";
+        } else {
+            print "<div>" . _t("%1 mappings are available for export", $vn_exporter_count) . "</div>";
+        }
+        ?></div>
 </h3>

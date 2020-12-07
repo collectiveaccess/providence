@@ -47,9 +47,9 @@ class Zend_Oauth_Http_RequestToken extends Zend_Oauth_Http
      */
     public function execute()
     {
-        $params   = $this->assembleParams();
+        $params = $this->assembleParams();
         $response = $this->startRequestCycle($params);
-        $return   = new Zend_Oauth_Token_Request($response);
+        $return = new Zend_Oauth_Token_Request($response);
         return $return;
     }
 
@@ -61,11 +61,11 @@ class Zend_Oauth_Http_RequestToken extends Zend_Oauth_Http
     public function assembleParams()
     {
         $params = array(
-            'oauth_consumer_key'     => $this->_consumer->getConsumerKey(),
-            'oauth_nonce'            => $this->_httpUtility->generateNonce(),
-            'oauth_timestamp'        => $this->_httpUtility->generateTimestamp(),
+            'oauth_consumer_key' => $this->_consumer->getConsumerKey(),
+            'oauth_nonce' => $this->_httpUtility->generateNonce(),
+            'oauth_timestamp' => $this->_httpUtility->generateTimestamp(),
             'oauth_signature_method' => $this->_consumer->getSignatureMethod(),
-            'oauth_version'          => $this->_consumer->getVersion(),
+            'oauth_version' => $this->_consumer->getVersion(),
         );
 
         // indicates we support 1.0a
@@ -118,7 +118,7 @@ class Zend_Oauth_Http_RequestToken extends Zend_Oauth_Http
      * Generate and return a HTTP Client configured for the POST Body Request
      * Scheme specified by OAuth, for use in requesting a Request Token.
      *
-     * @param  array $params
+     * @param array $params
      * @return Zend_Http_Client
      */
     public function getRequestSchemePostBodyClient(array $params)
@@ -140,7 +140,7 @@ class Zend_Oauth_Http_RequestToken extends Zend_Oauth_Http
      * Attempt a request based on the current configured OAuth Request Scheme and
      * return the resulting HTTP Response.
      *
-     * @param  array $params
+     * @param array $params
      * @return Zend_Http_Response
      */
     protected function _attemptRequest(array $params)
@@ -153,8 +153,10 @@ class Zend_Oauth_Http_RequestToken extends Zend_Oauth_Http
                 $httpClient = $this->getRequestSchemePostBodyClient($params);
                 break;
             case Zend_Oauth::REQUEST_SCHEME_QUERYSTRING:
-                $httpClient = $this->getRequestSchemeQueryStringClient($params,
-                    $this->_consumer->getRequestTokenUrl());
+                $httpClient = $this->getRequestSchemeQueryStringClient(
+                    $params,
+                    $this->_consumer->getRequestTokenUrl()
+                );
                 break;
         }
         return $httpClient->request();

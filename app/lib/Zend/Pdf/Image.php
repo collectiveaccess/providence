@@ -35,52 +35,52 @@
  */
 abstract class Zend_Pdf_Image
 {
-  /**** Class Constants ****/
+    /**** Class Constants ****/
 
 
-  /* Image Types */
+    /* Image Types */
 
     const TYPE_UNKNOWN = 0;
     const TYPE_JPEG = 1;
     const TYPE_PNG = 2;
     const TYPE_TIFF = 3;
 
-  /* TIFF Constants */
+    /* TIFF Constants */
 
-    const TIFF_FIELD_TYPE_BYTE=1;
-    const TIFF_FIELD_TYPE_ASCII=2;
-    const TIFF_FIELD_TYPE_SHORT=3;
-    const TIFF_FIELD_TYPE_LONG=4;
-    const TIFF_FIELD_TYPE_RATIONAL=5;
+    const TIFF_FIELD_TYPE_BYTE = 1;
+    const TIFF_FIELD_TYPE_ASCII = 2;
+    const TIFF_FIELD_TYPE_SHORT = 3;
+    const TIFF_FIELD_TYPE_LONG = 4;
+    const TIFF_FIELD_TYPE_RATIONAL = 5;
 
-    const TIFF_TAG_IMAGE_WIDTH=256;
-    const TIFF_TAG_IMAGE_LENGTH=257; //Height
-    const TIFF_TAG_BITS_PER_SAMPLE=258;
-    const TIFF_TAG_COMPRESSION=259;
-    const TIFF_TAG_PHOTOMETRIC_INTERPRETATION=262;
-    const TIFF_TAG_STRIP_OFFSETS=273;
-    const TIFF_TAG_SAMPLES_PER_PIXEL=277;
-    const TIFF_TAG_STRIP_BYTE_COUNTS=279;
+    const TIFF_TAG_IMAGE_WIDTH = 256;
+    const TIFF_TAG_IMAGE_LENGTH = 257; //Height
+    const TIFF_TAG_BITS_PER_SAMPLE = 258;
+    const TIFF_TAG_COMPRESSION = 259;
+    const TIFF_TAG_PHOTOMETRIC_INTERPRETATION = 262;
+    const TIFF_TAG_STRIP_OFFSETS = 273;
+    const TIFF_TAG_SAMPLES_PER_PIXEL = 277;
+    const TIFF_TAG_STRIP_BYTE_COUNTS = 279;
 
     const TIFF_COMPRESSION_UNCOMPRESSED = 1;
     const TIFF_COMPRESSION_CCITT1D = 2;
     const TIFF_COMPRESSION_GROUP_3_FAX = 3;
-    const TIFF_COMPRESSION_GROUP_4_FAX  = 4;
+    const TIFF_COMPRESSION_GROUP_4_FAX = 4;
     const TIFF_COMPRESSION_LZW = 5;
     const TIFF_COMPRESSION_JPEG = 6;
     const TIFF_COMPRESSION_FLATE = 8;
     const TIFF_COMPRESSION_FLATE_OBSOLETE_CODE = 32946;
     const TIFF_COMPRESSION_PACKBITS = 32773;
 
-    const TIFF_PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO=0;
-    const TIFF_PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO=1;
-    const TIFF_PHOTOMETRIC_INTERPRETATION_RGB=2;
-    const TIFF_PHOTOMETRIC_INTERPRETATION_RGB_INDEXED=3;
-    const TIFF_PHOTOMETRIC_INTERPRETATION_CMYK=5;
-    const TIFF_PHOTOMETRIC_INTERPRETATION_YCBCR=6;
-    const TIFF_PHOTOMETRIC_INTERPRETATION_CIELAB=8;
+    const TIFF_PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO = 0;
+    const TIFF_PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO = 1;
+    const TIFF_PHOTOMETRIC_INTERPRETATION_RGB = 2;
+    const TIFF_PHOTOMETRIC_INTERPRETATION_RGB_INDEXED = 3;
+    const TIFF_PHOTOMETRIC_INTERPRETATION_CMYK = 5;
+    const TIFF_PHOTOMETRIC_INTERPRETATION_YCBCR = 6;
+    const TIFF_PHOTOMETRIC_INTERPRETATION_CIELAB = 8;
 
-  /* PNG Constants */
+    /* PNG Constants */
 
     const PNG_COMPRESSION_DEFAULT_STRATEGY = 0;
     const PNG_COMPRESSION_FILTERED = 1;
@@ -102,10 +102,10 @@ abstract class Zend_Pdf_Image
     const PNG_CHANNEL_GRAY_ALPHA = 4;
     const PNG_CHANNEL_RGB_ALPHA = 6;
 
-  /**** Public Interface ****/
+    /**** Public Interface ****/
 
 
-  /* Factory Methods */
+    /* Factory Methods */
 
     /**
      * Returns a {@link Zend_Pdf_Resource_Image} object by file path.
@@ -156,7 +156,9 @@ abstract class Zend_Pdf_Image
                 break;
             default:
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception("Cannot create image resource. File extension not known or unsupported type.");
+                throw new Zend_Pdf_Exception(
+                    "Cannot create image resource. File extension not known or unsupported type."
+                );
                 break;
         }
 
@@ -166,14 +168,15 @@ abstract class Zend_Pdf_Image
 
         if ($image !== null) {
             return $image;
-
         } else {
             /* The type of image could not be determined. Give up.
              */
             require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception("Cannot determine image type: $filePath",
-                                         Zend_Pdf_Exception::CANT_DETERMINE_IMAGE_TYPE);
-         }
+            throw new Zend_Pdf_Exception(
+                "Cannot determine image type: $filePath",
+                Zend_Pdf_Exception::CANT_DETERMINE_IMAGE_TYPE
+            );
+        }
     }
 
 
@@ -194,7 +197,9 @@ abstract class Zend_Pdf_Image
     protected static function _extractJpegImage($dataSource)
     {
         require_once 'Zend/Pdf/Exception.php';
-        throw new Zend_Pdf_Exception('Jpeg image fileparser is not implemented. Old styly implementation has to be used.');
+        throw new Zend_Pdf_Exception(
+            'Jpeg image fileparser is not implemented. Old styly implementation has to be used.'
+        );
 
         require_once 'Zend/Pdf/FileParser/Image/Jpeg.php';
         $imageParser = new Zend_Pdf_FileParser_Image_Jpeg($dataSource);
@@ -234,7 +239,9 @@ abstract class Zend_Pdf_Image
     protected static function _extractTiffImage($dataSource)
     {
         require_once 'Zend/Pdf/Exception.php';
-        throw new Zend_Pdf_Exception('Tiff image fileparser is not implemented. Old styly implementation has to be used.');
+        throw new Zend_Pdf_Exception(
+            'Tiff image fileparser is not implemented. Old styly implementation has to be used.'
+        );
 
         require_once 'Zend/Pdf/FileParser/Image/Tiff.php';
         $imageParser = new Zend_Pdf_FileParser_Image_Tiff($dataSource);

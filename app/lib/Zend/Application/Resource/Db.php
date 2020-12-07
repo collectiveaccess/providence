@@ -66,7 +66,7 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     /**
      * Set the adapter
      *
-     * @param  string $adapter
+     * @param string $adapter
      * @return Zend_Application_Resource_Db
      */
     public function setAdapter($adapter)
@@ -88,7 +88,7 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     /**
      * Set the adapter params
      *
-     * @param  string $adapter
+     * @param string $adapter
      * @return Zend_Application_Resource_Db
      */
     public function setParams(array $params)
@@ -110,7 +110,7 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     /**
      * Set whether to use this as default table adapter
      *
-     * @param  boolean $defaultTableAdapter
+     * @param boolean $defaultTableAdapter
      * @return Zend_Application_Resource_Db
      */
     public function setIsDefaultTableAdapter($isDefaultTableAdapter)
@@ -141,7 +141,7 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
         ) {
             $this->_db = Zend_Db::factory($adapter, $this->getParams());
 
-            if ($this->_db instanceof Zend_Db_Adapter_Abstract 
+            if ($this->_db instanceof Zend_Db_Adapter_Abstract
                 && $this->isDefaultTableAdapter()
             ) {
                 Zend_Db_Table::setDefaultAdapter($this->_db);
@@ -183,8 +183,10 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
                     $metadataCache = $cacheManager->getCache($cache);
                 }
             }
-        } else if ($cache instanceof Zend_Cache_Core) {
-            $metadataCache = $cache;
+        } else {
+            if ($cache instanceof Zend_Cache_Core) {
+                $metadataCache = $cache;
+            }
         }
 
         if ($metadataCache instanceof Zend_Cache_Core) {

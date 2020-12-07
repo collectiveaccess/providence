@@ -48,7 +48,8 @@ class Zend_Auth
      * @return void
      */
     protected function __construct()
-    {}
+    {
+    }
 
     /**
      * Singleton pattern implementation makes "clone" unavailable
@@ -56,7 +57,8 @@ class Zend_Auth
      * @return void
      */
     protected function __clone()
-    {}
+    {
+    }
 
     /**
      * Returns an instance of Zend_Auth
@@ -97,7 +99,7 @@ class Zend_Auth
     /**
      * Sets the persistent storage handler
      *
-     * @param  Zend_Auth_Storage_Interface $storage
+     * @param Zend_Auth_Storage_Interface $storage
      * @return Zend_Auth Provides a fluent interface
      */
     public function setStorage(Zend_Auth_Storage_Interface $storage)
@@ -109,7 +111,7 @@ class Zend_Auth
     /**
      * Authenticates against the supplied adapter
      *
-     * @param  Zend_Auth_Adapter_Interface $adapter
+     * @param Zend_Auth_Adapter_Interface $adapter
      * @return Zend_Auth_Result
      */
     public function authenticate(Zend_Auth_Adapter_Interface $adapter)

@@ -91,13 +91,14 @@ class Zend_Json_Encoder
     {
         if (is_object($value)) {
             return $this->_encodeObject($value);
-        } else if (is_array($value)) {
-            return $this->_encodeArray($value);
+        } else {
+            if (is_array($value)) {
+                return $this->_encodeArray($value);
+            }
         }
 
         return $this->_encodeDatum($value);
     }
-
 
 
     /**
@@ -115,12 +116,9 @@ class Zend_Json_Encoder
     {
         if ($this->_cycleCheck) {
             if ($this->_wasVisited($value)) {
-
                 if (isset($this->_options['silenceCyclicalExceptions'])
-                    && $this->_options['silenceCyclicalExceptions']===true) {
-
+                    && $this->_options['silenceCyclicalExceptions'] === true) {
                     return '"* RECURSION (' . get_class($value) . ') *"';
-
                 } else {
                     require_once 'Zend/Json/Exception.php';
                     throw new Zend_Json_Exception(
@@ -135,7 +133,7 @@ class Zend_Json_Encoder
 
         $props = '';
         if (method_exists($value, 'toJson')) {
-            $props =',' . preg_replace("/^\{(.*)\}$/","\\1",$value->toJson());
+            $props = ',' . preg_replace("/^\{(.*)\}$/", "\\1", $value->toJson());
         } else {
             if ($value instanceof IteratorAggregate) {
                 $propCollection = $value->getIterator();
@@ -148,15 +146,15 @@ class Zend_Json_Encoder
             foreach ($propCollection as $name => $propValue) {
                 if (isset($propValue)) {
                     $props .= ','
-                            . $this->_encodeString($name)
-                            . ':'
-                            . $this->_encodeValue($propValue);
+                        . $this->_encodeString($name)
+                        . ':'
+                        . $this->_encodeValue($propValue);
                 }
             }
         }
         $className = get_class($value);
         return '{"__className":' . $this->_encodeString($className)
-                . $props . '}';
+            . $props . '}';
     }
 
 
@@ -198,10 +196,10 @@ class Zend_Json_Encoder
             // Associative array
             $result = '{';
             foreach ($array as $key => $value) {
-                $key = (string) $key;
+                $key = (string)$key;
                 $tmpArray[] = $this->_encodeString($key)
-                            . ':'
-                            . $this->_encodeValue($value);
+                    . ':'
+                    . $this->_encodeValue($value);
             }
             $result .= implode(',', $tmpArray);
             $result .= '}';
@@ -234,7 +232,7 @@ class Zend_Json_Encoder
         $result = 'null';
 
         if (is_int($value) || is_float($value)) {
-            $result = (string) $value;
+            $result = (string)$value;
             $result = str_replace(",", ".", $result);
         } elseif (is_string($value)) {
             $result = $this->_encodeString($value);
@@ -256,9 +254,9 @@ class Zend_Json_Encoder
     {
         // Escape these characters with a backslash:
         // " \ / \n \r \t \b \f
-        $search  = array('\\', "\n", "\t", "\r", "\b", "\f", '"', '/');
+        $search = array('\\', "\n", "\t", "\r", "\b", "\f", '"', '/');
         $replace = array('\\\\', '\\n', '\\t', '\\r', '\\b', '\\f', '\"', '\\/');
-        $string  = str_replace($search, $replace, $string);
+        $string = str_replace($search, $replace, $string);
 
         // Escape certain ASCII characters:
         // 0x08 => \b
@@ -279,7 +277,7 @@ class Zend_Json_Encoder
      */
     private static function _encodeConstants(ReflectionClass $cls)
     {
-        $result    = "constants : {";
+        $result = "constants : {";
         $constants = $cls->getConstants();
 
         $tmpArray = array();
@@ -310,7 +308,7 @@ class Zend_Json_Encoder
 
         $started = false;
         foreach ($methods as $method) {
-            if (! $method->isPublic() || !$method->isUserDefined()) {
+            if (!$method->isPublic() || !$method->isUserDefined()) {
                 continue;
             }
 
@@ -319,11 +317,11 @@ class Zend_Json_Encoder
             }
             $started = true;
 
-            $result .= '' . $method->getName(). ':function(';
+            $result .= '' . $method->getName() . ':function(';
 
             if ('__construct' != $method->getName()) {
-                $parameters  = $method->getParameters();
-                $paramCount  = count($parameters);
+                $parameters = $method->getParameters();
+                $paramCount = count($parameters);
                 $argsStarted = false;
 
                 $argNames = "var argNames=[";
@@ -345,11 +343,11 @@ class Zend_Json_Encoder
                 $argNames .= "];";
 
                 $result .= "){"
-                         . $argNames
-                         . 'var result = ZAjaxEngine.invokeRemoteMethod('
-                         . "this, '" . $method->getName()
-                         . "',argNames,arguments);"
-                         . 'return(result);}';
+                    . $argNames
+                    . 'var result = ZAjaxEngine.invokeRemoteMethod('
+                    . "this, '" . $method->getName()
+                    . "',argNames,arguments);"
+                    . 'return(result);}';
             } else {
                 $result .= "){}";
             }
@@ -376,13 +374,13 @@ class Zend_Json_Encoder
 
         $tmpArray = array();
         foreach ($properties as $prop) {
-            if (! $prop->isPublic()) {
+            if (!$prop->isPublic()) {
                 continue;
             }
 
             $tmpArray[] = $prop->getName()
-                        . ':'
-                        . self::encode($propValues[$prop->getName()]);
+                . ':'
+                . self::encode($propValues[$prop->getName()]);
         }
         $result .= implode(',', $tmpArray);
 
@@ -405,15 +403,15 @@ class Zend_Json_Encoder
     public static function encodeClass($className, $package = '')
     {
         $cls = new ReflectionClass($className);
-        if (! $cls->isInstantiable()) {
+        if (!$cls->isInstantiable()) {
             require_once 'Zend/Json/Exception.php';
             throw new Zend_Json_Exception("$className must be instantiable");
         }
 
         return "Class.create('$package$className',{"
-                . self::_encodeConstants($cls)    .","
-                . self::_encodeMethods($cls)      .","
-                . self::_encodeVariables($cls)    .'});';
+            . self::_encodeConstants($cls) . ","
+            . self::_encodeMethods($cls) . ","
+            . self::_encodeVariables($cls) . '});';
     }
 
 
@@ -444,7 +442,7 @@ class Zend_Json_Encoder
      *
      * @link   http://solarphp.com/
      * @link   http://svn.solarphp.com/trunk/Solar/Json.php
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     public static function encodeUnicodeString($value)
@@ -456,7 +454,7 @@ class Zend_Json_Encoder
          * Iterate over every character in the string,
          * escaping with a slash or encoding to UTF-8 where necessary
          */
-        for($i = 0; $i < $strlen_var; $i++) {
+        for ($i = 0; $i < $strlen_var; $i++) {
             $ord_var_c = ord($value[$i]);
 
             switch (true) {
@@ -477,9 +475,12 @@ class Zend_Json_Encoder
                 case (($ord_var_c & 0xF0) == 0xE0):
                     // characters U-00000800 - U-0000FFFF, mask 1110XXXX
                     // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                    $char = pack('C*', $ord_var_c,
-                                 ord($value[$i + 1]),
-                                 ord($value[$i + 2]));
+                    $char = pack(
+                        'C*',
+                        $ord_var_c,
+                        ord($value[$i + 1]),
+                        ord($value[$i + 2])
+                    );
                     $i += 2;
                     $utf16 = self::_utf82utf16($char);
                     $ascii .= sprintf('\u%04s', bin2hex($utf16));
@@ -488,10 +489,13 @@ class Zend_Json_Encoder
                 case (($ord_var_c & 0xF8) == 0xF0):
                     // characters U-00010000 - U-001FFFFF, mask 11110XXX
                     // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                    $char = pack('C*', $ord_var_c,
-                                 ord($value[$i + 1]),
-                                 ord($value[$i + 2]),
-                                 ord($value[$i + 3]));
+                    $char = pack(
+                        'C*',
+                        $ord_var_c,
+                        ord($value[$i + 1]),
+                        ord($value[$i + 2]),
+                        ord($value[$i + 3])
+                    );
                     $i += 3;
                     $utf16 = self::_utf82utf16($char);
                     $ascii .= sprintf('\u%04s', bin2hex($utf16));
@@ -500,11 +504,14 @@ class Zend_Json_Encoder
                 case (($ord_var_c & 0xFC) == 0xF8):
                     // characters U-00200000 - U-03FFFFFF, mask 111110XX
                     // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                    $char = pack('C*', $ord_var_c,
-                                 ord($value[$i + 1]),
-                                 ord($value[$i + 2]),
-                                 ord($value[$i + 3]),
-                                 ord($value[$i + 4]));
+                    $char = pack(
+                        'C*',
+                        $ord_var_c,
+                        ord($value[$i + 1]),
+                        ord($value[$i + 2]),
+                        ord($value[$i + 3]),
+                        ord($value[$i + 4])
+                    );
                     $i += 4;
                     $utf16 = self::_utf82utf16($char);
                     $ascii .= sprintf('\u%04s', bin2hex($utf16));
@@ -513,12 +520,15 @@ class Zend_Json_Encoder
                 case (($ord_var_c & 0xFE) == 0xFC):
                     // characters U-04000000 - U-7FFFFFFF, mask 1111110X
                     // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                    $char = pack('C*', $ord_var_c,
-                                 ord($value[$i + 1]),
-                                 ord($value[$i + 2]),
-                                 ord($value[$i + 3]),
-                                 ord($value[$i + 4]),
-                                 ord($value[$i + 5]));
+                    $char = pack(
+                        'C*',
+                        $ord_var_c,
+                        ord($value[$i + 1]),
+                        ord($value[$i + 2]),
+                        ord($value[$i + 3]),
+                        ord($value[$i + 4]),
+                        ord($value[$i + 5])
+                    );
                     $i += 5;
                     $utf16 = self::_utf82utf16($char);
                     $ascii .= sprintf('\u%04s', bin2hex($utf16));
@@ -527,7 +537,7 @@ class Zend_Json_Encoder
         }
 
         return $ascii;
-     }
+    }
 
     /**
      * Convert a string from one UTF-8 char to one UTF-16 char.
@@ -545,7 +555,7 @@ class Zend_Json_Encoder
     protected static function _utf82utf16($utf8)
     {
         // Check for mb extension otherwise do by hand.
-        if( function_exists('mb_convert_encoding') ) {
+        if (function_exists('mb_convert_encoding')) {
             return mb_convert_encoding($utf8, 'UTF-16', 'UTF-8');
         }
 
@@ -559,16 +569,22 @@ class Zend_Json_Encoder
                 // return a UTF-16 character from a 2-byte UTF-8 char
                 // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
                 return chr(0x07 & (ord($utf8{0}) >> 2))
-                     . chr((0xC0 & (ord($utf8{0}) << 6))
-                         | (0x3F & ord($utf8{1})));
+                    . chr(
+                        (0xC0 & (ord($utf8{0}) << 6))
+                        | (0x3F & ord($utf8{1}))
+                    );
 
             case 3:
                 // return a UTF-16 character from a 3-byte UTF-8 char
                 // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                return chr((0xF0 & (ord($utf8{0}) << 4))
-                         | (0x0F & (ord($utf8{1}) >> 2)))
-                     . chr((0xC0 & (ord($utf8{1}) << 6))
-                         | (0x7F & ord($utf8{2})));
+                return chr(
+                        (0xF0 & (ord($utf8{0}) << 4))
+                        | (0x0F & (ord($utf8{1}) >> 2))
+                    )
+                    . chr(
+                        (0xC0 & (ord($utf8{1}) << 6))
+                        | (0x7F & ord($utf8{2}))
+                    );
         }
 
         // ignoring UTF-32 for now, sorry

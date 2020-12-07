@@ -25,31 +25,31 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vn_total_taggings_count = $this->getVar('total_taggings_count');
-	$vn_unmoderated_tag_count = $this->getVar('unmoderated_tag_count');
-	$vn_total_tag_count = $this->getVar('total_tag_count');
+
+$vn_total_taggings_count = $this->getVar('total_taggings_count');
+$vn_unmoderated_tag_count = $this->getVar('unmoderated_tag_count');
+$vn_total_tag_count = $this->getVar('total_tag_count');
 ?>
-	<h3 class='tags'><?php print _t('User tags'); ?>:
-	<div><?php
-			if ($vn_unmoderated_tag_count == 1) {
-				print _t("1 tagging needs moderation");
-			} else {
-				print _t("%1 taggings need moderation", $vn_unmoderated_tag_count);
-			}
-	?></div>
-	<div><?php
-			if ($vn_total_taggings_count == 1) {
-				print _t("1 tagging");
-			} else {
-				print _t("%1 total taggings", $vn_total_taggings_count);
-			}
-	?></div>
-	<div><?php
-			if ($vn_total_tag_count == 1) {
-				print _t("1 unique tag");
-			} else {
-				print _t("%1 total unique tags", $vn_total_tag_count);
-			}
-	?></div>
-	</h3>
+<h3 class='tags'><?php print _t('User tags'); ?>:
+    <div><?php
+        if ($vn_unmoderated_tag_count == 1) {
+            print _t("1 tagging needs moderation");
+        } else {
+            print _t("%1 taggings need moderation", $vn_unmoderated_tag_count);
+        }
+        ?></div>
+    <div><?php
+        if ($vn_total_taggings_count == 1) {
+            print _t("1 tagging");
+        } else {
+            print _t("%1 total taggings", $vn_total_taggings_count);
+        }
+        ?></div>
+    <div><?php
+        if ($vn_total_tag_count == 1) {
+            print _t("1 unique tag");
+        } else {
+            print _t("%1 total unique tags", $vn_total_tag_count);
+        }
+        ?></div>
+</h3>

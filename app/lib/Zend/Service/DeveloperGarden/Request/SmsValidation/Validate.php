@@ -55,7 +55,7 @@ class Zend_Service_DeveloperGarden_Request_SmsValidation_Validate
      *
      * @return string $keyword
      */
-    public function getKeyword ()
+    public function getKeyword()
     {
         return $this->keyword;
     }
@@ -71,7 +71,7 @@ class Zend_Service_DeveloperGarden_Request_SmsValidation_Validate
     {
         parent::__construct($environment);
         $this->setKeyword($keyword)
-             ->setNumber($number);
+            ->setNumber($number);
     }
 
     /**

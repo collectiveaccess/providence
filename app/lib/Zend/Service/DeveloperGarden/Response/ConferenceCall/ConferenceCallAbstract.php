@@ -56,17 +56,17 @@ abstract class Zend_Service_DeveloperGarden_Response_ConferenceCall_ConferenceCa
     /**
      * parse the response data and throws exceptions
      *
-     * @throws Zend_Service_DeveloperGarden_Response_Exception
      * @return mixed
+     * @throws Zend_Service_DeveloperGarden_Response_Exception
      */
     public function parse()
     {
         $retVal = $this->getResponse();
         if ($retVal === null) {
-            $this->statusCode    = 9999;
+            $this->statusCode = 9999;
             $this->statusMessage = 'Internal response property not found.';
         } else {
-            $this->statusCode    = $retVal->getStatusCode();
+            $this->statusCode = $retVal->getStatusCode();
             $this->statusMessage = $retVal->getStatusMessage();
         }
         parent::parse();

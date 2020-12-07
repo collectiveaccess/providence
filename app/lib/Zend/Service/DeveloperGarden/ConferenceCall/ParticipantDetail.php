@@ -19,6 +19,7 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id: ParticipantDetail.php 24593 2012-01-05 20:35:02Z matthew $
  */
+
 /**
  * @see Zend_Validate_EmailAddress
  */
@@ -71,10 +72,10 @@ class Zend_Service_DeveloperGarden_ConferenceCall_ParticipantDetail
     public function __construct($firstName, $lastName, $number, $email, $isInitiator = false)
     {
         $this->setFirstName($firstName)
-             ->setLastName($lastName)
-             ->setNumber($number)
-             ->setEmail($email)
-             ->setFlags((int) $isInitiator);
+            ->setLastName($lastName)
+            ->setNumber($number)
+            ->setEmail($email)
+            ->setFlags((int)$isInitiator);
     }
 
     /**

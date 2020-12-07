@@ -47,7 +47,7 @@ class Zend_Mobile_Push_Message_Apns extends Zend_Mobile_Push_Message_Abstract
      *
      * @var array
      */
-    protected $_alert  = array();
+    protected $_alert = array();
 
     /**
      * Expiration
@@ -90,7 +90,7 @@ class Zend_Mobile_Push_Message_Apns extends Zend_Mobile_Push_Message_Abstract
      * @param string $launchImage
      * @return Zend_Mobile_Push_Message_Apns
      */
-    public function setAlert($text, $actionLocKey=null, $locKey=null, $locArgs=null, $launchImage=null)
+    public function setAlert($text, $actionLocKey = null, $locKey = null, $locArgs = null, $launchImage = null)
     {
         if ($text !== null && !is_string($text)) {
             throw new Zend_Mobile_Push_Message_Exception('$text must be a string');
@@ -121,11 +121,11 @@ class Zend_Mobile_Push_Message_Apns extends Zend_Mobile_Push_Message_Abstract
         }
 
         $this->_alert = array(
-            'body'           => $text,
+            'body' => $text,
             'action-loc-key' => $actionLocKey,
-            'loc-key'        => $locKey,
-            'loc-args'       => $locArgs,
-            'launch-image'   => $launchImage,
+            'loc-key' => $locKey,
+            'loc-args' => $locArgs,
+            'launch-image' => $launchImage,
         );
         return $this;
     }
@@ -180,7 +180,7 @@ class Zend_Mobile_Push_Message_Apns extends Zend_Mobile_Push_Message_Abstract
         if (!is_numeric($expire)) {
             throw new Zend_Mobile_Push_Message_Exception('$expire must be an integer');
         }
-        $this->_expire = (int) $expire;
+        $this->_expire = (int)$expire;
         return $this;
     }
 

@@ -46,7 +46,7 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
     /**
      * Constructor
      *
-     * @param  array|Zend_Config $options
+     * @param array|Zend_Config $options
      * @return void
      */
     public function __construct($options = array())
@@ -71,14 +71,14 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
      *
      * TODO: Support streaming
      *
-     * @param  string $path
-     * @param  array $options
+     * @param string $path
+     * @param array $options
      * @return false|string
      */
     public function fetchItem($path, $options = array())
     {
         $filepath = $this->_getFullPath($path);
-        $path     = realpath($filepath);
+        $path = realpath($filepath);
 
         if (!$path || !file_exists($path)) {
             return false;
@@ -95,9 +95,9 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
      *
      * @TODO Support streams
      *
-     * @param  string $destinationPath
-     * @param  mixed $data
-     * @param  array $options
+     * @param string $destinationPath
+     * @param mixed $data
+     * @param array $options
      * @return void
      */
     public function storeItem($destinationPath, $data, $options = array())
@@ -110,8 +110,8 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
     /**
      * Delete an item in the storage service.
      *
-     * @param  string $path
-     * @param  array $options
+     * @param string $path
+     * @param array $options
      * @return void
      */
     public function deleteItem($path, $options = array())
@@ -134,9 +134,9 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
      *
      * @TODO Support streams for those services that don't support natively
      *
-     * @param  string $sourcePath
-     * @param  string $destination path
-     * @param  array $options
+     * @param string $sourcePath
+     * @param string $destination path
+     * @param array $options
      * @return void
      */
     public function copyItem($sourcePath, $destinationPath, $options = array())
@@ -152,9 +152,9 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
      *
      * @TODO Support streams for those services that don't support natively
      *
-     * @param  string $sourcePath
-     * @param  string $destination path
-     * @param  array $options
+     * @param string $sourcePath
+     * @param string $destination path
+     * @param array $options
      * @return void
      */
     public function moveItem($sourcePath, $destinationPath, $options = array())
@@ -162,13 +162,13 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
         rename($this->_getFullPath($sourcePath), $this->_getFullPath($destinationPath));
     }
 
-        /**
+    /**
      * Rename an item in the storage service to a given name.
      *
      *
-     * @param  string $path
-     * @param  string $name
-     * @param  array $options
+     * @param string $path
+     * @param string $name
+     * @param array $options
      * @return void
      */
     public function renameItem($path, $name, $options = null)
@@ -185,8 +185,8 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
      * The $path must be a directory
      *
      *
-     * @param  string $path Must be a directory
-     * @param  array $options
+     * @param string $path Must be a directory
+     * @param array $options
      * @return array A list of item names
      */
     public function listItems($path, $options = null)
@@ -202,8 +202,8 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
     /**
      * Get a key/value array of metadata for the given path.
      *
-     * @param  string $path
-     * @param  array $options
+     * @param string $path
+     * @param array $options
      * @return array
      */
     public function fetchMetadata($path, $options = array())
@@ -222,8 +222,8 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
      * WARNING: This operation overwrites any metadata that is located at
      * $destinationPath.
      *
-     * @param  string $destinationPath
-     * @param  array $options
+     * @param string $destinationPath
+     * @param array $options
      * @return void
      */
     public function storeMetadata($destinationPath, $metadata, $options = array())
@@ -235,8 +235,8 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
     /**
      * Delete a key/value array of metadata at the given path.
      *
-     * @param  string $path
-     * @param  array $options
+     * @param string $path
+     * @param array $options
      * @return void
      */
     public function deleteMetadata($path)
@@ -262,6 +262,6 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
      */
     public function getClient()
     {
-         return $this->_directory;
+        return $this->_directory;
     }
 }

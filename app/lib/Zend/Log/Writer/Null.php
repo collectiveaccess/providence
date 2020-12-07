@@ -36,7 +36,7 @@ class Zend_Log_Writer_Null extends Zend_Log_Writer_Abstract
     /**
      * Write a message to the log.
      *
-     * @param  array  $event  event data
+     * @param array $event event data
      * @return void
      */
     protected function _write($event)
@@ -46,7 +46,7 @@ class Zend_Log_Writer_Null extends Zend_Log_Writer_Abstract
     /**
      * Create a new instance of Zend_Log_Writer_Null
      *
-     * @param  array|Zend_Config $config
+     * @param array|Zend_Config $config
      * @return Zend_Log_Writer_Null
      */
     static public function factory($config)

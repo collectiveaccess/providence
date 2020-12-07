@@ -34,7 +34,7 @@ interface Zend_Application_Bootstrap_Bootstrapper
     /**
      * Constructor
      *
-     * @param  Zend_Application $application
+     * @param Zend_Application $application
      * @return void
      */
     public function __construct($application);
@@ -42,7 +42,7 @@ interface Zend_Application_Bootstrap_Bootstrapper
     /**
      * Set bootstrap options
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_Application_Bootstrap_Bootstrapper
      */
     public function setOptions(array $options);
@@ -80,7 +80,7 @@ interface Zend_Application_Bootstrap_Bootstrapper
     /**
      * Bootstrap application or individual resource
      *
-     * @param  null|string $resource
+     * @param null|string $resource
      * @return mixed
      */
     public function bootstrap($resource = null);

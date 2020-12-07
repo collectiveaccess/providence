@@ -66,7 +66,7 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
      * Object constructor
      *
      * @param Zend_Pdf_Element_Dictionary $dictionary
-     * @param SplObjectStorage            $processedActions  list of already processed action dictionaries, used to avoid cyclic references
+     * @param SplObjectStorage $processedActions list of already processed action dictionaries, used to avoid cyclic references
      * @throws Zend_Pdf_Exception
      */
     public function __construct(Zend_Pdf_Element $dictionary, SplObjectStorage $processedActions)
@@ -86,17 +86,19 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
                     $processedActions->attach($dictionary->Next);
                     $this->next[] = Zend_Pdf_Action::load($dictionary->Next, $processedActions);
                 }
-            } else if ($dictionary->Next instanceof Zend_Pdf_Element_Array) {
-                foreach ($dictionary->Next->items as $chainedActionDictionary) {
-                    // Check if dictionary object is not already processed
-                    if (!$processedActions->contains($chainedActionDictionary)) {
-                        $processedActions->attach($chainedActionDictionary);
-                        $this->next[] = Zend_Pdf_Action::load($chainedActionDictionary, $processedActions);
-                    }
-                }
             } else {
-                require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception('PDF Action dictionary Next entry must be a dictionary or an array.');
+                if ($dictionary->Next instanceof Zend_Pdf_Element_Array) {
+                    foreach ($dictionary->Next->items as $chainedActionDictionary) {
+                        // Check if dictionary object is not already processed
+                        if (!$processedActions->contains($chainedActionDictionary)) {
+                            $processedActions->attach($chainedActionDictionary);
+                            $this->next[] = Zend_Pdf_Action::load($chainedActionDictionary, $processedActions);
+                        }
+                    }
+                } else {
+                    require_once 'Zend/Pdf/Exception.php';
+                    throw new Zend_Pdf_Exception('PDF Action dictionary Next entry must be a dictionary or an array.');
+                }
             }
         }
 
@@ -106,11 +108,11 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
     /**
      * Load PDF action object using specified dictionary
      *
-     * @internal
      * @param Zend_Pdf_Element $dictionary (It's actually Dictionary or Dictionary Object or Reference to a Dictionary Object)
-     * @param SplObjectStorage $processedActions  list of already processed action dictionaries, used to avoid cyclic references
+     * @param SplObjectStorage $processedActions list of already processed action dictionaries, used to avoid cyclic references
      * @return Zend_Pdf_Action
      * @throws Zend_Pdf_Exception
+     * @internal
      */
     public static function load(Zend_Pdf_Element $dictionary, SplObjectStorage $processedActions = null)
     {
@@ -123,7 +125,7 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('$dictionary mast be a direct or an indirect dictionary object.');
         }
-        if (isset($dictionary->Type)  &&  $dictionary->Type->value != 'Action') {
+        if (isset($dictionary->Type) && $dictionary->Type->value != 'Action') {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Action dictionary Type entry must be set to \'Action\'.');
         }
@@ -234,8 +236,8 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
     /**
      * Get resource
      *
-     * @internal
      * @return Zend_Pdf_Element
+     * @internal
      */
     public function getResource()
     {
@@ -247,10 +249,10 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
      *
      * Returns dictionary indirect object or reference
      *
-     * @internal
-     * @param Zend_Pdf_ElementFactory $factory   Object factory for newly created indirect objects
-     * @param SplObjectStorage $processedActions  list of already processed actions (used to prevent infinity loop caused by cyclic references)
+     * @param Zend_Pdf_ElementFactory $factory Object factory for newly created indirect objects
+     * @param SplObjectStorage $processedActions list of already processed actions (used to prevent infinity loop caused by cyclic references)
      * @return Zend_Pdf_Element_Object|Zend_Pdf_Element_Reference   Dictionary indirect object
+     * @internal
      */
     public function dumpAction(Zend_Pdf_ElementFactory_Interface $factory, SplObjectStorage $processedActions = null)
     {
@@ -267,14 +269,16 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
         if (count($this->_originalNextList) != count($this->next)) {
             // If original and current children arrays have different size then children list was updated
             $childListUpdated = true;
-        } else if ( !(array_keys($this->_originalNextList) === array_keys($this->next)) ) {
-            // If original and current children arrays have different keys (with a glance to an order) then children list was updated
-            $childListUpdated = true;
         } else {
-            foreach ($this->next as $key => $childAction) {
-                if ($this->_originalNextList[$key] !== $childAction) {
-                    $childListUpdated = true;
-                    break;
+            if (!(array_keys($this->_originalNextList) === array_keys($this->next))) {
+                // If original and current children arrays have different keys (with a glance to an order) then children list was updated
+                $childListUpdated = true;
+            } else {
+                foreach ($this->next as $key => $childAction) {
+                    if ($this->_originalNextList[$key] !== $childAction) {
+                        $childListUpdated = true;
+                        break;
+                    }
                 }
             }
         }
@@ -295,7 +299,6 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
                     require_once 'Zend/Pdf/Element/Array.php';
                     $pdfChildArray = new Zend_Pdf_Element_Array();
                     foreach ($this->next as $child) {
-
                         $pdfChildArray->items[] = $child->dumpAction($factory, $processedActions);
                     }
                     $this->_actionDictionary->Next = $pdfChildArray;

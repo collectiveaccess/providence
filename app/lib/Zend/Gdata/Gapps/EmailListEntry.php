@@ -140,9 +140,9 @@ class Zend_Gdata_Gapps_EmailListEntry extends Zend_Gdata_Entry
     /**
      * Retrieve the email list property for this entry.
      *
-     * @see setEmailList
      * @return Zend_Gdata_Gapps_Extension_EmailList The requested object
      *              or null if not set.
+     * @see setEmailList
      */
     public function getEmailList()
     {
@@ -169,7 +169,6 @@ class Zend_Gdata_Gapps_EmailListEntry extends Zend_Gdata_Entry
     /**
      * Get the feed link property for this entry.
      *
-     * @see setFeedLink
      * @param string $rel (optional) The rel value of the link to be found.
      *          If null, the array of links is returned.
      * @return mixed If $rel is specified, a Zend_Gdata_Extension_FeedLink
@@ -178,6 +177,7 @@ class Zend_Gdata_Gapps_EmailListEntry extends Zend_Gdata_Entry
      *          $rel is null or not specified, an array of all available
      *          feed links for this entry is returned, or null if no feed
      *          links are set.
+     * @see setFeedLink
      */
     public function getFeedLink($rel = null)
     {

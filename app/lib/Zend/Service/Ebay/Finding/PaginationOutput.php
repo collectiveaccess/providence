@@ -108,8 +108,8 @@ class Zend_Service_Ebay_Finding_PaginationOutput extends Zend_Service_Ebay_Findi
         $ns = Zend_Service_Ebay_Finding::XMLNS_FINDING;
 
         $this->entriesPerPage = $this->_query(".//$ns:entriesPerPage[1]", 'integer');
-        $this->pageNumber     = $this->_query(".//$ns:pageNumber[1]", 'integer');
-        $this->totalEntries   = $this->_query(".//$ns:totalEntries[1]", 'integer');
-        $this->totalPages     = $this->_query(".//$ns:totalPages[1]", 'integer');
+        $this->pageNumber = $this->_query(".//$ns:pageNumber[1]", 'integer');
+        $this->totalEntries = $this->_query(".//$ns:totalEntries[1]", 'integer');
+        $this->totalPages = $this->_query(".//$ns:totalPages[1]", 'integer');
     }
 }

@@ -44,9 +44,9 @@ class Zend_Feed_Reader_Extension_Content_Entry
         if ($this->getType() !== Zend_Feed_Reader::TYPE_RSS_10
             && $this->getType() !== Zend_Feed_Reader::TYPE_RSS_090
         ) {
-            $content = $this->_xpath->evaluate('string('.$this->getXpathPrefix().'/content:encoded)');
+            $content = $this->_xpath->evaluate('string(' . $this->getXpathPrefix() . '/content:encoded)');
         } else {
-            $content = $this->_xpath->evaluate('string('.$this->getXpathPrefix().'/content:encoded)');
+            $content = $this->_xpath->evaluate('string(' . $this->getXpathPrefix() . '/content:encoded)');
         }
         return $content;
     }

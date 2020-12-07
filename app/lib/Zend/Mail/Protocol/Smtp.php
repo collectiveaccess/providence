@@ -114,9 +114,9 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     /**
      * Constructor.
      *
-     * @param  string  $host
-     * @param  integer $port
-     * @param  array   $config
+     * @param string $host
+     * @param integer $port
+     * @param array $config
      * @return void
      * @throws Zend_Mail_Protocol_Exception
      */
@@ -164,16 +164,16 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
      */
     public function connect()
     {
-        return $this->_connect($this->_transport . '://' . $this->_host . ':'. $this->_port);
+        return $this->_connect($this->_transport . '://' . $this->_host . ':' . $this->_port);
     }
 
 
     /**
      * Initiate HELO/EHLO sequence and set flag to indicate valid smtp session
      *
-     * @param  string $host The client hostname or IP address (default: 127.0.0.1)
-     * @throws Zend_Mail_Protocol_Exception
+     * @param string $host The client hostname or IP address (default: 127.0.0.1)
      * @return void
+     * @throws Zend_Mail_Protocol_Exception
      */
     public function helo($host = '127.0.0.1')
     {
@@ -221,9 +221,9 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     /**
      * Send EHLO or HELO depending on capabilities of smtp host
      *
-     * @param  string $host The client hostname or IP address (default: 127.0.0.1)
-     * @throws Zend_Mail_Protocol_Exception
+     * @param string $host The client hostname or IP address (default: 127.0.0.1)
      * @return void
+     * @throws Zend_Mail_Protocol_Exception
      */
     protected function _ehlo($host)
     {
@@ -243,9 +243,9 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     /**
      * Issues MAIL command
      *
-     * @param  string $from Sender mailbox
-     * @throws Zend_Mail_Protocol_Exception
+     * @param string $from Sender mailbox
      * @return void
+     * @throws Zend_Mail_Protocol_Exception
      */
     public function mail($from)
     {
@@ -270,9 +270,9 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     /**
      * Issues RCPT command
      *
-     * @param  string $to Receiver(s) mailbox
-     * @throws Zend_Mail_Protocol_Exception
+     * @param string $to Receiver(s) mailbox
      * @return void
+     * @throws Zend_Mail_Protocol_Exception
      */
     public function rcpt($to)
     {
@@ -294,9 +294,9 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     /**
      * Issues DATA command
      *
-     * @param  string $data
-     * @throws Zend_Mail_Protocol_Exception
+     * @param string $data
      * @return void
+     * @throws Zend_Mail_Protocol_Exception
      */
     public function data($data)
     {
@@ -364,7 +364,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
      *
      * Not used by Zend_Mail.
      *
-     * @param  string $user User Name or eMail to verify
+     * @param string $user User Name or eMail to verify
      * @return void
      */
     public function vrfy($user)
@@ -394,8 +394,8 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
      *
      * This default method is implemented by AUTH adapters to properly authenticate to a remote host.
      *
-     * @throws Zend_Mail_Protocol_Exception
      * @return void
+     * @throws Zend_Mail_Protocol_Exception
      */
     public function auth()
     {

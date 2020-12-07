@@ -41,7 +41,7 @@ require_once 'Zend/Ldap/Filter/String.php';
 abstract class Zend_Ldap_Filter_Logical extends Zend_Ldap_Filter_Abstract
 {
     const TYPE_AND = '&';
-    const TYPE_OR  = '|';
+    const TYPE_OR = '|';
 
     /**
      * All the sub-filters for this grouping filter.
@@ -60,19 +60,22 @@ abstract class Zend_Ldap_Filter_Logical extends Zend_Ldap_Filter_Abstract
     /**
      * Creates a new grouping filter.
      *
-     * @param array  $subfilters
+     * @param array $subfilters
      * @param string $symbol
      */
     protected function __construct(array $subfilters, $symbol)
     {
         foreach ($subfilters as $key => $s) {
-            if (is_string($s)) $subfilters[$key] = new Zend_Ldap_Filter_String($s);
-            else if (!($s instanceof Zend_Ldap_Filter_Abstract)) {
-                /**
-                 * @see Zend_Ldap_Filter_Exception
-                 */
-                require_once 'Zend/Ldap/Filter/Exception.php';
-                throw new Zend_Ldap_Filter_Exception('Only strings or Zend_Ldap_Filter_Abstract allowed.');
+            if (is_string($s)) {
+                $subfilters[$key] = new Zend_Ldap_Filter_String($s);
+            } else {
+                if (!($s instanceof Zend_Ldap_Filter_Abstract)) {
+                    /**
+                     * @see Zend_Ldap_Filter_Exception
+                     */
+                    require_once 'Zend/Ldap/Filter/Exception.php';
+                    throw new Zend_Ldap_Filter_Exception('Only strings or Zend_Ldap_Filter_Abstract allowed.');
+                }
             }
         }
         $this->_subfilters = $subfilters;
@@ -82,7 +85,7 @@ abstract class Zend_Ldap_Filter_Logical extends Zend_Ldap_Filter_Abstract
     /**
      * Adds a filter to this grouping filter.
      *
-     * @param  Zend_Ldap_Filter_Abstract $filter
+     * @param Zend_Ldap_Filter_Abstract $filter
      * @return Zend_Ldap_Filter_Logical
      */
     public function addFilter(Zend_Ldap_Filter_Abstract $filter)
@@ -100,7 +103,9 @@ abstract class Zend_Ldap_Filter_Logical extends Zend_Ldap_Filter_Abstract
     public function toString()
     {
         $return = '(' . $this->_symbol;
-        foreach ($this->_subfilters as $sub) $return .= $sub->toString();
+        foreach ($this->_subfilters as $sub) {
+            $return .= $sub->toString();
+        }
         $return .= ')';
         return $return;
     }

@@ -73,7 +73,7 @@ class Zend_Service_DeveloperGarden_SecurityTokenServer
      */
     protected $_classMap = array(
         'SecurityTokenResponse' => 'Zend_Service_DeveloperGarden_Response_SecurityTokenServer_SecurityTokenResponse',
-        'getTokensResponse'     => 'Zend_Service_DeveloperGarden_Response_SecurityTokenServer_GetTokensResponse'
+        'getTokensResponse' => 'Zend_Service_DeveloperGarden_Response_SecurityTokenServer_GetTokensResponse'
     );
 
     /**
@@ -114,9 +114,11 @@ class Zend_Service_DeveloperGarden_SecurityTokenServer
         if ($token === null
             || !$token->isValid()
         ) {
-            $token = $this->getSoapClient()->getTokens(array(
-                'serviceId' => $this->_serviceAuthId
-            ));
+            $token = $this->getSoapClient()->getTokens(
+                array(
+                    'serviceId' => $this->_serviceAuthId
+                )
+            );
             Zend_Service_DeveloperGarden_SecurityTokenServer_Cache::setTokenToCache(
                 'getTokens',
                 $token

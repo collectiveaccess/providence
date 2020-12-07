@@ -51,16 +51,16 @@ class Zend_Dojo
     /**
      * Dojo-enable a form instance
      *
-     * @param  Zend_Form $form
+     * @param Zend_Form $form
      * @return void
      */
     public static function enableForm(Zend_Form $form)
     {
         $form->addPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator', 'decorator')
-             ->addPrefixPath('Zend_Dojo_Form_Element', 'Zend/Dojo/Form/Element', 'element')
-             ->addElementPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator', 'decorator')
-             ->addDisplayGroupPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator')
-             ->setDefaultDisplayGroupClass('Zend_Dojo_Form_DisplayGroup');
+            ->addPrefixPath('Zend_Dojo_Form_Element', 'Zend/Dojo/Form/Element', 'element')
+            ->addElementPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator', 'decorator')
+            ->addDisplayGroupPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator')
+            ->setDefaultDisplayGroupClass('Zend_Dojo_Form_DisplayGroup');
 
         foreach ($form->getSubForms() as $subForm) {
             self::enableForm($subForm);
@@ -74,7 +74,7 @@ class Zend_Dojo
     /**
      * Dojo-enable a view instance
      *
-     * @param  Zend_View_Interface $view
+     * @param Zend_View_Interface $view
      * @return void
      */
     public static function enableView(Zend_View_Interface $view)

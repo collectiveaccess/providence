@@ -97,19 +97,19 @@ class Zend_Gdata_Gapps_Extension_EmailList extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'name':
-            $this->_name = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'name':
+                $this->_name = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 
     /**
      * Get the value for this element's name attribute.
      *
-     * @see setName
      * @return string The requested attribute.
+     * @see setName
      */
     public function getName()
     {

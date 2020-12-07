@@ -99,13 +99,13 @@ class Zend_Crypt
         if (function_exists('hash')) {
             self::$_type = self::TYPE_HASH;
             if (in_array($algorithm, hash_algos())) {
-               return;
+                return;
             }
         }
         if (function_exists('mhash')) {
             self::$_type = self::TYPE_MHASH;
             if (in_array($algorithm, self::$_supportedAlgosMhash)) {
-               return;
+                return;
             }
         }
         if (function_exists('openssl_digest')) {
@@ -114,14 +114,16 @@ class Zend_Crypt
             }
             self::$_type = self::TYPE_OPENSSL;
             if (in_array($algorithm, self::$_supportedAlgosOpenssl)) {
-               return;
+                return;
             }
         }
         /**
          * @see Zend_Crypt_Exception
          */
         require_once 'Zend/Crypt/Exception.php';
-        throw new Zend_Crypt_Exception('\'' . $algorithm . '\' is not supported by any available extension or native function');
+        throw new Zend_Crypt_Exception(
+            '\'' . $algorithm . '\' is not supported by any available extension or native function'
+        );
     }
 
     /**

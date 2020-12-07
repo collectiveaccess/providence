@@ -39,7 +39,7 @@ require_once 'Zend/View/Helper/FormElement.php';
 class Zend_View_Helper_FormNote extends Zend_View_Helper_FormElement
 {
     /**
-    * Helper to show a "note" based on a hidden value.
+     * Helper to show a "note" based on a hidden value.
      *
      * @access public
      *

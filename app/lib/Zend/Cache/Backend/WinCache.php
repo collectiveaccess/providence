@@ -44,14 +44,14 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
      * Log message
      */
     const TAGS_UNSUPPORTED_BY_CLEAN_OF_WINCACHE_BACKEND = 'Zend_Cache_Backend_WinCache::clean() : tags are unsupported by the WinCache backend';
-    const TAGS_UNSUPPORTED_BY_SAVE_OF_WINCACHE_BACKEND =  'Zend_Cache_Backend_WinCache::save() : tags are unsupported by the WinCache backend';
+    const TAGS_UNSUPPORTED_BY_SAVE_OF_WINCACHE_BACKEND = 'Zend_Cache_Backend_WinCache::save() : tags are unsupported by the WinCache backend';
 
     /**
      * Constructor
      *
-     * @param  array $options associative array of options
-     * @throws Zend_Cache_Exception
+     * @param array $options associative array of options
      * @return void
+     * @throws Zend_Cache_Exception
      */
     public function __construct(array $options = array())
     {
@@ -66,8 +66,8 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
      *
      * WARNING $doNotTestCacheValidity=true is unsupported by the WinCache backend
      *
-     * @param  string  $id                     cache id
-     * @param  boolean $doNotTestCacheValidity if set to true, the cache validity won't be tested
+     * @param string $id cache id
+     * @param boolean $doNotTestCacheValidity if set to true, the cache validity won't be tested
      * @return string cached datas (or false)
      */
     public function load($id, $doNotTestCacheValidity = false)
@@ -82,7 +82,7 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
     /**
      * Test if a cache is available or not (for the given id)
      *
-     * @param  string $id cache id
+     * @param string $id cache id
      * @return mixed false (a cache is not available) or "last modified" timestamp (int) of the available cache record
      */
     public function test($id)
@@ -119,7 +119,7 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
     /**
      * Remove a cache record
      *
-     * @param  string $id cache id
+     * @param string $id cache id
      * @return boolean true if no problem
      */
     public function remove($id)
@@ -137,10 +137,10 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
      * 'notMatchingTag' => unsupported
      * 'matchingAnyTag' => unsupported
      *
-     * @param  string $mode clean mode
-     * @param  array  $tags array of tags
-     * @throws Zend_Cache_Exception
+     * @param string $mode clean mode
+     * @param array $tags array of tags
      * @return boolean true if no problem
+     * @throws Zend_Cache_Exception
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
     {
@@ -149,7 +149,9 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
                 return wincache_ucache_clear();
                 break;
             case Zend_Cache::CLEANING_MODE_OLD:
-                $this->_log("Zend_Cache_Backend_WinCache::clean() : CLEANING_MODE_OLD is unsupported by the WinCache backend");
+                $this->_log(
+                    "Zend_Cache_Backend_WinCache::clean() : CLEANING_MODE_OLD is unsupported by the WinCache backend"
+                );
                 break;
             case Zend_Cache::CLEANING_MODE_MATCHING_TAG:
             case Zend_Cache::CLEANING_MODE_NOT_MATCHING_TAG:
@@ -167,8 +169,8 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
      *
      * DEPRECATED : use getCapabilities() instead
      *
-     * @deprecated
      * @return boolean
+     * @deprecated
      */
     public function isAutomaticCleaningAvailable()
     {
@@ -178,8 +180,8 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
     /**
      * Return the filling percentage of the backend storage
      *
-     * @throws Zend_Cache_Exception
      * @return int integer between 0 and 100
+     * @throws Zend_Cache_Exception
      */
     public function getFillingPercentage()
     {
@@ -192,7 +194,7 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
         if ($memUsed > $memSize) {
             return 100;
         }
-        return ((int) (100. * ($memUsed / $memSize)));
+        return ((int)(100. * ($memUsed / $memSize)));
     }
 
     /**
@@ -312,7 +314,7 @@ class Zend_Cache_Backend_WinCache extends Zend_Cache_Backend implements Zend_Cac
             }
             $lifetime = $tmp[2];
             $newLifetime = $lifetime - (time() - $mtime) + $extraLifetime;
-            if ($newLifetime <=0) {
+            if ($newLifetime <= 0) {
                 return false;
             }
             return wincache_ucache_set($id, array($data, time(), $newLifetime), $newLifetime);

@@ -73,7 +73,7 @@ class Zend_Service_DeveloperGarden_Request_ConferenceCall_GetConferenceStatusReq
     {
         parent::__construct($environment);
         $this->setConferenceId($conferenceId)
-             ->setWhat($what);
+            ->setWhat($what);
     }
 
     /**

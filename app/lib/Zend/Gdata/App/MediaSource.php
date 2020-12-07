@@ -58,8 +58,8 @@ interface Zend_Gdata_App_MediaSource
      * Sets the Slug header value.  Used by some services to determine the
      * title for the uploaded file.  A null value indicates no slug header.
      *
-     * @var string The slug value
      * @return Zend_Gdata_App_MediaSource Provides a fluent interface
+     * @var string The slug value
      */
     public function setSlug($value);
 

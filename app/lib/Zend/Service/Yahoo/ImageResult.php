@@ -97,7 +97,7 @@ class Zend_Service_Yahoo_ImageResult extends Zend_Service_Yahoo_Result
     /**
      * Initializes the image result
      *
-     * @param  DOMElement $result
+     * @param DOMElement $result
      * @return void
      */
     public function __construct(DOMElement $result)

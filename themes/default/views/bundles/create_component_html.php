@@ -25,33 +25,34 @@
  *
  * ----------------------------------------------------------------------
  */
+
 ?>
-<div id="caObjectComponentPanel" class="caRelationQuickAddPanel"> 
-	<div id="caObjectComponentPanelContentArea">
-	<div class='dialogHeader'><?php print _t('Add component'); ?></div>
-		
-	</div>
+<div id="caObjectComponentPanel" class="caRelationQuickAddPanel">
+    <div id="caObjectComponentPanelContentArea">
+        <div class='dialogHeader'><?php print _t('Add component'); ?></div>
+
+    </div>
 </div>
 <script type="text/javascript">
-	var caObjectComponentPanel;
-	jQuery(document).ready(function() {
-		if (caUI.initPanel) {
-			caObjectComponentPanel = caUI.initPanel({ 
-				panelID: "caObjectComponentPanel",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caObjectComponentPanelContentArea",		/* DOM ID of the content area <div> in the panel */
-				exposeBackgroundColor: "#000000",				
-				exposeBackgroundOpacity: 0.7,					
-				panelTransitionSpeed: 400,						
-				closeButtonSelector: ".close",
-				center: true,
-				onOpenCallback: function() {
-					jQuery("#topNavContainer").hide(250);
-				},
-				onCloseCallback: function() {
-					jQuery("#topNavContainer").show(250);
-				}
-			});
-		}
-		jQuery("#caObjectComponentPanelContentArea").data("panel", caObjectComponentPanel<?php print $vs_id_prefix; ?>);
-	});
+    var caObjectComponentPanel;
+    jQuery(document).ready(function () {
+        if (caUI.initPanel) {
+            caObjectComponentPanel = caUI.initPanel({
+                panelID: "caObjectComponentPanel",						/* DOM ID of the <div> enclosing the panel */
+                panelContentID: "caObjectComponentPanelContentArea",		/* DOM ID of the content area <div> in the panel */
+                exposeBackgroundColor: "#000000",
+                exposeBackgroundOpacity: 0.7,
+                panelTransitionSpeed: 400,
+                closeButtonSelector: ".close",
+                center: true,
+                onOpenCallback: function () {
+                    jQuery("#topNavContainer").hide(250);
+                },
+                onCloseCallback: function () {
+                    jQuery("#topNavContainer").show(250);
+                }
+            });
+        }
+        jQuery("#caObjectComponentPanelContentArea").data("panel", caObjectComponentPanel<?php print $vs_id_prefix; ?>);
+    });
 </script>

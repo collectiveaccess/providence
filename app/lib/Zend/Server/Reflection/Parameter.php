@@ -146,7 +146,7 @@ class Zend_Server_Reflection_Parameter
      */
     public function setPosition($index)
     {
-        $this->_position = (int) $index;
+        $this->_position = (int)$index;
     }
 
     /**

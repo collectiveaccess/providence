@@ -34,15 +34,15 @@ class Zend_Service_Amazon_Ec2
     /**
      * Factory method to fetch what you want to work with.
      *
-     * @param string $section           Create the method that you want to work with
-     * @param string $key               Override the default aws key
-     * @param string $secret_key        Override the default aws secretkey
-     * @throws Zend_Service_Amazon_Ec2_Exception
+     * @param string $section Create the method that you want to work with
+     * @param string $key Override the default aws key
+     * @param string $secret_key Override the default aws secretkey
      * @return object
+     * @throws Zend_Service_Amazon_Ec2_Exception
      */
     public static function factory($section, $key = null, $secret_key = null)
     {
-        switch(strtolower($section)) {
+        switch (strtolower($section)) {
             case 'keypair':
                 $class = 'Zend_Service_Amazon_Ec2_Keypair';
                 break;

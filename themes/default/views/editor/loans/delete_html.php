@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/editor/loans/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_loan 			= $this->getVar('t_subject');
-	$vn_loan_id 		= $this->getVar('subject_id');
+$t_loan = $this->getVar('t_subject');
+$vn_loan_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_loan, $this->getVar('subject_name'), 'editor/loans', 'LoanEditor', 'Edit/'.$this->request->getActionExtra(), array('loan_id' => $vn_loan_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_loan,
+            $this->getVar('subject_name'),
+            'editor/loans',
+            'LoanEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('loan_id' => $vn_loan_id)
+        );
+    }
+    ?>
 </div>

@@ -49,12 +49,12 @@ abstract class Zend_Service_DeveloperGarden_Client_ClientAbstract
      * constants for using with the odg api
      */
     const ENV_PRODUCTION = 1; // Production Environment
-    const ENV_SANDBOX    = 2; // Sandbox Environment, limited access to the api
-    const ENV_MOCK       = 3; // Api calls are without any functionality
+    const ENV_SANDBOX = 2; // Sandbox Environment, limited access to the api
+    const ENV_MOCK = 3; // Api calls are without any functionality
 
     const PARTICIPANT_MUTE_OFF = 0; // removes mute from participant in a conference
-    const PARTICIPANT_MUTE_ON  = 1; // mute participant in a conference
-    const PARTICIPANT_RECALL   = 2; // recalls the participant in a conference
+    const PARTICIPANT_MUTE_ON = 1; // mute participant in a conference
+    const PARTICIPANT_RECALL = 2; // recalls the participant in a conference
 
     /**
      * array of all possible env types
@@ -169,10 +169,10 @@ abstract class Zend_Service_DeveloperGarden_Client_ClientAbstract
     /**
      * Set an option
      *
-     * @param  string $name
-     * @param  mixed $value
-     * @throws Zend_Service_DeveloperGarden_Client_Exception
+     * @param string $name
+     * @param mixed $value
      * @return Zend_Service_DeveloperGarden_Client_ClientAbstract
+     * @throws Zend_Service_DeveloperGarden_Client_Exception
      */
     public function setOption($name, $value)
     {
@@ -191,7 +191,7 @@ abstract class Zend_Service_DeveloperGarden_Client_ClientAbstract
     /**
      * get an option value from the internal options object
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function getOption($name)
@@ -225,10 +225,10 @@ abstract class Zend_Service_DeveloperGarden_Client_ClientAbstract
             $this->_soapClient->setCredential($this->_credential);
             $tokenService = new Zend_Service_DeveloperGarden_SecurityTokenServer(
                 array(
-                    'username'    => $this->_credential->getUsername(),
-                    'password'    => $this->_credential->getPassword(),
+                    'username' => $this->_credential->getUsername(),
+                    'password' => $this->_credential->getPassword(),
                     'environment' => $this->getEnvironment(),
-                    'realm'       => $this->_credential->getRealm(),
+                    'realm' => $this->_credential->getRealm(),
                 )
             );
             $this->_soapClient->setTokenService($tokenService);
@@ -284,7 +284,7 @@ abstract class Zend_Service_DeveloperGarden_Client_ClientAbstract
      */
     public function setUseLocalWsdl($use = true)
     {
-        $this->_useLocalWsdl = (boolean) $use;
+        $this->_useLocalWsdl = (boolean)$use;
         return $this;
     }
 
@@ -381,11 +381,11 @@ abstract class Zend_Service_DeveloperGarden_Client_ClientAbstract
 
     /**
      * checks if the given action is valid
-     * otherwise it @throws Zend_Service_DeveloperGarden_Exception
-     *
-     * @param int $action
-     * @throws Zend_Service_DeveloperGarden_Client_Exception
+     * otherwise it @param int $action
      * @return void
+     * @throws Zend_Service_DeveloperGarden_Client_Exception
+     * @throws Zend_Service_DeveloperGarden_Exception
+     *
      */
     static public function checkParticipantAction($action)
     {
@@ -412,11 +412,11 @@ abstract class Zend_Service_DeveloperGarden_Client_ClientAbstract
 
     /**
      * checks if the given environemnt is valid
-     * otherwise it @throws Zend_Service_DeveloperGarden_Client_Exception
-     *
-     * @param int $environment
-     * @throws Zend_Service_DeveloperGarden_Client_Exception
+     * otherwise it @param int $environment
      * @return void
+     * @throws Zend_Service_DeveloperGarden_Client_Exception
+     * @throws Zend_Service_DeveloperGarden_Client_Exception
+     *
      */
     static public function checkEnvironment($environment)
     {

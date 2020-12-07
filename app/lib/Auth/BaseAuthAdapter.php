@@ -30,86 +30,100 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/Auth/IAuthAdapter.php');
+require_once(__CA_LIB_DIR__ . '/Auth/IAuthAdapter.php');
 
-abstract class BaseAuthAdapter implements IAuthAdapter {
+abstract class BaseAuthAdapter implements IAuthAdapter
+{
 
-	/**
-	 * Fallback if authentication adapter doesn't implement createUserAndGetPassword().
-	 *
-	 * @param $ps_username
-	 * @param $ps_password
-	 * @throws AuthClassFeatureException
-	 * @return string
-	 */
-	public function createUserAndGetPassword($ps_username, $ps_password) {
-		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support creating new users programmatically."));
-	}
+    /**
+     * Fallback if authentication adapter doesn't implement createUserAndGetPassword().
+     *
+     * @param $ps_username
+     * @param $ps_password
+     * @return string
+     * @throws AuthClassFeatureException
+     */
+    public function createUserAndGetPassword($ps_username, $ps_password)
+    {
+        throw new AuthClassFeatureException(
+            _t("Authentication back-end doesn't support creating new users programmatically.")
+        );
+    }
 
-	/**
-	 * Fallback for getUserInfo()
-	 *
-	 * @param $ps_username
-	 * @param $ps_password
-	 * @param $pa_options
-	 * @return array
-	 * @throws AuthClassFeatureException
-	 */
-	public function getUserInfo($ps_username, $ps_password, $pa_options=null) {
-		throw new AuthClassFeatureException();
-	}
+    /**
+     * Fallback for getUserInfo()
+     *
+     * @param $ps_username
+     * @param $ps_password
+     * @param $pa_options
+     * @return array
+     * @throws AuthClassFeatureException
+     */
+    public function getUserInfo($ps_username, $ps_password, $pa_options = null)
+    {
+        throw new AuthClassFeatureException();
+    }
 
-	/**
-	 * Fallback if authentication adapter doesn't implement deleteUser(), which may be the
-	 * case for some external authentication methods like OpenLDAP/slapd or ADS
-	 *
-	 * @param $ps_username
-	 * @throws AuthClassFeatureException
-	 * @return bool
-	 */
-	public function deleteUser($ps_username) {
-		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support deleting users programmatically."));
-	}
+    /**
+     * Fallback if authentication adapter doesn't implement deleteUser(), which may be the
+     * case for some external authentication methods like OpenLDAP/slapd or ADS
+     *
+     * @param $ps_username
+     * @return bool
+     * @throws AuthClassFeatureException
+     */
+    public function deleteUser($ps_username)
+    {
+        throw new AuthClassFeatureException(
+            _t("Authentication back-end doesn't support deleting users programmatically.")
+        );
+    }
 
-	/**
-	 * Fallback if authentication adapter doesn't implement updatePassword(), which may be the
-	 * case for some external authentication methods like OpenLDAP/slapd or ADS
-	 *
-	 * @param $ps_username
-	 * @param $ps_password
-	 * @throws AuthClassFeatureException
-	 * @return string
-	 */
-	public function updatePassword($ps_username, $ps_password) {
-		throw new AuthClassFeatureException(_t("Authentication back-end doesn't updating existing users programmatically."));
-	}
+    /**
+     * Fallback if authentication adapter doesn't implement updatePassword(), which may be the
+     * case for some external authentication methods like OpenLDAP/slapd or ADS
+     *
+     * @param $ps_username
+     * @param $ps_password
+     * @return string
+     * @throws AuthClassFeatureException
+     */
+    public function updatePassword($ps_username, $ps_password)
+    {
+        throw new AuthClassFeatureException(
+            _t("Authentication back-end doesn't updating existing users programmatically.")
+        );
+    }
 
-	/**
-	 * Fallback if authentication adapter doesn't implement supports(). For more info @see IAuthAdapter::supports()
-	 *
-	 * @param int $pn_feature
-	 * @return bool
-	 */
-	public function supports($pn_feature) {
-		return false;
-	}
+    /**
+     * Fallback if authentication adapter doesn't implement supports(). For more info @param int $pn_feature
+     * @return bool
+     * @see IAuthAdapter::supports()
+     *
+     */
+    public function supports($pn_feature)
+    {
+        return false;
+    }
 
-	/**
-	 * Fallback for accountManagementLink()
-	 *
-	 * @return false|string
-	 */
-	public function getAccountManagementLink() {
-		return false;
-	}
-	
+    /**
+     * Fallback for accountManagementLink()
+     *
+     * @return false|string
+     */
+    public function getAccountManagementLink()
+    {
+        return false;
+    }
 
-	/**
-	 * Fallback for deauthenticate()
-	 *
-	 * @return false
-	 */
-	public function deauthenticate($pa_options=null) {
-		return false;
-	}
+
+    /**
+     * Fallback for deauthenticate()
+     *
+     * @return false
+     */
+    public function deauthenticate($pa_options = null)
+    {
+        return false;
+    }
 }

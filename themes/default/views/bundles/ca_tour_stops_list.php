@@ -25,36 +25,45 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 
-	AssetLoadManager::register('sortableUI');
 
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_tour 				= $this->getVar('t_tour');	
-	$t_stop					= $this->getVar('t_stop');
-	
-	$va_initial_values = $this->getVar('stops');	// list of existing stops
-	$va_errors = array();
-	$va_failed_inserts = array();
- 
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
- ?>
- <div id="<?php print $vs_id_prefix; ?>">
-<?php
-	//
-	// The bundle template - used to generate each bundle in the form
-	//
+
+AssetLoadManager::register('sortableUI');
+
+$vs_id_prefix = $this->getVar('placement_code') . $this->getVar('id_prefix');
+$t_tour = $this->getVar('t_tour');
+$t_stop = $this->getVar('t_stop');
+
+$va_initial_values = $this->getVar('stops');    // list of existing stops
+$va_errors = array();
+$va_failed_inserts = array();
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
-	<textarea class='caItemTemplate' style='display: none;'>
+<div id="<?php print $vs_id_prefix; ?>">
+    <?php
+    //
+    // The bundle template - used to generate each bundle in the form
+    //
+    ?>
+    <textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
 			<table class="uiScreenItem">
-				<tr >
+				<tr>
 					<td width="200">
 						<div class="formLabel" id="{fieldNamePrefix}edit_name_{n}" style="display: none;">
-							<?php print _t("Name")." ".caHTMLTextInput('{fieldNamePrefix}name_{n}', array('id' => '{fieldNamePrefix}name_{n}', 'value' => '{name}'), array('width' => 40)); ?>
-							<?php print _t("Type")." ".$t_stop->getTypeListAsHTMLFormElement('{fieldNamePrefix}type_id_{n}'); ?>
+							<?php print _t("Name") . " " . caHTMLTextInput(
+                                    '{fieldNamePrefix}name_{n}',
+                                    array(
+                                        'id' => '{fieldNamePrefix}name_{n}',
+                                        'value' => '{name}'
+                                    ),
+                                    array('width' => 40)
+                                ); ?>
+                            <?php print _t("Type") . " " . $t_stop->getTypeListAsHTMLFormElement(
+                                    '{fieldNamePrefix}type_id_{n}'
+                                ); ?>
 						</div>
 						
 						<span id="{fieldNamePrefix}screen_name_{n}">
@@ -64,50 +73,67 @@
 					</td>
 					<td>
 						<div style="float:right;">
-							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1), '', 'editor/tour_stops', 'TourStopEditor', 'Edit', array('stop_id' => '{stop_id}'))); ?></span>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(
+                                    caNavLink(
+                                        $this->request,
+                                        caNavIcon(__CA_NAV_ICON_EDIT__, 1),
+                                        '',
+                                        'editor/tour_stops',
+                                        'TourStopEditor',
+                                        'Edit',
+                                        array('stop_id' => '{stop_id}')
+                                    )
+                                ); ?></span>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(
+                                    __CA_NAV_ICON_DEL_BUNDLE__,
+                                    1
+                                ); ?></a>
 						</div>
 					</td>
 				</tr>
 			</table>
 		</div>
 <?php
-	print TooltipManager::getLoadHTML('bundle_ca_tour_stops_list');
+print TooltipManager::getLoadHTML('bundle_ca_tour_stops_list');
 ?>
 	</textarea>
-	
-	<div class="bundleContainer">
-		<div class="caItemList">
-		
-		</div>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add stop"); ?> &rsaquo;</a></div>
-	</div>
+
+    <div class="bundleContainer">
+        <div class="caItemList">
+
+        </div>
+        <div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(
+                    __CA_NAV_ICON_ADD__,
+                    '15px'
+                ); ?> <?php print _t("Add stop"); ?> &rsaquo;</a></div>
+    </div>
 </div>
 
-<input type="hidden" id="<?php print $vs_id_prefix; ?>_StopBundleList" name="<?php print $vs_id_prefix; ?>_StopBundleList" value=""/>
+<input type="hidden" id="<?php print $vs_id_prefix; ?>_StopBundleList"
+       name="<?php print $vs_id_prefix; ?>_StopBundleList" value=""/>
 <?php
-	// order element
+// order element
 ?>
-			
+
 <script type="text/javascript">
-	caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-		templateValues: ['name', 'locale_id', 'rank', 'stop_id', 'typename'],
-		initialValues: <?php print json_encode($va_initial_values); ?>,
-		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
-		errors: <?php print json_encode($va_errors); ?>,
-		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
-		itemID: '<?php print $vs_id_prefix; ?>Item_',
-		templateClassName: 'caItemTemplate',
-		itemListClassName: 'caItemList',
-		itemClassName: 'labelInfo',
-		addButtonClassName: 'caAddItemButton',
-		deleteButtonClassName: 'caDeleteItemButton',
-		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_name_'],
-		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_stop_info_', '<?php print $vs_id_prefix; ?>_edit_'],
-		showEmptyFormsOnLoad: 1,
-		isSortable: true,
-		listSortOrderID: '<?php print $vs_id_prefix; ?>_StopBundleList',
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
-	});
+    caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
+        fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
+        templateValues: ['name', 'locale_id', 'rank', 'stop_id', 'typename'],
+        initialValues: <?php print json_encode($va_initial_values); ?>,
+        initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
+        errors: <?php print json_encode($va_errors); ?>,
+        forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
+        itemID: '<?php print $vs_id_prefix; ?>Item_',
+        templateClassName: 'caItemTemplate',
+        itemListClassName: 'caItemList',
+        itemClassName: 'labelInfo',
+        addButtonClassName: 'caAddItemButton',
+        deleteButtonClassName: 'caDeleteItemButton',
+        showOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_name_'],
+        hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_stop_info_', '<?php print $vs_id_prefix; ?>_edit_'],
+        showEmptyFormsOnLoad: 1,
+        isSortable: true,
+        listSortOrderID: '<?php print $vs_id_prefix; ?>_StopBundleList',
+        defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+    });
 </script>

@@ -31,7 +31,7 @@ require_once 'Zend/Dojo/View/Helper/Dijit.php';
  * @subpackage View
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
-  */
+ */
 abstract class Zend_Dojo_View_Helper_Slider extends Zend_Dojo_View_Helper_Dijit
 {
     /**
@@ -55,10 +55,10 @@ abstract class Zend_Dojo_View_Helper_Slider extends Zend_Dojo_View_Helper_Dijit
     /**
      * dijit.form.Slider
      *
-     * @param  int $id
-     * @param  mixed $value
-     * @param  array $params  Parameters to use for dijit creation
-     * @param  array $attribs HTML attributes
+     * @param int $id
+     * @param mixed $value
+     * @param array $params Parameters to use for dijit creation
+     * @param array $attribs HTML attributes
      * @return string
      */
     public function prepareSlider($id, $value = null, array $params = array(), array $attribs = array())
@@ -72,7 +72,9 @@ abstract class Zend_Dojo_View_Helper_Slider extends Zend_Dojo_View_Helper_Dijit
         foreach ($this->_requiredParams as $param) {
             if (!array_key_exists($param, $params)) {
                 require_once 'Zend/Dojo/View/Exception.php';
-                throw new Zend_Dojo_View_Exception('prepareSlider() requires minimally the "minimum", "maximum", and "discreteValues" parameters');
+                throw new Zend_Dojo_View_Exception(
+                    'prepareSlider() requires minimally the "minimum", "maximum", and "discreteValues" parameters'
+                );
             }
         }
 
@@ -83,9 +85,9 @@ abstract class Zend_Dojo_View_Helper_Slider extends Zend_Dojo_View_Helper_Dijit
             $attribs['onChange'] = "dojo.byId('" . $id . "').value = arguments[0];";
         }
 
-        $id  = str_replace('][', '-', $id);
-        $id  = str_replace(array('[', ']'), '-', $id);
-        $id  = rtrim($id, '-');
+        $id = str_replace('][', '-', $id);
+        $id = str_replace(array('[', ']'), '-', $id);
+        $id = rtrim($id, '-');
         $id .= '-slider';
 
         switch ($this->_sliderType) {
@@ -138,9 +140,9 @@ abstract class Zend_Dojo_View_Helper_Slider extends Zend_Dojo_View_Helper_Dijit
     /**
      * Prepare slider decoration
      *
-     * @param  string $position
-     * @param  string $id
-     * @param  array $decInfo
+     * @param string $position
+     * @param string $id
+     * @param array $decInfo
      * @return string
      */
     protected function _prepareDecoration($position, $id, $decInfo)
@@ -167,9 +169,9 @@ abstract class Zend_Dojo_View_Helper_Slider extends Zend_Dojo_View_Helper_Dijit
             }
         }
 
-        $params  = array();
+        $params = array();
         $attribs = array();
-        $labels  = $decInfo['labels'];
+        $labels = $decInfo['labels'];
         if (array_key_exists('params', $decInfo)) {
             $params = $decInfo['params'];
         }
@@ -212,7 +214,7 @@ abstract class Zend_Dojo_View_Helper_Slider extends Zend_Dojo_View_Helper_Dijit
         }
 
         $containerParams['container'] = $position;
-        $labelsParams['container']    = $position;
+        $labelsParams['container'] = $position;
 
         $labelList = $this->_prepareLabelsList($id, $labelsParams, $labelsAttribs, $labels);
 
@@ -234,10 +236,10 @@ abstract class Zend_Dojo_View_Helper_Slider extends Zend_Dojo_View_Helper_Dijit
     /**
      * Prepare slider label list
      *
-     * @param  string $id
-     * @param  array $params
-     * @param  array $attribs
-     * @param  array $labels
+     * @param string $id
+     * @param array $params
+     * @param array $attribs
+     * @param array $labels
      * @return string
      */
     protected function _prepareLabelsList($id, array $params, array $attribs, array $labels)

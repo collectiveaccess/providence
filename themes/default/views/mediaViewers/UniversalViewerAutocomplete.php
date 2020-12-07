@@ -29,24 +29,27 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-    $va_matches = $this->getVar('matches');
-    
-    $vs_url = caNavUrl($this->request, '*', '*', '*', ['q' => $this->request->getParameter('q', pString)]);
-    if (is_array($va_matches)) {
-        $va_matches = array_map(function($v) use ($vs_url) {
+
+$va_matches = $this->getVar('matches');
+
+$vs_url = caNavUrl($this->request, '*', '*', '*', ['q' => $this->request->getParameter('q', pString)]);
+if (is_array($va_matches)) {
+    $va_matches = array_map(
+        function ($v) use ($vs_url) {
             return [
                 'match' => $v,
                 'search' => $vs_url
             ];
-        }, $va_matches);
-    }
- 
-    $va_manifest = [
-      "@context" => "http://iiif.io/api/search/0/context.json",
-      "@id" => $vs_url,
-      "@type" => "search:TermList",
-      "terms" => $va_matches
-    ];
-    
-    print json_encode($va_manifest);
+        },
+        $va_matches
+    );
+}
+
+$va_manifest = [
+    "@context" => "http://iiif.io/api/search/0/context.json",
+    "@id" => $vs_url,
+    "@type" => "search:TermList",
+    "terms" => $va_matches
+];
+
+print json_encode($va_manifest);

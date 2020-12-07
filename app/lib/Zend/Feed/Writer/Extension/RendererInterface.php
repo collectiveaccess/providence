@@ -30,7 +30,7 @@ interface Zend_Feed_Writer_Extension_RendererInterface
     /**
      * Constructor
      *
-     * @param  mixed $container
+     * @param mixed $container
      * @return void
      */
     public function __construct($container);
@@ -38,8 +38,8 @@ interface Zend_Feed_Writer_Extension_RendererInterface
     /**
      * Set DOMDocument and DOMElement on which to operate
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $base
+     * @param DOMDocument $dom
+     * @param DOMElement $base
      * @return void
      */
     public function setDomDocument(DOMDocument $dom, DOMElement $base);

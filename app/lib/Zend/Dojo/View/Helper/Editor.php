@@ -76,10 +76,10 @@ class Zend_Dojo_View_Helper_Editor extends Zend_Dojo_View_Helper_Dijit
     /**
      * dijit.Editor
      *
-     * @param  string $id
-     * @param  string $value
-     * @param  array $params
-     * @param  array $attribs
+     * @param string $id
+     * @param string $value
+     * @param array $params
+     * @param array $attribs
      * @return string
      */
     public function editor($id, $value = null, $params = array(), $attribs = array())
@@ -106,13 +106,13 @@ class Zend_Dojo_View_Helper_Editor extends Zend_Dojo_View_Helper_Dijit
         $hiddenId = $this->_normalizeId($hiddenId);
 
         $textareaName = $this->_normalizeEditorName($hiddenName);
-        $textareaId   = $hiddenId . '-Editor';
+        $textareaId = $hiddenId . '-Editor';
 
         $hiddenAttribs = array(
-            'id'    => $hiddenId,
-            'name'  => $hiddenName,
+            'id' => $hiddenId,
+            'name' => $hiddenName,
             'value' => $value,
-            'type'  => 'hidden',
+            'type' => 'hidden',
         );
         $attribs['id'] = $textareaId;
 
@@ -121,18 +121,18 @@ class Zend_Dojo_View_Helper_Editor extends Zend_Dojo_View_Helper_Dijit
 
         $attribs = $this->_prepareDijit($attribs, $params, 'textarea');
 
-        $html  = '<div' . $this->_htmlAttribs($attribs) . '>'
-               . $value
-               . "</div>\n";
+        $html = '<div' . $this->_htmlAttribs($attribs) . '>'
+            . $value
+            . "</div>\n";
 
         // Embed a textarea in a <noscript> tag to allow for graceful
         // degradation
         $html .= '<noscript>'
-               . $this->view->formTextarea($hiddenId, $value, $attribs)
-               . '</noscript>';
+            . $this->view->formTextarea($hiddenId, $value, $attribs)
+            . '</noscript>';
 
-        $html  .= '<input' . $this->_htmlAttribs($hiddenAttribs) . $this->getClosingBracket();
-        
+        $html .= '<input' . $this->_htmlAttribs($hiddenAttribs) . $this->getClosingBracket();
+
         return $html;
     }
 
@@ -158,7 +158,7 @@ class Zend_Dojo_View_Helper_Editor extends Zend_Dojo_View_Helper_Dijit
     /**
      * Normalize editor element name
      *
-     * @param  string $name
+     * @param string $name
      * @return string
      */
     protected function _normalizeEditorName($name)
@@ -175,8 +175,8 @@ class Zend_Dojo_View_Helper_Editor extends Zend_Dojo_View_Helper_Dijit
     /**
      * Create onSubmit binding for element
      *
-     * @param  string $hiddenId
-     * @param  string $editorId
+     * @param string $hiddenId
+     * @param string $editorId
      * @return void
      */
     protected function _createEditorOnSubmit($hiddenId, $editorId)

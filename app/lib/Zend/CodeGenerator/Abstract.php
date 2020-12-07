@@ -116,7 +116,6 @@ abstract class Zend_CodeGenerator_Abstract
      */
     protected function _init()
     {
-
     }
 
     /**
@@ -125,7 +124,6 @@ abstract class Zend_CodeGenerator_Abstract
      */
     protected function _prepare()
     {
-
     }
 
     /**

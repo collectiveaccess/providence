@@ -42,15 +42,15 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
     /**#@+
      * @param const string
      */
-    const VISIBILITY_PUBLIC    = 'public';
+    const VISIBILITY_PUBLIC = 'public';
     const VISIBILITY_PROTECTED = 'protected';
-    const VISIBILITY_PRIVATE   = 'private';
+    const VISIBILITY_PRIVATE = 'private';
     /**#@-*/
 
     /**
      * @var Zend_CodeGenerator_Php_Docblock
      */
-    protected $_docblock   = null;
+    protected $_docblock = null;
 
     /**
      * @var bool
@@ -60,12 +60,12 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
     /**
      * @var bool
      */
-    protected $_isFinal    = false;
+    protected $_isFinal = false;
 
     /**
      * @var bool
      */
-    protected $_isStatic   = false;
+    protected $_isStatic = false;
 
     /**
      * @var const
@@ -93,7 +93,9 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
             $docblock = new Zend_CodeGenerator_Php_Docblock($docblock);
         } elseif (!$docblock instanceof Zend_CodeGenerator_Php_Docblock) {
             require_once 'Zend/CodeGenerator/Php/Exception.php';
-            throw new Zend_CodeGenerator_Php_Exception('setDocblock() is expecting either a string, array or an instance of Zend_CodeGenerator_Php_Docblock');
+            throw new Zend_CodeGenerator_Php_Exception(
+                'setDocblock() is expecting either a string, array or an instance of Zend_CodeGenerator_Php_Docblock'
+            );
         }
 
         $this->_docblock = $docblock;

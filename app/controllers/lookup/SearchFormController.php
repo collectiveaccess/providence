@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/SearchFormController.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class SearchFormController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_search_forms';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'search form';
- 		protected $ops_search_class = null;
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once(__CA_LIB_DIR__ . "/BaseLookupController.php");
+
+class SearchFormController extends BaseLookupController
+{
+    # -------------------------------------------------------
+    protected $opb_uses_hierarchy_browser = false;
+    protected $ops_table_name = 'ca_search_forms';        // name of "subject" table (what we're editing)
+    protected $ops_name_singular = 'search form';
+    protected $ops_search_class = null;
+    # -------------------------------------------------------
+}
+
+?>

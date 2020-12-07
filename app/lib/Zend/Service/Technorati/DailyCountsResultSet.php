@@ -67,8 +67,8 @@ class Zend_Service_Technorati_DailyCountsResultSet extends Zend_Service_Technora
     /**
      * Parses the search response and retrieve the results for iteration.
      *
-     * @param   DomDocument $dom    the ReST fragment for this object
-     * @param   array $options      query options as associative array
+     * @param DomDocument $dom the ReST fragment for this object
+     * @param array $options query options as associative array
      */
     public function __construct(DomDocument $dom, $options = array())
     {
@@ -79,15 +79,17 @@ class Zend_Service_Technorati_DailyCountsResultSet extends Zend_Service_Technora
         // Zend_Locale::setDefault('en');
 
         $result = $this->_xpath->query('/tapi/document/result/days/text()');
-        if ($result->length == 1) $this->_days = (int) $result->item(0)->data;
+        if ($result->length == 1) {
+            $this->_days = (int)$result->item(0)->data;
+        }
 
         $result = $this->_xpath->query('/tapi/document/result/searchurl/text()');
         if ($result->length == 1) {
             $this->_searchUrl = Zend_Service_Technorati_Utils::normalizeUriHttp($result->item(0)->data);
         }
 
-        $this->_totalResultsReturned  = (int) $this->_xpath->evaluate("count(/tapi/document/items/item)");
-        $this->_totalResultsAvailable = (int) $this->getDays();
+        $this->_totalResultsReturned = (int)$this->_xpath->evaluate("count(/tapi/document/items/item)");
+        $this->_totalResultsAvailable = (int)$this->getDays();
     }
 
 
@@ -96,7 +98,8 @@ class Zend_Service_Technorati_DailyCountsResultSet extends Zend_Service_Technora
      *
      * @return  Zend_Uri_Http
      */
-    public function getSearchUrl() {
+    public function getSearchUrl()
+    {
         return $this->_searchUrl;
     }
 
@@ -105,7 +108,8 @@ class Zend_Service_Technorati_DailyCountsResultSet extends Zend_Service_Technora
      *
      * @return  int
      */
-    public function getDays() {
+    public function getDays()
+    {
         return $this->_days;
     }
 

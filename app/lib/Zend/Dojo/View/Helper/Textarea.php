@@ -31,14 +31,14 @@ require_once 'Zend/Dojo/View/Helper/Dijit.php';
  * @subpackage View
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
-  */
+ */
 class Zend_Dojo_View_Helper_Textarea extends Zend_Dojo_View_Helper_Dijit
 {
     /**
      * Dijit being used
      * @var string
      */
-    protected $_dijit  = 'dijit.form.Textarea';
+    protected $_dijit = 'dijit.form.Textarea';
 
     /**
      * HTML element type
@@ -55,24 +55,24 @@ class Zend_Dojo_View_Helper_Textarea extends Zend_Dojo_View_Helper_Dijit
     /**
      * dijit.form.Textarea
      *
-     * @param  int $id
-     * @param  mixed $value
-     * @param  array $params  Parameters to use for dijit creation
-     * @param  array $attribs HTML attributes
+     * @param int $id
+     * @param mixed $value
+     * @param array $params Parameters to use for dijit creation
+     * @param array $attribs HTML attributes
      * @return string
      */
     public function textarea($id, $value = null, array $params = array(), array $attribs = array())
     {
         if (!array_key_exists('id', $attribs)) {
-            $attribs['id']    = $id;
+            $attribs['id'] = $id;
         }
-        $attribs['name']  = $id;
+        $attribs['name'] = $id;
 
         $attribs = $this->_prepareDijit($attribs, $params, 'textarea');
 
         $html = '<textarea' . $this->_htmlAttribs($attribs) . '>'
-              . $value
-              . "</textarea>\n";
+            . $value
+            . "</textarea>\n";
 
         return $html;
     }

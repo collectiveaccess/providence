@@ -191,7 +191,9 @@ class Zend_Tool_Framework_Metadata_Dynamic
             return $this->_dynamicAttributes[$name];
         } else {
             require_once 'Zend/Tool/Framework/Registry/Exception.php';
-            throw new Zend_Tool_Framework_Registry_Exception('Property ' . $name . ' was not located in this metadata.');
+            throw new Zend_Tool_Framework_Registry_Exception(
+                'Property ' . $name . ' was not located in this metadata.'
+            );
         }
     }
 

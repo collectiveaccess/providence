@@ -83,7 +83,6 @@ class Zend_Tool_Framework_Client_Storage
         } else {
             return $defaultValue;
         }
-
     }
 
     public function has($name)

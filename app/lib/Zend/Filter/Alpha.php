@@ -68,33 +68,35 @@ class Zend_Filter_Alpha implements Zend_Filter_Interface
     /**
      * Sets default option values for this instance
      *
-     * @param  boolean $allowWhiteSpace
+     * @param boolean $allowWhiteSpace
      * @return void
      */
     public function __construct($allowWhiteSpace = false)
     {
         if ($allowWhiteSpace instanceof Zend_Config) {
             $allowWhiteSpace = $allowWhiteSpace->toArray();
-        } else if (is_array($allowWhiteSpace)) {
-            if (array_key_exists('allowwhitespace', $allowWhiteSpace)) {
-                $allowWhiteSpace = $allowWhiteSpace['allowwhitespace'];
-            } else {
-                $allowWhiteSpace = false;
+        } else {
+            if (is_array($allowWhiteSpace)) {
+                if (array_key_exists('allowwhitespace', $allowWhiteSpace)) {
+                    $allowWhiteSpace = $allowWhiteSpace['allowwhitespace'];
+                } else {
+                    $allowWhiteSpace = false;
+                }
             }
         }
 
-        $this->allowWhiteSpace = (boolean) $allowWhiteSpace;
+        $this->allowWhiteSpace = (boolean)$allowWhiteSpace;
         if (null === self::$_unicodeEnabled) {
             self::$_unicodeEnabled = (@preg_match('/\pL/u', 'a')) ? true : false;
         }
 
         if (null === self::$_meansEnglishAlphabet) {
             $this->_locale = new Zend_Locale('auto');
-            self::$_meansEnglishAlphabet = in_array($this->_locale->getLanguage(),
-                                                    array('ja', 'ko', 'zh')
-                                                    );
+            self::$_meansEnglishAlphabet = in_array(
+                $this->_locale->getLanguage(),
+                array('ja', 'ko', 'zh')
+            );
         }
-
     }
 
     /**
@@ -115,7 +117,7 @@ class Zend_Filter_Alpha implements Zend_Filter_Interface
      */
     public function setAllowWhiteSpace($allowWhiteSpace)
     {
-        $this->allowWhiteSpace = (boolean) $allowWhiteSpace;
+        $this->allowWhiteSpace = (boolean)$allowWhiteSpace;
         return $this;
     }
 
@@ -124,7 +126,7 @@ class Zend_Filter_Alpha implements Zend_Filter_Interface
      *
      * Returns the string $value, removing all but alphabetic characters
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     public function filter($value)
@@ -133,14 +135,16 @@ class Zend_Filter_Alpha implements Zend_Filter_Interface
         if (!self::$_unicodeEnabled) {
             // POSIX named classes are not supported, use alternative a-zA-Z match
             $pattern = '/[^a-zA-Z' . $whiteSpace . ']/';
-        } else if (self::$_meansEnglishAlphabet) {
-            //The Alphabet means english alphabet.
-            $pattern = '/[^a-zA-Z'  . $whiteSpace . ']/u';
         } else {
-            //The Alphabet means each language's alphabet.
-            $pattern = '/[^\p{L}' . $whiteSpace . ']/u';
+            if (self::$_meansEnglishAlphabet) {
+                //The Alphabet means english alphabet.
+                $pattern = '/[^a-zA-Z' . $whiteSpace . ']/u';
+            } else {
+                //The Alphabet means each language's alphabet.
+                $pattern = '/[^\p{L}' . $whiteSpace . ']/u';
+            }
         }
 
-        return preg_replace($pattern, '', (string) $value);
+        return preg_replace($pattern, '', (string)$value);
     }
 }

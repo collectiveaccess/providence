@@ -1,4 +1,5 @@
 <?php
+
 /** ---------------------------------------------------------------------
  * tests/lib/Controller/ControllerTest.php
  * ----------------------------------------------------------------------
@@ -15,28 +16,30 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
+ *
  * @package CollectiveAccess
  * @subpackage tests
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/Controller/AppController.php');
+require_once(__CA_LIB_DIR__ . '/Controller/AppController.php');
 
-class ControllerTest extends PHPUnit_Framework_TestCase {
+class ControllerTest extends PHPUnit_Framework_TestCase
+{
 
 
-	public function testRequestDispatch() {
-
-	}
+    public function testRequestDispatch()
+    {
+    }
 
 }
+
 ?>

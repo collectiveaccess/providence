@@ -36,49 +36,65 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  * Class LabelSearchQueryTest
  * Note: Requires testing profile!
  */
-class LabelSearchQueryTest extends AbstractSearchQueryTest {
-	# -------------------------------------------------------
-	public function setUp() {
-		// don't forget to call parent so that request is set up correctly
-		parent::setUp();
+class LabelSearchQueryTest extends AbstractSearchQueryTest
+{
+    # -------------------------------------------------------
+    public function setUp()
+    {
+        // don't forget to call parent so that request is set up correctly
+        parent::setUp();
 
-		// search subject table
-		$this->setPrimaryTable('ca_objects');
+        // search subject table
+        $this->setPrimaryTable('ca_objects');
 
-		/**
-		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
-		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
-		 */
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "[My test image]",
-				),
-			),
-		)));
+        /**
+         * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+         * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+         */
+        $this->assertGreaterThan(
+            0,
+            $this->addTestRecord(
+                'ca_objects',
+                array(
+                    'intrinsic_fields' => array(
+                        'type_id' => 'image',
+                    ),
+                    'preferred_labels' => array(
+                        array(
+                            "locale" => "en_US",
+                            "name" => "[My test image]",
+                        ),
+                    ),
+                )
+            )
+        );
 
-		// no label!
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'dataset',
-			),
-		)));
+        // no label!
+        $this->assertGreaterThan(
+            0,
+            $this->addTestRecord(
+                'ca_objects',
+                array(
+                    'intrinsic_fields' => array(
+                        'type_id' => 'dataset',
+                    ),
+                )
+            )
+        );
 
-		// search queries
-		$this->setSearchQueries(array(
-			'My Test Image' => 1,
-			'ca_object_labels.name:image' => 1,
-			'ca_object_labels.name:im*' => 1,
-			'ca_object_labels.name:"[BLANK]"' => 1,
-			'ca_object_labels.name:[BLANK]' => 1,
-			'ca_object_labels.name:"[SET]"' => 2, // the "BLANK" value counts as set I guess
-			'ca_object_labels.name:[SET]' => 2,
-			'ca_object_labels.name:"[My test image]"' => 1,
-		));
-	}
-	# -------------------------------------------------------
+        // search queries
+        $this->setSearchQueries(
+            array(
+                'My Test Image' => 1,
+                'ca_object_labels.name:image' => 1,
+                'ca_object_labels.name:im*' => 1,
+                'ca_object_labels.name:"[BLANK]"' => 1,
+                'ca_object_labels.name:[BLANK]' => 1,
+                'ca_object_labels.name:"[SET]"' => 2, // the "BLANK" value counts as set I guess
+                'ca_object_labels.name:[SET]' => 2,
+                'ca_object_labels.name:"[My test image]"' => 1,
+            )
+        );
+    }
+    # -------------------------------------------------------
 }

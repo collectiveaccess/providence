@@ -50,6 +50,6 @@ class Zend_Service_DeveloperGarden_Response_ConferenceCall_GetConferenceListResp
      */
     public function getConferenceIds()
     {
-        return (array) $this->conferenceIds;
+        return (array)$this->conferenceIds;
     }
 }

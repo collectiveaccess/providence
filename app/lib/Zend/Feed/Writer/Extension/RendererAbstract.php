@@ -24,7 +24,7 @@
  */
 require_once 'Zend/Feed/Writer/Extension/RendererInterface.php';
 
- /**
+/**
  * @category   Zend
  * @package    Zend_Feed_Writer
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
@@ -73,7 +73,7 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     /**
      * Constructor
      *
-     * @param  mixed $container
+     * @param mixed $container
      * @return void
      */
     public function __construct($container)
@@ -84,7 +84,7 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     /**
      * Set feed encoding
      *
-     * @param  string $enc
+     * @param string $enc
      * @return Zend_Feed_Writer_Extension_RendererAbstract
      */
     public function setEncoding($enc)
@@ -106,13 +106,13 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     /**
      * Set DOMDocument and DOMElement on which to operate
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $base
+     * @param DOMDocument $dom
+     * @param DOMElement $base
      * @return Zend_Feed_Writer_Extension_RendererAbstract
      */
     public function setDomDocument(DOMDocument $dom, DOMElement $base)
     {
-        $this->_dom  = $dom;
+        $this->_dom = $dom;
         $this->_base = $base;
         return $this;
     }
@@ -130,7 +130,7 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     /**
      * Set feed type
      *
-     * @param  string $type
+     * @param string $type
      * @return Zend_Feed_Writer_Extension_RendererAbstract
      */
     public function setType($type)
@@ -152,7 +152,7 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     /**
      * Set root element of document
      *
-     * @param  DOMElement $root
+     * @param DOMElement $root
      * @return Zend_Feed_Writer_Extension_RendererAbstract
      */
     public function setRootElement(DOMElement $root)

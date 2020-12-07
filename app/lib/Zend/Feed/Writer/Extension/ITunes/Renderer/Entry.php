@@ -68,15 +68,17 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
      */
     protected function _appendNamespaces()
     {
-        $this->getRootElement()->setAttribute('xmlns:itunes',
-            'http://www.itunes.com/dtds/podcast-1.0.dtd');
+        $this->getRootElement()->setAttribute(
+            'xmlns:itunes',
+            'http://www.itunes.com/dtds/podcast-1.0.dtd'
+        );
     }
 
     /**
      * Set entry authors
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setAuthors(DOMDocument $dom, DOMElement $root)
@@ -97,8 +99,8 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
     /**
      * Set itunes block
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setBlock(DOMDocument $dom, DOMElement $root)
@@ -117,8 +119,8 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
     /**
      * Set entry duration
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setDuration(DOMDocument $dom, DOMElement $root)
@@ -137,8 +139,8 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
     /**
      * Set explicit flag
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setExplicit(DOMDocument $dom, DOMElement $root)
@@ -157,8 +159,8 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
     /**
      * Set entry keywords
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setKeywords(DOMDocument $dom, DOMElement $root)
@@ -177,8 +179,8 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
     /**
      * Set entry subtitle
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setSubtitle(DOMDocument $dom, DOMElement $root)
@@ -197,8 +199,8 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
     /**
      * Set entry summary
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setSummary(DOMDocument $dom, DOMElement $root)

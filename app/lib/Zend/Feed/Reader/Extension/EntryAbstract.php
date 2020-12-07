@@ -72,15 +72,15 @@ abstract class Zend_Feed_Reader_Extension_EntryAbstract
     /**
      * Constructor
      *
-     * @param  Zend_Feed_Entry_Abstract $entry
-     * @param  int $entryKey
-     * @param  string $type
+     * @param Zend_Feed_Entry_Abstract $entry
+     * @param int $entryKey
+     * @param string $type
      * @return void
      */
     public function __construct(DOMElement $entry, $entryKey, $type = null)
     {
-        $this->_entry       = $entry;
-        $this->_entryKey    = $entryKey;
+        $this->_entry = $entry;
+        $this->_entryKey = $entryKey;
         $this->_domDocument = $entry->ownerDocument;
 
         if ($type !== null) {
@@ -92,13 +92,13 @@ abstract class Zend_Feed_Reader_Extension_EntryAbstract
         if ($this->getType() == Zend_Feed_Reader::TYPE_RSS_10
             || $this->getType() == Zend_Feed_Reader::TYPE_RSS_090
         ) {
-            $this->setXpathPrefix('//rss:item[' . ($this->_entryKey+1) . ']');
+            $this->setXpathPrefix('//rss:item[' . ($this->_entryKey + 1) . ']');
         } elseif ($this->getType() == Zend_Feed_Reader::TYPE_ATOM_10
-                  || $this->getType() == Zend_Feed_Reader::TYPE_ATOM_03
+            || $this->getType() == Zend_Feed_Reader::TYPE_ATOM_03
         ) {
-            $this->setXpathPrefix('//atom:entry[' . ($this->_entryKey+1) . ']');
+            $this->setXpathPrefix('//atom:entry[' . ($this->_entryKey + 1) . ']');
         } else {
-            $this->setXpathPrefix('//item[' . ($this->_entryKey+1) . ']');
+            $this->setXpathPrefix('//item[' . ($this->_entryKey + 1) . ']');
         }
     }
 
@@ -136,7 +136,7 @@ abstract class Zend_Feed_Reader_Extension_EntryAbstract
     /**
      * Set the XPath query
      *
-     * @param  DOMXPath $xpath
+     * @param DOMXPath $xpath
      * @return Zend_Feed_Reader_Extension_EntryAbstract
      */
     public function setXpath(DOMXPath $xpath)
@@ -182,7 +182,7 @@ abstract class Zend_Feed_Reader_Extension_EntryAbstract
     /**
      * Set the XPath prefix
      *
-     * @param  string $prefix
+     * @param string $prefix
      * @return Zend_Feed_Reader_Extension_EntryAbstract
      */
     public function setXpathPrefix($prefix)

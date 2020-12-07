@@ -44,7 +44,7 @@ class Zend_View_Helper_PaginationControl
     /**
      * Sets the view instance.
      *
-     * @param  Zend_View_Interface $view View instance
+     * @param Zend_View_Interface $view View instance
      * @return Zend_View_Helper_PaginationControl
      */
     public function setView(Zend_View_Interface $view)
@@ -78,15 +78,19 @@ class Zend_View_Helper_PaginationControl
      * if so, uses that.  Also, if no scrolling style or partial are specified,
      * the defaults will be used (if set).
      *
-     * @param  Zend_Paginator (Optional) $paginator
-     * @param  string $scrollingStyle (Optional) Scrolling style
-     * @param  string $partial (Optional) View partial
-     * @param  array|string $params (Optional) params to pass to the partial
+     * @param Zend_Paginator (Optional) $paginator
+     * @param string $scrollingStyle (Optional) Scrolling style
+     * @param string $partial (Optional) View partial
+     * @param array|string $params (Optional) params to pass to the partial
      * @return string
      * @throws Zend_View_Exception
      */
-    public function paginationControl(Zend_Paginator $paginator = null, $scrollingStyle = null, $partial = null, $params = null)
-    {
+    public function paginationControl(
+        Zend_Paginator $paginator = null,
+        $scrollingStyle = null,
+        $partial = null,
+        $params = null
+    ) {
         if ($paginator === null) {
             if (isset($this->view->paginator) and $this->view->paginator !== null and $this->view->paginator instanceof Zend_Paginator) {
                 $paginator = $this->view->paginator;
@@ -119,7 +123,7 @@ class Zend_View_Helper_PaginationControl
         $pages = get_object_vars($paginator->getPages($scrollingStyle));
 
         if ($params !== null) {
-            $pages = array_merge($pages, (array) $params);
+            $pages = array_merge($pages, (array)$params);
         }
 
         if (is_array($partial)) {
@@ -128,7 +132,9 @@ class Zend_View_Helper_PaginationControl
                  * @see Zend_View_Exception
                  */
                 require_once 'Zend/View/Exception.php';
-                $e = new Zend_View_Exception('A view partial supplied as an array must contain two values: the filename and its module');
+                $e = new Zend_View_Exception(
+                    'A view partial supplied as an array must contain two values: the filename and its module'
+                );
                 $e->setView($this->view);
                 throw $e;
             }

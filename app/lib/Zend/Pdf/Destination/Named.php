@@ -59,7 +59,8 @@ class Zend_Pdf_Destination_Named extends Zend_Pdf_Destination
      */
     public function __construct(Zend_Pdf_Element $resource)
     {
-        if ($resource->getType() != Zend_Pdf_Element::TYPE_NAME  &&  $resource->getType() != Zend_Pdf_Element::TYPE_STRING) {
+        if ($resource->getType() != Zend_Pdf_Element::TYPE_NAME && $resource->getType(
+            ) != Zend_Pdf_Element::TYPE_STRING) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Named destination resource must be a PDF name or a PDF string.');
         }
@@ -91,8 +92,8 @@ class Zend_Pdf_Destination_Named extends Zend_Pdf_Destination
     /**
      * Get resource
      *
-     * @internal
      * @return Zend_Pdf_Element
+     * @internal
      */
     public function getResource()
     {

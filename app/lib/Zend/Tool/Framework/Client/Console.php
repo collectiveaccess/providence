@@ -120,8 +120,8 @@ class Zend_Tool_Framework_Client_Console
     }
 
     /**
-		 * @param array $classesToLoad
-		 */
+     * @param array $classesToLoad
+     */
     public function setClassesToLoad($classesToLoad)
     {
         $this->_classesToLoad = $classesToLoad;
@@ -145,14 +145,14 @@ class Zend_Tool_Framework_Client_Console
         if ($this->_storageOptions != null && isset($this->_storageOptions['directory'])) {
             $storage->setAdapter(
                 new Zend_Tool_Framework_Client_Storage_Directory($this->_storageOptions['directory'])
-                );
+            );
         }
 
         // which classes are essential to initializing Zend_Tool_Framework_Client_Console
         $classesToLoad = array(
             'Zend_Tool_Framework_Client_Console_Manifest',
             'Zend_Tool_Framework_System_Manifest'
-            );
+        );
 
         if ($this->_classesToLoad) {
             if (is_string($this->_classesToLoad)) {
@@ -171,7 +171,7 @@ class Zend_Tool_Framework_Client_Console
 
         $this->_registry->setLoader(
             new Zend_Tool_Framework_Loader_BasicLoader(array('classesToLoad' => $classesToLoad))
-            );
+        );
 
         return;
     }
@@ -219,7 +219,7 @@ class Zend_Tool_Framework_Client_Console
                 ->respondWithSpecialtyAndParamHelp(
                     $request->getProviderName(),
                     $request->getActionName()
-                    );
+                );
         }
 
         echo PHP_EOL;
@@ -261,8 +261,11 @@ class Zend_Tool_Framework_Client_Console
      * @param string $missingParameterName
      * @return string
      */
-    public function getMissingParameterPromptString(Zend_Tool_Framework_Provider_Interface $provider, Zend_Tool_Framework_Action_Interface $actionInterface, $missingParameterName)
-    {
+    public function getMissingParameterPromptString(
+        Zend_Tool_Framework_Provider_Interface $provider,
+        Zend_Tool_Framework_Action_Interface $actionInterface,
+        $missingParameterName
+    ) {
         return 'Please provide a value for $' . $missingParameterName;
     }
 

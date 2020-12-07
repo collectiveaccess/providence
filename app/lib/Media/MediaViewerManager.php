@@ -33,87 +33,101 @@
 /**
  *
  */
- 
-	require_once(__CA_LIB_DIR__.'/Configuration.php');
- 
-	class MediaViewerManager {
-		# -------------------------------------------------------
-		/** 
-		 * @var Global flag indicating whether we've required() viewer plugins yet
-		 */
-		static $s_manager_did_do_init = false;
-		
-		/** 
-		 * 
-		 */
-		static $s_media_viewer_plugin_dir;
-		
-		/** 
-		 * 
-		 */
-		static $s_media_viewers = [];
-		
-		# -------------------------------------------------------
-		#
-		# -------------------------------------------------------
-		/**
-		 * Loads viewers
-		 */
-		public static function initViewers() {
-			MediaViewerManager::$s_media_viewer_plugin_dir = __CA_LIB_DIR__.'/Media/MediaViewers';	// set here for compatibility with PHP 5.5 and earlier
-			
-			if (MediaViewerManager::$s_manager_did_do_init) { return true; }
-			
-			MediaViewerManager::$s_media_viewers = MediaViewerManager::getViewerNames();
-			MediaViewerManager::$s_manager_did_do_init = true;
-			
-			return true;
-		}
-		# -------------------------------------------------------
-		/**
-		 * 
-		 */
-		public static function viewerIsAvailable($ps_viewer_name) {
-			MediaViewerManager::initViewers();
-			if (in_array($ps_viewer_name, MediaViewerManager::$s_media_viewers)) {
-				return true;
-			}
-			return false;
-		}
-		# -------------------------------------------------------
-		/**
-		 * Returns names of all media viewers
-		 */
-		public static function getViewerNames() {
-			if(!file_exists(MediaViewerManager::$s_media_viewer_plugin_dir)) { return array(); }
-			
-			$va_media_viewers = [];
-			if (is_resource($r_dir = opendir(MediaViewerManager::$s_media_viewer_plugin_dir))) {
-				while (($vs_plugin = readdir($r_dir)) !== false) {
-					$vs_plugin_proc = str_replace(".php", "", $vs_plugin);
-					if (preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_plugin_proc)) {
-						require_once(MediaViewerManager::$s_media_viewer_plugin_dir."/".$vs_plugin);
-						$va_media_viewers[] = $vs_plugin_proc;
-					}
-				}
-			}
-			
-			sort($va_media_viewers);
-			
-			return $va_media_viewers;
-		}
-		# ----------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function getViewerForMimetype($ps_context, $ps_mimetype) {
-			$va_info = caGetMediaDisplayInfo($ps_context, $ps_mimetype);
-			if (!isset($va_info['viewer']) || !($vs_viewer = $va_info['viewer'])) { 
-				$vs_viewer = caGetDefaultMediaViewer($ps_mimetype);
-			}
-			if (!$vs_viewer) { return null; }
-			
-			return MediaViewerManager::viewerIsAvailable($vs_viewer) ? $vs_viewer : null;
-		} 
-		# ----------------------------------------------------------
-	}
+
+require_once(__CA_LIB_DIR__ . '/Configuration.php');
+
+class MediaViewerManager
+{
+    # -------------------------------------------------------
+    /**
+     * @var Global flag indicating whether we've required() viewer plugins yet
+     */
+    static $s_manager_did_do_init = false;
+
+    /**
+     *
+     */
+    static $s_media_viewer_plugin_dir;
+
+    /**
+     *
+     */
+    static $s_media_viewers = [];
+
+    # -------------------------------------------------------
+    #
+    # -------------------------------------------------------
+    /**
+     * Loads viewers
+     */
+    public static function initViewers()
+    {
+        MediaViewerManager::$s_media_viewer_plugin_dir = __CA_LIB_DIR__ . '/Media/MediaViewers';    // set here for compatibility with PHP 5.5 and earlier
+
+        if (MediaViewerManager::$s_manager_did_do_init) {
+            return true;
+        }
+
+        MediaViewerManager::$s_media_viewers = MediaViewerManager::getViewerNames();
+        MediaViewerManager::$s_manager_did_do_init = true;
+
+        return true;
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function viewerIsAvailable($ps_viewer_name)
+    {
+        MediaViewerManager::initViewers();
+        if (in_array($ps_viewer_name, MediaViewerManager::$s_media_viewers)) {
+            return true;
+        }
+        return false;
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Returns names of all media viewers
+     */
+    public static function getViewerNames()
+    {
+        if (!file_exists(MediaViewerManager::$s_media_viewer_plugin_dir)) {
+            return array();
+        }
+
+        $va_media_viewers = [];
+        if (is_resource($r_dir = opendir(MediaViewerManager::$s_media_viewer_plugin_dir))) {
+            while (($vs_plugin = readdir($r_dir)) !== false) {
+                $vs_plugin_proc = str_replace(".php", "", $vs_plugin);
+                if (preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_plugin_proc)) {
+                    require_once(MediaViewerManager::$s_media_viewer_plugin_dir . "/" . $vs_plugin);
+                    $va_media_viewers[] = $vs_plugin_proc;
+                }
+            }
+        }
+
+        sort($va_media_viewers);
+
+        return $va_media_viewers;
+    }
+    # ----------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function getViewerForMimetype($ps_context, $ps_mimetype)
+    {
+        $va_info = caGetMediaDisplayInfo($ps_context, $ps_mimetype);
+        if (!isset($va_info['viewer']) || !($vs_viewer = $va_info['viewer'])) {
+            $vs_viewer = caGetDefaultMediaViewer($ps_mimetype);
+        }
+        if (!$vs_viewer) {
+            return null;
+        }
+
+        return MediaViewerManager::viewerIsAvailable($vs_viewer) ? $vs_viewer : null;
+    }
+    # ----------------------------------------------------------
+}

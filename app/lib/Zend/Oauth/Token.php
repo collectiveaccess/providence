@@ -33,8 +33,8 @@ abstract class Zend_Oauth_Token
     /**@+
      * Token constants
      */
-    const TOKEN_PARAM_KEY                = 'oauth_token';
-    const TOKEN_SECRET_PARAM_KEY         = 'oauth_token_secret';
+    const TOKEN_PARAM_KEY = 'oauth_token';
+    const TOKEN_SECRET_PARAM_KEY = 'oauth_token_secret';
     const TOKEN_PARAM_CALLBACK_CONFIRMED = 'oauth_callback_confirmed';
     /**@-*/
 
@@ -60,8 +60,8 @@ abstract class Zend_Oauth_Token
     /**
      * Constructor; basic setup for any Token subclass.
      *
-     * @param  null|Zend_Http_Response $response
-     * @param  null|Zend_Oauth_Http_Utility $utility
+     * @param null|Zend_Http_Response $response
+     * @param null|Zend_Oauth_Http_Utility $utility
      * @return void
      */
     public function __construct(
@@ -113,7 +113,7 @@ abstract class Zend_Oauth_Token
      * Sets the value for the this Token's secret which may be used when signing
      * requests with this Token.
      *
-     * @param  string $secret
+     * @param string $secret
      * @return Zend_Oauth_Token
      */
     public function setTokenSecret($secret)
@@ -137,8 +137,8 @@ abstract class Zend_Oauth_Token
      * Sets the value for a parameter (e.g. token secret or other) and run
      * a simple filter to remove any trailing newlines.
      *
-     * @param  string $key
-     * @param  string $value
+     * @param string $key
+     * @param string $value
      * @return Zend_Oauth_Token
      */
     public function setParam($key, $value)
@@ -151,12 +151,12 @@ abstract class Zend_Oauth_Token
      * Sets the value for some parameters (e.g. token secret or other) and run
      * a simple filter to remove any trailing newlines.
      *
-     * @param  array $params
+     * @param array $params
      * @return Zend_Oauth_Token
      */
     public function setParams(array $params)
     {
-        foreach ($params as $key=>$value) {
+        foreach ($params as $key => $value) {
             $this->setParam($key, $value);
         }
         return $this;
@@ -165,7 +165,7 @@ abstract class Zend_Oauth_Token
     /**
      * Get the value for a parameter (e.g. token secret or other).
      *
-     * @param  string $key
+     * @param string $key
      * @return mixed
      */
     public function getParam($key)
@@ -179,7 +179,7 @@ abstract class Zend_Oauth_Token
     /**
      * Sets the value for a Token.
      *
-     * @param  string $token
+     * @param string $token
      * @return Zend_Oauth_Token
      */
     public function setToken($token)
@@ -211,8 +211,8 @@ abstract class Zend_Oauth_Token
     /**
      * Generic mutator to enable access as public properties.
      *
-     * @param  string $key
-     * @param  string $value
+     * @param string $key
+     * @param string $value
      * @return void
      */
     public function __set($key, $value)
@@ -245,13 +245,13 @@ abstract class Zend_Oauth_Token
      * Parse a HTTP response body and collect returned parameters
      * as raw url decoded key-value pairs in an associative array.
      *
-     * @param  Zend_Http_Response $response
+     * @param Zend_Http_Response $response
      * @return array
      */
     protected function _parseParameters(Zend_Http_Response $response)
     {
         $params = array();
-        $body   = $response->getBody();
+        $body = $response->getBody();
         if (empty($body)) {
             return;
         }

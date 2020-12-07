@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,32 +29,37 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
-require_once(__CA_LIB_DIR__."/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/BaseObject.php");
+/**
+ *
+ */
 
-class WLPlug extends BaseObject {
-	# ------------------------------------------------------------------------
-	var $error_output = false;
-	var $description = '';
-	
-	# ------------------------------------------------------------------------
-	public function getDescription() {
-		return isset($this->description) ? $this->description : '';
-	}
-	# ------------------------------------------------------------------------
-	public function checkStatus() {
-		return array(
-			'description' => $this->getDescription(),
-			'errors' => array(),
-			'warnings' => array(),
-			'available' => false
-		);
-	}
-	# ------------------------------------------------------------------------
+require_once(__CA_LIB_DIR__ . "/ApplicationError.php");
+require_once(__CA_LIB_DIR__ . "/BaseObject.php");
+
+class WLPlug extends BaseObject
+{
+    # ------------------------------------------------------------------------
+    var $error_output = false;
+    var $description = '';
+
+    # ------------------------------------------------------------------------
+    public function getDescription()
+    {
+        return isset($this->description) ? $this->description : '';
+    }
+
+    # ------------------------------------------------------------------------
+    public function checkStatus()
+    {
+        return array(
+            'description' => $this->getDescription(),
+            'errors' => array(),
+            'warnings' => array(),
+            'available' => false
+        );
+    }
+    # ------------------------------------------------------------------------
 }
+
 ?>

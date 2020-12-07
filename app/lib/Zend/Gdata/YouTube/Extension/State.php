@@ -47,14 +47,17 @@ class Zend_Gdata_YouTube_Extension_State extends Zend_Gdata_Extension
     /**
      * Constructs a new Zend_Gdata_YouTube_Extension_State object.
      *
-     * @param string $explanation(optional) The explanation of this state
-     * @param string $name(optional) The name value
-     * @param string $reasonCode(optional) The reasonCode value
-     * @param string $helpUrl(optional) The helpUrl value
+     * @param string $explanation (optional) The explanation of this state
+     * @param string $name (optional) The name value
+     * @param string $reasonCode (optional) The reasonCode value
+     * @param string $helpUrl (optional) The helpUrl value
      */
-    public function __construct($explanation = null, $name = null,
-                                $reasonCode = null, $helpUrl = null)
-    {
+    public function __construct(
+        $explanation = null,
+        $name = null,
+        $reasonCode = null,
+        $helpUrl = null
+    ) {
         $this->registerAllNamespaces(Zend_Gdata_YouTube::$namespaces);
         parent::__construct();
         $this->_text = $explanation;
@@ -99,17 +102,17 @@ class Zend_Gdata_YouTube_Extension_State extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'name':
-            $this->_name = $attribute->nodeValue;
-            break;
-        case 'reasonCode':
-            $this->_reasonCode = $attribute->nodeValue;
-            break;
-        case 'helpUrl':
-            $this->_helpUrl = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'name':
+                $this->_name = $attribute->nodeValue;
+                break;
+            case 'reasonCode':
+                $this->_reasonCode = $attribute->nodeValue;
+                break;
+            case 'helpUrl':
+                $this->_helpUrl = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

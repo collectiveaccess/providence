@@ -66,14 +66,14 @@ class Zend_Gdata_App_Extension_Control extends Zend_Gdata_App_Extension
     {
         $absoluteNodeName = $child->namespaceURI . ':' . $child->localName;
         switch ($absoluteNodeName) {
-        case $this->lookupNamespace('app') . ':' . 'draft':
-            $draft = new Zend_Gdata_App_Extension_Draft();
-            $draft->transferFromDOM($child);
-            $this->_draft = $draft;
-            break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
+            case $this->lookupNamespace('app') . ':' . 'draft':
+                $draft = new Zend_Gdata_App_Extension_Draft();
+                $draft->transferFromDOM($child);
+                $this->_draft = $draft;
+                break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
         }
     }
 

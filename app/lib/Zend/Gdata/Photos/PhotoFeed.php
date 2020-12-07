@@ -262,8 +262,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
                 foreach ($categories as $category) {
                     if ($category->scheme == Zend_Gdata_Photos::KIND_PATH &&
                         $this->_entryKindClassMapping[$category->term] != "") {
-                            $entryClassName = $this->_entryKindClassMapping[$category->term];
-                            break;
+                        $entryClassName = $this->_entryKindClassMapping[$category->term];
+                        break;
                     } else {
                         require_once 'Zend/Gdata/App/Exception.php';
                         throw new Zend_Gdata_App_Exception('Entry is missing kind declaration.');
@@ -283,8 +283,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:id attribute.
      *
-     * @see setGphotoId
      * @return string The requested attribute.
+     * @see setGphotoId
      */
     public function getGphotoId()
     {
@@ -306,8 +306,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:version attribute.
      *
-     * @see setGphotoVersion
      * @return string The requested attribute.
+     * @see setGphotoVersion
      */
     public function getGphotoVersion()
     {
@@ -329,8 +329,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:albumid attribute.
      *
-     * @see setGphotoAlbumId
      * @return string The requested attribute.
+     * @see setGphotoAlbumId
      */
     public function getGphotoAlbumId()
     {
@@ -352,8 +352,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:width attribute.
      *
-     * @see setGphotoWidth
      * @return string The requested attribute.
+     * @see setGphotoWidth
      */
     public function getGphotoWidth()
     {
@@ -375,8 +375,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:height attribute.
      *
-     * @see setGphotoHeight
      * @return string The requested attribute.
+     * @see setGphotoHeight
      */
     public function getGphotoHeight()
     {
@@ -398,8 +398,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:size attribute.
      *
-     * @see setGphotoSize
      * @return string The requested attribute.
+     * @see setGphotoSize
      */
     public function getGphotoSize()
     {
@@ -421,8 +421,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:client attribute.
      *
-     * @see setGphotoClient
      * @return string The requested attribute.
+     * @see setGphotoClient
      */
     public function getGphotoClient()
     {
@@ -444,8 +444,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:checksum attribute.
      *
-     * @see setGphotoChecksum
      * @return string The requested attribute.
+     * @see setGphotoChecksum
      */
     public function getGphotoChecksum()
     {
@@ -467,8 +467,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:timestamp attribute.
      *
-     * @see setGphotoTimestamp
      * @return string The requested attribute.
+     * @see setGphotoTimestamp
      */
     public function getGphotoTimestamp()
     {
@@ -490,8 +490,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:commentCount attribute.
      *
-     * @see setGphotoCommentCount
      * @return string The requested attribute.
+     * @see setGphotoCommentCount
      */
     public function getGphotoCommentCount()
     {
@@ -513,8 +513,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's gphoto:commentingEnabled attribute.
      *
-     * @see setGphotoCommentingEnabled
      * @return string The requested attribute.
+     * @see setGphotoCommentingEnabled
      */
     public function getGphotoCommentingEnabled()
     {
@@ -536,8 +536,8 @@ class Zend_Gdata_Photos_PhotoFeed extends Zend_Gdata_Feed
     /**
      * Get the value for this element's media:group attribute.
      *
-     * @see setMediaGroup
      * @return string The requested attribute.
+     * @see setMediaGroup
      */
     public function getMediaGroup()
     {

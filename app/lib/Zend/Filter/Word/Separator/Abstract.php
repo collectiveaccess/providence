@@ -39,7 +39,7 @@ abstract class Zend_Filter_Word_Separator_Abstract extends Zend_Filter_PregRepla
     /**
      * Constructor
      *
-     * @param  string $separator Space by default
+     * @param string $separator Space by default
      * @return void
      */
     public function __construct($separator = ' ')
@@ -50,7 +50,7 @@ abstract class Zend_Filter_Word_Separator_Abstract extends Zend_Filter_PregRepla
     /**
      * Sets a new seperator
      *
-     * @param  string  $separator  Seperator
+     * @param string $separator Seperator
      * @return $this
      */
     public function setSeparator($separator)

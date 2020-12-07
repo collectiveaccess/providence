@@ -38,7 +38,7 @@ class Zend_Dojo_View_Helper_SimpleTextarea extends Zend_Dojo_View_Helper_Dijit
     /**
      * @var string Dijit type
      */
-    protected $_dijit  = 'dijit.form.SimpleTextarea';
+    protected $_dijit = 'dijit.form.SimpleTextarea';
 
     /**
      * @var string HTML element type
@@ -53,24 +53,24 @@ class Zend_Dojo_View_Helper_SimpleTextarea extends Zend_Dojo_View_Helper_Dijit
     /**
      * dijit.form.SimpleTextarea
      *
-     * @param  string $id
-     * @param  string $value
-     * @param  array $params  Parameters to use for dijit creation
-     * @param  array $attribs HTML attributes
+     * @param string $id
+     * @param string $value
+     * @param array $params Parameters to use for dijit creation
+     * @param array $attribs HTML attributes
      * @return string
      */
     public function simpleTextarea($id, $value = null, array $params = array(), array $attribs = array())
     {
         if (!array_key_exists('id', $attribs)) {
-            $attribs['id']    = $id;
+            $attribs['id'] = $id;
         }
-        $attribs['name']  = $id;
+        $attribs['name'] = $id;
 
         $attribs = $this->_prepareDijit($attribs, $params, 'textarea');
 
         $html = '<textarea' . $this->_htmlAttribs($attribs) . '>'
-              . $this->view->escape($value)
-              . "</textarea>\n";
+            . $this->view->escape($value)
+            . "</textarea>\n";
 
         return $html;
     }

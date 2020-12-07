@@ -77,7 +77,7 @@ class Zend_Mobile_Push_Gcm extends Zend_Mobile_Push_Abstract
     /**
      * Set API Key
      *
-     * @param  string $key
+     * @param string $key
      * @return Zend_Mobile_Push_Gcm
      * @throws Zend_Mobile_Push_Exception
      */
@@ -99,9 +99,11 @@ class Zend_Mobile_Push_Gcm extends Zend_Mobile_Push_Abstract
     {
         if (!$this->_httpClient) {
             $this->_httpClient = new Zend_Http_Client();
-            $this->_httpClient->setConfig(array(
-                'strictredirects' => true,
-            ));
+            $this->_httpClient->setConfig(
+                array(
+                    'strictredirects' => true,
+                )
+            );
         }
         return $this->_httpClient;
     }
@@ -145,26 +147,33 @@ class Zend_Mobile_Push_Gcm extends Zend_Mobile_Push_Abstract
         }
 
         $response = $client->setRawData($message->toJson(), 'application/json')
-                           ->request('POST');
+            ->request('POST');
         $this->close();
 
-        switch ($response->getStatus())
-        {
+        switch ($response->getStatus()) {
             case 500:
                 require_once 'Zend/Mobile/Push/Exception/ServerUnavailable.php';
-                throw new Zend_Mobile_Push_Exception_ServerUnavailable('The server encountered an internal error, try again');
+                throw new Zend_Mobile_Push_Exception_ServerUnavailable(
+                    'The server encountered an internal error, try again'
+                );
                 break;
             case 503:
                 require_once 'Zend/Mobile/Push/Exception/ServerUnavailable.php';
-                throw new Zend_Mobile_Push_Exception_ServerUnavailable('The server was unavailable, check Retry-After header');
+                throw new Zend_Mobile_Push_Exception_ServerUnavailable(
+                    'The server was unavailable, check Retry-After header'
+                );
                 break;
             case 401:
                 require_once 'Zend/Mobile/Push/Exception/InvalidAuthToken.php';
-                throw new Zend_Mobile_Push_Exception_InvalidAuthToken('There was an error authenticating the sender account');
+                throw new Zend_Mobile_Push_Exception_InvalidAuthToken(
+                    'There was an error authenticating the sender account'
+                );
                 break;
             case 400:
                 require_once 'Zend/Mobile/Push/Exception/InvalidPayload.php';
-                throw new Zend_Mobile_Push_Exception_InvalidPayload('The request could not be parsed as JSON or contains invalid fields');
+                throw new Zend_Mobile_Push_Exception_InvalidPayload(
+                    'The request could not be parsed as JSON or contains invalid fields'
+                );
                 break;
         }
         return new Zend_Mobile_Push_Response_Gcm($response->getBody(), $message);

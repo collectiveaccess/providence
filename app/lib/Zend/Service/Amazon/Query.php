@@ -54,10 +54,10 @@ class Zend_Service_Amazon_Query extends Zend_Service_Amazon
     /**
      * Prepares query parameters
      *
-     * @param  string $method
-     * @param  array  $args
-     * @throws Zend_Service_Exception
+     * @param string $method
+     * @param array $args
      * @return Zend_Service_Amazon_Query Provides a fluent interface
+     * @throws Zend_Service_Exception
      */
     public function __call($method, $args)
     {
@@ -70,14 +70,16 @@ class Zend_Service_Amazon_Query extends Zend_Service_Amazon
         if (strtolower($method) === 'category') {
             $this->_searchIndex = $args[0];
             $this->_search['SearchIndex'] = $args[0];
-        } else if (isset($this->_search['SearchIndex']) || $this->_searchIndex !== null || $this->_searchIndex === 'asin') {
-            $this->_search[$method] = $args[0];
         } else {
-            /**
-             * @see Zend_Service_Exception
-             */
-            require_once 'Zend/Service/Exception.php';
-            throw new Zend_Service_Exception('You must set a category before setting the search parameters');
+            if (isset($this->_search['SearchIndex']) || $this->_searchIndex !== null || $this->_searchIndex === 'asin') {
+                $this->_search[$method] = $args[0];
+            } else {
+                /**
+                 * @see Zend_Service_Exception
+                 */
+                require_once 'Zend/Service/Exception.php';
+                throw new Zend_Service_Exception('You must set a category before setting the search parameters');
+            }
         }
 
         return $this;

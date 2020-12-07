@@ -63,7 +63,7 @@ class Zend_Form_Decorator_File
      */
     public function getAttribs()
     {
-        $attribs   = $this->getOptions();
+        $attribs = $this->getOptions();
 
         if (null !== ($element = $this->getElement())) {
             $attribs = array_merge($attribs, $element->getAttribs());
@@ -81,7 +81,7 @@ class Zend_Form_Decorator_File
     /**
      * Render a form file
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function render($content)
@@ -96,16 +96,16 @@ class Zend_Form_Decorator_File
             return $content;
         }
 
-        $name      = $element->getName();
-        $attribs   = $this->getAttribs();
+        $name = $element->getName();
+        $attribs = $this->getAttribs();
         if (!array_key_exists('id', $attribs)) {
             $attribs['id'] = $name;
         }
 
         $separator = $this->getSeparator();
         $placement = $this->getPlacement();
-        $markup    = array();
-        $size      = $element->getMaxFileSize();
+        $markup = array();
+        $size = $element->getMaxFileSize();
         if ($size > 0) {
             $element->setMaxFileSize(0);
             $markup[] = $view->formHidden('MAX_FILE_SIZE', $size);
@@ -113,8 +113,10 @@ class Zend_Form_Decorator_File
 
         if (Zend_File_Transfer_Adapter_Http::isApcAvailable()) {
             $markup[] = $view->formHidden(ini_get('apc.rfc1867_name'), uniqid(), array('id' => 'progress_key'));
-        } else if (Zend_File_Transfer_Adapter_Http::isUploadProgressAvailable()) {
-            $markup[] = $view->formHidden('UPLOAD_IDENTIFIER', uniqid(), array('id' => 'progress_key'));
+        } else {
+            if (Zend_File_Transfer_Adapter_Http::isUploadProgressAvailable()) {
+                $markup[] = $view->formHidden('UPLOAD_IDENTIFIER', uniqid(), array('id' => 'progress_key'));
+            }
         }
 
         $helper = $element->helper;
@@ -122,7 +124,7 @@ class Zend_Form_Decorator_File
             $name .= "[]";
             $count = $element->getMultiFile();
             for ($i = 0; $i < $count; ++$i) {
-                $htmlAttribs        = $attribs;
+                $htmlAttribs = $attribs;
                 $htmlAttribs['id'] .= '-' . $i;
                 $markup[] = $view->$helper($name, $htmlAttribs);
             }

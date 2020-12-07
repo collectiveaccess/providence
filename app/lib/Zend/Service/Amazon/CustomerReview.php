@@ -69,7 +69,7 @@ class Zend_Service_Amazon_CustomerReview
     /**
      * Assigns values to properties relevant to CustomerReview
      *
-     * @param  DOMElement $dom
+     * @param DOMElement $dom
      * @return void
      */
     public function __construct(DOMElement $dom)
@@ -79,7 +79,7 @@ class Zend_Service_Amazon_CustomerReview
         foreach (array('Rating', 'HelpfulVotes', 'CustomerId', 'TotalVotes', 'Date', 'Summary', 'Content') as $el) {
             $result = $xpath->query("./az:$el/text()", $dom);
             if ($result->length == 1) {
-                $this->$el = (string) $result->item(0)->data;
+                $this->$el = (string)$result->item(0)->data;
             }
         }
     }

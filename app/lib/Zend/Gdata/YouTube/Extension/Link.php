@@ -50,9 +50,15 @@ class Zend_Gdata_YouTube_Extension_Link extends Zend_Gdata_App_Extension_Link
      * @see Zend_Gdata_App_Extension_Link#__construct
      * @param Zend_Gdata_YouTube_Extension_Token $token
      */
-    public function __construct($href = null, $rel = null, $type = null,
-            $hrefLang = null, $title = null, $length = null, $token = null)
-    {
+    public function __construct(
+        $href = null,
+        $rel = null,
+        $type = null,
+        $hrefLang = null,
+        $title = null,
+        $length = null,
+        $token = null
+    ) {
         $this->registerAllNamespaces(Zend_Gdata_YouTube::$namespaces);
         parent::__construct($href, $rel, $type, $hrefLang, $title, $length);
         $this->_token = $token;
@@ -87,14 +93,14 @@ class Zend_Gdata_YouTube_Extension_Link extends Zend_Gdata_App_Extension_Link
     {
         $absoluteNodeName = $child->namespaceURI . ':' . $child->localName;
         switch ($absoluteNodeName) {
-        case $this->lookupNamespace('yt') . ':' . 'token':
-            $token = new Zend_Gdata_YouTube_Extension_Token();
-            $token->transferFromDOM($child);
-            $this->_token = $token;
-            break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
+            case $this->lookupNamespace('yt') . ':' . 'token':
+                $token = new Zend_Gdata_YouTube_Extension_Token();
+                $token->transferFromDOM($child);
+                $this->_token = $token;
+                break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
         }
     }
 
@@ -121,13 +127,13 @@ class Zend_Gdata_YouTube_Extension_Link extends Zend_Gdata_App_Extension_Link
     }
 
     /**
-    * Get the value of this element's token attribute.
-    *
-    * @return string The token's text value
-    */
+     * Get the value of this element's token attribute.
+     *
+     * @return string The token's text value
+     */
     public function getTokenValue()
     {
-      return $this->getToken()->getText();
+        return $this->getToken()->getText();
     }
 
 }

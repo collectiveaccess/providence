@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * vimeoPlugin.php : 
  * ----------------------------------------------------------------------
@@ -25,58 +26,66 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
- 
+require_once(__CA_LIB_DIR__ . '/Logging/Eventlog.php');
 
-	
-	class vimeoPlugin extends BaseApplicationPlugin {
-		# -------------------------------------------------------
-		private $opo_config;
-		private $opn_last_update_timestamp;
-		private $opn_old_access_value;
-		# -------------------------------------------------------
-		public function __construct($ps_plugin_path) {
-			$this->description = _t('Handles authentication for vimeo media replication');
-			parent::__construct();
-			
-			$this->opo_config = Configuration::load($ps_plugin_path.'/conf/vimeo.conf');
-		}
-		# -------------------------------------------------------
-		/**
-		 * Override checkStatus() to return true - the twitterPlugin plugin always initializes ok
-		 */
-		public function checkStatus() {
-			return array(
-				'description' => $this->getDescription(),
-				'errors' => array(),
-				'warnings' => array(),
-				'available' => ((bool)$this->opo_config->get('enabled'))
-			);
-		}
-		# -------------------------------------------------------
-		/**
-		 * Insert Vimeo configuration option into "manage" menu
-		 */
-		public function hookRenderMenuBar($pa_menu_bar) {
-			if ($o_req = $this->getRequest()) {
-				if (isset($pa_menu_bar['manage'])) {
-					$va_menu_items = $pa_menu_bar['manage']['navigation'];
-					if (!is_array($va_menu_items)) { $va_menu_items = array(); }
-				} else {
-					$va_menu_items = array();
-				}
-				$va_menu_items['vimeo_auth'] = array(
-					'displayName' => _t('Vimeo integration'),
-					"default" => array(
-						'module' => 'vimeo', 
-						'controller' => 'Auth', 
-						'action' => 'Index'
-					)
-				);
-				
-				$pa_menu_bar['manage']['navigation'] = $va_menu_items;
-			} 
-			return $pa_menu_bar;
-		}
-		# -------------------------------------------------------
-	}
+
+class vimeoPlugin extends BaseApplicationPlugin
+{
+    # -------------------------------------------------------
+    private $opo_config;
+    private $opn_last_update_timestamp;
+    private $opn_old_access_value;
+
+    # -------------------------------------------------------
+    public function __construct($ps_plugin_path)
+    {
+        $this->description = _t('Handles authentication for vimeo media replication');
+        parent::__construct();
+
+        $this->opo_config = Configuration::load($ps_plugin_path . '/conf/vimeo.conf');
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Override checkStatus() to return true - the twitterPlugin plugin always initializes ok
+     */
+    public function checkStatus()
+    {
+        return array(
+            'description' => $this->getDescription(),
+            'errors' => array(),
+            'warnings' => array(),
+            'available' => ((bool)$this->opo_config->get('enabled'))
+        );
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Insert Vimeo configuration option into "manage" menu
+     */
+    public function hookRenderMenuBar($pa_menu_bar)
+    {
+        if ($o_req = $this->getRequest()) {
+            if (isset($pa_menu_bar['manage'])) {
+                $va_menu_items = $pa_menu_bar['manage']['navigation'];
+                if (!is_array($va_menu_items)) {
+                    $va_menu_items = array();
+                }
+            } else {
+                $va_menu_items = array();
+            }
+            $va_menu_items['vimeo_auth'] = array(
+                'displayName' => _t('Vimeo integration'),
+                "default" => array(
+                    'module' => 'vimeo',
+                    'controller' => 'Auth',
+                    'action' => 'Index'
+                )
+            );
+
+            $pa_menu_bar['manage']['navigation'] = $va_menu_items;
+        }
+        return $pa_menu_bar;
+    }
+    # -------------------------------------------------------
+}

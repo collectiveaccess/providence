@@ -216,7 +216,7 @@ class Zend_Tool_Framework_Client_Request
      */
     public function setPretend($pretend)
     {
-        $this->_isPretend = (bool) $pretend;
+        $this->_isPretend = (bool)$pretend;
         return $this;
     }
 
@@ -238,7 +238,7 @@ class Zend_Tool_Framework_Client_Request
      */
     public function setDebug($debug)
     {
-        $this->_isDebug = (bool) $debug;
+        $this->_isDebug = (bool)$debug;
         return $this;
     }
 
@@ -260,7 +260,7 @@ class Zend_Tool_Framework_Client_Request
      */
     public function setVerbose($verbose)
     {
-        $this->_isVerbose = (bool) $verbose;
+        $this->_isVerbose = (bool)$verbose;
         return $this;
     }
 
@@ -282,7 +282,7 @@ class Zend_Tool_Framework_Client_Request
      */
     public function setDispatchable($dispatchable)
     {
-        $this->_isDispatchable = (bool) $dispatchable;
+        $this->_isDispatchable = (bool)$dispatchable;
         return $this;
     }
 

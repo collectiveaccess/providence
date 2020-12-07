@@ -53,8 +53,8 @@ class Zend_Cloud_DocumentService_Document
      * If no identifier is provided, but a field matching KEY_FIELD is present,
      * then that field's value will be used as the document identifier.
      *
-     * @param  array $fields
-     * @param  mixed $id Document identifier
+     * @param array $fields
+     * @param mixed $id Document identifier
      * @return void
      */
     public function __construct($fields, $id = null)
@@ -76,7 +76,7 @@ class Zend_Cloud_DocumentService_Document
     /**
      * Set document identifier
      *
-     * @param  mixed $id
+     * @param mixed $id
      * @return Zend_Cloud_DocumentService_Document
      */
     public function setId($id)
@@ -108,7 +108,7 @@ class Zend_Cloud_DocumentService_Document
     /**
      * Get field by name.
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function getField($name)
@@ -122,8 +122,8 @@ class Zend_Cloud_DocumentService_Document
     /**
      * Set field by name.
      *
-     * @param  string $name
-     * @param  mixed $value
+     * @param string $name
+     * @param mixed $value
      * @return Zend_Cloud_DocumentService_Document
      */
     public function setField($name, $value)
@@ -135,7 +135,7 @@ class Zend_Cloud_DocumentService_Document
     /**
      * Overloading: get value
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function __get($name)
@@ -146,8 +146,8 @@ class Zend_Cloud_DocumentService_Document
     /**
      * Overloading: set field
      *
-     * @param  string $name
-     * @param  mixed $value
+     * @param string $name
+     * @param mixed $value
      * @return void
      */
     public function __set($name, $value)
@@ -158,7 +158,7 @@ class Zend_Cloud_DocumentService_Document
     /**
      * ArrayAccess: does field exist?
      *
-     * @param  string $name
+     * @param string $name
      * @return bool
      */
     public function offsetExists($name)
@@ -169,7 +169,7 @@ class Zend_Cloud_DocumentService_Document
     /**
      * ArrayAccess: get field by name
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function offsetGet($name)
@@ -180,8 +180,8 @@ class Zend_Cloud_DocumentService_Document
     /**
      * ArrayAccess: set field to value
      *
-     * @param  string $name
-     * @param  mixed $value
+     * @param string $name
+     * @param mixed $value
      * @return void
      */
     public function offsetSet($name, $value)
@@ -192,7 +192,7 @@ class Zend_Cloud_DocumentService_Document
     /**
      * ArrayAccess: remove field from document
      *
-     * @param  string $name
+     * @param string $name
      * @return void
      */
     public function offsetUnset($name)
@@ -205,8 +205,8 @@ class Zend_Cloud_DocumentService_Document
     /**
      * Overloading: retrieve and set fields by name
      *
-     * @param  string $name
-     * @param  mixed $args
+     * @param string $name
+     * @param mixed $args
      * @return mixed
      */
     public function __call($name, $args)

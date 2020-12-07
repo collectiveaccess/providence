@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/manage/MetadataAlertsController.php :
  * ----------------------------------------------------------------------
@@ -25,43 +26,51 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
-require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
-require_once(__CA_LIB_DIR__."/ResultContext.php");
+require_once(__CA_LIB_DIR__ . "/Controller/ActionController.php");
+require_once(__CA_MODELS_DIR__ . '/ca_metadata_alert_rules.php');
+require_once(__CA_LIB_DIR__ . "/ResultContext.php");
 
-class MetadataAlertsController extends ActionController {
-	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
-		
- 		if (!$this->request->user->canDoAction("can_use_metadata_alerts")) { throw new ApplicationException(_t('Alerts are not available')); }
-	}
-	# -------------------------------------------------------
-	public function ListAlerts() {
-		AssetLoadManager::register('tableList');
+class MetadataAlertsController extends ActionController
+{
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
 
-		$t_rule = new ca_metadata_alert_rules();
-		$va_list = caExtractValuesByLocale(caGetUserLocaleRules(), $t_rule->getRules());
-		$this->getView()->setVar('rule_list', $va_list);
+        if (!$this->request->user->canDoAction("can_use_metadata_alerts")) {
+            throw new ApplicationException(_t('Alerts are not available'));
+        }
+    }
 
-		$o_result_context = new ResultContext($this->getRequest(), 'ca_metadata_alert_rules', 'basic_search');
-		$o_result_context->setAsLastFind();
-		$o_result_context->setResultList(is_array($va_list) ? array_keys($va_list) : array());
-		$o_result_context->saveContext();
+    # -------------------------------------------------------
+    public function ListAlerts()
+    {
+        AssetLoadManager::register('tableList');
 
-		$this->render('metadata_alert_list_html.php');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function Info() {
-		$t_rule = new ca_metadata_alert_rules();
-		$va_list = caExtractValuesByLocale(caGetUserLocaleRules(), $t_rule->getRules());
+        $t_rule = new ca_metadata_alert_rules();
+        $va_list = caExtractValuesByLocale(caGetUserLocaleRules(), $t_rule->getRules());
+        $this->getView()->setVar('rule_list', $va_list);
 
-		$this->getView()->setVar('rule_count', sizeof($va_list));
+        $o_result_context = new ResultContext($this->getRequest(), 'ca_metadata_alert_rules', 'basic_search');
+        $o_result_context->setAsLastFind();
+        $o_result_context->setResultList(is_array($va_list) ? array_keys($va_list) : array());
+        $o_result_context->saveContext();
 
-		return $this->render('widget_metadata_alerts_info_html.php', true);
-	}
-	# -------------------------------------------------------
+        $this->render('metadata_alert_list_html.php');
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     */
+    public function Info()
+    {
+        $t_rule = new ca_metadata_alert_rules();
+        $va_list = caExtractValuesByLocale(caGetUserLocaleRules(), $t_rule->getRules());
+
+        $this->getView()->setVar('rule_count', sizeof($va_list));
+
+        return $this->render('widget_metadata_alerts_info_html.php', true);
+    }
+    # -------------------------------------------------------
 }

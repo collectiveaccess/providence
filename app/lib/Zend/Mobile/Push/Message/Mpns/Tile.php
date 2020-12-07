@@ -139,7 +139,7 @@ class Zend_Mobile_Push_Message_Mpns_Tile extends Zend_Mobile_Push_Message_Mpns
         if (!is_numeric($count)) {
             throw new Zend_Mobile_Push_Message_Exception('$count is not numeric');
         }
-        $this->_count = (int) $count;
+        $this->_count = (int)$count;
         return $this;
     }
 
@@ -233,7 +233,7 @@ class Zend_Mobile_Push_Message_Mpns_Tile extends Zend_Mobile_Push_Message_Mpns
 
     /**
      * Set Back Content
-     * 
+     *
      * @param string $content
      * @return Zend_Mobile_Push_Message_Mpns_Tile
      * @throws Zend_Mobile_Push_Message_Exception
@@ -294,11 +294,14 @@ class Zend_Mobile_Push_Message_Mpns_Tile extends Zend_Mobile_Push_Message_Mpns
      */
     public function setDelay($delay)
     {
-        if (!in_array($delay, array(
-            self::DELAY_IMMEDIATE,
-            self::DELAY_450S,
-            self::DELAY_900S
-        ))) {
+        if (!in_array(
+            $delay,
+            array(
+                self::DELAY_IMMEDIATE,
+                self::DELAY_450S,
+                self::DELAY_900S
+            )
+        )) {
             throw new Zend_Mobile_Push_Message_Exception('$delay must be one of the DELAY_* constants');
         }
         $this->_delay = $delay;
@@ -326,11 +329,13 @@ class Zend_Mobile_Push_Message_Mpns_Tile extends Zend_Mobile_Push_Message_Mpns
             . '<wp:Notification xmlns:wp="WPNotification">'
             . '<wp:Tile' . (($this->_tileId) ? ' Id="' . htmlspecialchars($this->_tileId) . '"' : '') . '>'
             . '<wp:BackgroundImage>' . htmlspecialchars($this->_backgroundImage) . '</wp:BackgroundImage>'
-            . '<wp:Count>' . (int) $this->_count . '</wp:Count>'
+            . '<wp:Count>' . (int)$this->_count . '</wp:Count>'
             . '<wp:Title>' . htmlspecialchars($this->_title) . '</wp:Title>';
 
         if ($this->_backBackgroundImage) {
-            $ret .= '<wp:BackBackgroundImage>' . htmlspecialchars($this->_backBackgroundImage) . '</wp:BackBackgroundImage>';
+            $ret .= '<wp:BackBackgroundImage>' . htmlspecialchars(
+                    $this->_backBackgroundImage
+                ) . '</wp:BackBackgroundImage>';
         }
         if ($this->_backTitle) {
             $ret .= '<wp:BackTitle>' . htmlspecialchars($this->_backTitle) . '</wp:BackTitle>';

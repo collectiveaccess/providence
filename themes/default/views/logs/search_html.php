@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/views/logs/search_html.php :
  * ----------------------------------------------------------------------
@@ -25,101 +26,117 @@
  *
  * ----------------------------------------------------------------------
  */
-	$va_search_list = $this->getVar('search_list');
+$va_search_list = $this->getVar('search_list');
 
 ?>
 <script language="JavaScript" type="text/javascript">
-/* <![CDATA[ */
-	$(document).ready(function(){
-		$('#caItemList').caFormatListTable();
-	});
-/* ]]> */
+    /* <![CDATA[ */
+    $(document).ready(function () {
+        $('#caItemList').caFormatListTable();
+    });
+    /* ]]> */
 </script>
 <div class="sectionBox">
-	<?php 
-		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
-			'', 
-			_t('Show from').': '.caFormTag($this->request, 'Index', 'searchLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)).caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('search_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'searchLogSearch')."</form>"
-		); 
-	?>
-	
-	<table id="caItemList" class="listtable">
-		<thead>
-			<tr>
-				<th class="list-header-unsorted">
-					<?php print _t('Date/time'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Type'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Search'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Num hits'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('User'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('IP'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Source'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Exec time (sec.)'); ?>
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-<?php
-	if (sizeof($va_search_list)) {
-		foreach($va_search_list as $va_search) {
-?>
-			<tr>
-				<td>
-					<?php print date("n/d/Y@g:i:sa T", $va_search['log_datetime']); ?>
-				</td>
-				<td>
-					<?php print $va_search['table_name']; ?>
-				</td>
-				<td>
-					<?php print $va_search['search_expression']; ?>
-				</td>
-				<td>
-					<?php print $va_search['num_hits']; ?>
-				</td>
-				<td>
-					<?php print $va_search['user_name']; ?>
-				</td>
-				<td>
-					<?php print $va_search['ip_addr']; ?>
-				</td>
-				<td>
-					<?php print $va_search['search_source'].($va_search['form'] ? '/'.$va_search['form'] : ''); ?>
-				</td>
-				<td>
-					<?php print $va_search['execution_time']; ?>
-				</td>
-			</tr>
-<?php
-		}
-	} else {
-?>
-		<tr>
-			<td colspan='9'>
-				<div align="center">
-					<?php print (trim($this->getVar('search_list_search'))) ? _t('No searches found') : _t('Enter a date to display searches from above'); ?>
-				</div>
-			</td>
-		</tr>
-<?php
-	}
-?>
-		</tbody>
-	</table>
+    <?php
+    print caFormControlBox(
+        '<div class="list-filter">' . _t(
+            'Filter'
+        ) . ': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
+        '',
+        _t('Show from') . ': ' . caFormTag(
+            $this->request,
+            'Index',
+            'searchLogSearch',
+            null,
+            'post',
+            'multipart/form-data',
+            '_top',
+            array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)
+        ) . caHTMLTextInput(
+            'search',
+            array('size' => 25, 'value' => $this->getVar('search_list_search'))
+        ) . " " . caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'searchLogSearch') . "</form>"
+    );
+    ?>
+
+    <table id="caItemList" class="listtable">
+        <thead>
+        <tr>
+            <th class="list-header-unsorted">
+                <?php print _t('Date/time'); ?>
+            </th>
+            <th class="list-header-unsorted">
+                <?php print _t('Type'); ?>
+            </th>
+            <th class="list-header-unsorted">
+                <?php print _t('Search'); ?>
+            </th>
+            <th class="list-header-unsorted">
+                <?php print _t('Num hits'); ?>
+            </th>
+            <th class="list-header-unsorted">
+                <?php print _t('User'); ?>
+            </th>
+            <th class="list-header-unsorted">
+                <?php print _t('IP'); ?>
+            </th>
+            <th class="list-header-unsorted">
+                <?php print _t('Source'); ?>
+            </th>
+            <th class="list-header-unsorted">
+                <?php print _t('Exec time (sec.)'); ?>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        if (sizeof($va_search_list)) {
+            foreach ($va_search_list as $va_search) {
+                ?>
+                <tr>
+                    <td>
+                        <?php print date("n/d/Y@g:i:sa T", $va_search['log_datetime']); ?>
+                    </td>
+                    <td>
+                        <?php print $va_search['table_name']; ?>
+                    </td>
+                    <td>
+                        <?php print $va_search['search_expression']; ?>
+                    </td>
+                    <td>
+                        <?php print $va_search['num_hits']; ?>
+                    </td>
+                    <td>
+                        <?php print $va_search['user_name']; ?>
+                    </td>
+                    <td>
+                        <?php print $va_search['ip_addr']; ?>
+                    </td>
+                    <td>
+                        <?php print $va_search['search_source'] . ($va_search['form'] ? '/' . $va_search['form'] : ''); ?>
+                    </td>
+                    <td>
+                        <?php print $va_search['execution_time']; ?>
+                    </td>
+                </tr>
+                <?php
+            }
+        } else {
+            ?>
+            <tr>
+                <td colspan='9'>
+                    <div align="center">
+                        <?php print (trim($this->getVar('search_list_search'))) ? _t('No searches found') : _t(
+                            'Enter a date to display searches from above'
+                        ); ?>
+                    </div>
+                </td>
+            </tr>
+            <?php
+        }
+        ?>
+        </tbody>
+    </table>
 </div>
 
 <div class="editorBottomPadding"><!-- empty --></div>

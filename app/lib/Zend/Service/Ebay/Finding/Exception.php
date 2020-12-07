@@ -34,4 +34,5 @@ require_once 'Zend/Service/Ebay/Exception.php';
  * @uses       Zend_Service_Ebay_Exception
  */
 class Zend_Service_Ebay_Finding_Exception extends Zend_Service_Ebay_Exception
-{}
+{
+}

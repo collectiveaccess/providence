@@ -65,9 +65,9 @@ class Zend_Db
     /**
      * Use the INT_TYPE, BIGINT_TYPE, and FLOAT_TYPE with the quote() method.
      */
-    const INT_TYPE    = 0;
+    const INT_TYPE = 0;
     const BIGINT_TYPE = 1;
-    const FLOAT_TYPE  = 2;
+    const FLOAT_TYPE = 2;
 
     /**
      * PDO constant values discovered by this script result:
@@ -125,17 +125,17 @@ class Zend_Db
     const CASE_UPPER = 1;
     const CURSOR_FWDONLY = 0;
     const CURSOR_SCROLL = 1;
-    const ERR_ALREADY_EXISTS = NULL;
-    const ERR_CANT_MAP = NULL;
-    const ERR_CONSTRAINT = NULL;
-    const ERR_DISCONNECTED = NULL;
-    const ERR_MISMATCH = NULL;
-    const ERR_NO_PERM = NULL;
+    const ERR_ALREADY_EXISTS = null;
+    const ERR_CANT_MAP = null;
+    const ERR_CONSTRAINT = null;
+    const ERR_DISCONNECTED = null;
+    const ERR_MISMATCH = null;
+    const ERR_NO_PERM = null;
     const ERR_NONE = '00000';
-    const ERR_NOT_FOUND = NULL;
-    const ERR_NOT_IMPLEMENTED = NULL;
-    const ERR_SYNTAX = NULL;
-    const ERR_TRUNCATED = NULL;
+    const ERR_NOT_FOUND = null;
+    const ERR_NOT_IMPLEMENTED = null;
+    const ERR_SYNTAX = null;
+    const ERR_TRUNCATED = null;
     const ERRMODE_EXCEPTION = 2;
     const ERRMODE_SILENT = 0;
     const ERRMODE_WARNING = 1;
@@ -162,7 +162,7 @@ class Zend_Db
     const FETCH_UNIQUE = 196608;
     const NULL_EMPTY_STRING = 1;
     const NULL_NATURAL = 0;
-    const NULL_TO_STRING = NULL;
+    const NULL_TO_STRING = null;
     const PARAM_BOOL = 5;
     const PARAM_INPUT_OUTPUT = -2147483648;
     const PARAM_INT = 1;
@@ -191,8 +191,8 @@ class Zend_Db
      * If the first argument is of type Zend_Config, it is assumed to contain
      * all parameters, and the second argument is ignored.
      *
-     * @param  mixed $adapter String name of base adapter class, or Zend_Config object.
-     * @param  mixed $config  OPTIONAL; an array or Zend_Config object with adapter parameters.
+     * @param mixed $adapter String name of base adapter class, or Zend_Config object.
+     * @param mixed $config OPTIONAL; an array or Zend_Config object with adapter parameters.
      * @return Zend_Db_Adapter_Abstract
      * @throws Zend_Db_Exception
      */
@@ -211,7 +211,7 @@ class Zend_Db
                 $config = $adapter->params->toArray();
             }
             if (isset($adapter->adapter)) {
-                $adapter = (string) $adapter->adapter;
+                $adapter = (string)$adapter->adapter;
             } else {
                 $adapter = null;
             }
@@ -272,7 +272,7 @@ class Zend_Db
         /*
          * Verify that the object created is a descendent of the abstract adapter type.
          */
-        if (! $dbAdapter instanceof Zend_Db_Adapter_Abstract) {
+        if (!$dbAdapter instanceof Zend_Db_Adapter_Abstract) {
             /**
              * @see Zend_Db_Exception
              */

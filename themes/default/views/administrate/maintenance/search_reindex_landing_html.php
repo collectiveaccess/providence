@@ -25,17 +25,34 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print "<h1>"._t("Rebuild search indices")."</h1>\n";
 
-	print "<div class='searchReindexHelpText'>";
-	print _t("<p>CollectiveAccess relies upon <em>indices</em> when searching your data.  Indices are simply summaries of your data designed to speed query processing. The precise form and characteristics of the indices used will vary with the type of search engine you  are using. They may be stored on disk, in a database or on another server, but their purpose is always the same: to make searches execute faster.</p>
+print "<h1>" . _t("Rebuild search indices") . "</h1>\n";
+
+print "<div class='searchReindexHelpText'>";
+print _t(
+    "<p>CollectiveAccess relies upon <em>indices</em> when searching your data.  Indices are simply summaries of your data designed to speed query processing. The precise form and characteristics of the indices used will vary with the type of search engine you  are using. They may be stored on disk, in a database or on another server, but their purpose is always the same: to make searches execute faster.</p>
 <p>For search results to be accurate the database and indices must be in sync. CollectiveAccess simultaneously updates both the database and indicies as you add, edit and delete data, keeping database and indices in agreement. Occasionally things get out of sync, however. If the basic and advanced searches are consistently returning unexpected results you can use this tool to rebuild the indices from the database and bring things back into alignment.</p> 
 <p>Note that depending upon the size of your database rebuilding can take from a few minutes to several hours. During the rebuilding process the system will remain usable but search functions may return incomplete results. Browse functions, which do not rely upon indices, will not be affected.</p>
-	");
-	
-	print caFormTag($this->request, 'reindex', 'caSearchReindexForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Rebuild search indices"), 'caSearchReindexForm', array())."</div>";
-	print "</form>";
-	print "</div>\n";
+	"
+);
+
+print caFormTag(
+    $this->request,
+    'reindex',
+    'caSearchReindexForm',
+    null,
+    'post',
+    'multipart/form-data',
+    '_top',
+    array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true)
+);
+print "<div style='text-align: center'>" . caFormSubmitButton(
+        $this->request,
+        __CA_NAV_ICON_GO__,
+        _t("Rebuild search indices"),
+        'caSearchReindexForm',
+        array()
+    ) . "</div>";
+print "</form>";
+print "</div>\n";
 ?>

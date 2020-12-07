@@ -52,7 +52,7 @@ class Zend_Service_Technorati_GetInfoResult
     /**
      * Constructs a new object object from DOM Document.
      *
-     * @param   DomDocument $dom the ReST fragment for this object
+     * @param DomDocument $dom the ReST fragment for this object
      */
     public function __construct(DomDocument $dom)
     {
@@ -87,7 +87,8 @@ class Zend_Service_Technorati_GetInfoResult
      *
      * @return  Zend_Service_Technorati_Author
      */
-    public function getAuthor() {
+    public function getAuthor()
+    {
         return $this->_author;
     }
 
@@ -96,7 +97,8 @@ class Zend_Service_Technorati_GetInfoResult
      *
      * @return  array of Zend_Service_Technorati_Weblog
      */
-    public function getWeblogs() {
+    public function getWeblogs()
+    {
         return $this->_weblogs;
     }
 

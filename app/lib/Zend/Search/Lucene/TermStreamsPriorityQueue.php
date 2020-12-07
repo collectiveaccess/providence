@@ -58,7 +58,7 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
     /**
      * Object constructor
      *
-     * @param array $termStreams  array of term streams (Zend_Search_Lucene_Index_TermsStream_Interface objects)
+     * @param array $termStreams array of term streams (Zend_Search_Lucene_Index_TermsStream_Interface objects)
      */
     public function __construct(array $termStreams)
     {
@@ -121,7 +121,7 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
         while (($termStream = $this->_termsStreamQueue->pop()) !== null) {
             if ($this->_termsStreamQueue->top() === null ||
                 $this->_termsStreamQueue->top()->currentTerm()->key() !=
-                            $termStream->currentTerm()->key()) {
+                $termStream->currentTerm()->key()) {
                 // We got new term
                 $this->_lastTerm = $termStream->currentTerm();
 
@@ -167,6 +167,6 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
         }
 
         $this->_termsStreamQueue = null;
-        $this->_lastTerm         = null;
+        $this->_lastTerm = null;
     }
 }

@@ -31,29 +31,36 @@
  */
 
 
-require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
-class ca_data_exportersTest extends PHPUnit_Framework_TestCase {
-	/**
-	 * @link http://clangers.collectiveaccess.org/jira/browse/PROV-1026
-	 */
-	public function testDataExporterCanLoadFromFile(){
-		$t_locale = new ca_locales();
-		$va_locales = $t_locale->getLocaleList();
-		$vn_locale_id = key($va_locales);
+require_once(__CA_MODELS_DIR__ . '/ca_data_exporters.php');
 
-		$t_exporter = new ca_data_exporters();
-		$va_errors = array();
-		ca_data_exporters::loadExporterFromFile(__DIR__ . '/data/list_item_export_mapping.xlsx', $va_errors, array('locale_id' => $vn_locale_id));
+class ca_data_exportersTest extends PHPUnit_Framework_TestCase
+{
+    /**
+     * @link http://clangers.collectiveaccess.org/jira/browse/PROV-1026
+     */
+    public function testDataExporterCanLoadFromFile()
+    {
+        $t_locale = new ca_locales();
+        $va_locales = $t_locale->getLocaleList();
+        $vn_locale_id = key($va_locales);
 
-		$vo_exporter = ca_data_exporters::loadExporterByCode('testmappingforunittests');
+        $t_exporter = new ca_data_exporters();
+        $va_errors = array();
+        ca_data_exporters::loadExporterFromFile(
+            __DIR__ . '/data/list_item_export_mapping.xlsx',
+            $va_errors,
+            array('locale_id' => $vn_locale_id)
+        );
 
-		$this->assertEmpty($va_errors, 'Should be no error messages');
-		$this->assertTrue(is_object($vo_exporter), 'Should have found an exporter by the correct name');
-		$this->assertInstanceOf('ca_data_exporters', $vo_exporter, 'Incorrect type loaded');
-		$vo_exporter->setMode(ACCESS_WRITE);
-		$vo_exporter->delete(true, array( 'hard' => true ));
+        $vo_exporter = ca_data_exporters::loadExporterByCode('testmappingforunittests');
 
-		$vo_exporter = $t_exporter->load(array('exporter_code' => 'testmappingforunittests'));
-		$this->assertFalse($vo_exporter, 'Should no longer have an exporter loaded');
-	}
+        $this->assertEmpty($va_errors, 'Should be no error messages');
+        $this->assertTrue(is_object($vo_exporter), 'Should have found an exporter by the correct name');
+        $this->assertInstanceOf('ca_data_exporters', $vo_exporter, 'Incorrect type loaded');
+        $vo_exporter->setMode(ACCESS_WRITE);
+        $vo_exporter->delete(true, array('hard' => true));
+
+        $vo_exporter = $t_exporter->load(array('exporter_code' => 'testmappingforunittests'));
+        $this->assertFalse($vo_exporter, 'Should no longer have an exporter loaded');
+    }
 }

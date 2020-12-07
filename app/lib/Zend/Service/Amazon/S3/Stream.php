@@ -74,7 +74,7 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Retrieve client for this stream type
      *
-     * @param  string $path
+     * @param string $path
      * @return Zend_Service_Amazon_S3
      */
     protected function _getS3Client($path)
@@ -113,18 +113,19 @@ class Zend_Service_Amazon_S3_Stream
     {
         $url = parse_url($path);
         if ($url['host']) {
-            return !empty($url['path']) ? $url['host'].$url['path'] : $url['host'];
+            return !empty($url['path']) ? $url['host'] . $url['path'] : $url['host'];
         }
 
         return '';
     }
+
     /**
      * Open the stream
      *
-     * @param  string  $path
-     * @param  string  $mode
-     * @param  integer $options
-     * @param  string  $opened_path
+     * @param string $path
+     * @param string $mode
+     * @param integer $options
+     * @param string $opened_path
      * @return boolean
      */
     public function stream_open($path, $mode, $options, $opened_path)
@@ -178,7 +179,7 @@ class Zend_Service_Amazon_S3_Stream
      * internal read buffer size (8192) no matter what is passed as $count
      * parameter to fread().
      *
-     * @param  integer $count
+     * @param integer $count
      * @return string
      */
     public function stream_read($count)
@@ -193,12 +194,12 @@ class Zend_Service_Amazon_S3_Stream
         }
 
         $range_start = $this->_position;
-        $range_end   = $this->_position + $count - 1;
+        $range_end = $this->_position + $count - 1;
 
         // Only fetch more data from S3 if we haven't fetched any data yet (postion=0)
         // OR, the range end position plus 1 is greater than the size of the current
         // object buffer
-        if ($this->_objectBuffer === null  ||  $range_end >= strlen($this->_objectBuffer)) {
+        if ($this->_objectBuffer === null || $range_end >= strlen($this->_objectBuffer)) {
             $headers = array(
                 'Range' => "bytes=$range_start-$range_end"
             );
@@ -218,7 +219,7 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Write to the stream
      *
-     * @param  string $data
+     * @param string $data
      * @return integer
      */
     public function stream_write($data)
@@ -260,8 +261,8 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Update the read/write position of the stream
      *
-     * @param  integer $offset
-     * @param  integer $whence
+     * @param integer $offset
+     * @param integer $whence
      * @return boolean
      */
     public function stream_seek($offset, $whence)
@@ -337,15 +338,15 @@ class Zend_Service_Amazon_S3_Stream
         $stat['blksize'] = 0;
         $stat['blocks'] = 0;
 
-    if(($slash = strchr($this->_objectName, '/')) === false || $slash == strlen($this->_objectName)-1) {
-        /* bucket */
-        $stat['mode'] |= 040000;
-    } else {
-        $stat['mode'] |= 0100000;
-    }
-           $info = $this->_s3->getInfo($this->_objectName);
+        if (($slash = strchr($this->_objectName, '/')) === false || $slash == strlen($this->_objectName) - 1) {
+            /* bucket */
+            $stat['mode'] |= 040000;
+        } else {
+            $stat['mode'] |= 0100000;
+        }
+        $info = $this->_s3->getInfo($this->_objectName);
         if (!empty($info)) {
-            $stat['size']  = $info['size'];
+            $stat['size'] = $info['size'];
             $stat['atime'] = time();
             $stat['mtime'] = $info['mtime'];
         }
@@ -356,7 +357,7 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Attempt to delete the item
      *
-     * @param  string $path
+     * @param string $path
      * @return boolean
      */
     public function unlink($path)
@@ -367,8 +368,8 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Attempt to rename the item
      *
-     * @param  string  $path_from
-     * @param  string  $path_to
+     * @param string $path_from
+     * @param string $path_to
      * @return boolean False
      */
     public function rename($path_from, $path_to)
@@ -380,9 +381,9 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Create a new directory
      *
-     * @param  string  $path
-     * @param  integer $mode
-     * @param  integer $options
+     * @param string $path
+     * @param integer $mode
+     * @param integer $options
      * @return boolean
      */
     public function mkdir($path, $mode, $options)
@@ -393,8 +394,8 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Remove a directory
      *
-     * @param  string  $path
-     * @param  integer $options
+     * @param string $path
+     * @param integer $options
      * @return boolean
      */
     public function rmdir($path, $options)
@@ -405,17 +406,15 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Attempt to open a directory
      *
-     * @param  string $path
-     * @param  integer $options
+     * @param string $path
+     * @param integer $options
      * @return boolean
      */
     public function dir_opendir($path, $options)
     {
-
         if (preg_match('@^([a-z0-9+.]|-)+://$@', $path)) {
             $this->_bucketList = $this->_getS3Client($path)->getBuckets();
-        }
-        else {
+        } else {
             $host = parse_url($path, PHP_URL_HOST);
             $this->_bucketList = $this->_getS3Client($path)->getObjectsByBucket($host);
         }
@@ -426,8 +425,8 @@ class Zend_Service_Amazon_S3_Stream
     /**
      * Return array of URL variables
      *
-     * @param  string $path
-     * @param  integer $flags
+     * @param string $path
+     * @param integer $flags
      * @return array
      */
     public function url_stat($path, $flags)
@@ -447,17 +446,17 @@ class Zend_Service_Amazon_S3_Stream
         $stat['blksize'] = 0;
         $stat['blocks'] = 0;
 
-    $name = $this->_getNamePart($path);
-    if(($slash = strchr($name, '/')) === false || $slash == strlen($name)-1) {
-        /* bucket */
-        $stat['mode'] |= 040000;
-    } else {
-        $stat['mode'] |= 0100000;
-    }
-           $info = $this->_getS3Client($path)->getInfo($name);
+        $name = $this->_getNamePart($path);
+        if (($slash = strchr($name, '/')) === false || $slash == strlen($name) - 1) {
+            /* bucket */
+            $stat['mode'] |= 040000;
+        } else {
+            $stat['mode'] |= 0100000;
+        }
+        $info = $this->_getS3Client($path)->getInfo($name);
 
         if (!empty($info)) {
-            $stat['size']  = $info['size'];
+            $stat['size'] = $info['size'];
             $stat['atime'] = time();
             $stat['mtime'] = $info['mtime'];
         }

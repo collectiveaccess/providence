@@ -63,7 +63,6 @@ class Zend_Tool_Project_Profile_FileParser_Xml implements Zend_Tool_Project_Prof
      */
     public function serialize(Zend_Tool_Project_Profile $profile)
     {
-
         $profile = clone $profile;
 
         $this->_profile = $profile;
@@ -113,11 +112,11 @@ class Zend_Tool_Project_Profile_FileParser_Xml implements Zend_Tool_Project_Prof
         }
 
         if (isset($xmlDataIterator['type'])) {
-            $this->_profile->setAttribute('type', (string) $xmlDataIterator['type']);
+            $this->_profile->setAttribute('type', (string)$xmlDataIterator['type']);
         }
 
         if (isset($xmlDataIterator['version'])) {
-            $this->_profile->setAttribute('version', (string) $xmlDataIterator['version']);
+            $this->_profile->setAttribute('version', (string)$xmlDataIterator['version']);
         }
 
         // start un-serialization of the xml doc
@@ -127,7 +126,6 @@ class Zend_Tool_Project_Profile_FileParser_Xml implements Zend_Tool_Project_Prof
         $this->_lazyLoadContexts();
 
         return $this->_profile;
-
     }
 
     /**
@@ -147,7 +145,6 @@ class Zend_Tool_Project_Profile_FileParser_Xml implements Zend_Tool_Project_Prof
         //}
 
         foreach ($resources as $resource) {
-
             if ($resource->isDeleted()) {
                 continue;
             }
@@ -170,9 +167,7 @@ class Zend_Tool_Project_Profile_FileParser_Xml implements Zend_Tool_Project_Prof
             if ($resource->hasChildren()) {
                 self::_serializeRecurser($resource, $newNode);
             }
-
         }
-
     }
 
 
@@ -185,11 +180,11 @@ class Zend_Tool_Project_Profile_FileParser_Xml implements Zend_Tool_Project_Prof
      * @param SimpleXMLIterator $xmlIterator
      * @param Zend_Tool_Project_Profile_Resource $resource
      */
-    protected function _unserializeRecurser(SimpleXMLIterator $xmlIterator, Zend_Tool_Project_Profile_Resource $resource = null)
-    {
-
+    protected function _unserializeRecurser(
+        SimpleXMLIterator $xmlIterator,
+        Zend_Tool_Project_Profile_Resource $resource = null
+    ) {
         foreach ($xmlIterator as $resourceName => $resourceData) {
-
             $contextName = $resourceName;
             $subResource = new Zend_Tool_Project_Profile_Resource($contextName);
             $subResource->setProfile($this->_profile);
@@ -197,7 +192,7 @@ class Zend_Tool_Project_Profile_FileParser_Xml implements Zend_Tool_Project_Prof
             if ($resourceAttributes = $resourceData->attributes()) {
                 $attributes = array();
                 foreach ($resourceAttributes as $attrName => $attrValue) {
-                    $attributes[$attrName] = (string) $attrValue;
+                    $attributes[$attrName] = (string)$attrValue;
                 }
                 $subResource->setAttributes($attributes);
             }
@@ -227,14 +222,12 @@ class Zend_Tool_Project_Profile_FileParser_Xml implements Zend_Tool_Project_Prof
      */
     protected function _lazyLoadContexts()
     {
-
         foreach ($this->_profile as $topResource) {
             $rii = new RecursiveIteratorIterator($topResource, RecursiveIteratorIterator::SELF_FIRST);
             foreach ($rii as $resource) {
                 $resource->initializeContext();
             }
         }
-
     }
 
 }

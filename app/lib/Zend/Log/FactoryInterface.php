@@ -31,7 +31,7 @@ interface Zend_Log_FactoryInterface
     /**
      * Construct a Zend_Log driver
      *
-     * @param  array|Zend_Config $config
+     * @param array|Zend_Config $config
      * @return Zend_Log_FactoryInterface
      */
     static public function factory($config);

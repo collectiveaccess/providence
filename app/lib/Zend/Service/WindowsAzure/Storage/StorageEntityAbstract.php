@@ -26,42 +26,44 @@
  * @subpackage Storage
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * 
+ *
  */
 abstract class Zend_Service_WindowsAzure_Storage_StorageEntityAbstract
 {
     /**
      * Data
-     * 
+     *
      * @var array
      */
     protected $_data = null;
-    
+
     /**
      * Magic overload for setting properties
-     * 
-     * @param string $name     Name of the property
-     * @param string $value    Value to set
+     *
+     * @param string $name Name of the property
+     * @param string $value Value to set
      */
-    public function __set($name, $value) {
+    public function __set($name, $value)
+    {
         if (array_key_exists(strtolower($name), $this->_data)) {
             $this->_data[strtolower($name)] = $value;
             return;
         }
-		require_once 'Zend/Service/WindowsAzure/Exception.php';
+        require_once 'Zend/Service/WindowsAzure/Exception.php';
         throw new Zend_Service_WindowsAzure_Exception("Unknown property: " . $name);
     }
 
     /**
      * Magic overload for getting properties
-     * 
-     * @param string $name     Name of the property
+     *
+     * @param string $name Name of the property
      */
-    public function __get($name) {
+    public function __get($name)
+    {
         if (array_key_exists(strtolower($name), $this->_data)) {
             return $this->_data[strtolower($name)];
         }
-		require_once 'Zend/Service/WindowsAzure/Exception.php';
+        require_once 'Zend/Service/WindowsAzure/Exception.php';
         throw new Zend_Service_WindowsAzure_Exception("Unknown property: " . $name);
     }
 }

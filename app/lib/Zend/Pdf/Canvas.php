@@ -54,9 +54,11 @@ class Zend_Pdf_Canvas extends Zend_Pdf_Canvas_Abstract
      */
     protected $_height;
 
-    protected $_resources = array('Font'      => array(),
-                                  'XObject'   => array(),
-                                  'ExtGState' => array());
+    protected $_resources = array(
+        'Font' => array(),
+        'XObject' => array(),
+        'ExtGState' => array()
+    );
 
     /**
      * Object constructor
@@ -66,7 +68,7 @@ class Zend_Pdf_Canvas extends Zend_Pdf_Canvas_Abstract
      */
     public function __construct($width, $height)
     {
-        $this->_width  = $width;
+        $this->_width = $width;
         $this->_height = $height;
     }
 
@@ -138,8 +140,8 @@ class Zend_Pdf_Canvas extends Zend_Pdf_Canvas_Abstract
      * where ProcSet array is a list of used procedure sets names (strings).
      * Allowed procedure set names: 'PDF', 'Text', 'ImageB', 'ImageC', 'ImageI'
      *
-     * @internal
      * @return array
+     * @internal
      */
     public function getResources()
     {

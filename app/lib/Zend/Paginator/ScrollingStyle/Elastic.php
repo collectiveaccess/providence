@@ -40,22 +40,24 @@ class Zend_Paginator_ScrollingStyle_Elastic extends Zend_Paginator_ScrollingStyl
     /**
      * Returns an array of "local" pages given a page number and range.
      *
-     * @param  Zend_Paginator $paginator
-     * @param  integer $pageRange Unused
+     * @param Zend_Paginator $paginator
+     * @param integer $pageRange Unused
      * @return array
      */
     public function getPages(Zend_Paginator $paginator, $pageRange = null)
     {
-        $pageRange  = $paginator->getPageRange();
+        $pageRange = $paginator->getPageRange();
         $pageNumber = $paginator->getCurrentPageNumber();
 
         $originalPageRange = $pageRange;
-        $pageRange         = $pageRange * 2 - 1;
+        $pageRange = $pageRange * 2 - 1;
 
         if ($originalPageRange + $pageNumber - 1 < $pageRange) {
             $pageRange = $originalPageRange + $pageNumber - 1;
-        } else if ($originalPageRange + $pageNumber - 1 > count($paginator)) {
-            $pageRange = $originalPageRange + count($paginator) - $pageNumber;
+        } else {
+            if ($originalPageRange + $pageNumber - 1 > count($paginator)) {
+                $pageRange = $originalPageRange + count($paginator) - $pageNumber;
+            }
         }
 
         return parent::getPages($paginator, $pageRange);

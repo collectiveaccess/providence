@@ -60,14 +60,16 @@ class Zend_Tool_Framework_Client_Config
     }
 
     /**
-     * @param  string $configFilepath
+     * @param string $configFilepath
      * @return Zend_Tool_Framework_Client_Config
      */
     public function setConfigFilepath($configFilepath)
     {
         if (!file_exists($configFilepath)) {
             require_once 'Zend/Tool/Framework/Client/Exception.php';
-            throw new Zend_Tool_Framework_Client_Exception('Provided path to config ' . $configFilepath . ' does not exist');
+            throw new Zend_Tool_Framework_Client_Exception(
+                'Provided path to config ' . $configFilepath . ' does not exist'
+            );
         }
 
         $this->_configFilepath = $configFilepath;
@@ -100,9 +102,10 @@ class Zend_Tool_Framework_Client_Config
                 break;
             default:
                 require_once 'Zend/Tool/Framework/Client/Exception.php';
-                throw new Zend_Tool_Framework_Client_Exception('Unknown config file type '
+                throw new Zend_Tool_Framework_Client_Exception(
+                    'Unknown config file type '
                     . $suffix . ' at location ' . $configFilepath
-                    );
+                );
         }
     }
 
@@ -123,7 +126,7 @@ class Zend_Tool_Framework_Client_Config
      * @param string $defaultValue
      * @return mixed
      */
-    public function get($name, $defaultValue=null)
+    public function get($name, $defaultValue = null)
     {
         return $this->getConfigInstance()->get($name, $defaultValue);
     }
@@ -142,12 +145,12 @@ class Zend_Tool_Framework_Client_Config
     /**
      * Check if a configuration value isset.
      *
-     * @param  string $name
+     * @param string $name
      * @return boolean
      */
     public function __isset($name)
     {
-        if($this->exists() == false) {
+        if ($this->exists() == false) {
             return false;
         }
         return isset($this->getConfigInstance()->{$name});
@@ -177,16 +180,16 @@ class Zend_Tool_Framework_Client_Config
      */
     public function exists()
     {
-        return ($this->_config!==null);
+        return ($this->_config !== null);
     }
 
     /**
-     * @throws Zend_Tool_Framework_Client_Exception
      * @return Zend_Config
+     * @throws Zend_Tool_Framework_Client_Exception
      */
     public function getConfigInstance()
     {
-        if(!$this->exists()) {
+        if (!$this->exists()) {
             require_once "Zend/Tool/Framework/Client/Exception.php";
             throw new Zend_Tool_Framework_Client_Exception("Client has no persistent configuration.");
         }
@@ -201,7 +204,7 @@ class Zend_Tool_Framework_Client_Config
      */
     public function save()
     {
-        if($this->exists()) {
+        if ($this->exists()) {
             $writer = $this->getConfigWriter();
             $writer->write($this->getConfigFilepath(), $this->getConfigInstance(), true);
             $this->loadConfig($this->getConfigFilepath());
@@ -219,7 +222,7 @@ class Zend_Tool_Framework_Client_Config
     protected function getConfigWriter()
     {
         $suffix = substr($this->getConfigFilepath(), -4);
-        switch($suffix) {
+        switch ($suffix) {
             case '.ini':
                 require_once "Zend/Config/Writer/Ini.php";
                 $writer = new Zend_Config_Writer_Ini();
@@ -235,9 +238,10 @@ class Zend_Tool_Framework_Client_Config
                 break;
             default:
                 require_once 'Zend/Tool/Framework/Client/Exception.php';
-                throw new Zend_Tool_Framework_Client_Exception('Unknown config file type '
+                throw new Zend_Tool_Framework_Client_Exception(
+                    'Unknown config file type '
                     . $suffix . ' at location ' . $this->getConfigFilepath()
-                    );
+                );
         }
         return $writer;
     }

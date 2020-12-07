@@ -22,7 +22,7 @@
 
 
 /** Define constant used to provide correct file processing order    */
-/** @todo Section should be removed with ZF 2.0 release as obsolete  */
+/** @todo Section should be removed with ZF 2.0 release as obsolete */
 if (!defined('ZEND_SEARCH_LUCENE_COMMON_ANALYZER_PROCESSED')) {
     define('ZEND_SEARCH_LUCENE_COMMON_ANALYZER_PROCESSED', true);
 }

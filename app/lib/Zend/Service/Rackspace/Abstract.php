@@ -23,20 +23,20 @@ require_once 'Zend/Http/Client.php';
 
 abstract class Zend_Service_Rackspace_Abstract
 {
-    const VERSION                = 'v1.0';
-    const US_AUTH_URL            = 'https://auth.api.rackspacecloud.com';
-    const UK_AUTH_URL            = 'https://lon.auth.api.rackspacecloud.com';
-    const API_FORMAT             = 'json';
-    const USER_AGENT             = 'Zend_Service_Rackspace';
-    const STORAGE_URL            = "X-Storage-Url";
-    const AUTHTOKEN              = "X-Auth-Token";
-    const AUTHUSER_HEADER        = "X-Auth-User";
-    const AUTHKEY_HEADER         = "X-Auth-Key";
+    const VERSION = 'v1.0';
+    const US_AUTH_URL = 'https://auth.api.rackspacecloud.com';
+    const UK_AUTH_URL = 'https://lon.auth.api.rackspacecloud.com';
+    const API_FORMAT = 'json';
+    const USER_AGENT = 'Zend_Service_Rackspace';
+    const STORAGE_URL = "X-Storage-Url";
+    const AUTHTOKEN = "X-Auth-Token";
+    const AUTHUSER_HEADER = "X-Auth-User";
+    const AUTHKEY_HEADER = "X-Auth-Key";
     const AUTHUSER_HEADER_LEGACY = "X-Storage-User";
-    const AUTHKEY_HEADER_LEGACY  = "X-Storage-Pass";
-    const AUTHTOKEN_LEGACY       = "X-Storage-Token";
-    const CDNM_URL               = "X-CDN-Management-Url";
-    const MANAGEMENT_URL         = "X-Server-Management-Url";
+    const AUTHKEY_HEADER_LEGACY = "X-Storage-Pass";
+    const AUTHTOKEN_LEGACY = "X-Storage-Token";
+    const CDNM_URL = "X-CDN-Management-Url";
+    const MANAGEMENT_URL = "X-Server-Management-Url";
     /**
      * Rackspace Key
      *
@@ -91,16 +91,17 @@ abstract class Zend_Service_Rackspace_Abstract
     protected $cdnUrl;
     /**
      * Server management URL
-     * 
-     * @var string 
+     *
+     * @var string
      */
     protected $managementUrl;
     /**
      * Do we use ServiceNet?
-     * 
+     *
      * @var boolean
      */
     protected $useServiceNet = false;
+
     /**
      * Constructor
      *
@@ -111,7 +112,7 @@ abstract class Zend_Service_Rackspace_Abstract
      * @param string $key
      * @param string $authUrl
      */
-    public function __construct($user, $key, $authUrl=self::US_AUTH_URL)
+    public function __construct($user, $key, $authUrl = self::US_AUTH_URL)
     {
         if (!isset($user)) {
             require_once 'Zend/Service/Rackspace/Exception.php';
@@ -129,6 +130,7 @@ abstract class Zend_Service_Rackspace_Abstract
         $this->setKey($key);
         $this->setAuthUrl($authUrl);
     }
+
     /**
      * Get User account
      *
@@ -138,6 +140,7 @@ abstract class Zend_Service_Rackspace_Abstract
     {
         return $this->user;
     }
+
     /**
      * Get user key
      *
@@ -147,6 +150,7 @@ abstract class Zend_Service_Rackspace_Abstract
     {
         return $this->key;
     }
+
     /**
      * Get authentication URL
      *
@@ -156,12 +160,13 @@ abstract class Zend_Service_Rackspace_Abstract
     {
         return $this->authUrl;
     }
+
     /**
      * Get the storage URL
      *
      * @return string|boolean
      */
-    public function getStorageUrl() 
+    public function getStorageUrl()
     {
         if (empty($this->storageUrl)) {
             if (!$this->authenticate()) {
@@ -170,12 +175,13 @@ abstract class Zend_Service_Rackspace_Abstract
         }
         return $this->storageUrl;
     }
+
     /**
      * Get the CDN URL
      *
      * @return string|boolean
      */
-    public function getCdnUrl() 
+    public function getCdnUrl()
     {
         if (empty($this->cdnUrl)) {
             if (!$this->authenticate()) {
@@ -184,11 +190,12 @@ abstract class Zend_Service_Rackspace_Abstract
         }
         return $this->cdnUrl;
     }
+
     /**
      * Get the management server URL
-     * 
+     *
      * @return string|boolean
-     */     
+     */
     public function getManagementUrl()
     {
         if (empty($this->managementUrl)) {
@@ -198,6 +205,7 @@ abstract class Zend_Service_Rackspace_Abstract
         }
         return $this->managementUrl;
     }
+
     /**
      * Set the user account
      *
@@ -210,6 +218,7 @@ abstract class Zend_Service_Rackspace_Abstract
             $this->user = $user;
         }
     }
+
     /**
      * Set the authentication key
      *
@@ -222,6 +231,7 @@ abstract class Zend_Service_Rackspace_Abstract
             $this->key = $key;
         }
     }
+
     /**
      * Set the Authentication URL
      *
@@ -237,13 +247,13 @@ abstract class Zend_Service_Rackspace_Abstract
             throw new Zend_Service_Rackspace_Exception("The authentication URL is not valid");
         }
     }
-    
+
     /**
      * Sets whether to use ServiceNet
-     * 
+     *
      * ServiceNet is Rackspace's internal network. Bandwidth on ServiceNet is
      * not charged.
-     * 
+     *
      * @param boolean $useServiceNet
      */
     public function setServiceNet($useServiceNet = true)
@@ -254,7 +264,7 @@ abstract class Zend_Service_Rackspace_Abstract
 
     /**
      * Get whether we're using ServiceNet
-     * 
+     *
      * @return boolean
      */
     public function getServiceNet()
@@ -276,24 +286,27 @@ abstract class Zend_Service_Rackspace_Abstract
         }
         return $this->token;
     }
+
     /**
      * Get the error msg of the last HTTP call
      *
      * @return string
      */
-    public function getErrorMsg() 
+    public function getErrorMsg()
     {
         return $this->errorMsg;
     }
+
     /**
      * Get the error code of the last HTTP call
-     * 
-     * @return strig 
+     *
+     * @return strig
      */
-    public function getErrorCode() 
+    public function getErrorCode()
     {
         return $this->errorCode;
     }
+
     /**
      * get the HttpClient instance
      *
@@ -306,15 +319,17 @@ abstract class Zend_Service_Rackspace_Abstract
         }
         return $this->httpClient;
     }
+
     /**
      * Return true is the last call was successful
-     * 
-     * @return boolean 
+     *
+     * @return boolean
      */
     public function isSuccessful()
     {
-        return ($this->errorMsg=='');
+        return ($this->errorMsg == '');
     }
+
     /**
      * HTTP call
      *
@@ -325,30 +340,31 @@ abstract class Zend_Service_Rackspace_Abstract
      * @param string $body
      * @return Zend_Http_Response
      */
-    protected function httpCall($url,$method,$headers=array(),$data=array(),$body=null)
+    protected function httpCall($url, $method, $headers = array(), $data = array(), $body = null)
     {
         $client = $this->getHttpClient();
         $client->resetParameters(true);
         if (empty($headers[self::AUTHUSER_HEADER])) {
-            $headers[self::AUTHTOKEN]= $this->getToken();
-        } 
+            $headers[self::AUTHTOKEN] = $this->getToken();
+        }
         $client->setMethod($method);
         if (empty($data['format'])) {
-            $data['format']= self::API_FORMAT;
+            $data['format'] = self::API_FORMAT;
         }
-        $client->setParameterGet($data);    
+        $client->setParameterGet($data);
         if (!empty($body)) {
             $client->setRawData($body);
             if (!isset($headers['Content-Type'])) {
-                $headers['Content-Type']= 'application/json';
+                $headers['Content-Type'] = 'application/json';
             }
         }
         $client->setHeaders($headers);
         $client->setUri($url);
-        $this->errorMsg='';
-        $this->errorCode='';
+        $this->errorMsg = '';
+        $this->errorCode = '';
         return $client->request();
     }
+
     /**
      * Authentication
      *
@@ -364,12 +380,12 @@ abstract class Zend_Service_Rackspace_Abstract
             throw new Zend_Service_Rackspace_Exception("User has not been set");
         }
 
-        $headers = array (
+        $headers = array(
             self::AUTHUSER_HEADER => $this->user,
             self::AUTHKEY_HEADER => $this->key
         );
-        $result = $this->httpCall($this->authUrl.'/'.self::VERSION,'GET', $headers);
-        if ($result->getStatus()==204) {
+        $result = $this->httpCall($this->authUrl . '/' . self::VERSION, 'GET', $headers);
+        if ($result->getStatus() == 204) {
             $this->token = $result->getHeader(self::AUTHTOKEN);
             $this->cdnUrl = $result->getHeader(self::CDNM_URL);
             $this->managementUrl = $result->getHeader(self::MANAGEMENT_URL);
@@ -383,5 +399,5 @@ abstract class Zend_Service_Rackspace_Abstract
         $this->errorMsg = $result->getBody();
         $this->errorCode = $result->getStatus();
         return false;
-    } 
+    }
 }

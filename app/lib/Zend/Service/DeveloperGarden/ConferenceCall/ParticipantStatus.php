@@ -54,7 +54,7 @@ class Zend_Service_DeveloperGarden_ConferenceCall_ParticipantStatus
     public function __construct($name, $value = null)
     {
         $this->setName($name)
-             ->setValue($value);
+            ->setValue($value);
     }
 
     /**

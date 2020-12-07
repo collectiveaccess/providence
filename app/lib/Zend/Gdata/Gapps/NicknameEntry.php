@@ -139,8 +139,8 @@ class Zend_Gdata_Gapps_NicknameEntry extends Zend_Gdata_Entry
     /**
      * Get the value of the login property for this object.
      *
-     * @see setLogin
      * @return Zend_Gdata_Gapps_Extension_Login The requested object.
+     * @see setLogin
      */
     public function getLogin()
     {
@@ -164,8 +164,8 @@ class Zend_Gdata_Gapps_NicknameEntry extends Zend_Gdata_Entry
     /**
      * Get the value of the nickname property for this object.
      *
-     * @see setNickname
      * @return Zend_Gdata_Gapps_Extension_Nickname The requested object.
+     * @see setNickname
      */
     public function getNickname()
     {

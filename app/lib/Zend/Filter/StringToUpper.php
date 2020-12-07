@@ -48,13 +48,15 @@ class Zend_Filter_StringToUpper implements Zend_Filter_Interface
     {
         if ($options instanceof Zend_Config) {
             $options = $options->toArray();
-        } else if (!is_array($options)) {
-            $options = func_get_args();
-            $temp    = array();
-            if (!empty($options)) {
-                $temp['encoding'] = array_shift($options);
+        } else {
+            if (!is_array($options)) {
+                $options = func_get_args();
+                $temp = array();
+                if (!empty($options)) {
+                    $temp['encoding'] = array_shift($options);
+                }
+                $options = $temp;
             }
-            $options = $temp;
         }
 
         if (!array_key_exists('encoding', $options) && function_exists('mb_internal_encoding')) {
@@ -79,7 +81,7 @@ class Zend_Filter_StringToUpper implements Zend_Filter_Interface
     /**
      * Set the input encoding for the given string
      *
-     * @param  string $encoding
+     * @param string $encoding
      * @return Zend_Filter_StringToUpper Provides a fluent interface
      * @throws Zend_Filter_Exception
      */
@@ -91,7 +93,7 @@ class Zend_Filter_StringToUpper implements Zend_Filter_Interface
                 throw new Zend_Filter_Exception('mbstring is required for this feature');
             }
 
-            $encoding = (string) $encoding;
+            $encoding = (string)$encoding;
             if (!in_array(strtolower($encoding), array_map('strtolower', mb_list_encodings()))) {
                 require_once 'Zend/Filter/Exception.php';
                 throw new Zend_Filter_Exception("The given encoding '$encoding' is not supported by mbstring");
@@ -107,15 +109,15 @@ class Zend_Filter_StringToUpper implements Zend_Filter_Interface
      *
      * Returns the string $value, converting characters to uppercase as necessary
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     public function filter($value)
     {
         if ($this->_encoding) {
-            return mb_strtoupper((string) $value, $this->_encoding);
+            return mb_strtoupper((string)$value, $this->_encoding);
         }
 
-        return strtoupper((string) $value);
+        return strtoupper((string)$value);
     }
 }

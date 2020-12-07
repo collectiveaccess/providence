@@ -46,7 +46,7 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
      * @var string
      */
     protected $_CHALLENGE = 'recaptcha_challenge_field';
-    protected $_RESPONSE  = 'recaptcha_response_field';
+    protected $_RESPONSE = 'recaptcha_response_field';
     /**@-*/
 
     /**
@@ -74,8 +74,8 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
      * Error codes
      */
     const MISSING_VALUE = 'missingValue';
-    const ERR_CAPTCHA   = 'errCaptcha';
-    const BAD_CAPTCHA   = 'badCaptcha';
+    const ERR_CAPTCHA = 'errCaptcha';
+    const BAD_CAPTCHA = 'badCaptcha';
     /**#@-*/
 
     /**
@@ -84,8 +84,8 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
      */
     protected $_messageTemplates = array(
         self::MISSING_VALUE => 'Missing captcha fields',
-        self::ERR_CAPTCHA   => 'Failed to validate captcha',
-        self::BAD_CAPTCHA   => 'Captcha value is wrong: %value%',
+        self::ERR_CAPTCHA => 'Failed to validate captcha',
+        self::BAD_CAPTCHA => 'Captcha value is wrong: %value%',
     );
 
     /**
@@ -135,7 +135,7 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
     /**
      * Constructor
      *
-     * @param  array|Zend_Config $options
+     * @param array|Zend_Config $options
      * @return void
      */
     public function __construct($options = null)
@@ -157,7 +157,7 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
     /**
      * Set service object
      *
-     * @param  Zend_Service_ReCaptcha $service
+     * @param Zend_Service_ReCaptcha $service
      * @return Zend_Captcha_ReCaptcha
      */
     public function setService(Zend_Service_ReCaptcha $service)
@@ -182,8 +182,8 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
      * If option is a service parameter, proxies to the service. The same
      * goes for any service options (distinct from service params)
      *
-     * @param  string $key
-     * @param  mixed $value
+     * @param string $key
+     * @param mixed $value
      * @return Zend_Captcha_ReCaptcha
      */
     public function setOption($key, $value)
@@ -203,8 +203,8 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
     /**
      * Generate captcha
      *
-     * @see Zend_Form_Captcha_Adapter::generate()
      * @return string
+     * @see Zend_Form_Captcha_Adapter::generate()
      */
     public function generate()
     {
@@ -214,9 +214,9 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
     /**
      * Validate captcha
      *
-     * @see    Zend_Validate_Interface::isValid()
-     * @param  mixed $value
+     * @param mixed $value
      * @return boolean
+     * @see    Zend_Validate_Interface::isValid()
      */
     public function isValid($value, $context = null)
     {
@@ -255,8 +255,8 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
     /**
      * Render captcha
      *
-     * @param  Zend_View_Interface $view
-     * @param  mixed $element
+     * @param Zend_View_Interface $view
+     * @param mixed $element
      * @return string
      */
     public function render(Zend_View_Interface $view = null, $element = null)

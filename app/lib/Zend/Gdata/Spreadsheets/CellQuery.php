@@ -332,11 +332,13 @@ class Zend_Gdata_Spreadsheets_CellQuery extends Zend_Gdata_Query
     public function setReturnEmpty($value)
     {
         if (is_bool($value)) {
-            $this->_params['return-empty'] = ($value?'true':'false');
-        } else if ($value != null) {
-            $this->_params['return-empty'] = $value;
+            $this->_params['return-empty'] = ($value ? 'true' : 'false');
         } else {
-            unset($this->_params['return-empty']);
+            if ($value != null) {
+                $this->_params['return-empty'] = $value;
+            } else {
+                unset($this->_params['return-empty']);
+            }
         }
         return $this;
     }
@@ -366,35 +368,35 @@ class Zend_Gdata_Spreadsheets_CellQuery extends Zend_Gdata_Query
             $uri = $this->_defaultFeedUri;
 
             if ($this->_spreadsheetKey != null) {
-                $uri .= '/'.$this->_spreadsheetKey;
+                $uri .= '/' . $this->_spreadsheetKey;
             } else {
                 require_once 'Zend/Gdata/App/Exception.php';
                 throw new Zend_Gdata_App_Exception('A spreadsheet key must be provided for cell queries.');
             }
 
             if ($this->_worksheetId != null) {
-                $uri .= '/'.$this->_worksheetId;
+                $uri .= '/' . $this->_worksheetId;
             } else {
                 require_once 'Zend/Gdata/App/Exception.php';
                 throw new Zend_Gdata_App_Exception('A worksheet id must be provided for cell queries.');
             }
 
             if ($this->_visibility != null) {
-                $uri .= '/'.$this->_visibility;
+                $uri .= '/' . $this->_visibility;
             } else {
                 require_once 'Zend/Gdata/App/Exception.php';
                 throw new Zend_Gdata_App_Exception('A visibility must be provided for cell queries.');
             }
 
             if ($this->_projection != null) {
-                $uri .= '/'.$this->_projection;
+                $uri .= '/' . $this->_projection;
             } else {
                 require_once 'Zend/Gdata/App/Exception.php';
                 throw new Zend_Gdata_App_Exception('A projection must be provided for cell queries.');
             }
 
             if ($this->_cellId != null) {
-                $uri .= '/'.$this->_cellId;
+                $uri .= '/' . $this->_cellId;
             }
         } else {
             $uri = $this->_url;

@@ -163,19 +163,19 @@ abstract class Zend_Dojo_Form_Decorator_DijitContainer extends Zend_Form_Decorat
      *
      * Replaces $content entirely from currently set element.
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function render($content)
     {
         $element = $this->getElement();
-        $view    = $element->getView();
+        $view = $element->getView();
         if (null === $view) {
             return $content;
         }
 
         $dijitParams = $this->getDijitParams();
-        $attribs     = array_merge($this->getAttribs(), $this->getOptions());
+        $attribs = array_merge($this->getAttribs(), $this->getOptions());
 
         if (array_key_exists('legend', $attribs)) {
             if (!array_key_exists('title', $dijitParams) || empty($dijitParams['title'])) {
@@ -184,11 +184,14 @@ abstract class Zend_Dojo_Form_Decorator_DijitContainer extends Zend_Form_Decorat
             unset($attribs['legend']);
         }
 
-        $helper      = $this->getHelper();
-        $id          = $element->getId() . '-' . $helper;
+        $helper = $this->getHelper();
+        $id = $element->getId() . '-' . $helper;
 
         if ($view->dojo()->hasDijit($id)) {
-            trigger_error(sprintf('Duplicate dijit ID detected for id "%s; temporarily generating uniqid"', $id), E_USER_WARNING);
+            trigger_error(
+                sprintf('Duplicate dijit ID detected for id "%s; temporarily generating uniqid"', $id),
+                E_USER_WARNING
+            );
             $base = $id;
             do {
                 $id = $base . '-' . uniqid();

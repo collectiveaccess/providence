@@ -92,11 +92,11 @@ class Zend_Service_DeveloperGarden_IpLocation
      *
      */
     protected $_classMap = array(
-        'LocateIPResponseType'  => 'Zend_Service_DeveloperGarden_Response_IpLocation_LocateIPResponseType',
+        'LocateIPResponseType' => 'Zend_Service_DeveloperGarden_Response_IpLocation_LocateIPResponseType',
         'IPAddressLocationType' => 'Zend_Service_DeveloperGarden_Response_IpLocation_IPAddressLocationType',
-        'RegionType'            => 'Zend_Service_DeveloperGarden_Response_IpLocation_RegionType',
-        'GeoCoordinatesType'    => 'Zend_Service_DeveloperGarden_Response_IpLocation_GeoCoordinatesType',
-        'CityType'              => 'Zend_Service_DeveloperGarden_Response_IpLocation_CityType',
+        'RegionType' => 'Zend_Service_DeveloperGarden_Response_IpLocation_RegionType',
+        'GeoCoordinatesType' => 'Zend_Service_DeveloperGarden_Response_IpLocation_GeoCoordinatesType',
+        'CityType' => 'Zend_Service_DeveloperGarden_Response_IpLocation_CityType',
     );
 
     /**

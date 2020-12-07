@@ -42,16 +42,16 @@ class Zend_Barcode_Object_Ean5 extends Zend_Barcode_Object_Ean13
 {
 
     protected $_parities = array(
-        0 => array('B','B','A','A','A'),
-        1 => array('B','A','B','A','A'),
-        2 => array('B','A','A','B','A'),
-        3 => array('B','A','A','A','B'),
-        4 => array('A','B','B','A','A'),
-        5 => array('A','A','B','B','A'),
-        6 => array('A','A','A','B','B'),
-        7 => array('A','B','A','B','A'),
-        8 => array('A','B','A','A','B'),
-        9 => array('A','A','B','A','B')
+        0 => array('B', 'B', 'A', 'A', 'A'),
+        1 => array('B', 'A', 'B', 'A', 'A'),
+        2 => array('B', 'A', 'A', 'B', 'A'),
+        3 => array('B', 'A', 'A', 'A', 'B'),
+        4 => array('A', 'B', 'B', 'A', 'A'),
+        5 => array('A', 'A', 'B', 'B', 'A'),
+        6 => array('A', 'A', 'A', 'B', 'B'),
+        7 => array('A', 'B', 'A', 'B', 'A'),
+        8 => array('A', 'B', 'A', 'A', 'B'),
+        9 => array('A', 'A', 'B', 'A', 'B')
     );
 
     /**
@@ -69,10 +69,10 @@ class Zend_Barcode_Object_Ean5 extends Zend_Barcode_Object_Ean13
      */
     protected function _calculateBarcodeWidth()
     {
-        $quietZone       = $this->getQuietZone();
-        $startCharacter  = (5 * $this->_barThinWidth) * $this->_factor;
+        $quietZone = $this->getQuietZone();
+        $startCharacter = (5 * $this->_barThinWidth) * $this->_factor;
         $middleCharacter = (2 * $this->_barThinWidth) * $this->_factor;
-        $encodedData     = (7 * $this->_barThinWidth) * $this->_factor;
+        $encodedData = (7 * $this->_barThinWidth) * $this->_factor;
         return $quietZone + $startCharacter + ($this->_barcodeLength - 1) * $middleCharacter + $this->_barcodeLength * $encodedData + $quietZone;
     }
 
@@ -85,11 +85,11 @@ class Zend_Barcode_Object_Ean5 extends Zend_Barcode_Object_Ean13
         $barcodeTable = array();
 
         // Start character (01011)
-        $barcodeTable[] = array(0 , $this->_barThinWidth , 0 , 1);
-        $barcodeTable[] = array(1 , $this->_barThinWidth , 0 , 1);
-        $barcodeTable[] = array(0 , $this->_barThinWidth , 0 , 1);
-        $barcodeTable[] = array(1 , $this->_barThinWidth , 0 , 1);
-        $barcodeTable[] = array(1 , $this->_barThinWidth , 0 , 1);
+        $barcodeTable[] = array(0, $this->_barThinWidth, 0, 1);
+        $barcodeTable[] = array(1, $this->_barThinWidth, 0, 1);
+        $barcodeTable[] = array(0, $this->_barThinWidth, 0, 1);
+        $barcodeTable[] = array(1, $this->_barThinWidth, 0, 1);
+        $barcodeTable[] = array(1, $this->_barThinWidth, 0, 1);
 
         $firstCharacter = true;
         $textTable = str_split($this->getText());
@@ -100,12 +100,12 @@ class Zend_Barcode_Object_Ean5 extends Zend_Barcode_Object_Ean13
                 $firstCharacter = false;
             } else {
                 // Intermediate character (01)
-                $barcodeTable[] = array(0 , $this->_barThinWidth , 0 , 1);
-                $barcodeTable[] = array(1 , $this->_barThinWidth , 0 , 1);
+                $barcodeTable[] = array(0, $this->_barThinWidth, 0, 1);
+                $barcodeTable[] = array(1, $this->_barThinWidth, 0, 1);
             }
             $bars = str_split($this->_codingMap[$this->_getParity($i)][$textTable[$i]]);
             foreach ($bars as $b) {
-                $barcodeTable[] = array($b , $this->_barThinWidth , 0 , 1);
+                $barcodeTable[] = array($b, $this->_barThinWidth, 0, 1);
             }
         }
 
@@ -115,7 +115,7 @@ class Zend_Barcode_Object_Ean5 extends Zend_Barcode_Object_Ean13
     /**
      * Get barcode checksum
      *
-     * @param  string $text
+     * @param string $text
      * @return int
      */
     public function getChecksum($text)
@@ -123,7 +123,7 @@ class Zend_Barcode_Object_Ean5 extends Zend_Barcode_Object_Ean13
         $this->_checkText($text);
         $checksum = 0;
 
-        for ($i = 0 ; $i < $this->_barcodeLength; $i ++) {
+        for ($i = 0; $i < $this->_barcodeLength; $i++) {
             $checksum += intval($text{$i}) * ($i % 2 ? 9 : 3);
         }
 

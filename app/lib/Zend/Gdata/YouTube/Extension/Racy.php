@@ -44,7 +44,7 @@ class Zend_Gdata_YouTube_Extension_Racy extends Zend_Gdata_Extension
 
     /**
      * Constructs a new Zend_Gdata_YouTube_Extension_Racy object.
-     * @param bool $state(optional) The state value of the element.
+     * @param bool $state (optional) The state value of the element.
      */
     public function __construct($state = null)
     {
@@ -82,11 +82,11 @@ class Zend_Gdata_YouTube_Extension_Racy extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'state':
-            $this->_state = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'state':
+                $this->_state = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

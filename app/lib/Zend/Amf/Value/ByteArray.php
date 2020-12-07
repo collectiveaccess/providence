@@ -38,7 +38,7 @@ class Zend_Amf_Value_ByteArray
     /**
      * Create a ByteArray
      *
-     * @param  string $data
+     * @param string $data
      * @return void
      */
     public function __construct($data)

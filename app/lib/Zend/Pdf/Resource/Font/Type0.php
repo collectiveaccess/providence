@@ -77,27 +77,27 @@ class Zend_Pdf_Resource_Font_Type0 extends Zend_Pdf_Resource_Font
      */
     static private function getToUnicodeCMapData()
     {
-        return '/CIDInit /ProcSet findresource begin '              . "\n"
-             . '12 dict begin '                                     . "\n"
-             . 'begincmap '                                         . "\n"
-             . '/CIDSystemInfo '                                    . "\n"
-             . '<</Registry (Adobe) '                               . "\n"
-             . '/Ordering (UCS) '                                   . "\n"
-             . '/Supplement 0'                                      . "\n"
-             . '>> def'                                             . "\n"
-             . '/CMapName /Adobe-Identity-UCS def '                 . "\n"
-             . '/CMapType 2 def '                                   . "\n"
-             . '1 begincodespacerange'                              . "\n"
-             . '<0000> <FFFF> '                                     . "\n"
-             . 'endcodespacerange '                                 . "\n"
-             . '1 beginbfrange '                                    . "\n"
-             . '<0000> <FFFF> <0000> '                              . "\n"
-             . 'endbfrange '                                        . "\n"
-             . 'endcmap '                                           . "\n"
-             . 'CMapName currentdict /CMap defineresource pop '     . "\n"
-             . 'end '
-             . 'end ';
-            }
+        return '/CIDInit /ProcSet findresource begin ' . "\n"
+            . '12 dict begin ' . "\n"
+            . 'begincmap ' . "\n"
+            . '/CIDSystemInfo ' . "\n"
+            . '<</Registry (Adobe) ' . "\n"
+            . '/Ordering (UCS) ' . "\n"
+            . '/Supplement 0' . "\n"
+            . '>> def' . "\n"
+            . '/CMapName /Adobe-Identity-UCS def ' . "\n"
+            . '/CMapType 2 def ' . "\n"
+            . '1 begincodespacerange' . "\n"
+            . '<0000> <FFFF> ' . "\n"
+            . 'endcodespacerange ' . "\n"
+            . '1 beginbfrange ' . "\n"
+            . '<0000> <FFFF> <0000> ' . "\n"
+            . 'endbfrange ' . "\n"
+            . 'endcmap ' . "\n"
+            . 'CMapName currentdict /CMap defineresource pop ' . "\n"
+            . 'end '
+            . 'end ';
+    }
 
     /**
      * Object constructor
@@ -109,36 +109,35 @@ class Zend_Pdf_Resource_Font_Type0 extends Zend_Pdf_Resource_Font
 
         $this->_objectFactory->attach($descendantFont->getFactory());
 
-        $this->_fontType       = Zend_Pdf_Font::TYPE_TYPE_0;
+        $this->_fontType = Zend_Pdf_Font::TYPE_TYPE_0;
         $this->_descendantFont = $descendantFont;
 
 
-        $this->_fontNames    = $descendantFont->getFontNames();
+        $this->_fontNames = $descendantFont->getFontNames();
 
-        $this->_isBold       = $descendantFont->isBold();
-        $this->_isItalic     = $descendantFont->isItalic();
+        $this->_isBold = $descendantFont->isBold();
+        $this->_isItalic = $descendantFont->isItalic();
         $this->_isMonospaced = $descendantFont->isMonospace();
 
-        $this->_underlinePosition  = $descendantFont->getUnderlinePosition();
+        $this->_underlinePosition = $descendantFont->getUnderlinePosition();
         $this->_underlineThickness = $descendantFont->getUnderlineThickness();
-        $this->_strikePosition     = $descendantFont->getStrikePosition();
-        $this->_strikeThickness    = $descendantFont->getStrikeThickness();
+        $this->_strikePosition = $descendantFont->getStrikePosition();
+        $this->_strikeThickness = $descendantFont->getStrikeThickness();
 
         $this->_unitsPerEm = $descendantFont->getUnitsPerEm();
 
-        $this->_ascent  = $descendantFont->getAscent();
+        $this->_ascent = $descendantFont->getAscent();
         $this->_descent = $descendantFont->getDescent();
         $this->_lineGap = $descendantFont->getLineGap();
 
 
-        $this->_resource->Subtype         = new Zend_Pdf_Element_Name('Type0');
-        $this->_resource->BaseFont        = new Zend_Pdf_Element_Name($descendantFont->getResource()->BaseFont->value);
-        $this->_resource->DescendantFonts = new Zend_Pdf_Element_Array(array( $descendantFont->getResource() ));
-        $this->_resource->Encoding        = new Zend_Pdf_Element_Name('Identity-H');
+        $this->_resource->Subtype = new Zend_Pdf_Element_Name('Type0');
+        $this->_resource->BaseFont = new Zend_Pdf_Element_Name($descendantFont->getResource()->BaseFont->value);
+        $this->_resource->DescendantFonts = new Zend_Pdf_Element_Array(array($descendantFont->getResource()));
+        $this->_resource->Encoding = new Zend_Pdf_Element_Name('Identity-H');
 
         $toUnicode = $this->_objectFactory->newStreamObject(self::getToUnicodeCMapData());
         $this->_resource->ToUnicode = $toUnicode;
-
     }
 
     /**
@@ -250,7 +249,7 @@ class Zend_Pdf_Resource_Font_Type0 extends Zend_Pdf_Resource_Font
      * @param string $charEncoding Character encoding of resulting text.
      * @return string
      */
-        public function decodeString($string, $charEncoding)
+    public function decodeString($string, $charEncoding)
     {
         return iconv('UTF-16BE', $charEncoding, $string);
     }

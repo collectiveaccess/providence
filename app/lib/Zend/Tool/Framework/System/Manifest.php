@@ -46,7 +46,7 @@ class Zend_Tool_Framework_System_Manifest
             new Zend_Tool_Framework_System_Provider_Config(),
             new Zend_Tool_Framework_System_Provider_Phpinfo(),
             new Zend_Tool_Framework_System_Provider_Manifest()
-            );
+        );
 
         return $providers;
     }
@@ -56,7 +56,7 @@ class Zend_Tool_Framework_System_Manifest
         $actions = array(
             new Zend_Tool_Framework_System_Action_Create(),
             new Zend_Tool_Framework_System_Action_Delete()
-            );
+        );
 
         return $actions;
     }

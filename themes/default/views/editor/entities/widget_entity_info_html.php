@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 
-	print caEditorInspector($this, array());
+print caEditorInspector($this, array());
 ?>

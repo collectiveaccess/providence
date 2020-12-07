@@ -66,15 +66,17 @@ class Zend_Feed_Writer_Extension_Slash_Renderer_Entry
      */
     protected function _appendNamespaces()
     {
-        $this->getRootElement()->setAttribute('xmlns:slash',
-            'http://purl.org/rss/1.0/modules/slash/');
+        $this->getRootElement()->setAttribute(
+            'xmlns:slash',
+            'http://purl.org/rss/1.0/modules/slash/'
+        );
     }
 
     /**
      * Set entry comment count
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setCommentCount(DOMDocument $dom, DOMElement $root)

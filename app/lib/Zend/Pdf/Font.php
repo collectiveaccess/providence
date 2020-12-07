@@ -38,10 +38,10 @@
  */
 abstract class Zend_Pdf_Font
 {
-  /**** Class Constants ****/
+    /**** Class Constants ****/
 
 
-  /* Font Types */
+    /* Font Types */
 
     /**
      * Unknown font type.
@@ -81,7 +81,7 @@ abstract class Zend_Pdf_Font
     const TYPE_CIDFONT_TYPE_2 = 6;
 
 
-  /* Names of the Standard 14 PDF Fonts */
+    /* Names of the Standard 14 PDF Fonts */
 
     /**
      * Name of the standard PDF font Courier.
@@ -184,59 +184,59 @@ abstract class Zend_Pdf_Font
     const FONT_ZAPFDINGBATS = 'ZapfDingbats';
 
 
-  /* Font Name String Types */
+    /* Font Name String Types */
 
     /**
      * Full copyright notice for the font.
      */
-    const NAME_COPYRIGHT =  0;
+    const NAME_COPYRIGHT = 0;
 
     /**
      * Font family name. Used to group similar styles of fonts together.
      */
-    const NAME_FAMILY =  1;
+    const NAME_FAMILY = 1;
 
     /**
      * Font style within the font family. Examples: Regular, Italic, Bold, etc.
      */
-    const NAME_STYLE =  2;
+    const NAME_STYLE = 2;
 
     /**
      * Unique font identifier.
      */
-    const NAME_ID =  3;
+    const NAME_ID = 3;
 
     /**
      * Full font name. Usually a combination of the {@link NAME_FAMILY} and
      * {@link NAME_STYLE} strings.
      */
-    const NAME_FULL =  4;
+    const NAME_FULL = 4;
 
     /**
      * Version number of the font.
      */
-    const NAME_VERSION =  5;
+    const NAME_VERSION = 5;
 
     /**
      * PostScript name for the font. This is the name used to identify fonts
      * internally and within the PDF file.
      */
-    const NAME_POSTSCRIPT =  6;
+    const NAME_POSTSCRIPT = 6;
 
     /**
      * Font trademark notice. This is distinct from the {@link NAME_COPYRIGHT}.
      */
-    const NAME_TRADEMARK =  7;
+    const NAME_TRADEMARK = 7;
 
     /**
      * Name of the font manufacturer.
      */
-    const NAME_MANUFACTURER =  8;
+    const NAME_MANUFACTURER = 8;
 
     /**
      * Name of the designer of the font.
      */
-    const NAME_DESIGNER =  9;
+    const NAME_DESIGNER = 9;
 
     /**
      * Description of the font. May contain revision information, usage
@@ -288,7 +288,7 @@ abstract class Zend_Pdf_Font
     const NAME_CID_NAME = 20;
 
 
-  /* Font Weights */
+    /* Font Weights */
 
     /**
      * Thin font weight.
@@ -336,7 +336,7 @@ abstract class Zend_Pdf_Font
     const WEIGHT_BLACK = 900;
 
 
-  /* Font Widths */
+    /* Font Widths */
 
     /**
      * Ultra-condensed font width. Typically 50% of normal.
@@ -384,7 +384,7 @@ abstract class Zend_Pdf_Font
     const WIDTH_ULTRA_EXPANDED = 9;
 
 
-  /* Font Embedding Options */
+    /* Font Embedding Options */
 
     /**
      * Do not embed the font in the PDF document.
@@ -408,8 +408,7 @@ abstract class Zend_Pdf_Font
     const EMBED_SUPPRESS_EMBED_EXCEPTION = 0x08;
 
 
-
-  /**** Class Variables ****/
+    /**** Class Variables ****/
 
 
     /**
@@ -427,11 +426,10 @@ abstract class Zend_Pdf_Font
     private static $_fontFilePaths = array();
 
 
+    /**** Public Interface ****/
 
-  /**** Public Interface ****/
 
-
-  /* Factory Methods */
+    /* Factory Methods */
 
     /**
      * Returns a {@link Zend_Pdf_Resource_Font} object by full name.
@@ -461,7 +459,7 @@ abstract class Zend_Pdf_Font
      * @throws Zend_Pdf_Exception
      */
     public static function fontWithName($name, $embeddingOptions = 0)
-        {
+    {
         /* First check the cache. Don't duplicate font objects.
          */
         if (isset(Zend_Pdf_Font::$_fontNames[$name])) {
@@ -552,8 +550,10 @@ abstract class Zend_Pdf_Font
 
             default:
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception("Unknown font name: $name",
-                                             Zend_Pdf_Exception::BAD_FONT_NAME);
+                throw new Zend_Pdf_Exception(
+                    "Unknown font name: $name",
+                    Zend_Pdf_Exception::BAD_FONT_NAME
+                );
         }
 
         /* Add this new font to the cache array and return it for use.
@@ -659,23 +659,23 @@ abstract class Zend_Pdf_Font
             $filePathKey = md5($filePath);
             Zend_Pdf_Font::$_fontFilePaths[$filePathKey] = $font;
             return $font;
-
         } else {
             /* The type of font could not be determined. Give up.
              */
             require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception("Cannot determine font type: $filePath",
-                                         Zend_Pdf_Exception::CANT_DETERMINE_FONT_TYPE);
-         }
-
+            throw new Zend_Pdf_Exception(
+                "Cannot determine font type: $filePath",
+                Zend_Pdf_Exception::CANT_DETERMINE_FONT_TYPE
+            );
+        }
     }
 
 
 
-  /**** Internal Methods ****/
+    /**** Internal Methods ****/
 
 
-  /* Font Extraction Methods */
+    /* Font Extraction Methods */
 
     /**
      * Attempts to extract a TrueType font from the data source.
@@ -707,7 +707,7 @@ abstract class Zend_Pdf_Font
                 require_once 'Zend/Pdf/Resource/Font/Type0.php';
                 /* Use Composite Type 0 font which supports Unicode character mapping */
                 $cidFont = new Zend_Pdf_Resource_Font_CidFont_TrueType($fontParser, $embeddingOptions);
-                $font    = new Zend_Pdf_Resource_Font_Type0($cidFont);
+                $font = new Zend_Pdf_Resource_Font_Type0($cidFont);
             }
         } catch (Zend_Pdf_Exception $e) {
             /* The following exception codes suggest that this isn't really a

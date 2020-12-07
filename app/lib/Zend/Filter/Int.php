@@ -40,11 +40,11 @@ class Zend_Filter_Int implements Zend_Filter_Interface
      *
      * Returns (int) $value
      *
-     * @param  string $value
+     * @param string $value
      * @return integer
      */
     public function filter($value)
     {
-        return (int) ((string) $value);
+        return (int)((string)$value);
     }
 }

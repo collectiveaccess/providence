@@ -78,7 +78,7 @@ class Zend_Service_Amazon_SimpleDb_Response
     /**
      * Creates a new high-level SimpleDB response object
      *
-     * @param  Zend_Http_Response $httpResponse the HTTP response.
+     * @param Zend_Http_Response $httpResponse the HTTP response.
      * @return void
      */
     public function __construct(Zend_Http_Response $httpResponse)
@@ -99,8 +99,10 @@ class Zend_Service_Amazon_SimpleDb_Response
                 $this->_xpath = false;
             } else {
                 $this->_xpath = new DOMXPath($document);
-                $this->_xpath->registerNamespace('sdb',
-                    $this->getNamespace());
+                $this->_xpath->registerNamespace(
+                    'sdb',
+                    $this->getNamespace()
+                );
             }
         }
 

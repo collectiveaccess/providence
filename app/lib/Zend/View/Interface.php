@@ -61,8 +61,8 @@ interface Zend_View_Interface
     /**
      * Set a base path to all view resources
      *
-     * @param  string $path
-     * @param  string $classPrefix
+     * @param string $path
+     * @param string $classPrefix
      * @return void
      */
     public function setBasePath($path, $classPrefix = 'Zend_View');
@@ -70,8 +70,8 @@ interface Zend_View_Interface
     /**
      * Add an additional path to view resources
      *
-     * @param  string $path
-     * @param  string $classPrefix
+     * @param string $path
+     * @param string $classPrefix
      * @return void
      */
     public function addBasePath($path, $classPrefix = 'Zend_View');
@@ -108,12 +108,12 @@ interface Zend_View_Interface
      * specified value, OR passing an array of key => value pairs to set en
      * masse.
      *
-     * @see __set()
      * @param string|array $spec The assignment strategy to use (key or array of key
      * => value pairs)
      * @param mixed $value (Optional) If assigning a named variable, use this
      * as the value.
      * @return void
+     * @see __set()
      */
     public function assign($spec, $value = null);
 

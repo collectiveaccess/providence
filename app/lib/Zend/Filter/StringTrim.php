@@ -45,17 +45,19 @@ class Zend_Filter_StringTrim implements Zend_Filter_Interface
     /**
      * Sets filter options
      *
-     * @param  string|array|Zend_Config $options
+     * @param string|array|Zend_Config $options
      * @return void
      */
     public function __construct($options = null)
     {
         if ($options instanceof Zend_Config) {
             $options = $options->toArray();
-        } else if (!is_array($options)) {
-            $options          = func_get_args();
-            $temp['charlist'] = array_shift($options);
-            $options          = $temp;
+        } else {
+            if (!is_array($options)) {
+                $options = func_get_args();
+                $temp['charlist'] = array_shift($options);
+                $options = $temp;
+            }
         }
 
         if (array_key_exists('charlist', $options)) {
@@ -76,7 +78,7 @@ class Zend_Filter_StringTrim implements Zend_Filter_Interface
     /**
      * Sets the charList option
      *
-     * @param  string|null $charList
+     * @param string|null $charList
      * @return Zend_Filter_StringTrim Provides a fluent interface
      */
     public function setCharList($charList)
@@ -90,15 +92,15 @@ class Zend_Filter_StringTrim implements Zend_Filter_Interface
      *
      * Returns the string $value with characters stripped from the beginning and end
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     public function filter($value)
     {
         if (null === $this->_charList) {
-            return $this->_unicodeTrim((string) $value);
+            return $this->_unicodeTrim((string)$value);
         } else {
-            return $this->_unicodeTrim((string) $value, $this->_charList);
+            return $this->_unicodeTrim((string)$value, $this->_charList);
         }
     }
 
@@ -113,8 +115,8 @@ class Zend_Filter_StringTrim implements Zend_Filter_Interface
     protected function _unicodeTrim($value, $charlist = '\\\\s')
     {
         $chars = preg_replace(
-            array( '/[\^\-\]\\\]/S', '/\\\{4}/S', '/\//'),
-            array( '\\\\\\0', '\\', '\/' ),
+            array('/[\^\-\]\\\]/S', '/\\\{4}/S', '/\//'),
+            array('\\\\\\0', '\\', '\/'),
             $charlist
         );
 

@@ -54,7 +54,7 @@ class Zend_Filter_File_Decrypt extends Zend_Filter_Decrypt
     /**
      * Sets the new filename where the content will be stored
      *
-     * @param  string $filename (Optional) New filename to set
+     * @param string $filename (Optional) New filename to set
      * @return Zend_Filter_File_Encryt
      */
     public function setFilename($filename = null)
@@ -68,7 +68,7 @@ class Zend_Filter_File_Decrypt extends Zend_Filter_Decrypt
      *
      * Decrypts the file $value with the defined settings
      *
-     * @param  string $value Full path of file to change
+     * @param string $value Full path of file to change
      * @return string The filename which has been set, or false when there were errors
      */
     public function filter($value)
@@ -94,7 +94,7 @@ class Zend_Filter_File_Decrypt extends Zend_Filter_Decrypt
         }
 
         $decrypted = parent::filter($content);
-        $result    = file_put_contents($this->_filename, $decrypted);
+        $result = file_put_contents($this->_filename, $decrypted);
 
         if (!$result) {
             require_once 'Zend/Filter/Exception.php';

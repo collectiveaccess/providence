@@ -78,19 +78,19 @@ class Zend_Pdf_Element_Object extends Zend_Pdf_Element
             throw new Zend_Pdf_Exception('Object number must not be an instance of Zend_Pdf_Element_Object.');
         }
 
-        if ( !(is_integer($objNum) && $objNum > 0) ) {
+        if (!(is_integer($objNum) && $objNum > 0)) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Object number must be positive integer.');
         }
 
-        if ( !(is_integer($genNum) && $genNum >= 0) ) {
+        if (!(is_integer($genNum) && $genNum >= 0)) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Generation number must be non-negative integer.');
         }
 
-        $this->_value   = $val;
-        $this->_objNum  = $objNum;
-        $this->_genNum  = $genNum;
+        $this->_value = $val;
+        $this->_objNum = $objNum;
+        $this->_genNum = $genNum;
         $this->_factory = $factory;
 
         $this->setParentObject($this);
@@ -172,9 +172,9 @@ class Zend_Pdf_Element_Object extends Zend_Pdf_Element
     {
         $shift = $factory->getEnumerationShift($this->_factory);
 
-        return  $this->_objNum + $shift . " " . $this->_genNum . " obj \n"
-             .  $this->_value->toString($factory) . "\n"
-             . "endobj\n";
+        return $this->_objNum + $shift . " " . $this->_genNum . " obj \n"
+            . $this->_value->toString($factory) . "\n"
+            . "endobj\n";
     }
 
     /**
@@ -192,7 +192,7 @@ class Zend_Pdf_Element_Object extends Zend_Pdf_Element
      * Set handler
      *
      * @param string $property
-     * @param  mixed $value
+     * @param mixed $value
      */
     public function __set($property, $value)
     {
@@ -203,7 +203,7 @@ class Zend_Pdf_Element_Object extends Zend_Pdf_Element
      * Call handler
      *
      * @param string $method
-     * @param array  $args
+     * @param array $args
      * @return mixed
      */
     public function __call($method, $args)
@@ -214,9 +214,9 @@ class Zend_Pdf_Element_Object extends Zend_Pdf_Element
     /**
      * Detach PDF object from the factory (if applicable), clone it and attach to new factory.
      *
-     * @param Zend_Pdf_ElementFactory $factory  The factory to attach
-     * @param array &$processed  List of already processed indirect objects, used to avoid objects duplication
-     * @param integer $mode  Cloning mode (defines filter for objects cloning)
+     * @param Zend_Pdf_ElementFactory $factory The factory to attach
+     * @param array &$processed List of already processed indirect objects, used to avoid objects duplication
+     * @param integer $mode Cloning mode (defines filter for objects cloning)
      * @returns Zend_Pdf_Element
      */
     public function makeClone(Zend_Pdf_ElementFactory $factory, array &$processed, $mode)

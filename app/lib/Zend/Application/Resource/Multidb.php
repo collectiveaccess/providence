@@ -86,7 +86,7 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
 
         foreach ($options as $id => $params) {
             $adapter = $params['adapter'];
-            $default = (int) (
+            $default = (int)(
                 isset($params['isDefaultTableAdapter']) && $params['isDefaultTableAdapter']
                 || isset($params['default']) && $params['default']
             );
@@ -109,12 +109,12 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
     /**
      * Determine if the given db(identifier) is the default db.
      *
-     * @param  string|Zend_Db_Adapter_Abstract $db The db to determine whether it's set as default
+     * @param string|Zend_Db_Adapter_Abstract $db The db to determine whether it's set as default
      * @return boolean True if the given parameter is configured as default. False otherwise
      */
     public function isDefault($db)
     {
-        if(!$db instanceof Zend_Db_Adapter_Abstract) {
+        if (!$db instanceof Zend_Db_Adapter_Abstract) {
             $db = $this->getDb($db);
         }
 
@@ -124,7 +124,7 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
     /**
      * Retrieve the specified database connection
      *
-     * @param  null|string|Zend_Db_Adapter_Abstract $db The adapter to retrieve.
+     * @param null|string|Zend_Db_Adapter_Abstract $db The adapter to retrieve.
      *                                               Null to retrieve the default connection
      * @return Zend_Db_Adapter_Abstract
      * @throws Zend_Application_Resource_Exception if the given parameter could not be found
@@ -147,7 +147,7 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
     /**
      * Get the default db connection
      *
-     * @param  boolean $justPickOne If true, a random (the first one in the stack)
+     * @param boolean $justPickOne If true, a random (the first one in the stack)
      *                           connection is returned if no default was set.
      *                           If false, null is returned if no default was set.
      * @return null|Zend_Db_Adapter_Abstract
@@ -176,7 +176,7 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
         $this->_defaultDb = $adapter;
     }
 
-   /**
+    /**
      * Set the default metadata cache
      *
      * @param string|Zend_Cache_Core $cache
@@ -197,8 +197,10 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
                     $metadataCache = $cacheManager->getCache($cache);
                 }
             }
-        } else if ($cache instanceof Zend_Cache_Core) {
-            $metadataCache = $cache;
+        } else {
+            if ($cache instanceof Zend_Cache_Core) {
+                $metadataCache = $cache;
+            }
         }
 
         if ($metadataCache instanceof Zend_Cache_Core) {

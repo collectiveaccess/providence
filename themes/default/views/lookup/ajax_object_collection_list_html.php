@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * lookup/ajax_object_collection_list_html.php : 
  * ----------------------------------------------------------------------
@@ -25,5 +26,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('collection_list') + $this->getVar('object_list'));
+print json_encode($this->getVar('collection_list') + $this->getVar('object_list'));
 ?>

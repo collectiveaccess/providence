@@ -38,22 +38,22 @@ class Zend_Measure_Torque extends Zend_Measure_Abstract
 {
     const STANDARD = 'NEWTON_METER';
 
-    const DYNE_CENTIMETER     = 'DYNE_CENTIMETER';
-    const GRAM_CENTIMETER     = 'GRAM_CENTIMETER';
+    const DYNE_CENTIMETER = 'DYNE_CENTIMETER';
+    const GRAM_CENTIMETER = 'GRAM_CENTIMETER';
     const KILOGRAM_CENTIMETER = 'KILOGRAM_CENTIMETER';
-    const KILOGRAM_METER      = 'KILOGRAM_METER';
-    const KILONEWTON_METER    = 'KILONEWTON_METER';
-    const KILOPOND_METER      = 'KILOPOND_METER';
-    const MEGANEWTON_METER    = 'MEGANEWTON_METER';
-    const MICRONEWTON_METER   = 'MICRONEWTON_METER';
-    const MILLINEWTON_METER   = 'MILLINEWTON_METER';
-    const NEWTON_CENTIMETER   = 'NEWTON_CENTIMETER';
-    const NEWTON_METER        = 'NEWTON_METER';
-    const OUNCE_FOOT          = 'OUNCE_FOOT';
-    const OUNCE_INCH          = 'OUNCE_INCH';
-    const POUND_FOOT          = 'POUND_FOOT';
-    const POUNDAL_FOOT        = 'POUNDAL_FOOT';
-    const POUND_INCH          = 'POUND_INCH';
+    const KILOGRAM_METER = 'KILOGRAM_METER';
+    const KILONEWTON_METER = 'KILONEWTON_METER';
+    const KILOPOND_METER = 'KILOPOND_METER';
+    const MEGANEWTON_METER = 'MEGANEWTON_METER';
+    const MICRONEWTON_METER = 'MICRONEWTON_METER';
+    const MILLINEWTON_METER = 'MILLINEWTON_METER';
+    const NEWTON_CENTIMETER = 'NEWTON_CENTIMETER';
+    const NEWTON_METER = 'NEWTON_METER';
+    const OUNCE_FOOT = 'OUNCE_FOOT';
+    const OUNCE_INCH = 'OUNCE_INCH';
+    const POUND_FOOT = 'POUND_FOOT';
+    const POUNDAL_FOOT = 'POUNDAL_FOOT';
+    const POUND_INCH = 'POUND_INCH';
 
     /**
      * Calculations for all torque units
@@ -61,22 +61,22 @@ class Zend_Measure_Torque extends Zend_Measure_Abstract
      * @var array
      */
     protected $_units = array(
-        'DYNE_CENTIMETER'     => array('0.0000001',          'dyncm'),
-        'GRAM_CENTIMETER'     => array('0.0000980665',       'gcm'),
-        'KILOGRAM_CENTIMETER' => array('0.0980665',          'kgcm'),
-        'KILOGRAM_METER'      => array('9.80665',            'kgm'),
-        'KILONEWTON_METER'    => array('1000',               'kNm'),
-        'KILOPOND_METER'      => array('9.80665',            'kpm'),
-        'MEGANEWTON_METER'    => array('1000000',            'MNm'),
-        'MICRONEWTON_METER'   => array('0.000001',           'µNm'),
-        'MILLINEWTON_METER'   => array('0.001',              'mNm'),
-        'NEWTON_CENTIMETER'   => array('0.01',               'Ncm'),
-        'NEWTON_METER'        => array('1',                  'Nm'),
-        'OUNCE_FOOT'          => array('0.084738622',        'ozft'),
-        'OUNCE_INCH'          => array(array('' => '0.084738622', '/' => '12'), 'ozin'),
-        'POUND_FOOT'          => array(array('' => '0.084738622', '*' => '16'), 'lbft'),
-        'POUNDAL_FOOT'        => array('0.0421401099752144', 'plft'),
-        'POUND_INCH'          => array(array('' => '0.084738622', '/' => '12', '*' => '16'), 'lbin'),
-        'STANDARD'            => 'NEWTON_METER'
+        'DYNE_CENTIMETER' => array('0.0000001', 'dyncm'),
+        'GRAM_CENTIMETER' => array('0.0000980665', 'gcm'),
+        'KILOGRAM_CENTIMETER' => array('0.0980665', 'kgcm'),
+        'KILOGRAM_METER' => array('9.80665', 'kgm'),
+        'KILONEWTON_METER' => array('1000', 'kNm'),
+        'KILOPOND_METER' => array('9.80665', 'kpm'),
+        'MEGANEWTON_METER' => array('1000000', 'MNm'),
+        'MICRONEWTON_METER' => array('0.000001', 'µNm'),
+        'MILLINEWTON_METER' => array('0.001', 'mNm'),
+        'NEWTON_CENTIMETER' => array('0.01', 'Ncm'),
+        'NEWTON_METER' => array('1', 'Nm'),
+        'OUNCE_FOOT' => array('0.084738622', 'ozft'),
+        'OUNCE_INCH' => array(array('' => '0.084738622', '/' => '12'), 'ozin'),
+        'POUND_FOOT' => array(array('' => '0.084738622', '*' => '16'), 'lbft'),
+        'POUNDAL_FOOT' => array('0.0421401099752144', 'plft'),
+        'POUND_INCH' => array(array('' => '0.084738622', '/' => '12', '*' => '16'), 'lbin'),
+        'STANDARD' => 'NEWTON_METER'
     );
 }

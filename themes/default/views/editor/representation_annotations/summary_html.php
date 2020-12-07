@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/editor/representation_annotations/summary_html.php : 
  * ----------------------------------------------------------------------
@@ -25,38 +26,49 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_item 				= $this->getVar('t_subject');
-	$vn_item_id 			= $this->getVar('subject_id');
-	
-	$t_display 				= $this->getVar('t_display');
-	$va_placements 			= $this->getVar("placements");	
+$t_item = $this->getVar('t_subject');
+$vn_item_id = $this->getVar('subject_id');
+
+$t_display = $this->getVar('t_display');
+$va_placements = $this->getVar("placements");
 ?>
-<div id="summary" style="clear: both;">
+    <div id="summary" style="clear: both;">
+        <?php
+        print caEditorPrintSummaryControls($this);
+        ?>
+        <div id="title">
+            <?php print $t_item->getLabelForDisplay(); ?>
+        </div><!-- end title -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td valign="top" align="left" style="padding-right:10px;">
+                    <?php
+                    foreach ($va_placements as $vn_placement_id => $va_info) {
+                        $vs_class = "";
+                        if (!strlen(
+                            $vs_display_value = $t_display->getDisplayValue(
+                                $t_item,
+                                $vn_placement_id,
+                                array_merge(
+                                    array('request' => $this->request),
+                                    is_array($va_info['settings']) ? $va_info['settings'] : array()
+                                )
+                            )
+                        )) {
+                            if (!(bool)$t_display->getSetting('show_empty_values')) {
+                                continue;
+                            }
+                            $vs_display_value = "&lt;" . _t('not defined') . "&gt;";
+                            $vs_class = " notDefined";
+                        }
+                        print "<div class=\"unit" . $vs_class . "\"><span class=\"heading" . $vs_class . "\">" . $va_info['display'] . ":</span> " . $vs_display_value . "</div>\n";
+                    }
+                    ?>
+                </td>
+                </td>
+            </tr>
+        </table>
+    </div><!-- end summary -->
 <?php
-    print caEditorPrintSummaryControls($this);
-?>
-	<div id="title">
-		<?php print $t_item->getLabelForDisplay(); ?>
-	</div><!-- end title -->
-	<table border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr>
-			<td valign="top" align="left" style="padding-right:10px;">
-<?php
-		foreach($va_placements as $vn_placement_id => $va_info) {
-			$vs_class = "";
-			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
-				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-				$vs_display_value = "&lt;"._t('not defined')."&gt;";
-				$vs_class = " notDefined";
-			}
-			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".$va_info['display'].":</span> ".$vs_display_value."</div>\n";
-		}
-?>
-			</td>
-			</td>
-		</tr>
-	</table>
-</div><!-- end summary -->
-<?php
-		TooltipManager::add('#printButton', _t("Download Summary as PDF"));
-		TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
+TooltipManager::add('#printButton', _t("Download Summary as PDF"));
+TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));

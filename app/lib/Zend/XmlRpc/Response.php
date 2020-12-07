@@ -115,7 +115,7 @@ class Zend_XmlRpc_Response
     public function setReturnValue($value, $type = null)
     {
         $this->_return = $value;
-        $this->_type = (string) $type;
+        $this->_type = (string)$type;
     }
 
     /**
@@ -177,7 +177,7 @@ class Zend_XmlRpc_Response
         }
 
         // @see ZF-12293 - disable external entities for security purposes
-        $loadEntities         = libxml_disable_entity_loader(true);
+        $loadEntities = libxml_disable_entity_loader(true);
         $useInternalXmlErrors = libxml_use_internal_errors(true);
         try {
             $dom = new DOMDocument;
@@ -246,12 +246,12 @@ class Zend_XmlRpc_Response
         $value = $this->_getXmlRpcReturn();
         $generator = Zend_XmlRpc_Value::getGenerator();
         $generator->openElement('methodResponse')
-                  ->openElement('params')
-                  ->openElement('param');
+            ->openElement('params')
+            ->openElement('param');
         $value->generateXml();
         $generator->closeElement('param')
-                  ->closeElement('params')
-                  ->closeElement('methodResponse');
+            ->closeElement('params')
+            ->closeElement('methodResponse');
 
         return $generator->flush();
     }

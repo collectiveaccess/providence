@@ -60,7 +60,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationDirectory extends Zend_Tool_Projec
     {
         return array(
             'classNamePrefix' => $this->getClassNamePrefix()
-            );
+        );
     }
 
     public function getName()

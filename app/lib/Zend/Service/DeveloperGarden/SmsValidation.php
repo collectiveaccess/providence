@@ -102,11 +102,11 @@ class Zend_Service_DeveloperGarden_SmsValidation extends Zend_Service_DeveloperG
      *
      */
     protected $_classMap = array(
-        'getValidatedNumbersResponse'   => 'Zend_Service_DeveloperGarden_Response_SmsValidation_GetValidatedNumbersResponse',
-        'ValidatedNumber'               => 'Zend_Service_DeveloperGarden_Response_SmsValidation_ValidatedNumber',
+        'getValidatedNumbersResponse' => 'Zend_Service_DeveloperGarden_Response_SmsValidation_GetValidatedNumbersResponse',
+        'ValidatedNumber' => 'Zend_Service_DeveloperGarden_Response_SmsValidation_ValidatedNumber',
         'sendValidationKeywordResponse' => 'Zend_Service_DeveloperGarden_Response_SmsValidation_SendValidationKeywordResponse',
-        'validateResponse'              => 'Zend_Service_DeveloperGarden_Response_SmsValidation_ValidateResponse',
-        'invalidateResponse'            => 'Zend_Service_DeveloperGarden_Response_SmsValidation_InvalidateResponse',
+        'validateResponse' => 'Zend_Service_DeveloperGarden_Response_SmsValidation_ValidateResponse',
+        'invalidateResponse' => 'Zend_Service_DeveloperGarden_Response_SmsValidation_InvalidateResponse',
     );
 
     /**
@@ -125,8 +125,8 @@ class Zend_Service_DeveloperGarden_SmsValidation extends Zend_Service_DeveloperG
         );
 
         return $this->getSoapClient()
-                    ->validate($request)
-                    ->parse();
+            ->validate($request)
+            ->parse();
     }
 
     /**
@@ -143,8 +143,8 @@ class Zend_Service_DeveloperGarden_SmsValidation extends Zend_Service_DeveloperG
         );
 
         return $this->getSoapClient()
-                    ->invalidate($request)
-                    ->parse();
+            ->invalidate($request)
+            ->parse();
     }
 
     /**
@@ -166,13 +166,13 @@ class Zend_Service_DeveloperGarden_SmsValidation extends Zend_Service_DeveloperG
             $this->getEnvironment()
         );
         $request->setNumber($number)
-                ->setMessage($message)
-                ->setOriginator($originator)
-                ->setAccount($account);
+            ->setMessage($message)
+            ->setOriginator($originator)
+            ->setAccount($account);
 
         return $this->getSoapClient()
-                    ->sendValidationKeyword($request)
-                    ->parse();
+            ->sendValidationKeyword($request)
+            ->parse();
     }
 
     /**
@@ -186,8 +186,8 @@ class Zend_Service_DeveloperGarden_SmsValidation extends Zend_Service_DeveloperG
             $this->getEnvironment()
         );
         return $this->getSoapClient()
-                    ->getValidatedNumbers($request)
-                    ->parse();
+            ->getValidatedNumbers($request)
+            ->parse();
     }
 // @codeCoverageIgnoreEnd
 }

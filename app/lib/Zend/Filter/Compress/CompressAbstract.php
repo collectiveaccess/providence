@@ -72,7 +72,7 @@ abstract class Zend_Filter_Compress_CompressAbstract implements Zend_Filter_Comp
     /**
      * Sets all or one option
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_Filter_Compress_Bz2
      */
     public function setOptions(array $options)

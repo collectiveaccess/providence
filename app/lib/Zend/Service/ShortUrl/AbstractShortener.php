@@ -58,9 +58,12 @@ abstract class Zend_Service_ShortUrl_AbstractShortener
         require_once 'Zend/Uri.php';
         if (!Zend_Uri::check($url)) {
             require_once 'Zend/Service/ShortUrl/Exception.php';
-            throw new Zend_Service_ShortUrl_Exception(sprintf(
-                'The url "%s" is not valid and cannot be shortened', $url
-            ));
+            throw new Zend_Service_ShortUrl_Exception(
+                sprintf(
+                    'The url "%s" is not valid and cannot be shortened',
+                    $url
+                )
+            );
         }
     }
 
@@ -74,10 +77,12 @@ abstract class Zend_Service_ShortUrl_AbstractShortener
     {
         if (strpos($shortenedUrl, $this->_baseUri) !== 0) {
             require_once 'Zend/Service/ShortUrl/Exception.php';
-            throw new Zend_Service_ShortUrl_Exception(sprintf(
-                'The url "%s" is not valid for this service and the target cannot be resolved',
-                $shortenedUrl
-            ));
+            throw new Zend_Service_ShortUrl_Exception(
+                sprintf(
+                    'The url "%s" is not valid for this service and the target cannot be resolved',
+                    $shortenedUrl
+                )
+            );
         }
     }
 }

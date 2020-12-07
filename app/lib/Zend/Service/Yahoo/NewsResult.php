@@ -97,13 +97,20 @@ class Zend_Service_Yahoo_NewsResult extends Zend_Service_Yahoo_Result
     /**
      * Initializes the news result
      *
-     * @param  DOMElement $result
+     * @param DOMElement $result
      * @return void
      */
     public function __construct(DOMElement $result)
     {
-        $this->_fields = array('Summary', 'NewsSource', 'NewsSourceUrl', 'Language', 'PublishDate',
-                               'ModificationDate', 'Thumbnail');
+        $this->_fields = array(
+            'Summary',
+            'NewsSource',
+            'NewsSourceUrl',
+            'Language',
+            'PublishDate',
+            'ModificationDate',
+            'Thumbnail'
+        );
 
         parent::__construct($result);
 

@@ -62,12 +62,12 @@ class Zend_Service_Amazon_Authentication_V2 extends Zend_Service_Amazon_Authenti
      */
     public function generateSignature($url, array &$parameters)
     {
-        $parameters['AWSAccessKeyId']   = $this->_accessKey;
+        $parameters['AWSAccessKeyId'] = $this->_accessKey;
         $parameters['SignatureVersion'] = $this->_signatureVersion;
-        $parameters['Version']          = $this->_apiVersion;
-        $parameters['SignatureMethod']  = $this->_signatureMethod;
-        if(!isset($parameters['Timestamp'])) {
-            $parameters['Timestamp']    = gmdate('Y-m-d\TH:i:s\Z', time()+10);
+        $parameters['Version'] = $this->_apiVersion;
+        $parameters['SignatureMethod'] = $this->_signatureMethod;
+        if (!isset($parameters['Timestamp'])) {
+            $parameters['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z', time() + 10);
         }
 
         $data = $this->_signParameters($url, $parameters);
@@ -79,7 +79,8 @@ class Zend_Service_Amazon_Authentication_V2 extends Zend_Service_Amazon_Authenti
      * Set http request type to POST or GET
      * @param string $method
      */
-    public function setHttpMethod($method = "POST") {
+    public function setHttpMethod($method = "POST")
+    {
         $this->_httpMethod = strtoupper($method);
     }
 
@@ -107,8 +108,8 @@ class Zend_Service_Amazon_Authentication_V2 extends Zend_Service_Amazon_Authenti
      *    values before constructing this string. Do not use any separator
      *    characters when appending strings.
      *
-     * @param  string $queue_url  Queue URL
-     * @param  array  $parameters the parameters for which to get the signature.
+     * @param string $queue_url Queue URL
+     * @param array $parameters the parameters for which to get the signature.
      *
      * @return string the signed data.
      */
@@ -123,7 +124,7 @@ class Zend_Service_Amazon_Authentication_V2 extends Zend_Service_Amazon_Authenti
         unset($paramaters['Signature']);
 
         $arrData = array();
-        foreach($paramaters as $key => $value) {
+        foreach ($paramaters as $key => $value) {
             $arrData[] = $key . '=' . str_replace('%7E', '~', rawurlencode($value));
         }
 

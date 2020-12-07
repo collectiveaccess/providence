@@ -64,11 +64,12 @@ class Zend_Gdata extends Zend_Gdata_App
      * @var array
      */
     protected $_registeredPackages = array(
-            'Zend_Gdata_Kind',
-            'Zend_Gdata_Extension',
-            'Zend_Gdata',
-            'Zend_Gdata_App_Extension',
-            'Zend_Gdata_App');
+        'Zend_Gdata_Kind',
+        'Zend_Gdata_Extension',
+        'Zend_Gdata',
+        'Zend_Gdata_App_Extension',
+        'Zend_Gdata_App'
+    );
 
     /**
      * Namespaces used for Gdata data
@@ -111,18 +112,20 @@ class Zend_Gdata extends Zend_Gdata_App
     /**
      * Imports a feed located at $uri.
      *
-     * @param  string $uri
-     * @param  Zend_Http_Client $client The client used for communication
-     * @param  string $className The class which is used as the return type
-     * @throws Zend_Gdata_App_Exception
+     * @param string $uri
+     * @param Zend_Http_Client $client The client used for communication
+     * @param string $className The class which is used as the return type
      * @return string|Zend_Gdata_App_Feed Returns string only if the object
      *                                    mapping has been disabled explicitly
      *                                    by passing false to the
      *                                    useObjectMapping() function.
+     * @throws Zend_Gdata_App_Exception
      */
-    public static function import($uri, $client = null,
-        $className='Zend_Gdata_Feed')
-    {
+    public static function import(
+        $uri,
+        $client = null,
+        $className = 'Zend_Gdata_Feed'
+    ) {
         $app = new Zend_Gdata($client);
         $requestData = $app->decodeRequest('GET', $uri);
         $response = $app->performHttpRequest($requestData['method'], $requestData['url']);
@@ -141,13 +144,13 @@ class Zend_Gdata extends Zend_Gdata_App
      *
      * @param mixed $location The location as string or Zend_Gdata_Query
      * @param string $className The class type to use for returning the feed
-     * @throws Zend_Gdata_App_InvalidArgumentException
      * @return string|Zend_Gdata_App_Feed Returns string only if the object
      *                                    mapping has been disabled explicitly
      *                                    by passing false to the
      *                                    useObjectMapping() function.
+     * @throws Zend_Gdata_App_InvalidArgumentException
      */
-    public function getFeed($location, $className='Zend_Gdata_Feed')
+    public function getFeed($location, $className = 'Zend_Gdata_Feed')
     {
         if (is_string($location)) {
             $uri = $location;
@@ -156,8 +159,9 @@ class Zend_Gdata extends Zend_Gdata_App
         } else {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'You must specify the location as either a string URI ' .
-                    'or a child of Zend_Gdata_Query');
+                'You must specify the location as either a string URI ' .
+                'or a child of Zend_Gdata_Query'
+            );
         }
         return parent::getFeed($uri, $className);
     }
@@ -166,13 +170,13 @@ class Zend_Gdata extends Zend_Gdata_App
      * Retrieve entry as string or object
      *
      * @param mixed $location The location as string or Zend_Gdata_Query
-     * @throws Zend_Gdata_App_InvalidArgumentException
      * @return string|Zend_Gdata_App_Entry Returns string only if the object
      *                                     mapping has been disabled explicitly
      *                                     by passing false to the
      *                                     useObjectMapping() function.
+     * @throws Zend_Gdata_App_InvalidArgumentException
      */
-    public function getEntry($location, $className='Zend_Gdata_Entry')
+    public function getEntry($location, $className = 'Zend_Gdata_Entry')
     {
         if (is_string($location)) {
             $uri = $location;
@@ -181,8 +185,9 @@ class Zend_Gdata extends Zend_Gdata_App
         } else {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'You must specify the location as either a string URI ' .
-                    'or a child of Zend_Gdata_Query');
+                'You must specify the location as either a string URI ' .
+                'or a child of Zend_Gdata_Query'
+            );
         }
         return parent::getEntry($uri, $className);
     }
@@ -207,8 +212,14 @@ class Zend_Gdata extends Zend_Gdata_App
      *                                if requests results in one
      * @return Zend_Http_Response The response object
      */
-    public function performHttpRequest($method, $url, $headers = array(), $body = null, $contentType = null, $remainingRedirects = null)
-    {
+    public function performHttpRequest(
+        $method,
+        $url,
+        $headers = array(),
+        $body = null,
+        $contentType = null,
+        $remainingRedirects = null
+    ) {
         if ($this->_httpClient instanceof Zend_Gdata_HttpClient) {
             $filterResult = $this->_httpClient->filterHttpRequest($method, $url, $headers, $body, $contentType);
             $method = $filterResult['method'];
@@ -216,7 +227,9 @@ class Zend_Gdata extends Zend_Gdata_App
             $body = $filterResult['body'];
             $headers = $filterResult['headers'];
             $contentType = $filterResult['contentType'];
-            return $this->_httpClient->filterHttpResponse(parent::performHttpRequest($method, $url, $headers, $body, $contentType, $remainingRedirects));
+            return $this->_httpClient->filterHttpResponse(
+                parent::performHttpRequest($method, $url, $headers, $body, $contentType, $remainingRedirects)
+            );
         } else {
             return parent::performHttpRequest($method, $url, $headers, $body, $contentType, $remainingRedirects);
         }
@@ -232,7 +245,7 @@ class Zend_Gdata extends Zend_Gdata_App
         $client = parent::getHttpClient();
         if ($client->getClientLoginToken() ||
             $client->getAuthSubToken()) {
-                return true;
+            return true;
         }
 
         return false;

@@ -40,65 +40,70 @@
  * ----------------------------------------------------------------------
  */
 
-	$vo_result 				= $this->getVar('result');
-	$vn_num_items			= (int)$vo_result->numHits();
-	$t_set					= $this->getVar("t_set");
-	
-	print $this->render("pdfStart.php");
-	print $this->render("header.php");
-	print $this->render("footer.php");
-?>
-		<div id='body'>
-			<div class="row">
-				<table>
-				<tr><td>
-					<div class='title'><?php print $t_set->get("ca_sets.preferred_labels.name"); ?></div>
-<?php
-					if($t_set->get("description")){
-						print "<p>".$t_set->get("description")."</p>";
-					}
-?>
-				</td></tr>
-				</table>
-			</div>
-<?php
+$vo_result = $this->getVar('result');
+$vn_num_items = (int)$vo_result->numHits();
+$t_set = $this->getVar("t_set");
 
-		$vo_result->seek(0);
-		
-		$vn_c = 0;
-		while($vo_result->nextHit()) {
-			$vn_c++;
-			$vn_object_id = $vo_result->get('ca_objects.object_id');		
+print $this->render("pdfStart.php");
+print $this->render("header.php");
+print $this->render("footer.php");
 ?>
-			<div class="row">
-			<table>
-			<tr>
-				<td><b><?php print $vn_c; ?></b>&nbsp;&nbsp;</td>
-				<td>
-<?php 
-					if ($vs_path = $vo_result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
-						print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
-					} else {
-?>
-						<div class="imageTinyPlaceholder">&nbsp;</div>
-<?php					
-					}	
-?>								
+<div id='body'>
+    <div class="row">
+        <table>
+            <tr>
+                <td>
+                    <div class='title'><?php print $t_set->get("ca_sets.preferred_labels.name"); ?></div>
+                    <?php
+                    if ($t_set->get("description")) {
+                        print "<p>" . $t_set->get("description") . "</p>";
+                    }
+                    ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <?php
 
-				</td><td>
-					<div class="metaBlock">
-<?php				
-					print "<div class='title'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 							
-?>
-					</div>				
-				</td>	
-			</tr>
-			</table>	
-			</div>
+    $vo_result->seek(0);
+
+    $vn_c = 0;
+    while ($vo_result->nextHit()) {
+        $vn_c++;
+        $vn_object_id = $vo_result->get('ca_objects.object_id');
+        ?>
+        <div class="row">
+            <table>
+                <tr>
+                    <td><b><?php print $vn_c; ?></b>&nbsp;&nbsp;</td>
+                    <td>
+                        <?php
+                        if ($vs_path = $vo_result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
+                            print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
+                        } else {
+                            ?>
+                            <div class="imageTinyPlaceholder">&nbsp;</div>
+                            <?php
+                        }
+                        ?>
+
+                    </td>
+                    <td>
+                        <div class="metaBlock">
+                            <?php
+                            print "<div class='title'>" . $vo_result->getWithTemplate(
+                                    '^ca_objects.preferred_labels.name (^ca_objects.idno)'
+                                ) . "</div>";
+                            ?>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <?php
+    }
+    ?>
+</div>
 <?php
-		}
-?>
-		</div>
-<?php
-	print $this->render("pdfEnd.php");
+print $this->render("pdfEnd.php");
 ?>

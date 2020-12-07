@@ -76,8 +76,8 @@ class Zend_Service_DeveloperGarden_Credential
      * split the password into an array
      *
      * @param string $password
-     * @throws Zend_Service_DeveloperGarden_Client_Exception
      * @return Zend_Service_DeveloperGarden_Client_ClientAbstract
+     * @throws Zend_Service_DeveloperGarden_Client_Exception
      */
     public function setPassword($password = null)
     {
@@ -109,8 +109,8 @@ class Zend_Service_DeveloperGarden_Credential
      * set the new login
      *
      * @param string $username
-     * @throws Zend_Service_DeveloperGarden_Client_Exception
      * @return Zend_Service_DeveloperGarden_Client_ClientAbstract
+     * @throws Zend_Service_DeveloperGarden_Client_Exception
      */
     public function setUsername($username = null)
     {
@@ -154,8 +154,8 @@ class Zend_Service_DeveloperGarden_Credential
      * set the new realm
      *
      * @param string $realm
-     * @throws Zend_Service_DeveloperGarden_Client_Exception
      * @return Zend_Service_DeveloperGarden_Client_ClientAbstract
+     * @throws Zend_Service_DeveloperGarden_Client_Exception
      */
     public function setRealm($realm = null)
     {

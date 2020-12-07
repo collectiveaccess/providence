@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * themes/default/views/find/ca_occurrences_search_html.php 
  * ----------------------------------------------------------------------
@@ -24,42 +25,44 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */ 
-	$vo_result = $this->getVar('result');
- 	print $this->render('Search/search_controls_html.php');
- ?>
-	
- 	<div id="resultBox">
-<?php
-	if($vo_result) {
-		print $this->render('Results/paging_controls_html.php');
-		
-		print $this->render('Results/search_options_html.php');
+ */
+$vo_result = $this->getVar('result');
+print $this->render('Search/search_controls_html.php');
 ?>
-	<div class="sectionBox">
-<?php
-		$vs_view = $this->getVar('current_view');
-		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
-		switch($vs_view) {
-			case 'no_results':
-				print $this->render('Results/no_results_html.php');
-				break;
-			case 'thumbnail':
-				print $this->render('Results/ca_occurrences_results_thumbnail_html.php');
-				break;
-			case 'full':
-				print $this->render('Results/ca_occurrences_results_full_html.php');
-				break;
-			case 'list':
-			default:
-				print $this->render('Results/ca_occurrences_results_list_html.php');
-				break;
-		}
-?>		
-	</div><!-- end sectionbox -->
-<?php
-		print $this->render('Results/paging_controls_minimal_html.php');
-	}
-?>
-	</div><!-- end resultbox -->
-	<div class="editorBottomPadding"><!-- empty --></div>
+
+<div id="resultBox">
+    <?php
+    if ($vo_result) {
+        print $this->render('Results/paging_controls_html.php');
+
+        print $this->render('Results/search_options_html.php');
+        ?>
+        <div class="sectionBox">
+            <?php
+            $vs_view = $this->getVar('current_view');
+            if ($vo_result->numHits() == 0) {
+                $vs_view = 'no_results';
+            }
+            switch ($vs_view) {
+                case 'no_results':
+                    print $this->render('Results/no_results_html.php');
+                    break;
+                case 'thumbnail':
+                    print $this->render('Results/ca_occurrences_results_thumbnail_html.php');
+                    break;
+                case 'full':
+                    print $this->render('Results/ca_occurrences_results_full_html.php');
+                    break;
+                case 'list':
+                default:
+                    print $this->render('Results/ca_occurrences_results_list_html.php');
+                    break;
+            }
+            ?>
+        </div><!-- end sectionbox -->
+        <?php
+        print $this->render('Results/paging_controls_minimal_html.php');
+    }
+    ?>
+</div><!-- end resultbox -->
+<div class="editorBottomPadding"><!-- empty --></div>

@@ -94,17 +94,17 @@ class Zend_Gdata_Calendar_Extension_WebContent extends Zend_Gdata_App_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-                case 'url':
-                        $this->_url = $attribute->nodeValue;
-                        break;
-                case 'height':
-                        $this->_height = $attribute->nodeValue;
-                        break;
-                case 'width':
-                        $this->_width = $attribute->nodeValue;
-                        break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'url':
+                $this->_url = $attribute->nodeValue;
+                break;
+            case 'height':
+                $this->_height = $attribute->nodeValue;
+                break;
+            case 'width':
+                $this->_width = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

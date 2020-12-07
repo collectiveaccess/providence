@@ -50,12 +50,12 @@ class Zend_Pdf_Element_Boolean extends Zend_Pdf_Element
      */
     public function __construct($val)
     {
-        if (! is_bool($val)) {
+        if (!is_bool($val)) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Argument must be boolean.');
         }
 
-        $this->value   = $val;
+        $this->value = $val;
     }
 
 

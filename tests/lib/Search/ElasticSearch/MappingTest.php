@@ -30,45 +30,56 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Mapping.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/ElasticSearch/Mapping.php');
+require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 
-class MappingTest extends PHPUnit_Framework_TestCase {
-	public function testGetFieldsToIndex() {
+class MappingTest extends PHPUnit_Framework_TestCase
+{
+    public function testGetFieldsToIndex()
+    {
+        $o_mapping = new ElasticSearch\Mapping();
+        $va_fields = $o_mapping->getFieldsToIndex('ca_objects');
+        $this->assertInternalType('array', $va_fields);
+        $this->assertEquals(122, sizeof($va_fields));
 
-		$o_mapping = new ElasticSearch\Mapping();
-		$va_fields = $o_mapping->getFieldsToIndex('ca_objects');
-		$this->assertInternalType('array', $va_fields);
-		$this->assertEquals(122, sizeof($va_fields));
+        foreach ($va_fields as $vs_fld => $va_options) {
+            $this->assertRegExp("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);
+        }
+    }
 
-		foreach($va_fields as $vs_fld => $va_options) {
-			$this->assertRegExp("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);
-		}
-	}
+    public function testGetElementIDsForTable()
+    {
+        $o_mapping = new ElasticSearch\Mapping();
 
-	public function testGetElementIDsForTable() {
-		$o_mapping = new ElasticSearch\Mapping();
+        //$va_element_ids = $o_mapping->getElementIDsForTable('ca_objects');
+        $va_element_ids = array_reduce(
+            array_keys($o_mapping->getFieldsToIndex('ca_objects')),
+            function ($c, $v) {
+                if (preg_match("!^ca_objects.A([\d]+)$!", $v, $m)) {
+                    $c[] = $m[1];
+                }
+                return $c;
+            },
+            []
+        );
 
-		//$va_element_ids = $o_mapping->getElementIDsForTable('ca_objects');
-		$va_element_ids = array_reduce(array_keys($o_mapping->getFieldsToIndex('ca_objects')), function($c, $v) { 
-			if(preg_match("!^ca_objects.A([\d]+)$!", $v, $m)) {
-				$c[] = $m[1];
-			}
-			return $c;
-		 }, []);
-		 
-		foreach(array_keys(ca_metadata_elements::getElementsAsList(true, 'ca_objects')) as $vn_element_id) {
-			$this->assertTrue(in_array($vn_element_id, $va_element_ids), "Expected element id {$vn_element_id} to be part of " . print_r($va_element_ids, true));
-		}
-	}
+        foreach (array_keys(ca_metadata_elements::getElementsAsList(true, 'ca_objects')) as $vn_element_id) {
+            $this->assertTrue(
+                in_array($vn_element_id, $va_element_ids),
+                "Expected element id {$vn_element_id} to be part of " . print_r($va_element_ids, true)
+            );
+        }
+    }
 
-	public function testGetConfigForIntrinsic() {
-		$o_mapping = new ElasticSearch\Mapping();
-		$o_mapping->getConfigForIntrinsic('ca_object_labels', 4, array());
-	}
+    public function testGetConfigForIntrinsic()
+    {
+        $o_mapping = new ElasticSearch\Mapping();
+        $o_mapping->getConfigForIntrinsic('ca_object_labels', 4, array());
+    }
 
-	public function testGet() {
-		$o_mapping = new ElasticSearch\Mapping();
-		$va_mapping = $o_mapping->get();
-	}
+    public function testGet()
+    {
+        $o_mapping = new ElasticSearch\Mapping();
+        $va_mapping = $o_mapping->get();
+    }
 }

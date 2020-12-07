@@ -76,22 +76,26 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
     public function lookup($pa_settings, $ps_search, $pa_options = null)
     {
         $vo_client = $this->getClient();
-        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP, [
-            'headers' => [
-                'Accept' => 'application/json'
-            ],
-            ['query' => "'".$ps_search."'"]
-        ]);
+        $vo_response = $vo_client->request(
+            "GET",
+            self::VIAF_SERVICES_BASE_URL . "/" . self::VIAF_LOOKUP,
+            [
+                'headers' => [
+                    'Accept' => 'application/json'
+                ],
+                ['query' => "'" . $ps_search . "'"]
+            ]
+        );
         #$vo_request->setHeader('Accept', 'application/json');
         #$vo_request->getQuery()->add('query', "'".$ps_search."'");
         #$va_raw_resultlist = $vo_request->send()->json();
         $va_raw_resultlist = json_decode($vo_response->getBody(), true);
         $response_data = $va_raw_resultlist['result'];
         $va_return = [];
-        foreach ($response_data as $data){
+        foreach ($response_data as $data) {
             $va_return['results'][] = [
                 'label' => $data['displayForm'],
-                'url' => self::VIAF_SERVICES_BASE_URL."/".$data['recordID'],
+                'url' => self::VIAF_SERVICES_BASE_URL . "/" . $data['recordID'],
                 'idno' => $data['recordID']
             ];
         }
@@ -106,13 +110,18 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
     /**
      * @return Guzzle\Http\Client
      */
-    public function getClient() {
-        if (!isset ($this->o_client))
-            $this->o_client = new \GuzzleHttp\Client(['base_uri' => self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP]);
+    public function getClient()
+    {
+        if (!isset ($this->o_client)) {
+            $this->o_client = new \GuzzleHttp\Client(
+                ['base_uri' => self::VIAF_SERVICES_BASE_URL . "/" . self::VIAF_LOOKUP]
+            );
+        }
 
         $o_conf = Configuration::load();
-        if($vs_proxy = $o_conf->get('web_services_proxy_url')) /* proxy server is configured */
+        if ($vs_proxy = $o_conf->get('web_services_proxy_url')) /* proxy server is configured */ {
             $this->o_client->getConfig()->add('proxy', $vs_proxy);
+        }
 
         return $this->o_client;
     }

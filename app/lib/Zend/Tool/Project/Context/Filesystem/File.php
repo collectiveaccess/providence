@@ -121,7 +121,8 @@ class Zend_Tool_Project_Context_Filesystem_File extends Zend_Tool_Project_Contex
     {
         // check to ensure the parent exists, if not, call it and create it
         if (($parentResource = $this->_resource->getParentResource()) instanceof Zend_Tool_Project_Profile_Resource) {
-            if ((($parentContext = $parentResource->getContext()) instanceof Zend_Tool_Project_Context_Filesystem_Abstract)
+            if ((($parentContext = $parentResource->getContext(
+                    )) instanceof Zend_Tool_Project_Context_Filesystem_Abstract)
                 && (!$parentContext->exists())) {
                 $parentResource->create();
             }

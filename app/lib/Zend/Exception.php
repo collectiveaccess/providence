@@ -20,11 +20,11 @@
  */
 
 /**
-* @category   Zend
-* @package    Zend
-* @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
-* @license    http://framework.zend.com/license/new-bsd     New BSD License
-*/
+ * @category   Zend
+ * @package    Zend
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ */
 class Zend_Exception extends Exception
 {
     /**
@@ -35,18 +35,18 @@ class Zend_Exception extends Exception
     /**
      * Construct the exception
      *
-     * @param  string $msg
-     * @param  int $code
-     * @param  Exception $previous
+     * @param string $msg
+     * @param int $code
+     * @param Exception $previous
      * @return void
      */
     public function __construct($msg = '', $code = 0, Exception $previous = null)
     {
         if (version_compare(PHP_VERSION, '5.3.0', '<')) {
-            parent::__construct($msg, (int) $code);
+            parent::__construct($msg, (int)$code);
             $this->_previous = $previous;
         } else {
-            parent::__construct($msg, (int) $code, $previous);
+            parent::__construct($msg, (int)$code, $previous);
         }
     }
 
@@ -55,8 +55,8 @@ class Zend_Exception extends Exception
      *
      * For PHP < 5.3.0, provides access to the getPrevious() method.
      *
-     * @param  string $method
-     * @param  array $args
+     * @param string $method
+     * @param array $args
      * @return mixed
      */
     public function __call($method, array $args)
@@ -77,8 +77,8 @@ class Zend_Exception extends Exception
         if (version_compare(PHP_VERSION, '5.3.0', '<')) {
             if (null !== ($e = $this->getPrevious())) {
                 return $e->__toString()
-                       . "\n\nNext "
-                       . parent::__toString();
+                    . "\n\nNext "
+                    . parent::__toString();
             }
         }
         return parent::__toString();

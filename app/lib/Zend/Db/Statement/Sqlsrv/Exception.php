@@ -45,17 +45,17 @@ class Zend_Db_Statement_Sqlsrv_Exception extends Zend_Db_Statement_Exception
      */
     public function __construct($message = null, $code = 0)
     {
-       if (is_array($message)) {
+        if (is_array($message)) {
             // Error should be array of errors
             // We only need first one (?)
             if (isset($message[0])) {
                 $message = $message[0];
             }
 
-            $code    = (int)    $message['code'];
-            $message = (string) $message['message'];
-       }
-       parent::__construct($message, $code);
-   }
+            $code = (int)$message['code'];
+            $message = (string)$message['message'];
+        }
+        parent::__construct($message, $code);
+    }
 }
 

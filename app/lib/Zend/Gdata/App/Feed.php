@@ -41,7 +41,7 @@ require_once 'Zend/Gdata/App/FeedSourceParent.php';
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
-        implements Iterator, ArrayAccess, Countable
+    implements Iterator, ArrayAccess, Countable
 {
 
     /**
@@ -73,7 +73,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      * using foreach ($feed->entries as $entry) or foreach
      * ($feed->entry as $entry).
      *
-     * @param  string $var The property to get.
+     * @param string $var The property to get.
      * @return mixed
      */
     public function __get($var)
@@ -111,16 +111,16 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
     {
         $absoluteNodeName = $child->namespaceURI . ':' . $child->localName;
         switch ($absoluteNodeName) {
-        case $this->lookupNamespace('atom') . ':' . 'entry':
-            $newEntry = new $this->_entryClassName($child);
-            $newEntry->setHttpClient($this->getHttpClient());
-            $newEntry->setMajorProtocolVersion($this->getMajorProtocolVersion());
-            $newEntry->setMinorProtocolVersion($this->getMinorProtocolVersion());
-            $this->_entry[] = $newEntry;
-            break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
+            case $this->lookupNamespace('atom') . ':' . 'entry':
+                $newEntry = new $this->_entryClassName($child);
+                $newEntry->setHttpClient($this->getHttpClient());
+                $newEntry->setMajorProtocolVersion($this->getMajorProtocolVersion());
+                $newEntry->setMinorProtocolVersion($this->getMinorProtocolVersion());
+                $this->_entry[] = $newEntry;
+                break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
         }
     }
 
@@ -270,20 +270,22 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
         return (array_key_exists($key, $this->_entry));
     }
 
-   /**
+    /**
      * Retrieve the next set of results from this feed.
      *
-     * @throws Zend_Gdata_App_Exception
      * @return mixed|null Returns the next set of results as a feed of the same
      *          class as this feed, or null if no results exist.
+     * @throws Zend_Gdata_App_Exception
      */
     public function getNextFeed()
     {
         $nextLink = $this->getNextLink();
         if (!$nextLink) {
             require_once 'Zend/Gdata/App/HttpException.php';
-            throw new Zend_Gdata_App_Exception('No link to next set ' .
-            'of results found.');
+            throw new Zend_Gdata_App_Exception(
+                'No link to next set ' .
+                'of results found.'
+            );
         }
         $nextLinkHref = $nextLink->getHref();
         $service = new Zend_Gdata_App($this->getHttpClient());
@@ -291,20 +293,22 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
         return $service->getFeed($nextLinkHref, get_class($this));
     }
 
-   /**
+    /**
      * Retrieve the previous set of results from this feed.
      *
-     * @throws Zend_Gdata_App_Exception
      * @return mixed|null Returns the previous set of results as a feed of
      *          the same class as this feed, or null if no results exist.
+     * @throws Zend_Gdata_App_Exception
      */
     public function getPreviousFeed()
     {
         $previousLink = $this->getPreviousLink();
         if (!$previousLink) {
             require_once 'Zend/Gdata/App/HttpException.php';
-            throw new Zend_Gdata_App_Exception('No link to previous set ' .
-            'of results found.');
+            throw new Zend_Gdata_App_Exception(
+                'No link to previous set ' .
+                'of results found.'
+            );
         }
         $previousLinkHref = $previousLink->getHref();
         $service = new Zend_Gdata_App($this->getHttpClient());
@@ -318,9 +322,9 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      *
      * This value will be propogated to all child entries.
      *
-     * @see _majorProtocolVersion
      * @param (int|NULL) $value The major protocol version to use.
      * @throws Zend_Gdata_App_InvalidArgumentException
+     * @see _majorProtocolVersion
      */
     public function setMajorProtocolVersion($value)
     {
@@ -337,9 +341,9 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      *
      * This value will be propogated to all child entries.
      *
-     * @see _minorProtocolVersion
      * @param (int|NULL) $value The minor protocol version to use.
      * @throws Zend_Gdata_App_InvalidArgumentException
+     * @see _minorProtocolVersion
      */
     public function setMinorProtocolVersion($value)
     {

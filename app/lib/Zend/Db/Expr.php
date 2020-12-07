@@ -63,7 +63,7 @@ class Zend_Db_Expr
      */
     public function __construct($expression)
     {
-        $this->_expression = (string) $expression;
+        $this->_expression = (string)$expression;
     }
 
     /**

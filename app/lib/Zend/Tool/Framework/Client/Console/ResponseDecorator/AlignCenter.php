@@ -45,18 +45,18 @@ class Zend_Tool_Framework_Client_Console_ResponseDecorator_AlignCenter
      */
     public function decorate($content, $lineLength)
     {
-        if(!is_numeric($lineLength)) {
+        if (!is_numeric($lineLength)) {
             $lineLength = 72;
         }
-        if(strlen($content) < $lineLength) {
+        if (strlen($content) < $lineLength) {
             $append = false;
             $len = strlen($content);
-            for($i = $len; $i < $lineLength; $i++) {
-                if($append == true) {
-                    $content = $content." ";
+            for ($i = $len; $i < $lineLength; $i++) {
+                if ($append == true) {
+                    $content = $content . " ";
                     $append = false;
                 } else {
-                    $content = " ".$content;
+                    $content = " " . $content;
                     $append = true;
                 }
             }

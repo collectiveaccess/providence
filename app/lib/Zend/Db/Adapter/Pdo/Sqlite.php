@@ -44,7 +44,7 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
      *
      * @var string
      */
-     protected $_pdoType = 'sqlite';
+    protected $_pdoType = 'sqlite';
 
     /**
      * Keys are UPPERCASE SQL datatypes or the constants
@@ -58,11 +58,11 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
+        Zend_Db::INT_TYPE => Zend_Db::INT_TYPE,
         Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INTEGER'            => Zend_Db::BIGINT_TYPE,
-        'REAL'               => Zend_Db::FLOAT_TYPE
+        Zend_Db::FLOAT_TYPE => Zend_Db::FLOAT_TYPE,
+        'INTEGER' => Zend_Db::BIGINT_TYPE,
+        'REAL' => Zend_Db::FLOAT_TYPE
     );
 
     /**
@@ -104,10 +104,12 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
     protected function _checkRequiredOptions(array $config)
     {
         // we need at least a dbname
-        if (! array_key_exists('dbname', $config)) {
+        if (!array_key_exists('dbname', $config)) {
             /** @see Zend_Db_Adapter_Exception */
             require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception("Configuration array must have a key for 'dbname' that names the database instance");
+            throw new Zend_Db_Adapter_Exception(
+                "Configuration array must have a key for 'dbname' that names the database instance"
+            );
         }
     }
 
@@ -116,7 +118,7 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
      */
     protected function _dsn()
     {
-        return $this->_pdoType .':'. $this->_config['dbname'];
+        return $this->_pdoType . ':' . $this->_config['dbname'];
     }
 
     /**
@@ -161,8 +163,8 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
     public function listTables()
     {
         $sql = "SELECT name FROM sqlite_master WHERE type='table' "
-             . "UNION ALL SELECT name FROM sqlite_temp_master "
-             . "WHERE type='table' ORDER BY name";
+            . "UNION ALL SELECT name FROM sqlite_temp_master "
+            . "WHERE type='table' ORDER BY name";
 
         return $this->fetchCol($sql);
     }
@@ -203,7 +205,7 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
             $sql .= $this->quoteIdentifier($schemaName) . '.';
         }
 
-        $sql .= 'table_info('.$this->quoteIdentifier($tableName).')';
+        $sql .= 'table_info(' . $this->quoteIdentifier($tableName) . ')';
 
         $stmt = $this->query($sql);
 
@@ -212,51 +214,55 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
          */
         $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
 
-        $cid        = 0;
-        $name       = 1;
-        $type       = 2;
-        $notnull    = 3;
+        $cid = 0;
+        $name = 1;
+        $type = 2;
+        $notnull = 3;
         $dflt_value = 4;
-        $pk         = 5;
+        $pk = 5;
 
         $desc = array();
 
         $p = 1;
         foreach ($result as $key => $row) {
-            list($length, $scale, $precision, $primary, $primaryPosition, $identity) =
+            list(
+                $length, $scale, $precision, $primary, $primaryPosition, $identity
+                ) =
                 array(null, null, null, false, null, false);
             if (preg_match('/^((?:var)?char)\((\d+)\)/i', $row[$type], $matches)) {
                 $row[$type] = $matches[1];
                 $length = $matches[2];
-            } else if (preg_match('/^decimal\((\d+),(\d+)\)/i', $row[$type], $matches)) {
-                $row[$type] = 'DECIMAL';
-                $precision = $matches[1];
-                $scale = $matches[2];
+            } else {
+                if (preg_match('/^decimal\((\d+),(\d+)\)/i', $row[$type], $matches)) {
+                    $row[$type] = 'DECIMAL';
+                    $precision = $matches[1];
+                    $scale = $matches[2];
+                }
             }
-            if ((bool) $row[$pk]) {
+            if ((bool)$row[$pk]) {
                 $primary = true;
                 $primaryPosition = $p;
                 /**
                  * SQLite INTEGER primary key is always auto-increment.
                  */
-                $identity = (bool) ($row[$type] == 'INTEGER');
+                $identity = (bool)($row[$type] == 'INTEGER');
                 ++$p;
             }
             $desc[$this->foldCase($row[$name])] = array(
-                'SCHEMA_NAME'      => $this->foldCase($schemaName),
-                'TABLE_NAME'       => $this->foldCase($tableName),
-                'COLUMN_NAME'      => $this->foldCase($row[$name]),
-                'COLUMN_POSITION'  => $row[$cid]+1,
-                'DATA_TYPE'        => $row[$type],
-                'DEFAULT'          => $row[$dflt_value],
-                'NULLABLE'         => ! (bool) $row[$notnull],
-                'LENGTH'           => $length,
-                'SCALE'            => $scale,
-                'PRECISION'        => $precision,
-                'UNSIGNED'         => null, // Sqlite3 does not support unsigned data
-                'PRIMARY'          => $primary,
+                'SCHEMA_NAME' => $this->foldCase($schemaName),
+                'TABLE_NAME' => $this->foldCase($tableName),
+                'COLUMN_NAME' => $this->foldCase($row[$name]),
+                'COLUMN_POSITION' => $row[$cid] + 1,
+                'DATA_TYPE' => $row[$type],
+                'DEFAULT' => $row[$dflt_value],
+                'NULLABLE' => !(bool)$row[$notnull],
+                'LENGTH' => $length,
+                'SCALE' => $scale,
+                'PRECISION' => $precision,
+                'UNSIGNED' => null, // Sqlite3 does not support unsigned data
+                'PRIMARY' => $primary,
                 'PRIMARY_POSITION' => $primaryPosition,
-                'IDENTITY'         => $identity
+                'IDENTITY' => $identity
             );
         }
         return $desc;

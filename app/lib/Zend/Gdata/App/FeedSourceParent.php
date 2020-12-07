@@ -87,10 +87,10 @@ abstract class Zend_Gdata_App_FeedSourceParent extends Zend_Gdata_App_FeedEntryP
      *
      * Sets the HTTP client object to use for retrieving the feed.
      *
+     * @param Zend_Http_Client $httpClient
+     * @return Zend_Gdata_App_FeedSourceParent Provides a fluent interface
      * @deprecated Deprecated as of Zend Framework 1.7. Use
      *             setService() instead.
-     * @param  Zend_Http_Client $httpClient
-     * @return Zend_Gdata_App_FeedSourceParent Provides a fluent interface
      */
     public function setHttpClient(Zend_Http_Client $httpClient)
     {
@@ -126,7 +126,7 @@ abstract class Zend_Gdata_App_FeedSourceParent extends Zend_Gdata_App_FeedEntryP
      * using foreach ($feed->entries as $entry) or foreach
      * ($feed->entry as $entry).
      *
-     * @param  string $var The property to access.
+     * @param string $var The property to access.
      * @return mixed
      */
     public function __get($var)
@@ -166,29 +166,29 @@ abstract class Zend_Gdata_App_FeedSourceParent extends Zend_Gdata_App_FeedEntryP
     {
         $absoluteNodeName = $child->namespaceURI . ':' . $child->localName;
         switch ($absoluteNodeName) {
-        case $this->lookupNamespace('atom') . ':' . 'generator':
-            $generator = new Zend_Gdata_App_Extension_Generator();
-            $generator->transferFromDOM($child);
-            $this->_generator = $generator;
-            break;
-        case $this->lookupNamespace('atom') . ':' . 'icon':
-            $icon = new Zend_Gdata_App_Extension_Icon();
-            $icon->transferFromDOM($child);
-            $this->_icon = $icon;
-            break;
-        case $this->lookupNamespace('atom') . ':' . 'logo':
-            $logo = new Zend_Gdata_App_Extension_Logo();
-            $logo->transferFromDOM($child);
-            $this->_logo = $logo;
-            break;
-        case $this->lookupNamespace('atom') . ':' . 'subtitle':
-            $subtitle = new Zend_Gdata_App_Extension_Subtitle();
-            $subtitle->transferFromDOM($child);
-            $this->_subtitle = $subtitle;
-            break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
+            case $this->lookupNamespace('atom') . ':' . 'generator':
+                $generator = new Zend_Gdata_App_Extension_Generator();
+                $generator->transferFromDOM($child);
+                $this->_generator = $generator;
+                break;
+            case $this->lookupNamespace('atom') . ':' . 'icon':
+                $icon = new Zend_Gdata_App_Extension_Icon();
+                $icon->transferFromDOM($child);
+                $this->_icon = $icon;
+                break;
+            case $this->lookupNamespace('atom') . ':' . 'logo':
+                $logo = new Zend_Gdata_App_Extension_Logo();
+                $logo->transferFromDOM($child);
+                $this->_logo = $logo;
+                break;
+            case $this->lookupNamespace('atom') . ':' . 'subtitle':
+                $subtitle = new Zend_Gdata_App_Extension_Subtitle();
+                $subtitle->transferFromDOM($child);
+                $this->_subtitle = $subtitle;
+                break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
         }
     }
 

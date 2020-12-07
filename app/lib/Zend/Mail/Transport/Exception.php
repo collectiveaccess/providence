@@ -35,5 +35,6 @@ require_once 'Zend/Mail/Exception.php';
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Mail_Transport_Exception extends Zend_Mail_Exception
-{}
+{
+}
 

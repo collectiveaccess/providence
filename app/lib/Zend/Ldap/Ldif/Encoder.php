@@ -37,9 +37,9 @@ class Zend_Ldap_Ldif_Encoder
      * @var array
      */
     protected $_options = array(
-        'sort'    => true,
+        'sort' => true,
         'version' => 1,
-        'wrap'    => 78
+        'wrap' => 78
     );
 
     /**
@@ -50,7 +50,7 @@ class Zend_Ldap_Ldif_Encoder
     /**
      * Constructor.
      *
-     * @param  array $options Additional options used during encoding
+     * @param array $options Additional options used during encoding
      * @return void
      */
     protected function __construct(array $options = array())
@@ -61,7 +61,7 @@ class Zend_Ldap_Ldif_Encoder
     /**
      * Decodes the string $string into an array of LDIF items
      *
-     * @param  string $string
+     * @param string $string
      * @return array
      */
     public static function decode($string)
@@ -73,7 +73,7 @@ class Zend_Ldap_Ldif_Encoder
     /**
      * Decodes the string $string into an array of LDIF items
      *
-     * @param  string $string
+     * @param string $string
      * @return array
      */
     protected function _decode($string)
@@ -86,32 +86,40 @@ class Zend_Ldap_Ldif_Encoder
             $matches = array();
             if (substr($line, 0, 1) === ' ' && $last !== null) {
                 $last[2] .= substr($line, 1);
-            } else if (substr($line, 0, 1) === '#') {
-                continue;
-            } else if (preg_match('/^([a-z0-9;-]+)(:[:<]?\s*)([^:<]*)$/i', $line, $matches)) {
-                $name = strtolower($matches[1]);
-                $type = trim($matches[2]);
-                $value = $matches[3];
-                if ($last !== null) {
-                    $this->_pushAttribute($last, $item);
-                }
-                if ($name === 'version') {
+            } else {
+                if (substr($line, 0, 1) === '#') {
                     continue;
-                } else if (count($item) > 0 && $name === 'dn') {
-                    $items[] = $item;
-                    $item = array();
-                    $last = null;
+                } else {
+                    if (preg_match('/^([a-z0-9;-]+)(:[:<]?\s*)([^:<]*)$/i', $line, $matches)) {
+                        $name = strtolower($matches[1]);
+                        $type = trim($matches[2]);
+                        $value = $matches[3];
+                        if ($last !== null) {
+                            $this->_pushAttribute($last, $item);
+                        }
+                        if ($name === 'version') {
+                            continue;
+                        } else {
+                            if (count($item) > 0 && $name === 'dn') {
+                                $items[] = $item;
+                                $item = array();
+                                $last = null;
+                            }
+                        }
+                        $last = array($name, $type, $value);
+                    } else {
+                        if (trim($line) === '') {
+                            continue;
+                        }
+                    }
                 }
-                $last = array($name, $type, $value);
-            } else if (trim($line) === '') {
-                continue;
             }
         }
         if ($last !== null) {
             $this->_pushAttribute($last, $item);
         }
         $items[] = $item;
-        return (count($items)>1) ? $items : $items[0];
+        return (count($items) > 1) ? $items : $items[0];
     }
 
     /**
@@ -130,18 +138,20 @@ class Zend_Ldap_Ldif_Encoder
         }
         if ($name === 'dn') {
             $entry[$name] = $value;
-        } else if (isset($entry[$name]) && $value !== '') {
-            $entry[$name][] = $value;
         } else {
-            $entry[$name] = ($value !== '') ? array($value) : array();
+            if (isset($entry[$name]) && $value !== '') {
+                $entry[$name][] = $value;
+            } else {
+                $entry[$name] = ($value !== '') ? array($value) : array();
+            }
         }
     }
 
     /**
      * Encode $value into a LDIF representation
      *
-     * @param  mixed $value   The value to be encoded
-     * @param  array $options Additional options used during encoding
+     * @param mixed $value The value to be encoded
+     * @param array $options Additional options used during encoding
      * @return string The encoded value
      */
     public static function encode($value, array $options = array())
@@ -154,17 +164,21 @@ class Zend_Ldap_Ldif_Encoder
      * Recursive driver which determines the type of value to be encoded
      * and then dispatches to the appropriate method.
      *
-     * @param  mixed $value The value to be encoded
+     * @param mixed $value The value to be encoded
      * @return string Encoded value
      */
     protected function _encode($value)
     {
         if (is_scalar($value)) {
             return $this->_encodeString($value);
-        } else if (is_array($value)) {
-            return $this->_encodeAttributes($value);
-        } else if ($value instanceof Zend_Ldap_Node) {
-            return $value->toLdif($this->_options);
+        } else {
+            if (is_array($value)) {
+                return $this->_encodeAttributes($value);
+            } else {
+                if ($value instanceof Zend_Ldap_Node) {
+                    return $value->toLdif($this->_options);
+                }
+            }
         }
         return null;
     }
@@ -174,8 +188,8 @@ class Zend_Ldap_Ldif_Encoder
      *
      * @link http://www.faqs.org/rfcs/rfc2849.html
      *
-     * @param  string $string
-     * @param  boolen $base64
+     * @param string $string
+     * @param boolen $base64
      * @return string
      */
     protected function _encodeString($string, &$base64 = null)
@@ -199,7 +213,7 @@ class Zend_Ldap_Ldif_Encoder
          *                ; any value <= 127 decimal except NUL, LF,
          *                ; and CR
          */
-        $unsafe_char      = array(0, 10, 13);
+        $unsafe_char = array(0, 10, 13);
 
         $base64 = false;
         for ($i = 0; $i < strlen($string); $i++) {
@@ -207,12 +221,16 @@ class Zend_Ldap_Ldif_Encoder
             if ($char >= 127) {
                 $base64 = true;
                 break;
-            } else if ($i === 0 && in_array($char, $unsafe_init_char)) {
-                $base64 = true;
-                break;
-            } else if (in_array($char, $unsafe_char)) {
-                $base64 = true;
-                break;
+            } else {
+                if ($i === 0 && in_array($char, $unsafe_init_char)) {
+                    $base64 = true;
+                    break;
+                } else {
+                    if (in_array($char, $unsafe_char)) {
+                        $base64 = true;
+                        break;
+                    }
+                }
             }
         }
         // Test for ending space
@@ -232,8 +250,8 @@ class Zend_Ldap_Ldif_Encoder
      *
      * @link http://www.faqs.org/rfcs/rfc2849.html
      *
-     * @param  string       $name
-     * @param  array|string $value
+     * @param string $name
+     * @param array|string $value
      * @return string
      */
     protected function _encodeAttribute($name, $value)
@@ -270,7 +288,7 @@ class Zend_Ldap_Ldif_Encoder
      *
      * @link http://www.faqs.org/rfcs/rfc2849.html
      *
-     * @param  array $attributes
+     * @param array $attributes
      * @return string
      */
     protected function _encodeAttributes(array $attributes)
@@ -278,7 +296,7 @@ class Zend_Ldap_Ldif_Encoder
         $string = '';
         $attributes = array_change_key_case($attributes, CASE_LOWER);
         if (!$this->_versionWritten && array_key_exists('dn', $attributes) && isset($this->_options['version'])
-                && array_key_exists('objectclass', $attributes)) {
+            && array_key_exists('objectclass', $attributes)) {
             $string .= sprintf('version: %d', $this->_options['version']) . PHP_EOL;
             $this->_versionWritten = true;
         }

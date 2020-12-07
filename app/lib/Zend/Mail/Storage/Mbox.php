@@ -92,7 +92,7 @@ class Zend_Mail_Storage_Mbox extends Zend_Mail_Storage_Abstract
     /**
      * Get a list of messages with number and size
      *
-     * @param  int|null $id  number of message or null for all messages
+     * @param int|null $id number of message or null for all messages
      * @return int|array size of given message of list with all messages as array(num => size)
      */
     public function getSize($id = 0)
@@ -135,18 +135,26 @@ class Zend_Mail_Storage_Mbox extends Zend_Mail_Storage_Abstract
     /**
      * Fetch a message
      *
-     * @param  int $id number of message
+     * @param int $id number of message
      * @return Zend_Mail_Message_File
      * @throws Zend_Mail_Storage_Exception
      */
     public function getMessage($id)
     {
         // TODO that's ugly, would be better to let the message class decide
-        if (strtolower($this->_messageClass) == 'zend_mail_message_file' || is_subclass_of($this->_messageClass, 'zend_mail_message_file')) {
+        if (strtolower($this->_messageClass) == 'zend_mail_message_file' || is_subclass_of(
+                $this->_messageClass,
+                'zend_mail_message_file'
+            )) {
             // TODO top/body lines
             $messagePos = $this->_getPos($id);
-            return new $this->_messageClass(array('file' => $this->_fh, 'startPos' => $messagePos['start'],
-                                                  'endPos' => $messagePos['end']));
+            return new $this->_messageClass(
+                array(
+                    'file' => $this->_fh,
+                    'startPos' => $messagePos['start'],
+                    'endPos' => $messagePos['end']
+                )
+            );
         }
 
         $bodyLines = 0; // TODO: need a way to change that
@@ -234,7 +242,7 @@ class Zend_Mail_Storage_Mbox extends Zend_Mail_Storage_Abstract
         }
 
         $this->_openMboxFile($params->filename);
-        $this->_has['top']      = true;
+        $this->_has['top'] = true;
         $this->_has['uniqueid'] = false;
     }
 
@@ -243,8 +251,8 @@ class Zend_Mail_Storage_Mbox extends Zend_Mail_Storage_Abstract
      *
      * if $file is a resource its file pointer is moved after the first line
      *
-     * @param  resource|string $file stream resource of name of file
-     * @param  bool $fileIsString file is string or resource
+     * @param resource|string $file stream resource of name of file
+     * @param bool $fileIsString file is string or resource
      * @return bool file is mbox file
      */
     protected function _isMboxFile($file, $fileIsString = true)
@@ -275,7 +283,7 @@ class Zend_Mail_Storage_Mbox extends Zend_Mail_Storage_Abstract
     /**
      * open given file as current mbox file
      *
-     * @param  string $filename filename of mbox file
+     * @param string $filename filename of mbox file
      * @return null
      * @throws Zend_Mail_Storage_Exception
      */

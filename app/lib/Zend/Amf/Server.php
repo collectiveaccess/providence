@@ -45,6 +45,7 @@ require_once 'Zend/Amf/Parse/TypeLoader.php';
 
 /** @see Zend_Auth */
 require_once 'Zend/Auth.php';
+
 /**
  * An AMF gateway server implementation to allow the connection of the Adobe Flash Player to
  * Zend Framework
@@ -131,21 +132,24 @@ class Zend_Amf_Server implements Zend_Server_Interface
      * @var Zend_Acl
      */
     protected $_acl;
+
     /**
      * The server constructor
      */
     public function __construct()
     {
-        Zend_Amf_Parse_TypeLoader::setResourceLoader(new Zend_Loader_PluginLoader(array("Zend_Amf_Parse_Resource" => "Zend/Amf/Parse/Resource")));
+        Zend_Amf_Parse_TypeLoader::setResourceLoader(
+            new Zend_Loader_PluginLoader(array("Zend_Amf_Parse_Resource" => "Zend/Amf/Parse/Resource"))
+        );
     }
 
     /**
      * Set authentication adapter
      *
-     * If the authentication adapter implements a "getAcl()" method, populate 
+     * If the authentication adapter implements a "getAcl()" method, populate
      * the ACL of this instance with it (if none exists already).
      *
-     * @param  Zend_Amf_Auth_Abstract $auth
+     * @param Zend_Amf_Auth_Abstract $auth
      * @return Zend_Amf_Server
      */
     public function setAuth(Zend_Amf_Auth_Abstract $auth)
@@ -156,7 +160,8 @@ class Zend_Amf_Server implements Zend_Server_Interface
         }
         return $this;
     }
-   /**
+
+    /**
      * Get authentication adapter
      *
      * @return Zend_Amf_Auth_Abstract
@@ -169,7 +174,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
     /**
      * Set ACL adapter
      *
-     * @param  Zend_Acl $acl
+     * @param Zend_Acl $acl
      * @return Zend_Amf_Server
      */
     public function setAcl(Zend_Acl $acl)
@@ -177,7 +182,8 @@ class Zend_Amf_Server implements Zend_Server_Interface
         $this->_acl = $acl;
         return $this;
     }
-   /**
+
+    /**
      * Get ACL adapter
      *
      * @return Zend_Acl
@@ -190,12 +196,12 @@ class Zend_Amf_Server implements Zend_Server_Interface
     /**
      * Set production flag
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_Amf_Server
      */
     public function setProduction($flag)
     {
-        $this->_production = (bool) $flag;
+        $this->_production = (bool)$flag;
         return $this;
     }
 
@@ -239,17 +245,17 @@ class Zend_Amf_Server implements Zend_Server_Interface
      */
     protected function _checkAcl($object, $function)
     {
-        if(!$this->_acl) {
+        if (!$this->_acl) {
             return true;
         }
-        if($object) {
-            $class = is_object($object)?get_class($object):$object;
-            if(!$this->_acl->has($class)) {
+        if ($object) {
+            $class = is_object($object) ? get_class($object) : $object;
+            if (!$this->_acl->has($class)) {
                 require_once 'Zend/Acl/Resource.php';
                 $this->_acl->add(new Zend_Acl_Resource($class));
             }
             $call = array($object, "initAcl");
-            if(is_callable($call) && !call_user_func($call, $this->_acl)) {
+            if (is_callable($call) && !call_user_func($call, $this->_acl)) {
                 // if initAcl returns false, no ACL check
                 return true;
             }
@@ -258,17 +264,17 @@ class Zend_Amf_Server implements Zend_Server_Interface
         }
 
         $auth = Zend_Auth::getInstance();
-        if($auth->hasIdentity()) {
+        if ($auth->hasIdentity()) {
             $role = $auth->getIdentity()->role;
         } else {
-            if($this->_acl->hasRole(Zend_Amf_Constants::GUEST_ROLE)) {
+            if ($this->_acl->hasRole(Zend_Amf_Constants::GUEST_ROLE)) {
                 $role = Zend_Amf_Constants::GUEST_ROLE;
             } else {
                 require_once 'Zend/Amf/Server/Exception.php';
                 throw new Zend_Amf_Server_Exception("Unauthenticated access not allowed");
             }
         }
-        if($this->_acl->isAllowed($role, $class, $function)) {
+        if ($this->_acl->isAllowed($role, $class, $function)) {
             return true;
         } else {
             require_once 'Zend/Amf/Server/Exception.php';
@@ -283,7 +289,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
      */
     protected function getLoader()
     {
-        if(empty($this->_loader)) {
+        if (empty($this->_loader)) {
             require_once 'Zend/Loader/PluginLoader.php';
             $this->_loader = new Zend_Loader_PluginLoader();
         }
@@ -294,15 +300,15 @@ class Zend_Amf_Server implements Zend_Server_Interface
      * Loads a remote class or method and executes the function and returns
      * the result
      *
-     * @param  string $method Is the method to execute
-     * @param  mixed $param values for the method
+     * @param string $method Is the method to execute
+     * @param mixed $param values for the method
      * @return mixed $response the result of executing the method
      * @throws Zend_Amf_Server_Exception
      */
     protected function _dispatch($method, $params = null, $source = null)
     {
-        if($source) {
-            if(($mapped = Zend_Amf_Parse_TypeLoader::getMappedClassName($source)) !== false) {
+        if ($source) {
+            if (($mapped = Zend_Amf_Parse_TypeLoader::getMappedClassName($source)) !== false) {
                 $source = $mapped;
             }
         }
@@ -312,7 +318,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
             // if source is null a method that was not defined was called.
             if ($source) {
                 $className = str_replace('.', '_', $source);
-                if(class_exists($className, false) && !isset($this->_classAllowed[$className])) {
+                if (class_exists($className, false) && !isset($this->_classAllowed[$className])) {
                     require_once 'Zend/Amf/Server/Exception.php';
                     throw new Zend_Amf_Server_Exception('Can not call "' . $className . '" - use setClass()');
                 }
@@ -320,10 +326,12 @@ class Zend_Amf_Server implements Zend_Server_Interface
                     $this->getLoader()->load($className);
                 } catch (Exception $e) {
                     require_once 'Zend/Amf/Server/Exception.php';
-                    throw new Zend_Amf_Server_Exception('Class "' . $className . '" does not exist: '.$e->getMessage(), 0, $e);
+                    throw new Zend_Amf_Server_Exception(
+                        'Class "' . $className . '" does not exist: ' . $e->getMessage(), 0, $e
+                    );
                 }
                 // Add the new loaded class to the server.
-                    require_once 'Zend/Amf/Server/Exception.php';
+                require_once 'Zend/Amf/Server/Exception.php';
                 $this->setClass($className, $source);
             }
 
@@ -362,7 +370,10 @@ class Zend_Amf_Server implements Zend_Server_Interface
                     $object = $info->getDeclaringClass()->newInstance();
                 } catch (Exception $e) {
                     require_once 'Zend/Amf/Server/Exception.php';
-                    throw new Zend_Amf_Server_Exception('Error instantiating class ' . $class . ' to invoke method ' . $info->getName() . ': '.$e->getMessage(), 621, $e);
+                    throw new Zend_Amf_Server_Exception(
+                        'Error instantiating class ' . $class . ' to invoke method ' . $info->getName(
+                        ) . ': ' . $e->getMessage(), 621, $e
+                    );
                 }
                 $this->_checkAcl($object, $info->getName());
                 $return = $info->invokeArgs($object, $params);
@@ -380,14 +391,14 @@ class Zend_Amf_Server implements Zend_Server_Interface
      *
      * A command message is a flex.messaging.messages.CommandMessage
      *
-     * @see    Zend_Amf_Value_Messaging_CommandMessage
-     * @param  Zend_Amf_Value_Messaging_CommandMessage $message
+     * @param Zend_Amf_Value_Messaging_CommandMessage $message
      * @return Zend_Amf_Value_Messaging_AcknowledgeMessage
+     * @see    Zend_Amf_Value_Messaging_CommandMessage
      */
     protected function _loadCommandMessage(Zend_Amf_Value_Messaging_CommandMessage $message)
     {
         require_once 'Zend/Amf/Value/Messaging/AcknowledgeMessage.php';
-        switch($message->operation) {
+        switch ($message->operation) {
             case Zend_Amf_Value_Messaging_CommandMessage::DISCONNECT_OPERATION :
             case Zend_Amf_Value_Messaging_CommandMessage::CLIENT_PING_OPERATION :
                 $return = new Zend_Amf_Value_Messaging_AcknowledgeMessage($message);
@@ -395,19 +406,19 @@ class Zend_Amf_Server implements Zend_Server_Interface
             case Zend_Amf_Value_Messaging_CommandMessage::LOGIN_OPERATION :
                 $data = explode(':', base64_decode($message->body));
                 $userid = $data[0];
-                $password = isset($data[1])?$data[1]:"";
-                if(empty($userid)) {
+                $password = isset($data[1]) ? $data[1] : "";
+                if (empty($userid)) {
                     require_once 'Zend/Amf/Server/Exception.php';
                     throw new Zend_Amf_Server_Exception('Login failed: username not supplied');
                 }
-                if(!$this->_handleAuth($userid, $password)) {
+                if (!$this->_handleAuth($userid, $password)) {
                     require_once 'Zend/Amf/Server/Exception.php';
                     throw new Zend_Amf_Server_Exception('Authentication failed');
                 }
                 $return = new Zend_Amf_Value_Messaging_AcknowledgeMessage($message);
                 break;
-           case Zend_Amf_Value_Messaging_CommandMessage::LOGOUT_OPERATION :
-                if($this->_auth) {
+            case Zend_Amf_Value_Messaging_CommandMessage::LOGOUT_OPERATION :
+                if ($this->_auth) {
                     Zend_Auth::getInstance()->clearIdentity();
                 }
                 $return = new Zend_Amf_Value_Messaging_AcknowledgeMessage($message);
@@ -436,18 +447,18 @@ class Zend_Amf_Server implements Zend_Server_Interface
         $return = null;
         switch ($objectEncoding) {
             case Zend_Amf_Constants::AMF0_OBJECT_ENCODING :
-                return array (
-                        'description' => ($this->isProduction ()) ? '' : $description,
-                        'detail' => ($this->isProduction ()) ? '' : $detail,
-                        'line' => ($this->isProduction ()) ? 0 : $line,
-                        'code' => $code
+                return array(
+                    'description' => ($this->isProduction()) ? '' : $description,
+                    'detail' => ($this->isProduction()) ? '' : $detail,
+                    'line' => ($this->isProduction()) ? 0 : $line,
+                    'code' => $code
                 );
             case Zend_Amf_Constants::AMF3_OBJECT_ENCODING :
                 require_once 'Zend/Amf/Value/Messaging/ErrorMessage.php';
-                $return = new Zend_Amf_Value_Messaging_ErrorMessage ( $message );
-                $return->faultString = $this->isProduction () ? '' : $description;
+                $return = new Zend_Amf_Value_Messaging_ErrorMessage ($message);
+                $return->faultString = $this->isProduction() ? '' : $description;
                 $return->faultCode = $code;
-                $return->faultDetail = $this->isProduction () ? '' : $detail;
+                $return->faultDetail = $this->isProduction() ? '' : $detail;
                 break;
         }
         return $return;
@@ -460,7 +471,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
      * @param string $password
      * @return boolean
      */
-    protected function _handleAuth( $userid,  $password)
+    protected function _handleAuth($userid, $password)
     {
         if (!$this->_auth) {
             return true;
@@ -477,20 +488,22 @@ class Zend_Amf_Server implements Zend_Server_Interface
             // authentication failed, good bye
             require_once 'Zend/Amf/Server/Exception.php';
             throw new Zend_Amf_Server_Exception(
-                "Authentication failed: " . join("\n",
-                    $result->getMessages()), $result->getCode());
+                "Authentication failed: " . join(
+                    "\n",
+                    $result->getMessages()
+                ), $result->getCode()
+            );
         }
-
     }
 
     /**
      * Takes the deserialized AMF request and performs any operations.
      *
-     * @todo   should implement and SPL observer pattern for custom AMF headers
-     * @todo   DescribeService support
-     * @param  Zend_Amf_Request $request
+     * @param Zend_Amf_Request $request
      * @return Zend_Amf_Response
      * @throws Zend_Amf_server_Exception|Exception
+     * @todo   DescribeService support
+     * @todo   should implement and SPL observer pattern for custom AMF headers
      */
     protected function _handle(Zend_Amf_Request $request)
     {
@@ -504,16 +517,16 @@ class Zend_Amf_Server implements Zend_Server_Interface
         $response->setObjectEncoding($objectEncoding);
 
         // Authenticate, if we have credential headers
-        $error   = false;
+        $error = false;
         $headers = $request->getAmfHeaders();
-        if (isset($headers[Zend_Amf_Constants::CREDENTIALS_HEADER]) 
+        if (isset($headers[Zend_Amf_Constants::CREDENTIALS_HEADER])
             && isset($headers[Zend_Amf_Constants::CREDENTIALS_HEADER]->userid)
             && isset($headers[Zend_Amf_Constants::CREDENTIALS_HEADER]->password)
         ) {
             try {
                 if ($this->_handleAuth(
-                        $headers[Zend_Amf_Constants::CREDENTIALS_HEADER]->userid,
-                        $headers[Zend_Amf_Constants::CREDENTIALS_HEADER]->password
+                    $headers[Zend_Amf_Constants::CREDENTIALS_HEADER]->userid,
+                    $headers[Zend_Amf_Constants::CREDENTIALS_HEADER]->password
                 )) {
                     // use RequestPersistentHeader to clear credentials
                     $response->addAmfHeader(
@@ -530,8 +543,8 @@ class Zend_Amf_Server implements Zend_Server_Interface
             } catch (Exception $e) {
                 // Error during authentication; report it
                 $error = $this->_errorMessage(
-                    $objectEncoding, 
-                    '', 
+                    $objectEncoding,
+                    '',
                     $e->getMessage(),
                     $e->getTraceAsString(),
                     $e->getCode(),
@@ -542,12 +555,11 @@ class Zend_Amf_Server implements Zend_Server_Interface
         }
 
         // Iterate through each of the service calls in the AMF request
-        foreach($request->getAmfBodies() as $body)
-        {
+        foreach ($request->getAmfBodies() as $body) {
             if ($error) {
                 // Error during authentication; just report it and be done
                 $responseURI = $body->getResponseURI() . $responseType;
-                $newBody     = new Zend_Amf_Value_MessageBody($responseURI, null, $error);
+                $newBody = new Zend_Amf_Value_MessageBody($responseURI, null, $error);
                 $response->addAmfBody($newBody);
                 continue;
             }
@@ -601,30 +613,40 @@ class Zend_Amf_Server implements Zend_Server_Interface
                 }
                 $responseType = Zend_AMF_Constants::RESULT_METHOD;
             } catch (Exception $e) {
-                $return = $this->_errorMessage($objectEncoding, $message,
-                    $e->getMessage(), $e->getTraceAsString(),$e->getCode(),  $e->getLine());
+                $return = $this->_errorMessage(
+                    $objectEncoding,
+                    $message,
+                    $e->getMessage(),
+                    $e->getTraceAsString(),
+                    $e->getCode(),
+                    $e->getLine()
+                );
                 $responseType = Zend_AMF_Constants::STATUS_METHOD;
             }
 
             $responseURI = $body->getResponseURI() . $responseType;
-            $newBody     = new Zend_Amf_Value_MessageBody($responseURI, null, $return);
+            $newBody = new Zend_Amf_Value_MessageBody($responseURI, null, $return);
             $response->addAmfBody($newBody);
         }
         // Add a session header to the body if session is requested.
-        if($this->isSession()) {
-           $currentID = session_id();
-           $joint = "?";
-           if(isset($_SERVER['QUERY_STRING'])) {
-               if(!strpos($_SERVER['QUERY_STRING'], $currentID) !== FALSE) {
-                   if(strrpos($_SERVER['QUERY_STRING'], "?") !== FALSE) {
-                       $joint = "&";
-                   }
-               }
-           }
+        if ($this->isSession()) {
+            $currentID = session_id();
+            $joint = "?";
+            if (isset($_SERVER['QUERY_STRING'])) {
+                if (!strpos($_SERVER['QUERY_STRING'], $currentID) !== false) {
+                    if (strrpos($_SERVER['QUERY_STRING'], "?") !== false) {
+                        $joint = "&";
+                    }
+                }
+            }
 
             // create a new AMF message header with the session id as a variable.
             $sessionValue = $joint . $this->_sessionName . "=" . $currentID;
-            $sessionHeader = new Zend_Amf_Value_MessageHeader(Zend_Amf_Constants::URL_APPEND_HEADER, false, $sessionValue);
+            $sessionHeader = new Zend_Amf_Value_MessageHeader(
+                Zend_Amf_Constants::URL_APPEND_HEADER,
+                false,
+                $sessionValue
+            );
             $response->addAmfHeader($sessionHeader);
         }
 
@@ -635,7 +657,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
     /**
      * Handle an AMF call from the gateway.
      *
-     * @param  null|Zend_Amf_Request $request Optional
+     * @param null|Zend_Amf_Request $request Optional
      * @return Zend_Amf_Response
      */
     public function handle($request = null)
@@ -647,10 +669,10 @@ class Zend_Amf_Server implements Zend_Server_Interface
             $this->setRequest($request);
         }
         if ($this->isSession()) {
-             // Check if a session is being sent from the amf call
-             if (isset($_COOKIE[$this->_sessionName])) {
-                 session_id($_COOKIE[$this->_sessionName]);
-             }
+            // Check if a session is being sent from the amf call
+            if (isset($_COOKIE[$this->_sessionName])) {
+                session_id($_COOKIE[$this->_sessionName]);
+            }
         }
 
         // Check for errors that may have happend in deserialization of Request.
@@ -672,7 +694,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
     /**
      * Set request object
      *
-     * @param  string|Zend_Amf_Request $request
+     * @param string|Zend_Amf_Request $request
      * @return Zend_Amf_Server
      */
     public function setRequest($request)
@@ -709,7 +731,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
     /**
      * Public access method to private Zend_Amf_Server_Response reference
      *
-     * @param  string|Zend_Amf_Server_Response $response
+     * @param string|Zend_Amf_Server_Response $response
      * @return Zend_Amf_Server
      */
     public function setResponse($response)
@@ -751,15 +773,15 @@ class Zend_Amf_Server implements Zend_Server_Interface
      * a $namespace has been provided, that namespace is used to prefix
      * AMF service call.
      *
-     * @param  string|object $class
-     * @param  string $namespace Optional
-     * @param  mixed $arg Optional arguments to pass to a method
+     * @param string|object $class
+     * @param string $namespace Optional
+     * @param mixed $arg Optional arguments to pass to a method
      * @return Zend_Amf_Server
      * @throws Zend_Amf_Server_Exception on invalid input
      */
     public function setClass($class, $namespace = '', $argv = null)
     {
-        if (is_string($class) && !class_exists($class)){
+        if (is_string($class) && !class_exists($class)) {
             require_once 'Zend/Amf/Server/Exception.php';
             throw new Zend_Amf_Server_Exception('Invalid method or class');
         } elseif (!is_string($class) && !is_object($class)) {
@@ -793,8 +815,8 @@ class Zend_Amf_Server implements Zend_Server_Interface
      * any arguments following the namespace will be aggregated and passed at
      * dispatch time.
      *
-     * @param  string|array $function Valid callback
-     * @param  string $namespace Optional namespace prefix
+     * @param string|array $function Valid callback
+     * @param string $namespace Optional namespace prefix
      * @return Zend_Amf_Server
      * @throws Zend_Amf_Server_Exception
      */
@@ -810,7 +832,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
             $argv = array_slice(func_get_args(), 2);
         }
 
-        $function = (array) $function;
+        $function = (array)$function;
         foreach ($function as $func) {
             if (!is_string($func) || !function_exists($func)) {
                 require_once 'Zend/Amf/Server/Exception.php';
@@ -858,7 +880,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
         $table = array();
         foreach ($this->_methods as $key => $dispatchable) {
             if ($dispatchable instanceof Zend_Server_Reflection_Function_Abstract) {
-                $ns   = $dispatchable->getNamespace();
+                $ns = $dispatchable->getNamespace();
                 $name = $dispatchable->getName();
                 $name = empty($ns) ? $name : $ns . '.' . $name;
 
@@ -872,7 +894,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
 
             if ($dispatchable instanceof Zend_Server_Reflection_Class) {
                 foreach ($dispatchable->getMethods() as $method) {
-                    $ns   = $method->getNamespace();
+                    $ns = $method->getNamespace();
                     $name = $method->getName();
                     $name = empty($ns) ? $name : $ns . '.' . $name;
 
@@ -889,13 +911,12 @@ class Zend_Amf_Server implements Zend_Server_Interface
     }
 
 
-
     /**
      * Raise a server fault
      *
      * Unimplemented
      *
-     * @param  string|Exception $fault
+     * @param string|Exception $fault
      * @return void
      */
     public function fault($fault = null, $code = 404)
@@ -920,7 +941,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
      *
      * Unimplemented
      *
-     * @param  mixed $mode
+     * @param mixed $mode
      * @return void
      */
     public function setPersistence($mode)
@@ -932,7 +953,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
      *
      * Unimplemented
      *
-     * @param  array $definition
+     * @param array $definition
      * @return void
      */
     public function loadFunctions($definition)
@@ -942,8 +963,8 @@ class Zend_Amf_Server implements Zend_Server_Interface
     /**
      * Map ActionScript classes to PHP classes
      *
-     * @param  string $asClass
-     * @param  string $phpClass
+     * @param string $asClass
+     * @param string $phpClass
      * @return Zend_Amf_Server
      */
     public function setClassMap($asClass, $phpClass)
@@ -970,9 +991,9 @@ class Zend_Amf_Server implements Zend_Server_Interface
      *
      * Takes the provided parameters from the request, and attempts to cast them
      * to objects, if the prototype defines any as explicit object types
-     * 
-     * @param  Reflection $reflectionMethod 
-     * @param  array $params 
+     *
+     * @param Reflection $reflectionMethod
+     * @param array $params
      * @return array
      */
     protected function _castParameters($reflectionMethod, array $params)
@@ -995,7 +1016,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
             'object',
             'stdclass',
         );
-        $types      = array();
+        $types = array();
         foreach ($prototypes as $prototype) {
             foreach ($prototype->getParameters() as $parameter) {
                 $type = $parameter->getType();

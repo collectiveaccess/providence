@@ -40,11 +40,11 @@ class Zend_Filter_BaseName implements Zend_Filter_Interface
      *
      * Returns basename($value)
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     public function filter($value)
     {
-        return basename((string) $value);
+        return basename((string)$value);
     }
 }

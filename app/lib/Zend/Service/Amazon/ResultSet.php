@@ -68,7 +68,7 @@ class Zend_Service_Amazon_ResultSet implements SeekableIterator
     /**
      * Create an instance of Zend_Service_Amazon_ResultSet and create the necessary data objects
      *
-     * @param  DOMDocument $dom
+     * @param DOMDocument $dom
      * @return void
      */
     public function __construct(DOMDocument $dom)
@@ -87,7 +87,7 @@ class Zend_Service_Amazon_ResultSet implements SeekableIterator
     public function totalResults()
     {
         $result = $this->_xpath->query('//az:TotalResults/text()');
-        return (int) $result->item(0)->data;
+        return (int)$result->item(0)->data;
     }
 
     /**
@@ -98,7 +98,7 @@ class Zend_Service_Amazon_ResultSet implements SeekableIterator
     public function totalPages()
     {
         $result = $this->_xpath->query('//az:TotalPages/text()');
-        return (int) $result->item(0)->data;
+        return (int)$result->item(0)->data;
     }
 
     /**
@@ -144,13 +144,13 @@ class Zend_Service_Amazon_ResultSet implements SeekableIterator
     /**
      * Implement SeekableIterator::seek()
      *
-     * @param  int $index
-     * @throws OutOfBoundsException
+     * @param int $index
      * @return void
+     * @throws OutOfBoundsException
      */
     public function seek($index)
     {
-        $indexInt = (int) $index;
+        $indexInt = (int)$index;
         if ($indexInt >= 0 && (null === $this->_results || $indexInt < $this->_results->length)) {
             $this->_currentIndex = $indexInt;
         } else {

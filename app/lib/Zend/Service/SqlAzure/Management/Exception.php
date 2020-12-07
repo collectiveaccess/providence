@@ -20,7 +20,7 @@
  * @version    $Id$
  */
 
- require_once 'Zend/Service/SqlAzure/Exception.php';
+require_once 'Zend/Service/SqlAzure/Exception.php';
 
 /**
  * @category   Zend
@@ -30,6 +30,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_SqlAzure_Management_Exception
-	extends Zend_Service_SqlAzure_Exception
+    extends Zend_Service_SqlAzure_Exception
 {
 }

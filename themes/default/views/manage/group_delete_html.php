@@ -26,11 +26,19 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_group 				= $this->getVar('t_group');
-	$vn_group_id 		= $this->getVar('group_id');
+$t_group = $this->getVar('t_group');
+$vn_group_id = $this->getVar('group_id');
 ?>
 <div class="sectionBox">
-<?php
-	print caDeleteWarningBox($this->request, $t_group, $t_group->getName(), 'manage', 'groups', 'ListGroups', array('group_id' => $vn_group_id));
-?>
+    <?php
+    print caDeleteWarningBox(
+        $this->request,
+        $t_group,
+        $t_group->getName(),
+        'manage',
+        'groups',
+        'ListGroups',
+        array('group_id' => $vn_group_id)
+    );
+    ?>
 </div>

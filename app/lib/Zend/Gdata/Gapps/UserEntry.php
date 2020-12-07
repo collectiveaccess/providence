@@ -179,8 +179,8 @@ class Zend_Gdata_Gapps_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value of the login property for this object.
      *
-     * @see setLogin
      * @return Zend_Gdata_Gapps_Extension_Login The requested object.
+     * @see setLogin
      */
     public function getLogin()
     {
@@ -204,8 +204,8 @@ class Zend_Gdata_Gapps_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value of the name property for this object.
      *
-     * @see setName
      * @return Zend_Gdata_Gapps_Extension_Name The requested object.
+     * @see setName
      */
     public function getName()
     {
@@ -229,8 +229,8 @@ class Zend_Gdata_Gapps_UserEntry extends Zend_Gdata_Entry
     /**
      * Get the value of the quota property for this object.
      *
-     * @see setQuota
      * @return Zend_Gdata_Gapps_Extension_Quota The requested object.
+     * @see setQuota
      */
     public function getQuota()
     {

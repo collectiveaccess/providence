@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * index.php : health check
  * ----------------------------------------------------------------------
@@ -25,38 +26,39 @@
  *
  * ----------------------------------------------------------------------
  */
-	define("__CA_APP_TYPE__", "PROVIDENCE");
-	define("__CA_MICROTIME_START_OF_REQUEST__", microtime());
-	define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
-	require("../app/helpers/errorHelpers.php");
-	
-	$s = explode("/", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__);
-	array_pop($s); array_pop($s);
-	define("__CA_BASE_DIR__", join("/", $s));
-	
-	if (!file_exists('../setup.php')) {
-		print "No setup.php found";
-		http_response_code(500);
-		exit; 
-	}
-	if (!@require('../setup.php')) { 
-		print "Loading setup.php failed";
-	    http_response_code(500);
-		exit; 
-	}
-	if (!@require_once('../app/helpers/post-setup.php')) {
-		print "Loading post-setup.php failed";
-	    http_response_code(500);
-		exit; 
-	}
-	
-	require_once(__CA_APP_DIR__.'/lib/ConfigurationCheck.php');
-	ConfigurationCheck::performQuick(['skipPathChecks' => true]);
-	if(ConfigurationCheck::foundErrors()){
-		print "Configuration check failed";
-		ConfigurationCheck::renderErrorsAsHTMLOutput();
-	    http_response_code(500);
-		exit; 
-	}
-	
-	print "status=happy";
+define("__CA_APP_TYPE__", "PROVIDENCE");
+define("__CA_MICROTIME_START_OF_REQUEST__", microtime());
+define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
+require("../app/helpers/errorHelpers.php");
+
+$s = explode("/", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__);
+array_pop($s);
+array_pop($s);
+define("__CA_BASE_DIR__", join("/", $s));
+
+if (!file_exists('../setup.php')) {
+    print "No setup.php found";
+    http_response_code(500);
+    exit;
+}
+if (!@require('../setup.php')) {
+    print "Loading setup.php failed";
+    http_response_code(500);
+    exit;
+}
+if (!@require_once('../app/helpers/post-setup.php')) {
+    print "Loading post-setup.php failed";
+    http_response_code(500);
+    exit;
+}
+
+require_once(__CA_APP_DIR__ . '/lib/ConfigurationCheck.php');
+ConfigurationCheck::performQuick(['skipPathChecks' => true]);
+if (ConfigurationCheck::foundErrors()) {
+    print "Configuration check failed";
+    ConfigurationCheck::renderErrorsAsHTMLOutput();
+    http_response_code(500);
+    exit;
+}
+
+print "status=happy";

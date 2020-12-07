@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/views/administrate/setup/interface_editor/screen_html.php : 
  * ----------------------------------------------------------------------
@@ -25,33 +26,62 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_subject = $this->getVar('t_subject');
-	$vn_subject_id = $this->getVar('subject_id');
-	
-	$t_ui = $this->getVar('t_ui');
-	
-	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'InterfaceEditorForm').' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '',  'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit/'.$this->request->getActionExtra(), array('ui_id' => $vn_subject_id)), 
-		'', 
-		(intval($vn_subject_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'form-button deleteButton', 'administrate/setup/interface_editor', 'InterfaceEditor', 'Delete/'.$this->request->getActionExtra(), array('ui_id' => $vn_subject_id)) : ''
-	);
-?>
-	<div class="sectionBox">
-<?php
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/ui_id/'.$vn_subject_id, 'InterfaceEditorForm', null, 'POST', 'multipart/form-data');
-			
-			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'InterfaceEditorForm'));
-			
-			print join("\n", $va_form_elements);
-			
-			print $vs_control_box;
-?>
-			<input type='hidden' name='editor_type' value='<?php print $t_subject->get('editor_type'); ?>'/>
-			<input type='hidden' name='ui_id' value='<?php print $vn_subject_id; ?>'/>
-		</form>
-	</div>
+$t_subject = $this->getVar('t_subject');
+$vn_subject_id = $this->getVar('subject_id');
 
-	<div class="editorBottomPadding"><!-- empty --></div>
+$t_ui = $this->getVar('t_ui');
+
+print $vs_control_box = caFormControlBox(
+    caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'InterfaceEditorForm') . ' ' .
+    caFormNavButton(
+        $this->request,
+        __CA_NAV_ICON_CANCEL__,
+        _t("Cancel"),
+        '',
+        'administrate/setup/interface_editor',
+        'InterfaceEditor',
+        'Edit/' . $this->request->getActionExtra(),
+        array('ui_id' => $vn_subject_id)
+    ),
+    '',
+    (intval($vn_subject_id) > 0) ? caFormNavButton(
+        $this->request,
+        __CA_NAV_ICON_DELETE__,
+        _t("Delete"),
+        'form-button deleteButton',
+        'administrate/setup/interface_editor',
+        'InterfaceEditor',
+        'Delete/' . $this->request->getActionExtra(),
+        array('ui_id' => $vn_subject_id)
+    ) : ''
+);
+?>
+<div class="sectionBox">
+    <?php
+    print caFormTag(
+        $this->request,
+        'Save/' . $this->request->getActionExtra() . '/ui_id/' . $vn_subject_id,
+        'InterfaceEditorForm',
+        null,
+        'POST',
+        'multipart/form-data'
+    );
+
+    $va_form_elements = $t_subject->getBundleFormHTMLForScreen(
+        $this->request->getActionExtra(),
+        array(
+            'request' => $this->request,
+            'formName' => 'InterfaceEditorForm'
+        )
+    );
+
+    print join("\n", $va_form_elements);
+
+    print $vs_control_box;
+    ?>
+    <input type='hidden' name='editor_type' value='<?php print $t_subject->get('editor_type'); ?>'/>
+    <input type='hidden' name='ui_id' value='<?php print $vn_subject_id; ?>'/>
+    </form>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>

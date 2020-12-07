@@ -138,7 +138,7 @@ class Zend_Controller_Action_Helper_Cache
                 && method_exists($backend, 'removeRecursively')
             ) {
                 $result = $backend->removeRecursively($encodedCacheId);
-                if (is_null($result) ) {
+                if (is_null($result)) {
                     $result = $backend->removeRecursively($relativeUrl);
                 }
                 return $result;
@@ -146,7 +146,7 @@ class Zend_Controller_Action_Helper_Cache
         }
 
         $result = $cache->remove($encodedCacheId);
-        if (is_null($result) ) {
+        if (is_null($result)) {
             $result = $cache->remove($relativeUrl);
         }
         return $result;
@@ -179,16 +179,16 @@ class Zend_Controller_Action_Helper_Cache
         $stats = ob_get_status(true);
         foreach ($stats as $status) {
             if ($status['name'] == 'Zend_Cache_Frontend_Page::_flush'
-            || $status['name'] == 'Zend_Cache_Frontend_Capture::_flush') {
+                || $status['name'] == 'Zend_Cache_Frontend_Capture::_flush') {
                 $obStarted = true;
             }
         }
         if (!isset($obStarted) && isset($this->_caching[$controller]) &&
-        in_array($action, $this->_caching[$controller])) {
+            in_array($action, $this->_caching[$controller])) {
             $reqUri = $this->getRequest()->getRequestUri();
             $tags = array();
             if (isset($this->_tags[$controller][$action])
-            && !empty($this->_tags[$controller][$action])) {
+                && !empty($this->_tags[$controller][$action])) {
                 $tags = array_unique($this->_tags[$controller][$action]);
             }
             $extension = null;
@@ -205,8 +205,8 @@ class Zend_Controller_Action_Helper_Cache
      * is trapped in the Frontend classes. Will try to get this reversed for ZF 2.0
      * because it's a major annoyance to have IDs so restricted!
      *
-     * @return string
      * @param string $requestUri
+     * @return string
      */
     protected function _encodeCacheId($requestUri)
     {
@@ -238,7 +238,7 @@ class Zend_Controller_Action_Helper_Cache
         }
         $front = Zend_Controller_Front::getInstance();
         if ($front->getParam('bootstrap')
-        && $front->getParam('bootstrap')->getResource('CacheManager')) {
+            && $front->getParam('bootstrap')->getResource('CacheManager')) {
             return $front->getParam('bootstrap')
                 ->getResource('CacheManager');
         }
@@ -279,11 +279,14 @@ class Zend_Controller_Action_Helper_Cache
     {
         if (method_exists($this->getManager(), $method)) {
             return call_user_func_array(
-                array($this->getManager(), $method), $args
+                array($this->getManager(), $method),
+                $args
             );
         }
-        throw new Zend_Controller_Action_Exception('Method does not exist:'
-            . $method);
+        throw new Zend_Controller_Action_Exception(
+            'Method does not exist:'
+            . $method
+        );
     }
 
 }

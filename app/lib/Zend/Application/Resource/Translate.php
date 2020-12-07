@@ -70,11 +70,13 @@ class Zend_Application_Resource_Translate extends Zend_Application_Resource_Reso
             if (!isset($options['content']) && !isset($options['data'])) {
                 require_once 'Zend/Application/Resource/Exception.php';
                 throw new Zend_Application_Resource_Exception('No translation source data provided.');
-            } else if (array_key_exists('content', $options) && array_key_exists('data', $options)) {
-                require_once 'Zend/Application/Resource/Exception.php';
-                throw new Zend_Application_Resource_Exception(
-                    'Conflict on translation source data: choose only one key between content and data.'
-                );
+            } else {
+                if (array_key_exists('content', $options) && array_key_exists('data', $options)) {
+                    require_once 'Zend/Application/Resource/Exception.php';
+                    throw new Zend_Application_Resource_Exception(
+                        'Conflict on translation source data: choose only one key between content and data.'
+                    );
+                }
             }
 
             if (empty($options['adapter'])) {
@@ -87,7 +89,7 @@ class Zend_Application_Resource_Translate extends Zend_Application_Resource_Reso
             }
 
             if (isset($options['options'])) {
-                foreach($options['options'] as $key => $value) {
+                foreach ($options['options'] as $key => $value) {
                     $options[$key] = $value;
                 }
             }
@@ -108,17 +110,19 @@ class Zend_Application_Resource_Translate extends Zend_Application_Resource_Reso
             }
 
             $key = (isset($options['registry_key']) && !is_numeric($options['registry_key']))
-                 ? $options['registry_key']
-                 : self::DEFAULT_REGISTRY_KEY;
+                ? $options['registry_key']
+                : self::DEFAULT_REGISTRY_KEY;
             unset($options['registry_key']);
 
-            if(Zend_Registry::isRegistered($key)) {
+            if (Zend_Registry::isRegistered($key)) {
                 $translate = Zend_Registry::get($key);
-                if(!$translate instanceof Zend_Translate) {
+                if (!$translate instanceof Zend_Translate) {
                     require_once 'Zend/Application/Resource/Exception.php';
-                    throw new Zend_Application_Resource_Exception($key
-                                   . ' already registered in registry but is '
-                                   . 'no instance of Zend_Translate');
+                    throw new Zend_Application_Resource_Exception(
+                        $key
+                        . ' already registered in registry but is '
+                        . 'no instance of Zend_Translate'
+                    );
                 }
 
                 $translate->addTranslation($options);

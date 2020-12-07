@@ -67,16 +67,16 @@ class Zend_Validate implements Zend_Validate_Interface
      * If $breakChainOnFailure is true, then if the validator fails, the next validator in the chain,
      * if one exists, will not be executed.
      *
-     * @param  Zend_Validate_Interface $validator
-     * @param  boolean                 $breakChainOnFailure
+     * @param Zend_Validate_Interface $validator
+     * @param boolean $breakChainOnFailure
      * @return Zend_Validate Provides a fluent interface
      */
     public function addValidator(Zend_Validate_Interface $validator, $breakChainOnFailure = false)
     {
         $this->_validators[] = array(
             'instance' => $validator,
-            'breakChainOnFailure' => (boolean) $breakChainOnFailure
-            );
+            'breakChainOnFailure' => (boolean)$breakChainOnFailure
+        );
         return $this;
     }
 
@@ -85,13 +85,13 @@ class Zend_Validate implements Zend_Validate_Interface
      *
      * Validators are run in the order in which they were added to the chain (FIFO).
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return boolean
      */
     public function isValid($value)
     {
         $this->_messages = array();
-        $this->_errors   = array();
+        $this->_errors = array();
         $result = true;
         foreach ($this->_validators as $element) {
             $validator = $element['instance'];
@@ -101,7 +101,7 @@ class Zend_Validate implements Zend_Validate_Interface
             $result = false;
             $messages = $validator->getMessages();
             $this->_messages = array_merge($this->_messages, $messages);
-            $this->_errors   = array_merge($this->_errors,   array_keys($messages));
+            $this->_errors = array_merge($this->_errors, array_keys($messages));
             if ($element['breakChainOnFailure']) {
                 break;
             }
@@ -153,7 +153,7 @@ class Zend_Validate implements Zend_Validate_Interface
     public static function setDefaultNamespaces($namespace)
     {
         if (!is_array($namespace)) {
-            $namespace = array((string) $namespace);
+            $namespace = array((string)$namespace);
         }
 
         self::$_defaultNamespaces = $namespace;
@@ -168,7 +168,7 @@ class Zend_Validate implements Zend_Validate_Interface
     public static function addDefaultNamespaces($namespace)
     {
         if (!is_array($namespace)) {
-            $namespace = array((string) $namespace);
+            $namespace = array((string)$namespace);
         }
 
         self::$_defaultNamespaces = array_unique(array_merge(self::$_defaultNamespaces, $namespace));
@@ -185,23 +185,23 @@ class Zend_Validate implements Zend_Validate_Interface
     }
 
     /**
-     * @param  mixed    $value
-     * @param  string   $classBaseName
-     * @param  array    $args          OPTIONAL
-     * @param  mixed    $namespaces    OPTIONAL
+     * @param mixed $value
+     * @param string $classBaseName
+     * @param array $args OPTIONAL
+     * @param mixed $namespaces OPTIONAL
      * @return boolean
      * @throws Zend_Validate_Exception
      */
     public static function is($value, $classBaseName, array $args = array(), $namespaces = array())
     {
-        $namespaces = array_merge((array) $namespaces, self::$_defaultNamespaces, array('Zend_Validate'));
-        $className  = ucfirst($classBaseName);
+        $namespaces = array_merge((array)$namespaces, self::$_defaultNamespaces, array('Zend_Validate'));
+        $className = ucfirst($classBaseName);
         try {
             if (!class_exists($className, false)) {
                 require_once 'Zend/Loader.php';
-                foreach($namespaces as $namespace) {
+                foreach ($namespaces as $namespace) {
                     $class = $namespace . '_' . $className;
-                    $file  = str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
+                    $file = str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
                     if (Zend_Loader::isReadable($file)) {
                         Zend_Loader::loadClass($class);
                         $className = $class;
@@ -213,9 +213,9 @@ class Zend_Validate implements Zend_Validate_Interface
             $class = new ReflectionClass($className);
             if ($class->implementsInterface('Zend_Validate_Interface')) {
                 if ($class->hasMethod('__construct')) {
-                    $keys    = array_keys($args);
+                    $keys = array_keys($args);
                     $numeric = false;
-                    foreach($keys as $key) {
+                    foreach ($keys as $key) {
                         if (is_numeric($key)) {
                             $numeric = true;
                             break;

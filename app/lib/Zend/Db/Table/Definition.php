@@ -79,7 +79,7 @@ class Zend_Db_Table_Definition
 
     /**
      * @param string $tableName
-     * @param array  $tableConfig
+     * @param array $tableConfig
      * @return Zend_Db_Table_Definition
      */
     public function setTableConfig($tableName, array $tableConfig)

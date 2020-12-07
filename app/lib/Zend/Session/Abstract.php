@@ -72,8 +72,8 @@ abstract class Zend_Session_Abstract
     /**
      * namespaceIsset() - check to see if a namespace or a variable within a namespace is set
      *
-     * @param  string $namespace
-     * @param  string $name
+     * @param string $namespace
+     * @param string $name
      * @return bool
      */
     protected static function _namespaceIsset($namespace, $name = null)
@@ -87,9 +87,9 @@ abstract class Zend_Session_Abstract
         }
 
         if ($name === null) {
-            return ( isset($_SESSION[$namespace]) || isset(self::$_expiringData[$namespace]) );
+            return (isset($_SESSION[$namespace]) || isset(self::$_expiringData[$namespace]));
         } else {
-            return ( isset($_SESSION[$namespace][$name]) || isset(self::$_expiringData[$namespace][$name]) );
+            return (isset($_SESSION[$namespace][$name]) || isset(self::$_expiringData[$namespace][$name]));
         }
     }
 
@@ -97,10 +97,10 @@ abstract class Zend_Session_Abstract
     /**
      * namespaceUnset() - unset a namespace or a variable within a namespace
      *
-     * @param  string $namespace
-     * @param  string $name
-     * @throws Zend_Session_Exception
+     * @param string $namespace
+     * @param string $name
      * @return void
+     * @throws Zend_Session_Exception
      */
     protected static function _namespaceUnset($namespace, $name = null)
     {
@@ -112,7 +112,7 @@ abstract class Zend_Session_Abstract
             throw new Zend_Session_Exception(self::_THROW_NOT_WRITABLE_MSG);
         }
 
-        $name = (string) $name;
+        $name = (string)$name;
 
         // check to see if the api wanted to remove a var from a namespace or a namespace
         if ($name === '') {
@@ -133,8 +133,8 @@ abstract class Zend_Session_Abstract
     /**
      * namespaceGet() - Get $name variable from $namespace, returning by reference.
      *
-     * @param  string $namespace
-     * @param  string $name
+     * @param string $namespace
+     * @param string $name
      * @return mixed
      */
     protected static function & _namespaceGet($namespace, $name = null)
@@ -176,7 +176,7 @@ abstract class Zend_Session_Abstract
      */
     protected static function _namespaceGetAll($namespace)
     {
-        $currentData  = (isset($_SESSION[$namespace]) && is_array($_SESSION[$namespace])) ?
+        $currentData = (isset($_SESSION[$namespace]) && is_array($_SESSION[$namespace])) ?
             $_SESSION[$namespace] : array();
         $expiringData = (isset(self::$_expiringData[$namespace]) && is_array(self::$_expiringData[$namespace])) ?
             self::$_expiringData[$namespace] : array();

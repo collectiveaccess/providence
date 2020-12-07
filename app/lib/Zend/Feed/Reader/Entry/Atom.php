@@ -57,9 +57,9 @@ class Zend_Feed_Reader_Entry_Atom extends Zend_Feed_Reader_EntryAbstract impleme
     /**
      * Constructor
      *
-     * @param  DOMElement $entry
-     * @param  int $entryKey
-     * @param  string $type
+     * @param DOMElement $entry
+     * @param int $entryKey
+     * @param string $type
      * @return void
      */
     public function __construct(DOMElement $entry, $entryKey, $type = null)
@@ -82,7 +82,7 @@ class Zend_Feed_Reader_Entry_Atom extends Zend_Feed_Reader_EntryAbstract impleme
     /**
      * Get the specified author
      *
-     * @param  int $index
+     * @param int $index
      * @return string|null
      */
     public function getAuthor($index = 0)
@@ -225,7 +225,7 @@ class Zend_Feed_Reader_Entry_Atom extends Zend_Feed_Reader_EntryAbstract impleme
     /**
      * Get a specific link
      *
-     * @param  int $index
+     * @param int $index
      * @return string
      */
     public function getLink($index = 0)

@@ -95,7 +95,8 @@ class Zend_Gdata_Photos_CommentEntry extends Zend_Gdata_Entry
 
         $category = new Zend_Gdata_App_Extension_Category(
             'http://schemas.google.com/photos/2007#comment',
-            'http://schemas.google.com/g/2005#kind');
+            'http://schemas.google.com/g/2005#kind'
+        );
         $this->setCategory(array($category));
     }
 
@@ -150,8 +151,8 @@ class Zend_Gdata_Photos_CommentEntry extends Zend_Gdata_Entry
     /**
      * Get the value for this element's gphoto:photoid attribute.
      *
-     * @see setGphotoPhotoId
      * @return string The requested attribute.
+     * @see setGphotoPhotoId
      */
     public function getGphotoPhotoId()
     {
@@ -173,8 +174,8 @@ class Zend_Gdata_Photos_CommentEntry extends Zend_Gdata_Entry
     /**
      * Get the value for this element's gphoto:id attribute.
      *
-     * @see setGphotoId
      * @return string The requested attribute.
+     * @see setGphotoId
      */
     public function getGphotoId()
     {

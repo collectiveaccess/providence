@@ -43,12 +43,12 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
     /**
      * Set defaultTimeout
      *
-     * @param  int $timeout
+     * @param int $timeout
      * @return Zend_Dojo_Form_Element_NumberSpinner
      */
     public function setDefaultTimeout($timeout)
     {
-        $this->setDijitParam('defaultTimeout', (int) $timeout);
+        $this->setDijitParam('defaultTimeout', (int)$timeout);
         return $this;
     }
 
@@ -65,12 +65,12 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
     /**
      * Set timeoutChangeRate
      *
-     * @param  int $rate
+     * @param int $rate
      * @return Zend_Dojo_Form_Element_NumberSpinner
      */
     public function setTimeoutChangeRate($rate)
     {
-        $this->setDijitParam('timeoutChangeRate', (int) $rate);
+        $this->setDijitParam('timeoutChangeRate', (int)$rate);
         return $this;
     }
 
@@ -87,12 +87,12 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
     /**
      * Set largeDelta
      *
-     * @param  int $delta
+     * @param int $delta
      * @return Zend_Dojo_Form_Element_NumberSpinner
      */
     public function setLargeDelta($delta)
     {
-        $this->setDijitParam('largeDelta', (float) $delta);
+        $this->setDijitParam('largeDelta', (float)$delta);
         return $this;
     }
 
@@ -109,12 +109,12 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
     /**
      * Set smallDelta
      *
-     * @param  int $delta
+     * @param int $delta
      * @return Zend_Dojo_Form_Element_NumberSpinner
      */
     public function setSmallDelta($delta)
     {
-        $this->setDijitParam('smallDelta', (float) $delta);
+        $this->setDijitParam('smallDelta', (float)$delta);
         return $this;
     }
 
@@ -131,12 +131,12 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
     /**
      * Set intermediateChanges flag
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_Dojo_Form_Element_TextBox
      */
     public function setIntermediateChanges($flag)
     {
-        $this->setDijitParam('intermediateChanges', (bool) $flag);
+        $this->setDijitParam('intermediateChanges', (bool)$flag);
         return $this;
     }
 
@@ -156,12 +156,12 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
     /**
      * Set rangeMessage
      *
-     * @param  string $message
+     * @param string $message
      * @return Zend_Dojo_Form_Element_NumberSpinner
      */
     public function setRangeMessage($message)
     {
-        $this->setDijitParam('rangeMessage', (string) $message);
+        $this->setDijitParam('rangeMessage', (string)$message);
         return $this;
     }
 
@@ -178,7 +178,7 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
     /**
      * Set minimum value
      *
-     * @param  int $value
+     * @param int $value
      * @return Zend_Dojo_Form_Element_NumberSpinner
      */
     public function setMin($value)
@@ -187,7 +187,7 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
         if ($this->hasDijitParam('constraints')) {
             $constraints = $this->getDijitParam('constraints');
         }
-        $constraints['min'] = (float) $value;
+        $constraints['min'] = (float)$value;
         $this->setDijitParam('constraints', $constraints);
         return $this;
     }
@@ -212,7 +212,7 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
     /**
      * Set maximum value
      *
-     * @param  int $value
+     * @param int $value
      * @return Zend_Dojo_Form_Element_NumberSpinner
      */
     public function setMax($value)
@@ -221,7 +221,7 @@ class Zend_Dojo_Form_Element_NumberSpinner extends Zend_Dojo_Form_Element_Valida
         if ($this->hasDijitParam('constraints')) {
             $constraints = $this->getDijitParam('constraints');
         }
-        $constraints['max'] = (float) $value;
+        $constraints['max'] = (float)$value;
         $this->setDijitParam('constraints', $constraints);
         return $this;
     }

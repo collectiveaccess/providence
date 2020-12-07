@@ -77,10 +77,10 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
      * Binds a parameter to the specified variable name.
      *
      * @param mixed $parameter Name the parameter, either integer or string.
-     * @param mixed $variable  Reference to PHP variable containing the value.
-     * @param mixed $type      OPTIONAL Datatype of SQL parameter.
-     * @param mixed $length    OPTIONAL Length of SQL parameter.
-     * @param mixed $options   OPTIONAL Other options.
+     * @param mixed $variable Reference to PHP variable containing the value.
+     * @param mixed $type OPTIONAL Datatype of SQL parameter.
+     * @param mixed $length OPTIONAL Length of SQL parameter.
+     * @param mixed $options OPTIONAL Other options.
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */
@@ -189,10 +189,10 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
 
             // make all params passed by reference
             $params_ = array();
-            $temp    = array();
-            $i       = 1;
+            $temp = array();
+            $i = 1;
             foreach ($params as $param) {
-                $temp[$i]  = $param;
+                $temp[$i] = $param;
                 $params_[] = &$temp[$i];
                 $i++;
             }
@@ -214,9 +214,9 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
     /**
      * Fetches a row from the result set.
      *
-     * @param  int $style  OPTIONAL Fetch mode for this fetch operation.
-     * @param  int $cursor OPTIONAL Absolute, relative, or other.
-     * @param  int $offset OPTIONAL Number for absolute or relative cursors.
+     * @param int $style OPTIONAL Fetch mode for this fetch operation.
+     * @param int $cursor OPTIONAL Absolute, relative, or other.
+     * @param int $offset OPTIONAL Number for absolute or relative cursors.
      * @return mixed Array, object, or scalar depending on fetch mode.
      * @throws Zend_Db_Statement_Exception
      */
@@ -259,15 +259,15 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
                 break;
             case Zend_Db::FETCH_BOTH:
                 $assoc = array_combine($this->_keys, $values);
-                $row   = array_merge($values, $assoc);
+                $row = array_merge($values, $assoc);
                 break;
             case Zend_Db::FETCH_OBJ:
-                $row = (object) array_combine($this->_keys, $values);
+                $row = (object)array_combine($this->_keys, $values);
                 break;
             case Zend_Db::FETCH_BOUND:
                 $assoc = array_combine($this->_keys, $values);
-                $row   = array_merge($values, $assoc);
-                $row   = $this->_fetchBound($row);
+                $row = array_merge($values, $assoc);
+                $row = $this->_fetchBound($row);
                 break;
             default:
                 require_once 'Zend/Db/Statement/Sqlsrv/Exception.php';
@@ -313,8 +313,8 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
     /**
      * Fetches the next row and returns it as an object.
      *
-     * @param string $class  OPTIONAL Name of the class to create.
-     * @param array  $config OPTIONAL Constructor arguments for the class.
+     * @param string $class OPTIONAL Name of the class to create.
+     * @param array $config OPTIONAL Constructor arguments for the class.
      * @return mixed One object instance of the specified class.
      * @throws Zend_Db_Statement_Exception
      */
@@ -376,7 +376,7 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
             require_once 'Zend/Db/Statement/Sqlsrv/Exception.php';
             throw new Zend_Db_Statement_Sqlsrv_Exception(sqlsrv_errors());
         }
-        
+
         // reset column keys
         $this->_keys = null;
 
@@ -411,12 +411,12 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
 
         return $num_rows;
     }
-    
+
     /**
      * Returns an array containing all of the result set rows.
      *
      * @param int $style OPTIONAL Fetch mode.
-     * @param int $col   OPTIONAL Column number, if fetch mode is by column.
+     * @param int $col OPTIONAL Column number, if fetch mode is by column.
      * @return array Collection of rows, each in a format by the fetch mode.
      *
      * Behaves like parent, but if limit()

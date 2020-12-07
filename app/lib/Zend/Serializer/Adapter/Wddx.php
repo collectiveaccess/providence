@@ -44,7 +44,7 @@ class Zend_Serializer_Adapter_Wddx extends Zend_Serializer_Adapter_AdapterAbstra
     /**
      * Constructor
      *
-     * @param  array $opts
+     * @param array $opts
      * @return void
      * @throws Zend_Serializer_Exception if wddx extension not found
      */
@@ -61,8 +61,8 @@ class Zend_Serializer_Adapter_Wddx extends Zend_Serializer_Adapter_AdapterAbstra
     /**
      * Serialize PHP to WDDX
      *
-     * @param  mixed $value
-     * @param  array $opts
+     * @param mixed $value
+     * @param array $opts
      * @return string
      * @throws Zend_Serializer_Exception on wddx error
      */
@@ -87,8 +87,8 @@ class Zend_Serializer_Adapter_Wddx extends Zend_Serializer_Adapter_AdapterAbstra
     /**
      * Unserialize from WDDX to PHP
      *
-     * @param  string $wddx
-     * @param  array $opts
+     * @param string $wddx
+     * @param array $opts
      * @return mixed
      * @throws Zend_Serializer_Exception on wddx error
      */

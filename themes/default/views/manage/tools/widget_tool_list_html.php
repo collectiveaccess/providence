@@ -25,18 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vn_tool_count 	= $this->getVar('tool_count');
-	$o_tool_manager = $this->getVar('tool_manager');
-	$va_tools = $o_tool_manager->getTools();
-	
-	if(strtolower($this->request->getAction()) != 'index') {
-		print "<h3 class='nextPrevious'>".caNavLink($this->request, _t('Back to list'), '', 'manage', 'Tools', 'Index')."</h3>";
-	}
+
+$vn_tool_count = $this->getVar('tool_count');
+$o_tool_manager = $this->getVar('tool_manager');
+$va_tools = $o_tool_manager->getTools();
+
+if (strtolower($this->request->getAction()) != 'index') {
+    print "<h3 class='nextPrevious'>" . caNavLink(
+            $this->request,
+            _t('Back to list'),
+            '',
+            'manage',
+            'Tools',
+            'Index'
+        ) . "</h3>";
+}
 ?>
-<h4><div id='caColorbox' style='border: 6px solid #444444; padding-bottom:15px;'>
-<strong><?php print _t('Tools for your installation'); ?>:</strong>
-<p><?php
-	print (is_array($va_tools) && sizeof($va_tools)) ? join("<br/>", array_keys($va_tools)) : _t('None available');
-?></p>
-</div></h4>
+<h4>
+    <div id='caColorbox' style='border: 6px solid #444444; padding-bottom:15px;'>
+        <strong><?php print _t('Tools for your installation'); ?>:</strong>
+        <p><?php
+            print (is_array($va_tools) && sizeof($va_tools)) ? join("<br/>", array_keys($va_tools)) : _t(
+                'None available'
+            );
+            ?></p>
+    </div>
+</h4>

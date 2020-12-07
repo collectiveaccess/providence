@@ -68,11 +68,11 @@ class Zend_Tag_Item implements Zend_Tag_Taggable
     /**
      * Create a new tag according to the options
      *
-     * @param  array|Zend_Config $options
-     * @throws Zend_Tag_Exception When invalid options are provided
+     * @param array|Zend_Config $options
+     * @return void
      * @throws Zend_Tag_Exception When title was not set
      * @throws Zend_Tag_Exception When weight was not set
-     * @return void
+     * @throws Zend_Tag_Exception When invalid options are provided
      */
     public function __construct($options)
     {
@@ -101,7 +101,7 @@ class Zend_Tag_Item implements Zend_Tag_Taggable
     /**
      * Set options of the tag
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_Tag_Item
      */
     public function setOptions(array $options)
@@ -133,9 +133,9 @@ class Zend_Tag_Item implements Zend_Tag_Taggable
     /**
      * Set the title
      *
-     * @param  string $title
-     * @throws Zend_Tag_Exception When title is no string
+     * @param string $title
      * @return Zend_Tag_Item
+     * @throws Zend_Tag_Exception When title is no string
      */
     public function setTitle($title)
     {
@@ -144,7 +144,7 @@ class Zend_Tag_Item implements Zend_Tag_Taggable
             throw new Zend_Tag_Exception('Title must be a string');
         }
 
-        $this->_title = (string) $title;
+        $this->_title = (string)$title;
         return $this;
     }
 
@@ -161,9 +161,9 @@ class Zend_Tag_Item implements Zend_Tag_Taggable
     /**
      * Set the weight
      *
-     * @param  float $weight
-     * @throws Zend_Tag_Exception When weight is not numeric
+     * @param float $weight
      * @return Zend_Tag_Item
+     * @throws Zend_Tag_Exception When weight is not numeric
      */
     public function setWeight($weight)
     {
@@ -172,14 +172,14 @@ class Zend_Tag_Item implements Zend_Tag_Taggable
             throw new Zend_Tag_Exception('Weight must be numeric');
         }
 
-        $this->_weight = (float) $weight;
+        $this->_weight = (float)$weight;
         return $this;
     }
 
     /**
      * Set multiple params at once
      *
-     * @param  array $params
+     * @param array $params
      * @return Zend_Tag_Item
      */
     public function setParams(array $params)
@@ -194,8 +194,8 @@ class Zend_Tag_Item implements Zend_Tag_Taggable
     /**
      * Defined by Zend_Tag_Taggable
      *
-     * @param  string $name
-     * @param  mixed  $value
+     * @param string $name
+     * @param mixed $value
      * @return Zend_Tag_Item
      */
     public function setParam($name, $value)
@@ -207,7 +207,7 @@ class Zend_Tag_Item implements Zend_Tag_Taggable
     /**
      * Defined by Zend_Tag_Taggable
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function getParam($name)

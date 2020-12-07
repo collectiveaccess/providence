@@ -80,8 +80,10 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
      *
      * @return Zend_View_Helper_HeadLink
      */
-    public function headLink(array $attributes = null, $placement = Zend_View_Helper_Placeholder_Container_Abstract::APPEND)
-    {
+    public function headLink(
+        array $attributes = null,
+        $placement = Zend_View_Helper_Placeholder_Container_Abstract::APPEND
+    ) {
         if (null !== $attributes) {
             $item = $this->createData($attributes);
             switch ($placement) {
@@ -138,10 +140,10 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     public function __call($method, $args)
     {
         if (preg_match('/^(?P<action>set|(ap|pre)pend|offsetSet)(?P<type>Stylesheet|Alternate)$/', $method, $matches)) {
-            $argc   = count($args);
+            $argc = count($args);
             $action = $matches['action'];
-            $type   = $matches['type'];
-            $index  = null;
+            $type = $matches['type'];
+            $index = null;
 
             if ('offsetSet' == $action) {
                 if (0 < $argc) {
@@ -152,7 +154,7 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
 
             if (1 > $argc) {
                 require_once 'Zend/View/Exception.php';
-                $e =  new Zend_View_Exception(sprintf('%s requires at least one argument', $method));
+                $e = new Zend_View_Exception(sprintf('%s requires at least one argument', $method));
                 $e->setView($this->view);
                 throw $e;
             }
@@ -161,7 +163,7 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
                 $item = $this->createData($args[0]);
             } else {
                 $dataMethod = 'createData' . $type;
-                $item       = $this->$dataMethod($args);
+                $item = $this->$dataMethod($args);
             }
 
             if ($item) {
@@ -181,7 +183,7 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * Check if value is valid
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return boolean
      */
     protected function _isValid($value)
@@ -190,8 +192,8 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
             return false;
         }
 
-        $vars         = get_object_vars($value);
-        $keys         = array_keys($vars);
+        $vars = get_object_vars($value);
+        $keys = array_keys($vars);
         $intersection = array_intersect($this->_itemKeys, $keys);
         if (empty($intersection)) {
             return false;
@@ -203,14 +205,16 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * append()
      *
-     * @param  array $value
+     * @param array $value
      * @return void
      */
     public function append($value)
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('append() expects a data token; please use one of the custom append*() methods');
+            $e = new Zend_View_Exception(
+                'append() expects a data token; please use one of the custom append*() methods'
+            );
             $e->setView($this->view);
             throw $e;
         }
@@ -221,15 +225,17 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * offsetSet()
      *
-     * @param  string|int $index
-     * @param  array $value
+     * @param string|int $index
+     * @param array $value
      * @return void
      */
     public function offsetSet($index, $value)
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('offsetSet() expects a data token; please use one of the custom offsetSet*() methods');
+            $e = new Zend_View_Exception(
+                'offsetSet() expects a data token; please use one of the custom offsetSet*() methods'
+            );
             $e->setView($this->view);
             throw $e;
         }
@@ -240,14 +246,16 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * prepend()
      *
-     * @param  array $value
+     * @param array $value
      * @return Zend_Layout_ViewHelper_HeadLink
      */
     public function prepend($value)
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('prepend() expects a data token; please use one of the custom prepend*() methods');
+            $e = new Zend_View_Exception(
+                'prepend() expects a data token; please use one of the custom prepend*() methods'
+            );
             $e->setView($this->view);
             throw $e;
         }
@@ -258,7 +266,7 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * set()
      *
-     * @param  array $value
+     * @param array $value
      * @return Zend_Layout_ViewHelper_HeadLink
      */
     public function set($value)
@@ -277,22 +285,28 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * Create HTML link element from data item
      *
-     * @param  stdClass $item
+     * @param stdClass $item
      * @return string
      */
     public function itemToString(stdClass $item)
     {
-        $attributes = (array) $item;
-        $link       = '<link ';
+        $attributes = (array)$item;
+        $link = '<link ';
 
         foreach ($this->_itemKeys as $itemKey) {
             if (isset($attributes[$itemKey])) {
-                if(is_array($attributes[$itemKey])) {
-                    foreach($attributes[$itemKey] as $key => $value) {
+                if (is_array($attributes[$itemKey])) {
+                    foreach ($attributes[$itemKey] as $key => $value) {
                         $link .= sprintf('%s="%s" ', $key, ($this->_autoEscape) ? $this->_escape($value) : $value);
                     }
                 } else {
-                    $link .= sprintf('%s="%s" ', $itemKey, ($this->_autoEscape) ? $this->_escape($attributes[$itemKey]) : $attributes[$itemKey]);
+                    $link .= sprintf(
+                        '%s="%s" ',
+                        $itemKey,
+                        ($this->_autoEscape) ? $this->_escape(
+                            $attributes[$itemKey]
+                        ) : $attributes[$itemKey]
+                    );
                 }
             }
         }
@@ -309,8 +323,7 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
 
         if (isset($attributes['conditionalStylesheet'])
             && !empty($attributes['conditionalStylesheet'])
-            && is_string($attributes['conditionalStylesheet']))
-        {
+            && is_string($attributes['conditionalStylesheet'])) {
             $link = '<!--[if ' . $attributes['conditionalStylesheet'] . ']> ' . $link . '<![endif]-->';
         }
 
@@ -320,14 +333,14 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * Render link elements as string
      *
-     * @param  string|int $indent
+     * @param string|int $indent
      * @return string
      */
     public function toString($indent = null)
     {
         $indent = (null !== $indent)
-                ? $this->getWhitespace($indent)
-                : $this->getIndent();
+            ? $this->getWhitespace($indent)
+            : $this->getIndent();
 
         $items = array();
         $this->getContainer()->ksort();
@@ -341,28 +354,28 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * Create data item for stack
      *
-     * @param  array $attributes
+     * @param array $attributes
      * @return stdClass
      */
     public function createData(array $attributes)
     {
-        $data = (object) $attributes;
+        $data = (object)$attributes;
         return $data;
     }
 
     /**
      * Create item for stylesheet link item
      *
-     * @param  array $args
+     * @param array $args
      * @return stdClass|false Returns fals if stylesheet is a duplicate
      */
     public function createDataStylesheet(array $args)
     {
-        $rel                   = 'stylesheet';
-        $type                  = 'text/css';
-        $media                 = 'screen';
+        $rel = 'stylesheet';
+        $type = 'text/css';
+        $media = 'screen';
         $conditionalStylesheet = false;
-        $href                  = array_shift($args);
+        $href = array_shift($args);
 
         if ($this->_isDuplicateStylesheet($href)) {
             return false;
@@ -370,24 +383,24 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
 
         if (0 < count($args)) {
             $media = array_shift($args);
-            if(is_array($media)) {
+            if (is_array($media)) {
                 $media = implode(',', $media);
             } else {
-                $media = (string) $media;
+                $media = (string)$media;
             }
         }
         if (0 < count($args)) {
             $conditionalStylesheet = array_shift($args);
-            if(!empty($conditionalStylesheet) && is_string($conditionalStylesheet)) {
-                $conditionalStylesheet = (string) $conditionalStylesheet;
+            if (!empty($conditionalStylesheet) && is_string($conditionalStylesheet)) {
+                $conditionalStylesheet = (string)$conditionalStylesheet;
             } else {
                 $conditionalStylesheet = null;
             }
         }
 
-        if(0 < count($args) && is_array($args[0])) {
+        if (0 < count($args) && is_array($args[0])) {
             $extras = array_shift($args);
-            $extras = (array) $extras;
+            $extras = (array)$extras;
         }
 
         $attributes = compact('rel', 'type', 'href', 'media', 'conditionalStylesheet', 'extras');
@@ -397,7 +410,7 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * Is the linked stylesheet a duplicate?
      *
-     * @param  string $uri
+     * @param string $uri
      * @return bool
      */
     protected function _isDuplicateStylesheet($uri)
@@ -413,7 +426,7 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     /**
      * Create item for alternate link item
      *
-     * @param  array $args
+     * @param array $args
      * @return stdClass
      */
     public function createDataAlternate(array $args)
@@ -425,23 +438,23 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
             throw $e;
         }
 
-        $rel   = 'alternate';
-        $href  = array_shift($args);
-        $type  = array_shift($args);
+        $rel = 'alternate';
+        $href = array_shift($args);
+        $type = array_shift($args);
         $title = array_shift($args);
 
-        if(0 < count($args) && is_array($args[0])) {
+        if (0 < count($args) && is_array($args[0])) {
             $extras = array_shift($args);
-            $extras = (array) $extras;
+            $extras = (array)$extras;
 
-            if(isset($extras['media']) && is_array($extras['media'])) {
+            if (isset($extras['media']) && is_array($extras['media'])) {
                 $extras['media'] = implode(',', $extras['media']);
             }
         }
 
-        $href  = (string) $href;
-        $type  = (string) $type;
-        $title = (string) $title;
+        $href = (string)$href;
+        $type = (string)$type;
+        $title = (string)$title;
 
         $attributes = compact('rel', 'href', 'type', 'title', 'extras');
         return $this->createData($this->_applyExtras($attributes));
@@ -455,7 +468,7 @@ class Zend_View_Helper_HeadLink extends Zend_View_Helper_Placeholder_Container_S
     protected function _applyExtras($attributes)
     {
         if (isset($attributes['extras'])) {
-            foreach ($attributes['extras'] as $eKey=>$eVal) {
+            foreach ($attributes['extras'] as $eKey => $eVal) {
                 if (isset($attributes[$eKey])) {
                     $attributes[$eKey] = $eVal;
                     unset($attributes['extras'][$eKey]);

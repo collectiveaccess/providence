@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/TaxonomyController.php :
  * ----------------------------------------------------------------------
@@ -25,182 +26,185 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
-	require_once(__CA_LIB_DIR__."/Configuration.php");
- 	
- 
- 	class TaxonomyController extends ActionController {
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		# AJAX handlers
- 		# -------------------------------------------------------
-		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			$ps_query = trim($this->request->getParameter('term', pString));
-			$vo_conf = Configuration::load();
-			$va_items = array();
-			if (mb_strlen($ps_query) >= 3) {
-				try {
-					/* // ITIS
-					$i = 0;
-					$vo_doc = new DOMDocument();
-					//$t = new Timer();
-					$vs_result = @file_get_contents("http://www.itis.gov/ITISWebService/services/ITISService/searchForAnyMatch?srchKey={$ps_query}",0,$vo_ctx);
-					//file_put_contents("/tmp/times", "ITIS: {$t->getTime(2)}\n", FILE_APPEND);
-					if(strlen($vs_result)>0){
-						$vo_doc->loadXML($vs_result);
-						$vo_resultlist = $vo_doc->getElementsByTagName("anyMatchList");
-						foreach($vo_resultlist as $vo_result){
-							$vs_cn = $vs_sn = $vs_id = "";
-							foreach($vo_result->childNodes as $vo_field){
-								switch($vo_field->nodeName){
-									case "ax23:commonNameList":
-										foreach($vo_field->childNodes as $vo_cns){
-											if($vo_cns->nodeName == "ax23:commonNames"){
-												foreach($vo_cns->childNodes as $vo_cn){
-													if($vo_cn->nodeName == "ax23:commonName"){
-														$vs_cn = $vo_cn->textContent;
-													}
-												}
-											}
-										}
-										break;
-									case "ax23:tsn":
-										$vs_id = $vo_field->textContent;
-										break;
-									case "ax23:sciName":
-										$vs_sn = $vo_field->textContent;
-										break;
-									default:
-										break;
-								}
-							}
-							if(strlen($vs_id)>0){
-								$va_items["itis".$vs_id] = array(
-									"idno" => "ITIS:{$vs_id}",
-									"common_name" => $vs_cn,
-									"sci_name" => $vs_sn
-								);
-								if(++$i == 50){ // let's limit to 50 results, right?
-									break;
-								}
-							}
-						}
-					} else {
-						$va_items['error_itis'] = array(
-							'msg' => _t('ERROR: ITIS web service query failed.'),
-						);
-					}*/
+require_once(__CA_APP_DIR__ . "/helpers/displayHelpers.php");
+require_once(__CA_LIB_DIR__ . "/Configuration.php");
 
-					// uBio
-					$vo_conf = new Configuration();
-					$vs_ubio_keycode = trim($vo_conf->get("ubio_keycode"));
-					if(strlen($vs_ubio_keycode)>0) {
 
-						$vs_url = "http://www.ubio.org/webservices/service.php?function=namebank_search&searchName={$ps_query}&sci=1&vern=1&keyCode={$vs_ubio_keycode}";
-						$vs_result = caQueryExternalWebservice($vs_url);
+class TaxonomyController extends ActionController
+{
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+    # -------------------------------------------------------
+    # AJAX handlers
+    # -------------------------------------------------------
+    public function Get($pa_additional_query_params = null, $pa_options = null)
+    {
+        $ps_query = trim($this->request->getParameter('term', pString));
+        $vo_conf = Configuration::load();
+        $va_items = array();
+        if (mb_strlen($ps_query) >= 3) {
+            try {
+                /* // ITIS
+                $i = 0;
+                $vo_doc = new DOMDocument();
+                //$t = new Timer();
+                $vs_result = @file_get_contents("http://www.itis.gov/ITISWebService/services/ITISService/searchForAnyMatch?srchKey={$ps_query}",0,$vo_ctx);
+                //file_put_contents("/tmp/times", "ITIS: {$t->getTime(2)}\n", FILE_APPEND);
+                if(strlen($vs_result)>0){
+                    $vo_doc->loadXML($vs_result);
+                    $vo_resultlist = $vo_doc->getElementsByTagName("anyMatchList");
+                    foreach($vo_resultlist as $vo_result){
+                        $vs_cn = $vs_sn = $vs_id = "";
+                        foreach($vo_result->childNodes as $vo_field){
+                            switch($vo_field->nodeName){
+                                case "ax23:commonNameList":
+                                    foreach($vo_field->childNodes as $vo_cns){
+                                        if($vo_cns->nodeName == "ax23:commonNames"){
+                                            foreach($vo_cns->childNodes as $vo_cn){
+                                                if($vo_cn->nodeName == "ax23:commonName"){
+                                                    $vs_cn = $vo_cn->textContent;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case "ax23:tsn":
+                                    $vs_id = $vo_field->textContent;
+                                    break;
+                                case "ax23:sciName":
+                                    $vs_sn = $vo_field->textContent;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        if(strlen($vs_id)>0){
+                            $va_items["itis".$vs_id] = array(
+                                "idno" => "ITIS:{$vs_id}",
+                                "common_name" => $vs_cn,
+                                "sci_name" => $vs_sn
+                            );
+                            if(++$i == 50){ // let's limit to 50 results, right?
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    $va_items['error_itis'] = array(
+                        'msg' => _t('ERROR: ITIS web service query failed.'),
+                    );
+                }*/
 
-						$vo_doc = new DOMDocument();
-						if(strlen($vs_result)>0){
-							$vo_doc->loadXML($vs_result);
-							$vo_resultlist = $vo_doc->getElementsByTagName("value");
-							$i = 0;
-							if ($vo_resultlist->length > 0) {
-								foreach($vo_resultlist as $vo_result){
-									$vs_name = $vs_id = $vs_package = $vs_cn = "";
-									if($vo_result->parentNode->nodeName == "scientificNames"){
-										foreach($vo_result->childNodes as $vo_field){
-											switch($vo_field->nodeName){
-												case "nameString":
-													$vs_name = base64_decode($vo_field->textContent);
-													break;
-												case "namebankID":
-													$vs_id = $vo_field->textContent;
-													break;
-												case "packageName":
-													$vs_package = $vo_field->textContent;
-													break;
-												default:
-													break;
-											}
-										}
-									} elseif($vo_result->parentNode->nodeName == "vernacularNames"){
-										foreach($vo_result->childNodes as $vo_field){
-											switch($vo_field->nodeName){
-												case "fullNameStringLink":
-													$vs_name = base64_decode($vo_field->textContent);
-													break;
-												case "namebankIDLink":
-													$vs_id = $vo_field->textContent;
-													break;
-												case "packageName":
-													$vs_package = $vo_field->textContent;
-													break;
-												case "nameString":
-													$vs_cn = base64_decode($vo_field->textContent);
-													break;
-												default:
-													break;
-											}
-										}
-									}
-									if(strlen($vs_name)>0 && strlen($vs_id)>0){
-										$va_items["ubio{$vs_id}"] = array(
-											"id" => "uBio:{$vs_id}",
-											"idno" => "uBio:{$vs_id}",
-											"sci_name" => $vs_name.(strlen($vs_package)>0 ? " ({$vs_package}) " : ""),
-											"common_name" => $vs_cn
-										);
-										$va_items["ubio{$vs_id}"]['label'] = $va_items["ubio{$vs_id}"]['sci_name'].($vs_cn ? " ({$vs_cn})" : "")." [uBio:{$vs_id}]";
-										if(++$i == 100){ // let's limit to 100 results, right?
-											break;
-										}
-									}
-								}
-							} else {
-								if($vo_errors = $vo_doc->getElementsByTagName('error')) {
-									$vs_err = '';
-									foreach($vo_errors as $vo_result){
-										if($vo_result->textContent) {
-											$vs_err .= $vo_result->textContent;
-										}
-									}
-									$va_items['error_ubio'] = array(
-										'label' => $vs_err,
-										'id' => null
-									);
-								} else {
-									$va_items['error_ubio'] = array(
-										'label' => _t('No results found for %1.', $ps_query),
-										'id' => null
-									);
-								}
-							}
-						} else {
-							$va_items['error_ubio'] = array(
-								'label' => _t('ERROR: uBio web service query failed.'),
-								'id' => null
-							);
-						}
-					} else {
-						$va_items['error_ubio'] = array(
-							'label' => _t('ERROR: No uBio keycode in app.conf.'),
-							'id' => null
-						);
-					}
-				} catch (Exception $e) {
-					$va_items['error'] = array(
-						'label' => _t('ERROR').':'.$e->getMessage(),
-						'id' => null
-					);
-				}
-			}
+                // uBio
+                $vo_conf = new Configuration();
+                $vs_ubio_keycode = trim($vo_conf->get("ubio_keycode"));
+                if (strlen($vs_ubio_keycode) > 0) {
+                    $vs_url = "http://www.ubio.org/webservices/service.php?function=namebank_search&searchName={$ps_query}&sci=1&vern=1&keyCode={$vs_ubio_keycode}";
+                    $vs_result = caQueryExternalWebservice($vs_url);
 
-			$this->view->setVar('taxonomy_list', $va_items);
- 			return $this->render('ajax_taxonomy_list_html.php');
-		}
-		# -------------------------------------------------------
- 	}
- ?>
+                    $vo_doc = new DOMDocument();
+                    if (strlen($vs_result) > 0) {
+                        $vo_doc->loadXML($vs_result);
+                        $vo_resultlist = $vo_doc->getElementsByTagName("value");
+                        $i = 0;
+                        if ($vo_resultlist->length > 0) {
+                            foreach ($vo_resultlist as $vo_result) {
+                                $vs_name = $vs_id = $vs_package = $vs_cn = "";
+                                if ($vo_result->parentNode->nodeName == "scientificNames") {
+                                    foreach ($vo_result->childNodes as $vo_field) {
+                                        switch ($vo_field->nodeName) {
+                                            case "nameString":
+                                                $vs_name = base64_decode($vo_field->textContent);
+                                                break;
+                                            case "namebankID":
+                                                $vs_id = $vo_field->textContent;
+                                                break;
+                                            case "packageName":
+                                                $vs_package = $vo_field->textContent;
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                } elseif ($vo_result->parentNode->nodeName == "vernacularNames") {
+                                    foreach ($vo_result->childNodes as $vo_field) {
+                                        switch ($vo_field->nodeName) {
+                                            case "fullNameStringLink":
+                                                $vs_name = base64_decode($vo_field->textContent);
+                                                break;
+                                            case "namebankIDLink":
+                                                $vs_id = $vo_field->textContent;
+                                                break;
+                                            case "packageName":
+                                                $vs_package = $vo_field->textContent;
+                                                break;
+                                            case "nameString":
+                                                $vs_cn = base64_decode($vo_field->textContent);
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                }
+                                if (strlen($vs_name) > 0 && strlen($vs_id) > 0) {
+                                    $va_items["ubio{$vs_id}"] = array(
+                                        "id" => "uBio:{$vs_id}",
+                                        "idno" => "uBio:{$vs_id}",
+                                        "sci_name" => $vs_name . (strlen($vs_package) > 0 ? " ({$vs_package}) " : ""),
+                                        "common_name" => $vs_cn
+                                    );
+                                    $va_items["ubio{$vs_id}"]['label'] = $va_items["ubio{$vs_id}"]['sci_name'] . ($vs_cn ? " ({$vs_cn})" : "") . " [uBio:{$vs_id}]";
+                                    if (++$i == 100) { // let's limit to 100 results, right?
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            if ($vo_errors = $vo_doc->getElementsByTagName('error')) {
+                                $vs_err = '';
+                                foreach ($vo_errors as $vo_result) {
+                                    if ($vo_result->textContent) {
+                                        $vs_err .= $vo_result->textContent;
+                                    }
+                                }
+                                $va_items['error_ubio'] = array(
+                                    'label' => $vs_err,
+                                    'id' => null
+                                );
+                            } else {
+                                $va_items['error_ubio'] = array(
+                                    'label' => _t('No results found for %1.', $ps_query),
+                                    'id' => null
+                                );
+                            }
+                        }
+                    } else {
+                        $va_items['error_ubio'] = array(
+                            'label' => _t('ERROR: uBio web service query failed.'),
+                            'id' => null
+                        );
+                    }
+                } else {
+                    $va_items['error_ubio'] = array(
+                        'label' => _t('ERROR: No uBio keycode in app.conf.'),
+                        'id' => null
+                    );
+                }
+            } catch (Exception $e) {
+                $va_items['error'] = array(
+                    'label' => _t('ERROR') . ':' . $e->getMessage(),
+                    'id' => null
+                );
+            }
+        }
+
+        $this->view->setVar('taxonomy_list', $va_items);
+        return $this->render('ajax_taxonomy_list_html.php');
+    }
+    # -------------------------------------------------------
+}
+
+?>

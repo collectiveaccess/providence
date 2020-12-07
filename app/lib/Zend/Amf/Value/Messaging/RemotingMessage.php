@@ -62,12 +62,12 @@ class Zend_Amf_Value_Messaging_RemotingMessage extends Zend_Amf_Value_Messaging_
      */
     public function __construct()
     {
-        $this->clientId    = $this->generateId();
+        $this->clientId = $this->generateId();
         $this->destination = null;
-        $this->messageId   = $this->generateId();
-        $this->timestamp   = time().'00';
-        $this->timeToLive  = 0;
-        $this->headers     = new stdClass();
-        $this->body        = null;
+        $this->messageId = $this->generateId();
+        $this->timestamp = time() . '00';
+        $this->timeToLive = 0;
+        $this->headers = new stdClass();
+        $this->body = null;
     }
 }

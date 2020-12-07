@@ -66,15 +66,17 @@ class Zend_Feed_Writer_Extension_DublinCore_Renderer_Entry
      */
     protected function _appendNamespaces()
     {
-        $this->getRootElement()->setAttribute('xmlns:dc',
-            'http://purl.org/dc/elements/1.1/');
+        $this->getRootElement()->setAttribute(
+            'xmlns:dc',
+            'http://purl.org/dc/elements/1.1/'
+        );
     }
 
     /**
      * Set entry author elements
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setAuthors(DOMDocument $dom, DOMElement $root)

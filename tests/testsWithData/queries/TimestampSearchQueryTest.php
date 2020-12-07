@@ -36,43 +36,57 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  * Class TimestampSearchQueryTest
  * Note: Requires testing profile!
  */
-class TimestampSearchQueryTest extends AbstractSearchQueryTest {
-	# -------------------------------------------------------
-	public function setUp() {
-		// don't forget to call parent so that request is set up correctly
-		parent::setUp();
+class TimestampSearchQueryTest extends AbstractSearchQueryTest
+{
+    # -------------------------------------------------------
+    public function setUp()
+    {
+        // don't forget to call parent so that request is set up correctly
+        parent::setUp();
 
-		// log in as admin so we can test user-specific change log search
-		/** @var RequestHTTP $g_request */
-		global $g_request;
-		$g_request->doAuthentication(array(
-			'user_name' => 'administrator', 'password' => 'dublincore',
-			'dont_redirect_to_login' => true, 'no_headers' => true
-		));
+        // log in as admin so we can test user-specific change log search
+        /** @var RequestHTTP $g_request */
+        global $g_request;
+        $g_request->doAuthentication(
+            array(
+                'user_name' => 'administrator',
+                'password' => 'dublincore',
+                'dont_redirect_to_login' => true,
+                'no_headers' => true
+            )
+        );
 
-		// search subject table
-		$this->setPrimaryTable('ca_objects');
+        // search subject table
+        $this->setPrimaryTable('ca_objects');
 
-		/**
-		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
-		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
-		 */
-		$this->assertGreaterThan(0, $vn_record_id = $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'access' => 1,
-				'status' => 4,
-			),
-		)));
+        /**
+         * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+         * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+         */
+        $this->assertGreaterThan(
+            0,
+            $vn_record_id = $this->addTestRecord(
+                'ca_objects',
+                array(
+                    'intrinsic_fields' => array(
+                        'type_id' => 'image',
+                        'access' => 1,
+                        'status' => 4,
+                    ),
+                )
+            )
+        );
 
-		// search queries
-		$this->setSearchQueries(array(
-			'created:' . date('Y') => 1,
-			'created.administrator:' . date('Y') => 1,
-			'created.cataloguer:' . date('Y') => 0,
-			'created:"1985-1986"' => 0,
-			'created:"2000-2020"' => 1,
-		));
-	}
-	# -------------------------------------------------------
+        // search queries
+        $this->setSearchQueries(
+            array(
+                'created:' . date('Y') => 1,
+                'created.administrator:' . date('Y') => 1,
+                'created.cataloguer:' . date('Y') => 0,
+                'created:"1985-1986"' => 0,
+                'created:"2000-2020"' => 1,
+            )
+        );
+    }
+    # -------------------------------------------------------
 }

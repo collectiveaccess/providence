@@ -93,8 +93,8 @@ class Zend_Pdf_Parser
      * Load XReference table and referenced objects
      *
      * @param integer $offset
-     * @throws Zend_Pdf_Exception
      * @return Zend_Pdf_Trailer_Keeper
+     * @throws Zend_Pdf_Exception
      */
     private function _loadXRefTable($offset)
     {
@@ -103,7 +103,7 @@ class Zend_Pdf_Parser
         require_once 'Zend/Pdf/Element/Reference/Table.php';
         $refTable = new Zend_Pdf_Element_Reference_Table();
         require_once 'Zend/Pdf/Element/Reference/Context.php';
-        $context  = new Zend_Pdf_Element_Reference_Context($this->_stringParser, $refTable);
+        $context = new Zend_Pdf_Element_Reference_Context($this->_stringParser, $refTable);
         $this->_stringParser->setContext($context);
 
         $nextLexeme = $this->_stringParser->readLexeme();
@@ -112,17 +112,27 @@ class Zend_Pdf_Parser
              * Common cross-reference table
              */
             $this->_stringParser->skipWhiteSpace();
-            while ( ($nextLexeme = $this->_stringParser->readLexeme()) != 'trailer' ) {
+            while (($nextLexeme = $this->_stringParser->readLexeme()) != 'trailer') {
                 if (!ctype_digit($nextLexeme)) {
                     require_once 'Zend/Pdf/Exception.php';
-                    throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X. Cross-reference table subheader values must contain only digits.', $this->_stringParser->offset-strlen($nextLexeme)));
+                    throw new Zend_Pdf_Exception(
+                        sprintf(
+                            'PDF file syntax error. Offset - 0x%X. Cross-reference table subheader values must contain only digits.',
+                            $this->_stringParser->offset - strlen($nextLexeme)
+                        )
+                    );
                 }
                 $objNum = (int)$nextLexeme;
 
                 $refCount = $this->_stringParser->readLexeme();
                 if (!ctype_digit($refCount)) {
                     require_once 'Zend/Pdf/Exception.php';
-                    throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X. Cross-reference table subheader values must contain only digits.', $this->_stringParser->offset-strlen($refCount)));
+                    throw new Zend_Pdf_Exception(
+                        sprintf(
+                            'PDF file syntax error. Offset - 0x%X. Cross-reference table subheader values must contain only digits.',
+                            $this->_stringParser->offset - strlen($refCount)
+                        )
+                    );
                 }
 
                 $this->_stringParser->skipWhiteSpace();
@@ -130,10 +140,15 @@ class Zend_Pdf_Parser
                     $objectOffset = substr($this->_stringParser->data, $this->_stringParser->offset, 10);
                     if (!ctype_digit($objectOffset)) {
                         require_once 'Zend/Pdf/Exception.php';
-                        throw new Zend_Pdf_Exception(sprintf('PDF file cross-reference table syntax error. Offset - 0x%X. Offset must contain only digits.', $this->_stringParser->offset));
+                        throw new Zend_Pdf_Exception(
+                            sprintf(
+                                'PDF file cross-reference table syntax error. Offset - 0x%X. Offset must contain only digits.',
+                                $this->_stringParser->offset
+                            )
+                        );
                     }
                     // Force $objectOffset to be treated as decimal instead of octal number
-                    for ($numStart = 0; $numStart < strlen($objectOffset)-1; $numStart++) {
+                    for ($numStart = 0; $numStart < strlen($objectOffset) - 1; $numStart++) {
                         if ($objectOffset[$numStart] != '0') {
                             break;
                         }
@@ -143,17 +158,27 @@ class Zend_Pdf_Parser
 
                     if (strpos("\x00\t\n\f\r ", $this->_stringParser->data[$this->_stringParser->offset]) === false) {
                         require_once 'Zend/Pdf/Exception.php';
-                        throw new Zend_Pdf_Exception(sprintf('PDF file cross-reference table syntax error. Offset - 0x%X. Value separator must be white space.', $this->_stringParser->offset));
+                        throw new Zend_Pdf_Exception(
+                            sprintf(
+                                'PDF file cross-reference table syntax error. Offset - 0x%X. Value separator must be white space.',
+                                $this->_stringParser->offset
+                            )
+                        );
                     }
                     $this->_stringParser->offset++;
 
                     $genNumber = substr($this->_stringParser->data, $this->_stringParser->offset, 5);
                     if (!ctype_digit($objectOffset)) {
                         require_once 'Zend/Pdf/Exception.php';
-                        throw new Zend_Pdf_Exception(sprintf('PDF file cross-reference table syntax error. Offset - 0x%X. Offset must contain only digits.', $this->_stringParser->offset));
+                        throw new Zend_Pdf_Exception(
+                            sprintf(
+                                'PDF file cross-reference table syntax error. Offset - 0x%X. Offset must contain only digits.',
+                                $this->_stringParser->offset
+                            )
+                        );
                     }
                     // Force $objectOffset to be treated as decimal instead of octal number
-                    for ($numStart = 0; $numStart < strlen($genNumber)-1; $numStart++) {
+                    for ($numStart = 0; $numStart < strlen($genNumber) - 1; $numStart++) {
                         if ($genNumber[$numStart] != '0') {
                             break;
                         }
@@ -163,7 +188,12 @@ class Zend_Pdf_Parser
 
                     if (strpos("\x00\t\n\f\r ", $this->_stringParser->data[$this->_stringParser->offset]) === false) {
                         require_once 'Zend/Pdf/Exception.php';
-                        throw new Zend_Pdf_Exception(sprintf('PDF file cross-reference table syntax error. Offset - 0x%X. Value separator must be white space.', $this->_stringParser->offset));
+                        throw new Zend_Pdf_Exception(
+                            sprintf(
+                                'PDF file cross-reference table syntax error. Offset - 0x%X. Value separator must be white space.',
+                                $this->_stringParser->offset
+                            )
+                        );
                     }
                     $this->_stringParser->offset++;
 
@@ -173,28 +203,46 @@ class Zend_Pdf_Parser
                     switch ($inUseKey) {
                         case 'f':
                             // free entry
-                            unset( $this->_refTable[$objNum . ' ' . $genNumber . ' R'] );
-                            $refTable->addReference($objNum . ' ' . $genNumber . ' R',
-                                                    $objectOffset,
-                                                    false);
+                            unset($this->_refTable[$objNum . ' ' . $genNumber . ' R']);
+                            $refTable->addReference(
+                                $objNum . ' ' . $genNumber . ' R',
+                                $objectOffset,
+                                false
+                            );
                             break;
 
                         case 'n':
                             // in-use entry
 
-                            $refTable->addReference($objNum . ' ' . $genNumber . ' R',
-                                                    $objectOffset,
-                                                    true);
+                            $refTable->addReference(
+                                $objNum . ' ' . $genNumber . ' R',
+                                $objectOffset,
+                                true
+                            );
                     }
 
-                    if ( !Zend_Pdf_StringParser::isWhiteSpace(ord( $this->_stringParser->data[$this->_stringParser->offset] )) ) {
+                    if (!Zend_Pdf_StringParser::isWhiteSpace(
+                        ord($this->_stringParser->data[$this->_stringParser->offset])
+                    )) {
                         require_once 'Zend/Pdf/Exception.php';
-                        throw new Zend_Pdf_Exception(sprintf('PDF file cross-reference table syntax error. Offset - 0x%X. Value separator must be white space.', $this->_stringParser->offset));
+                        throw new Zend_Pdf_Exception(
+                            sprintf(
+                                'PDF file cross-reference table syntax error. Offset - 0x%X. Value separator must be white space.',
+                                $this->_stringParser->offset
+                            )
+                        );
                     }
                     $this->_stringParser->offset++;
-                    if ( !Zend_Pdf_StringParser::isWhiteSpace(ord( $this->_stringParser->data[$this->_stringParser->offset] )) ) {
+                    if (!Zend_Pdf_StringParser::isWhiteSpace(
+                        ord($this->_stringParser->data[$this->_stringParser->offset])
+                    )) {
                         require_once 'Zend/Pdf/Exception.php';
-                        throw new Zend_Pdf_Exception(sprintf('PDF file cross-reference table syntax error. Offset - 0x%X. Value separator must be white space.', $this->_stringParser->offset));
+                        throw new Zend_Pdf_Exception(
+                            sprintf(
+                                'PDF file cross-reference table syntax error. Offset - 0x%X. Value separator must be white space.',
+                                $this->_stringParser->offset
+                            )
+                        );
                     }
                     $this->_stringParser->offset++;
 
@@ -207,24 +255,41 @@ class Zend_Pdf_Parser
             $trailerDict = $this->_stringParser->readElement();
             if (!$trailerDict instanceof Zend_Pdf_Element_Dictionary) {
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X.  Dictionary expected after \'trailer\' keyword.', $trailerDictOffset));
+                throw new Zend_Pdf_Exception(
+                    sprintf(
+                        'PDF file syntax error. Offset - 0x%X.  Dictionary expected after \'trailer\' keyword.',
+                        $trailerDictOffset
+                    )
+                );
             }
         } else {
             $xrefStream = $this->_stringParser->getObject($offset, $context);
 
             if (!$xrefStream instanceof Zend_Pdf_Element_Object_Stream) {
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X.  Cross-reference stream expected.', $offset));
+                throw new Zend_Pdf_Exception(
+                    sprintf('PDF file syntax error. Offset - 0x%X.  Cross-reference stream expected.', $offset)
+                );
             }
 
             $trailerDict = $xrefStream->dictionary;
             if ($trailerDict->Type->value != 'XRef') {
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X.  Cross-reference stream object must have /Type property assigned to /XRef.', $offset));
+                throw new Zend_Pdf_Exception(
+                    sprintf(
+                        'PDF file syntax error. Offset - 0x%X.  Cross-reference stream object must have /Type property assigned to /XRef.',
+                        $offset
+                    )
+                );
             }
-            if ($trailerDict->W === null  || $trailerDict->W->getType() != Zend_Pdf_Element::TYPE_ARRAY) {
+            if ($trailerDict->W === null || $trailerDict->W->getType() != Zend_Pdf_Element::TYPE_ARRAY) {
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X. Cross reference stream dictionary doesn\'t have W entry or it\'s not an array.', $offset));
+                throw new Zend_Pdf_Exception(
+                    sprintf(
+                        'PDF file syntax error. Offset - 0x%X. Cross reference stream dictionary doesn\'t have W entry or it\'s not an array.',
+                        $offset
+                    )
+                );
             }
 
             $entryField1Size = $trailerDict->W->items[0]->value;
@@ -233,7 +298,12 @@ class Zend_Pdf_Parser
 
             if ($entryField2Size == 0 || $entryField3Size == 0) {
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X. Wrong W dictionary entry. Only type field of stream entries has default value and could be zero length.', $offset));
+                throw new Zend_Pdf_Exception(
+                    sprintf(
+                        'PDF file syntax error. Offset - 0x%X. Wrong W dictionary entry. Only type field of stream entries has default value and could be zero length.',
+                        $offset
+                    )
+                );
             }
 
             $xrefStreamData = $xrefStream->value;
@@ -241,48 +311,67 @@ class Zend_Pdf_Parser
             if ($trailerDict->Index !== null) {
                 if ($trailerDict->Index->getType() != Zend_Pdf_Element::TYPE_ARRAY) {
                     require_once 'Zend/Pdf/Exception.php';
-                    throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X. Cross reference stream dictionary Index entry must be an array.', $offset));
+                    throw new Zend_Pdf_Exception(
+                        sprintf(
+                            'PDF file syntax error. Offset - 0x%X. Cross reference stream dictionary Index entry must be an array.',
+                            $offset
+                        )
+                    );
                 }
-                $sections = count($trailerDict->Index->items)/2;
+                $sections = count($trailerDict->Index->items) / 2;
             } else {
                 $sections = 1;
             }
 
             $streamOffset = 0;
 
-            $size    = $entryField1Size + $entryField2Size + $entryField3Size;
-            $entries = strlen($xrefStreamData)/$size;
+            $size = $entryField1Size + $entryField2Size + $entryField3Size;
+            $entries = strlen($xrefStreamData) / $size;
 
             for ($count = 0; $count < $sections; $count++) {
                 if ($trailerDict->Index !== null) {
-                    $objNum  = $trailerDict->Index->items[$count*2    ]->value;
-                    $entries = $trailerDict->Index->items[$count*2 + 1]->value;
+                    $objNum = $trailerDict->Index->items[$count * 2]->value;
+                    $entries = $trailerDict->Index->items[$count * 2 + 1]->value;
                 } else {
-                    $objNum  = 0;
+                    $objNum = 0;
                     $entries = $trailerDict->Size->value;
                 }
 
                 for ($count2 = 0; $count2 < $entries; $count2++) {
                     if ($entryField1Size == 0) {
                         $type = 1;
-                    } else if ($entryField1Size == 1) { // Optimyze one-byte field case
-                        $type = ord($xrefStreamData[$streamOffset++]);
                     } else {
-                        $type = Zend_Pdf_StringParser::parseIntFromStream($xrefStreamData, $streamOffset, $entryField1Size);
-                        $streamOffset += $entryField1Size;
+                        if ($entryField1Size == 1) { // Optimyze one-byte field case
+                            $type = ord($xrefStreamData[$streamOffset++]);
+                        } else {
+                            $type = Zend_Pdf_StringParser::parseIntFromStream(
+                                $xrefStreamData,
+                                $streamOffset,
+                                $entryField1Size
+                            );
+                            $streamOffset += $entryField1Size;
+                        }
                     }
 
                     if ($entryField2Size == 1) { // Optimyze one-byte field case
                         $field2 = ord($xrefStreamData[$streamOffset++]);
                     } else {
-                        $field2 = Zend_Pdf_StringParser::parseIntFromStream($xrefStreamData, $streamOffset, $entryField2Size);
+                        $field2 = Zend_Pdf_StringParser::parseIntFromStream(
+                            $xrefStreamData,
+                            $streamOffset,
+                            $entryField2Size
+                        );
                         $streamOffset += $entryField2Size;
                     }
 
                     if ($entryField3Size == 1) { // Optimyze one-byte field case
                         $field3 = ord($xrefStreamData[$streamOffset++]);
                     } else {
-                        $field3 = Zend_Pdf_StringParser::parseIntFromStream($xrefStreamData, $streamOffset, $entryField3Size);
+                        $field3 = Zend_Pdf_StringParser::parseIntFromStream(
+                            $xrefStreamData,
+                            $streamOffset,
+                            $entryField3Size
+                        );
                         $streamOffset += $entryField3Size;
                     }
 
@@ -322,7 +411,7 @@ class Zend_Pdf_Parser
         require_once 'Zend/Pdf/Trailer/Keeper.php';
         $trailerObj = new Zend_Pdf_Trailer_Keeper($trailerDict, $context);
         if ($trailerDict->Prev instanceof Zend_Pdf_Element_Numeric ||
-            $trailerDict->Prev instanceof Zend_Pdf_Element_Reference ) {
+            $trailerDict->Prev instanceof Zend_Pdf_Element_Reference) {
             $trailerObj->setPrev($this->_loadXRefTable($trailerDict->Prev->value));
             $context->getRefTable()->setParent($trailerObj->getPrev()->getRefTable());
         }
@@ -362,9 +451,9 @@ class Zend_Pdf_Parser
     public function __construct($source, Zend_Pdf_ElementFactory_Interface $factory, $load)
     {
         if ($load) {
-            if (($pdfFile = @fopen($source, 'rb')) === false ) {
+            if (($pdfFile = @fopen($source, 'rb')) === false) {
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception( "Can not open '$source' file for reading." );
+                throw new Zend_Pdf_Exception("Can not open '$source' file for reading.");
             }
 
             $data = '';
@@ -373,7 +462,7 @@ class Zend_Pdf_Parser
                 $nextBlock = fread($pdfFile, $byteCount);
                 if ($nextBlock === false) {
                     require_once 'Zend/Pdf/Exception.php';
-                    throw new Zend_Pdf_Exception( "Error occured while '$source' file reading." );
+                    throw new Zend_Pdf_Exception("Error occured while '$source' file reading.");
                 }
 
                 $data .= $nextBlock;
@@ -381,7 +470,7 @@ class Zend_Pdf_Parser
             }
             if ($byteCount != 0) {
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception( "Error occured while '$source' file reading." );
+                throw new Zend_Pdf_Exception("Error occured while '$source' file reading.");
             }
             fclose($pdfFile);
 
@@ -397,9 +486,9 @@ class Zend_Pdf_Parser
         }
 
         $pdfVersion = substr($pdfVersionComment, 5);
-        if (version_compare($pdfVersion, '0.9',  '<')  ||
+        if (version_compare($pdfVersion, '0.9', '<') ||
             version_compare($pdfVersion, '1.61', '>=')
-           ) {
+        ) {
             /**
              * @todo
              * To support PDF versions 1.5 (Acrobat 6) and PDF version 1.7 (Acrobat 7)
@@ -407,7 +496,9 @@ class Zend_Pdf_Parser
              * Cross reference streams must be implemented
              */
             require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception(sprintf('Unsupported PDF version. Zend_Pdf supports PDF 1.0-1.4. Current version - \'%f\'', $pdfVersion));
+            throw new Zend_Pdf_Exception(
+                sprintf('Unsupported PDF version. Zend_Pdf supports PDF 1.0-1.4. Current version - \'%f\'', $pdfVersion)
+            );
         }
         $this->_pdfVersion = $pdfVersion;
 
@@ -422,22 +513,22 @@ class Zend_Pdf_Parser
         /**
          * Go to end of cross-reference table offset
          */
-        while (Zend_Pdf_StringParser::isWhiteSpace( ord($this->_stringParser->data[$this->_stringParser->offset]) )&&
-               ($this->_stringParser->offset > 0)) {
+        while (Zend_Pdf_StringParser::isWhiteSpace(ord($this->_stringParser->data[$this->_stringParser->offset])) &&
+            ($this->_stringParser->offset > 0)) {
             $this->_stringParser->offset--;
         }
         /**
          * Go to the start of cross-reference table offset
          */
-        while ( (!Zend_Pdf_StringParser::isWhiteSpace( ord($this->_stringParser->data[$this->_stringParser->offset]) ))&&
-               ($this->_stringParser->offset > 0)) {
+        while ((!Zend_Pdf_StringParser::isWhiteSpace(ord($this->_stringParser->data[$this->_stringParser->offset]))) &&
+            ($this->_stringParser->offset > 0)) {
             $this->_stringParser->offset--;
         }
         /**
          * Go to the end of 'startxref' keyword
          */
-        while (Zend_Pdf_StringParser::isWhiteSpace( ord($this->_stringParser->data[$this->_stringParser->offset]) )&&
-               ($this->_stringParser->offset > 0)) {
+        while (Zend_Pdf_StringParser::isWhiteSpace(ord($this->_stringParser->data[$this->_stringParser->offset])) &&
+            ($this->_stringParser->offset > 0)) {
             $this->_stringParser->offset--;
         }
         /**
@@ -448,13 +539,23 @@ class Zend_Pdf_Parser
         $nextLexeme = $this->_stringParser->readLexeme();
         if ($nextLexeme != 'startxref') {
             require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception(sprintf('Pdf file syntax error. \'startxref\' keyword expected. Offset - 0x%X.', $this->_stringParser->offset-strlen($nextLexeme)));
+            throw new Zend_Pdf_Exception(
+                sprintf(
+                    'Pdf file syntax error. \'startxref\' keyword expected. Offset - 0x%X.',
+                    $this->_stringParser->offset - strlen($nextLexeme)
+                )
+            );
         }
 
         $startXref = $this->_stringParser->readLexeme();
         if (!ctype_digit($startXref)) {
             require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception(sprintf('Pdf file syntax error. Cross-reference table offset must contain only digits. Offset - 0x%X.', $this->_stringParser->offset-strlen($nextLexeme)));
+            throw new Zend_Pdf_Exception(
+                sprintf(
+                    'Pdf file syntax error. Cross-reference table offset must contain only digits. Offset - 0x%X.',
+                    $this->_stringParser->offset - strlen($nextLexeme)
+                )
+            );
         }
 
         $this->_trailer = $this->_loadXRefTable($startXref);

@@ -62,12 +62,12 @@ class Zend_Form_Decorator_ViewHelper extends Zend_Form_Decorator_Abstract
     /**
      * Set view helper to use when rendering
      *
-     * @param  string $helper
+     * @param string $helper
      * @return Zend_Form_Decorator_Element_ViewHelper
      */
     public function setHelper($helper)
     {
-        $this->_helper = (string) $helper;
+        $this->_helper = (string)$helper;
         return $this;
     }
 
@@ -124,8 +124,8 @@ class Zend_Form_Decorator_ViewHelper extends Zend_Form_Decorator_Abstract
 
         if (null !== ($belongsTo = $element->getBelongsTo())) {
             $name = $belongsTo . '['
-                  . $name
-                  . ']';
+                . $name
+                . ']';
         }
 
         if ($element->isArray()) {
@@ -183,7 +183,7 @@ class Zend_Form_Decorator_ViewHelper extends Zend_Form_Decorator_Abstract
      *
      * If element type is one of the button types, returns the label.
      *
-     * @param  Zend_Form_Element $element
+     * @param Zend_Form_Element $element
      * @return string|null
      */
     public function getValue($element)
@@ -213,7 +213,7 @@ class Zend_Form_Decorator_ViewHelper extends Zend_Form_Decorator_Abstract
      * the element type. Then call as
      * helper($element->getName(), $element->getValue(), $element->getAttribs())
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      * @throws Zend_Form_Decorator_Exception if element or view are not registered
      */
@@ -224,22 +224,24 @@ class Zend_Form_Decorator_ViewHelper extends Zend_Form_Decorator_Abstract
         $view = $element->getView();
         if (null === $view) {
             require_once 'Zend/Form/Decorator/Exception.php';
-            throw new Zend_Form_Decorator_Exception('ViewHelper decorator cannot render without a registered view object');
+            throw new Zend_Form_Decorator_Exception(
+                'ViewHelper decorator cannot render without a registered view object'
+            );
         }
 
         if (method_exists($element, 'getMultiOptions')) {
             $element->getMultiOptions();
         }
 
-        $helper        = $this->getHelper();
-        $separator     = $this->getSeparator();
-        $value         = $this->getValue($element);
-        $attribs       = $this->getElementAttribs();
-        $name          = $element->getFullyQualifiedName();
-        $id            = $element->getId();
+        $helper = $this->getHelper();
+        $separator = $this->getSeparator();
+        $value = $this->getValue($element);
+        $attribs = $this->getElementAttribs();
+        $name = $element->getFullyQualifiedName();
+        $id = $element->getId();
         $attribs['id'] = $id;
 
-        $helperObject  = $view->getHelper($helper);
+        $helperObject = $view->getHelper($helper);
         if (method_exists($helperObject, 'setTranslator')) {
             $helperObject->setTranslator($element->getTranslator());
         }

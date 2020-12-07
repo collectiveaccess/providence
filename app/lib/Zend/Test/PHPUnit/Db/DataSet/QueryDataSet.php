@@ -59,9 +59,11 @@ class Zend_Test_PHPUnit_Db_DataSet_QueryDataSet extends PHPUnit_Extensions_Datab
      */
     public function __construct(PHPUnit_Extensions_Database_DB_IDatabaseConnection $databaseConnection)
     {
-        if( !($databaseConnection instanceof Zend_Test_PHPUnit_Db_Connection) ) {
+        if (!($databaseConnection instanceof Zend_Test_PHPUnit_Db_Connection)) {
             require_once "Zend/Test/PHPUnit/Db/Exception.php";
-            throw new Zend_Test_PHPUnit_Db_Exception("Zend_Test_PHPUnit_Db_DataSet_QueryDataSet only works with Zend_Test_PHPUnit_Db_Connection connections-");
+            throw new Zend_Test_PHPUnit_Db_Exception(
+                "Zend_Test_PHPUnit_Db_DataSet_QueryDataSet only works with Zend_Test_PHPUnit_Db_Connection connections-"
+            );
         }
         $this->databaseConnection = $databaseConnection;
     }
@@ -71,20 +73,24 @@ class Zend_Test_PHPUnit_Db_DataSet_QueryDataSet extends PHPUnit_Extensions_Datab
      *
      * By default a select * will be done on the given tablename.
      *
-     * @param string                $tableName
+     * @param string $tableName
      * @param string|Zend_Db_Select $query
      */
-    public function addTable($tableName, $query = NULL)
+    public function addTable($tableName, $query = null)
     {
-        if ($query === NULL) {
+        if ($query === null) {
             $query = $this->databaseConnection->getConnection()->select();
             $query->from($tableName, Zend_Db_Select::SQL_WILDCARD);
         }
 
-        if($query instanceof Zend_Db_Select) {
+        if ($query instanceof Zend_Db_Select) {
             $query = $query->__toString();
         }
 
-        $this->tables[$tableName] = new Zend_Test_PHPUnit_Db_DataSet_QueryTable($tableName, $query, $this->databaseConnection);
+        $this->tables[$tableName] = new Zend_Test_PHPUnit_Db_DataSet_QueryTable(
+            $tableName,
+            $query,
+            $this->databaseConnection
+        );
     }
 }

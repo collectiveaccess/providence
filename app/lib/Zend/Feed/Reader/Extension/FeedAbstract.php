@@ -74,8 +74,8 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
     /**
      * Constructor
      *
-     * @param  Zend_Feed_Abstract $feed The source Zend_Feed object
-     * @param  string $type Feed type
+     * @param Zend_Feed_Abstract $feed The source Zend_Feed object
+     * @param string $type Feed type
      * @return void
      */
     public function __construct(DomDocument $dom, $type = null, DOMXPath $xpath = null)
@@ -142,7 +142,7 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
     /**
      * Set the XPath query
      *
-     * @param  DOMXPath $xpath
+     * @param DOMXPath $xpath
      * @return Zend_Feed_Reader_Extension_EntryAbstract
      */
     public function setXpath(DOMXPath $xpath)

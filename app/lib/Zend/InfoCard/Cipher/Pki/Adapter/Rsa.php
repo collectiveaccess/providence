@@ -54,9 +54,11 @@ class Zend_InfoCard_Cipher_Pki_Adapter_Rsa
     {
         // Can't test this..
         // @codeCoverageIgnoreStart
-        if(!extension_loaded('openssl')) {
+        if (!extension_loaded('openssl')) {
             require_once 'Zend/InfoCard/Cipher/Exception.php';
-            throw new Zend_InfoCard_Cipher_Exception("Use of this PKI RSA Adapter requires the openssl extension loaded");
+            throw new Zend_InfoCard_Cipher_Exception(
+                "Use of this PKI RSA Adapter requires the openssl extension loaded"
+            );
         }
         // @codeCoverageIgnoreEnd
 
@@ -66,32 +68,32 @@ class Zend_InfoCard_Cipher_Pki_Adapter_Rsa
     /**
      * Decrypts RSA encrypted data using the given private key
      *
-     * @throws Zend_InfoCard_Cipher_Exception
      * @param string $encryptedData The encrypted data in binary format
      * @param string $privateKey The private key in binary format
      * @param string $password The private key passphrase
      * @param integer $padding The padding to use during decryption (of not provided object value will be used)
      * @return string The decrypted data
+     * @throws Zend_InfoCard_Cipher_Exception
      */
     public function decrypt($encryptedData, $privateKey, $password = null, $padding = null)
     {
         $private_key = openssl_pkey_get_private(array($privateKey, $password));
 
-        if(!$private_key) {
+        if (!$private_key) {
             require_once 'Zend/InfoCard/Cipher/Exception.php';
             throw new Zend_InfoCard_Cipher_Exception("Failed to load private key");
         }
 
-        if($padding !== null) {
+        if ($padding !== null) {
             try {
                 $this->setPadding($padding);
-            } catch(Exception $e) {
+            } catch (Exception $e) {
                 openssl_free_key($private_key);
                 throw $e;
             }
         }
 
-        switch($this->getPadding()) {
+        switch ($this->getPadding()) {
             case self::NO_PADDING:
                 $openssl_padding = OPENSSL_NO_PADDING;
                 break;
@@ -104,12 +106,12 @@ class Zend_InfoCard_Cipher_Pki_Adapter_Rsa
 
         openssl_free_key($private_key);
 
-        if(!$result) {
+        if (!$result) {
             require_once 'Zend/InfoCard/Cipher/Exception.php';
             throw new Zend_InfoCard_Cipher_Exception("Unable to Decrypt Value using provided private key");
         }
 
-        if($this->getPadding() == self::NO_PADDING) {
+        if ($this->getPadding() == self::NO_PADDING) {
             $decryptedData = substr($decryptedData, 2);
             $start = strpos($decryptedData, 0) + 1;
             $decryptedData = substr($decryptedData, $start);

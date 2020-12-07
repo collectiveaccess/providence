@@ -99,14 +99,14 @@ class Zend_Gdata_YouTube_Extension_MediaRating extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'scheme':
-            $this->_scheme = $attribute->nodeValue;
-            break;
-        case 'country':
-            $this->_country = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'scheme':
+                $this->_scheme = $attribute->nodeValue;
+                break;
+            case 'country':
+                $this->_country = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

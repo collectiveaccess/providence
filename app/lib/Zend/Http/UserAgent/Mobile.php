@@ -271,8 +271,8 @@ class Zend_Http_UserAgent_Mobile extends Zend_Http_UserAgent_AbstractDevice
     /**
      * Comparison of the UserAgent chain and User Agent signatures
      *
-     * @param  string $userAgent User Agent chain
-     * @param  array $server $_SERVER like param
+     * @param string $userAgent User Agent chain
+     * @param array $server $_SERVER like param
      * @return bool
      */
     public static function match($userAgent, $server)
@@ -309,12 +309,11 @@ class Zend_Http_UserAgent_Mobile extends Zend_Http_UserAgent_AbstractDevice
     /**
      * Retrieve beginning clause of user agent
      *
-     * @param  string $userAgent
+     * @param string $userAgent
      * @return string
      */
     public static function userAgentStart($userAgent)
     {
-
         $mobile_ua = strtolower(substr($userAgent, 0, 4));
 
         return (in_array($mobile_ua, self::$_uaBegin));
@@ -329,7 +328,7 @@ class Zend_Http_UserAgent_Mobile extends Zend_Http_UserAgent_AbstractDevice
     {
         // For mobile detection, an adapter must be defined
         if (empty($config['mobile']['features'])) {
-            $config['mobile']['features']['path']      = self::DEFAULT_FEATURES_ADAPTER_PATH;
+            $config['mobile']['features']['path'] = self::DEFAULT_FEATURES_ADAPTER_PATH;
             $config['mobile']['features']['classname'] = self::DEFAULT_FEATURES_ADAPTER_CLASSNAME;
         }
         parent::__construct($userAgent, $server, $config);

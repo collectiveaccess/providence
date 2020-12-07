@@ -93,12 +93,16 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
                  * @see Zend_Feed_Exception
                  */
                 require_once 'Zend/Feed/Exception.php';
-                throw new Zend_Feed_Exception('No root <feed> or <' . $this->_entryElementName
-                                              . '> element found, cannot parse feed.');
+                throw new Zend_Feed_Exception(
+                    'No root <feed> or <' . $this->_entryElementName
+                    . '> element found, cannot parse feed.'
+                );
             }
 
-            $doc = new DOMDocument($this->_element->version,
-                                   $this->_element->actualEncoding);
+            $doc = new DOMDocument(
+                $this->_element->version,
+                $this->_element->actualEncoding
+            );
             $feed = $doc->appendChild($doc->createElement('feed'));
             $feed->appendChild($doc->importNode($element, true));
             $element = $feed;
@@ -124,7 +128,7 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
      * $elt->link(): returns the value of the link tag.
      * $elt->link('self'): returns the href from the first <link rel="self"> in the entry.
      *
-     * @param  string $rel The "rel" attribute to look for.
+     * @param string $rel The "rel" attribute to look for.
      * @return mixed
      */
     public function link($rel = null)
@@ -164,7 +168,7 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
      * using foreach ($feed->entries as $entry) or foreach
      * ($feed->entry as $entry).
      *
-     * @param  string $var The property to access.
+     * @param string $var The property to access.
      * @return mixed
      */
     public function __get($var)
@@ -183,7 +187,7 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
     /**
      * Generate the header of the feed when working in write mode
      *
-     * @param  array $array the data to use
+     * @param array $array the data to use
      * @return DOMElement root node
      */
     protected function _mapFeedHeaders($array)
@@ -262,8 +266,8 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
      *    <content>long version, can contain html</content>
      * </entry>
      *
-     * @param  array      $array the data to use
-     * @param  DOMElement $root  the root node to use
+     * @param array $array the data to use
+     * @param DOMElement $root the root node to use
      * @return void
      */
     protected function _mapFeedEntries(DOMElement $root, $array)
@@ -335,15 +339,19 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
             }
 
             if (isset($dataentry->comments)) {
-                $comments = $this->_element->createElementNS('http://wellformedweb.org/CommentAPI/',
-                                                             'wfw:comment',
-                                                             $dataentry->comments);
+                $comments = $this->_element->createElementNS(
+                    'http://wellformedweb.org/CommentAPI/',
+                    'wfw:comment',
+                    $dataentry->comments
+                );
                 $entry->appendChild($comments);
             }
             if (isset($dataentry->commentRss)) {
-                $comments = $this->_element->createElementNS('http://wellformedweb.org/CommentAPI/',
-                                                             'wfw:commentRss',
-                                                             $dataentry->commentRss);
+                $comments = $this->_element->createElementNS(
+                    'http://wellformedweb.org/CommentAPI/',
+                    'wfw:commentRss',
+                    $dataentry->commentRss
+                );
                 $entry->appendChild($comments);
             }
 
@@ -359,8 +367,10 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
     public function saveXml()
     {
         // Return a complete document including XML prologue.
-        $doc = new DOMDocument($this->_element->ownerDocument->version,
-                               $this->_element->ownerDocument->actualEncoding);
+        $doc = new DOMDocument(
+            $this->_element->ownerDocument->version,
+            $this->_element->ownerDocument->actualEncoding
+        );
         $doc->appendChild($doc->importNode($this->_element, true));
         $doc->formatOutput = true;
 

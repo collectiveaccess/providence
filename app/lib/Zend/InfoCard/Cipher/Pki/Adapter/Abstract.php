@@ -56,13 +56,13 @@ abstract class Zend_InfoCard_Cipher_Pki_Adapter_Abstract implements Zend_InfoCar
     /**
      * Set the padding of the public key encryption
      *
-     * @throws Zend_InfoCard_Cipher_Exception
      * @param integer $padding One of the constnats in this class
      * @return Zend_InfoCard_Pki_Adapter_Abstract
+     * @throws Zend_InfoCard_Cipher_Exception
      */
     public function setPadding($padding)
     {
-        switch($padding) {
+        switch ($padding) {
             case self::OAEP_PADDING:
             case self::NO_PADDING:
                 $this->_padding = $padding;

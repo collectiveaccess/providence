@@ -35,7 +35,7 @@ class Zend_Filter_Word_SeparatorToDash extends Zend_Filter_Word_SeparatorToSepar
     /**
      * Constructor
      *
-     * @param  string  $searchSeparator  Seperator to search for change
+     * @param string $searchSeparator Seperator to search for change
      * @return void
      */
     public function __construct($searchSeparator = ' ')

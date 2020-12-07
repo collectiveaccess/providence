@@ -64,7 +64,7 @@ class Zend_Amf_Request_Http extends Zend_Amf_Request
             $this->_rawRequest = $amfRequest;
             $this->initialize($amfRequest);
         } else {
-            echo '<p>Zend Amf Endpoint</p>' ;
+            echo '<p>Zend Amf Endpoint</p>';
         }
     }
 

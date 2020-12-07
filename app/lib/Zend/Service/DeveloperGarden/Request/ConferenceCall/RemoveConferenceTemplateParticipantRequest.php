@@ -61,7 +61,7 @@ class Zend_Service_DeveloperGarden_Request_ConferenceCall_RemoveConferenceTempla
     {
         parent::__construct($environment);
         $this->setTemplateId($templateId)
-             ->setParticipantId($participantId);
+            ->setParticipantId($participantId);
     }
 
     /**

@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	print json_encode($this->getVar('information_service_list'));
+
+print json_encode($this->getVar('information_service_list'));
 ?>

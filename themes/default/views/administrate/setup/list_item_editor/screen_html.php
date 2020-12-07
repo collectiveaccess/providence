@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/views/administrate/setup/list_item_editor_screen_html.php : 
  * ----------------------------------------------------------------------
@@ -25,65 +26,97 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_item 			= $this->getVar('t_subject');
-	$vn_item_id 		= $this->getVar('subject_id');
-	$vn_above_id 		= $this->getVar('above_id');
-	$vn_after_id 		= $this->getVar('after_id');
+$t_item = $this->getVar('t_subject');
+$vn_item_id = $this->getVar('subject_id');
+$vn_above_id = $this->getVar('above_id');
+$vn_after_id = $this->getVar('after_id');
 
-	$vb_can_edit	 	= $t_item->isSaveable($this->request);
-	$vb_can_delete		= $t_item->isDeletable($this->request);
-	
-	$vs_context_id 		= $this->getVar('_context_id');	// used to restrict idno uniqueness checking to within the current list
-	
-	
-	if($vb_can_edit){
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ListItemEditorForm').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup/list_item_editor', 'ListItemEditor', 'Edit/'.$this->request->getActionExtra(), array('item_id' => $vn_item_id)), 
-			'', 
-			((intval($vn_item_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup/list_item_editor', 'ListItemEditor', 'Delete/'.$this->request->getActionExtra(), array('item_id' => $vn_item_id)) : ''
-		);
-	}
+$vb_can_edit = $t_item->isSaveable($this->request);
+$vb_can_delete = $t_item->isDeletable($this->request);
+
+$vs_context_id = $this->getVar(
+    '_context_id'
+);    // used to restrict idno uniqueness checking to within the current list
+
+
+if ($vb_can_edit) {
+    print $vs_control_box = caFormControlBox(
+        caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ListItemEditorForm') . ' ' .
+        caFormNavButton(
+            $this->request,
+            __CA_NAV_ICON_CANCEL__,
+            _t("Cancel"),
+            '',
+            'administrate/setup/list_item_editor',
+            'ListItemEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('item_id' => $vn_item_id)
+        ),
+        '',
+        ((intval($vn_item_id) > 0) && $vb_can_delete) ? caNavButton(
+            $this->request,
+            __CA_NAV_ICON_DELETE__,
+            _t("Delete"),
+            '',
+            'administrate/setup/list_item_editor',
+            'ListItemEditor',
+            'Delete/' . $this->request->getActionExtra(),
+            array('item_id' => $vn_item_id)
+        ) : ''
+    );
+}
 ?>
-	<div class="sectionBox">
-<?php
-			if(!$vb_can_edit){
+<div class="sectionBox">
+    <?php
+    if (!$vb_can_edit) {
+        ?>
+        <div class='notification-warning-box'>
+            <ul class='notification-warning-box'>
+                <li class='notification-info-box'><?php print ((intval($vn_item_id) == 0) ? _t(
+                        "You are not allowed to add items to this list"
+                    ) : _t("You are not allowed to edit items in this list")); ?></li>
+            </ul>
+        </div>
+        <?php
+    }
 
-?>
-				<div class='notification-warning-box'>
-					<ul class='notification-warning-box'>
-						<li class='notification-info-box'><?php print ((intval($vn_item_id) == 0) ? _t("You are not allowed to add items to this list") : _t("You are not allowed to edit items in this list") );?></li>
-					</ul>
-				</div>
-<?php
+    if ((intval($vn_item_id) > 0) || $vb_can_edit) {
+        print caFormTag(
+            $this->request,
+            'Save/' . $this->request->getActionExtra() . '/item_id/' . $vn_item_id,
+            'ListItemEditorForm',
+            null,
+            'POST',
+            'multipart/form-data'
+        );
 
-			} 
+        $va_form_elements = $t_item->getBundleFormHTMLForScreen(
+            $this->request->getActionExtra(),
+            array(
+                'request' => $this->request,
+                'formName' => 'ListItemEditorForm',
+                'context_id' => $vs_context_id
+            ),
+            $va_bundle_list
+        );
 
-			if((intval($vn_item_id) > 0) || $vb_can_edit){
+        print join("\n", $va_form_elements);
 
-				print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/item_id/'.$vn_item_id, 'ListItemEditorForm', null, 'POST', 'multipart/form-data');
-				
-					$va_form_elements = $t_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-											'request' => $this->request, 
-											'formName' => 'ListItemEditorForm',
-											'context_id' => $vs_context_id
-										), $va_bundle_list);
-					
-					print join("\n", $va_form_elements);
-					
-					if($vb_can_edit) { print $vs_control_box; }
-?>
-					<input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
-					<input type='hidden' name='item_id' value='<?php print $vn_item_id; ?>'/>
-					<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
-					<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
+        if ($vb_can_edit) {
+            print $vs_control_box;
+        }
+        ?>
+        <input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
+        <input type='hidden' name='item_id' value='<?php print $vn_item_id; ?>'/>
+        <input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
+        <input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
 
-				</form>
-<?php
-			}
-?>
-	</div>
+        </form>
+        <?php
+    }
+    ?>
+</div>
 
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
-	<?php print caEditorFieldList($this->request, $t_item, $va_bundle_list); ?>
+<div class="editorBottomPadding"><!-- empty --></div>
+
+<?php print caEditorFieldList($this->request, $t_item, $va_bundle_list); ?>

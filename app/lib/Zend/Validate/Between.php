@@ -35,7 +35,7 @@ class Zend_Validate_Between extends Zend_Validate_Abstract
     /**
      * Validation failure message key for when the value is not between the min and max, inclusively
      */
-    const NOT_BETWEEN        = 'notBetween';
+    const NOT_BETWEEN = 'notBetween';
 
     /**
      * Validation failure message key for when the value is not strictly between the min and max
@@ -48,7 +48,7 @@ class Zend_Validate_Between extends Zend_Validate_Abstract
      * @var array
      */
     protected $_messageTemplates = array(
-        self::NOT_BETWEEN        => "'%value%' is not between '%min%' and '%max%', inclusively",
+        self::NOT_BETWEEN => "'%value%' is not between '%min%' and '%max%', inclusively",
         self::NOT_BETWEEN_STRICT => "'%value%' is not strictly between '%min%' and '%max%'"
     );
 
@@ -93,25 +93,27 @@ class Zend_Validate_Between extends Zend_Validate_Abstract
      *   'max' => scalar, maximum border
      *   'inclusive' => boolean, inclusive border values
      *
-     * @param  array|Zend_Config $options
+     * @param array|Zend_Config $options
      * @return void
      */
     public function __construct($options)
     {
         if ($options instanceof Zend_Config) {
             $options = $options->toArray();
-        } else if (!is_array($options)) {
-            $options = func_get_args();
-            $temp['min'] = array_shift($options);
-            if (!empty($options)) {
-                $temp['max'] = array_shift($options);
-            }
+        } else {
+            if (!is_array($options)) {
+                $options = func_get_args();
+                $temp['min'] = array_shift($options);
+                if (!empty($options)) {
+                    $temp['max'] = array_shift($options);
+                }
 
-            if (!empty($options)) {
-                $temp['inclusive'] = array_shift($options);
-            }
+                if (!empty($options)) {
+                    $temp['inclusive'] = array_shift($options);
+                }
 
-            $options = $temp;
+                $options = $temp;
+            }
         }
 
         if (!array_key_exists('min', $options) || !array_key_exists('max', $options)) {
@@ -124,8 +126,8 @@ class Zend_Validate_Between extends Zend_Validate_Abstract
         }
 
         $this->setMin($options['min'])
-             ->setMax($options['max'])
-             ->setInclusive($options['inclusive']);
+            ->setMax($options['max'])
+            ->setInclusive($options['inclusive']);
     }
 
     /**
@@ -141,7 +143,7 @@ class Zend_Validate_Between extends Zend_Validate_Abstract
     /**
      * Sets the min option
      *
-     * @param  mixed $min
+     * @param mixed $min
      * @return Zend_Validate_Between Provides a fluent interface
      */
     public function setMin($min)
@@ -163,7 +165,7 @@ class Zend_Validate_Between extends Zend_Validate_Abstract
     /**
      * Sets the max option
      *
-     * @param  mixed $max
+     * @param mixed $max
      * @return Zend_Validate_Between Provides a fluent interface
      */
     public function setMax($max)
@@ -185,7 +187,7 @@ class Zend_Validate_Between extends Zend_Validate_Abstract
     /**
      * Sets the inclusive option
      *
-     * @param  boolean $inclusive
+     * @param boolean $inclusive
      * @return Zend_Validate_Between Provides a fluent interface
      */
     public function setInclusive($inclusive)
@@ -200,7 +202,7 @@ class Zend_Validate_Between extends Zend_Validate_Abstract
      * Returns true if and only if $value is between min and max options, inclusively
      * if inclusive option is true.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return boolean
      */
     public function isValid($value)

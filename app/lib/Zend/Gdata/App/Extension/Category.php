@@ -43,7 +43,7 @@ class Zend_Gdata_App_Extension_Category extends Zend_Gdata_App_Extension
     protected $_scheme = null;
     protected $_label = null;
 
-    public function __construct($term = null, $scheme = null, $label=null)
+    public function __construct($term = null, $scheme = null, $label = null)
     {
         parent::__construct();
         $this->_term = $term;
@@ -69,17 +69,17 @@ class Zend_Gdata_App_Extension_Category extends Zend_Gdata_App_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'term':
-            $this->_term = $attribute->nodeValue;
-            break;
-        case 'scheme':
-            $this->_scheme = $attribute->nodeValue;
-            break;
-        case 'label':
-            $this->_label = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'term':
+                $this->_term = $attribute->nodeValue;
+                break;
+            case 'scheme':
+                $this->_scheme = $attribute->nodeValue;
+                break;
+            case 'label':
+                $this->_label = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

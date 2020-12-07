@@ -32,9 +32,9 @@ interface Zend_Controller_Router_Interface
      * Processes a request and sets its controller and action.  If
      * no route was possible, an exception is thrown.
      *
-     * @param  Zend_Controller_Request_Abstract
-     * @throws Zend_Controller_Router_Exception
+     * @param Zend_Controller_Request_Abstract
      * @return Zend_Controller_Request_Abstract|boolean
+     * @throws Zend_Controller_Router_Exception
      */
     public function route(Zend_Controller_Request_Abstract $dispatcher);
 
@@ -53,12 +53,12 @@ interface Zend_Controller_Router_Interface
      *
      * Encode tells to url encode resulting path parts.
      *
-     * @param  array $userParams Options passed by a user used to override parameters
-     * @param  mixed $name The name of a Route to use
-     * @param  bool $reset Whether to reset to the route defaults ignoring URL params
-     * @param  bool $encode Tells to encode URL parts on output
-     * @throws Zend_Controller_Router_Exception
+     * @param array $userParams Options passed by a user used to override parameters
+     * @param mixed $name The name of a Route to use
+     * @param bool $reset Whether to reset to the route defaults ignoring URL params
+     * @param bool $encode Tells to encode URL parts on output
      * @return string Resulting URL path
+     * @throws Zend_Controller_Router_Exception
      */
     public function assemble($userParams, $name = null, $reset = false, $encode = true);
 

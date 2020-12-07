@@ -45,8 +45,8 @@ require_once 'Zend/Markup/Renderer/TokenConverterInterface.php';
 abstract class Zend_Markup_Renderer_RendererAbstract
 {
     const TYPE_CALLBACK = 4;
-    const TYPE_REPLACE  = 8;
-    const TYPE_ALIAS    = 16;
+    const TYPE_REPLACE = 8;
+    const TYPE_ALIAS = 16;
 
     /**
      * Tag info
@@ -142,7 +142,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     /**
      * Set the parser
      *
-     * @param  Zend_Markup_Parser_ParserInterface $parser
+     * @param Zend_Markup_Parser_ParserInterface $parser
      * @return Zend_Markup_Renderer_RendererAbstract
      */
     public function setParser(Zend_Markup_Parser_ParserInterface $parser)
@@ -246,7 +246,8 @@ abstract class Zend_Markup_Renderer_RendererAbstract
             if (empty($options['name'])) {
                 require_once 'Zend/Markup/Renderer/Exception.php';
                 throw new Zend_Markup_Renderer_Exception(
-                        'No alias was provided but tag was defined as such');
+                    'No alias was provided but tag was defined as such'
+                );
             }
 
             $this->_markups[$name] = array(
@@ -256,13 +257,13 @@ abstract class Zend_Markup_Renderer_RendererAbstract
         } else {
             if ($type && array_key_exists('empty', $options) && $options['empty']) {
                 // add a single replace markup
-                $options['type']   = $type;
+                $options['type'] = $type;
                 $options['filter'] = $filter;
 
                 $this->_markups[$name] = $options;
             } else {
                 // add a replace markup
-                $options['type']   = $type;
+                $options['type'] = $type;
                 $options['filter'] = $filter;
 
                 $this->_markups[$name] = $options;
@@ -296,7 +297,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     /**
      * Render function
      *
-     * @param  Zend_Markup_TokenList|string $tokenList
+     * @param Zend_Markup_TokenList|string $tokenList
      * @return string
      */
     public function render($value)
@@ -317,12 +318,12 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     /**
      * Render a single token
      *
-     * @param  Zend_Markup_Token $token
+     * @param Zend_Markup_Token $token
      * @return string
      */
     protected function _render(Zend_Markup_Token $token)
     {
-        $return    = '';
+        $return = '';
 
         $this->_token = $token;
 
@@ -339,7 +340,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     /**
      * Get the group of a token
      *
-     * @param  Zend_Markup_Token $token
+     * @param Zend_Markup_Token $token
      * @return string|bool
      */
     protected function _getGroup(Zend_Markup_Token $token)
@@ -361,7 +362,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     /**
      * Execute the token
      *
-     * @param  Zend_Markup_Token $token
+     * @param Zend_Markup_Token $token
      * @return string
      */
     protected function _execute(Zend_Markup_Token $token)
@@ -373,15 +374,15 @@ abstract class Zend_Markup_Renderer_RendererAbstract
 
         // if the token doesn't have a notation, return the plain text
         if (!isset($this->_markups[$token->getName()])) {
-            $oldToken  = $this->_token;
+            $oldToken = $this->_token;
             $return = $this->_filter($token->getTag()) . $this->_render($token) . $token->getStopper();
             $this->_token = $oldToken;
             return $return;
         }
 
-        $name   = $this->_getMarkupName($token);
+        $name = $this->_getMarkupName($token);
         $markup = (!$name) ? false : $this->_markups[$name];
-        $empty  = (is_array($markup) && array_key_exists('empty', $markup) && $markup['empty']);
+        $empty = (is_array($markup) && array_key_exists('empty', $markup) && $markup['empty']);
 
         // check if the tag has content
         if (!$empty && !$token->hasChildren()) {
@@ -391,7 +392,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
         // check for the context
         if (is_array($markup) && !in_array($markup['group'], $this->_groups[$this->_group])) {
             $oldToken = $this->_token;
-            $return   = $this->_filter($token->getTag()) . $this->_render($token) . $token->getStopper();
+            $return = $this->_filter($token->getTag()) . $this->_render($token) . $token->getStopper();
             $this->_token = $oldToken;
             return $return;
         }
@@ -404,7 +405,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
 
         // save old values to reset them after the work is done
         $oldFilter = $this->_filter;
-        $oldGroup  = $this->_group;
+        $oldGroup = $this->_group;
 
         $return = '';
 
@@ -448,7 +449,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
 
         // reset to the old values
         $this->_filter = $oldFilter;
-        $this->_group  = $oldGroup;
+        $this->_group = $oldGroup;
 
         return $return;
     }
@@ -495,7 +496,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     protected function _resolveMarkupName($name)
     {
         while (($type = $this->_getMarkupType($name))
-               && ($type & self::TYPE_ALIAS)
+            && ($type & self::TYPE_ALIAS)
         ) {
             $name = $this->_markups[$name]['name'];
         }
@@ -506,7 +507,7 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     /**
      * Retrieve markup type
      *
-     * @param  string $name
+     * @param string $name
      * @return false|int
      */
     protected function _getMarkupType($name)
@@ -523,8 +524,8 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     /**
      * Execute a replace token
      *
-     * @param  Zend_Markup_Token $token
-     * @param  array $tag
+     * @param Zend_Markup_Token $token
+     * @param array $tag
      * @return string
      */
     protected function _executeReplace(Zend_Markup_Token $token, $tag)
@@ -535,8 +536,8 @@ abstract class Zend_Markup_Renderer_RendererAbstract
     /**
      * Execute a single replace token
      *
-     * @param  Zend_Markup_Token $token
-     * @param  array $tag
+     * @param Zend_Markup_Token $token
+     * @param array $tag
      * @return string
      */
     protected function _executeSingleReplace(Zend_Markup_Token $token, $tag)

@@ -139,7 +139,7 @@ class Zend_Memory_AccessController implements Zend_Memory_Container_Interface
      * Set handler
      *
      * @param string $property
-     * @param  string $value
+     * @param string $value
      * @throws Zend_Exception
      */
     public function __set($property, $value)

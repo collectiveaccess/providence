@@ -25,72 +25,84 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	if(!($vs_window_title = trim(MetaTagManager::getWindowTitle()))) {
- 		$va_breadcrumb = $this->getVar('nav')->getDestinationAsBreadCrumbTrail();
- 		if (is_array($va_breadcrumb) && sizeof($va_breadcrumb)) {
- 			$vs_window_title = array_pop($va_breadcrumb);
- 		}
- 	}
+
+if (!($vs_window_title = trim(MetaTagManager::getWindowTitle()))) {
+    $va_breadcrumb = $this->getVar('nav')->getDestinationAsBreadCrumbTrail();
+    if (is_array($va_breadcrumb) && sizeof($va_breadcrumb)) {
+        $vs_window_title = array_pop($va_breadcrumb);
+    }
+}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-	<head>
-		<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
-	    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-		<meta http-equiv="Content-Style-Type" content="text/css" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=EDGE"/>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Style-Type" content="text/css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 
-		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
+    <title><?php print $this->appconfig->get(
+                "window_title"
+            ) . ($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
 
-		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
-<?php
-	print AssetLoadManager::getLoadHTML($this->request);
-	print MetaTagManager::getHTML();
-	
-	if ($vs_local_css_url_path = $this->request->getUrlPathForThemeFile("css/local.css")) {
-		print "<link rel='stylesheet' href='{$vs_local_css_url_path}' type='text/css' media='screen' />
+    <script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
+    <?php
+    print AssetLoadManager::getLoadHTML($this->request);
+    print MetaTagManager::getHTML();
+
+    if ($vs_local_css_url_path = $this->request->getUrlPathForThemeFile("css/local.css")) {
+        print "<link rel='stylesheet' href='{$vs_local_css_url_path}' type='text/css' media='screen' />
 ";
-	}
-	
-	//
-	// Pull in JS and CSS for debug bar
-	// 
-	if(Debug::isEnabled()) {
-		$o_debugbar_renderer = Debug::$bar->getJavascriptRenderer();
-		$o_debugbar_renderer->setBaseUrl(__CA_URL_ROOT__.$o_debugbar_renderer->getBaseUrl());
-		print $o_debugbar_renderer->renderHead();
-	}
-?>
-		<script type="text/javascript">
-			// initialise plugins
-			jQuery(document).ready(function() {
-				jQuery('ul.sf-menu').superfish(
-					{
-						delay: 350,
-						speed: 150,
-						disableHI: true,
-						animation: { opacity: 'show' }
-					}
-				);
-				
-				jQuery('#caQuickSearchFormText').searchlight('<?php print caNavUrl($this->request, 'find', 'SearchObjects', 'lookup'); ?>', {showIcons: false, searchDelay: 100, minimumCharacters: 3, limitPerCategory: 3});
-			});
-			
-			// initialize CA Utils
-			caUI.initUtils({unsavedChangesWarningMessage: '<?php _p('You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes.'); ?>'});
+    }
 
-		</script>
-		<!--[if lte IE 6]>
-			<style type="text/css">
-			#container {
-			height: 100%;
-			}
-			</style>
-			<![endif]-->
-		<!-- super fish end menus -->	
-        <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
-	</head>	
-	<body>
-		<div align="center">
+    //
+    // Pull in JS and CSS for debug bar
+    //
+    if (Debug::isEnabled()) {
+        $o_debugbar_renderer = Debug::$bar->getJavascriptRenderer();
+        $o_debugbar_renderer->setBaseUrl(__CA_URL_ROOT__ . $o_debugbar_renderer->getBaseUrl());
+        print $o_debugbar_renderer->renderHead();
+    }
+    ?>
+    <script type="text/javascript">
+        // initialise plugins
+        jQuery(document).ready(function () {
+            jQuery('ul.sf-menu').superfish(
+                {
+                    delay: 350,
+                    speed: 150,
+                    disableHI: true,
+                    animation: {opacity: 'show'}
+                }
+            );
+
+            jQuery('#caQuickSearchFormText').searchlight('<?php print caNavUrl(
+                $this->request,
+                'find',
+                'SearchObjects',
+                'lookup'
+            ); ?>', {showIcons: false, searchDelay: 100, minimumCharacters: 3, limitPerCategory: 3});
+        });
+
+        // initialize CA Utils
+        caUI.initUtils({
+            unsavedChangesWarningMessage: '<?php _p(
+                'You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes.'
+            ); ?>'
+        });
+
+    </script>
+    <!--[if lte IE 6]>
+        <style type="text/css">
+        #container {
+        height: 100%;
+        }
+        </style>
+        <![endif]-->
+    <!-- super fish end menus -->
+    <link rel="stylesheet" type="text/css"
+          href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>
+</head>
+<body>
+<div align="center">

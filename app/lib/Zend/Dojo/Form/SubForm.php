@@ -43,16 +43,16 @@ class Zend_Dojo_Form_SubForm extends Zend_Form_SubForm
     /**
      * Constructor
      *
-     * @param  array|Zend_Config|null $options
+     * @param array|Zend_Config|null $options
      * @return void
      */
     public function __construct($options = null)
     {
         $this->addPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator', 'decorator')
-             ->addPrefixPath('Zend_Dojo_Form_Element', 'Zend/Dojo/Form/Element', 'element')
-             ->addElementPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator', 'decorator')
-             ->addDisplayGroupPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator')
-             ->setDefaultDisplayGroupClass('Zend_Dojo_Form_DisplayGroup');
+            ->addPrefixPath('Zend_Dojo_Form_Element', 'Zend/Dojo/Form/Element', 'element')
+            ->addElementPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator', 'decorator')
+            ->addDisplayGroupPrefixPath('Zend_Dojo_Form_Decorator', 'Zend/Dojo/Form/Decorator')
+            ->setDefaultDisplayGroupClass('Zend_Dojo_Form_DisplayGroup');
         parent::__construct($options);
     }
 
@@ -70,8 +70,8 @@ class Zend_Dojo_Form_SubForm extends Zend_Form_SubForm
         $decorators = $this->getDecorators();
         if (empty($decorators)) {
             $this->addDecorator('FormElements')
-                 ->addDecorator('HtmlTag', array('tag' => 'dl'))
-                 ->addDecorator('ContentPane');
+                ->addDecorator('HtmlTag', array('tag' => 'dl'))
+                ->addDecorator('ContentPane');
         }
     }
 

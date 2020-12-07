@@ -70,7 +70,7 @@ class Zend_Feed_Reader_Extension_CreativeCommons_Entry extends Zend_Feed_Reader_
 
         if ($list->length) {
             foreach ($list as $license) {
-                    $licenses[] = $license->nodeValue;
+                $licenses[] = $license->nodeValue;
             }
 
             $licenses = array_unique($licenses);

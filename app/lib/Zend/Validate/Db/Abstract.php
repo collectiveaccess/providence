@@ -39,14 +39,14 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
      * Error constants
      */
     const ERROR_NO_RECORD_FOUND = 'noRecordFound';
-    const ERROR_RECORD_FOUND    = 'recordFound';
+    const ERROR_RECORD_FOUND = 'recordFound';
 
     /**
      * @var array Message templates
      */
     protected $_messageTemplates = array(
         self::ERROR_NO_RECORD_FOUND => "No record matching '%value%' was found",
-        self::ERROR_RECORD_FOUND    => "A record matching '%value%' was found",
+        self::ERROR_RECORD_FOUND => "A record matching '%value%' was found",
     );
 
     /**
@@ -106,19 +106,21 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
         }
         if ($options instanceof Zend_Config) {
             $options = $options->toArray();
-        } else if (func_num_args() > 1) {
-            $options       = func_get_args();
-            $temp['table'] = array_shift($options);
-            $temp['field'] = array_shift($options);
-            if (!empty($options)) {
-                $temp['exclude'] = array_shift($options);
-            }
+        } else {
+            if (func_num_args() > 1) {
+                $options = func_get_args();
+                $temp['table'] = array_shift($options);
+                $temp['field'] = array_shift($options);
+                if (!empty($options)) {
+                    $temp['exclude'] = array_shift($options);
+                }
 
-            if (!empty($options)) {
-                $temp['adapter'] = array_shift($options);
-            }
+                if (!empty($options)) {
+                    $temp['adapter'] = array_shift($options);
+                }
 
-            $options = $temp;
+                $options = $temp;
+            }
         }
 
         if (!array_key_exists('table', $options) && !array_key_exists('schema', $options)) {
@@ -172,7 +174,7 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
     /**
      * Sets a new database adapter
      *
-     * @param  Zend_Db_Adapter_Abstract $adapter
+     * @param Zend_Db_Adapter_Abstract $adapter
      * @return Zend_Validate_Db_Abstract
      */
     public function setAdapter($adapter)
@@ -226,7 +228,7 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
      */
     public function setField($field)
     {
-        $this->_field = (string) $field;
+        $this->_field = (string)$field;
         return $this;
     }
 
@@ -248,7 +250,7 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
      */
     public function setTable($table)
     {
-        $this->_table = (string) $table;
+        $this->_table = (string)$table;
         return $this;
     }
 
@@ -283,8 +285,10 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
     public function setSelect($select)
     {
         if (!$select instanceof Zend_Db_Select) {
-            throw new Zend_Validate_Exception('Select option must be a valid ' .
-                                              'Zend_Db_Select object');
+            throw new Zend_Validate_Exception(
+                'Select option must be a valid ' .
+                'Zend_Db_Select object'
+            );
         }
         $this->_select = $select;
         return $this;
@@ -308,15 +312,16 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
             $select = new Zend_Db_Select($db);
             $select->from($this->_table, array($this->_field), $this->_schema);
             if ($db->supportsParameters('named')) {
-                $select->where($db->quoteIdentifier($this->_field, true).' = :value'); // named
+                $select->where($db->quoteIdentifier($this->_field, true) . ' = :value'); // named
             } else {
-                $select->where($db->quoteIdentifier($this->_field, true).' = ?'); // positional
+                $select->where($db->quoteIdentifier($this->_field, true) . ' = ?'); // positional
             }
             if ($this->_exclude !== null) {
                 if (is_array($this->_exclude)) {
                     $select->where(
-                          $db->quoteIdentifier($this->_exclude['field'], true) .
-                            ' != ?', $this->_exclude['value']
+                        $db->quoteIdentifier($this->_exclude['field'], true) .
+                        ' != ?',
+                        $this->_exclude['value']
                     );
                 } else {
                     $select->where($this->_exclude);
@@ -331,7 +336,7 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
     /**
      * Run query and returns matches, or null if no matches are found.
      *
-     * @param  String $value
+     * @param String $value
      * @return Array when matches are found.
      */
     protected function _query($value)
@@ -344,7 +349,7 @@ abstract class Zend_Validate_Db_Abstract extends Zend_Validate_Abstract
             $select,
             array('value' => $value), // this should work whether db supports positional or named params
             Zend_Db::FETCH_ASSOC
-            );
+        );
 
         return $result;
     }

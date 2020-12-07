@@ -39,7 +39,7 @@ class Zend_Filter_Decrypt extends Zend_Filter_Encrypt
      *
      * Decrypts the content $value with the defined settings
      *
-     * @param  string $value Content to decrypt
+     * @param string $value Content to decrypt
      * @return string The decrypted content
      */
     public function filter($value)

@@ -80,10 +80,10 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
      * @var array
      */
     protected $_defaultOptions = array(
-        'base_url'   => null,
-        'format'     => null,
-        'width'      => false,
-        'height'     => false,
+        'base_url' => null,
+        'format' => null,
+        'width' => false,
+        'height' => false,
         'create_tag' => true,
     );
 
@@ -112,9 +112,9 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
         $url = '/' . $this->_mergeBaseUrl($options) . ltrim($image, '/');
 
         $src = self::TINYSRC_BASE
-             . $this->_mergeFormat($options)
-             . $this->_mergeDimensions($options)
-             . $url;
+            . $this->_mergeFormat($options)
+            . $this->_mergeDimensions($options)
+            . $url;
 
         if (!$options['create_tag']) {
             return $src;
@@ -143,7 +143,7 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
     /**
      * Set base URL for images
      *
-     * @param  string $url
+     * @param string $url
      * @return Zend_View_Helper_TinySrc
      */
     public function setBaseUrl($url)
@@ -173,7 +173,7 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
      *
      * If set, this will set the default format to use on all images.
      *
-     * @param  null|string $format
+     * @param null|string $format
      * @return Zend_View_Helper_TinySrc
      * @throws Zend_View_Exception
      */
@@ -200,8 +200,8 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
      * only width is specified, only width will be used. If either dimension
      * fails validation, an exception is raised.
      *
-     * @param  null|int|string $width
-     * @param  null|int|string $height
+     * @param null|int|string $width
+     * @param null|int|string $height
      * @return Zend_View_Helper_TinySrc
      * @throws Zend_View_Exception
      */
@@ -233,12 +233,12 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
     /**
      * Set state of "create tag" flag
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_View_Helper_TinySrc
      */
     public function setCreateTag($flag)
     {
-        $this->_createTagFlag = (bool) $flag;
+        $this->_createTagFlag = (bool)$flag;
         return $this;
     }
 
@@ -257,7 +257,7 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
      *
      * Dimensions may be integers, optionally preceded by '-' or 'x'.
      *
-     * @param  string $dim
+     * @param string $dim
      * @return bool
      */
     protected function _validateDimension($dim)
@@ -265,13 +265,13 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
         if (!is_scalar($dim) || is_bool($dim)) {
             return false;
         }
-        return preg_match('/^(-|x)?\d+$/', (string) $dim);
+        return preg_match('/^(-|x)?\d+$/', (string)$dim);
     }
 
     /**
      * Determine whether to use default base URL, or base URL from options
      *
-     * @param  array $options
+     * @param array $options
      * @return string
      */
     protected function _mergeBaseUrl(array $options)
@@ -285,7 +285,7 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
     /**
      * Determine whether to use default format or format provided in options.
      *
-     * @param  array $options
+     * @param array $options
      * @return string
      */
     protected function _mergeFormat(array $options)
@@ -299,7 +299,7 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
     /**
      * Determine whether to use default dimensions, or those passed in options.
      *
-     * @param  array $options
+     * @param array $options
      * @return string
      */
     protected function _mergeDimensions(array $options)

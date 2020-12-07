@@ -22,7 +22,7 @@
 
 
 /** User land classes and interfaces turned on by Zend/Search/Analyzer.php file inclusion. */
-/** @todo Section should be removed with ZF 2.0 release as obsolete                      */
+/** @todo Section should be removed with ZF 2.0 release as obsolete */
 if (!defined('ZEND_SEARCH_LUCENE_COMMON_ANALYZER_PROCESSED')) {
     /** Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8 */
     require_once 'Zend/Search/Lucene/Analysis/Analyzer/Common/Utf8.php';
@@ -66,7 +66,6 @@ if (!defined('ZEND_SEARCH_LUCENE_COMMON_ANALYZER_PROCESSED')) {
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-
 abstract class Zend_Search_Lucene_Analysis_Analyzer
 {
     /**
@@ -120,7 +119,7 @@ abstract class Zend_Search_Lucene_Analysis_Analyzer
      */
     public function setInput($data, $encoding = '')
     {
-        $this->_input    = $data;
+        $this->_input = $data;
         $this->_encoding = $encoding;
         $this->reset();
     }
@@ -140,8 +139,6 @@ abstract class Zend_Search_Lucene_Analysis_Analyzer
      * @return Zend_Search_Lucene_Analysis_Token|null
      */
     abstract public function nextToken();
-
-
 
 
     /**

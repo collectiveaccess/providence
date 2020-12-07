@@ -25,73 +25,98 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
- 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
- 	
- 
- 	class SearchFormEditorController extends BaseEditorController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_search_forms';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		protected function _initView($pa_options=null) {
- 			AssetLoadManager::register('bundleableEditor');
- 			AssetLoadManager::register('sortableUI');
- 			AssetLoadManager::register('bundleListEditorUI');
- 			
- 			$va_init = parent::_initView($pa_options);
- 			if (!$va_init[1]->getPrimaryKey()) {
- 				$va_init[1]->set('user_id', $this->request->getUserID());
- 				$va_init[1]->set('table_num', $this->request->getParameter('table_num', pInteger));
- 			}
- 			
- 			return $va_init;
- 		}
- 		# -------------------------------------------------------
- 		protected function _isFormEditable() {
- 			$pn_form_id = $this->request->getParameter('form_id', pInteger);
- 			if ($pn_form_id == 0) { return true; }		// allow creation of new forms
- 			$t_form = new ca_search_forms();
- 			if (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_BUNDLE_DISPLAY_EDIT_ACCESS__, $pn_form_id)) {		// is user allowed to edit form?
- 				$this->notification->addNotification(_t("You cannot edit that form"), __NOTIFICATION_TYPE_ERROR__);
- 				$this->response->setRedirect(caNavUrl($this->request, 'manage', 'SearchForm', 'ListForms'));
- 				return false; 
- 			} else {
- 				return true;
- 			}
- 		}
- 		# -------------------------------------------------------
- 		public function Edit($pa_values=null, $pa_options=null) {
- 			if ($this->_isFormEditable()) { return parent::Edit($pa_values, $pa_options); } 
- 			return false;
- 		}
- 		# -------------------------------------------------------
- 		public function Delete($pa_options=null) {
- 			if ($this->_isFormEditable()) { return parent::Delete($pa_options); } 
- 			return false;
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * If instance was just saved grant current user access
- 		 */
- 		public function _afterSave($pt_subject, $pb_is_insert) {
- 			if ($pb_is_insert && $pt_subject->getPrimaryKey()) {
- 				$pt_subject->addUsers(array($this->request->getUserID() => __CA_SEARCH_FORM_EDIT_ACCESS__));
- 			}
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		public function Info($pa_parameters) {
- 			parent::info($pa_parameters);
- 			
- 			
- 			return $this->render('widget_search_form_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+
+require_once(__CA_MODELS_DIR__ . "/ca_search_forms.php");
+require_once(__CA_LIB_DIR__ . "/BaseEditorController.php");
+
+
+class SearchFormEditorController extends BaseEditorController
+{
+    # -------------------------------------------------------
+    protected $ops_table_name = 'ca_search_forms';        // name of "subject" table (what we're editing)
+
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+
+    # -------------------------------------------------------
+    protected function _initView($pa_options = null)
+    {
+        AssetLoadManager::register('bundleableEditor');
+        AssetLoadManager::register('sortableUI');
+        AssetLoadManager::register('bundleListEditorUI');
+
+        $va_init = parent::_initView($pa_options);
+        if (!$va_init[1]->getPrimaryKey()) {
+            $va_init[1]->set('user_id', $this->request->getUserID());
+            $va_init[1]->set('table_num', $this->request->getParameter('table_num', pInteger));
+        }
+
+        return $va_init;
+    }
+
+    # -------------------------------------------------------
+    protected function _isFormEditable()
+    {
+        $pn_form_id = $this->request->getParameter('form_id', pInteger);
+        if ($pn_form_id == 0) {
+            return true;
+        }        // allow creation of new forms
+        $t_form = new ca_search_forms();
+        if (!$t_form->haveAccessToForm(
+            $this->request->getUserID(),
+            __CA_BUNDLE_DISPLAY_EDIT_ACCESS__,
+            $pn_form_id
+        )) {        // is user allowed to edit form?
+            $this->notification->addNotification(_t("You cannot edit that form"), __NOTIFICATION_TYPE_ERROR__);
+            $this->response->setRedirect(caNavUrl($this->request, 'manage', 'SearchForm', 'ListForms'));
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    # -------------------------------------------------------
+    public function Edit($pa_values = null, $pa_options = null)
+    {
+        if ($this->_isFormEditable()) {
+            return parent::Edit($pa_values, $pa_options);
+        }
+        return false;
+    }
+
+    # -------------------------------------------------------
+    public function Delete($pa_options = null)
+    {
+        if ($this->_isFormEditable()) {
+            return parent::Delete($pa_options);
+        }
+        return false;
+    }
+    # -------------------------------------------------------
+
+    /**
+     * If instance was just saved grant current user access
+     */
+    public function _afterSave($pt_subject, $pb_is_insert)
+    {
+        if ($pb_is_insert && $pt_subject->getPrimaryKey()) {
+            $pt_subject->addUsers(array($this->request->getUserID() => __CA_SEARCH_FORM_EDIT_ACCESS__));
+        }
+    }
+    # -------------------------------------------------------
+    # Sidebar info handler
+    # -------------------------------------------------------
+    public function Info($pa_parameters)
+    {
+        parent::info($pa_parameters);
+
+
+        return $this->render('widget_search_form_info_html.php', true);
+    }
+    # -------------------------------------------------------
+}
+
+?>

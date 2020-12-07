@@ -106,7 +106,7 @@ class Zend_Validate_Int extends Zend_Validate_Abstract
      *
      * Returns true if and only if $value is a valid integer
      *
-     * @param  string|integer $value
+     * @param string|integer $value
      * @return boolean
      */
     public function isValid($value)
@@ -122,7 +122,7 @@ class Zend_Validate_Int extends Zend_Validate_Abstract
 
         $this->_setValue($value);
         if ($this->_locale === null) {
-            $locale        = localeconv();
+            $locale = localeconv();
             $valueFiltered = str_replace($locale['decimal_point'], '.', $value);
             $valueFiltered = str_replace($locale['thousands_sep'], '', $valueFiltered);
 
@@ -130,7 +130,6 @@ class Zend_Validate_Int extends Zend_Validate_Abstract
                 $this->_error(self::NOT_INT);
                 return false;
             }
-
         } else {
             try {
                 if (!Zend_Locale_Format::isInteger($value, array('locale' => $this->_locale))) {

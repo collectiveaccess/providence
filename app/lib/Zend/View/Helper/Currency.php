@@ -43,7 +43,7 @@ class Zend_View_Helper_Currency extends Zend_View_Helper_Abstract
     /**
      * Constructor for manually handling
      *
-     * @param  Zend_Currency $currency Instance of Zend_Currency
+     * @param Zend_Currency $currency Instance of Zend_Currency
      * @return void
      */
     public function __construct($currency = null)
@@ -61,8 +61,8 @@ class Zend_View_Helper_Currency extends Zend_View_Helper_Abstract
     /**
      * Output a formatted currency
      *
-     * @param  integer|float            $value    Currency value to output
-     * @param  string|Zend_Locale|array $currency OPTIONAL Currency to use for
+     * @param integer|float $value Currency value to output
+     * @param string|Zend_Locale|array $currency OPTIONAL Currency to use for
      *                                            this call
      * @return string Formatted currency
      */
@@ -93,9 +93,9 @@ class Zend_View_Helper_Currency extends Zend_View_Helper_Abstract
     /**
      * Sets a currency to use
      *
-     * @param  Zend_Currency|String|Zend_Locale $currency Currency to use
-     * @throws Zend_View_Exception When no or a false currency was set
+     * @param Zend_Currency|String|Zend_Locale $currency Currency to use
      * @return Zend_View_Helper_Currency
+     * @throws Zend_View_Exception When no or a false currency was set
      */
     public function setCurrency($currency = null)
     {

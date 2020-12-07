@@ -47,9 +47,9 @@ class Zend_Filter_Compress_Rar extends Zend_Filter_Compress_CompressAbstract
      */
     protected $_options = array(
         'callback' => null,
-        'archive'  => null,
+        'archive' => null,
         'password' => null,
-        'target'   => '.',
+        'target' => '.',
     );
 
     /**
@@ -112,7 +112,7 @@ class Zend_Filter_Compress_Rar extends Zend_Filter_Compress_CompressAbstract
     public function setArchive($archive)
     {
         $archive = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $archive);
-        $this->_options['archive'] = (string) $archive;
+        $this->_options['archive'] = (string)$archive;
 
         return $this;
     }
@@ -135,7 +135,7 @@ class Zend_Filter_Compress_Rar extends Zend_Filter_Compress_CompressAbstract
      */
     public function setPassword($password)
     {
-        $this->_options['password'] = (string) $password;
+        $this->_options['password'] = (string)$password;
         return $this;
     }
 
@@ -163,14 +163,14 @@ class Zend_Filter_Compress_Rar extends Zend_Filter_Compress_CompressAbstract
         }
 
         $target = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $target);
-        $this->_options['target'] = (string) $target;
+        $this->_options['target'] = (string)$target;
         return $this;
     }
 
     /**
      * Compresses the given content
      *
-     * @param  string|array $content
+     * @param string|array $content
      * @return string
      */
     public function compress($content)
@@ -196,7 +196,7 @@ class Zend_Filter_Compress_Rar extends Zend_Filter_Compress_CompressAbstract
     /**
      * Decompresses the given content
      *
-     * @param  string $content
+     * @param string $content
      * @return boolean
      */
     public function decompress($content)
@@ -232,7 +232,7 @@ class Zend_Filter_Compress_Rar extends Zend_Filter_Compress_CompressAbstract
             throw new Zend_Filter_Exception("Error reading the RAR Archive");
         }
 
-        foreach($filelist as $file) {
+        foreach ($filelist as $file) {
             $file->extract($target);
         }
 

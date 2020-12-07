@@ -62,7 +62,7 @@ class Zend_Amf_Util_BinaryStream
      * by the methods in the class. Detect if the class should use big or
      * little Endian encoding.
      *
-     * @param  string $stream use '' if creating a new stream or pass a string if reading.
+     * @param string $stream use '' if creating a new stream or pass a string if reading.
      * @return void
      */
     public function __construct($stream)
@@ -72,11 +72,13 @@ class Zend_Amf_Util_BinaryStream
             throw new Zend_Amf_Exception('Inputdata is not of type String');
         }
 
-        $this->_stream       = $stream;
-        $this->_needle       = 0;
-        $this->_mbStringFunctionsOverloaded = function_exists('mb_strlen') && (ini_get('mbstring.func_overload') !== '') && ((int)ini_get('mbstring.func_overload') & 2);
+        $this->_stream = $stream;
+        $this->_needle = 0;
+        $this->_mbStringFunctionsOverloaded = function_exists('mb_strlen') && (ini_get(
+                    'mbstring.func_overload'
+                ) !== '') && ((int)ini_get('mbstring.func_overload') & 2);
         $this->_streamLength = $this->_mbStringFunctionsOverloaded ? mb_strlen($stream, '8bit') : strlen($stream);
-        $this->_bigEndian    = (pack('l', 1) === "\x00\x00\x00\x01");
+        $this->_bigEndian = (pack('l', 1) === "\x00\x00\x00\x01");
     }
 
     /**
@@ -92,19 +94,26 @@ class Zend_Amf_Util_BinaryStream
     /**
      * Read the number of bytes in a row for the length supplied.
      *
-     * @todo   Should check that there are enough bytes left in the stream we are about to read.
-     * @param  int $length
+     * @param int $length
      * @return string
      * @throws Zend_Amf_Exception for buffer underrun
+     * @todo   Should check that there are enough bytes left in the stream we are about to read.
      */
     public function readBytes($length)
     {
         if (($length + $this->_needle) > $this->_streamLength) {
             require_once 'Zend/Amf/Exception.php';
-            throw new Zend_Amf_Exception('Buffer underrun at needle position: ' . $this->_needle . ' while requesting length: ' . $length);
+            throw new Zend_Amf_Exception(
+                'Buffer underrun at needle position: ' . $this->_needle . ' while requesting length: ' . $length
+            );
         }
-        $bytes = $this->_mbStringFunctionsOverloaded ? mb_substr($this->_stream, $this->_needle, $length, '8bit') : substr($this->_stream, $this->_needle, $length);
-        $this->_needle+= $length;
+        $bytes = $this->_mbStringFunctionsOverloaded ? mb_substr(
+            $this->_stream,
+            $this->_needle,
+            $length,
+            '8bit'
+        ) : substr($this->_stream, $this->_needle, $length);
+        $this->_needle += $length;
         return $bytes;
     }
 
@@ -113,12 +122,12 @@ class Zend_Amf_Util_BinaryStream
      *
      * Usually a string.
      *
-     * @param  string $bytes
+     * @param string $bytes
      * @return Zend_Amf_Util_BinaryStream
      */
     public function writeBytes($bytes)
     {
-        $this->_stream.= $bytes;
+        $this->_stream .= $bytes;
         return $this;
     }
 
@@ -146,12 +155,12 @@ class Zend_Amf_Util_BinaryStream
     /**
      * Writes the passed string into a signed byte on the stream.
      *
-     * @param  string $stream
+     * @param string $stream
      * @return Zend_Amf_Util_BinaryStream
      */
     public function writeByte($stream)
     {
-        $this->_stream.= pack('c', $stream);
+        $this->_stream .= pack('c', $stream);
         return $this;
     }
 
@@ -168,12 +177,12 @@ class Zend_Amf_Util_BinaryStream
     /**
      * Write an the integer to the output stream as a 32 bit signed integer
      *
-     * @param  int $stream
+     * @param int $stream
      * @return Zend_Amf_Util_BinaryStream
      */
     public function writeInt($stream)
     {
-        $this->_stream.= pack('n', $stream);
+        $this->_stream .= pack('n', $stream);
         return $this;
     }
 
@@ -191,13 +200,13 @@ class Zend_Amf_Util_BinaryStream
     /**
      * Wite a UTF-8 string to the outputstream
      *
-     * @param  string $stream
+     * @param string $stream
      * @return Zend_Amf_Util_BinaryStream
      */
     public function writeUtf($stream)
     {
         $this->writeInt($this->_mbStringFunctionsOverloaded ? mb_strlen($stream, '8bit') : strlen($stream));
-        $this->_stream.= $stream;
+        $this->_stream .= $stream;
         return $this;
     }
 
@@ -216,13 +225,13 @@ class Zend_Amf_Util_BinaryStream
     /**
      * Write a long UTF string to the buffer
      *
-     * @param  string $stream
+     * @param string $stream
      * @return Zend_Amf_Util_BinaryStream
      */
     public function writeLongUtf($stream)
     {
         $this->writeLong($this->_mbStringFunctionsOverloaded ? mb_strlen($stream, '8bit') : strlen($stream));
-        $this->_stream.= $stream;
+        $this->_stream .= $stream;
     }
 
     /**
@@ -238,20 +247,20 @@ class Zend_Amf_Util_BinaryStream
     /**
      * Write long numeric value to output stream
      *
-     * @param  int|string $stream
+     * @param int|string $stream
      * @return Zend_Amf_Util_BinaryStream
      */
     public function writeLong($stream)
     {
-        $this->_stream.= pack('N', $stream);
+        $this->_stream .= pack('N', $stream);
         return $this;
     }
 
     /**
      * Read a 16 bit unsigned short.
      *
-     * @todo   This could use the unpack() w/ S,n, or v
      * @return double
+     * @todo   This could use the unpack() w/ S,n, or v
      */
     public function readUnsignedShort()
     {
@@ -267,8 +276,12 @@ class Zend_Amf_Util_BinaryStream
      */
     public function readDouble()
     {
-        $bytes = $this->_mbStringFunctionsOverloaded ? mb_substr($this->_stream, $this->_needle, 8, '8bit') : substr($this->_stream, $this->_needle, 8);
-        $this->_needle+= 8;
+        $bytes = $this->_mbStringFunctionsOverloaded ? mb_substr($this->_stream, $this->_needle, 8, '8bit') : substr(
+            $this->_stream,
+            $this->_needle,
+            8
+        );
+        $this->_needle += 8;
 
         if (!$this->_bigEndian) {
             $bytes = strrev($bytes);
@@ -281,7 +294,7 @@ class Zend_Amf_Util_BinaryStream
     /**
      * Writes an IEEE 754 double-precision floating point number from the data stream.
      *
-     * @param  string|double $stream
+     * @param string|double $stream
      * @return Zend_Amf_Util_BinaryStream
      */
     public function writeDouble($stream)
@@ -290,7 +303,7 @@ class Zend_Amf_Util_BinaryStream
         if (!$this->_bigEndian) {
             $stream = strrev($stream);
         }
-        $this->_stream.= $stream;
+        $this->_stream .= $stream;
         return $this;
     }
 

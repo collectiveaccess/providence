@@ -63,7 +63,7 @@ require_once 'Zend/Feed/Writer/Feed/FeedAbstract.php';
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Feed_Writer_Feed extends Zend_Feed_Writer_Feed_FeedAbstract
-implements Iterator, Countable
+    implements Iterator, Countable
 {
 
     /**
@@ -184,9 +184,9 @@ implements Iterator, Countable
         $entries = array();
         foreach ($this->_entries as $entry) {
             if ($entry->getDateModified()) {
-                $timestamp = (int) $entry->getDateModified()->get(Zend_Date::TIMESTAMP);
+                $timestamp = (int)$entry->getDateModified()->get(Zend_Date::TIMESTAMP);
             } elseif ($entry->getDateCreated()) {
-                $timestamp = (int) $entry->getDateCreated()->get(Zend_Date::TIMESTAMP);
+                $timestamp = (int)$entry->getDateCreated()->get(Zend_Date::TIMESTAMP);
             }
             $entries[$timestamp] = $entry;
         }
@@ -258,8 +258,8 @@ implements Iterator, Countable
     /**
      * Attempt to build and return the feed resulting from the data set
      *
-     * @param string $type             The feed type "rss" or "atom" to export as
-		 * @param bool   $ignoreExceptions
+     * @param string $type The feed type "rss" or "atom" to export as
+     * @param bool $ignoreExceptions
      * @return string
      */
     public function export($type, $ignoreExceptions = false)
@@ -268,8 +268,10 @@ implements Iterator, Countable
         $type = ucfirst($this->getType());
         if ($type !== 'Rss' && $type !== 'Atom') {
             require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception('Invalid feed type specified: ' . $type . '.'
-            . ' Should be one of "rss" or "atom".');
+            throw new Zend_Feed_Exception(
+                'Invalid feed type specified: ' . $type . '.'
+                . ' Should be one of "rss" or "atom".'
+            );
         }
         $renderClass = 'Zend_Feed_Writer_Renderer_Feed_' . $type;
         $renderer = new $renderClass($this);

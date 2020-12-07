@@ -25,32 +25,34 @@
  *
  * ----------------------------------------------------------------------
  */
- 	 
-	$vo_result = $this->getVar('result');
- 	print $this->render('Search/search_controls_html.php');
- ?>
-	
- 	<div id="resultBox">
-<?php
-	if($vo_result) {
-		print $this->render('Results/paging_controls_html.php');
+
+$vo_result = $this->getVar('result');
+print $this->render('Search/search_controls_html.php');
 ?>
-	<div class="sectionBox">
-<?php
-		$vs_view = $this->getVar('current_view');
-		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
-		switch($vs_view) {
-			case 'no_results':
-				print $this->render('Results/no_results_html.php');
-				break;
-			case 'list':
-			default:
-				print $this->render('Results/ca_relationship_types_list_html.php');
-				break;
-		}
-?>		
-	</div><!-- end sectionbox -->
-<?php
-	}
-?>
-	</div><!-- end resultbox -->
+
+<div id="resultBox">
+    <?php
+    if ($vo_result) {
+        print $this->render('Results/paging_controls_html.php');
+        ?>
+        <div class="sectionBox">
+            <?php
+            $vs_view = $this->getVar('current_view');
+            if ($vo_result->numHits() == 0) {
+                $vs_view = 'no_results';
+            }
+            switch ($vs_view) {
+                case 'no_results':
+                    print $this->render('Results/no_results_html.php');
+                    break;
+                case 'list':
+                default:
+                    print $this->render('Results/ca_relationship_types_list_html.php');
+                    break;
+            }
+            ?>
+        </div><!-- end sectionbox -->
+        <?php
+    }
+    ?>
+</div><!-- end resultbox -->

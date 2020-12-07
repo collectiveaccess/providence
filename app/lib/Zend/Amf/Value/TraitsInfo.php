@@ -53,18 +53,18 @@ class Zend_Amf_Value_TraitsInfo
     /**
      * Used to keep track of all class traits of an AMF3 object
      *
-     * @param  string $className
-     * @param  boolean $dynamic
-     * @param  boolean $externalizable
-     * @param  boolean $properties
+     * @param string $className
+     * @param boolean $dynamic
+     * @param boolean $externalizable
+     * @param boolean $properties
      * @return void
      */
-    public function __construct($className, $dynamic=false, $externalizable=false, $properties=null)
+    public function __construct($className, $dynamic = false, $externalizable = false, $properties = null)
     {
-        $this->_className      = $className;
-        $this->_dynamic        = $dynamic;
+        $this->_className = $className;
+        $this->_dynamic = $dynamic;
         $this->_externalizable = $externalizable;
-        $this->_properties     = $properties;
+        $this->_properties = $properties;
     }
 
     /**
@@ -110,7 +110,7 @@ class Zend_Amf_Value_TraitsInfo
     /**
      * Add an additional property
      *
-     * @param  string $name
+     * @param string $name
      * @return Zend_Amf_Value_TraitsInfo
      */
     public function addProperty($name)
@@ -122,7 +122,7 @@ class Zend_Amf_Value_TraitsInfo
     /**
      * Add all properties of the class.
      *
-     * @param  array $props
+     * @param array $props
      * @return Zend_Amf_Value_TraitsInfo
      */
     public function addAllProperties(array $props)
@@ -134,12 +134,12 @@ class Zend_Amf_Value_TraitsInfo
     /**
      * Get the property at a given index
      *
-     * @param  int $index
+     * @param int $index
      * @return string
      */
     public function getProperty($index)
     {
-        return $this->_properties[(int) $index];
+        return $this->_properties[(int)$index];
     }
 
     /**

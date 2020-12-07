@@ -55,7 +55,7 @@ class Zend_Service_DeveloperGarden_Request_VoiceButler_CallStatus
     {
         parent::__construct($environment);
         $this->setSessionId($sessionId)
-             ->setKeepAlive($keepAlive);
+            ->setKeepAlive($keepAlive);
     }
 
     /**

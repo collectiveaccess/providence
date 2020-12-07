@@ -89,7 +89,7 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     /**
      * Append a new Statement to the SQL Result Stack.
      *
-     * @param  Zend_Test_DbStatement $stmt
+     * @param Zend_Test_DbStatement $stmt
      * @return Zend_Test_DbAdapter
      */
     public function appendStatementToStack(Zend_Test_DbStatement $stmt)
@@ -101,7 +101,7 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     /**
      * Append a new Insert Id to the {@see lastInsertId}.
      *
-     * @param  int|string $id
+     * @param int|string $id
      * @return Zend_Test_DbAdapter
      */
     public function appendLastInsertIdToStack($id)
@@ -145,13 +145,13 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
      */
     public function listTables()
     {
-       return $this->_listTables;
+        return $this->_listTables;
     }
 
     /**
      *
-     * @param  string $table
-     * @param  array $tableInfo
+     * @param string $table
+     * @param array $tableInfo
      * @return Zend_Test_DbAdapter
      */
     public function setDescribeTable($table, $tableInfo)
@@ -189,7 +189,7 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
      */
     public function describeTable($tableName, $schemaName = null)
     {
-        if(isset($this->_describeTables[$tableName])) {
+        if (isset($this->_describeTables[$tableName])) {
             return $this->_describeTables[$tableName];
         } else {
             return array();
@@ -236,13 +236,13 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     {
         $queryId = $this->getProfiler()->queryStart($sql);
 
-        if(count($this->_statementStack)) {
+        if (count($this->_statementStack)) {
             $stmt = array_pop($this->_statementStack);
         } else {
             $stmt = new Zend_Test_DbStatement();
         }
 
-        if($this->getProfiler()->getEnabled() == true) {
+        if ($this->getProfiler()->getEnabled() == true) {
             $qp = $this->getProfiler()->getQueryProfile($queryId);
             $stmt->setQueryProfile($qp);
         }
@@ -260,13 +260,13 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
      * returns the last value generated for such a column, and the table name
      * argument is disregarded.
      *
-     * @param string $tableName   OPTIONAL Name of table.
-     * @param string $primaryKey  OPTIONAL Name of primary key column.
+     * @param string $tableName OPTIONAL Name of table.
+     * @param string $primaryKey OPTIONAL Name of primary key column.
      * @return string
      */
     public function lastInsertId($tableName = null, $primaryKey = null)
     {
-        if(count($this->_lastInsertIdStack)) {
+        if (count($this->_lastInsertIdStack)) {
             return array_pop($this->_lastInsertIdStack);
         } else {
             return false;
@@ -294,7 +294,6 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
      */
     protected function _rollBack()
     {
-
     }
 
     /**

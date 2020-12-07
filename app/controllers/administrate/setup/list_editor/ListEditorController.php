@@ -25,72 +25,88 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_MODELS_DIR__."/ca_lists.php");
- 	require_once(__CA_MODELS_DIR__."/ca_list_items.php");
- 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
- 	require_once(__CA_LIB_DIR__."/Search/ListSearch.php");
- 	
- 
- 	class ListEditorController extends BaseEditorController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_lists';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		public function Edit($pa_values = NULL, $pa_options = NULL) {
- 			parent::Edit($pa_values, $pa_options);
- 			
- 			// Set last browse ID so when we return to the ca_list_items hierarchy browser from 
- 			// the editing screen it defaults to the list we just edited
- 			$vn_list_id = $this->request->getParameter('list_id', pInteger);
- 			$t_list_item = new ca_list_items();
- 			if ($t_list_item->load(array('list_id' => $vn_list_id, 'parent_id' => null))) {		// root ca_list_item record for this ca_list record
- 				Session::setVar('ca_list_items_browse_last_id', $t_list_item->getPrimaryKey());
- 			}
- 		}
- 		# -------------------------------------------------------
- 		public function Delete($pa_options=null) {
- 			parent::Delete($pa_options);
- 			
- 			# unset default item because it's from the now-deleted list
- 			Session::setVar('ca_list_items_browse_last_id', null);
- 			Session::setVar('ca_lists_browse_last_id', null);
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		public function info($pa_parameters) {
- 			parent::info($pa_parameters);
- 			$t_list = $this->view->getVar('t_item');
- 			
- 			if ($t_list->getPrimaryKey()) {
- 			
- 				$va_labels = $t_list->getDisplayLabels();
- 				$this->view->setVar('labels', $t_list->getPrimaryKey() ? $va_labels : array());
- 				$this->view->setVar('idno', $t_list->get('idno'));
- 			}
- 			
- 			$t_list_item = new ca_list_items();
- 			$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
- 			$this->view->setVar('t_list_item', $t_list_item);
- 			
- 			if ($vn_item_id = $t_list_item->getPrimaryKey()) {
- 				$va_children = caExtractValuesByUserLocaleFromHierarchyChildList(
- 					$t_list_item->getHierarchyChildren(null, array(
- 						'additionalTableToJoin' => 'ca_list_item_labels',
-						'additionalTableJoinType' => 'LEFT',
-						'additionalTableSelectFields' => array('name_plural', 'locale_id'),
-						'additionalTableWheres' => array('(ca_list_item_labels.is_preferred = 1 OR ca_list_item_labels.is_preferred IS NULL)')
- 					)
- 				), 'item_id', 'name_plural', 'item_value');
- 				$this->view->setVar('children', $va_children);
- 			} 
- 			
- 			return $this->render('widget_list_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+
+require_once(__CA_MODELS_DIR__ . "/ca_lists.php");
+require_once(__CA_MODELS_DIR__ . "/ca_list_items.php");
+require_once(__CA_LIB_DIR__ . "/BaseEditorController.php");
+require_once(__CA_LIB_DIR__ . "/Search/ListSearch.php");
+
+
+class ListEditorController extends BaseEditorController
+{
+    # -------------------------------------------------------
+    protected $ops_table_name = 'ca_lists';        // name of "subject" table (what we're editing)
+
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+
+    # -------------------------------------------------------
+    public function Edit($pa_values = null, $pa_options = null)
+    {
+        parent::Edit($pa_values, $pa_options);
+
+        // Set last browse ID so when we return to the ca_list_items hierarchy browser from
+        // the editing screen it defaults to the list we just edited
+        $vn_list_id = $this->request->getParameter('list_id', pInteger);
+        $t_list_item = new ca_list_items();
+        if ($t_list_item->load(
+            array('list_id' => $vn_list_id, 'parent_id' => null)
+        )) {        // root ca_list_item record for this ca_list record
+            Session::setVar('ca_list_items_browse_last_id', $t_list_item->getPrimaryKey());
+        }
+    }
+
+    # -------------------------------------------------------
+    public function Delete($pa_options = null)
+    {
+        parent::Delete($pa_options);
+
+        # unset default item because it's from the now-deleted list
+        Session::setVar('ca_list_items_browse_last_id', null);
+        Session::setVar('ca_lists_browse_last_id', null);
+    }
+    # -------------------------------------------------------
+    # Sidebar info handler
+    # -------------------------------------------------------
+    public function info($pa_parameters)
+    {
+        parent::info($pa_parameters);
+        $t_list = $this->view->getVar('t_item');
+
+        if ($t_list->getPrimaryKey()) {
+            $va_labels = $t_list->getDisplayLabels();
+            $this->view->setVar('labels', $t_list->getPrimaryKey() ? $va_labels : array());
+            $this->view->setVar('idno', $t_list->get('idno'));
+        }
+
+        $t_list_item = new ca_list_items();
+        $t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
+        $this->view->setVar('t_list_item', $t_list_item);
+
+        if ($vn_item_id = $t_list_item->getPrimaryKey()) {
+            $va_children = caExtractValuesByUserLocaleFromHierarchyChildList(
+                $t_list_item->getHierarchyChildren(
+                    null,
+                    array(
+                        'additionalTableToJoin' => 'ca_list_item_labels',
+                        'additionalTableJoinType' => 'LEFT',
+                        'additionalTableSelectFields' => array('name_plural', 'locale_id'),
+                        'additionalTableWheres' => array('(ca_list_item_labels.is_preferred = 1 OR ca_list_item_labels.is_preferred IS NULL)')
+                    )
+                ),
+                'item_id',
+                'name_plural',
+                'item_value'
+            );
+            $this->view->setVar('children', $va_children);
+        }
+
+        return $this->render('widget_list_info_html.php', true);
+    }
+    # -------------------------------------------------------
+}
+
+?>

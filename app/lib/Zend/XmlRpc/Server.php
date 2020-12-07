@@ -145,35 +145,35 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
      * @var array
      */
     protected $_typeMap = array(
-        'i4'                         => 'i4',
-        'int'                        => 'int',
-        'integer'                    => 'int',
+        'i4' => 'i4',
+        'int' => 'int',
+        'integer' => 'int',
         'Zend_Crypt_Math_BigInteger' => 'i8',
-        'i8'                         => 'i8',
-        'ex:i8'                      => 'i8',
-        'double'                     => 'double',
-        'float'                      => 'double',
-        'real'                       => 'double',
-        'boolean'                    => 'boolean',
-        'bool'                       => 'boolean',
-        'true'                       => 'boolean',
-        'false'                      => 'boolean',
-        'string'                     => 'string',
-        'str'                        => 'string',
-        'base64'                     => 'base64',
-        'dateTime.iso8601'           => 'dateTime.iso8601',
-        'date'                       => 'dateTime.iso8601',
-        'time'                       => 'dateTime.iso8601',
-        'time'                       => 'dateTime.iso8601',
-        'Zend_Date'                  => 'dateTime.iso8601',
-        'DateTime'                   => 'dateTime.iso8601',
-        'array'                      => 'array',
-        'struct'                     => 'struct',
-        'null'                       => 'nil',
-        'nil'                        => 'nil',
-        'ex:nil'                     => 'nil',
-        'void'                       => 'void',
-        'mixed'                      => 'struct',
+        'i8' => 'i8',
+        'ex:i8' => 'i8',
+        'double' => 'double',
+        'float' => 'double',
+        'real' => 'double',
+        'boolean' => 'boolean',
+        'bool' => 'boolean',
+        'true' => 'boolean',
+        'false' => 'boolean',
+        'string' => 'string',
+        'str' => 'string',
+        'base64' => 'base64',
+        'dateTime.iso8601' => 'dateTime.iso8601',
+        'date' => 'dateTime.iso8601',
+        'time' => 'dateTime.iso8601',
+        'time' => 'dateTime.iso8601',
+        'Zend_Date' => 'dateTime.iso8601',
+        'DateTime' => 'dateTime.iso8601',
+        'array' => 'array',
+        'struct' => 'struct',
+        'null' => 'nil',
+        'nil' => 'nil',
+        'ex:nil' => 'nil',
+        'void' => 'void',
+        'mixed' => 'struct',
     );
 
     /**
@@ -199,8 +199,8 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
     /**
      * Proxy calls to system object
      *
-     * @param  string $method
-     * @param  array $params
+     * @param string $method
+     * @param array $params
      * @return mixed
      * @throws Zend_XmlRpc_Server_Exception
      */
@@ -243,7 +243,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
             $argv = array_slice($argv, 2);
         }
 
-        $function = (array) $function;
+        $function = (array)$function;
         foreach ($function as $func) {
             if (!is_string($func) || !function_exists($func)) {
                 require_once 'Zend/XmlRpc/Server/Exception.php';
@@ -300,7 +300,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
     public function fault($fault = null, $code = 404)
     {
         if (!$fault instanceof Exception) {
-            $fault = (string) $fault;
+            $fault = (string)$fault;
             if (empty($fault)) {
                 $fault = 'Unknown Error';
             }
@@ -352,7 +352,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
      * Typically, you will not use this method; it will be called using the
      * results pulled from {@link Zend_XmlRpc_Server_Cache::get()}.
      *
-     * @param  array|Zend_Server_Definition $definition
+     * @param array|Zend_Server_Definition $definition
      * @return void
      * @throws Zend_XmlRpc_Server_Exception on invalid input
      */
@@ -365,7 +365,9 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
                 $type = gettype($definition);
             }
             require_once 'Zend/XmlRpc/Server/Exception.php';
-            throw new Zend_XmlRpc_Server_Exception('Unable to load server definition; must be an array or Zend_Server_Definition, received ' . $type, 612);
+            throw new Zend_XmlRpc_Server_Exception(
+                'Unable to load server definition; must be an array or Zend_Server_Definition, received ' . $type, 612
+            );
         }
 
         $this->_table->clearMethods();
@@ -409,7 +411,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
     /**
      * Do nothing; persistence is handled via {@link Zend_XmlRpc_Server_Cache}
      *
-     * @param  mixed $mode
+     * @param mixed $mode
      * @return void
      */
     public function setPersistence($mode)
@@ -461,7 +463,6 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
     {
         if (!class_exists($class) or
             ($c = new ReflectionClass($class) and !$c->isSubclassOf('Zend_XmlRpc_Response'))) {
-
             require_once 'Zend/XmlRpc/Server/Exception.php';
             throw new Zend_XmlRpc_Server_Exception('Invalid response class');
         }
@@ -533,7 +534,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
     /**
      * Map PHP type to XML-RPC type
      *
-     * @param  string $type
+     * @param string $type
      * @return string
      */
     protected function _fixType($type)
@@ -563,19 +564,19 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
             throw new Zend_XmlRpc_Server_Exception('Method "' . $method . '" does not exist', 620);
         }
 
-        $info     = $this->_table->getMethod($method);
-        $params   = $request->getParams();
-        $argv     = $info->getInvokeArguments();
+        $info = $this->_table->getMethod($method);
+        $params = $request->getParams();
+        $argv = $info->getInvokeArguments();
         if (0 < count($argv) and $this->sendArgumentsToAllMethods()) {
             $params = array_merge($params, $argv);
         }
 
         // Check calling parameters against signatures
-        $matched    = false;
-        $sigCalled  = $request->getTypes();
+        $matched = false;
+        $sigCalled = $request->getTypes();
 
-        $sigLength  = count($sigCalled);
-        $paramsLen  = count($params);
+        $sigLength = count($sigCalled);
+        $paramsLen = count($params);
         if ($sigLength < $paramsLen) {
             for ($i = $sigLength; $i < $paramsLen; ++$i) {
                 $xmlRpcValue = Zend_XmlRpc_Value::getXmlRpcValue($params[$i]);
@@ -596,7 +597,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
             throw new Zend_XmlRpc_Server_Exception('Calling parameters do not match signature', 623);
         }
 
-        $return        = $this->_dispatch($info, $params);
+        $return = $this->_dispatch($info, $params);
         $responseClass = $this->getResponseClass();
         return new $responseClass($return);
     }

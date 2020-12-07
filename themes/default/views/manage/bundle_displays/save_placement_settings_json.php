@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print json_encode(array("message" => _t("Saved changes")));
+
+print json_encode(array("message" => _t("Saved changes")));
 ?>

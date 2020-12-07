@@ -40,7 +40,7 @@ abstract class Zend_Controller_Router_Abstract implements Zend_Controller_Router
      * URI delimiter
      */
     const URI_DELIMITER = '/';
-    
+
     /**
      * Front controller instance
      * @var Zend_Controller_Front
@@ -74,7 +74,7 @@ abstract class Zend_Controller_Router_Abstract implements Zend_Controller_Router
      */
     public function setParam($name, $value)
     {
-        $name = (string) $name;
+        $name = (string)$name;
         $this->_invokeParams[$name] = $value;
         return $this;
     }
@@ -99,7 +99,7 @@ abstract class Zend_Controller_Router_Abstract implements Zend_Controller_Router
      */
     public function getParam($name)
     {
-        if(isset($this->_invokeParams[$name])) {
+        if (isset($this->_invokeParams[$name])) {
             return $this->_invokeParams[$name];
         }
 

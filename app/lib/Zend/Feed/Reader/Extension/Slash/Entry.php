@@ -72,13 +72,14 @@ class Zend_Feed_Reader_Extension_Slash_Entry
         }
 
         $stringParade = $this->_getData($name);
-        $hitParade    = array();
+        $hitParade = array();
 
         if (!empty($stringParade)) {
             $stringParade = explode(',', $stringParade);
 
-            foreach ($stringParade as $hit)
-                $hitParade[] = $hit + 0; //cast to integer
+            foreach ($stringParade as $hit) {
+                $hitParade[] = $hit + 0;
+            } //cast to integer
         }
 
         $this->_data[$name] = $hitParade;

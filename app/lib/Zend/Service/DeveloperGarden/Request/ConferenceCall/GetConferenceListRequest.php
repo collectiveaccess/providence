@@ -71,7 +71,7 @@ class Zend_Service_DeveloperGarden_Request_ConferenceCall_GetConferenceListReque
     {
         parent::__construct($environment);
         $this->setWhat($what)
-             ->setOwnerId($ownerId);
+            ->setOwnerId($ownerId);
     }
 
     /**

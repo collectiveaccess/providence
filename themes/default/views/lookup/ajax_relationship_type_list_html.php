@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * lookup/ajax_relationship_type_list_html.php : 
  * ----------------------------------------------------------------------
@@ -25,5 +26,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('relationship_type_list'));
+print json_encode($this->getVar('relationship_type_list'));
 ?>

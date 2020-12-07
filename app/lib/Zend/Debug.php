@@ -27,7 +27,6 @@
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-
 class Zend_Debug
 {
 
@@ -67,15 +66,15 @@ class Zend_Debug
      * the <pre /> tags, cleans up newlines and indents, and runs
      * htmlentities() before output.
      *
-     * @param  mixed  $var   The variable to dump.
-     * @param  string $label OPTIONAL Label to prepend to output.
-     * @param  bool   $echo  OPTIONAL Echo output if true.
+     * @param mixed $var The variable to dump.
+     * @param string $label OPTIONAL Label to prepend to output.
+     * @param bool $echo OPTIONAL Echo output if true.
      * @return string
      */
-    public static function dump($var, $label=null, $echo=true)
+    public static function dump($var, $label = null, $echo = true)
     {
         // format the label
-        $label = ($label===null) ? '' : rtrim($label) . ' ';
+        $label = ($label === null) ? '' : rtrim($label) . ' ';
 
         // var_dump the variable into a buffer and keep the output
         ob_start();
@@ -86,10 +85,10 @@ class Zend_Debug
         $output = preg_replace("/\]\=\>\n(\s+)/m", "] => ", $output);
         if (self::getSapi() == 'cli') {
             $output = PHP_EOL . $label
-                    . PHP_EOL . $output
-                    . PHP_EOL;
+                . PHP_EOL . $output
+                . PHP_EOL;
         } else {
-            if(!extension_loaded('xdebug')) {
+            if (!extension_loaded('xdebug')) {
                 $flags = ENT_QUOTES;
                 // PHP 5.4.0+
                 if (defined('ENT_SUBSTITUTE')) {
@@ -99,9 +98,9 @@ class Zend_Debug
             }
 
             $output = '<pre>'
-                    . $label
-                    . $output
-                    . '</pre>';
+                . $label
+                . $output
+                . '</pre>';
         }
 
         if ($echo) {

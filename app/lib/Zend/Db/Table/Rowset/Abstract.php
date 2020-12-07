@@ -105,24 +105,24 @@ abstract class Zend_Db_Table_Rowset_Abstract implements SeekableIterator, Counta
     public function __construct(array $config)
     {
         if (isset($config['table'])) {
-            $this->_table      = $config['table'];
+            $this->_table = $config['table'];
             $this->_tableClass = get_class($this->_table);
         }
         if (isset($config['rowClass'])) {
-            $this->_rowClass   = $config['rowClass'];
+            $this->_rowClass = $config['rowClass'];
         }
         if (!class_exists($this->_rowClass)) {
             require_once 'Zend/Loader.php';
             Zend_Loader::loadClass($this->_rowClass);
         }
         if (isset($config['data'])) {
-            $this->_data       = $config['data'];
+            $this->_data = $config['data'];
         }
         if (isset($config['readOnly'])) {
-            $this->_readOnly   = $config['readOnly'];
+            $this->_readOnly = $config['readOnly'];
         }
         if (isset($config['stored'])) {
-            $this->_stored     = $config['stored'];
+            $this->_stored = $config['stored'];
         }
 
         // set the count of rows
@@ -138,8 +138,16 @@ abstract class Zend_Db_Table_Rowset_Abstract implements SeekableIterator, Counta
      */
     public function __sleep()
     {
-        return array('_data', '_tableClass', '_rowClass', '_pointer', '_count', '_rows', '_stored',
-                     '_readOnly');
+        return array(
+            '_data',
+            '_tableClass',
+            '_rowClass',
+            '_pointer',
+            '_count',
+            '_rows',
+            '_stored',
+            '_readOnly'
+        );
     }
 
     /**
@@ -307,7 +315,7 @@ abstract class Zend_Db_Table_Rowset_Abstract implements SeekableIterator, Counta
      */
     public function seek($position)
     {
-        $position = (int) $position;
+        $position = (int)$position;
         if ($position < 0 || $position >= $this->_count) {
             require_once 'Zend/Db/Table/Rowset/Exception.php';
             throw new Zend_Db_Table_Rowset_Exception("Illegal index $position");
@@ -325,7 +333,7 @@ abstract class Zend_Db_Table_Rowset_Abstract implements SeekableIterator, Counta
      */
     public function offsetExists($offset)
     {
-        return isset($this->_data[(int) $offset]);
+        return isset($this->_data[(int)$offset]);
     }
 
     /**
@@ -337,7 +345,7 @@ abstract class Zend_Db_Table_Rowset_Abstract implements SeekableIterator, Counta
      */
     public function offsetGet($offset)
     {
-        $offset = (int) $offset;
+        $offset = (int)$offset;
         if ($offset < 0 || $offset >= $this->_count) {
             require_once 'Zend/Db/Table/Rowset/Exception.php';
             throw new Zend_Db_Table_Rowset_Exception("Illegal index $offset");
@@ -382,7 +390,7 @@ abstract class Zend_Db_Table_Rowset_Abstract implements SeekableIterator, Counta
             $row = $this->_loadAndReturnRow($position);
         } catch (Zend_Db_Table_Rowset_Exception $e) {
             require_once 'Zend/Db/Table/Rowset/Exception.php';
-            throw new Zend_Db_Table_Rowset_Exception('No row could be found at position ' . (int) $position, 0, $e);
+            throw new Zend_Db_Table_Rowset_Exception('No row could be found at position ' . (int)$position, 0, $e);
         }
 
         if ($seek == true) {
@@ -420,9 +428,9 @@ abstract class Zend_Db_Table_Rowset_Abstract implements SeekableIterator, Counta
         if (empty($this->_rows[$position])) {
             $this->_rows[$position] = new $this->_rowClass(
                 array(
-                    'table'    => $this->_table,
-                    'data'     => $this->_data[$position],
-                    'stored'   => $this->_stored,
+                    'table' => $this->_table,
+                    'data' => $this->_data[$position],
+                    'stored' => $this->_stored,
                     'readOnly' => $this->_readOnly
                 )
             );

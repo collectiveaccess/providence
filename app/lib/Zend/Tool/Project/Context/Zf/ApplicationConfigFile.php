@@ -94,7 +94,6 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
             } else {
                 $this->_content = $this->_getDefaultContents();
             }
-
         }
 
         return $this->_content;
@@ -111,7 +110,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
      * @param string $key
      * @param string $value
      * @param string $section
-     * @param bool   $quoteValue
+     * @param bool $quoteValue
      * @return Zend_Tool_Project_Context_Zf_ApplicationConfigFile
      */
     public function addStringItem($key, $value, $section = 'production', $quoteValue = true)
@@ -131,7 +130,6 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
         $insideSection = false;
 
         foreach ($contentLines as $contentLineIndex => $contentLine) {
-
             if ($insideSection === false && preg_match('#^\[' . $section . '#', $contentLine)) {
                 $insideSection = true;
             }
@@ -142,9 +140,11 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
                 if (isset($contentLines[$contentLineIndex + 1]{0}) && $contentLines[$contentLineIndex + 1]{0} == '[') {
                     $newLines[] = $key . ' = ' . $value;
                     $insideSection = null;
-                } else if (!isset($contentLines[$contentLineIndex + 1])){
-                    $newLines[] = $key . ' = ' . $value;
-                    $insideSection = null;
+                } else {
+                    if (!isset($contentLines[$contentLineIndex + 1])) {
+                        $newLines[] = $key . ' = ' . $value;
+                        $insideSection = null;
+                    }
                 }
             }
         }
@@ -169,7 +169,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
         $rii = new RecursiveIteratorIterator(
             new RecursiveArrayIterator($item),
             RecursiveIteratorIterator::SELF_FIRST
-            );
+        );
 
         $lastDepth = 0;
 
@@ -200,7 +200,6 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
         $insideSection = false;
 
         foreach ($contentLines as $contentLineIndex => $contentLine) {
-
             if ($insideSection === false && preg_match('#^\[' . $section . '#', $contentLine)) {
                 $insideSection = true;
             }
@@ -229,7 +228,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
         $rii = new RecursiveIteratorIterator(
             new RecursiveArrayIterator($item),
             RecursiveIteratorIterator::SELF_FIRST
-            );
+        );
 
         $lastDepth = 0;
 
@@ -254,8 +253,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
 
     protected function _getDefaultContents()
     {
-
-        $contents =<<<EOS
+        $contents = <<<EOS
 [production]
 phpSettings.display_startup_errors = 0
 phpSettings.display_errors = 0

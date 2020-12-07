@@ -35,12 +35,13 @@ require_once 'Zend/Controller/Action/Helper/AutoComplete/Abstract.php';
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Controller_Action_Helper_AutoCompleteScriptaculous extends Zend_Controller_Action_Helper_AutoComplete_Abstract
+class Zend_Controller_Action_Helper_AutoCompleteScriptaculous extends
+    Zend_Controller_Action_Helper_AutoComplete_Abstract
 {
     /**
      * Validate data for autocompletion
      *
-     * @param  mixed $data
+     * @param mixed $data
      * @return bool
      */
     public function validateData($data)
@@ -55,10 +56,10 @@ class Zend_Controller_Action_Helper_AutoCompleteScriptaculous extends Zend_Contr
     /**
      * Prepare data for autocompletion
      *
-     * @param  mixed   $data
-     * @param  boolean $keepLayouts
-     * @throws Zend_Controller_Action_Exception
+     * @param mixed $data
+     * @param boolean $keepLayouts
      * @return string
+     * @throws Zend_Controller_Action_Exception
      */
     public function prepareAutoCompletion($data, $keepLayouts = false)
     {
@@ -70,7 +71,7 @@ class Zend_Controller_Action_Helper_AutoCompleteScriptaculous extends Zend_Contr
             throw new Zend_Controller_Action_Exception('Invalid data passed for autocompletion');
         }
 
-        $data = (array) $data;
+        $data = (array)$data;
         $data = '<ul><li>' . implode('</li><li>', $data) . '</li></ul>';
 
         if (!$keepLayouts) {

@@ -69,7 +69,7 @@ class Zend_Tool_Project_Context_Zf_ModelFile extends Zend_Tool_Project_Context_Z
     {
         return array(
             'modelName' => $this->getModelName()
-            );
+        );
     }
 
     /**
@@ -89,17 +89,20 @@ class Zend_Tool_Project_Context_Zf_ModelFile extends Zend_Tool_Project_Context_Z
 
     public function getContents()
     {
-
         $className = $this->getFullClassName($this->_modelName, 'Model');
 
-        $codeGenFile = new Zend_CodeGenerator_Php_File(array(
-            'fileName' => $this->getPath(),
-            'classes' => array(
-                new Zend_CodeGenerator_Php_Class(array(
-                    'name' => $className,
-                    ))
+        $codeGenFile = new Zend_CodeGenerator_Php_File(
+            array(
+                'fileName' => $this->getPath(),
+                'classes' => array(
+                    new Zend_CodeGenerator_Php_Class(
+                        array(
+                            'name' => $className,
+                        )
+                    )
                 )
-            ));
+            )
+        );
         return $codeGenFile->generate();
     }
 

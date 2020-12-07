@@ -92,12 +92,12 @@ class Zend_Service_DeveloperGarden_ConferenceCall_ConferenceSchedule
     public function __construct($minute, $hour, $dayOfMonth, $month, $year, $recurring = 0, $notify = 0)
     {
         $this->setMinute($minute)
-             ->setHour($hour)
-             ->setDayOfMonth($dayOfMonth)
-             ->setMonth($month)
-             ->setYear($year)
-             ->setRecurring($recurring)
-             ->setNotify($notify);
+            ->setHour($hour)
+            ->setDayOfMonth($dayOfMonth)
+            ->setMonth($month)
+            ->setYear($year)
+            ->setRecurring($recurring)
+            ->setNotify($notify);
     }
 
     /**

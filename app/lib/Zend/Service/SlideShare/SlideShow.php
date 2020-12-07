@@ -288,7 +288,7 @@ class Zend_Service_SlideShare_SlideShow
      */
     public function setThumbnailUrl($url)
     {
-        $this->_thumbnailUrl = (string) $url;
+        $this->_thumbnailUrl = (string)$url;
         return $this;
     }
 

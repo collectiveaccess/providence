@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/manage/site_pages/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_page 		= $this->getVar('t_subject');
-	$vn_page_id 	= $this->getVar('subject_id');
+$t_page = $this->getVar('t_subject');
+$vn_page_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_page, $t_page->get('title'), 'manage/site_pages', 'SitePageEditor', 'Edit/'.$this->request->getActionExtra(), array('page_id' => $vn_page_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_page,
+            $t_page->get('title'),
+            'manage/site_pages',
+            'SitePageEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('page_id' => $vn_page_id)
+        );
+    }
+    ?>
 </div>

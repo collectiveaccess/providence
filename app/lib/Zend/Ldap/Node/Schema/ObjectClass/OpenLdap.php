@@ -143,12 +143,16 @@ class Zend_Ldap_Node_Schema_ObjectClass_OpenLdap extends Zend_Ldap_Node_Schema_I
     {
         if ($this->structural) {
             return Zend_Ldap_Node_Schema::OBJECTCLASS_TYPE_STRUCTURAL;
-        } else if ($this->abstract) {
-            return Zend_Ldap_Node_Schema::OBJECTCLASS_TYPE_ABSTRACT;
-        } else if ($this->auxiliary) {
-            return Zend_Ldap_Node_Schema::OBJECTCLASS_TYPE_AUXILIARY;
         } else {
-            return Zend_Ldap_Node_Schema::OBJECTCLASS_TYPE_UNKNOWN;
+            if ($this->abstract) {
+                return Zend_Ldap_Node_Schema::OBJECTCLASS_TYPE_ABSTRACT;
+            } else {
+                if ($this->auxiliary) {
+                    return Zend_Ldap_Node_Schema::OBJECTCLASS_TYPE_AUXILIARY;
+                } else {
+                    return Zend_Ldap_Node_Schema::OBJECTCLASS_TYPE_UNKNOWN;
+                }
+            }
         }
     }
 

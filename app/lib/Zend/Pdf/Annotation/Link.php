@@ -57,8 +57,8 @@ class Zend_Pdf_Annotation_Link extends Zend_Pdf_Annotation
             throw new Zend_Pdf_Exception('Annotation dictionary resource has to be a dictionary.');
         }
 
-        if ($annotationDictionary->Subtype === null  ||
-            $annotationDictionary->Subtype->getType() != Zend_Pdf_Element::TYPE_NAME  ||
+        if ($annotationDictionary->Subtype === null ||
+            $annotationDictionary->Subtype->getType() != Zend_Pdf_Element::TYPE_NAME ||
             $annotationDictionary->Subtype->value != 'Link') {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Subtype => Link entry is requires');
@@ -90,7 +90,7 @@ class Zend_Pdf_Annotation_Link extends Zend_Pdf_Annotation
 
         $annotationDictionary = new Zend_Pdf_Element_Dictionary();
 
-        $annotationDictionary->Type    = new Zend_Pdf_Element_Name('Annot');
+        $annotationDictionary->Type = new Zend_Pdf_Element_Name('Annot');
         $annotationDictionary->Subtype = new Zend_Pdf_Element_Name('Link');
 
         $rectangle = new Zend_Pdf_Element_Array();
@@ -130,10 +130,10 @@ class Zend_Pdf_Annotation_Link extends Zend_Pdf_Annotation
         $this->_annotationDictionary->Dest = $destination->getResource();
         if ($target instanceof Zend_Pdf_Destination) {
             $this->_annotationDictionary->Dest = $target->getResource();
-            $this->_annotationDictionary->A    = null;
+            $this->_annotationDictionary->A = null;
         } else {
             $this->_annotationDictionary->Dest = null;
-            $this->_annotationDictionary->A    = $target->getResource();
+            $this->_annotationDictionary->A = $target->getResource();
         }
 
         return $this;
@@ -146,8 +146,8 @@ class Zend_Pdf_Annotation_Link extends Zend_Pdf_Annotation
      */
     public function getDestination()
     {
-        if ($this->_annotationDictionary->Dest === null  &&
-            $this->_annotationDictionary->A    === null) {
+        if ($this->_annotationDictionary->Dest === null &&
+            $this->_annotationDictionary->A === null) {
             return null;
         }
 

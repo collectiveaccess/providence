@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/find/SearchCollectionsAdvancedController.php : controller for "advanced" place search request handling
  * ----------------------------------------------------------------------
@@ -25,75 +26,80 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseAdvancedSearchController.php");
- 	require_once(__CA_LIB_DIR__."/Search/CollectionSearch.php");
- 	require_once(__CA_LIB_DIR__."/Browse/CollectionBrowse.php");
-	require_once(__CA_MODELS_DIR__."/ca_collections.php");
-	require_once(__CA_MODELS_DIR__."/ca_sets.php");
- 	
- 	class SearchCollectionsAdvancedController extends BaseAdvancedSearchController {
- 		# -------------------------------------------------------
- 		/**
- 		 * Name of subject table (ex. for an object search this is 'ca_objects')
- 		 */
- 		protected $ops_tablename = 'ca_collections';
- 		
- 		/** 
- 		 * Number of items per search results page
- 		 */
- 		protected $opa_items_per_page = array(10, 20, 30, 40, 50);
- 		 
- 		/**
- 		 * List of search-result views supported for this find
- 		 * Is associative array: values are view labels, keys are view specifier to be incorporated into view name
- 		 */ 
- 		protected $opa_views;
- 		
- 		/**
- 		 * Name of "find" used to defined result context for ResultContext object
- 		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
- 		 */
- 		protected $ops_find_type = 'advanced_search';
- 		 
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
-			if($this->request->config->get('enable_full_thumbnail_result_views_for_ca_collections_search')){
-				$this->opa_views = array(
-					'list' => _t('list'),
-					'thumbnail' => _t('thumbnails'),
-					'full' => _t('full')
-				);
-			}else{
-				$this->opa_views = array(
-					'list' => _t('list')
-				);
-			}
-			 
-			 $this->opo_browse = new CollectionBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
-		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Advanced search handler (returns search form and results, if any)
- 		 * Most logic is contained in the BaseAdvancedSearchController->Index() method; all you usually
- 		 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
- 		 * (eg. ObjectSearch for objects, CollectionSearch for collections) and pass it to BaseAdvancedSearchController->Index() 
- 		 */ 
- 		public function Index($pa_options=null) {
- 			$pa_options['search'] = $this->opo_browse;
- 			AssetLoadManager::register('imageScroller');
- 			AssetLoadManager::register('tabUI');
- 			AssetLoadManager::register('panel');
- 			return parent::Index($pa_options);
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		/**
- 		 * Returns "search tools" widget
- 		 */ 
- 		public function Tools($pa_parameters) {
- 			return parent::Tools($pa_parameters);
- 		}
- 		# -------------------------------------------------------
- 	}
+require_once(__CA_LIB_DIR__ . "/BaseAdvancedSearchController.php");
+require_once(__CA_LIB_DIR__ . "/Search/CollectionSearch.php");
+require_once(__CA_LIB_DIR__ . "/Browse/CollectionBrowse.php");
+require_once(__CA_MODELS_DIR__ . "/ca_collections.php");
+require_once(__CA_MODELS_DIR__ . "/ca_sets.php");
+
+class SearchCollectionsAdvancedController extends BaseAdvancedSearchController
+{
+    # -------------------------------------------------------
+    /**
+     * Name of subject table (ex. for an object search this is 'ca_objects')
+     */
+    protected $ops_tablename = 'ca_collections';
+
+    /**
+     * Number of items per search results page
+     */
+    protected $opa_items_per_page = array(10, 20, 30, 40, 50);
+
+    /**
+     * List of search-result views supported for this find
+     * Is associative array: values are view labels, keys are view specifier to be incorporated into view name
+     */
+    protected $opa_views;
+
+    /**
+     * Name of "find" used to defined result context for ResultContext object
+     * Must be unique for the table and have a corresponding entry in find_navigation.conf
+     */
+    protected $ops_find_type = 'advanced_search';
+
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+        if ($this->request->config->get('enable_full_thumbnail_result_views_for_ca_collections_search')) {
+            $this->opa_views = array(
+                'list' => _t('list'),
+                'thumbnail' => _t('thumbnails'),
+                'full' => _t('full')
+            );
+        } else {
+            $this->opa_views = array(
+                'list' => _t('list')
+            );
+        }
+
+        $this->opo_browse = new CollectionBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Advanced search handler (returns search form and results, if any)
+     * Most logic is contained in the BaseAdvancedSearchController->Index() method; all you usually
+     * need to do here is instantiate a new subject-appropriate subclass of BaseSearch
+     * (eg. ObjectSearch for objects, CollectionSearch for collections) and pass it to BaseAdvancedSearchController->Index()
+     */
+    public function Index($pa_options = null)
+    {
+        $pa_options['search'] = $this->opo_browse;
+        AssetLoadManager::register('imageScroller');
+        AssetLoadManager::register('tabUI');
+        AssetLoadManager::register('panel');
+        return parent::Index($pa_options);
+    }
+    # -------------------------------------------------------
+    # Sidebar info handler
+    # -------------------------------------------------------
+    /**
+     * Returns "search tools" widget
+     */
+    public function Tools($pa_parameters)
+    {
+        return parent::Tools($pa_parameters);
+    }
+    # -------------------------------------------------------
+}

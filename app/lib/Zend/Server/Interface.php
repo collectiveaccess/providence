@@ -110,9 +110,9 @@ interface Zend_Server_Interface
     /**
      * Set server persistence
      *
-     * @todo Determine how to implement this
      * @param int $mode
      * @return void
+     * @todo Determine how to implement this
      */
     public function setPersistence($mode);
 }

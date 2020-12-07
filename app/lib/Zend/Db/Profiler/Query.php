@@ -72,8 +72,8 @@ class Zend_Db_Profiler_Query
      * Class constructor.  A query is about to be started, save the query text ($query) and its
      * type (one of the Zend_Db_Profiler::* constants).
      *
-     * @param  string  $query
-     * @param  integer $queryType
+     * @param string $query
+     * @param integer $queryType
      * @return void
      */
     public function __construct($query, $queryType)
@@ -203,7 +203,7 @@ class Zend_Db_Profiler_Query
      */
     public function getStartedMicrotime()
     {
-        if(null === $this->_startedMicrotime) {
+        if (null === $this->_startedMicrotime) {
             return false;
         }
 

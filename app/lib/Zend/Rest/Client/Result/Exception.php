@@ -33,4 +33,6 @@ require_once "Zend/Rest/Client/Exception.php";
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Rest_Client_Result_Exception extends Zend_Rest_Client_Exception{}
+class Zend_Rest_Client_Result_Exception extends Zend_Rest_Client_Exception
+{
+}

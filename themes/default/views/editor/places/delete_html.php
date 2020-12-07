@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/editor/places/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_place = $this->getVar('t_subject');
-	$vn_place_id = $this->getVar('subject_id');
+$t_place = $this->getVar('t_subject');
+$vn_place_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_place, $this->getVar('subject_name'), 'editor/places', 'PlaceEditor', 'Edit/'.$this->request->getActionExtra(), array('place_id' => $vn_place_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_place,
+            $this->getVar('subject_name'),
+            'editor/places',
+            'PlaceEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('place_id' => $vn_place_id)
+        );
+    }
+    ?>
 </div>

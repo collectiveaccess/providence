@@ -137,7 +137,6 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
         if ($this instanceof Zend_Tool_Framework_Client_Interactive_OutputInterface) {
             $this->_registry->getResponse()->setContentCallback(array($this, 'handleInteractiveOutput'));
         }
-
     }
 
 
@@ -204,14 +203,15 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
     {
         if (!$this->hasInteractiveInput()) {
             require_once 'Zend/Tool/Framework/Client/Exception.php';
-            throw new Zend_Tool_Framework_Client_Exception('promptInteractive() cannot be called on a non-interactive client.');
+            throw new Zend_Tool_Framework_Client_Exception(
+                'promptInteractive() cannot be called on a non-interactive client.'
+            );
         }
 
         $inputHandler = new Zend_Tool_Framework_Client_Interactive_InputHandler();
         $inputHandler->setClient($this);
         $inputHandler->setInputRequest($inputRequest);
         return $inputHandler->handle();
-
     }
 
     /**
@@ -223,11 +223,9 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
         $this->initialize();
 
         try {
-
             $this->_preDispatch();
 
             if ($this->_registry->getRequest()->isDispatchable()) {
-
                 if ($this->_registry->getRequest()->getActionName() == null) {
                     require_once 'Zend/Tool/Framework/Client/Exception.php';
                     throw new Zend_Tool_Framework_Client_Exception('Client failed to setup the action name.');
@@ -239,9 +237,7 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
                 }
 
                 $this->_handleDispatch();
-
             }
-
         } catch (Exception $exception) {
             $this->_registry->getResponse()->setException($exception);
         }
@@ -288,7 +284,7 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
         }
 
         // get the actual method and param information
-        $methodName       = $actionableMethod['methodName'];
+        $methodName = $actionableMethod['methodName'];
         $methodParameters = $actionableMethod['parameterInfo'];
 
         // get the provider params
@@ -297,21 +293,35 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
         // @todo This seems hackish, determine if there is a better way
         $callParameters = array();
         foreach ($methodParameters as $methodParameterName => $methodParameterValue) {
-            if (!array_key_exists($methodParameterName, $requestParameters) && $methodParameterValue['optional'] == false) {
+            if (!array_key_exists(
+                    $methodParameterName,
+                    $requestParameters
+                ) && $methodParameterValue['optional'] == false) {
                 if ($this instanceof Zend_Tool_Framework_Client_Interactive_InputInterface) {
-                    $promptSting = $this->getMissingParameterPromptString($provider, $actionableMethod['action'], $methodParameterValue['name']);
+                    $promptSting = $this->getMissingParameterPromptString(
+                        $provider,
+                        $actionableMethod['action'],
+                        $methodParameterValue['name']
+                    );
                     $parameterPromptValue = $this->promptInteractiveInput($promptSting)->getContent();
                     if ($parameterPromptValue == null) {
                         require_once 'Zend/Tool/Framework/Client/Exception.php';
-                        throw new Zend_Tool_Framework_Client_Exception('Value supplied for required parameter "' . $methodParameterValue['name'] . '" is empty');
+                        throw new Zend_Tool_Framework_Client_Exception(
+                            'Value supplied for required parameter "' . $methodParameterValue['name'] . '" is empty'
+                        );
                     }
                     $callParameters[] = $parameterPromptValue;
                 } else {
                     require_once 'Zend/Tool/Framework/Client/Exception.php';
-                    throw new Zend_Tool_Framework_Client_Exception('A required parameter "' . $methodParameterValue['name'] . '" was not supplied.');
+                    throw new Zend_Tool_Framework_Client_Exception(
+                        'A required parameter "' . $methodParameterValue['name'] . '" was not supplied.'
+                    );
                 }
             } else {
-                $callParameters[] = (array_key_exists($methodParameterName, $requestParameters)) ? $requestParameters[$methodParameterName] : $methodParameterValue['default'];
+                $callParameters[] = (array_key_exists(
+                    $methodParameterName,
+                    $requestParameters
+                )) ? $requestParameters[$methodParameterName] : $methodParameterValue['default'];
             }
         }
 

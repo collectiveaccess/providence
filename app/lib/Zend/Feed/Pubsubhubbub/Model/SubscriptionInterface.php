@@ -41,7 +41,7 @@ interface Zend_Feed_Pubsubhubbub_Model_SubscriptionInterface
     /**
      * Get subscription by ID/key
      *
-     * @param  string $key
+     * @param string $key
      * @return array
      */
     public function getSubscription($key);
@@ -49,7 +49,7 @@ interface Zend_Feed_Pubsubhubbub_Model_SubscriptionInterface
     /**
      * Determine if a subscription matching the key exists
      *
-     * @param  string $key
+     * @param string $key
      * @return bool
      */
     public function hasSubscription($key);

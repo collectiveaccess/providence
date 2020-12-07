@@ -107,17 +107,17 @@ class Zend_Gdata_Media_Extension_MediaPlayer extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'url':
-            $this->_url = $attribute->nodeValue;
-            break;
-        case 'width':
-            $this->_width = $attribute->nodeValue;
-            break;
-        case 'height':
-            $this->_height = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'url':
+                $this->_url = $attribute->nodeValue;
+                break;
+            case 'width':
+                $this->_width = $attribute->nodeValue;
+                break;
+            case 'height':
+                $this->_height = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

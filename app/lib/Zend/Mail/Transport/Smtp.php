@@ -108,8 +108,8 @@ class Zend_Mail_Transport_Smtp extends Zend_Mail_Transport_Abstract
     /**
      * Constructor.
      *
-     * @param  string $host OPTIONAL (Default: 127.0.0.1)
-     * @param  array|null $config OPTIONAL (Default: null)
+     * @param string $host OPTIONAL (Default: 127.0.0.1)
+     * @param array|null $config OPTIONAL (Default: null)
      * @return void
      *
      * @todo Someone please make this compatible
@@ -221,7 +221,7 @@ class Zend_Mail_Transport_Smtp extends Zend_Mail_Transport_Abstract
      * Some SMTP servers do not strip BCC headers. Most clients do it themselves as do we.
      *
      * @access  protected
-     * @param   array $headers
+     * @param array $headers
      * @return  void
      * @throws  Zend_Transport_Exception
      */

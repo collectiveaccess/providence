@@ -48,12 +48,12 @@ class Zend_Form_Element_Password extends Zend_Form_Element_Xhtml
 
     /**
      * Set flag indicating whether or not to render the password
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_Form_Element_Password
      */
     public function setRenderPassword($flag)
     {
-        $this->renderPassword = (bool) $flag;
+        $this->renderPassword = (bool)$flag;
         return $this;
     }
 
@@ -72,8 +72,8 @@ class Zend_Form_Element_Password extends Zend_Form_Element_Xhtml
      *
      * Ensure that validation error messages mask password value.
      *
-     * @param  string $value
-     * @param  mixed $context
+     * @param string $value
+     * @param mixed $context
      * @return bool
      */
     public function isValid($value, $context = null)

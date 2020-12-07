@@ -49,12 +49,12 @@ class Zend_Service_Yahoo
     /**
      * Sets the application ID and instantiates the REST client
      *
-     * @param  string $appId specified the developer's appid
+     * @param string $appId specified the developer's appid
      * @return void
      */
     public function __construct($appId)
     {
-        $this->appId = (string) $appId;
+        $this->appId = (string)$appId;
         /**
          * @see Zend_Rest_Client
          */
@@ -72,15 +72,17 @@ class Zend_Service_Yahoo
      * 'entire_site'  => bool  Data for the whole site or a single page
      * 'omit_inlinks' => (none|domain|subdomain)  Filter inlinks from these sources
      *
-     * @param  string $query    the query being run
-     * @param  array  $options  any optional parameters
+     * @param string $query the query being run
+     * @param array $options any optional parameters
      * @return Zend_Service_Yahoo_ResultSet  The return set
      * @throws Zend_Service_Exception
      */
     public function inlinkDataSearch($query, array $options = array())
     {
-        static $defaultOptions = array('results'     => '50',
-                                       'start'    => 1);
+        static $defaultOptions = array(
+            'results' => '50',
+            'start' => 1
+        );
 
         $options = $this->_prepareOptions($query, $options, $defaultOptions);
         $this->_validateInlinkDataSearch($options);
@@ -94,8 +96,10 @@ class Zend_Service_Yahoo
              * @see Zend_Service_Exception
              */
             require_once 'Zend/Service/Exception.php';
-            throw new Zend_Service_Exception('An error occurred sending request. Status code: ' .
-                                             $response->getStatus());
+            throw new Zend_Service_Exception(
+                'An error occurred sending request. Status code: ' .
+                $response->getStatus()
+            );
         }
 
         $dom = new DOMDocument();
@@ -124,18 +128,20 @@ class Zend_Service_Yahoo
      * 'coloration' => (any|color|bw)  The coloration of images to search for
      * 'adult_ok'   => bool  Flag to allow 'adult' images.
      *
-     * @param  string $query   the query to be run
-     * @param  array  $options an optional array of query options
+     * @param string $query the query to be run
+     * @param array $options an optional array of query options
      * @return Zend_Service_Yahoo_ImageResultSet the search results
      * @throws Zend_Service_Exception
      */
     public function imageSearch($query, array $options = array())
     {
-        static $defaultOptions = array('type'       => 'all',
-                                       'results'    => 10,
-                                       'start'      => 1,
-                                       'format'     => 'any',
-                                       'coloration' => 'any');
+        static $defaultOptions = array(
+            'type' => 'all',
+            'results' => 10,
+            'start' => 1,
+            'format' => 'any',
+            'coloration' => 'any'
+        );
 
         $options = $this->_prepareOptions($query, $options, $defaultOptions);
 
@@ -150,8 +156,10 @@ class Zend_Service_Yahoo
              * @see Zend_Service_Exception
              */
             require_once 'Zend/Service/Exception.php';
-            throw new Zend_Service_Exception('An error occurred sending request. Status code: ' .
-                                             $response->getStatus());
+            throw new Zend_Service_Exception(
+                'An error occurred sending request. Status code: ' .
+                $response->getStatus()
+            );
         }
 
         $dom = new DOMDocument();
@@ -189,17 +197,19 @@ class Zend_Service_Yahoo
      * 'state'      => string  The state for address search
      * 'location'   => string  An adhoc location string to search around
      *
-     * @param  string $query    The query string you want to run
-     * @param  array  $options  The search options, including location
+     * @param string $query The query string you want to run
+     * @param array $options The search options, including location
      * @return Zend_Service_Yahoo_LocalResultSet The results
      * @throws Zend_Service_Exception
      */
     public function localSearch($query, array $options = array())
     {
-        static $defaultOptions = array('results' => 10,
-                                       'start'   => 1,
-                                       'sort'    => 'distance',
-                                       'radius'  => 5);
+        static $defaultOptions = array(
+            'results' => 10,
+            'start' => 1,
+            'sort' => 'distance',
+            'radius' => 5
+        );
 
         $options = $this->_prepareOptions($query, $options, $defaultOptions);
 
@@ -214,8 +224,10 @@ class Zend_Service_Yahoo
              * @see Zend_Service_Exception
              */
             require_once 'Zend/Service/Exception.php';
-            throw new Zend_Service_Exception('An error occurred sending request. Status code: ' .
-                                             $response->getStatus());
+            throw new Zend_Service_Exception(
+                'An error occurred sending request. Status code: ' .
+                $response->getStatus()
+            );
         }
 
         $dom = new DOMDocument();
@@ -244,16 +256,18 @@ class Zend_Service_Yahoo
      * 'type'       => (all|any|phrase)  How the query should be parsed
      * 'site'       => string  A site to which your search should be restricted
      *
-     * @param  string $query    The query to run
-     * @param  array  $options  The array of optional parameters
+     * @param string $query The query to run
+     * @param array $options The array of optional parameters
      * @return Zend_Service_Yahoo_NewsResultSet  The query return set
      * @throws Zend_Service_Exception
      */
     public function newsSearch($query, array $options = array())
     {
-        static $defaultOptions = array('type'     => 'all',
-                                       'start'    => 1,
-                                       'sort'     => 'rank');
+        static $defaultOptions = array(
+            'type' => 'all',
+            'start' => 1,
+            'sort' => 'rank'
+        );
 
         $options = $this->_prepareOptions($query, $options, $defaultOptions);
 
@@ -268,8 +282,10 @@ class Zend_Service_Yahoo
              * @see Zend_Service_Exception
              */
             require_once 'Zend/Service/Exception.php';
-            throw new Zend_Service_Exception('An error occurred sending request. Status code: ' .
-                                             $response->getStatus());
+            throw new Zend_Service_Exception(
+                'An error occurred sending request. Status code: ' .
+                $response->getStatus()
+            );
         }
 
         $dom = new DOMDocument();
@@ -293,15 +309,17 @@ class Zend_Service_Yahoo
      * 'start'        => int  The start offset for search results
      * 'domain_only'  => bool  Data for just the given domain or all sub-domains also
      *
-     * @param  string $query    the query being run
-     * @param  array  $options  any optional parameters
+     * @param string $query the query being run
+     * @param array $options any optional parameters
      * @return Zend_Service_Yahoo_ResultSet  The return set
      * @throws Zend_Service_Exception
      */
     public function pageDataSearch($query, array $options = array())
     {
-        static $defaultOptions = array('results'     => '50',
-                                       'start'    => 1);
+        static $defaultOptions = array(
+            'results' => '50',
+            'start' => 1
+        );
 
         $options = $this->_prepareOptions($query, $options, $defaultOptions);
         $this->_validatePageDataSearch($options);
@@ -315,8 +333,10 @@ class Zend_Service_Yahoo
              * @see Zend_Service_Exception
              */
             require_once 'Zend/Service/Exception.php';
-            throw new Zend_Service_Exception('An error occurred sending request. Status code: ' .
-                                             $response->getStatus());
+            throw new Zend_Service_Exception(
+                'An error occurred sending request. Status code: ' .
+                $response->getStatus()
+            );
         }
 
         $dom = new DOMDocument();
@@ -344,17 +364,19 @@ class Zend_Service_Yahoo
      * 'format'     => (any|avi|flash|mpeg|msmedia|quicktime|realmedia)  The type of videos to search for
      * 'adult_ok'   => bool  Flag to allow 'adult' videos.
      *
-     * @param  string $query   the query to be run
-     * @param  array  $options an optional array of query options
+     * @param string $query the query to be run
+     * @param array $options an optional array of query options
      * @return Zend_Service_Yahoo_VideoResultSet the search results
      * @throws Zend_Service_Exception
      */
     public function videoSearch($query, array $options = array())
     {
-        static $defaultOptions = array('type'       => 'all',
-                                       'results'    => 10,
-                                       'start'      => 1,
-                                       'format'     => 'any');
+        static $defaultOptions = array(
+            'type' => 'all',
+            'results' => 10,
+            'start' => 1,
+            'format' => 'any'
+        );
 
         $options = $this->_prepareOptions($query, $options, $defaultOptions);
 
@@ -369,8 +391,10 @@ class Zend_Service_Yahoo
              * @see Zend_Service_Exception
              */
             require_once 'Zend/Service/Exception.php';
-            throw new Zend_Service_Exception('An error occurred sending request. Status code: ' .
-                                             $response->getStatus());
+            throw new Zend_Service_Exception(
+                'An error occurred sending request. Status code: ' .
+                $response->getStatus()
+            );
         }
 
         $dom = new DOMDocument();
@@ -402,17 +426,19 @@ class Zend_Service_Yahoo
      * 'license'    => (any|cc_any|cc_commercial|cc_modifiable)  The license of content being searched
      * 'region'     => The regional search engine on which the service performs the search. default us.
      *
-     * @param  string $query    the query being run
-     * @param  array  $options  any optional parameters
+     * @param string $query the query being run
+     * @param array $options any optional parameters
      * @return Zend_Service_Yahoo_WebResultSet  The return set
      * @throws Zend_Service_Exception
      */
     public function webSearch($query, array $options = array())
     {
-        static $defaultOptions = array('type'     => 'all',
-                                       'start'    => 1,
-                                       'results'  => 10,
-                                       'format'   => 'any');
+        static $defaultOptions = array(
+            'type' => 'all',
+            'start' => 1,
+            'results' => 10,
+            'format' => 'any'
+        );
 
         $options = $this->_prepareOptions($query, $options, $defaultOptions);
         $this->_validateWebSearch($options);
@@ -426,8 +452,10 @@ class Zend_Service_Yahoo
              * @see Zend_Service_Exception
              */
             require_once 'Zend/Service/Exception.php';
-            throw new Zend_Service_Exception('An error occurred sending request. Status code: ' .
-                                             $response->getStatus());
+            throw new Zend_Service_Exception(
+                'An error occurred sending request. Status code: ' .
+                $response->getStatus()
+            );
         }
 
         $dom = new DOMDocument();
@@ -457,7 +485,7 @@ class Zend_Service_Yahoo
     /**
      * Validate Inlink Data Search Options
      *
-     * @param  array $options
+     * @param array $options
      * @return void
      * @throws Zend_Service_Exception
      */
@@ -498,7 +526,7 @@ class Zend_Service_Yahoo
     /**
      * Validate Image Search Options
      *
-     * @param  array $options
+     * @param array $options
      * @return void
      * @throws Zend_Service_Exception
      */
@@ -509,7 +537,7 @@ class Zend_Service_Yahoo
         $this->_compareOptions($options, $validOptions);
 
         if (isset($options['type'])) {
-            switch($options['type']) {
+            switch ($options['type']) {
                 case 'all':
                 case 'any':
                 case 'phrase':
@@ -573,8 +601,10 @@ class Zend_Service_Yahoo
                      * @see Zend_Service_Exception
                      */
                     require_once 'Zend/Service/Exception.php';
-                    throw new Zend_Service_Exception("Invalid value for option 'coloration': "
-                                                   . "{$options['coloration']}");
+                    throw new Zend_Service_Exception(
+                        "Invalid value for option 'coloration': "
+                        . "{$options['coloration']}"
+                    );
             }
         }
     }
@@ -583,14 +613,27 @@ class Zend_Service_Yahoo
     /**
      * Validate Local Search Options
      *
-     * @param  array $options
+     * @param array $options
      * @return void
      * @throws Zend_Service_Exception
      */
     protected function _validateLocalSearch(array $options)
     {
-        $validOptions = array('appid', 'query', 'results', 'start', 'sort', 'radius', 'street',
-                              'city', 'state', 'zip', 'location', 'latitude', 'longitude');
+        $validOptions = array(
+            'appid',
+            'query',
+            'results',
+            'start',
+            'sort',
+            'radius',
+            'street',
+            'city',
+            'state',
+            'zip',
+            'location',
+            'latitude',
+            'longitude'
+        );
 
         $this->_compareOptions($options, $validOptions);
 
@@ -670,7 +713,7 @@ class Zend_Service_Yahoo
     /**
      * Validate News Search Options
      *
-     * @param  array $options
+     * @param array $options
      * @return void
      * @throws Zend_Service_Exception
      */
@@ -714,7 +757,7 @@ class Zend_Service_Yahoo
     /**
      * Validate Page Data Search Options
      *
-     * @param  array $options
+     * @param array $options
      * @return void
      * @throws Zend_Service_Exception
      */
@@ -751,7 +794,7 @@ class Zend_Service_Yahoo
     /**
      * Validate Video Search Options
      *
-     * @param  array $options
+     * @param array $options
      * @return void
      * @throws Zend_Service_Exception
      */
@@ -788,7 +831,11 @@ class Zend_Service_Yahoo
         }
 
         if (isset($options['format'])) {
-            $this->_validateInArray('format', $options['format'], array('any', 'avi', 'flash', 'mpeg', 'msmedia', 'quicktime', 'realmedia'));
+            $this->_validateInArray(
+                'format',
+                $options['format'],
+                array('any', 'avi', 'flash', 'mpeg', 'msmedia', 'quicktime', 'realmedia')
+            );
         }
     }
 
@@ -796,14 +843,28 @@ class Zend_Service_Yahoo
     /**
      * Validate Web Search Options
      *
-     * @param  array $options
+     * @param array $options
      * @return void
      * @throws Zend_Service_Exception
      */
     protected function _validateWebSearch(array $options)
     {
-        $validOptions = array('appid', 'query', 'results', 'start', 'language', 'type', 'format', 'adult_ok',
-                              'similar_ok', 'country', 'site', 'subscription', 'license', 'region');
+        $validOptions = array(
+            'appid',
+            'query',
+            'results',
+            'start',
+            'language',
+            'type',
+            'format',
+            'adult_ok',
+            'similar_ok',
+            'country',
+            'site',
+            'subscription',
+            'license',
+            'region'
+        );
 
         $this->_compareOptions($options, $validOptions);
 
@@ -834,18 +895,66 @@ class Zend_Service_Yahoo
         }
 
         $this->_validateInArray('type', $options['type'], array('all', 'any', 'phrase'));
-        $this->_validateInArray('format', $options['format'], array('any', 'html', 'msword', 'pdf', 'ppt', 'rss',
-                                                                    'txt', 'xls'));
+        $this->_validateInArray(
+            'format',
+            $options['format'],
+            array(
+                'any',
+                'html',
+                'msword',
+                'pdf',
+                'ppt',
+                'rss',
+                'txt',
+                'xls'
+            )
+        );
         if (isset($options['license'])) {
-            $this->_validateInArray('license', $options['license'], array('any', 'cc_any', 'cc_commercial',
-                                                                      'cc_modifiable'));
+            $this->_validateInArray(
+                'license',
+                $options['license'],
+                array(
+                    'any',
+                    'cc_any',
+                    'cc_commercial',
+                    'cc_modifiable'
+                )
+            );
         }
 
-        if (isset($options['region'])){
-            $this->_validateInArray('region', $options['region'], array('ar', 'au', 'at', 'br', 'ca', 'ct', 'dk', 'fi',
-                                                                          'fr', 'de', 'in', 'id', 'it', 'my', 'mx',
-                                                                          'nl', 'no', 'ph', 'ru', 'sg', 'es', 'se',
-                                                                          'ch', 'th', 'uk', 'us'));
+        if (isset($options['region'])) {
+            $this->_validateInArray(
+                'region',
+                $options['region'],
+                array(
+                    'ar',
+                    'au',
+                    'at',
+                    'br',
+                    'ca',
+                    'ct',
+                    'dk',
+                    'fi',
+                    'fr',
+                    'de',
+                    'in',
+                    'id',
+                    'it',
+                    'my',
+                    'mx',
+                    'nl',
+                    'no',
+                    'ph',
+                    'ru',
+                    'sg',
+                    'es',
+                    'se',
+                    'ch',
+                    'th',
+                    'uk',
+                    'us'
+                )
+            );
         }
     }
 
@@ -853,15 +962,15 @@ class Zend_Service_Yahoo
     /**
      * Prepare options for sending to Yahoo!
      *
-     * @param  string $query          Search Query
-     * @param  array  $options        User specified options
-     * @param  array  $defaultOptions Required/Default options
+     * @param string $query Search Query
+     * @param array $options User specified options
+     * @param array $defaultOptions Required/Default options
      * @return array
      */
     protected function _prepareOptions($query, array $options, array $defaultOptions = array())
     {
         $options['appid'] = $this->appId;
-        $options['query'] = (string) $query;
+        $options['query'] = (string)$query;
 
         return array_merge($defaultOptions, $options);
     }
@@ -870,16 +979,51 @@ class Zend_Service_Yahoo
     /**
      * Throws an exception if the chosen language is not supported
      *
-     * @param  string $lang Language code
+     * @param string $lang Language code
      * @return void
      * @throws Zend_Service_Exception
      */
     protected function _validateLanguage($lang)
     {
-        $languages = array('ar', 'bg', 'ca', 'szh', 'tzh', 'hr', 'cs', 'da', 'nl', 'en', 'et', 'fi', 'fr', 'de', 'el',
-            'he', 'hu', 'is', 'id', 'it', 'ja', 'ko', 'lv', 'lt', 'no', 'fa', 'pl', 'pt', 'ro', 'ru', 'sk', 'sr', 'sl',
-            'es', 'sv', 'th', 'tr'
-            );
+        $languages = array(
+            'ar',
+            'bg',
+            'ca',
+            'szh',
+            'tzh',
+            'hr',
+            'cs',
+            'da',
+            'nl',
+            'en',
+            'et',
+            'fi',
+            'fr',
+            'de',
+            'el',
+            'he',
+            'hu',
+            'is',
+            'id',
+            'it',
+            'ja',
+            'ko',
+            'lv',
+            'lt',
+            'no',
+            'fa',
+            'pl',
+            'pt',
+            'ro',
+            'ru',
+            'sk',
+            'sr',
+            'sl',
+            'es',
+            'sv',
+            'th',
+            'tr'
+        );
         if (!in_array($lang, $languages)) {
             /**
              * @see Zend_Service_Exception
@@ -893,8 +1037,8 @@ class Zend_Service_Yahoo
     /**
      * Utility function to check for a difference between two arrays.
      *
-     * @param  array $options      User specified options
-     * @param  array $validOptions Valid options
+     * @param array $options User specified options
+     * @param array $validOptions Valid options
      * @return void
      * @throws Zend_Service_Exception if difference is found (e.g., unsupported query option)
      */
@@ -914,9 +1058,9 @@ class Zend_Service_Yahoo
     /**
      * Check that a named value is in the given array
      *
-     * @param  string $name  Name associated with the value
-     * @param  mixed  $value Value
-     * @param  array  $array Array in which to check for the value
+     * @param string $name Name associated with the value
+     * @param mixed $value Value
+     * @param array $array Array in which to check for the value
      * @return void
      * @throws Zend_Service_Exception
      */
@@ -935,7 +1079,7 @@ class Zend_Service_Yahoo
     /**
      * Check if response is an error
      *
-     * @param  DOMDocument $dom DOM Object representing the result XML
+     * @param DOMDocument $dom DOM Object representing the result XML
      * @return void
      * @throws Zend_Service_Exception Thrown when the result from Yahoo! is an error
      */

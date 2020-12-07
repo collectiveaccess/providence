@@ -44,13 +44,13 @@ class Zend_Amf_Value_Messaging_AcknowledgeMessage extends Zend_Amf_Value_Messagi
      */
     public function __construct($message)
     {
-        $this->clientId    = $this->generateId();
+        $this->clientId = $this->generateId();
         $this->destination = null;
-        $this->messageId   = $this->generateId();
-        $this->timestamp   = time().'00';
-        $this->timeToLive  = 0;
-        $this->headers     = new STDClass();
-        $this->body        = null;
+        $this->messageId = $this->generateId();
+        $this->timestamp = time() . '00';
+        $this->timeToLive = 0;
+        $this->headers = new STDClass();
+        $this->body = null;
 
         // correleate the two messages
         if ($message && isset($message->messageId)) {

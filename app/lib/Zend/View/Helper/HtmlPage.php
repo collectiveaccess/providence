@@ -44,7 +44,7 @@ class Zend_View_Helper_HtmlPage extends Zend_View_Helper_HtmlObject
      * Object classid
      *
      */
-    const ATTRIB_CLASSID  = 'clsid:25336920-03F9-11CF-8FD0-00AA00686F13';
+    const ATTRIB_CLASSID = 'clsid:25336920-03F9-11CF-8FD0-00AA00686F13';
 
     /**
      * Default attributes
@@ -57,8 +57,8 @@ class Zend_View_Helper_HtmlPage extends Zend_View_Helper_HtmlObject
      * Output a html object tag
      *
      * @param string $data The html url
-     * @param array  $attribs Attribs for the object tag
-     * @param array  $params Params for in the object tag
+     * @param array $attribs Attribs for the object tag
+     * @param array $params Params for in the object tag
      * @param string $content Alternative content
      * @return string
      */

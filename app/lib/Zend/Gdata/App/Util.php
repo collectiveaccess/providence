@@ -43,7 +43,7 @@ class Zend_Gdata_App_Util
     public static function formatTimestamp($timestamp)
     {
         $rfc3339 = '/^(\d{4})\-?(\d{2})\-?(\d{2})((T|t)(\d{2})\:?(\d{2})' .
-                   '\:?(\d{2})(\.\d{1,})?((Z|z)|([\+\-])(\d{2})\:?(\d{2})))?$/';
+            '\:?(\d{2})(\.\d{1,})?((Z|z)|([\+\-])(\d{2})\:?(\d{2})))?$/';
 
         if (ctype_digit((string)$timestamp)) {
             return gmdate('Y-m-d\TH:i:sP', $timestamp);
@@ -61,15 +61,15 @@ class Zend_Gdata_App_Util
     }
 
     /** Find the greatest key that is less than or equal to a given upper
-      * bound, and return the value associated with that key.
-      *
-      * @param integer|null $maximumKey The upper bound for keys. If null, the
-      *        maxiumum valued key will be found.
-      * @param array $collection An two-dimensional array of key/value pairs
-      *        to search through.
-      * @returns mixed The value corresponding to the located key.
-      * @throws Zend_Gdata_App_Exception Thrown if $collection is empty.
-      */
+     * bound, and return the value associated with that key.
+     *
+     * @param integer|null $maximumKey The upper bound for keys. If null, the
+     *        maxiumum valued key will be found.
+     * @param array $collection An two-dimensional array of key/value pairs
+     *        to search through.
+     * @returns mixed The value corresponding to the located key.
+     * @throws Zend_Gdata_App_Exception Thrown if $collection is empty.
+     */
     public static function findGreatestBoundedValue($maximumKey, $collection)
     {
         $found = false;
@@ -92,10 +92,11 @@ class Zend_Gdata_App_Util
             // will have a matching namespce. If that fails, we decrement the
             // version until we find a match.
             while (!$found && $foundKey >= 0) {
-                if (array_key_exists($foundKey, $collection))
+                if (array_key_exists($foundKey, $collection)) {
                     $found = true;
-                else
+                } else {
                     $foundKey--;
+                }
             }
         }
 

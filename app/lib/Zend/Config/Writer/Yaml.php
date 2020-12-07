@@ -57,7 +57,7 @@ class Zend_Config_Writer_Yaml extends Zend_Config_Writer_FileAbstract
     /**
      * Set callback for decoding YAML
      *
-     * @param  callable $yamlEncoder the decoder to set
+     * @param callable $yamlEncoder the decoder to set
      * @return Zend_Config_Yaml
      */
     public function setYamlEncoder($yamlEncoder)
@@ -74,14 +74,14 @@ class Zend_Config_Writer_Yaml extends Zend_Config_Writer_FileAbstract
     /**
      * Render a Zend_Config into a YAML config string.
      *
-     * @since 1.10
      * @return string
+     * @since 1.10
      */
     public function render()
     {
-        $data        = $this->_config->toArray();
+        $data = $this->_config->toArray();
         $sectionName = $this->_config->getSectionName();
-        $extends     = $this->_config->getExtends();
+        $extends = $this->_config->getExtends();
 
         if (is_string($sectionName)) {
             $data = array($sectionName => $data);
@@ -131,13 +131,13 @@ class Zend_Config_Writer_Yaml extends Zend_Config_Writer_FileAbstract
         $result = "";
         $numeric = is_numeric(key($data));
 
-        foreach($data as $key => $value) {
-            if(is_array($value)) {
-                $encoded = "\n".self::_encodeYaml($indent+1, $value);
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $encoded = "\n" . self::_encodeYaml($indent + 1, $value);
             } else {
-                $encoded = (string)$value."\n";
+                $encoded = (string)$value . "\n";
             }
-            $result .= str_repeat("  ", $indent).($numeric?"- ":"$key: ").$encoded;
+            $result .= str_repeat("  ", $indent) . ($numeric ? "- " : "$key: ") . $encoded;
         }
         return $result;
     }

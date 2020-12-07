@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * dateJoinerRefinery.php : 
  * ----------------------------------------------------------------------
@@ -25,346 +26,569 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
- 	require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
- 
-	class dateJoinerRefinery extends BaseRefinery {
-		# -------------------------------------------------------
-		
-		# -------------------------------------------------------
-		public function __construct() {
-			$this->ops_name = 'dateJoiner';
-			$this->ops_title = _t('Date joiner');
-			$this->ops_description = _t('Joins data with partial date values into a single valid date expression for import.');
-			
-			parent::__construct();
-		}
-		# -------------------------------------------------------
-		/**
-		 * Override checkStatus() to return true
-		 */
-		public function checkStatus() {
-			return array(
-				'description' => $this->getDescription(),
-				'errors' => array(),
-				'warnings' => array(),
-				'available' => true,
-			);
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
-			
-			$pm_value = $pa_source_data[$pa_item['source']];	// not actually used
-			
-			$va_item_dest = explode(".", $pa_item['destination']);
-			$vs_item_terminal = array_pop($va_item_dest);
-			$vs_group_terminal = array_pop($va_item_dest);
-			
-			$o_tep = new TimeExpressionParser();
-			$o_tep->setLanguage('en_US');
-			
-			switch($vs_mode = $pa_item['settings']['dateJoiner_mode']) {
-				default:
-				case 'range':
-					$vs_date_expression = $pa_item['settings']['dateJoiner_expression'];
-					$vs_date_start = $pa_item['settings']['dateJoiner_start'];
-					$vs_date_end = $pa_item['settings']['dateJoiner_end'];
-			
-					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) {
-						if ($o_tep->parse($vs_exp)) {
-							return $o_tep->getText();
-						} else {
-							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
-						}
-					}
-			
-					$va_date = array();
-					if ($vs_date_start = BaseRefinery::parsePlaceholder($vs_date_start, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) { 
-						if (
-							!($vs_skip_start_exp = $pa_item['settings']['dateJoiner_skipStartIfExpression'])
-							||
-							!ExpressionParser::evaluate($vs_skip_start_exp, array_merge($pa_source_data, array('start' => $vs_date_start, 'end' => $vs_date_end, 'expression' => $ps_expression)))
-						) {
-							$va_date[] = $vs_date_start; 
-						} elseif ($vs_skip_start_replacement = $pa_item['settings']['dateJoiner_skipStartIfExpressionReplacementValue']) {
-							$va_date[] = $vs_skip_start_replacement; 
-						}
-					}
-					if ($vs_date_end = BaseRefinery::parsePlaceholder($vs_date_end, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) { 
-						if (
-							!($vs_skip_end_exp = $pa_item['settings']['dateJoiner_skipEndIfExpression'])
-							||
-							!ExpressionParser::evaluate($vs_skip_end_exp, array_merge($pa_source_data, array('start' => $vs_date_start, 'end' => $vs_date_end, 'expression' => $ps_expression)))
-						) {
-							$va_date[] = $vs_date_end; 
-						} elseif ($vs_skip_end_replacement = $pa_item['settings']['dateJoiner_skipEndIfExpressionReplacementValue']) {
-							$va_date[] = $vs_skip_end_replacement; 
-						}
-						
-					}
-					
-					foreach($va_date as $vn_i => $vs_date) {
-						$va_date[$vn_i] = preg_replace("![^\d]+$!", "", $vs_date);
-					}
-					$vs_date_expression = join(" - ", $va_date);
-					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) {
-						if ($o_tep->parse($vs_exp)) {
-							return $o_tep->getText();
-						} else {
-							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
-						}
-					}
-					break;
-					
-				case 'multiColumnDate':
-					$va_month_list = $o_tep->getMonthList();
-					
-					$va_date = array();
-					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_month'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { 
-						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
-							$vs_date_month = ($vn_m + 1);
-						}
-						$va_date[] = $vs_date_month; 
-					}
+require_once(__CA_LIB_DIR__ . '/Import/BaseRefinery.php');
+require_once(__CA_LIB_DIR__ . '/Utils/DataMigrationUtils.php');
+require_once(__CA_LIB_DIR__ . '/Parsers/ExpressionParser.php');
 
-					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_day'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { $va_date[] = $vs_date_day; }
-					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_year'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { $va_date[] = $vs_date_year; }
-		
-					if(sizeof($va_date)) {							// TODO: this is assuming US-style dates for now
-						if ($o_tep->parse(join("/", $va_date))) {
-							return $o_tep->getText();
-						} else {
-							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnDate', join("/", $va_date))); }
-						}
-					}
-					break;
-				case 'multiColumnRange':
-					$va_dates = array();
-					
-					$va_month_list = $o_tep->getMonthList();
-					
-					// Process start date
-					$va_date = array();
-					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startMonth'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { 
-						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
-							$vs_date_month = ($vn_m + 1);
-						}
-						$va_date[] = $vs_date_month; 
-					}
-					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startDay'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { $va_date[] = $vs_date_day; }
-					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startYear'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { $va_date[] = $vs_date_year; }
-		
-					if(sizeof($va_date)) {
-						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
-							$va_dates[] = $o_tep->getText();
-						} else {
-							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
-						}
-					}
-					
-					// Process end date
-					$va_date = array();
-					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endMonth'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { 
-						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
-							$vs_date_month = ($vn_m + 1);
-						}
-						$va_date[] = $vs_date_month; 
-					}
-					
-					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endDay'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { $va_date[] = $vs_date_day; }
-					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endYear'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)))) { $va_date[] = $vs_date_year; }
-		
-					if(sizeof($va_date)) {
-						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
-							$va_dates[] = $o_tep->getText();
-						} else {
-							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
-						}
-					}
-					
-					if (sizeof($va_dates) > 0) {
-						return join(" - ", $va_dates);
-					}
-					break;
-			}
-			
-			return null;
-		}
-		# -------------------------------------------------------	
-		/**
-		 * dateJoiner returns a single transformed date value
-		 *
-		 * @return bool Always false
-		 */
-		public function returnsMultipleValues() {
-			return false;
-		}
-		# -------------------------------------------------------
-	}
-	
-	 BaseRefinery::$s_refinery_settings['dateJoiner'] = array(	
-	 		'dateJoiner_mode' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'options' => array(
-					_t('Two-column range') => 'range',
-					_t('Multi-column range') => 'multiColumnRange',
-					_t('Multi-column date') => 'multiColumnDate'
-				),
-				'label' => _t('Join mode'),
-				'description' => _t('Determines how dateJoiner joins date values together. Two-column range is the default if mode is not specified.')
-			),	
-			'dateJoiner_expression' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date expression'),
-				'description' => _t('Date expression (For Two-column range)')
-			),
-			'dateJoiner_start' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date start'),
-				'description' => _t('Maps the date from the data source that is the beginning of the conjoined date range. (For Two-column range).')
-			),
-			'dateJoiner_skipStartIfExpression' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Skip start date if expression'),
-				'description' => _t('Omits start date from range if specified expression is true. (For Two-column range).')
-			),
-			
-			'dateJoiner_skipStartIfExpressionReplacementValue' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Skip start date replacement value'),
-				'description' => _t('Value to replace start date with when start date is skipped. (For Two-column range).')
-			),
-			'dateJoiner_end' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date end'),
-				'description' => _t('Maps the date from the data source that is the end of the conjoined date range. (For Two-column range)')
-			),
-			'dateJoiner_skipEndIfExpression' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Skip end date if expression'),
-				'description' => _t('Omits end date from range if specified expression is true. (For Two-column range).')
-			),
-			'dateJoiner_skipEndIfExpressionReplacementValue' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Skip end date replacement value'),
-				'description' => _t('Value to replace end date with when end date is skipped. (For Two-column range).')
-			),
-			'dateJoiner_startDay' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date start day'),
-				'description' => _t('Maps the day value for the start date from the data source. (For Multi-column range)')
-			),
-			'dateJoiner_startMonth' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date start month'),
-				'description' => _t('Maps the month value for the start date from the data source. (For Multi-column range)')
-			),
-			'dateJoiner_startYear' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date start year'),
-				'description' => _t('Maps the year value for the start date from the data source. (For Multi-column range)')
-			),
-			'dateJoiner_endDay' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date end day'),
-				'description' => _t('Maps the day value for the end date from the data source. (For Multi-column range)')
-			),
-			'dateJoiner_endMonth' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date end month'),
-				'description' => _t('Maps the month value for the end date from the data source. (For Multi-column range)')
-			),
-			'dateJoiner_endYear' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date end year'),
-				'description' => _t('Maps the year value for the end date from the data source. (For Multi-column range)')
-			),
-			'dateJoiner_day' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date day'),
-				'description' => _t('Maps the day value for the date from the data source. (For Multi-column date)')
-			),
-			'dateJoiner_month' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date month'),
-				'description' => _t('Maps the month value for the date from the data source. (For Multi-column date)')
-			),
-			'dateJoiner_year' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Date year'),
-				'description' => _t('Maps the year value for the date from the data source. (For Multi-column date)')
-			)
-		);
+class dateJoinerRefinery extends BaseRefinery
+{
+    # -------------------------------------------------------
+
+    # -------------------------------------------------------
+    public function __construct()
+    {
+        $this->ops_name = 'dateJoiner';
+        $this->ops_title = _t('Date joiner');
+        $this->ops_description = _t(
+            'Joins data with partial date values into a single valid date expression for import.'
+        );
+
+        parent::__construct();
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Override checkStatus() to return true
+     */
+    public function checkStatus()
+    {
+        return array(
+            'description' => $this->getDescription(),
+            'errors' => array(),
+            'warnings' => array(),
+            'available' => true,
+        );
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     */
+    public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options = null)
+    {
+        $o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+
+        $pm_value = $pa_source_data[$pa_item['source']];    // not actually used
+
+        $va_item_dest = explode(".", $pa_item['destination']);
+        $vs_item_terminal = array_pop($va_item_dest);
+        $vs_group_terminal = array_pop($va_item_dest);
+
+        $o_tep = new TimeExpressionParser();
+        $o_tep->setLanguage('en_US');
+
+        switch ($vs_mode = $pa_item['settings']['dateJoiner_mode']) {
+            default:
+            case 'range':
+                $vs_date_expression = $pa_item['settings']['dateJoiner_expression'];
+                $vs_date_start = $pa_item['settings']['dateJoiner_start'];
+                $vs_date_end = $pa_item['settings']['dateJoiner_end'];
+
+                if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder(
+                        $vs_date_expression,
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array(
+                            'reader' => caGetOption(
+                                'reader',
+                                $pa_options,
+                                null
+                            ),
+                            'returnAsString' => true
+                        )
+                    ))) {
+                    if ($o_tep->parse($vs_exp)) {
+                        return $o_tep->getText();
+                    } else {
+                        if ($o_log) {
+                            $o_log->logWarn(
+                                _t(
+                                    '[dateJoinerRefinery] Could not parse date expression %1 assembled from range',
+                                    $vs_exp
+                                )
+                            );
+                        }
+                    }
+                }
+
+                $va_date = array();
+                if ($vs_date_start = BaseRefinery::parsePlaceholder(
+                    $vs_date_start,
+                    $pa_source_data,
+                    $pa_item,
+                    $vn_c,
+                    array(
+                        'reader' => caGetOption(
+                            'reader',
+                            $pa_options,
+                            null
+                        ),
+                        'returnAsString' => true
+                    )
+                )) {
+                    if (
+                        !($vs_skip_start_exp = $pa_item['settings']['dateJoiner_skipStartIfExpression'])
+                        ||
+                        !ExpressionParser::evaluate(
+                            $vs_skip_start_exp,
+                            array_merge(
+                                $pa_source_data,
+                                array(
+                                    'start' => $vs_date_start,
+                                    'end' => $vs_date_end,
+                                    'expression' => $ps_expression
+                                )
+                            )
+                        )
+                    ) {
+                        $va_date[] = $vs_date_start;
+                    } elseif ($vs_skip_start_replacement = $pa_item['settings']['dateJoiner_skipStartIfExpressionReplacementValue']) {
+                        $va_date[] = $vs_skip_start_replacement;
+                    }
+                }
+                if ($vs_date_end = BaseRefinery::parsePlaceholder(
+                    $vs_date_end,
+                    $pa_source_data,
+                    $pa_item,
+                    $vn_c,
+                    array(
+                        'reader' => caGetOption(
+                            'reader',
+                            $pa_options,
+                            null
+                        ),
+                        'returnAsString' => true
+                    )
+                )) {
+                    if (
+                        !($vs_skip_end_exp = $pa_item['settings']['dateJoiner_skipEndIfExpression'])
+                        ||
+                        !ExpressionParser::evaluate(
+                            $vs_skip_end_exp,
+                            array_merge(
+                                $pa_source_data,
+                                array(
+                                    'start' => $vs_date_start,
+                                    'end' => $vs_date_end,
+                                    'expression' => $ps_expression
+                                )
+                            )
+                        )
+                    ) {
+                        $va_date[] = $vs_date_end;
+                    } elseif ($vs_skip_end_replacement = $pa_item['settings']['dateJoiner_skipEndIfExpressionReplacementValue']) {
+                        $va_date[] = $vs_skip_end_replacement;
+                    }
+                }
+
+                foreach ($va_date as $vn_i => $vs_date) {
+                    $va_date[$vn_i] = preg_replace("![^\d]+$!", "", $vs_date);
+                }
+                $vs_date_expression = join(" - ", $va_date);
+                if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder(
+                        $vs_date_expression,
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array(
+                            'reader' => caGetOption(
+                                'reader',
+                                $pa_options,
+                                null
+                            ),
+                            'returnAsString' => true
+                        )
+                    ))) {
+                    if ($o_tep->parse($vs_exp)) {
+                        return $o_tep->getText();
+                    } else {
+                        if ($o_log) {
+                            $o_log->logWarn(
+                                _t(
+                                    '[dateJoinerRefinery] Could not parse date expression %1 assembled from range',
+                                    $vs_exp
+                                )
+                            );
+                        }
+                    }
+                }
+                break;
+
+            case 'multiColumnDate':
+                $va_month_list = $o_tep->getMonthList();
+
+                $va_date = array();
+                if ($vs_date_month = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_month'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
+                        $vs_date_month = ($vn_m + 1);
+                    }
+                    $va_date[] = $vs_date_month;
+                }
+
+                if ($vs_date_day = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_day'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    $va_date[] = $vs_date_day;
+                }
+                if ($vs_date_year = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_year'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    $va_date[] = $vs_date_year;
+                }
+
+                if (sizeof($va_date)) {                            // TODO: this is assuming US-style dates for now
+                    if ($o_tep->parse(join("/", $va_date))) {
+                        return $o_tep->getText();
+                    } else {
+                        if ($o_log) {
+                            $o_log->logWarn(
+                                _t(
+                                    '[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnDate',
+                                    join("/", $va_date)
+                                )
+                            );
+                        }
+                    }
+                }
+                break;
+            case 'multiColumnRange':
+                $va_dates = array();
+
+                $va_month_list = $o_tep->getMonthList();
+
+                // Process start date
+                $va_date = array();
+                if ($vs_date_month = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_startMonth'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
+                        $vs_date_month = ($vn_m + 1);
+                    }
+                    $va_date[] = $vs_date_month;
+                }
+                if ($vs_date_day = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_startDay'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    $va_date[] = $vs_date_day;
+                }
+                if ($vs_date_year = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_startYear'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    $va_date[] = $vs_date_year;
+                }
+
+                if (sizeof($va_date)) {
+                    if ($o_tep->parse(join("/", $va_date))) {    // TODO: this is assuming US-style dates for now
+                        $va_dates[] = $o_tep->getText();
+                    } else {
+                        if ($o_log) {
+                            $o_log->logWarn(
+                                _t(
+                                    '[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange',
+                                    join("/", $va_date)
+                                )
+                            );
+                        }
+                    }
+                }
+
+                // Process end date
+                $va_date = array();
+                if ($vs_date_month = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_endMonth'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
+                        $vs_date_month = ($vn_m + 1);
+                    }
+                    $va_date[] = $vs_date_month;
+                }
+
+                if ($vs_date_day = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_endDay'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    $va_date[] = $vs_date_day;
+                }
+                if ($vs_date_year = trim(
+                    BaseRefinery::parsePlaceholder(
+                        $pa_item['settings']['dateJoiner_endYear'],
+                        $pa_source_data,
+                        $pa_item,
+                        $vn_c,
+                        array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true)
+                    )
+                )) {
+                    $va_date[] = $vs_date_year;
+                }
+
+                if (sizeof($va_date)) {
+                    if ($o_tep->parse(join("/", $va_date))) {    // TODO: this is assuming US-style dates for now
+                        $va_dates[] = $o_tep->getText();
+                    } else {
+                        if ($o_log) {
+                            $o_log->logWarn(
+                                _t(
+                                    '[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange',
+                                    join("/", $va_date)
+                                )
+                            );
+                        }
+                    }
+                }
+
+                if (sizeof($va_dates) > 0) {
+                    return join(" - ", $va_dates);
+                }
+                break;
+        }
+
+        return null;
+    }
+    # -------------------------------------------------------
+
+    /**
+     * dateJoiner returns a single transformed date value
+     *
+     * @return bool Always false
+     */
+    public function returnsMultipleValues()
+    {
+        return false;
+    }
+    # -------------------------------------------------------
+}
+
+BaseRefinery::$s_refinery_settings['dateJoiner'] = array(
+    'dateJoiner_mode' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_SELECT,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'options' => array(
+            _t('Two-column range') => 'range',
+            _t('Multi-column range') => 'multiColumnRange',
+            _t('Multi-column date') => 'multiColumnDate'
+        ),
+        'label' => _t('Join mode'),
+        'description' => _t(
+            'Determines how dateJoiner joins date values together. Two-column range is the default if mode is not specified.'
+        )
+    ),
+    'dateJoiner_expression' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date expression'),
+        'description' => _t('Date expression (For Two-column range)')
+    ),
+    'dateJoiner_start' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date start'),
+        'description' => _t(
+            'Maps the date from the data source that is the beginning of the conjoined date range. (For Two-column range).'
+        )
+    ),
+    'dateJoiner_skipStartIfExpression' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Skip start date if expression'),
+        'description' => _t('Omits start date from range if specified expression is true. (For Two-column range).')
+    ),
+
+    'dateJoiner_skipStartIfExpressionReplacementValue' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Skip start date replacement value'),
+        'description' => _t('Value to replace start date with when start date is skipped. (For Two-column range).')
+    ),
+    'dateJoiner_end' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date end'),
+        'description' => _t(
+            'Maps the date from the data source that is the end of the conjoined date range. (For Two-column range)'
+        )
+    ),
+    'dateJoiner_skipEndIfExpression' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Skip end date if expression'),
+        'description' => _t('Omits end date from range if specified expression is true. (For Two-column range).')
+    ),
+    'dateJoiner_skipEndIfExpressionReplacementValue' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Skip end date replacement value'),
+        'description' => _t('Value to replace end date with when end date is skipped. (For Two-column range).')
+    ),
+    'dateJoiner_startDay' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date start day'),
+        'description' => _t('Maps the day value for the start date from the data source. (For Multi-column range)')
+    ),
+    'dateJoiner_startMonth' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date start month'),
+        'description' => _t('Maps the month value for the start date from the data source. (For Multi-column range)')
+    ),
+    'dateJoiner_startYear' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date start year'),
+        'description' => _t('Maps the year value for the start date from the data source. (For Multi-column range)')
+    ),
+    'dateJoiner_endDay' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date end day'),
+        'description' => _t('Maps the day value for the end date from the data source. (For Multi-column range)')
+    ),
+    'dateJoiner_endMonth' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date end month'),
+        'description' => _t('Maps the month value for the end date from the data source. (For Multi-column range)')
+    ),
+    'dateJoiner_endYear' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date end year'),
+        'description' => _t('Maps the year value for the end date from the data source. (For Multi-column range)')
+    ),
+    'dateJoiner_day' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date day'),
+        'description' => _t('Maps the day value for the date from the data source. (For Multi-column date)')
+    ),
+    'dateJoiner_month' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date month'),
+        'description' => _t('Maps the month value for the date from the data source. (For Multi-column date)')
+    ),
+    'dateJoiner_year' => array(
+        'formatType' => FT_TEXT,
+        'displayType' => DT_FIELD,
+        'width' => 10,
+        'height' => 1,
+        'takesLocale' => false,
+        'default' => '',
+        'label' => _t('Date year'),
+        'description' => _t('Maps the year value for the date from the data source. (For Multi-column date)')
+    )
+);

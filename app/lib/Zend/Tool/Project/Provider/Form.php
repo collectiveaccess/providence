@@ -32,7 +32,9 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
     public static function createResource(Zend_Tool_Project_Profile $profile, $formName, $moduleName = null)
     {
         if (!is_string($formName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Form::createResource() expects \"formName\" is the name of a form resource to create.');
+            throw new Zend_Tool_Project_Provider_Exception(
+                'Zend_Tool_Project_Provider_Form::createResource() expects \"formName\" is the name of a form resource to create.'
+            );
         }
 
         if (!($formsDirectory = self::_getFormsDirectoryResource($profile, $moduleName))) {
@@ -47,7 +49,7 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
         $newForm = $formsDirectory->createResource(
             'formFile',
             array('formName' => $formName, 'moduleName' => $moduleName)
-            );
+        );
 
         return $newForm;
     }
@@ -63,11 +65,15 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
     public static function hasResource(Zend_Tool_Project_Profile $profile, $formName, $moduleName = null)
     {
         if (!is_string($formName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Form::createResource() expects \"formName\" is the name of a form resource to check for existence.');
+            throw new Zend_Tool_Project_Provider_Exception(
+                'Zend_Tool_Project_Provider_Form::createResource() expects \"formName\" is the name of a form resource to check for existence.'
+            );
         }
 
         $formsDirectory = self::_getFormsDirectoryResource($profile, $moduleName);
-        return (($formsDirectory->search(array('formFile' => array('formName' => $formName)))) instanceof Zend_Tool_Project_Profile_Resource);
+        return (($formsDirectory->search(
+                array('formFile' => array('formName' => $formName))
+            )) instanceof Zend_Tool_Project_Profile_Resource);
     }
 
     /**
@@ -103,14 +109,17 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
             throw new Zend_Tool_Project_Provider_Exception('This project already has forms enabled.');
         } else {
             if ($this->_registry->getRequest()->isPretend()) {
-                $this->_registry->getResponse()->appendContent('Would enable forms directory at ' . $formDirectoryResource->getContext()->getPath());
+                $this->_registry->getResponse()->appendContent(
+                    'Would enable forms directory at ' . $formDirectoryResource->getContext()->getPath()
+                );
             } else {
-                $this->_registry->getResponse()->appendContent('Enabling forms directory at ' . $formDirectoryResource->getContext()->getPath());
+                $this->_registry->getResponse()->appendContent(
+                    'Enabling forms directory at ' . $formDirectoryResource->getContext()->getPath()
+                );
                 $formDirectoryResource->setEnabled(true);
                 $formDirectoryResource->create();
                 $this->_storeProfile();
             }
-
         }
     }
 
@@ -145,7 +154,6 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
                 $testFormResource = null;
                 // $testFormResource = Zend_Tool_Project_Provider_Test::createApplicationResource($this->_loadedProfile, $name, 'index', $module);
             }
-
         } catch (Exception $e) {
             $response = $this->_registry->getResponse();
             $response->setException($e);
@@ -154,26 +162,30 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
 
         // do the creation
         if ($this->_registry->getRequest()->isPretend()) {
-
-            $this->_registry->getResponse()->appendContent('Would create a form at '  . $formResource->getContext()->getPath());
+            $this->_registry->getResponse()->appendContent(
+                'Would create a form at ' . $formResource->getContext()->getPath()
+            );
 
             if ($testFormResource) {
-                $this->_registry->getResponse()->appendContent('Would create a form test file at ' . $testFormResource->getContext()->getPath());
+                $this->_registry->getResponse()->appendContent(
+                    'Would create a form test file at ' . $testFormResource->getContext()->getPath()
+                );
             }
-
         } else {
-
-            $this->_registry->getResponse()->appendContent('Creating a form at ' . $formResource->getContext()->getPath());
+            $this->_registry->getResponse()->appendContent(
+                'Creating a form at ' . $formResource->getContext()->getPath()
+            );
             $formResource->create();
 
             if ($testFormResource) {
-                $this->_registry->getResponse()->appendContent('Creating a form test file at ' . $testFormResource->getContext()->getPath());
+                $this->_registry->getResponse()->appendContent(
+                    'Creating a form test file at ' . $testFormResource->getContext()->getPath()
+                );
                 $testFormResource->create();
             }
 
             $this->_storeProfile();
         }
-
     }
 
 

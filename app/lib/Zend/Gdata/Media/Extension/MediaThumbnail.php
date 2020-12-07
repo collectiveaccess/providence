@@ -69,15 +69,18 @@ class Zend_Gdata_Media_Extension_MediaThumbnail extends Zend_Gdata_Extension
      * @param int $height
      * @param string $time
      */
-    public function __construct($url = null, $width = null, $height = null,
-            $time = null)
-    {
+    public function __construct(
+        $url = null,
+        $width = null,
+        $height = null,
+        $time = null
+    ) {
         $this->registerAllNamespaces(Zend_Gdata_Media::$namespaces);
         parent::__construct();
         $this->_url = $url;
         $this->_width = $width;
         $this->_height = $height;
-        $this->_time = $time ;
+        $this->_time = $time;
     }
 
     /**
@@ -118,20 +121,20 @@ class Zend_Gdata_Media_Extension_MediaThumbnail extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'url':
-            $this->_url = $attribute->nodeValue;
-            break;
-        case 'width':
-            $this->_width = $attribute->nodeValue;
-            break;
-        case 'height':
-            $this->_height = $attribute->nodeValue;
-            break;
-        case 'time':
-            $this->_time = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'url':
+                $this->_url = $attribute->nodeValue;
+                break;
+            case 'width':
+                $this->_width = $attribute->nodeValue;
+                break;
+            case 'height':
+                $this->_height = $attribute->nodeValue;
+                break;
+            case 'time':
+                $this->_time = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

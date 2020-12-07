@@ -62,13 +62,13 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
     /**
      * Set datastore identifier
      *
-     * @param  string $identifier
+     * @param string $identifier
      * @return Zend_Dojo_Form_Element_ComboBox
      */
     public function setStoreId($identifier)
     {
         $store = $this->getStoreInfo();
-        $store['store'] = (string) $identifier;
+        $store['store'] = (string)$identifier;
         $this->setDijitParam('store', $store);
         return $this;
     }
@@ -90,13 +90,13 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
     /**
      * Set datastore dijit type
      *
-     * @param  string $dojoType
+     * @param string $dojoType
      * @return Zend_Dojo_Form_Element_ComboBox
      */
     public function setStoreType($dojoType)
     {
         $store = $this->getStoreInfo();
-        $store['type'] = (string) $dojoType;
+        $store['type'] = (string)$dojoType;
         $this->setDijitParam('store', $store);
         return $this;
     }
@@ -118,7 +118,7 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
     /**
      * Set datastore parameters
      *
-     * @param  array $params
+     * @param array $params
      * @return Zend_Dojo_Form_Element_ComboBox
      */
     public function setStoreParams(array $params)
@@ -146,12 +146,12 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
     /**
      * Set autocomplete flag
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_Dojo_Form_Element_ComboBox
      */
     public function setAutocomplete($flag)
     {
-        $this->setDijitParam('autocomplete', (bool) $flag);
+        $this->setDijitParam('autocomplete', (bool)$flag);
         return $this;
     }
 
@@ -171,8 +171,8 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
     /**
      * Is the value valid?
      *
-     * @param  string $value
-     * @param  mixed $context
+     * @param string $value
+     * @param mixed $context
      * @return bool
      */
     public function isValid($value, $context = null)

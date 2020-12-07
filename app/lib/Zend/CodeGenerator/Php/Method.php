@@ -142,7 +142,9 @@ class Zend_CodeGenerator_Php_Method extends Zend_CodeGenerator_Php_Member_Abstra
             $parameterName = $parameter->getName();
         } else {
             require_once 'Zend/CodeGenerator/Php/Exception.php';
-            throw new Zend_CodeGenerator_Php_Exception('setParameter() expects either an array of method options or an instance of Zend_CodeGenerator_Php_Parameter');
+            throw new Zend_CodeGenerator_Php_Exception(
+                'setParameter() expects either an array of method options or an instance of Zend_CodeGenerator_Php_Parameter'
+            );
         }
 
         $this->_parameters[$parameterName] = $parameter;
@@ -222,8 +224,8 @@ class Zend_CodeGenerator_Php_Method extends Zend_CodeGenerator_Php_Member_Abstra
 
         if ($this->_body && $this->isSourceDirty()) {
             $output .= '        '
-                    .  str_replace(self::LINE_FEED, self::LINE_FEED . $indent . $indent, trim($this->_body))
-                    .  self::LINE_FEED;
+                . str_replace(self::LINE_FEED, self::LINE_FEED . $indent . $indent, trim($this->_body))
+                . self::LINE_FEED;
         } elseif ($this->_body) {
             $output .= $this->_body . self::LINE_FEED;
         }

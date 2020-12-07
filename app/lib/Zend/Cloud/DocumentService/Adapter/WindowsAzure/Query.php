@@ -46,7 +46,7 @@ class Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
     /**
      * Constructor
      *
-     * @param  null|Zend_Service_WindowsAzure_Storage_TableEntityQuery $select Table select object
+     * @param null|Zend_Service_WindowsAzure_Storage_TableEntityQuery $select Table select object
      * @return void
      */
     public function __construct($select = null)
@@ -63,7 +63,7 @@ class Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
      *
      * Does nothing for Azure.
      *
-     * @param  string $select
+     * @param string $select
      * @return Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
      */
     public function select($select)
@@ -107,7 +107,7 @@ class Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
      * This one should be used when fetching specific rows since some adapters
      * have special syntax for primary keys
      *
-     * @param  array $value Row ID for the document (PartitionKey, RowKey)
+     * @param array $value Row ID for the document (PartitionKey, RowKey)
      * @return Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
      */
     public function whereId($value)
@@ -123,7 +123,7 @@ class Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
     /**
      * LIMIT clause (how many rows to return)
      *
-     * @param  int $limit
+     * @param int $limit
      * @return Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
      */
     public function limit($limit)
@@ -136,8 +136,8 @@ class Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
      * ORDER BY clause (sorting)
      *
      * @todo   Azure service doesn't seem to support this yet; emulate?
-     * @param  string $sort Column to sort by
-     * @param  string $direction Direction - asc/desc
+     * @param string $sort Column to sort by
+     * @param string $direction Direction - asc/desc
      * @return Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
      * @throws Zend_Cloud_OperationNotAvailableException
      */
@@ -154,7 +154,7 @@ class Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
      */
     public function getAzureSelect()
     {
-        return  $this->_azureSelect;
+        return $this->_azureSelect;
     }
 
     /**

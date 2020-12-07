@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 
-	print json_encode($this->getVar('annotations'));	
+print json_encode($this->getVar('annotations'));
 ?>

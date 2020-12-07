@@ -70,10 +70,10 @@ class Zend_Search_Lucene_Index_TermInfo
 
     public function __construct($docFreq, $freqPointer, $proxPointer, $skipOffset, $indexPointer = null)
     {
-        $this->docFreq      = $docFreq;
-        $this->freqPointer  = $freqPointer;
-        $this->proxPointer  = $proxPointer;
-        $this->skipOffset   = $skipOffset;
+        $this->docFreq = $docFreq;
+        $this->freqPointer = $freqPointer;
+        $this->proxPointer = $proxPointer;
+        $this->skipOffset = $skipOffset;
         $this->indexPointer = $indexPointer;
     }
 }

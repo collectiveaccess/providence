@@ -54,12 +54,18 @@ class Zend_Tool_Project_Provider_DbAdapter
         $appConfigFileResource = $profile->search('applicationConfigFile');
 
         if ($appConfigFileResource == false) {
-            throw new Zend_Tool_Project_Exception('A project with an application config file is required to use this provider.');
+            throw new Zend_Tool_Project_Exception(
+                'A project with an application config file is required to use this provider.'
+            );
         }
 
         $this->_appConfigFilePath = $appConfigFileResource->getPath();
 
-        $this->_config = new Zend_Config_Ini($this->_appConfigFilePath, null, array('skipExtends' => true, 'allowModifications' => true));
+        $this->_config = new Zend_Config_Ini(
+            $this->_appConfigFilePath,
+            null,
+            array('skipExtends' => true, 'allowModifications' => true)
+        );
 
         if ($sectionName != 'production') {
             $this->_sectionName = $sectionName;
@@ -70,18 +76,18 @@ class Zend_Tool_Project_Provider_DbAdapter
         }
 
         if (isset($this->_config->{$this->_sectionName}->resources->db)) {
-            throw new Zend_Tool_Project_Exception('The config already has a db resource configured in section ' . $this->_sectionName . '.');
+            throw new Zend_Tool_Project_Exception(
+                'The config already has a db resource configured in section ' . $this->_sectionName . '.'
+            );
         }
 
         if ($dsn) {
             $this->_configureViaDSN($dsn);
-        //} elseif ($interactivelyPrompt) {
-        //    $this->_promptForConfig();
+            //} elseif ($interactivelyPrompt) {
+            //    $this->_promptForConfig();
         } else {
             $this->_registry->getResponse()->appendContent('Nothing to do!');
         }
-
-
     }
 
     protected function _configureViaDSN($dsn)
@@ -89,9 +95,10 @@ class Zend_Tool_Project_Provider_DbAdapter
         $dsnVars = array();
 
         if (strpos($dsn, '=') === false) {
-            throw new Zend_Tool_Project_Provider_Exception('At least one name value pair is expected, typcially '
+            throw new Zend_Tool_Project_Provider_Exception(
+                'At least one name value pair is expected, typcially '
                 . 'in the format of "adapter=Mysqli&username=uname&password=mypass&dbname=mydb"'
-                );
+            );
         }
 
         parse_str($dsn, $dsnVars);
@@ -119,15 +126,17 @@ class Zend_Tool_Project_Provider_DbAdapter
         $response = $this->_registry->getResponse();
 
         if ($isPretend) {
-            $response->appendContent('A db configuration for the ' . $this->_sectionName
+            $response->appendContent(
+                'A db configuration for the ' . $this->_sectionName
                 . ' section would be written to the application config file with the following contents: '
-                );
+            );
             $response->appendContent($applicationConfig->getContents());
         } else {
             $applicationConfig->create();
-            $response->appendContent('A db configuration for the ' . $this->_sectionName
+            $response->appendContent(
+                'A db configuration for the ' . $this->_sectionName
                 . ' section has been written to the application config file.'
-                );
+            );
         }
     }
 

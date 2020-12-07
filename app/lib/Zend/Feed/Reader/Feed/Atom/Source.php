@@ -53,7 +53,9 @@ class Zend_Feed_Reader_Feed_Atom_Source extends Zend_Feed_Reader_Feed_Atom
         $atomClass = Zend_Feed_Reader::getPluginLoader()->getClassName('Atom_Feed');
         $this->_extensions['Atom_Feed'] = new $atomClass($this->_domDocument, $this->_data['type'], $this->_xpath);
         $atomClass = Zend_Feed_Reader::getPluginLoader()->getClassName('DublinCore_Feed');
-        $this->_extensions['DublinCore_Feed'] = new $atomClass($this->_domDocument, $this->_data['type'], $this->_xpath);
+        $this->_extensions['DublinCore_Feed'] = new $atomClass(
+            $this->_domDocument, $this->_data['type'], $this->_xpath
+        );
         foreach ($this->_extensions as $extension) {
             $extension->setXpathPrefix(rtrim($xpathPrefix, '/') . '/atom:source');
         }
@@ -67,36 +69,50 @@ class Zend_Feed_Reader_Feed_Atom_Source extends Zend_Feed_Reader_Feed_Atom
     /**
      * @return void
      */
-    public function count() {}
+    public function count()
+    {
+    }
 
     /**
      * @return void
      */
-    public function current() {}
+    public function current()
+    {
+    }
 
     /**
      * @return void
      */
-    public function key() {}
+    public function key()
+    {
+    }
 
     /**
      * @return void
      */
-    public function next() {}
+    public function next()
+    {
+    }
 
     /**
      * @return void
      */
-    public function rewind() {}
+    public function rewind()
+    {
+    }
 
     /**
      * @return void
      */
-    public function valid() {}
+    public function valid()
+    {
+    }
 
     /**
      * @return void
      */
-    protected function _indexEntries() {}
+    protected function _indexEntries()
+    {
+    }
 
 }

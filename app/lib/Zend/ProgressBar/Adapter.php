@@ -59,7 +59,7 @@ abstract class Zend_ProgressBar_Adapter
     /**
      * Set options via a Zend_Config instance
      *
-     * @param  Zend_Config $config
+     * @param Zend_Config $config
      * @return Zend_ProgressBar_Adapter
      */
     public function setConfig(Zend_Config $config)
@@ -72,7 +72,7 @@ abstract class Zend_ProgressBar_Adapter
     /**
      * Set options via an array
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_ProgressBar_Adapter
      */
     public function setOptions(array $options)
@@ -94,12 +94,12 @@ abstract class Zend_ProgressBar_Adapter
     /**
      * Notify the adapter about an update
      *
-     * @param  float   $current       Current progress value
-     * @param  float   $max           Max progress value
-     * @param  float   $percent       Current percent value
-     * @param  integer $timeTaken     Taken time in seconds
-     * @param  integer $timeRemaining Remaining time in seconds
-     * @param  string  $text          Status text
+     * @param float $current Current progress value
+     * @param float $max Max progress value
+     * @param float $percent Current percent value
+     * @param integer $timeTaken Taken time in seconds
+     * @param integer $timeRemaining Remaining time in seconds
+     * @param string $text Status text
      * @return void
      */
     abstract public function notify($current, $max, $percent, $timeTaken, $timeRemaining, $text);

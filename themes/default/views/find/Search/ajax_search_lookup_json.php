@@ -26,63 +26,105 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$va_data = array();
-	$va_match_list = $this->getVar('matches');
-	foreach($va_match_list as $vs_table => $va_type_groups) {
-		foreach($va_type_groups as $vs_type => $va_matches) {
-			$va_cur_data = array(
-				'title' => $vs_type,
-				'results' => array()
-			);
-			foreach($va_matches as $vn_id => $va_match) {
-					if (!is_numeric($vn_id)) { continue; }
-					$vs_match = $va_match['label'];
-					
-					switch($vs_table) {
-						# --------------------------------------------------------
-						case 'ca_objects':
-							$vs_url = caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'Edit', array('object_id' => $vn_id));
-							
-							$va_cur_data['results'][] = array(
-								$vs_url, $vs_match, ''
-							);
-							break;
-						# --------------------------------------------------------
-						case 'ca_entities':
-							$vs_url = caNavUrl($this->request, 'editor/entities', 'EntityEditor', 'Edit', array('entity_id' => $vn_id));
-							$va_cur_data['results'][] = array(
-								$vs_url, $vs_match, ''
-							);
-							break;
-						# --------------------------------------------------------
-						case 'ca_places':
-							$vs_url = caNavUrl($this->request, 'editor/places', 'PlaceEditor', 'Edit', array('place_id' => $vn_id));
-							$va_cur_data['results'][] = array(
-								$vs_url, $vs_match, ''
-							);
-							break;
-						# --------------------------------------------------------
-						case 'ca_occurrences':
-							$vs_url = caNavUrl($this->request, 'editor/occurrences', 'OccurrenceEditor', 'Edit', array('occurrence_id' => $vn_id));
-							$va_cur_data['results'][] = array(
-								$vs_url, $vs_match, ''
-							);
-							break;
-						# --------------------------------------------------------
-						case 'ca_collections':
-							$vs_url = caNavUrl($this->request, 'editor/collections', 'CollectionEditor', 'Edit', array('collection_id' => $vn_id));
-							$va_cur_data['results'][] = array(
-								$vs_url, $vs_match, ''
-							);
-							break;
-						# --------------------------------------------------------
-					}
-			}
-			
-			$va_data[] = $va_cur_data;
-		}
-	}
-	
-	print json_encode($va_data);
+
+$va_data = array();
+$va_match_list = $this->getVar('matches');
+foreach ($va_match_list as $vs_table => $va_type_groups) {
+    foreach ($va_type_groups as $vs_type => $va_matches) {
+        $va_cur_data = array(
+            'title' => $vs_type,
+            'results' => array()
+        );
+        foreach ($va_matches as $vn_id => $va_match) {
+            if (!is_numeric($vn_id)) {
+                continue;
+            }
+            $vs_match = $va_match['label'];
+
+            switch ($vs_table) {
+                # --------------------------------------------------------
+                case 'ca_objects':
+                    $vs_url = caNavUrl(
+                        $this->request,
+                        'editor/objects',
+                        'ObjectEditor',
+                        'Edit',
+                        array('object_id' => $vn_id)
+                    );
+
+                    $va_cur_data['results'][] = array(
+                        $vs_url,
+                        $vs_match,
+                        ''
+                    );
+                    break;
+                # --------------------------------------------------------
+                case 'ca_entities':
+                    $vs_url = caNavUrl(
+                        $this->request,
+                        'editor/entities',
+                        'EntityEditor',
+                        'Edit',
+                        array('entity_id' => $vn_id)
+                    );
+                    $va_cur_data['results'][] = array(
+                        $vs_url,
+                        $vs_match,
+                        ''
+                    );
+                    break;
+                # --------------------------------------------------------
+                case 'ca_places':
+                    $vs_url = caNavUrl(
+                        $this->request,
+                        'editor/places',
+                        'PlaceEditor',
+                        'Edit',
+                        array('place_id' => $vn_id)
+                    );
+                    $va_cur_data['results'][] = array(
+                        $vs_url,
+                        $vs_match,
+                        ''
+                    );
+                    break;
+                # --------------------------------------------------------
+                case 'ca_occurrences':
+                    $vs_url = caNavUrl(
+                        $this->request,
+                        'editor/occurrences',
+                        'OccurrenceEditor',
+                        'Edit',
+                        array('occurrence_id' => $vn_id)
+                    );
+                    $va_cur_data['results'][] = array(
+                        $vs_url,
+                        $vs_match,
+                        ''
+                    );
+                    break;
+                # --------------------------------------------------------
+                case 'ca_collections':
+                    $vs_url = caNavUrl(
+                        $this->request,
+                        'editor/collections',
+                        'CollectionEditor',
+                        'Edit',
+                        array('collection_id' => $vn_id)
+                    );
+                    $va_cur_data['results'][] = array(
+                        $vs_url,
+                        $vs_match,
+                        ''
+                    );
+                    break;
+                # --------------------------------------------------------
+            }
+        }
+
+        $va_data[] = $va_cur_data;
+    }
+}
+
+print json_encode($va_data);
 ?>

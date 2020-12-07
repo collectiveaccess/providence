@@ -30,99 +30,119 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php');
 
 /**
  * Class ObjectsXEntitiesTest
  * Note: Requires testing profile!
  */
-class ObjectsXEntitiesTest extends BaseTestWithData {
-	# -------------------------------------------------------
-	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
-	 */
-	private $opt_object = null;
-	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
-	 */
-	private $opt_entity = null;
-	# -------------------------------------------------------
-	public function setUp() {
-		// don't forget to call parent so that the request is set up
-		parent::setUp();
+class ObjectsXEntitiesTest extends BaseTestWithData
+{
+    # -------------------------------------------------------
+    /**
+     * @var BundlableLabelableBaseModelWithAttributes
+     */
+    private $opt_object = null;
+    /**
+     * @var BundlableLabelableBaseModelWithAttributes
+     */
+    private $opt_entity = null;
 
-		/**
-		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
-		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
-		 */
-		$vn_object_id = $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => 'test_img'
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "Test Image",
-				),
-			),
-		));
+    # -------------------------------------------------------
+    public function setUp()
+    {
+        // don't forget to call parent so that the request is set up
+        parent::setUp();
 
-		$this->assertGreaterThan(0, $vn_object_id);
+        /**
+         * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+         * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+         */
+        $vn_object_id = $this->addTestRecord(
+            'ca_objects',
+            array(
+                'intrinsic_fields' => array(
+                    'type_id' => 'image',
+                    'idno' => 'test_img'
+                ),
+                'preferred_labels' => array(
+                    array(
+                        "locale" => "en_US",
+                        "name" => "Test Image",
+                    ),
+                ),
+            )
+        );
 
-		$vn_entity_id = $this->addTestRecord('ca_entities', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'ind',
-				'idno' => 'hjs',
-				'lifespan' => '12/17/1989 -'
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"forename" => "Homer",
-					"middlename" => "J.",
-					"surname" => "Simpson",
-				),
-			),
-			'nonpreferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"forename" => "Max",
-					"middlename" => "",
-					"surname" => "Power",
-					"type_id" => "alt",
-				),
-			),
-			'related' => array(
-				'ca_objects' => array(
-					array(
-						'object_id' => $vn_object_id,
-						'type_id' => 'creator',
-						'effective_date' => '2015',
-						'source_info' => 'Me'
-					)
-				),
-			),
-		));
+        $this->assertGreaterThan(0, $vn_object_id);
 
-		$this->assertGreaterThan(0, $vn_entity_id);
+        $vn_entity_id = $this->addTestRecord(
+            'ca_entities',
+            array(
+                'intrinsic_fields' => array(
+                    'type_id' => 'ind',
+                    'idno' => 'hjs',
+                    'lifespan' => '12/17/1989 -'
+                ),
+                'preferred_labels' => array(
+                    array(
+                        "locale" => "en_US",
+                        "forename" => "Homer",
+                        "middlename" => "J.",
+                        "surname" => "Simpson",
+                    ),
+                ),
+                'nonpreferred_labels' => array(
+                    array(
+                        "locale" => "en_US",
+                        "forename" => "Max",
+                        "middlename" => "",
+                        "surname" => "Power",
+                        "type_id" => "alt",
+                    ),
+                ),
+                'related' => array(
+                    'ca_objects' => array(
+                        array(
+                            'object_id' => $vn_object_id,
+                            'type_id' => 'creator',
+                            'effective_date' => '2015',
+                            'source_info' => 'Me'
+                        )
+                    ),
+                ),
+            )
+        );
 
-		$this->opt_object = new ca_objects($vn_object_id);
-		$this->opt_entity = new ca_entities($vn_entity_id);
-	}
-	# -------------------------------------------------------
-	public function testInterstitialGet() {
+        $this->assertGreaterThan(0, $vn_entity_id);
 
-		// should only be one
-		$vn_relation_id = $this->opt_object->get('ca_objects_x_entities.relation_id');
-		$this->assertTrue(is_numeric($vn_relation_id));
+        $this->opt_object = new ca_objects($vn_object_id);
+        $this->opt_entity = new ca_entities($vn_entity_id);
+    }
 
-		$t_rel = new ca_objects_x_entities($vn_relation_id);
-		$this->assertEquals('Homer J. Simpson', $t_rel->get('ca_entities.preferred_labels'));
-		$this->assertEquals('Homer J. Simpson (creator)', $t_rel->get('ca_entities.preferred_labels', array('template' => '^ca_entities.preferred_labels (^relationship_typename)')));
-		$this->assertEquals('Homer J. Simpson (creator)', $t_rel->get('ca_entities.preferred_labels',
-			array('template' => '<unit relativeTo="ca_objects_x_entities">^ca_entities.preferred_labels (^relationship_typename)</unit>'))
-		);
-	}
-	# -------------------------------------------------------
+    # -------------------------------------------------------
+    public function testInterstitialGet()
+    {
+        // should only be one
+        $vn_relation_id = $this->opt_object->get('ca_objects_x_entities.relation_id');
+        $this->assertTrue(is_numeric($vn_relation_id));
+
+        $t_rel = new ca_objects_x_entities($vn_relation_id);
+        $this->assertEquals('Homer J. Simpson', $t_rel->get('ca_entities.preferred_labels'));
+        $this->assertEquals(
+            'Homer J. Simpson (creator)',
+            $t_rel->get(
+                'ca_entities.preferred_labels',
+                array('template' => '^ca_entities.preferred_labels (^relationship_typename)')
+            )
+        );
+        $this->assertEquals(
+            'Homer J. Simpson (creator)',
+            $t_rel->get(
+                'ca_entities.preferred_labels',
+                array('template' => '<unit relativeTo="ca_objects_x_entities">^ca_entities.preferred_labels (^relationship_typename)</unit>')
+            )
+        );
+    }
+    # -------------------------------------------------------
 }

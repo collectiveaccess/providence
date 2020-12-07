@@ -42,9 +42,9 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     /**#@+
      * @var string
      */
-    protected $_clientName    = null;
-    protected $_actionName    = null;
-    protected $_providerName  = null;
+    protected $_clientName = null;
+    protected $_actionName = null;
+    protected $_providerName = null;
     protected $_specialtyName = null;
     /**#@-*/
 
@@ -54,6 +54,7 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     protected $_clientReference = null;
     protected $_actionReference = null;
     protected $_providerReference = null;
+
     /**#@-*/
 
     public function setClientName($clientName)
@@ -208,9 +209,9 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     {
         $string = parent::__toString();
         $string .= ' (ProviderName: ' . $this->_providerName
-             . ', ActionName: '     . $this->_actionName
-             . ', SpecialtyName: '  . $this->_specialtyName
-             . ')';
+            . ', ActionName: ' . $this->_actionName
+            . ', SpecialtyName: ' . $this->_specialtyName
+            . ')';
 
         return $string;
     }

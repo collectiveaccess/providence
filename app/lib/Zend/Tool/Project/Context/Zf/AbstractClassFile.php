@@ -47,7 +47,6 @@ abstract class Zend_Tool_Project_Context_Zf_AbstractClassFile extends Zend_Tool_
      */
     public function getFullClassName($localClassName, $classContextName = null)
     {
-
         // find the ApplicationDirectory OR ModuleDirectory
         $currentResource = $this->_resource;
         do {
@@ -57,7 +56,7 @@ abstract class Zend_Tool_Project_Context_Zf_AbstractClassFile extends Zend_Tool_
                 break;
             }
         } while ($currentResource instanceof Zend_Tool_Project_Profile_Resource
-            && $currentResource = $currentResource->getParentResource());
+        && $currentResource = $currentResource->getParentResource());
 
         $fullClassName = '';
 

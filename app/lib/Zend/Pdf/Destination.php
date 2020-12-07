@@ -42,14 +42,15 @@ abstract class Zend_Pdf_Destination extends Zend_Pdf_Target
     /**
      * Load Destination object from a specified resource
      *
-     * @internal
      * @param Zend_Pdf_Element $resource
      * @return Zend_Pdf_Destination
+     * @internal
      */
     public static function load(Zend_Pdf_Element $resource)
     {
         require_once 'Zend/Pdf/Element.php';
-        if ($resource->getType() == Zend_Pdf_Element::TYPE_NAME  ||  $resource->getType() == Zend_Pdf_Element::TYPE_STRING) {
+        if ($resource->getType() == Zend_Pdf_Element::TYPE_NAME || $resource->getType(
+            ) == Zend_Pdf_Element::TYPE_STRING) {
             require_once 'Zend/Pdf/Destination/Named.php';
             return new Zend_Pdf_Destination_Named($resource);
         }

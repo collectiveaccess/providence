@@ -88,7 +88,7 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
     /**
      * Constructor
      *
-     * @param  array|Zend_Config $options
+     * @param array|Zend_Config $options
      * @return void
      */
     public function __construct($options = null)
@@ -96,8 +96,10 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
         // Set options
         if (is_array($options)) {
             $this->setOptions($options);
-        } else if ($options instanceof Zend_Config) {
-            $this->setConfig($options);
+        } else {
+            if ($options instanceof Zend_Config) {
+                $this->setConfig($options);
+            }
         }
     }
 
@@ -114,8 +116,8 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
             return $this;
         }
 
-        $method = 'set' . ucfirst ($key);
-        if (method_exists ($this, $method)) {
+        $method = 'set' . ucfirst($key);
+        if (method_exists($this, $method)) {
             // Setter exists; use it
             $this->$method ($value);
             $this->_options[$key] = $value;
@@ -130,7 +132,7 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
     /**
      * Set object state from options array
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_Form_Element
      */
     public function setOptions($options = null)
@@ -154,7 +156,7 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
     /**
      * Set object state from config object
      *
-     * @param  Zend_Config $config
+     * @param Zend_Config $config
      * @return Zend_Captcha_Base
      */
     public function setConfig(Zend_Config $config)

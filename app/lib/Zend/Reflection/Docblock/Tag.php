@@ -34,9 +34,9 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      * @var array Array of Class names
      */
     protected static $_tagClasses = array(
-        'param'  => 'Zend_Reflection_Docblock_Tag_Param',
+        'param' => 'Zend_Reflection_Docblock_Tag_Param',
         'return' => 'Zend_Reflection_Docblock_Tag_Return',
-        );
+    );
 
     /**
      * @var string
@@ -51,7 +51,7 @@ class Zend_Reflection_Docblock_Tag implements Reflector
     /**
      * Factory: Create the appropriate annotation tag object
      *
-     * @param  string $tagDocblockLine
+     * @param string $tagDocblockLine
      * @return Zend_Reflection_Docblock_Tag
      */
     public static function factory($tagDocblockLine)
@@ -79,8 +79,8 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      *
      * Required by Reflector
      *
-     * @todo   What should this do?
      * @return void
+     * @todo   What should this do?
      */
     public static function export()
     {
@@ -91,12 +91,12 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      *
      * Required by Reflector
      *
-     * @todo   What should this do?
      * @return string
+     * @todo   What should this do?
      */
     public function __toString()
     {
-        $str = "Docblock Tag [ * @".$this->_name." ]".PHP_EOL;
+        $str = "Docblock Tag [ * @" . $this->_name . " ]" . PHP_EOL;
 
         return $str;
     }
@@ -104,7 +104,7 @@ class Zend_Reflection_Docblock_Tag implements Reflector
     /**
      * Constructor
      *
-     * @param  string $tagDocblockLine
+     * @param string $tagDocblockLine
      * @return void
      */
     public function __construct($tagDocblockLine)

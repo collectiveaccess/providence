@@ -44,14 +44,14 @@ class Zend_Service_Nirvanix_Response
      * Class constructor.  Parse the XML response from a Nirvanix method
      * call into a decorated SimpleXMLElement element.
      *
-     * @param string $xml  XML response string from Nirvanix
+     * @param string $xml XML response string from Nirvanix
      * @throws Zend_Service_Nirvanix_Exception
      */
     public function __construct($xml)
     {
         $this->_sxml = @simplexml_load_string($xml);
 
-        if (! $this->_sxml instanceof SimpleXMLElement) {
+        if (!$this->_sxml instanceof SimpleXMLElement) {
             $this->_throwException("XML could not be parsed from response: $xml");
         }
 
@@ -81,7 +81,7 @@ class Zend_Service_Nirvanix_Response
     /**
      * Delegate undefined properties to the decorated SimpleXMLElement.
      *
-     * @param  string  $offset  Undefined property name
+     * @param string $offset Undefined property name
      * @return mixed
      */
     public function __get($offset)
@@ -92,8 +92,8 @@ class Zend_Service_Nirvanix_Response
     /**
      * Delegate undefined methods to the decorated SimpleXMLElement.
      *
-     * @param  string  $offset  Underfined method name
-     * @param  array   $args    Method arguments
+     * @param string $offset Underfined method name
+     * @param array $args Method arguments
      * @return mixed
      */
     public function __call($method, $args)
@@ -105,10 +105,10 @@ class Zend_Service_Nirvanix_Response
      * Throw an exception.  This method exists to only contain the
      * lazy-require() of the exception class.
      *
-     * @param  string   $message  Error message
-     * @param  integer  $code     Error code
-     * @throws Zend_Service_Nirvanix_Exception
+     * @param string $message Error message
+     * @param integer $code Error code
      * @return void
+     * @throws Zend_Service_Nirvanix_Exception
      */
     protected function _throwException($message, $code = null)
     {

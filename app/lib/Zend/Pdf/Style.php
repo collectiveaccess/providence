@@ -87,7 +87,6 @@ class Zend_Pdf_Style
     private $_fontSize;
 
 
-
     /**
      * Create style.
      *
@@ -96,13 +95,13 @@ class Zend_Pdf_Style
     public function __construct($anotherStyle = null)
     {
         if ($anotherStyle !== null) {
-            $this->_fillColor          = $anotherStyle->_fillColor;
-            $this->_color              = $anotherStyle->_color;
-            $this->_lineWidth          = $anotherStyle->_lineWidth;
+            $this->_fillColor = $anotherStyle->_fillColor;
+            $this->_color = $anotherStyle->_color;
+            $this->_lineWidth = $anotherStyle->_lineWidth;
             $this->_lineDashingPattern = $anotherStyle->_lineDashingPattern;
-            $this->_lineDashingPhase   = $anotherStyle->_lineDashingPhase;
-            $this->_font               = $anotherStyle->_font;
-            $this->_fontSize           = $anotherStyle->_fontSize;
+            $this->_lineDashingPhase = $anotherStyle->_lineDashingPhase;
+            $this->_font = $anotherStyle->_font;
+            $this->_fontSize = $anotherStyle->_fontSize;
         }
     }
 
@@ -150,12 +149,12 @@ class Zend_Pdf_Style
         require_once 'Zend/Pdf/Page.php';
         if ($pattern === Zend_Pdf_Page::LINE_DASHING_SOLID) {
             $pattern = array();
-            $phase   = 0;
+            $phase = 0;
         }
 
         require_once 'Zend/Pdf/Element/Numeric.php';
         $this->_lineDashingPattern = $pattern;
-        $this->_lineDashingPhase   = new Zend_Pdf_Element_Numeric($phase);
+        $this->_lineDashingPhase = new Zend_Pdf_Element_Numeric($phase);
     }
 
 
@@ -285,7 +284,7 @@ class Zend_Pdf_Style
             }
 
             $instructions .= $dashPattern->toString() . ' '
-                           . $this->_lineDashingPhase->toString() . " d\n";
+                . $this->_lineDashingPhase->toString() . " d\n";
         }
 
         return $instructions;

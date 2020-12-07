@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/editor/object_lots/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,12 +26,21 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_lot = $this->getVar('t_subject');
-	$vn_lot_id = $this->getVar('subject_id');
+$t_lot = $this->getVar('t_subject');
+$vn_lot_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		print caDeleteWarningBox($this->request, $t_lot, $this->getVar('subject_name'), 'editor/object_lots', 'ObjectLotEditor', 'Edit/'.$this->request->getActionExtra(), array('lot_id' => $vn_lot_id));}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        print caDeleteWarningBox(
+            $this->request,
+            $t_lot,
+            $this->getVar('subject_name'),
+            'editor/object_lots',
+            'ObjectLotEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('lot_id' => $vn_lot_id)
+        );
+    }
+    ?>
 </div>

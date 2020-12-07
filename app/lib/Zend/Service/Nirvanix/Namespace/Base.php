@@ -92,7 +92,7 @@ class Zend_Service_Nirvanix_Namespace_Base
             $this->_defaults = $options['defaults'];
         }
 
-        if (! isset($options['httpClient'])) {
+        if (!isset($options['httpClient'])) {
             $options['httpClient'] = new Zend_Http_Client();
         }
         $this->_httpClient = $options['httpClient'];
@@ -109,9 +109,9 @@ class Zend_Service_Nirvanix_Namespace_Base
      * POST parameters would be filePath, merged with the
      * $this->_defaults (containing the sessionToken).
      *
-     * @param  string  $methodName  Name of the command to call
+     * @param string $methodName Name of the command to call
      *                              on this namespace.
-     * @param  array   $args        Only the first is used and it must be
+     * @param array $args Only the first is used and it must be
      *                              an array.  It contains the POST params.
      *
      * @return Zend_Service_Nirvanix_Response
@@ -149,7 +149,7 @@ class Zend_Service_Nirvanix_Namespace_Base
      * Make a complete URI from an RPC method name.  All Nirvanix REST
      * service URIs use the same format.
      *
-     * @param  string  $methodName  RPC method name
+     * @param string $methodName RPC method name
      * @return string
      */
     protected function _makeUri($methodName)
@@ -162,7 +162,7 @@ class Zend_Service_Nirvanix_Namespace_Base
      * All Nirvanix REST service calls return an XML payload.  This method
      * makes a Zend_Service_Nirvanix_Response from that XML payload.
      *
-     * @param  Zend_Http_Response  $httpResponse  Raw response from Nirvanix
+     * @param Zend_Http_Response $httpResponse Raw response from Nirvanix
      * @return Zend_Service_Nirvanix_Response     Wrapped response
      */
     protected function _wrapResponse($httpResponse)

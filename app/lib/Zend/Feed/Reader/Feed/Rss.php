@@ -56,8 +56,8 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
     /**
      * Constructor
      *
-     * @param  DOMDocument $dom
-     * @param  string $type
+     * @param DOMDocument $dom
+     * @param string $type
      */
     public function __construct(DomDocument $dom, $type = null)
     {
@@ -81,7 +81,7 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
     /**
      * Get a single author
      *
-     * @param  int $index
+     * @param int $index
      * @return string|null
      */
     public function getAuthor($index = 0)
@@ -121,7 +121,7 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
          * but it's supported on a "just in case" basis.
          */
         if ($this->getType() !== Zend_Feed_Reader::TYPE_RSS_10
-        && $this->getType() !== Zend_Feed_Reader::TYPE_RSS_090) {
+            && $this->getType() !== Zend_Feed_Reader::TYPE_RSS_090) {
             $list = $this->_xpath->query('//author');
         } else {
             $list = $this->_xpath->query('//rss:author');
@@ -230,8 +230,12 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
                 if ($dateModifiedParsed) {
                     $date = new Zend_Date($dateModifiedParsed);
                 } else {
-                    $dateStandards = array(Zend_Date::RSS, Zend_Date::RFC_822,
-                    Zend_Date::RFC_2822, Zend_Date::DATES);
+                    $dateStandards = array(
+                        Zend_Date::RSS,
+                        Zend_Date::RFC_822,
+                        Zend_Date::RFC_2822,
+                        Zend_Date::DATES
+                    );
                     $date = new Zend_Date;
                     foreach ($dateStandards as $standard) {
                         try {
@@ -242,7 +246,7 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
                                 require_once 'Zend/Feed/Exception.php';
                                 throw new Zend_Feed_Exception(
                                     'Could not load date due to unrecognised'
-                                    .' format (should follow RFC 822 or 2822):'
+                                    . ' format (should follow RFC 822 or 2822):'
                                     . $e->getMessage(),
                                     0, $e
                                 );
@@ -292,8 +296,12 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
                 if ($lastBuildDateParsed) {
                     $date = new Zend_Date($lastBuildDateParsed);
                 } else {
-                    $dateStandards = array(Zend_Date::RSS, Zend_Date::RFC_822,
-                    Zend_Date::RFC_2822, Zend_Date::DATES);
+                    $dateStandards = array(
+                        Zend_Date::RSS,
+                        Zend_Date::RFC_822,
+                        Zend_Date::RFC_2822,
+                        Zend_Date::DATES
+                    );
                     $date = new Zend_Date;
                     foreach ($dateStandards as $standard) {
                         try {
@@ -304,7 +312,7 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
                                 require_once 'Zend/Feed/Exception.php';
                                 throw new Zend_Feed_Exception(
                                     'Could not load date due to unrecognised'
-                                    .' format (should follow RFC 822 or 2822):'
+                                    . ' format (should follow RFC 822 or 2822):'
                                     . $e->getMessage(),
                                     0, $e
                                 );
@@ -572,7 +580,7 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
 
         if (!$generator) {
             if ($this->getType() !== Zend_Feed_Reader::TYPE_RSS_10 &&
-            $this->getType() !== Zend_Feed_Reader::TYPE_RSS_090) {
+                $this->getType() !== Zend_Feed_Reader::TYPE_RSS_090) {
                 $generator = $this->_xpath->evaluate('string(/rss/channel/atom:generator)');
             } else {
                 $generator = $this->_xpath->evaluate('string(/rdf:RDF/rss:channel/atom:generator)');
@@ -707,7 +715,7 @@ class Zend_Feed_Reader_Feed_Rss extends Zend_Feed_Reader_FeedAbstract
             $entries = $this->_xpath->evaluate('//rss:item');
         }
 
-        foreach($entries as $index=>$entry) {
+        foreach ($entries as $index => $entry) {
             $this->_entries[$index] = $entry;
         }
     }

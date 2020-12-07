@@ -26,15 +26,17 @@
  * ----------------------------------------------------------------------
  */
 
-	$va_list = $this->getVar('storage_location_list');
-	foreach($va_list as $vs_level => $va_level_content) {
-		foreach($va_level_content as $vs_key => $va_info) {
-			if (!is_array($va_info)) { continue; }
+$va_list = $this->getVar('storage_location_list');
+foreach ($va_list as $vs_level => $va_level_content) {
+    foreach ($va_level_content as $vs_key => $va_info) {
+        if (!is_array($va_info)) {
+            continue;
+        }
 
-			if (isset($va_info['is_enabled']) && !$va_info['is_enabled']) {
-				$va_level_content[$vs_key]['name'] .= ' ⨂';
-			}
-		}
-		$va_list[$vs_level] = $va_level_content;
-	}
-	print json_encode($va_list);
+        if (isset($va_info['is_enabled']) && !$va_info['is_enabled']) {
+            $va_level_content[$vs_key]['name'] .= ' ⨂';
+        }
+    }
+    $va_list[$vs_level] = $va_level_content;
+}
+print json_encode($va_list);

@@ -38,16 +38,16 @@ class Zend_Validate_File_Hash extends Zend_Validate_Abstract
      * @const string Error constants
      */
     const DOES_NOT_MATCH = 'fileHashDoesNotMatch';
-    const NOT_DETECTED   = 'fileHashHashNotDetected';
-    const NOT_FOUND      = 'fileHashNotFound';
+    const NOT_DETECTED = 'fileHashHashNotDetected';
+    const NOT_FOUND = 'fileHashNotFound';
 
     /**
      * @var array Error message templates
      */
     protected $_messageTemplates = array(
         self::DOES_NOT_MATCH => "File '%value%' does not match the given hashes",
-        self::NOT_DETECTED   => "A hash could not be evaluated for the given file",
-        self::NOT_FOUND      => "File '%value%' is not readable or does not exist"
+        self::NOT_DETECTED => "A hash could not be evaluated for the given file",
+        self::NOT_FOUND => "File '%value%' is not readable or does not exist"
     );
 
     /**
@@ -60,7 +60,7 @@ class Zend_Validate_File_Hash extends Zend_Validate_Abstract
     /**
      * Sets validator options
      *
-     * @param  string|array $options
+     * @param string|array $options
      * @return void
      */
     public function __construct($options)
@@ -94,12 +94,12 @@ class Zend_Validate_File_Hash extends Zend_Validate_Abstract
     /**
      * Sets the hash for one or multiple files
      *
-     * @param  string|array $options
+     * @param string|array $options
      * @return Zend_Validate_File_Hash Provides a fluent interface
      */
     public function setHash($options)
     {
-        $this->_hash  = null;
+        $this->_hash = null;
         $this->addHash($options);
 
         return $this;
@@ -108,16 +108,18 @@ class Zend_Validate_File_Hash extends Zend_Validate_Abstract
     /**
      * Adds the hash for one or multiple files
      *
-     * @param  string|array $options
+     * @param string|array $options
      * @return Zend_Validate_File_Hash Provides a fluent interface
      */
     public function addHash($options)
     {
         if (is_string($options)) {
             $options = array($options);
-        } else if (!is_array($options)) {
-            require_once 'Zend/Validate/Exception.php';
-            throw new Zend_Validate_Exception("False parameter given");
+        } else {
+            if (!is_array($options)) {
+                require_once 'Zend/Validate/Exception.php';
+                throw new Zend_Validate_Exception("False parameter given");
+            }
         }
 
         $known = hash_algos();
@@ -145,8 +147,8 @@ class Zend_Validate_File_Hash extends Zend_Validate_Abstract
      *
      * Returns true if and only if the given file confirms the set hash
      *
-     * @param  string $value Filename to check for hash
-     * @param  array  $file  File data from Zend_File_Transfer
+     * @param string $value Filename to check for hash
+     * @param array $file File data from Zend_File_Transfer
      * @return boolean
      */
     public function isValid($value, $file = null)
@@ -157,7 +159,7 @@ class Zend_Validate_File_Hash extends Zend_Validate_Abstract
             return $this->_throw($file, self::NOT_FOUND);
         }
 
-        $algos  = array_unique(array_values($this->_hash));
+        $algos = array_unique(array_values($this->_hash));
         $hashes = array_unique(array_keys($this->_hash));
         foreach ($algos as $algorithm) {
             $filehash = hash_file($algorithm, $value);
@@ -165,7 +167,7 @@ class Zend_Validate_File_Hash extends Zend_Validate_Abstract
                 return $this->_throw($file, self::NOT_DETECTED);
             }
 
-            foreach($hashes as $hash) {
+            foreach ($hashes as $hash) {
                 if ($filehash === $hash) {
                     return true;
                 }
@@ -178,8 +180,8 @@ class Zend_Validate_File_Hash extends Zend_Validate_Abstract
     /**
      * Throws an error of the given type
      *
-     * @param  string $file
-     * @param  string $errorType
+     * @param string $file
+     * @param string $errorType
      * @return false
      */
     protected function _throw($file, $errorType)

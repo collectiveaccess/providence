@@ -28,13 +28,15 @@
 
 $va_errors = $this->getVar('errors');
 
-if($va_errors && is_array($va_errors)){
-	print "<div class='notification-error-box'><h2 style='margin-left:25px;'>"._t("Export mapping has errors")."</h2>";
-	print "<ul>";
+if ($va_errors && is_array($va_errors)) {
+    print "<div class='notification-error-box'><h2 style='margin-left:25px;'>" . _t(
+            "Export mapping has errors"
+        ) . "</h2>";
+    print "<ul>";
 
-	foreach($va_errors as $vs_error){
-		print "<li class='notification-error-box'>$vs_error</li>";
-	}
+    foreach ($va_errors as $vs_error) {
+        print "<li class='notification-error-box'>$vs_error</li>";
+    }
 
-	print "</ul></div>";
+    print "</ul></div>";
 }

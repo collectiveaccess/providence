@@ -77,13 +77,13 @@ class Zend_View_Helper_Placeholder_Registry
     /**
      * createContainer
      *
-     * @param  string $key
-     * @param  array $value
+     * @param string $key
+     * @param array $value
      * @return Zend_View_Helper_Placeholder_Container_Abstract
      */
     public function createContainer($key, array $value = array())
     {
-        $key = (string) $key;
+        $key = (string)$key;
 
         $this->_items[$key] = new $this->_containerClass($value);
         return $this->_items[$key];
@@ -92,12 +92,12 @@ class Zend_View_Helper_Placeholder_Registry
     /**
      * Retrieve a placeholder container
      *
-     * @param  string $key
+     * @param string $key
      * @return Zend_View_Helper_Placeholder_Container_Abstract
      */
     public function getContainer($key)
     {
-        $key = (string) $key;
+        $key = (string)$key;
         if (isset($this->_items[$key])) {
             return $this->_items[$key];
         }
@@ -110,26 +110,26 @@ class Zend_View_Helper_Placeholder_Registry
     /**
      * Does a particular container exist?
      *
-     * @param  string $key
+     * @param string $key
      * @return bool
      */
     public function containerExists($key)
     {
-        $key = (string) $key;
-        $return =  array_key_exists($key, $this->_items);
+        $key = (string)$key;
+        $return = array_key_exists($key, $this->_items);
         return $return;
     }
 
     /**
      * Set the container for an item in the registry
      *
-     * @param  string $key
-     * @param  Zend_View_Placeholder_Container_Abstract $container
+     * @param string $key
+     * @param Zend_View_Placeholder_Container_Abstract $container
      * @return Zend_View_Placeholder_Registry
      */
     public function setContainer($key, Zend_View_Helper_Placeholder_Container_Abstract $container)
     {
-        $key = (string) $key;
+        $key = (string)$key;
         $this->_items[$key] = $container;
         return $this;
     }
@@ -137,12 +137,12 @@ class Zend_View_Helper_Placeholder_Registry
     /**
      * Delete a container
      *
-     * @param  string $key
+     * @param string $key
      * @return bool
      */
     public function deleteContainer($key)
     {
-        $key = (string) $key;
+        $key = (string)$key;
         if (isset($this->_items[$key])) {
             unset($this->_items[$key]);
             return true;
@@ -154,7 +154,7 @@ class Zend_View_Helper_Placeholder_Registry
     /**
      * Set the container class to use
      *
-     * @param  string $name
+     * @param string $name
      * @return Zend_View_Helper_Placeholder_Registry
      */
     public function setContainerClass($name)

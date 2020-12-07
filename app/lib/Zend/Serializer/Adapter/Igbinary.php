@@ -40,7 +40,7 @@ class Zend_Serializer_Adapter_Igbinary extends Zend_Serializer_Adapter_AdapterAb
     /**
      * Constructor
      *
-     * @param  array|Zend_Config $opts
+     * @param array|Zend_Config $opts
      * @return void
      * @throws Zend_Serializer_Exception If igbinary extension is not present
      */
@@ -61,8 +61,8 @@ class Zend_Serializer_Adapter_Igbinary extends Zend_Serializer_Adapter_AdapterAb
     /**
      * Serialize PHP value to igbinary
      *
-     * @param  mixed $value
-     * @param  array $opts
+     * @param mixed $value
+     * @param array $opts
      * @return string
      * @throws Zend_Serializer_Exception on igbinary error
      */
@@ -80,8 +80,8 @@ class Zend_Serializer_Adapter_Igbinary extends Zend_Serializer_Adapter_AdapterAb
     /**
      * Deserialize igbinary string to PHP value
      *
-     * @param  string|binary $serialized
-     * @param  array $opts
+     * @param string|binary $serialized
+     * @param array $opts
      * @return mixed
      * @throws Zend_Serializer_Exception on igbinary error
      */

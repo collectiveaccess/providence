@@ -49,9 +49,12 @@ class Zend_Gdata_Extension_EntryLink extends Zend_Gdata_Extension
     protected $_rel = null;
     protected $_entry = null;
 
-    public function __construct($href = null, $rel = null,
-            $readOnly = null, $entry = null)
-    {
+    public function __construct(
+        $href = null,
+        $rel = null,
+        $readOnly = null,
+        $entry = null
+    ) {
         parent::__construct();
         $this->_href = $href;
         $this->_readOnly = $readOnly;
@@ -86,34 +89,36 @@ class Zend_Gdata_Extension_EntryLink extends Zend_Gdata_Extension
                 $entry->transferFromDOM($child);
                 $this->_entry = $entry;
                 break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
         }
     }
 
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'href':
-            $this->_href = $attribute->nodeValue;
-            break;
-        case 'readOnly':
-            if ($attribute->nodeValue == "true") {
-                $this->_readOnly = true;
-            }
-            else if ($attribute->nodeValue == "false") {
-                $this->_readOnly = false;
-            }
-            else {
-                throw new Zend_Gdata_App_InvalidArgumentException("Expected 'true' or 'false' for gCal:selected#value.");
-            }
-            break;
-        case 'rel':
-            $this->_rel = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'href':
+                $this->_href = $attribute->nodeValue;
+                break;
+            case 'readOnly':
+                if ($attribute->nodeValue == "true") {
+                    $this->_readOnly = true;
+                } else {
+                    if ($attribute->nodeValue == "false") {
+                        $this->_readOnly = false;
+                    } else {
+                        throw new Zend_Gdata_App_InvalidArgumentException(
+                            "Expected 'true' or 'false' for gCal:selected#value."
+                        );
+                    }
+                }
+                break;
+            case 'rel':
+                $this->_rel = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

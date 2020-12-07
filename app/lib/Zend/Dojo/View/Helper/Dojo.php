@@ -80,7 +80,7 @@ class Zend_Dojo_View_Helper_Dojo
     /**
      * Set view object
      *
-     * @param  Zend_Dojo_View_Interface $view
+     * @param Zend_Dojo_View_Interface $view
      * @return void
      */
     public function setView(Zend_View_Interface $view)
@@ -102,8 +102,8 @@ class Zend_Dojo_View_Helper_Dojo
     /**
      * Proxy to container methods
      *
-     * @param  string $method
-     * @param  array $args
+     * @param string $method
+     * @param array $args
      * @return mixed
      * @throws Zend_Dojo_View_Exception For invalid method calls
      */
@@ -133,7 +133,7 @@ class Zend_Dojo_View_Helper_Dojo
      * Optionally, specifiy whether or not dijit helpers should generate the
      * programmatic dojo.
      *
-     * @param  int $style
+     * @param int $style
      * @return void
      */
     public static function setUseProgrammatic($style = self::PROGRAMMATIC_SCRIPT)

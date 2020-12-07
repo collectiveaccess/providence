@@ -36,50 +36,60 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  * Class BooleanSearchQueryTest
  * Note: Requires testing profile!
  */
-class BooleanSearchQueryTest extends AbstractSearchQueryTest {
-	# -------------------------------------------------------
-	public function setUp() {
-		// don't forget to call parent so that request is set up correctly
-		parent::setUp();
+class BooleanSearchQueryTest extends AbstractSearchQueryTest
+{
+    # -------------------------------------------------------
+    public function setUp()
+    {
+        // don't forget to call parent so that request is set up correctly
+        parent::setUp();
 
-		// search subject table
-		$this->setPrimaryTable('ca_objects');
+        // search subject table
+        $this->setPrimaryTable('ca_objects');
 
-		/**
-		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
-		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
-		 */
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "My test image",
-				),
-			),
-		)));
+        /**
+         * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+         * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+         */
+        $this->assertGreaterThan(
+            0,
+            $this->addTestRecord(
+                'ca_objects',
+                array(
+                    'intrinsic_fields' => array(
+                        'type_id' => 'image',
+                    ),
+                    'preferred_labels' => array(
+                        array(
+                            "locale" => "en_US",
+                            "name" => "My test image",
+                        ),
+                    ),
+                )
+            )
+        );
 
 
-		// search queries
-		$this->setSearchQueries(array(
-			// establish that data was set correctly
-			'ca_objects.type_id:image' => 1,
-			'ca_object_labels.name:test' => 1,
+        // search queries
+        $this->setSearchQueries(
+            array(
+                // establish that data was set correctly
+                'ca_objects.type_id:image' => 1,
+                'ca_object_labels.name:test' => 1,
 
-			// AND
-			'ca_objects.type_id:image AND ca_object_labels.name:test' => 1, // 1 and 1 = 1
-			'ca_objects.type_id:image AND ca_object_labels.name:doesntexist' => 0, // 1 and 0 = 0
-			'ca_objects.type_id:dataset AND ca_object_labels.name:test' => 0, // 0 and 1 = 0
-			'ca_objects.type_id:dataset AND ca_object_labels.name:doesntexist' => 0, // 0 and 0 = 0
+                // AND
+                'ca_objects.type_id:image AND ca_object_labels.name:test' => 1, // 1 and 1 = 1
+                'ca_objects.type_id:image AND ca_object_labels.name:doesntexist' => 0, // 1 and 0 = 0
+                'ca_objects.type_id:dataset AND ca_object_labels.name:test' => 0, // 0 and 1 = 0
+                'ca_objects.type_id:dataset AND ca_object_labels.name:doesntexist' => 0, // 0 and 0 = 0
 
-			// OR
-			'ca_objects.type_id:image OR ca_object_labels.name:test' => 1, // 1 or 1 = 1
-			'ca_objects.type_id:image OR ca_object_labels.name:doesntexist' => 1, // 1 or 0 = 1
-			'ca_objects.type_id:dataset OR ca_object_labels.name:test' => 1, // 0 or 1 = 1
-			'ca_objects.type_id:dataset OR ca_object_labels.name:doesntexist' => 0, // 0 or 0 = 0
-		));
-	}
-	# -------------------------------------------------------
+                // OR
+                'ca_objects.type_id:image OR ca_object_labels.name:test' => 1, // 1 or 1 = 1
+                'ca_objects.type_id:image OR ca_object_labels.name:doesntexist' => 1, // 1 or 0 = 1
+                'ca_objects.type_id:dataset OR ca_object_labels.name:test' => 1, // 0 or 1 = 1
+                'ca_objects.type_id:dataset OR ca_object_labels.name:doesntexist' => 0, // 0 or 0 = 0
+            )
+        );
+    }
+    # -------------------------------------------------------
 }

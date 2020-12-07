@@ -32,7 +32,7 @@ interface Zend_Filter_Encrypt_Interface
     /**
      * Encrypts $value with the defined settings
      *
-     * @param  string $value Data to encrypt
+     * @param string $value Data to encrypt
      * @return string The encrypted data
      */
     public function encrypt($value);
@@ -40,7 +40,7 @@ interface Zend_Filter_Encrypt_Interface
     /**
      * Decrypts $value with the defined settings
      *
-     * @param  string $value Data to decrypt
+     * @param string $value Data to decrypt
      * @return string The decrypted data
      */
     public function decrypt($value);

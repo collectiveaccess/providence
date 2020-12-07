@@ -100,7 +100,7 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
     /**
      * Set Certificate
      *
-     * @param  string $cert
+     * @param string $cert
      * @return Zend_Mobile_Push_Apns
      * @throws Zend_Mobile_Push_Exception
      */
@@ -129,7 +129,7 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
     /**
      * Set Certificate Passphrase
      *
-     * @param  string $passphrase
+     * @param string $passphrase
      * @return Zend_Mobile_Push_Apns
      * @throws Zend_Mobile_Push_Exception
      */
@@ -145,7 +145,7 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
     /**
      * Connect to Socket
      *
-     * @param  string $uri
+     * @param string $uri
      * @return bool
      * @throws Zend_Mobile_Push_Exception_ServerUnavailable
      */
@@ -158,23 +158,29 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
             $ssl['passphrase'] = $this->_certificatePassphrase;
         }
 
-        $this->_socket = stream_socket_client($uri,
+        $this->_socket = stream_socket_client(
+            $uri,
             $errno,
             $errstr,
             ini_get('default_socket_timeout'),
             STREAM_CLIENT_CONNECT,
-            stream_context_create(array(
-                'ssl' => $ssl,
-            ))
+            stream_context_create(
+                array(
+                    'ssl' => $ssl,
+                )
+            )
         );
 
         if (!is_resource($this->_socket)) {
             require_once 'Zend/Mobile/Push/Exception/ServerUnavailable.php';
-            throw new Zend_Mobile_Push_Exception_ServerUnavailable(sprintf('Unable to connect: %s: %d (%s)',
-                $uri,
-                $errno,
-                $errstr
-            ));
+            throw new Zend_Mobile_Push_Exception_ServerUnavailable(
+                sprintf(
+                    'Unable to connect: %s: %d (%s)',
+                    $uri,
+                    $errno,
+                    $errstr
+                )
+            );
         }
 
         stream_set_blocking($this->_socket, 0);
@@ -183,12 +189,13 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
     }
 
     /**
-    * Read from the Socket Server
-    * 
-    * @param int $length
-    * @return string
-    */
-    protected function _read($length) {
+     * Read from the Socket Server
+     *
+     * @param int $length
+     * @return string
+     */
+    protected function _read($length)
+    {
         $data = false;
         if (!feof($this->_socket)) {
             $data = fread($this->_socket, $length);
@@ -197,12 +204,13 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
     }
 
     /**
-    * Write to the Socket Server
-    * 
-    * @param string $payload
-    * @return int
-    */
-    protected function _write($payload) {
+     * Write to the Socket Server
+     *
+     * @param string $payload
+     * @return int
+     */
+    protected function _write($payload)
+    {
         return @fwrite($this->_socket, $payload);
     }
 
@@ -239,7 +247,6 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
     }
 
 
-
     /**
      * Feedback
      *
@@ -250,8 +257,10 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
     public function feedback()
     {
         if (!$this->_isConnected ||
-            !in_array($this->_currentEnv,
-                array(self::SERVER_FEEDBACK_SANDBOX_URI, self::SERVER_FEEDBACK_PRODUCTION_URI))) {
+            !in_array(
+                $this->_currentEnv,
+                array(self::SERVER_FEEDBACK_SANDBOX_URI, self::SERVER_FEEDBACK_PRODUCTION_URI)
+            )) {
             $this->connect(self::SERVER_FEEDBACK_PRODUCTION_URI);
         }
 
@@ -285,9 +294,13 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
             throw new Zend_Mobile_Push_Exception('The message is not valid.');
         }
 
-        if (!$this->_isConnected || !in_array($this->_currentEnv, array(
-            self::SERVER_SANDBOX_URI,
-            self::SERVER_PRODUCTION_URI))) {
+        if (!$this->_isConnected || !in_array(
+                $this->_currentEnv,
+                array(
+                    self::SERVER_SANDBOX_URI,
+                    self::SERVER_PRODUCTION_URI
+                )
+            )) {
             $this->connect(self::SERVER_PRODUCTION_URI);
         }
 
@@ -307,7 +320,7 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
         }
         $payload['aps']['sound'] = $message->getSound();
 
-        foreach($message->getCustomData() as $k => $v) {
+        foreach ($message->getCustomData() as $k => $v) {
             $payload[$k] = $v;
         }
         $payload = json_encode($payload);
@@ -338,35 +351,51 @@ class Zend_Mobile_Push_Apns extends Zend_Mobile_Push_Abstract
                     return true;
                     break;
                 case 1:
-                    throw new Zend_Mobile_Push_Exception('A processing error has occurred on the apple push notification server.');
+                    throw new Zend_Mobile_Push_Exception(
+                        'A processing error has occurred on the apple push notification server.'
+                    );
                     break;
                 case 2:
                     require_once 'Zend/Mobile/Push/Exception/InvalidToken.php';
-                    throw new Zend_Mobile_Push_Exception_InvalidToken('Missing token; you must set a token for the message.');
+                    throw new Zend_Mobile_Push_Exception_InvalidToken(
+                        'Missing token; you must set a token for the message.'
+                    );
                     break;
                 case 3:
                     require_once 'Zend/Mobile/Push/Exception/InvalidTopic.php';
-                    throw new Zend_Mobile_Push_Exception_InvalidTopic('Missing id; you must set an id for the message.');
+                    throw new Zend_Mobile_Push_Exception_InvalidTopic(
+                        'Missing id; you must set an id for the message.'
+                    );
                     break;
                 case 4:
                     require_once 'Zend/Mobile/Push/Exception/InvalidPayload.php';
-                    throw new Zend_Mobile_Push_Exception_InvalidPayload('Missing message; the message must always have some content.');
+                    throw new Zend_Mobile_Push_Exception_InvalidPayload(
+                        'Missing message; the message must always have some content.'
+                    );
                     break;
                 case 5:
                     require_once 'Zend/Mobile/Push/Exception/InvalidToken.php';
-                    throw new Zend_Mobile_Push_Exception_InvalidToken('Bad token.  This token is too big and is not a regular apns token.');
+                    throw new Zend_Mobile_Push_Exception_InvalidToken(
+                        'Bad token.  This token is too big and is not a regular apns token.'
+                    );
                     break;
                 case 6:
                     require_once 'Zend/Mobile/Push/Exception/InvalidTopic.php';
-                    throw new Zend_Mobile_Push_Exception_InvalidTopic('The message id is too big; reduce the size of the id.');
+                    throw new Zend_Mobile_Push_Exception_InvalidTopic(
+                        'The message id is too big; reduce the size of the id.'
+                    );
                     break;
                 case 7:
                     require_once 'Zend/Mobile/Push/Exception/InvalidPayload.php';
-                    throw new Zend_Mobile_Push_Exception_InvalidPayload('The message is too big; reduce the size of the message.');
+                    throw new Zend_Mobile_Push_Exception_InvalidPayload(
+                        'The message is too big; reduce the size of the message.'
+                    );
                     break;
                 case 8:
                     require_once 'Zend/Mobile/Push/Exception/InvalidToken.php';
-                    throw new Zend_Mobile_Push_Exception_InvalidToken('Bad token.  Remove this token from being sent to again.');
+                    throw new Zend_Mobile_Push_Exception_InvalidToken(
+                        'Bad token.  Remove this token from being sent to again.'
+                    );
                     break;
                 default:
                     throw new Zend_Mobile_Push_Exception(sprintf('An unknown error occurred: %d', $err['errno']));

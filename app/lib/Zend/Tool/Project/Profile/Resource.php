@@ -190,7 +190,7 @@ class Zend_Tool_Project_Profile_Resource extends Zend_Tool_Project_Profile_Resou
      */
     public function setDeleted($deleted = true)
     {
-        $this->_deleted = (bool) $deleted;
+        $this->_deleted = (bool)$deleted;
         return $this;
     }
 

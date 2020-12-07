@@ -17,65 +17,70 @@
 class getid3_gif extends getid3_handler
 {
 
-	public function Analyze() {
-		$info = &$this->getid3->info;
+    public function Analyze()
+    {
+        $info = &$this->getid3->info;
 
-		$info['fileformat']                  = 'gif';
-		$info['video']['dataformat']         = 'gif';
-		$info['video']['lossless']           = true;
-		$info['video']['pixel_aspect_ratio'] = (float) 1;
+        $info['fileformat'] = 'gif';
+        $info['video']['dataformat'] = 'gif';
+        $info['video']['lossless'] = true;
+        $info['video']['pixel_aspect_ratio'] = (float)1;
 
-		fseek($this->getid3->fp, $info['avdataoffset'], SEEK_SET);
-		$GIFheader = fread($this->getid3->fp, 13);
-		$offset = 0;
+        fseek($this->getid3->fp, $info['avdataoffset'], SEEK_SET);
+        $GIFheader = fread($this->getid3->fp, 13);
+        $offset = 0;
 
-		$info['gif']['header']['raw']['identifier']            =                              substr($GIFheader, $offset, 3);
-		$offset += 3;
+        $info['gif']['header']['raw']['identifier'] = substr($GIFheader, $offset, 3);
+        $offset += 3;
 
-		$magic = 'GIF';
-		if ($info['gif']['header']['raw']['identifier'] != $magic) {
-			$info['error'][] = 'Expecting "'.getid3_lib::PrintHexBytes($magic).'" at offset '.$info['avdataoffset'].', found "'.getid3_lib::PrintHexBytes($info['gif']['header']['raw']['identifier']).'"';
-			unset($info['fileformat']);
-			unset($info['gif']);
-			return false;
-		}
+        $magic = 'GIF';
+        if ($info['gif']['header']['raw']['identifier'] != $magic) {
+            $info['error'][] = 'Expecting "' . getid3_lib::PrintHexBytes(
+                    $magic
+                ) . '" at offset ' . $info['avdataoffset'] . ', found "' . getid3_lib::PrintHexBytes(
+                    $info['gif']['header']['raw']['identifier']
+                ) . '"';
+            unset($info['fileformat']);
+            unset($info['gif']);
+            return false;
+        }
 
-		$info['gif']['header']['raw']['version']               =                              substr($GIFheader, $offset, 3);
-		$offset += 3;
-		$info['gif']['header']['raw']['width']                 = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 2));
-		$offset += 2;
-		$info['gif']['header']['raw']['height']                = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 2));
-		$offset += 2;
-		$info['gif']['header']['raw']['flags']                 = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 1));
-		$offset += 1;
-		$info['gif']['header']['raw']['bg_color_index']        = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 1));
-		$offset += 1;
-		$info['gif']['header']['raw']['aspect_ratio']          = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 1));
-		$offset += 1;
+        $info['gif']['header']['raw']['version'] = substr($GIFheader, $offset, 3);
+        $offset += 3;
+        $info['gif']['header']['raw']['width'] = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 2));
+        $offset += 2;
+        $info['gif']['header']['raw']['height'] = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 2));
+        $offset += 2;
+        $info['gif']['header']['raw']['flags'] = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 1));
+        $offset += 1;
+        $info['gif']['header']['raw']['bg_color_index'] = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 1));
+        $offset += 1;
+        $info['gif']['header']['raw']['aspect_ratio'] = getid3_lib::LittleEndian2Int(substr($GIFheader, $offset, 1));
+        $offset += 1;
 
-		$info['video']['resolution_x']                         = $info['gif']['header']['raw']['width'];
-		$info['video']['resolution_y']                         = $info['gif']['header']['raw']['height'];
-		$info['gif']['version']                                = $info['gif']['header']['raw']['version'];
-		$info['gif']['header']['flags']['global_color_table']  = (bool) ($info['gif']['header']['raw']['flags'] & 0x80);
-		if ($info['gif']['header']['raw']['flags'] & 0x80) {
-			// Number of bits per primary color available to the original image, minus 1
-			$info['gif']['header']['bits_per_pixel']  = 3 * ((($info['gif']['header']['raw']['flags'] & 0x70) >> 4) + 1);
-		} else {
-			$info['gif']['header']['bits_per_pixel']  = 0;
-		}
-		$info['gif']['header']['flags']['global_color_sorted'] = (bool) ($info['gif']['header']['raw']['flags'] & 0x40);
-		if ($info['gif']['header']['flags']['global_color_table']) {
-			// the number of bytes contained in the Global Color Table. To determine that
-			// actual size of the color table, raise 2 to [the value of the field + 1]
-			$info['gif']['header']['global_color_size'] = pow(2, ($info['gif']['header']['raw']['flags'] & 0x07) + 1);
-			$info['video']['bits_per_sample']           = ($info['gif']['header']['raw']['flags'] & 0x07) + 1;
-		} else {
-			$info['gif']['header']['global_color_size'] = 0;
-		}
-		if ($info['gif']['header']['raw']['aspect_ratio'] != 0) {
-			// Aspect Ratio = (Pixel Aspect Ratio + 15) / 64
-			$info['gif']['header']['aspect_ratio'] = ($info['gif']['header']['raw']['aspect_ratio'] + 15) / 64;
-		}
+        $info['video']['resolution_x'] = $info['gif']['header']['raw']['width'];
+        $info['video']['resolution_y'] = $info['gif']['header']['raw']['height'];
+        $info['gif']['version'] = $info['gif']['header']['raw']['version'];
+        $info['gif']['header']['flags']['global_color_table'] = (bool)($info['gif']['header']['raw']['flags'] & 0x80);
+        if ($info['gif']['header']['raw']['flags'] & 0x80) {
+            // Number of bits per primary color available to the original image, minus 1
+            $info['gif']['header']['bits_per_pixel'] = 3 * ((($info['gif']['header']['raw']['flags'] & 0x70) >> 4) + 1);
+        } else {
+            $info['gif']['header']['bits_per_pixel'] = 0;
+        }
+        $info['gif']['header']['flags']['global_color_sorted'] = (bool)($info['gif']['header']['raw']['flags'] & 0x40);
+        if ($info['gif']['header']['flags']['global_color_table']) {
+            // the number of bytes contained in the Global Color Table. To determine that
+            // actual size of the color table, raise 2 to [the value of the field + 1]
+            $info['gif']['header']['global_color_size'] = pow(2, ($info['gif']['header']['raw']['flags'] & 0x07) + 1);
+            $info['video']['bits_per_sample'] = ($info['gif']['header']['raw']['flags'] & 0x07) + 1;
+        } else {
+            $info['gif']['header']['global_color_size'] = 0;
+        }
+        if ($info['gif']['header']['raw']['aspect_ratio'] != 0) {
+            // Aspect Ratio = (Pixel Aspect Ratio + 15) / 64
+            $info['gif']['header']['aspect_ratio'] = ($info['gif']['header']['raw']['aspect_ratio'] + 15) / 64;
+        }
 
 //		if ($info['gif']['header']['flags']['global_color_table']) {
 //			$GIFcolorTable = fread($this->getid3->fp, 3 * $info['gif']['header']['global_color_size']);
@@ -163,19 +168,20 @@ class getid3_gif extends getid3_handler
 //			}
 //		}
 
-		return true;
-	}
+        return true;
+    }
 
 
-	public function GetLSBits($bits) {
-		static $bitbuffer = '';
-		while (strlen($bitbuffer) < $bits) {
-			$bitbuffer = str_pad(decbin(ord(fread($this->getid3->fp, 1))), 8, '0', STR_PAD_LEFT).$bitbuffer;
-		}
-		$value = bindec(substr($bitbuffer, 0 - $bits));
-		$bitbuffer = substr($bitbuffer, 0, 0 - $bits);
+    public function GetLSBits($bits)
+    {
+        static $bitbuffer = '';
+        while (strlen($bitbuffer) < $bits) {
+            $bitbuffer = str_pad(decbin(ord(fread($this->getid3->fp, 1))), 8, '0', STR_PAD_LEFT) . $bitbuffer;
+        }
+        $value = bindec(substr($bitbuffer, 0 - $bits));
+        $bitbuffer = substr($bitbuffer, 0, 0 - $bits);
 
-		return $value;
-	}
+        return $value;
+    }
 
 }

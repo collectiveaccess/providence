@@ -26,17 +26,17 @@
  * ----------------------------------------------------------------------
  */
 
-	$pa_resourcespace_ids = 		$this->getVar('resourcespace_ids');
-	$pn_importer_id = 		$this->getVar('importer_id');
-	$ps_job_id = 			$this->getVar('job_id');
-	$pn_log_level = 		$this->getVar('log_level');
- ?>
+$pa_resourcespace_ids = $this->getVar('resourcespace_ids');
+$pn_importer_id = $this->getVar('importer_id');
+$ps_job_id = $this->getVar('job_id');
+$pn_log_level = $this->getVar('log_level');
+?>
 
 <h1><?php print _t('Importing from ResourceSpace'); ?></h1>
 
 <div class="batchProcessingTableProgressGroup">
-	<div id="batchProcessingTableStatus" class="batchProcessingStatus"> </div>
-	<div id="progressbar"></div>
+    <div id="batchProcessingTableStatus" class="batchProcessingStatus"></div>
+    <div id="progressbar"></div>
 </div>
 
 <div id="batchProcessingCounts"></div>
@@ -44,49 +44,63 @@
 
 <br class="clear"/>
 
-<div id="batchProcessingMediaPreview" style="width: 320px; height: 320px; overflow: hidden; margin: 0 auto 0 auto;"></div>
+<div id="batchProcessingMediaPreview"
+     style="width: 320px; height: 320px; overflow: hidden; margin: 0 auto 0 auto;"></div>
 <div id="batchProcessingReport"></div>
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <div id="batchProcessingMore">
 
-	<p>
-		<?php print caNavLink($this->request, _t('Run another import'), '', '*', '*', 'Index'); ?>
-	</p>
+    <p>
+        <?php print caNavLink($this->request, _t('Run another import'), '', '*', '*', 'Index'); ?>
+    </p>
 </div>
-	
+
 <script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery('#progressbar').progressbar({
-			value: 0
-		});
+    jQuery(document).ready(function () {
+        jQuery('#progressbar').progressbar({
+            value: 0
+        });
 
-		// Start running import
-		var updateProgressBarInterval = null;
-		<?php $vs_rs_ids = implode(',', $pa_resourcespace_ids); ?>
-		jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ResourceSpaceID' => $vs_rs_ids, 'log_level' => $pn_log_level)); ?>,
-			function(data, textStatus, jqXHR) {
-				// stop progress refresh
-				clearInterval(updateProgressBarInterval);
-				jQuery('#batchProcessingMore').prepend(data['links']).fadeIn(500);
+        // Start running import
+        var updateProgressBarInterval = null;
+        <?php $vs_rs_ids = implode(',', $pa_resourcespace_ids); ?>
+        jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(
+                array(
+                    'importer_id' => $pn_importer_id,
+                    'job_id' => $ps_job_id,
+                    'ResourceSpaceID' => $vs_rs_ids,
+                    'log_level' => $pn_log_level
+                )
+            ); ?>,
+            function (data, textStatus, jqXHR) {
+                // stop progress refresh
+                clearInterval(updateProgressBarInterval);
+                jQuery('#batchProcessingMore').prepend(data['links']).fadeIn(500);
 
-				var m = jQuery('#progressbar').progressbar("option", "max");
-				jQuery('#progressbar').progressbar("option", "value", m);
-				jQuery('#batchProcessingTableStatus').html('<?php print addslashes(_t("Complete!")); ?>');
-				jQuery('#batchProcessingCounts').html(m + "/" + m);
+                var m = jQuery('#progressbar').progressbar("option", "max");
+                jQuery('#progressbar').progressbar("option", "value", m);
+                jQuery('#batchProcessingTableStatus').html('<?php print addslashes(_t("Complete!")); ?>');
+                jQuery('#batchProcessingCounts').html(m + "/" + m);
 
-			}, 'json');
+            }, 'json');
 
 
-			// Set up repeating load of progress bar status
-			updateProgressBarInterval = setInterval(function() {
-				jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'GetImportStatus', array('job_id' => $ps_job_id)); ?>', {}, function(data) {
-					jQuery('#progressbar').progressbar("option", "value", data.position).progressbar("option", "max", data.total);
-					jQuery('#batchProcessingTableStatus').html(data.message);
-					jQuery('#batchProcessingElapsedTime').html(data.elapsedTime);
-					jQuery('#batchProcessingCounts').html(data.position + "/" + data.total);
-				});
-			}, 1000);
+        // Set up repeating load of progress bar status
+        updateProgressBarInterval = setInterval(function () {
+            jQuery.getJSON('<?php print caNavUrl(
+                $this->request,
+                '*',
+                '*',
+                'GetImportStatus',
+                array('job_id' => $ps_job_id)
+            ); ?>', {}, function (data) {
+                jQuery('#progressbar').progressbar("option", "value", data.position).progressbar("option", "max", data.total);
+                jQuery('#batchProcessingTableStatus').html(data.message);
+                jQuery('#batchProcessingElapsedTime').html(data.elapsedTime);
+                jQuery('#batchProcessingCounts').html(data.position + "/" + data.total);
+            });
+        }, 1000);
 
-	});
+    });
 </script>

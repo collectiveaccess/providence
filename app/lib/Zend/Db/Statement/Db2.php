@@ -77,10 +77,10 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
      * Binds a parameter to the specified variable name.
      *
      * @param mixed $parameter Name the parameter, either integer or string.
-     * @param mixed $variable  Reference to PHP variable containing the value.
-     * @param mixed $type      OPTIONAL Datatype of SQL parameter.
-     * @param mixed $length    OPTIONAL Length of SQL parameter.
-     * @param mixed $options   OPTIONAL Other options.
+     * @param mixed $variable Reference to PHP variable containing the value.
+     * @param mixed $type OPTIONAL Datatype of SQL parameter.
+     * @param mixed $length OPTIONAL Length of SQL parameter.
+     * @param mixed $options OPTIONAL Other options.
      * @return bool
      * @throws Zend_Db_Statement_Db2_Exception
      */
@@ -169,7 +169,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
     public function errorInfo()
     {
         $error = $this->errorCode();
-        if ($error === false){
+        if ($error === false) {
             return false;
         }
 
@@ -211,7 +211,8 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
             require_once 'Zend/Db/Statement/Db2/Exception.php';
             throw new Zend_Db_Statement_Db2_Exception(
                 db2_stmt_errormsg(),
-                db2_stmt_error());
+                db2_stmt_error()
+            );
         }
 
         $this->_keys = array();
@@ -233,7 +234,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
     /**
      * Fetches a row from the result set.
      *
-     * @param int $style  OPTIONAL Fetch mode for this fetch operation.
+     * @param int $style OPTIONAL Fetch mode for this fetch operation.
      * @param int $cursor OPTIONAL Absolute, relative, or other.
      * @param int $offset OPTIONAL Number for absolute or relative cursors.
      * @return mixed Array, object, or scalar depending on fetch mode.
@@ -283,8 +284,8 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
     /**
      * Fetches the next row and returns it as an object.
      *
-     * @param string $class  OPTIONAL Name of the class to create.
-     * @param array  $config OPTIONAL Constructor arguments for the class.
+     * @param string $class OPTIONAL Name of the class to create.
+     * @param array $config OPTIONAL Constructor arguments for the class.
      * @return mixed One object instance of the specified class.
      */
     public function fetchObject($class = 'stdClass', array $config = array())
@@ -332,11 +333,11 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
         return $num;
     }
 
-     /**
+    /**
      * Returns an array containing all of the result set rows.
      *
      * @param int $style OPTIONAL Fetch mode.
-     * @param int $col   OPTIONAL Column number, if fetch mode is by column.
+     * @param int $col OPTIONAL Column number, if fetch mode is by column.
      * @return array Collection of rows, each in a format by the fetch mode.
      *
      * Behaves like parent, but if limit()

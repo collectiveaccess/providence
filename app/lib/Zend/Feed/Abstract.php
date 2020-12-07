@@ -63,9 +63,9 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      * The Zend_Feed_Abstract constructor takes the URI of a feed or a
      * feed represented as a string and loads it as XML.
      *
-     * @param  string $uri The full URI of the feed to load, or NULL if not retrieved via HTTP or as an array.
-     * @param  string $string The feed as a string, or NULL if retrieved via HTTP or as an array.
-     * @param  Zend_Feed_Builder_Interface $builder The feed as a builder instance or NULL if retrieved as a string or via HTTP.
+     * @param string $uri The full URI of the feed to load, or NULL if not retrieved via HTTP or as an array.
+     * @param string $string The feed as a string, or NULL if retrieved via HTTP or as an array.
+     * @param Zend_Feed_Builder_Interface $builder The feed as a builder instance or NULL if retrieved as a string or via HTTP.
      * @return void
      * @throws Zend_Feed_Exception If loading the feed failed.
      */
@@ -81,7 +81,10 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
                  * @see Zend_Feed_Exception
                  */
                 require_once 'Zend/Feed/Exception.php';
-                throw new Zend_Feed_Exception('Feed failed to load, got response code ' . $response->getStatus() . '; request: ' . $client->getLastRequest() . "\nresponse: " . $response->asString());
+                throw new Zend_Feed_Exception(
+                    'Feed failed to load, got response code ' . $response->getStatus(
+                    ) . '; request: ' . $client->getLastRequest() . "\nresponse: " . $response->asString()
+                );
             }
             $this->_element = $this->_importFeedFromString($response->getBody());
             $this->__wakeup();
@@ -196,7 +199,8 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
     {
         return new $this->_entryClassName(
             null,
-            $this->_entries[$this->_entryIndex]);
+            $this->_entries[$this->_entryIndex]
+        );
     }
 
 
@@ -235,7 +239,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
     /**
      * Generate the header of the feed when working in write mode
      *
-     * @param  array $array the data to use
+     * @param array $array the data to use
      * @return DOMElement root node
      */
     abstract protected function _mapFeedHeaders($array);
@@ -243,8 +247,8 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
     /**
      * Generate the entries of the feed when working in write mode
      *
-     * @param  DOMElement $root the root node to use
-     * @param  array $array the data to use
+     * @param DOMElement $root the root node to use
+     * @param array $array the data to use
      * @return DOMElement root node
      */
     abstract protected function _mapFeedEntries(DOMElement $root, $array);
@@ -252,8 +256,8 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
     /**
      * Send feed to a http client with the correct header
      *
-     * @throws Zend_Feed_Exception if headers have already been sent
      * @return void
+     * @throws Zend_Feed_Exception if headers have already been sent
      */
     abstract public function send();
 
@@ -261,21 +265,23 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      * Import a feed from a string
      *
      * Protects against XXE attack vectors.
-     * 
-     * @param  string $feed 
+     *
+     * @param string $feed
      * @return string
      * @throws Zend_Feed_Exception on detection of an XXE vector
      */
     protected function _importFeedFromString($feed)
     {
         // Load the feed as an XML DOMDocument object
-        $libxml_errflag       = libxml_use_internal_errors(true);
+        $libxml_errflag = libxml_use_internal_errors(true);
         $libxml_entity_loader = libxml_disable_entity_loader(true);
         $doc = new DOMDocument;
         if (trim($feed) == '') {
             require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception('Remote feed being imported'
-            . ' is an Empty string or comes from an empty HTTP response');
+            throw new Zend_Feed_Exception(
+                'Remote feed being imported'
+                . ' is an Empty string or comes from an empty HTTP response'
+            );
         }
         $status = $doc->loadXML($feed);
         libxml_disable_entity_loader($libxml_entity_loader);

@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/views/editor/generic/export_xml.php : 
  * ----------------------------------------------------------------------
@@ -25,18 +26,18 @@
  *
  * ----------------------------------------------------------------------
  */
-	$vs_export_mimetype = 		$this->getVar('export_mimetype');
-	$vs_export_data = 			$this->getVar('export_data');
-	$vs_export_filename = 		$this->getVar('export_filename');
+$vs_export_mimetype = $this->getVar('export_mimetype');
+$vs_export_data = $this->getVar('export_data');
+$vs_export_filename = $this->getVar('export_filename');
 
-	header("Content-type: {$vs_export_mimetype}");
-	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-	header("Cache-Control: no-store, no-cache, must-revalidate");
-	header("Cache-Control: post-check=0, pre-check=0", false);
-	header("Pragma: no-cache");
-	header("Cache-control: private");
-	
-	header("Content-Disposition: attachment; filename={$vs_export_filename}");
-	
-	print $vs_export_data;
+header("Content-type: {$vs_export_mimetype}");
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Cache-control: private");
+
+header("Content-Disposition: attachment; filename={$vs_export_filename}");
+
+print $vs_export_data;
 ?>

@@ -67,10 +67,10 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
     /**
      * Sets adapter options
      *
-     * @param  mixed $filename
-     * @param  mixed $realm
-     * @param  mixed $username
-     * @param  mixed $password
+     * @param mixed $filename
+     * @param mixed $realm
+     * @param mixed $username
+     * @param mixed $password
      * @return void
      */
     public function __construct($filename = null, $realm = null, $username = null, $password = null)
@@ -97,12 +97,12 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
     /**
      * Sets the filename option value
      *
-     * @param  mixed $filename
+     * @param mixed $filename
      * @return Zend_Auth_Adapter_Digest Provides a fluent interface
      */
     public function setFilename($filename)
     {
-        $this->_filename = (string) $filename;
+        $this->_filename = (string)$filename;
         return $this;
     }
 
@@ -119,12 +119,12 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
     /**
      * Sets the realm option value
      *
-     * @param  mixed $realm
+     * @param mixed $realm
      * @return Zend_Auth_Adapter_Digest Provides a fluent interface
      */
     public function setRealm($realm)
     {
-        $this->_realm = (string) $realm;
+        $this->_realm = (string)$realm;
         return $this;
     }
 
@@ -141,12 +141,12 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
     /**
      * Sets the username option value
      *
-     * @param  mixed $username
+     * @param mixed $username
      * @return Zend_Auth_Adapter_Digest Provides a fluent interface
      */
     public function setUsername($username)
     {
-        $this->_username = (string) $username;
+        $this->_username = (string)$username;
         return $this;
     }
 
@@ -163,20 +163,20 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
     /**
      * Sets the password option value
      *
-     * @param  mixed $password
+     * @param mixed $password
      * @return Zend_Auth_Adapter_Digest Provides a fluent interface
      */
     public function setPassword($password)
     {
-        $this->_password = (string) $password;
+        $this->_password = (string)$password;
         return $this;
     }
 
     /**
      * Defined by Zend_Auth_Adapter_Interface
      *
-     * @throws Zend_Auth_Adapter_Exception
      * @return Zend_Auth_Result
+     * @throws Zend_Auth_Adapter_Exception
      */
     public function authenticate()
     {
@@ -199,21 +199,24 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
             throw new Zend_Auth_Adapter_Exception("Cannot open '$this->_filename' for reading");
         }
 
-        $id       = "$this->_username:$this->_realm";
+        $id = "$this->_username:$this->_realm";
         $idLength = strlen($id);
 
         $result = array(
-            'code'  => Zend_Auth_Result::FAILURE,
+            'code' => Zend_Auth_Result::FAILURE,
             'identity' => array(
-                'realm'    => $this->_realm,
+                'realm' => $this->_realm,
                 'username' => $this->_username,
-                ),
+            ),
             'messages' => array()
-            );
+        );
 
         while ($line = trim(fgets($fileHandle))) {
             if (substr($line, 0, $idLength) === $id) {
-                if ($this->_secureStringCompare(substr($line, -32), md5("$this->_username:$this->_realm:$this->_password"))) {
+                if ($this->_secureStringCompare(
+                    substr($line, -32),
+                    md5("$this->_username:$this->_realm:$this->_password")
+                )) {
                     $result['code'] = Zend_Auth_Result::SUCCESS;
                 } else {
                     $result['code'] = Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID;

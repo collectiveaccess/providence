@@ -30,46 +30,49 @@ class Zend_Soap_Server_Proxy
      * @var string
      */
     protected $_className;
+
     /**
      * Constructor
-     * 
-     * @param object $service 
+     *
+     * @param object $service
      */
-    public function  __construct($className, $classArgs = array())
+    public function __construct($className, $classArgs = array())
     {
         $class = new ReflectionClass($className);
         $constructor = $class->getConstructor();
-	if ($constructor === null) {
+        if ($constructor === null) {
             $this->_classInstance = $class->newInstance();
-	} else {
+        } else {
             $this->_classInstance = $class->newInstanceArgs($classArgs);
-	}
-	$this->_className = $className;
+        }
+        $this->_className = $className;
     }
+
     /**
      * Proxy for the WS-I compliant call
-     * 
-     * @param  string $name
-     * @param  string $arguments
-     * @return array 
+     *
+     * @param string $name
+     * @param string $arguments
+     * @return array
      */
     public function __call($name, $arguments)
     {
         $result = call_user_func_array(array($this->_classInstance, $name), $this->_preProcessArguments($arguments));
-        return array("{$name}Result"=>$result);
+        return array("{$name}Result" => $result);
     }
+
     /**
      *  Pre process arguments
-     * 
-     * @param  mixed $arguments
-     * @return array 
+     *
+     * @param mixed $arguments
+     * @return array
      */
     protected function _preProcessArguments($arguments)
     {
         if (count($arguments) == 1 && is_object($arguments[0])) {
             return get_object_vars($arguments[0]);
-	} else {
+        } else {
             return $arguments;
-	}
+        }
     }
 }

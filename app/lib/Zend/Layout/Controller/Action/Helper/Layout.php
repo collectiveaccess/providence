@@ -53,7 +53,7 @@ class Zend_Layout_Controller_Action_Helper_Layout extends Zend_Controller_Action
     /**
      * Constructor
      *
-     * @param  Zend_Layout $layout
+     * @param Zend_Layout $layout
      * @return void
      */
     public function __construct(Zend_Layout $layout = null)
@@ -124,7 +124,7 @@ class Zend_Layout_Controller_Action_Helper_Layout extends Zend_Controller_Action
     /**
      * Set layout object
      *
-     * @param  Zend_Layout $layout
+     * @param Zend_Layout $layout
      * @return Zend_Layout_Controller_Action_Helper_Layout
      */
     public function setLayoutInstance(Zend_Layout $layout)
@@ -169,8 +169,8 @@ class Zend_Layout_Controller_Action_Helper_Layout extends Zend_Controller_Action
     /**
      * Proxy method calls to layout object
      *
-     * @param  string $method
-     * @param  array $args
+     * @param string $method
+     * @param array $args
      * @return mixed
      */
     public function __call($method, $args)

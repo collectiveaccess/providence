@@ -30,101 +30,122 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php');
 
 /**
  * Class LoansXLoansTest
  * Note: Requires testing profile!
  */
-class LoansXLoansTest extends BaseTestWithData {
-	# -------------------------------------------------------
-	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
-	 */
-	private $opt_loan_in = null;
-	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
-	 */
-	private $opt_loan_out = null;
-	# -------------------------------------------------------
-	public function setUp() {
-		// don't forget to call parent so that the request is set up
-		parent::setUp();
+class LoansXLoansTest extends BaseTestWithData
+{
+    # -------------------------------------------------------
+    /**
+     * @var BundlableLabelableBaseModelWithAttributes
+     */
+    private $opt_loan_in = null;
+    /**
+     * @var BundlableLabelableBaseModelWithAttributes
+     */
+    private $opt_loan_out = null;
 
-		/**
-		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
-		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
-		 */
-		$vn_loan_in = $this->addTestRecord('ca_loans', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'in',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "New Loan In",
-				),
-			),
-		));
+    # -------------------------------------------------------
+    public function setUp()
+    {
+        // don't forget to call parent so that the request is set up
+        parent::setUp();
 
-		$this->assertGreaterThan(0, $vn_loan_in);
+        /**
+         * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+         * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+         */
+        $vn_loan_in = $this->addTestRecord(
+            'ca_loans',
+            array(
+                'intrinsic_fields' => array(
+                    'type_id' => 'in',
+                ),
+                'preferred_labels' => array(
+                    array(
+                        "locale" => "en_US",
+                        "name" => "New Loan In",
+                    ),
+                ),
+            )
+        );
 
-		$vn_loan_out = $this->addTestRecord('ca_loans', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'out',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "New Loan Out",
-				),
-			),
-			'related' => array(
-				'ca_loans' => array(
-					array(
-						'object_id' => $vn_loan_in,
-						'type_id' => 'related',
-					)
-				),
-			),
-		));
+        $this->assertGreaterThan(0, $vn_loan_in);
 
-		$this->assertGreaterThan(0, $vn_loan_out);
+        $vn_loan_out = $this->addTestRecord(
+            'ca_loans',
+            array(
+                'intrinsic_fields' => array(
+                    'type_id' => 'out',
+                ),
+                'preferred_labels' => array(
+                    array(
+                        "locale" => "en_US",
+                        "name" => "New Loan Out",
+                    ),
+                ),
+                'related' => array(
+                    'ca_loans' => array(
+                        array(
+                            'object_id' => $vn_loan_in,
+                            'type_id' => 'related',
+                        )
+                    ),
+                ),
+            )
+        );
 
-		$this->opt_loan_in = new ca_loans($vn_loan_in);
-		$this->opt_loan_out = new ca_loans($vn_loan_out);
-	}
-	# -------------------------------------------------------
-	public function testGets() {
-		$vm_ret = $this->opt_loan_in->get('ca_loans.related');
-		$this->assertEquals('New Loan Out', $vm_ret);
+        $this->assertGreaterThan(0, $vn_loan_out);
 
-		$va_items = $this->opt_loan_in->getRelatedItems('ca_loans');
-		$vn_relation_id = array_shift(caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id'));
+        $this->opt_loan_in = new ca_loans($vn_loan_in);
+        $this->opt_loan_out = new ca_loans($vn_loan_out);
+    }
 
-		// The relationship we created is Loan Out <-> Loan In, so evaluating with loan in as primary ID should give us the loan out
-		$va_opts = array(
-			'resolveLinksUsing' => 'ca_loans',
-			'primaryIDs' =>
-				array (
-					'ca_loans' => array ($this->opt_loan_in->getPrimaryKey()),
-  				),
-		);
+    # -------------------------------------------------------
+    public function testGets()
+    {
+        $vm_ret = $this->opt_loan_in->get('ca_loans.related');
+        $this->assertEquals('New Loan Out', $vm_ret);
 
-		$vm_ret = caProcessTemplateForIDs("^ca_loans.preferred_labels", 'ca_loans_x_loans', array($vn_relation_id), $va_opts);
-		$this->assertEquals('New Loan Out', $vm_ret);
+        $va_items = $this->opt_loan_in->getRelatedItems('ca_loans');
+        $vn_relation_id = array_shift(caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id'));
 
-		// Now for the other side ...
-		$va_opts = array(
-			'resolveLinksUsing' => 'ca_loans',
-			'primaryIDs' =>
-				array (
-					'ca_loans' => array ($this->opt_loan_out->getPrimaryKey()),
-				),
-		);
+        // The relationship we created is Loan Out <-> Loan In, so evaluating with loan in as primary ID should give us the loan out
+        $va_opts = array(
+            'resolveLinksUsing' => 'ca_loans',
+            'primaryIDs' =>
+                array(
+                    'ca_loans' => array($this->opt_loan_in->getPrimaryKey()),
+                ),
+        );
 
-		$vm_ret = caProcessTemplateForIDs("^ca_loans.preferred_labels", 'ca_loans_x_loans', array($vn_relation_id), $va_opts);
-		$this->assertEquals('New Loan In', $vm_ret);
-	}
-	# -------------------------------------------------------
+        $vm_ret = caProcessTemplateForIDs(
+            "^ca_loans.preferred_labels",
+            'ca_loans_x_loans',
+            array($vn_relation_id),
+            $va_opts
+        );
+        $this->assertEquals('New Loan Out', $vm_ret);
+
+        // Now for the other side ...
+        $va_opts = array(
+            'resolveLinksUsing' => 'ca_loans',
+            'primaryIDs' =>
+                array(
+                    'ca_loans' => array($this->opt_loan_out->getPrimaryKey()),
+                ),
+        );
+
+        $vm_ret = caProcessTemplateForIDs(
+            "^ca_loans.preferred_labels",
+            'ca_loans_x_loans',
+            array($vn_relation_id),
+            $va_opts
+        );
+        $this->assertEquals('New Loan In', $vm_ret);
+    }
+    # -------------------------------------------------------
 }

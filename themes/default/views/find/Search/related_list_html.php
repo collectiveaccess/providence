@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * themes/default/views/find/Search/related_list_html.php
  * ----------------------------------------------------------------------
@@ -24,38 +25,40 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */ 
-	$vo_result 				= $this->getVar('result');
- 	$vo_result_context 		= $this->getVar('result_context');
- 	
+ */
+$vo_result = $this->getVar('result');
+$vo_result_context = $this->getVar('result_context');
+
 // 	print $this->render('Search/search_controls_html.php');
- ?>
- 	<div id="resultBox" style="margin-bottom:13px"><!-- override margin from base.css so that the bottom paging controls barely fit -->
-<?php
-	if($vo_result) {
-		$vs_view = $this->getVar('current_view');
-		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
-		$this->setVar('dontShowPages', false);
-		print $this->render('Results/related_list_paging_controls_html.php');
-		print $this->render('Results/search_options_related_list_html.php');
 ?>
+<div id="resultBox" style="margin-bottom:13px">
+    <!-- override margin from base.css so that the bottom paging controls barely fit -->
+    <?php
+    if ($vo_result) {
+        $vs_view = $this->getVar('current_view');
+        if ($vo_result->numHits() == 0) {
+            $vs_view = 'no_results';
+        }
+        $this->setVar('dontShowPages', false);
+        print $this->render('Results/related_list_paging_controls_html.php');
+        print $this->render('Results/search_options_related_list_html.php');
+        ?>
 
-	<div class="sectionBox">
-<?php
-		switch($vs_view) {
-
-			case 'no_results':
-				print $this->render('Results/no_results_html.php');
-				break;
-			case 'list':
-			default:
-				print $this->render('Results/related_list_results_list_html.php');
-				break;
-		}
-?>		
-	</div><!-- end sectionbox -->
-<?php
-		print $this->render('Results/related_list_paging_controls_html.php');
-	}
-?>
+        <div class="sectionBox">
+            <?php
+            switch ($vs_view) {
+                case 'no_results':
+                    print $this->render('Results/no_results_html.php');
+                    break;
+                case 'list':
+                default:
+                    print $this->render('Results/related_list_results_list_html.php');
+                    break;
+            }
+            ?>
+        </div><!-- end sectionbox -->
+        <?php
+        print $this->render('Results/related_list_paging_controls_html.php');
+    }
+    ?>
 </div><!-- end resultbox -->

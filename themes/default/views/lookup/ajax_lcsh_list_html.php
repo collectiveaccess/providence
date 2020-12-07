@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	print json_encode($this->getVar('lcsh_list'));
+
+print json_encode($this->getVar('lcsh_list'));
 ?>

@@ -39,7 +39,7 @@ class Zend_XmlRpc_Server_System
     /**
      * Constructor
      *
-     * @param  Zend_XmlRpc_Server $server
+     * @param Zend_XmlRpc_Server $server
      * @return void
      */
     public function __construct(Zend_XmlRpc_Server $server)
@@ -108,7 +108,7 @@ class Zend_XmlRpc_Server_System
      * struct with a fault response.
      *
      * @see http://www.xmlrpc.com/discuss/msgReader$1208
-     * @param  array $methods
+     * @param array $methods
      * @return array
      */
     public function multicall($methods)
@@ -151,7 +151,7 @@ class Zend_XmlRpc_Server_System
 
             if ($fault) {
                 $responses[] = array(
-                    'faultCode'   => $fault->getCode(),
+                    'faultCode' => $fault->getCode(),
                     'faultString' => $fault->getMessage()
                 );
             }

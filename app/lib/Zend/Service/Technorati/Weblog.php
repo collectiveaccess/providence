@@ -152,34 +152,48 @@ class Zend_Service_Technorati_Weblog
     /**
      * Constructs a new object from DOM Element.
      *
-     * @param  DomElement $dom the ReST fragment for this object
+     * @param DomElement $dom the ReST fragment for this object
      */
     public function __construct(DomElement $dom)
     {
         $xpath = new DOMXPath($dom->ownerDocument);
 
         $result = $xpath->query('./name/text()', $dom);
-        if ($result->length == 1) $this->setName($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setName($result->item(0)->data);
+        }
 
         $result = $xpath->query('./url/text()', $dom);
-        if ($result->length == 1) $this->setUrl($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setUrl($result->item(0)->data);
+        }
 
         $result = $xpath->query('./inboundblogs/text()', $dom);
-        if ($result->length == 1) $this->setInboundBlogs($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setInboundBlogs($result->item(0)->data);
+        }
 
         $result = $xpath->query('./inboundlinks/text()', $dom);
-        if ($result->length == 1) $this->setInboundLinks($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setInboundLinks($result->item(0)->data);
+        }
 
         $result = $xpath->query('./lastupdate/text()', $dom);
-        if ($result->length == 1) $this->setLastUpdate($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setLastUpdate($result->item(0)->data);
+        }
 
         /* The following elements need more attention */
 
         $result = $xpath->query('./rssurl/text()', $dom);
-        if ($result->length == 1) $this->setRssUrl($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setRssUrl($result->item(0)->data);
+        }
 
         $result = $xpath->query('./atomurl/text()', $dom);
-        if ($result->length == 1) $this->setAtomUrl($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setAtomUrl($result->item(0)->data);
+        }
 
         $result = $xpath->query('./author', $dom);
         if ($result->length >= 1) {
@@ -196,16 +210,24 @@ class Zend_Service_Technorati_Weblog
          */
 
         $result = $xpath->query('./rank/text()', $dom);
-        if ($result->length == 1) $this->setRank($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setRank($result->item(0)->data);
+        }
 
         $result = $xpath->query('./lat/text()', $dom);
-        if ($result->length == 1) $this->setLat($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setLat($result->item(0)->data);
+        }
 
         $result = $xpath->query('./lon/text()', $dom);
-        if ($result->length == 1) $this->setLon($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setLon($result->item(0)->data);
+        }
 
         $result = $xpath->query('./hasphoto/text()', $dom);
-        if ($result->length == 1) $this->setHasPhoto($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setHasPhoto($result->item(0)->data);
+        }
     }
 
 
@@ -300,7 +322,8 @@ class Zend_Service_Technorati_Weblog
      *
      * @return  float   weblog latitude coordinate
      */
-    public function getLat() {
+    public function getLat()
+    {
         return $this->_lat;
     }
 
@@ -326,7 +349,7 @@ class Zend_Service_Technorati_Weblog
      */
     public function hasPhoto()
     {
-        return (bool) $this->_hasPhoto;
+        return (bool)$this->_hasPhoto;
     }
 
     /**
@@ -336,26 +359,26 @@ class Zend_Service_Technorati_Weblog
      */
     public function getAuthors()
     {
-        return (array) $this->_authors;
+        return (array)$this->_authors;
     }
 
 
     /**
      * Sets weblog name.
      *
-     * @param   string $name
+     * @param string $name
      * @return  Zend_Service_Technorati_Weblog $this instance
      */
     public function setName($name)
     {
-        $this->_name = (string) $name;
+        $this->_name = (string)$name;
         return $this;
     }
 
     /**
      * Sets weblog URL.
      *
-     * @param   string|Zend_Uri_Http $url
+     * @param string|Zend_Uri_Http $url
      * @return  void
      * @throws  Zend_Service_Technorati_Exception if $input is an invalid URI
      *          (via Zend_Service_Technorati_Utils::normalizeUriHttp)
@@ -369,31 +392,31 @@ class Zend_Service_Technorati_Weblog
     /**
      * Sets number of inbound blogs.
      *
-     * @param   integer $number
+     * @param integer $number
      * @return  Zend_Service_Technorati_Weblog $this instance
      */
     public function setInboundBlogs($number)
     {
-        $this->_inboundBlogs = (int) $number;
+        $this->_inboundBlogs = (int)$number;
         return $this;
     }
 
     /**
      * Sets number of Iinbound links.
      *
-     * @param   integer $number
+     * @param integer $number
      * @return  Zend_Service_Technorati_Weblog $this instance
      */
     public function setInboundLinks($number)
     {
-        $this->_inboundLinks = (int) $number;
+        $this->_inboundLinks = (int)$number;
         return $this;
     }
 
     /**
      * Sets weblog Rss URL.
      *
-     * @param   string|Zend_Uri_Http $url
+     * @param string|Zend_Uri_Http $url
      * @return  Zend_Service_Technorati_Weblog $this instance
      * @throws  Zend_Service_Technorati_Exception if $input is an invalid URI
      *          (via Zend_Service_Technorati_Utils::normalizeUriHttp)
@@ -407,7 +430,7 @@ class Zend_Service_Technorati_Weblog
     /**
      * Sets weblog Atom URL.
      *
-     * @param   string|Zend_Uri_Http $url
+     * @param string|Zend_Uri_Http $url
      * @return  Zend_Service_Technorati_Weblog $this instance
      * @throws  Zend_Service_Technorati_Exception if $input is an invalid URI
      *          (via Zend_Service_Technorati_Utils::normalizeUriHttp)
@@ -424,7 +447,7 @@ class Zend_Service_Technorati_Weblog
      * $datetime can be any value supported by
      * Zend_Service_Technorati_Utils::normalizeDate().
      *
-     * @param   mixed $datetime A string representing the last update date time
+     * @param mixed $datetime A string representing the last update date time
      *                          in a valid date time format
      * @return  Zend_Service_Technorati_Weblog $this instance
      * @throws  Zend_Service_Technorati_Exception
@@ -438,48 +461,48 @@ class Zend_Service_Technorati_Weblog
     /**
      * Sets weblog Rank.
      *
-     * @param   integer $rank
+     * @param integer $rank
      * @return  Zend_Service_Technorati_Weblog $this instance
      */
     public function setRank($rank)
     {
-        $this->_rank = (int) $rank;
+        $this->_rank = (int)$rank;
         return $this;
     }
 
     /**
      * Sets weblog latitude coordinate.
      *
-     * @param   float $coordinate
+     * @param float $coordinate
      * @return  Zend_Service_Technorati_Weblog $this instance
      */
     public function setLat($coordinate)
     {
-        $this->_lat = (float) $coordinate;
+        $this->_lat = (float)$coordinate;
         return $this;
     }
 
     /**
      * Sets weblog longitude coordinate.
      *
-     * @param   float $coordinate
+     * @param float $coordinate
      * @return  Zend_Service_Technorati_Weblog $this instance
      */
     public function setLon($coordinate)
     {
-        $this->_lon = (float) $coordinate;
+        $this->_lon = (float)$coordinate;
         return $this;
     }
 
     /**
      * Sets hasPhoto property.
      *
-     * @param   bool $hasPhoto
+     * @param bool $hasPhoto
      * @return  Zend_Service_Technorati_Weblog $this instance
      */
     public function setHasPhoto($hasPhoto)
     {
-        $this->_hasPhoto = (bool) $hasPhoto;
+        $this->_hasPhoto = (bool)$hasPhoto;
         return $this;
     }
 

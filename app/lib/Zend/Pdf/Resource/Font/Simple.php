@@ -96,7 +96,7 @@ abstract class Zend_Pdf_Resource_Font_Simple extends Zend_Pdf_Resource_Font
     /**** Public Interface ****/
 
 
-  /* Object Lifecycle */
+    /* Object Lifecycle */
 
     /**
      * Object constructor

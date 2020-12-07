@@ -84,14 +84,14 @@ class Zend_Service_Yahoo_ResultSet implements SeekableIterator
     /**
      * Parse the search response and retrieve the results for iteration
      *
-     * @param  DOMDocument $dom the REST fragment for this object
+     * @param DOMDocument $dom the REST fragment for this object
      * @return void
      */
     public function __construct(DOMDocument $dom)
     {
-        $this->totalResultsAvailable = (int) $dom->documentElement->getAttribute('totalResultsAvailable');
-        $this->totalResultsReturned = (int) $dom->documentElement->getAttribute('totalResultsReturned');
-        $this->firstResultPosition = (int) $dom->documentElement->getAttribute('firstResultPosition');
+        $this->totalResultsAvailable = (int)$dom->documentElement->getAttribute('totalResultsAvailable');
+        $this->totalResultsReturned = (int)$dom->documentElement->getAttribute('totalResultsReturned');
+        $this->firstResultPosition = (int)$dom->documentElement->getAttribute('firstResultPosition');
 
         $this->_dom = $dom;
         $this->_xpath = new DOMXPath($dom);
@@ -118,8 +118,8 @@ class Zend_Service_Yahoo_ResultSet implements SeekableIterator
      *
      * Must be implemented by child classes
      *
-     * @throws Zend_Service_Exception
      * @return Zend_Service_Yahoo_Result
+     * @throws Zend_Service_Exception
      */
     public function current()
     {
@@ -127,8 +127,10 @@ class Zend_Service_Yahoo_ResultSet implements SeekableIterator
          * @see Zend_Service_Exception
          */
         require_once 'Zend/Service/Exception.php';
-        throw new Zend_Service_Exception('Zend_Service_Yahoo_ResultSet::current() must be implemented by child '
-                                       . 'classes');
+        throw new Zend_Service_Exception(
+            'Zend_Service_Yahoo_ResultSet::current() must be implemented by child '
+            . 'classes'
+        );
     }
 
 
@@ -168,13 +170,13 @@ class Zend_Service_Yahoo_ResultSet implements SeekableIterator
     /**
      * Implement SeekableIterator::seek()
      *
-     * @param  int $index
+     * @param int $index
      * @return void
      * @throws OutOfBoundsException
      */
     public function seek($index)
     {
-        $indexInt = (int) $index;
+        $indexInt = (int)$index;
         if ($indexInt >= 0 && $indexInt < $this->_results->length) {
             $this->_currentIndex = $indexInt;
         } else {

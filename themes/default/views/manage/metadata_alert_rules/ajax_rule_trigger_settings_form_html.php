@@ -26,50 +26,61 @@
  * ----------------------------------------------------------------------
  */
 
-	/** @var ca_metadata_alert_triggers $t_trigger */
-	$t_trigger = $this->getVar('t_trigger');
-	$t_rule = $t_trigger->getRuleInstance();
-	$vs_id_prefix = $this->getVar('id_prefix');
-	$vn_trigger_id = $t_trigger->getPrimaryKey();
-	$va_triggers = $t_trigger->get('element_filters');
-	
-	if(is_array($va_available_settings = $this->getVar('available_settings')) && sizeof($va_available_settings)) {
+/** @var ca_metadata_alert_triggers $t_trigger */
+$t_trigger = $this->getVar('t_trigger');
+$t_rule = $t_trigger->getRuleInstance();
+$vs_id_prefix = $this->getVar('id_prefix');
+$vn_trigger_id = $t_trigger->getPrimaryKey();
+$va_triggers = $t_trigger->get('element_filters');
+
+if (is_array($va_available_settings = $this->getVar('available_settings')) && sizeof($va_available_settings)) {
+    ?>
+    <?php
+    foreach ($va_available_settings as $vs_code => $va_properties) {
+        print $t_trigger->settingHTMLFormElement($vs_code, ['name' => "{$vs_id_prefix}_setting_{$vs_code}"]);
+    }
+    ?>
+    <?php
+}
 ?>
+    <div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
+
+        <?php print ca_metadata_elements::getElementListAsHTMLSelect(
+            "{$vs_id_prefix}_element_id",
+            ["id" => "{$vs_id_prefix}_element_id"],
+            [
+                'rootElementsOnly' => false,
+                'noContainers' => true,
+                'tableNum' => $t_rule ? $t_rule->get('table_num') : null,
+                'addEmptyOption' => true,
+                'emptyOption' => '-',
+                'value' => ($vn_element_id = $t_trigger->get(
+                    'element_id'
+                )) ? $vn_element_id : $va_triggers['_non_element_filter'],
+                'restrictToDataTypes' => $t_trigger->getTriggerInstance()->getElementDataTypeFilters(),
+                'addItems' => $t_trigger->getTriggerInstance()->getAdditionalElementList()
+            ]
+        ); ?>
+    </div>
+    <div class="formLabel" id="<?php print $vs_id_prefix; ?>_filter"></div>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            jQuery("#<?php print $vs_id_prefix . '_element_id'; ?>").off().on('change', function () {
+                jQuery("#<?php print $vs_id_prefix; ?>_filter").load('<?php print caNavUrl(
+                    $this->request,
+                    'manage/metadata_alert_rules',
+                    'MetadataAlertRuleEditor',
+                    'getTriggerTypeFilterForm'
+                ); ?>', {
+                    'triggerType': jQuery('#<?php print "{$vs_id_prefix}triggerTypeSelect"; ?>').val(),
+                    'trigger_id': <?php print (int)$t_trigger->getPrimaryKey(); ?>,
+                    'id_prefix': '<?php print $vs_id_prefix; ?>',
+                    'element_id': parseInt(jQuery('#<?php print "{$vs_id_prefix}_element_id"; ?>').val())
+                });
+            });
+            jQuery("#<?php print $vs_id_prefix . '_element_id'; ?>").trigger('change');
+        });
+    </script>
 <?php
-		foreach($va_available_settings as $vs_code => $va_properties) {
-			print $t_trigger->settingHTMLFormElement($vs_code, ['name' => "{$vs_id_prefix}_setting_{$vs_code}"]);
-		}
-?>
-<?php
-	}
-?>
-			<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
-		
-			<?php print ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", ["id" => "{$vs_id_prefix}_element_id"], [
-				'rootElementsOnly' => false,
-				'noContainers' => true,
-				'tableNum' => $t_rule ? $t_rule->get('table_num') : null,
-				'addEmptyOption' => true,
-				'emptyOption' => '-',
-				'value' => ($vn_element_id = $t_trigger->get('element_id')) ? $vn_element_id : $va_triggers['_non_element_filter'],
-				'restrictToDataTypes' => $t_trigger->getTriggerInstance()->getElementDataTypeFilters(),
-				'addItems' => $t_trigger->getTriggerInstance()->getAdditionalElementList()
-			]); ?>
-			</div>
-			<div class="formLabel" id="<?php print $vs_id_prefix; ?>_filter"></div>
-		
-		<script type="text/javascript">
-			jQuery(document).ready(function() {
-				jQuery("#<?php print $vs_id_prefix.'_element_id'; ?>").off().on('change', function() { 
-					jQuery("#<?php print $vs_id_prefix; ?>_filter").load('<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'getTriggerTypeFilterForm'); ?>', {
-						'triggerType': jQuery('#<?php print "{$vs_id_prefix}triggerTypeSelect"; ?>').val(),
-						'trigger_id': <?php print (int)$t_trigger->getPrimaryKey(); ?>,
-						'id_prefix': '<?php print $vs_id_prefix; ?>',
-						'element_id': parseInt(jQuery('#<?php print "{$vs_id_prefix}_element_id"; ?>').val())
-					});
-				});
-				jQuery("#<?php print $vs_id_prefix.'_element_id'; ?>").trigger('change');
-			});
-		</script>
-<?php
-	print TooltipManager::getLoadHTML();
+print TooltipManager::getLoadHTML();

@@ -32,4 +32,5 @@ require_once 'Zend/Mobile/Push/Exception.php';
  * @version    $Id$
  */
 class Zend_Mobile_Push_Exception_InvalidAuthToken extends Zend_Mobile_Push_Exception
-{}
+{
+}

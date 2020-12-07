@@ -111,13 +111,23 @@ class Zend_Service_Yahoo_LocalResult extends Zend_Service_Yahoo_Result
     /**
      * Initializes the local result
      *
-     * @param  DOMElement $result
+     * @param DOMElement $result
      * @return void
      */
     public function __construct(DOMElement $result)
     {
-        $this->_fields = array('Address','City', 'City', 'State', 'Phone', 'Rating', 'Distance', 'MapUrl',
-                               'BusinessUrl', 'BusinessClickUrl');
+        $this->_fields = array(
+            'Address',
+            'City',
+            'City',
+            'State',
+            'Phone',
+            'Rating',
+            'Distance',
+            'MapUrl',
+            'BusinessUrl',
+            'BusinessClickUrl'
+        );
 
         parent::__construct($result);
     }

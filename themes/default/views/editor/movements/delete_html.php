@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/editor/movements/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_movement 		= $this->getVar('t_subject');
-	$vn_movement_id 	= $this->getVar('subject_id');
+$t_movement = $this->getVar('t_subject');
+$vn_movement_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_movement, $this->getVar('subject_name'), 'editor/movements', 'MovementEditor', 'Edit/'.$this->request->getActionExtra(), array('movement_id' => $vn_movement_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_movement,
+            $this->getVar('subject_name'),
+            'editor/movements',
+            'MovementEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('movement_id' => $vn_movement_id)
+        );
+    }
+    ?>
 </div>

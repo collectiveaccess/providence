@@ -50,8 +50,8 @@ class Zend_Auth_Storage_NonPersistent implements Zend_Auth_Storage_Interface
     /**
      * Returns true if and only if storage is empty
      *
-     * @throws Zend_Auth_Storage_Exception If it is impossible to determine whether storage is empty
      * @return boolean
+     * @throws Zend_Auth_Storage_Exception If it is impossible to determine whether storage is empty
      */
     public function isEmpty()
     {
@@ -62,8 +62,8 @@ class Zend_Auth_Storage_NonPersistent implements Zend_Auth_Storage_Interface
      * Returns the contents of storage
      * Behavior is undefined when storage is empty.
      *
-     * @throws Zend_Auth_Storage_Exception If reading contents from storage is impossible
      * @return mixed
+     * @throws Zend_Auth_Storage_Exception If reading contents from storage is impossible
      */
     public function read()
     {
@@ -73,9 +73,9 @@ class Zend_Auth_Storage_NonPersistent implements Zend_Auth_Storage_Interface
     /**
      * Writes $contents to storage
      *
-     * @param  mixed $contents
-     * @throws Zend_Auth_Storage_Exception If writing $contents to storage is impossible
+     * @param mixed $contents
      * @return void
+     * @throws Zend_Auth_Storage_Exception If writing $contents to storage is impossible
      */
     public function write($contents)
     {
@@ -85,8 +85,8 @@ class Zend_Auth_Storage_NonPersistent implements Zend_Auth_Storage_Interface
     /**
      * Clears contents from storage
      *
-     * @throws Zend_Auth_Storage_Exception If clearing contents from storage is impossible
      * @return void
+     * @throws Zend_Auth_Storage_Exception If clearing contents from storage is impossible
      */
     public function clear()
     {

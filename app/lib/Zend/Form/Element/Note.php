@@ -40,21 +40,21 @@ class Zend_Form_Element_Note extends Zend_Form_Element_Xhtml
      * @var string
      */
     public $helper = 'formNote';
-    
+
     /**
      * Ignore flag (used when retrieving values at form level)
      *
      * @var bool
      */
     protected $_ignore = true;
-    
+
     /**
      * Validate element value (pseudo)
      *
      * There is no need to reset the value
      *
-     * @param  mixed $value Is always ignored
-     * @param  mixed $context Is always ignored
+     * @param mixed $value Is always ignored
+     * @param mixed $context Is always ignored
      * @return boolean Returns always TRUE
      */
     public function isValid($value, $context = null)

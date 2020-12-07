@@ -66,7 +66,9 @@ class Zend_CodeGenerator_Php_Property extends Zend_CodeGenerator_Php_Member_Abst
         $property->setDefaultValue($allDefaultProperties[$reflectionProperty->getName()]);
 
         if ($reflectionProperty->getDocComment() != '') {
-            $property->setDocblock(Zend_CodeGenerator_Php_Docblock::fromReflection($reflectionProperty->getDocComment()));
+            $property->setDocblock(
+                Zend_CodeGenerator_Php_Docblock::fromReflection($reflectionProperty->getDocComment())
+            );
         }
 
         if ($reflectionProperty->isStatic()) {
@@ -148,7 +150,7 @@ class Zend_CodeGenerator_Php_Property extends Zend_CodeGenerator_Php_Member_Abst
      */
     public function generate()
     {
-        $name         = $this->getName();
+        $name = $this->getName();
         $defaultValue = $this->getDefaultValue();
 
         $output = '';
@@ -161,8 +163,10 @@ class Zend_CodeGenerator_Php_Property extends Zend_CodeGenerator_Php_Member_Abst
         if ($this->isConst()) {
             if ($defaultValue != null && !$defaultValue->isValidConstantType()) {
                 require_once 'Zend/CodeGenerator/Php/Exception.php';
-                throw new Zend_CodeGenerator_Php_Exception('The property ' . $this->_name . ' is said to be '
-                    . 'constant but does not have a valid constant value.');
+                throw new Zend_CodeGenerator_Php_Exception(
+                    'The property ' . $this->_name . ' is said to be '
+                    . 'constant but does not have a valid constant value.'
+                );
             }
             $output .= $this->_indentation . 'const ' . $name . ' = '
                 . (($defaultValue !== null) ? $defaultValue->generate() : 'null;');

@@ -80,7 +80,7 @@ class Zend_Tool_Project_Context_Zf_ModuleDirectory extends Zend_Tool_Project_Con
     {
         return array(
             'moduleName' => $this->getModuleName()
-            );
+        );
     }
 
     /**

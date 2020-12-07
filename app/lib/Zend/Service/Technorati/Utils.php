@@ -36,7 +36,7 @@ class Zend_Service_Technorati_Utils
      * Parses, validates and returns a valid Zend_Uri object
      * from given $input.
      *
-     * @param   string|Zend_Uri_Http $input
+     * @param string|Zend_Uri_Http $input
      * @return  null|Zend_Uri_Http
      * @throws  Zend_Service_Technorati_Exception
      * @static
@@ -56,9 +56,8 @@ class Zend_Service_Technorati_Utils
             $uri = $input;
         } else {
             try {
-                $uri = Zend_Uri::factory((string) $input);
-            }
-            // wrap exception under Zend_Service_Technorati_Exception object
+                $uri = Zend_Uri::factory((string)$input);
+            } // wrap exception under Zend_Service_Technorati_Exception object
             catch (Exception $e) {
                 /**
                  * @see Zend_Service_Technorati_Exception
@@ -75,11 +74,13 @@ class Zend_Service_Technorati_Utils
              */
             require_once 'Zend/Service/Technorati/Exception.php';
             throw new Zend_Service_Technorati_Exception(
-                "Invalid URL $uri, only HTTP(S) protocols can be used");
+                "Invalid URL $uri, only HTTP(S) protocols can be used"
+            );
         }
 
         return $uri;
     }
+
     /**
      * Parses, validates and returns a valid Zend_Date object
      * from given $input.
@@ -88,7 +89,7 @@ class Zend_Service_Technorati_Utils
      * If $input is string or int, it will be provided to Zend_Date as it is.
      * If $input is a Zend_Date object, the object instance will be returned.
      *
-     * @param   mixed|Zend_Date $input
+     * @param mixed|Zend_Date $input
      * @return  null|Zend_Date
      * @throws  Zend_Service_Technorati_Exception
      * @static
@@ -111,7 +112,7 @@ class Zend_Service_Technorati_Utils
 
         // due to a BC break as of ZF 1.5 it's not safe to use Zend_Date::isDate() here
         // see ZF-2524, ZF-2334
-        if (@strtotime($input) !== FALSE) {
+        if (@strtotime($input) !== false) {
             return new Zend_Date($input);
         } else {
             /**

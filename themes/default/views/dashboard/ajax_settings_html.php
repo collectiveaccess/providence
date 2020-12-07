@@ -25,40 +25,62 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$po_request 		= $this->getVar('request');
-	$vs_widget_id 		= $this->getVar('widget_id');
-	
+
+$po_request = $this->getVar('request');
+$vs_widget_id = $this->getVar('widget_id');
+
 ?>
 <div id="<?php print "caWidgetSettingForm_{$vs_widget_id}"; ?>">
-	<form id="<?php print "caWidgetSettings_{$vs_widget_id}"; ?>" action="#" method="get">
-<?php
-			if ($vs_form = $this->getVar('form')) {
-?>
-		<h1><?php print _t('Settings'); ?></h1>
-<?php
-				print $vs_form;
-				print caJSButton(
-					$po_request, __CA_NAV_ICON_SAVE__, _t('Save'), '', 
-					array('onclick' => 'jQuery("#caWidgetSettingForm_'.$vs_widget_id.'").load("'.caNavUrl($this->request, '', 'Dashboard', 'saveSettings', array()).'", jQuery("#caWidgetSettings_'.$vs_widget_id.'").serializeArray());'),
-					array()
-				).' ';
-			} else {
-?>
-		<h1><?php print _t('No settings available'); ?></h1>
-<?php
-			}
-			
-			print caJSButton(
-				$po_request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), '', 
-				array('onclick' => 'jQuery("#caWidgetSettingForm_'.$vs_widget_id.'").load("'.caNavUrl($this->request, '', 'Dashboard', 'getWidget', array()).'", jQuery("#caWidgetSettings_'.$vs_widget_id.'").serializeArray());',
-				array())
-			);
-?>
-			<?php print caHTMLHiddenInput('widget_id', array('value' => $vs_widget_id)); ?>
-	</form>
+    <form id="<?php print "caWidgetSettings_{$vs_widget_id}"; ?>" action="#" method="get">
+        <?php
+        if ($vs_form = $this->getVar('form')) {
+            ?>
+            <h1><?php print _t('Settings'); ?></h1>
+            <?php
+            print $vs_form;
+            print caJSButton(
+                    $po_request,
+                    __CA_NAV_ICON_SAVE__,
+                    _t('Save'),
+                    '',
+                    array(
+                        'onclick' => 'jQuery("#caWidgetSettingForm_' . $vs_widget_id . '").load("' . caNavUrl(
+                                $this->request,
+                                '',
+                                'Dashboard',
+                                'saveSettings',
+                                array()
+                            ) . '", jQuery("#caWidgetSettings_' . $vs_widget_id . '").serializeArray());'
+                    ),
+                    array()
+                ) . ' ';
+        } else {
+            ?>
+            <h1><?php print _t('No settings available'); ?></h1>
+            <?php
+        }
+
+        print caJSButton(
+            $po_request,
+            __CA_NAV_ICON_CANCEL__,
+            _t('Cancel'),
+            '',
+            array(
+                'onclick' => 'jQuery("#caWidgetSettingForm_' . $vs_widget_id . '").load("' . caNavUrl(
+                        $this->request,
+                        '',
+                        'Dashboard',
+                        'getWidget',
+                        array()
+                    ) . '", jQuery("#caWidgetSettings_' . $vs_widget_id . '").serializeArray());',
+                array()
+            )
+        );
+        ?>
+        <?php print caHTMLHiddenInput('widget_id', array('value' => $vs_widget_id)); ?>
+    </form>
 </div>
 
 <?php
-	print TooltipManager::getLoadHTML();
+print TooltipManager::getLoadHTML();
 ?>

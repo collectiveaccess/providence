@@ -40,22 +40,22 @@ class Zend_InfoCard_Xml_EncryptedData_XmlEnc extends Zend_InfoCard_Xml_Encrypted
     /**
      * Returns the Encrypted CipherValue block from the EncryptedData XML document
      *
-     * @throws Zend_InfoCard_Xml_Exception
      * @return string The value of the CipherValue block base64 encoded
+     * @throws Zend_InfoCard_Xml_Exception
      */
     public function getCipherValue()
     {
         $this->registerXPathNamespace('enc', 'http://www.w3.org/2001/04/xmlenc#');
 
-        list(,$cipherdata) = $this->xpath("//enc:CipherData");
+        list(, $cipherdata) = $this->xpath("//enc:CipherData");
 
-        if(!($cipherdata instanceof Zend_InfoCard_Xml_Element)) {
+        if (!($cipherdata instanceof Zend_InfoCard_Xml_Element)) {
             throw new Zend_InfoCard_Xml_Exception("Unable to find the enc:CipherData block");
         }
         $cipherdata->registerXPathNamespace('enc', 'http://www.w3.org/2001/04/xmlenc#');
-        list(,$ciphervalue) = $cipherdata->xpath("//enc:CipherValue");
+        list(, $ciphervalue) = $cipherdata->xpath("//enc:CipherValue");
 
-        if(!($ciphervalue instanceof Zend_InfoCard_Xml_Element)) {
+        if (!($ciphervalue instanceof Zend_InfoCard_Xml_Element)) {
             throw new Zend_InfoCard_Xml_Exception("Unable to fidn the enc:CipherValue block");
         }
 

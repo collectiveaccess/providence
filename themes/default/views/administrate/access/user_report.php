@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * /views/administrate/access/user_report_tab.php :
  * ----------------------------------------------------------------------
@@ -25,19 +26,23 @@
  *
  * ----------------------------------------------------------------------
  */
-	$vs_file_contents = $this->getVar('file_contents');
-	$vs_mimetype = $this->getVar('mimetype');
-	$vs_file_extension = $this->getVar('file_extension');
-	$vs_download_format = $this->getVar('download_format');
-	
-	header("Content-Disposition: attachment; filename=user_export_".$vs_download_format."_".date("m_d_y").".".$vs_file_extension);
-	header("Content-type: ".$vs_mimetype);
-	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-	header("Cache-Control: no-store, no-cache, must-revalidate");
-	header("Cache-Control: post-check=0, pre-check=0", false);
-	header("Pragma: no-cache");
-	header("Cache-control: private");
-	
-	print $vs_file_contents;
+$vs_file_contents = $this->getVar('file_contents');
+$vs_mimetype = $this->getVar('mimetype');
+$vs_file_extension = $this->getVar('file_extension');
+$vs_download_format = $this->getVar('download_format');
+
+header(
+    "Content-Disposition: attachment; filename=user_export_" . $vs_download_format . "_" . date(
+        "m_d_y"
+    ) . "." . $vs_file_extension
+);
+header("Content-type: " . $vs_mimetype);
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Cache-control: private");
+
+print $vs_file_contents;
 
 ?>

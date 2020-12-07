@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/administrate/setup/interface_screen_editor/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_screen = $this->getVar('t_subject');
-	$vn_screen_id = $this->getVar('subject_id');
+$t_screen = $this->getVar('t_subject');
+$vn_screen_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_screen, $this->getVar('subject_name'), 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit/'.$this->request->getActionExtra(), array('screen_id' => $vn_screen_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_screen,
+            $this->getVar('subject_name'),
+            'administrate/setup/interface_screen_editor',
+            'InterfaceScreenEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('screen_id' => $vn_screen_id)
+        );
+    }
+    ?>
 </div>

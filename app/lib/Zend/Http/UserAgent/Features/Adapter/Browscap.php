@@ -41,7 +41,7 @@ class Zend_Http_UserAgent_Features_Adapter_Browscap implements Zend_Http_UserAge
      * Constructor
      *
      * Validate that we have browscap support available.
-     * 
+     *
      * @return void
      * @throws Zend_Http_UserAgent_Features_Exception
      */
@@ -50,18 +50,20 @@ class Zend_Http_UserAgent_Features_Adapter_Browscap implements Zend_Http_UserAge
         $browscap = ini_get('browscap');
         if (empty($browscap) || !file_exists($browscap)) {
             require_once 'Zend/Http/UserAgent/Features/Exception.php';
-            throw new Zend_Http_UserAgent_Features_Exception(sprintf(
-                '%s requires a browscap entry in php.ini pointing to a valid browscap.ini; none present',
-                __CLASS__
-            ));
+            throw new Zend_Http_UserAgent_Features_Exception(
+                sprintf(
+                    '%s requires a browscap entry in php.ini pointing to a valid browscap.ini; none present',
+                    __CLASS__
+                )
+            );
         }
     }
 
     /**
      * Get features from request
      *
-     * @param  array $request $_SERVER variable
-     * @param  array $config ignored; included only to satisfy parent class
+     * @param array $request $_SERVER variable
+     * @param array $config ignored; included only to satisfy parent class
      * @return array
      */
     public static function getFromRequest($request, array $config)

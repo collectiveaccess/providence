@@ -58,7 +58,7 @@ class Zend_Gdata_Media_Extension_MediaRestriction extends Zend_Gdata_Extension
      * @param string $relationship
      * @param string $type
      */
-    public function __construct($text = null, $relationship = null,  $type = null)
+    public function __construct($text = null, $relationship = null, $type = null)
     {
         $this->registerAllNamespaces(Zend_Gdata_Media::$namespaces);
         parent::__construct();
@@ -99,14 +99,14 @@ class Zend_Gdata_Media_Extension_MediaRestriction extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'relationship':
-            $this->_relationship = $attribute->nodeValue;
-            break;
-        case 'type':
-            $this->_type = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'relationship':
+                $this->_relationship = $attribute->nodeValue;
+                break;
+            case 'type':
+                $this->_type = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 

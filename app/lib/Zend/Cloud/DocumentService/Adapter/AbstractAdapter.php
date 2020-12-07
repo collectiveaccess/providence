@@ -39,9 +39,9 @@ require_once 'Zend/Cloud/DocumentService/Query.php';
 abstract class Zend_Cloud_DocumentService_Adapter_AbstractAdapter
     implements Zend_Cloud_DocumentService_Adapter
 {
-    const DOCUMENT_CLASS    = 'document_class';
+    const DOCUMENT_CLASS = 'document_class';
     const DOCUMENTSET_CLASS = 'documentset_class';
-    const QUERY_CLASS       = 'query_class';
+    const QUERY_CLASS = 'query_class';
 
     /**
      * Class to utilize for new document objects
@@ -65,12 +65,12 @@ abstract class Zend_Cloud_DocumentService_Adapter_AbstractAdapter
     /**
      * Set the class for document objects
      *
-     * @param  string $class
+     * @param string $class
      * @return Zend_Cloud_DocumentService_Adapter_AbstractAdapter
      */
     public function setDocumentClass($class)
     {
-        $this->_documentClass = (string) $class;
+        $this->_documentClass = (string)$class;
         return $this;
     }
 
@@ -87,12 +87,12 @@ abstract class Zend_Cloud_DocumentService_Adapter_AbstractAdapter
     /**
      * Set the class for document set objects
      *
-     * @param  string $class
+     * @param string $class
      * @return Zend_Cloud_DocumentService_Adapter_AbstractAdapter
      */
     public function setDocumentSetClass($class)
     {
-        $this->_documentSetClass = (string) $class;
+        $this->_documentSetClass = (string)$class;
         return $this;
     }
 
@@ -109,12 +109,12 @@ abstract class Zend_Cloud_DocumentService_Adapter_AbstractAdapter
     /**
      * Set the query class for query objects
      *
-     * @param  string $class
+     * @param string $class
      * @return Zend_Cloud_DocumentService_Adapter_AbstractAdapter
      */
     public function setQueryClass($class)
     {
-        $this->_queryClass = (string) $class;
+        $this->_queryClass = (string)$class;
         return $this;
     }
 

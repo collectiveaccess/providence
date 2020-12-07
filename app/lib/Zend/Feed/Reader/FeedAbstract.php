@@ -190,7 +190,7 @@ abstract class Zend_Feed_Reader_FeedAbstract implements Zend_Feed_Reader_FeedInt
      */
     public function saveXml()
     {
-          return $this->getDomDocument()->saveXml();
+        return $this->getDomDocument()->saveXml();
     }
 
     /**
@@ -200,7 +200,7 @@ abstract class Zend_Feed_Reader_FeedAbstract implements Zend_Feed_Reader_FeedInt
      */
     public function getElement()
     {
-          return $this->getDomDocument()->documentElement;
+        return $this->getDomDocument()->documentElement;
     }
 
     /**
@@ -210,7 +210,7 @@ abstract class Zend_Feed_Reader_FeedAbstract implements Zend_Feed_Reader_FeedInt
      */
     public function getXpath()
     {
-          return $this->_xpath;
+        return $this->_xpath;
     }
 
     /**
@@ -274,8 +274,10 @@ abstract class Zend_Feed_Reader_FeedAbstract implements Zend_Feed_Reader_FeedInt
             }
         }
         require_once 'Zend/Feed/Exception.php';
-        throw new Zend_Feed_Exception('Method: ' . $method
-        . 'does not exist and could not be located on a registered Extension');
+        throw new Zend_Feed_Exception(
+            'Method: ' . $method
+            . 'does not exist and could not be located on a registered Extension'
+        );
     }
 
     /**

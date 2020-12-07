@@ -36,7 +36,17 @@
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
 if (!defined("__CA_BASE_DIR__")) {
-	define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps|/tests|support/bin/!", "", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__), PATHINFO_DIRNAME));
+    define(
+        "__CA_BASE_DIR__",
+        pathinfo(
+            preg_replace(
+                "!/install|/viewers/apps|/tests|support/bin/!",
+                "",
+                isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__
+            ),
+            PATHINFO_DIRNAME
+        )
+    );
 }
 
 
@@ -54,7 +64,10 @@ if (!defined("__CA_BASE_DIR__")) {
 # 		Example: If CollectiveAccess will be accessed via http://www.mysite.org/apps/ca then __CA_URL_ROOT__ would be set to /apps/ca
 #
 if (!defined("__CA_URL_ROOT__")) {
-	define("__CA_URL_ROOT__", str_replace(isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '', '', __CA_BASE_DIR__));
+    define(
+        "__CA_URL_ROOT__",
+        str_replace(isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '', '', __CA_BASE_DIR__)
+    );
 }
 
 
@@ -67,7 +80,7 @@ if (!defined("__CA_URL_ROOT__")) {
 #		If you must set this manually, it must be the full host name. Do not include http:// or any other prefixes.
 #
 if (!defined("__CA_SITE_HOSTNAME__")) {
-	define("__CA_SITE_HOSTNAME__", isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
+    define("__CA_SITE_HOSTNAME__", isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
 }
 
 #
@@ -76,52 +89,55 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 #		The default value is based on the URL being used to access the site.  To force a protocol, set it explicitly.
 #
 if (!defined("__CA_SITE_PROTOCOL__")) {
-	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&  ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http'));
+    define(
+        "__CA_SITE_PROTOCOL__",
+        isset($_SERVER['HTTPS']) ? 'https' : ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http')
+    );
 }
 
 # Path to CollectiveAccess 'app' directory 
 if (!defined("__CA_APP_DIR__")) {
-	define("__CA_APP_DIR__", __CA_BASE_DIR__."/app");
+    define("__CA_APP_DIR__", __CA_BASE_DIR__ . "/app");
 }
 
 # Path to CollectiveAccess 'models' directory containing database table model classes
 if (!defined("__CA_MODELS_DIR__")) {
-	define("__CA_MODELS_DIR__", __CA_APP_DIR__."/models");
+    define("__CA_MODELS_DIR__", __CA_APP_DIR__ . "/models");
 }
 
 # Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
 if (!defined("__CA_LIB_DIR__")) {
-	define("__CA_LIB_DIR__", __CA_APP_DIR__."/lib");
+    define("__CA_LIB_DIR__", __CA_APP_DIR__ . "/lib");
 }
 
 # Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
 if (!defined("__CA_CONF_DIR__")) {
-	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
+    define("__CA_CONF_DIR__", __CA_APP_DIR__ . "/conf");
 }
 
 #
-if(!isset($_CA_THEMES_BY_DEVICE) || !is_array($_CA_THEMES_BY_DEVICE) || !sizeof($_CA_THEMES_BY_DEVICE)) {
-	$_CA_THEMES_BY_DEVICE = array(
-		'_default_' 	=> 'default'
-	);
+if (!isset($_CA_THEMES_BY_DEVICE) || !is_array($_CA_THEMES_BY_DEVICE) || !sizeof($_CA_THEMES_BY_DEVICE)) {
+    $_CA_THEMES_BY_DEVICE = array(
+        '_default_' => 'default'
+    );
 }
 
 # Set path to instance configuration file
 # (If you want to run several CA distinct instances using a single install you can add additional configuration files here.)
 $_CA_INSTANCE_CONFIG_FILES = array(
-	'_default_'	=> __CA_CONF_DIR__.'/app.conf'	// the _default_ value must always be defined
+    '_default_' => __CA_CONF_DIR__ . '/app.conf'    // the _default_ value must always be defined
 );
 
 if (!isset($_SERVER['HTTP_HOST']) || !isset($_CA_INSTANCE_CONFIG_FILES[$_SERVER['HTTP_HOST']]) || !($_CA_CONFIG_PATH = $_CA_INSTANCE_CONFIG_FILES[$_SERVER['HTTP_HOST']])) {
-	$_CA_CONFIG_PATH = $_CA_INSTANCE_CONFIG_FILES['_default_'];
-} 
+    $_CA_CONFIG_PATH = $_CA_INSTANCE_CONFIG_FILES['_default_'];
+}
 
 if (!(file_exists($_CA_CONFIG_PATH))) {
-	$opa_error_messages = array("Configuration files are missing for hostname '".(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '[unknown]')."'!<br/>Please check the <em>__CA_BASE_DIR__</em> configuration setting in your <em>setup.php</em> file.");
-	if (!include_once(__CA_BASE_DIR__ . "/themes/default/views/system/configuration_error_html.php")) {
-		die("Fatal error: Configuration files are missing for hostname '".$_SERVER['HTTP_HOST']."'! Please check the __CA_BASE_DIR__ configuration setting in your setup.php file.");
-	}
-	exit();
+    $opa_error_messages = array("Configuration files are missing for hostname '" . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '[unknown]') . "'!<br/>Please check the <em>__CA_BASE_DIR__</em> configuration setting in your <em>setup.php</em> file.");
+    if (!include_once(__CA_BASE_DIR__ . "/themes/default/views/system/configuration_error_html.php")) {
+        die("Fatal error: Configuration files are missing for hostname '" . $_SERVER['HTTP_HOST'] . "'! Please check the __CA_BASE_DIR__ configuration setting in your setup.php file.");
+    }
+    exit();
 }
 
 # Only MySQL databases are currently supported but there are three available 
@@ -132,44 +148,44 @@ if (!(file_exists($_CA_CONFIG_PATH))) {
 #
 #  When in doubt, try MySQLi first and then fall back to mysql
 if (!defined("__CA_DB_TYPE__")) {
-	define("__CA_DB_TYPE__", 'mysqli');
+    define("__CA_DB_TYPE__", 'mysqli');
 }
 
-set_include_path(__CA_LIB_DIR__.PATH_SEPARATOR.__CA_MODELS_DIR__.PATH_SEPARATOR.get_include_path());
+set_include_path(__CA_LIB_DIR__ . PATH_SEPARATOR . __CA_MODELS_DIR__ . PATH_SEPARATOR . get_include_path());
 
 # The path to the main instance configuration file defined as a constant
 if (!defined('__CA_APP_CONFIG__')) {
-	define('__CA_APP_CONFIG__', $_CA_CONFIG_PATH);
+    define('__CA_APP_CONFIG__', $_CA_CONFIG_PATH);
 }
 
 # Now that we have __CA_APP_DIR__ set we can load our request helpers - very basic functions we need to set up request handling
-require_once(__CA_APP_DIR__.'/helpers/requestHelpers.php');
+require_once(__CA_APP_DIR__ . '/helpers/requestHelpers.php');
 
 # Name of theme to use for this request
 if (!defined("__CA_THEME__")) {
-	define("__CA_THEME__", $g_configuration_cache_suffix = caGetPreferredThemeForCurrentDevice($_CA_THEMES_BY_DEVICE));
+    define("__CA_THEME__", $g_configuration_cache_suffix = caGetPreferredThemeForCurrentDevice($_CA_THEMES_BY_DEVICE));
 }
 
 # Path to CollectiveAccess 'themes' directory containing visual presentation elements
 if (!defined("__CA_THEMES_DIR__")) {
-	define("__CA_THEMES_DIR__", __CA_BASE_DIR__."/themes");
+    define("__CA_THEMES_DIR__", __CA_BASE_DIR__ . "/themes");
 }
 
 # Now that we have __CA_APP_DIR__ set we can load our request helpers - very basic functions we need to set up request handling
-require_once(__CA_APP_DIR__.'/helpers/requestHelpers.php');
+require_once(__CA_APP_DIR__ . '/helpers/requestHelpers.php');
 
 
 # Root-relative URL path to 'themes' directory
 if (!defined("__CA_THEMES_URL__")) {
-	define("__CA_THEMES_URL__", __CA_URL_ROOT__."/themes");
+    define("__CA_THEMES_URL__", __CA_URL_ROOT__ . "/themes");
 }
 
 # Directory and URL paths to current theme
 if (!defined("__CA_THEME_DIR__")) {
-	define("__CA_THEME_DIR__", __CA_THEMES_DIR__."/".__CA_THEME__);
+    define("__CA_THEME_DIR__", __CA_THEMES_DIR__ . "/" . __CA_THEME__);
 }
 if (!defined("__CA_THEME_URL__")) {
-	define("__CA_THEME_URL__", __CA_THEMES_URL__."/".__CA_THEME__);
+    define("__CA_THEME_URL__", __CA_THEMES_URL__ . "/" . __CA_THEME__);
 }
 
 # Path to local config directory - configuration containing installation-specific configuration
@@ -177,16 +193,16 @@ if (!defined("__CA_THEME_URL__")) {
 # Installation-specific configuration simply allows you to override selected application configuration as-needed without having to modify the stock config
 # Note also that unit tests should generally ignore local configuration and use the base configuration only
 if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
-	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_APP_DIR__."/conf/local");
+    define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_APP_DIR__ . "/conf/local");
 }
 if (!defined("__CA_DEFAULT_THEME_CONFIG_DIRECTORY__")) {
-	define("__CA_DEFAULT_THEME_CONFIG_DIRECTORY__", __CA_THEMES_DIR__."/".__CA_THEME__."/conf");
+    define("__CA_DEFAULT_THEME_CONFIG_DIRECTORY__", __CA_THEMES_DIR__ . "/" . __CA_THEME__ . "/conf");
 }
 
 #
 # Load the application version number
 #
-require_once(__CA_APP_DIR__.'/version.php');
+require_once(__CA_APP_DIR__ . '/version.php');
 
 
 # --------------------------------------------------------------------------------------------
@@ -196,13 +212,13 @@ require_once(__CA_APP_DIR__.'/version.php');
 # __CA_SMTP_SERVER__ = Hostname of outgoing mail server
 #
 if (!defined("__CA_SMTP_SERVER__")) {
-	define("__CA_SMTP_SERVER__", 'localhost');
+    define("__CA_SMTP_SERVER__", 'localhost');
 }
 
 # __CA_SMTP_PORT__ = port to use for outgoing mail
 #
 if (!defined("__CA_SMTP_PORT__")) {
-	define("__CA_SMTP_PORT__", 25);
+    define("__CA_SMTP_PORT__", 25);
 }
 
 # If your outgoing (SMTP) mail server requires you to authenticate then authentiucation 
@@ -216,19 +232,19 @@ if (!defined("__CA_SMTP_PORT__")) {
 # PLAIN, LOGIN and CRAM-MD5. LOGIN is most typically used.
 #
 if (!defined("__CA_SMTP_AUTH__")) {
-	define("__CA_SMTP_AUTH__", '');
+    define("__CA_SMTP_AUTH__", '');
 }
 
 # __CA_SMTP_USER__ = User name for outgoing mail authentication
 #
 if (!defined("__CA_SMTP_USER__")) {
-	define("__CA_SMTP_USER__", '');
+    define("__CA_SMTP_USER__", '');
 }
 
 # __CA_SMTP_PASSWORD__ = Password for outgoing mail authentication
 #
 if (!defined("__CA_SMTP_PASSWORD__")) {
-	define("__CA_SMTP_PASSWORD__", '');
+    define("__CA_SMTP_PASSWORD__", '');
 }
 
 # __CA_SMTP_SSL__ = SSL method to use for outgoing mail connection
@@ -236,7 +252,7 @@ if (!defined("__CA_SMTP_PASSWORD__")) {
 # Use either SSL or TLS. Leave blank if SMTP encryption is not used.
 #
 if (!defined("__CA_SMTP_SSL__")) {
-	define("__CA_SMTP_SSL__", '');
+    define("__CA_SMTP_SSL__", '');
 }
 
 # --------------------------------------------------------------------------------------------
@@ -249,42 +265,42 @@ if (!defined("__CA_SMTP_SSL__")) {
 # part of the standard CollectiveAccess configuration check. If you do
 # configure them here and your setup doesn't have the extension, you
 # may see critical errors.
-if (!defined('__CA_CACHE_BACKEND__')) { 
-	define('__CA_CACHE_BACKEND__', 'file');
+if (!defined('__CA_CACHE_BACKEND__')) {
+    define('__CA_CACHE_BACKEND__', 'file');
 }
 
 # File path for file-based caching. The default works but in some setups you may want to move this
 # to the fastest available storage (in terms of random access time), like an SSD
-if (!defined('__CA_CACHE_FILEPATH__')) { 
-	define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+if (!defined('__CA_CACHE_FILEPATH__')) {
+    define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__ . DIRECTORY_SEPARATOR . 'tmp');
 }
 
 # Time-to-live for cache items (in seconds)
-if (!defined('__CA_CACHE_TTL__')) { 
-	define('__CA_CACHE_TTL__', 3600);
+if (!defined('__CA_CACHE_TTL__')) {
+    define('__CA_CACHE_TTL__', 3600);
 }
 
 # Host and port for memcached
-if (!defined('__CA_MEMCACHED_HOST__')) { 
-	define('__CA_MEMCACHED_HOST__', 'localhost');
+if (!defined('__CA_MEMCACHED_HOST__')) {
+    define('__CA_MEMCACHED_HOST__', 'localhost');
 }
-if (!defined('__CA_MEMCACHED_PORT__')) { 
-	define('__CA_MEMCACHED_PORT__', 11211);
+if (!defined('__CA_MEMCACHED_PORT__')) {
+    define('__CA_MEMCACHED_PORT__', 11211);
 }
 
 # Host and port for redis
-if (!defined('__CA_REDIS_HOST__')) { 
-	define('__CA_REDIS_HOST__', 'localhost');
+if (!defined('__CA_REDIS_HOST__')) {
+    define('__CA_REDIS_HOST__', 'localhost');
 }
-if (!defined('__CA_REDIS_PORT__')) { 
-	define('__CA_REDIS_PORT__', 6379);
+if (!defined('__CA_REDIS_PORT__')) {
+    define('__CA_REDIS_PORT__', 6379);
 }
 
 # Redis database index. This is useful if you want to use your Redis instance for several 
 # applications. Redis is usually set up with 16 databases, indexed 0 through 15. 
 # CollectiveAccess will use the first (index 0) unless told otherwise.
-if (!defined('__CA_REDIS_DB__')) { 
-	define('__CA_REDIS_DB__', 0);
+if (!defined('__CA_REDIS_DB__')) {
+    define('__CA_REDIS_DB__', 0);
 }
 
 
@@ -298,21 +314,24 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 # by exposing the update control on a public url on a publicly accessible site you are 
 # potentially allowing anyone to initiate the update. 
 if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__')) {
-	define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__', true);
+    define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__', true);
 }
 
 # Is vendor code set up?
-require_once(__CA_APP_DIR__.'/helpers/requestHelpers.php');	// provides caCheckVendorLibraries helper
+require_once(__CA_APP_DIR__ . '/helpers/requestHelpers.php');    // provides caCheckVendorLibraries helper
 caCheckVendorLibraries();
 
 # includes commonly used classes
-require_once(__CA_APP_DIR__.'/helpers/preload.php');
+require_once(__CA_APP_DIR__ . '/helpers/preload.php');
 
 #
 # Bail if request is a Google Cloud health check. We can to return an HTTP 200 code to 
 # signify "health"
 #
-if (caRequestIsHealthCheck()) { print "OK"; exit; }
+if (caRequestIsHealthCheck()) {
+    print "OK";
+    exit;
+}
 
 # __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__
 #
@@ -321,7 +340,7 @@ if (caRequestIsHealthCheck()) { print "OK"; exit; }
 # be a security risk as it allows anyone to upload files to your server. You should leave 
 # it set to false unless you really need it.
 if (!defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__')) {
-	define('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__', false);
+    define('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__', false);
 }
 
 # __CA_DISABLE_CONFIG_CACHING__
@@ -331,7 +350,7 @@ if (!defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__')) {
 # impact on performance. However, there are certain scenarios where want to prevent 
 # caching, e.g. for debugging. DO NOT touch this unless you know what you're doing!
 if (!defined('__CA_DISABLE_CONFIG_CACHING__')) {
-	define('__CA_DISABLE_CONFIG_CACHING__', false);
+    define('__CA_DISABLE_CONFIG_CACHING__', false);
 }
 
 # __CA_ENABLE_DEBUG_OUTPUT__
@@ -343,7 +362,7 @@ if (!defined('__CA_DISABLE_CONFIG_CACHING__')) {
 # variable content. Note that utilityHelpers.php has to be included to use the function, 
 # but it usually is.
 if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
-	define('__CA_ENABLE_DEBUG_OUTPUT__', false);
+    define('__CA_ENABLE_DEBUG_OUTPUT__', false);
 }
 
 # __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__
@@ -354,12 +373,12 @@ if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
 # by exposing the update control on a public url on a publicly accessible site you are 
 # potentially allowing anyone to initiate the database update. 
 if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__')) {
-	define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__', true);
+    define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__', true);
 }
 
 # __CA_APP_TYPE__
 #
 # Flag indicating application type to code libraries
 if (!defined("__CA_APP_TYPE__")) {
-	define("__CA_APP_TYPE__", "PROVIDENCE");
+    define("__CA_APP_TYPE__", "PROVIDENCE");
 }

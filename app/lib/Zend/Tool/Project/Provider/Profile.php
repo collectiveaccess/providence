@@ -49,6 +49,5 @@ class Zend_Tool_Project_Provider_Profile extends Zend_Tool_Project_Provider_Abst
                 str_repeat('    ', $profileIterator->getDepth()) . $profileItem
             );
         }
-
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * views/editor/storage_locations/delete_html.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_location = $this->getVar('t_subject');
-	$vn_location_id = $this->getVar('subject_id');
+$t_location = $this->getVar('t_subject');
+$vn_location_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_location, $this->getVar('subject_name'), 'editor/storage_locations', 'StorageLocationEditor', 'Edit/'.$this->request->getActionExtra(), array('location_id' => $vn_location_id));
-	}
-?>
+    <?php
+    if (!$this->getVar('confirmed')) {
+        // show delete confirmation notice
+        print caDeleteWarningBox(
+            $this->request,
+            $t_location,
+            $this->getVar('subject_name'),
+            'editor/storage_locations',
+            'StorageLocationEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('location_id' => $vn_location_id)
+        );
+    }
+    ?>
 </div>

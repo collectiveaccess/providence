@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/service/controllers/search/SearchController.php :
  * ----------------------------------------------------------------------
@@ -25,47 +26,56 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/Service/deprecated/SearchService.php');
-	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/Zend/Soap/Server.php');
-	require_once(__CA_LIB_DIR__.'/Zend/Soap/AutoDiscover.php');
-	require_once(__CA_LIB_DIR__.'/Zend/Rest/Server.php');
+require_once(__CA_LIB_DIR__ . '/Service/deprecated/SearchService.php');
+require_once(__CA_LIB_DIR__ . '/Service/BaseServiceController.php');
+require_once(__CA_LIB_DIR__ . '/Zend/Soap/Server.php');
+require_once(__CA_LIB_DIR__ . '/Zend/Soap/AutoDiscover.php');
+require_once(__CA_LIB_DIR__ . '/Zend/Rest/Server.php');
 
-	class SearchController extends BaseServiceController {
-		# -------------------------------------------------------
-		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
-		# -------------------------------------------------------
-		public function soap(){
-			$vs_wsdl =
-				$this->request->config->get("site_host").
-				__CA_URL_ROOT__.
-				"/service.php/search/Search/soapWSDL";
-			$vo_soapserver = new Zend_Soap_Server($vs_wsdl,array("soap_version" => SOAP_1_2));
-			$vo_soapserver->setClass('SearchService',$this->request);
-			$this->view->setVar("soap_server",$vo_soapserver);
-			$this->render("search_soap.php");
-		}
-		# -------------------------------------------------------
-		public function soapWSDL(){
-			$vs_service =
-				$this->request->config->get("site_host").
-				__CA_URL_ROOT__.
-				"/service.php/search/Search/soap";
-			$vo_autodiscover = new Zend_Soap_AutoDiscover(true,$vs_service);
-			$vo_autodiscover->setClass('SearchService',$this->request);
-			$this->view->setVar("autodiscover",$vo_autodiscover);
-			$this->render("search_soap_wsdl.php");
-		}
-		# -------------------------------------------------------
-		public function rest(){
-			$vo_restserver = new Zend_Rest_Server();
-			$vo_restserver->returnResponse(true);
-			$vo_restserver->setClass('SearchService',null,array($this->request));
-			$this->view->setVar("rest_server",$vo_restserver);
-			$this->render("search_rest.php");
-		}
-		# -------------------------------------------------------
-	}
+class SearchController extends BaseServiceController
+{
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+
+    # -------------------------------------------------------
+    public function soap()
+    {
+        $vs_wsdl =
+            $this->request->config->get("site_host") .
+            __CA_URL_ROOT__ .
+            "/service.php/search/Search/soapWSDL";
+        $vo_soapserver = new Zend_Soap_Server($vs_wsdl, array("soap_version" => SOAP_1_2));
+        $vo_soapserver->setClass('SearchService', $this->request);
+        $this->view->setVar("soap_server", $vo_soapserver);
+        $this->render("search_soap.php");
+    }
+
+    # -------------------------------------------------------
+    public function soapWSDL()
+    {
+        $vs_service =
+            $this->request->config->get("site_host") .
+            __CA_URL_ROOT__ .
+            "/service.php/search/Search/soap";
+        $vo_autodiscover = new Zend_Soap_AutoDiscover(true, $vs_service);
+        $vo_autodiscover->setClass('SearchService', $this->request);
+        $this->view->setVar("autodiscover", $vo_autodiscover);
+        $this->render("search_soap_wsdl.php");
+    }
+
+    # -------------------------------------------------------
+    public function rest()
+    {
+        $vo_restserver = new Zend_Rest_Server();
+        $vo_restserver->returnResponse(true);
+        $vo_restserver->setClass('SearchService', null, array($this->request));
+        $this->view->setVar("rest_server", $vo_restserver);
+        $this->render("search_rest.php");
+    }
+    # -------------------------------------------------------
+}
+
 ?>

@@ -56,11 +56,11 @@ class Zend_Service_DeveloperGarden_Response_LocalSearch_LocalSearchResponse
     public function __construct(
         Zend_Service_DeveloperGarden_Response_LocalSearch_LocalSearchResponseType $response
     ) {
-        $this->errorCode     = $response->getErrorCode();
-        $this->errorMessage  = $response->getErrorMessage();
-        $this->statusCode    = $response->getStatusCode();
+        $this->errorCode = $response->getErrorCode();
+        $this->errorMessage = $response->getErrorMessage();
+        $this->statusCode = $response->getStatusCode();
         $this->statusMessage = $response->getStatusMessage();
-        $this->searchResult  = $response;
+        $this->searchResult = $response;
     }
 
     /**

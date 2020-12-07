@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 
-	print caEditorInspector($this, array('backText' => _t('Back to browser')));
+print caEditorInspector($this, array('backText' => _t('Back to browser')));
 ?>

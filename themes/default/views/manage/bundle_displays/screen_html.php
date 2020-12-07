@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/views/manage/bundle_displays/screen_html.php : 
  * ----------------------------------------------------------------------
@@ -25,50 +26,79 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_display = $this->getVar('t_subject');
-	$vn_display_id = $this->getVar('subject_id');
-	
-	$t_ui = $this->getVar('t_ui');	
-?>
-	<div class="sectionBox">
-<?php
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'BundleDisplayEditorForm').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Edit/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)), 
-			'', 
-			(intval($vn_display_id) > 0) ? "<span class='deleteButton'>".caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Delete/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)).'<span>' : ''
-		);
-		
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/display_id/'.$vn_display_id, 'BundleDisplayEditorForm', null, 'POST', 'multipart/form-data');
-			
-			$va_form_elements = $t_display->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'BundleDisplayEditorForm'));
-					
-			if (!$vn_form_id) {
-				// For new displays, show mandatory fields...
-				// ... BUT ...
-				// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
-				// This allows us to set the content type for the display from the calling control
-				$va_mandatory_fields = $t_display->getMandatoryFields();
-				if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
-					if ($vn_table_num = $t_display->get('table_num')) {
-						print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
-						unset($va_form_elements['table_num']);
-						unset($va_mandatory_fields[$vn_index]);
-					}
-				}
-			}
-			
-			print join("\n", $va_form_elements);
-			
-			print $vs_control_box;
-?>
-			<input type='hidden' name='table_num' value='<?php print $t_display->get('table_num'); ?>'/>
-			<input type='hidden' name='display_id' value='<?php print $vn_display_id; ?>'/>
-		</form>
-	
-		<div class="editorBottomPadding"><!-- empty --></div>
-	</div>
+$t_display = $this->getVar('t_subject');
+$vn_display_id = $this->getVar('subject_id');
 
-	<div class="editorBottomPadding"><!-- empty --></div>
+$t_ui = $this->getVar('t_ui');
+?>
+<div class="sectionBox">
+    <?php
+    print $vs_control_box = caFormControlBox(
+        caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'BundleDisplayEditorForm') . ' ' .
+        caFormNavButton(
+            $this->request,
+            __CA_NAV_ICON_CANCEL__,
+            _t("Cancel"),
+            '',
+            'manage/bundle_displays',
+            'BundleDisplayEditor',
+            'Edit/' . $this->request->getActionExtra(),
+            array('display_id' => $vn_display_id)
+        ),
+        '',
+        (intval($vn_display_id) > 0) ? "<span class='deleteButton'>" . caFormNavButton(
+                $this->request,
+                __CA_NAV_ICON_DELETE__,
+                _t("Delete"),
+                '',
+                'manage/bundle_displays',
+                'BundleDisplayEditor',
+                'Delete/' . $this->request->getActionExtra(),
+                array('display_id' => $vn_display_id)
+            ) . '<span>' : ''
+    );
+
+    print caFormTag(
+        $this->request,
+        'Save/' . $this->request->getActionExtra() . '/display_id/' . $vn_display_id,
+        'BundleDisplayEditorForm',
+        null,
+        'POST',
+        'multipart/form-data'
+    );
+
+    $va_form_elements = $t_display->getBundleFormHTMLForScreen(
+        $this->request->getActionExtra(),
+        array(
+            'request' => $this->request,
+            'formName' => 'BundleDisplayEditorForm'
+        )
+    );
+
+    if (!$vn_form_id) {
+        // For new displays, show mandatory fields...
+        // ... BUT ...
+        // if table_num is set on the url then create a hidden element rather than show it as a mandatory field
+        // This allows us to set the content type for the display from the calling control
+        $va_mandatory_fields = $t_display->getMandatoryFields();
+        if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
+            if ($vn_table_num = $t_display->get('table_num')) {
+                print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
+                unset($va_form_elements['table_num']);
+                unset($va_mandatory_fields[$vn_index]);
+            }
+        }
+    }
+
+    print join("\n", $va_form_elements);
+
+    print $vs_control_box;
+    ?>
+    <input type='hidden' name='table_num' value='<?php print $t_display->get('table_num'); ?>'/>
+    <input type='hidden' name='display_id' value='<?php print $vn_display_id; ?>'/>
+    </form>
+
+    <div class="editorBottomPadding"><!-- empty --></div>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>

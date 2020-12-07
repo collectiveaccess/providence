@@ -49,7 +49,7 @@ class Zend_Config_Writer_FileAbstract extends Zend_Config_Writer
     /**
      * Set the target filename
      *
-     * @param  string $filename
+     * @param string $filename
      * @return Zend_Config_Writer_Array
      */
     public function setFilename($filename)
@@ -62,7 +62,7 @@ class Zend_Config_Writer_FileAbstract extends Zend_Config_Writer
     /**
      * Set wether to exclusively lock the file or not
      *
-     * @param  boolean     $exclusiveLock
+     * @param boolean $exclusiveLock
      * @return Zend_Config_Writer_Array
      */
     public function setExclusiveLock($exclusiveLock)
@@ -123,9 +123,9 @@ class Zend_Config_Writer_FileAbstract extends Zend_Config_Writer
     /**
      * Render a Zend_Config into a config file string.
      *
-     * @since 1.10
-     * @todo For 2.0 this should be redone into an abstract method.
      * @return string
+     * @todo For 2.0 this should be redone into an abstract method.
+     * @since 1.10
      */
     public function render()
     {

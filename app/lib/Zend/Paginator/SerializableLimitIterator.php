@@ -50,7 +50,7 @@ class Zend_Paginator_SerializableLimitIterator extends LimitIterator implements 
      * @param int $count Maximum number of elements to show or -1 for all
      * @see LimitIterator::__construct
      */
-    public function __construct (Iterator $it, $offset=0, $count=-1)
+    public function __construct(Iterator $it, $offset = 0, $count = -1)
     {
         parent::__construct($it, $offset, $count);
         $this->_offset = $offset;
@@ -62,12 +62,14 @@ class Zend_Paginator_SerializableLimitIterator extends LimitIterator implements 
      */
     public function serialize()
     {
-        return serialize(array(
-            'it'     => $this->getInnerIterator(),
-            'offset' => $this->_offset,
-            'count'  => $this->_count,
-            'pos'    => $this->getPosition(),
-        ));
+        return serialize(
+            array(
+                'it' => $this->getInnerIterator(),
+                'offset' => $this->_offset,
+                'count' => $this->_count,
+                'pos' => $this->getPosition(),
+            )
+        );
     }
 
     /**
@@ -77,7 +79,7 @@ class Zend_Paginator_SerializableLimitIterator extends LimitIterator implements 
     {
         $dataArr = unserialize($data);
         $this->__construct($dataArr['it'], $dataArr['offset'], $dataArr['count']);
-        $this->seek($dataArr['pos']+$dataArr['offset']);
+        $this->seek($dataArr['pos'] + $dataArr['offset']);
     }
 
     /**

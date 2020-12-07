@@ -131,9 +131,9 @@ abstract class Zend_Service_DeveloperGarden_Request_SendSms_SendSmsAbstract
      * set a new number(s)
      *
      * @param string $number
+     * @return Zend_Service_DeveloperGarden_Request_SendSms_SendSmsAbstract
      * @throws Zend_Service_DeveloperGarden_Request_Exception
      *
-     * @return Zend_Service_DeveloperGarden_Request_SendSms_SendSmsAbstract
      */
     public function setNumber($number)
     {
@@ -159,9 +159,9 @@ abstract class Zend_Service_DeveloperGarden_Request_SendSms_SendSmsAbstract
      * sets a new message
      *
      * @param string $message
+     * @return Zend_Service_DeveloperGarden_Request_SendSms_SendSmsAbstract
      * @throws Zend_Service_DeveloperGarden_Request_Exception
      *
-     * @return Zend_Service_DeveloperGarden_Request_SendSms_SendSmsAbstract
      */
     public function setMessage($message)
     {
@@ -224,7 +224,7 @@ abstract class Zend_Service_DeveloperGarden_Request_SendSms_SendSmsAbstract
     public function getMessageLength()
     {
         $message = $this->getMessage();
-        $length  = strlen($message);
+        $length = strlen($message);
 
         foreach ($this->_specialChars as $char) {
             $c = (substr_count($message, $char) * 2) - 1;
@@ -258,7 +258,7 @@ abstract class Zend_Service_DeveloperGarden_Request_SendSms_SendSmsAbstract
      */
     public function getNumberCount()
     {
-        $number   = $this->getNumber();
+        $number = $this->getNumber();
         $retValue = 0;
         if (!empty($number)) {
             $retValue = count(explode(',', $number));

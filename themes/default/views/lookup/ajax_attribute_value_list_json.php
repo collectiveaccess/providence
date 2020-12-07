@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * lookup/ajax_attribute_value_list_html.php : 
  * ----------------------------------------------------------------------
@@ -25,5 +26,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('attribute_value_list'));
+print json_encode($this->getVar('attribute_value_list'));
 ?>

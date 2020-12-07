@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/views/administrate/setup/relationship_type_editor/log_html.php : 
  * ----------------------------------------------------------------------
@@ -25,17 +26,19 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_type = $this->getVar('t_subject');
-	$vn_item_id = $this->getVar('subject_id');
+$t_type = $this->getVar('t_subject');
+$vn_item_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
-<?php
-	print caFormControlBox(
-		'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caLog\').caFilterTable(this.value); return false;" size="20"/></div>', 
-		'', 
-		''
-	); 
-	print $this->getVar('log');
-?>
-	<div class="editorBottomPadding"><!-- empty --></div>
+    <?php
+    print caFormControlBox(
+        '<div class="list-filter">' . _t(
+            'Filter'
+        ) . ': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caLog\').caFilterTable(this.value); return false;" size="20"/></div>',
+        '',
+        ''
+    );
+    print $this->getVar('log');
+    ?>
+    <div class="editorBottomPadding"><!-- empty --></div>
 </div>

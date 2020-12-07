@@ -83,7 +83,7 @@ class Zend_Service_DeveloperGarden_Request_IpLocation_LocateIPRequest
     {
         if ($ip instanceof Zend_Service_DeveloperGarden_IpLocation_IpAddress) {
             $this->address[] = array(
-                'ipType'    => $ip->getVersion(),
+                'ipType' => $ip->getVersion(),
                 'ipAddress' => $ip->getIp(),
             );
             return $this;

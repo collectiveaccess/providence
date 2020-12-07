@@ -45,11 +45,9 @@ interface Zend_Tool_Framework_Manifest_Interface
      *
      * @return array|Zend_Tool_Framework_Manifest_Metadata
      **
-
-    public function getMetadata();
-
+     *
+     * public function getMetadata();
      **/
-
 
 
     /**
@@ -60,11 +58,9 @@ interface Zend_Tool_Framework_Manifest_Interface
      *
      * @return array|Zend_Tool_Framework_Action_Interface
      **
-
-    public function getActions();
-
+     *
+     * public function getActions();
      **/
-
 
 
     /**
@@ -74,9 +70,8 @@ interface Zend_Tool_Framework_Manifest_Interface
      * of providers
      *
      **
-
-    public function getProviders();
-
+     *
+     * public function getProviders();
      **/
 
 }

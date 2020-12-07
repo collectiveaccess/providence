@@ -74,9 +74,9 @@ class Zend_Oauth_Http
     /**
      * Constructor
      *
-     * @param  Zend_Oauth_Consumer $consumer
-     * @param  null|array $parameters
-     * @param  null|Zend_Oauth_Http_Utility $utility
+     * @param Zend_Oauth_Consumer $consumer
+     * @param null|array $parameters
+     * @param null|Zend_Oauth_Http_Utility $utility
      * @return void
      */
     public function __construct(
@@ -99,7 +99,7 @@ class Zend_Oauth_Http
     /**
      * Set a preferred HTTP request method.
      *
-     * @param  string $method
+     * @param string $method
      * @return Zend_Oauth_Http
      */
     public function setMethod($method)
@@ -125,7 +125,7 @@ class Zend_Oauth_Http
     /**
      * Mutator to set an array of custom parameters for the HTTP request.
      *
-     * @param  array $customServiceParameters
+     * @param array $customServiceParameters
      * @return Zend_Oauth_Http
      */
     public function setParameters(array $customServiceParameters)
@@ -161,7 +161,7 @@ class Zend_Oauth_Http
      * preference list for OAuth Request Schemes.
      * On success, return the Request object that results for processing.
      *
-     * @param  array $params
+     * @param array $params
      * @return Zend_Http_Response
      * @throws Zend_Oauth_Exception on HTTP request errors
      * @todo   Remove cycling?; Replace with upfront do-or-die configuration
@@ -169,8 +169,8 @@ class Zend_Oauth_Http
     public function startRequestCycle(array $params)
     {
         $response = null;
-        $body     = null;
-        $status   = null;
+        $body = null;
+        $status = null;
         try {
             $response = $this->_attemptRequest($params);
         } catch (Zend_Http_Client_Exception $e) {
@@ -178,7 +178,7 @@ class Zend_Oauth_Http
             throw new Zend_Oauth_Exception('Error in HTTP request', null, $e);
         }
         if ($response !== null) {
-            $body   = $response->getBody();
+            $body = $response->getBody();
             $status = $response->getStatus();
         }
         if ($response === null // Request failure/exception
@@ -216,7 +216,7 @@ class Zend_Oauth_Http
      * Manages the switch from OAuth request scheme to another lower preference
      * scheme during a request cycle.
      *
-     * @param  Zend_Http_Response
+     * @param Zend_Http_Response
      * @return void
      * @throws Zend_Oauth_Exception if unable to retrieve valid token response
      */
@@ -244,8 +244,8 @@ class Zend_Oauth_Http
      * Generates a valid OAuth Authorization header based on the provided
      * parameters and realm.
      *
-     * @param  array $params
-     * @param  string $realm
+     * @param array $params
+     * @param string $realm
      * @return string
      */
     protected function _toAuthorizationHeader(array $params, $realm = null)
@@ -257,9 +257,9 @@ class Zend_Oauth_Http
                 continue;
             }
             $headerValue[] = Zend_Oauth_Http_Utility::urlEncode($key)
-                           . '="'
-                           . Zend_Oauth_Http_Utility::urlEncode($value)
-                           . '"';
+                . '="'
+                . Zend_Oauth_Http_Utility::urlEncode($value)
+                . '"';
         }
         return implode(",", $headerValue);
     }

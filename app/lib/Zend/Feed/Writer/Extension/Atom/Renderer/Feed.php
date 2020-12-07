@@ -71,25 +71,27 @@ class Zend_Feed_Writer_Extension_Atom_Renderer_Feed
      */
     protected function _appendNamespaces()
     {
-        $this->getRootElement()->setAttribute('xmlns:atom',
-            'http://www.w3.org/2005/Atom');
+        $this->getRootElement()->setAttribute(
+            'xmlns:atom',
+            'http://www.w3.org/2005/Atom'
+        );
     }
 
     /**
      * Set feed link elements
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setFeedLinks(DOMDocument $dom, DOMElement $root)
     {
         $flinks = $this->getDataContainer()->getFeedLinks();
-        if(!$flinks || empty($flinks)) {
+        if (!$flinks || empty($flinks)) {
             return;
         }
         foreach ($flinks as $type => $href) {
-            $mime  = 'application/' . strtolower($type) . '+xml';
+            $mime = 'application/' . strtolower($type) . '+xml';
             $flink = $dom->createElement('atom:link');
             $root->appendChild($flink);
             $flink->setAttribute('rel', 'self');
@@ -102,8 +104,8 @@ class Zend_Feed_Writer_Extension_Atom_Renderer_Feed
     /**
      * Set PuSH hubs
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setHubs(DOMDocument $dom, DOMElement $root)

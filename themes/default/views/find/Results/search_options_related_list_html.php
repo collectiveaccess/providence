@@ -26,154 +26,201 @@
  * ----------------------------------------------------------------------
  */
 
-	$vo_result 				= $this->getVar('result');
- 	$vo_result_context 		= $this->getVar('result_context');
- 	$t_subject 				= $this->getVar('t_subject');
- 	$vs_table 				= $t_subject->tableName();
- ?>
- 
- 
- <?php
-if($vo_result->numHits() > 0) {
-	print $this->render('Search/search_tools_related_list_html.php');
+$vo_result = $this->getVar('result');
+$vo_result_context = $this->getVar('result_context');
+$t_subject = $this->getVar('t_subject');
+$vs_table = $t_subject->tableName();
+?>
 
-	if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && !($this->getVar('noRefine'))) {
-		print $this->render('Search/search_refine_html.php');
-	}
+
+<?php
+if ($vo_result->numHits() > 0) {
+    print $this->render('Search/search_tools_related_list_html.php');
+
+    if (($this->getVar('mode') === 'search') && ($this->request->user->canDoAction(
+            'can_browse_' . $vs_table
+        )) && !($this->getVar('noRefine'))) {
+        print $this->render('Search/search_refine_html.php');
+    }
 }
 ?>
 <div style="clear: both;"><!-- empty --></div>
- 
-<a href='#' class='showOptions' id='showOptions_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("display", "show");'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, '24px'); ?></a>
+
+<a href='#' class='showOptions' id='showOptions_<?php print $this->getVar('interstitialPrefix'); ?>'
+   onclick='return caHandleResultsUIBoxes_<?php print $this->getVar(
+       'interstitialPrefix'
+   ); ?>("display", "show");'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, '24px'); ?></a>
 
 <?php
-	if($vo_result->numHits() > 0) {
-		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && !($this->getVar('noRefine'))) {
-?>
-			<a href='#' id='showRefine_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("refine", "show");'><?php print caNavIcon(__CA_NAV_ICON_FILTER__, '24px'); ?></a>
-<?php
-		}
-?>
-		<a href='#' class='showTools' id='showTools_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("tools", "show");'><?php print caNavIcon(__CA_NAV_ICON_EXPORT__, '24px'); ?></a>
-<?php
-	}
+if ($vo_result->numHits() > 0) {
+    if ($this->getVar('mode') === 'search' && ($this->request->user->canDoAction(
+            'can_browse_' . $vs_table
+        )) && !($this->getVar('noRefine'))) {
+        ?>
+        <a href='#' id='showRefine_<?php print $this->getVar('interstitialPrefix'); ?>'
+           onclick='return caHandleResultsUIBoxes_<?php print $this->getVar(
+               'interstitialPrefix'
+           ); ?>("refine", "show");'><?php print caNavIcon(__CA_NAV_ICON_FILTER__, '24px'); ?></a>
+        <?php
+    }
+    ?>
+    <a href='#' class='showTools' id='showTools_<?php print $this->getVar('interstitialPrefix'); ?>'
+       onclick='return caHandleResultsUIBoxes_<?php print $this->getVar(
+           'interstitialPrefix'
+       ); ?>("tools", "show");'><?php print caNavIcon(__CA_NAV_ICON_EXPORT__, '24px'); ?></a>
+    <?php
+}
 ?>
 <div style="clear: both;"><!-- empty --></div>
 <div id="searchOptionsBox_<?php print $this->getVar('interstitialPrefix'); ?>" class="relatedListSearchOptionsBox">
-	<div class="bg">
-<?php
-		print caFormTag($this->request, 'Index', 'caSearchOptionsForm_'.$this->getVar('interstitialPrefix'),  null , 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
-		
-		print "<div class='col'>";
-		print _t("Sort").": <select name='sort' style='width: 70px;'>\n";
-		
-		$vs_current_sort = $vo_result_context->getCurrentSort();
-		$vs_current_sort_direction = $vo_result_context->getCurrentSortDirection();
-		if(is_array($this->getVar("sorts")) && (sizeof($this->getVar("sorts")) > 0)){
-			foreach($this->getVar("sorts") as $vs_sort => $vs_option){
-				print "<option value='".$vs_sort."'".(($vs_current_sort == $vs_sort) ? " SELECTED" : "").">".$vs_option."</option>";
-			}
-		}
-		print "</select>\n";
-		
-		print caHTMLSelect('direction', array(
-			'↑' => 'asc',
-			'↓' => 'desc'
-		), null, array('value' => $vs_current_sort_direction));
-		
-		print "</div>";
-		
-		print "<div class='col'>";
-		$va_items_per_page = $this->getVar("items_per_page");
-		$vn_current_items_per_page = (int)$vo_result_context->getItemsPerPage();
-		print _t("#/page").": <select name='n' style='width: 50px;'>\n";
-		if(is_array($va_items_per_page) && sizeof($va_items_per_page) > 0){
-			foreach($va_items_per_page as $vn_items_per_p){
-				print "<option value='".(int)$vn_items_per_p."' ".(((int)$vn_items_per_p == $vn_current_items_per_page) ? "SELECTED='1'" : "").">{$vn_items_per_p}</option>\n";
-			}
-		}
-		print "</select>\n";
-		print "</div>";
+    <div class="bg">
+        <?php
+        print caFormTag(
+            $this->request,
+            'Index',
+            'caSearchOptionsForm_' . $this->getVar('interstitialPrefix'),
+            null,
+            'post',
+            'multipart/form-data',
+            '_top',
+            array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)
+        );
 
-		print "<div class='col'>";
-		$va_views = $this->getVar("views");
-		$vs_current_view = $vo_result_context->getCurrentView();
-		print _t("Layout").": <select name='view' style='width: 100px;'>\n";
-		if(is_array($va_views) && sizeof($va_views) > 0){
-			foreach($va_views as $vs_view => $vs_name){
-				print "<option value='".$vs_view."' ".(($vs_view == $vs_current_view) ? "SELECTED='1'" : "").">{$vs_name}</option>\n";
-			}
-		}
-		print "</select>\n";
-		print "</div>";
-		
-		print "<div class='col'>";
-		$va_display_lists = $this->getVar("display_lists");
-		print _t("Display").": <select name='display_id' style='width: 100px;'>\n";
-		if(is_array($va_display_lists) && sizeof($va_display_lists) > 0){
-			foreach($va_display_lists as $vn_display_id => $vs_display_name){
-				print "<option value='".$vn_display_id."' ".(($vn_display_id == $this->getVar("current_display_list")) ? "SELECTED='1'" : "").">{$vs_display_name}</option>\n";
-			}
-		}
-		print "</select>\n";
-		print "</div>";		
-?>		
-			<div class="clear"> </div>
-		
-			<a href='#' id='hideOptions_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("display", "hide"); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
-			<a href='#' id='saveOptions_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='jQuery("#caSearchOptionsForm_<?php print $this->getVar('interstitialPrefix'); ?>").submit(); return false;'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
-		</form>
+        print "<div class='col'>";
+        print _t("Sort") . ": <select name='sort' style='width: 70px;'>\n";
 
-		<div style='clear:both;height:1px;'>&nbsp;</div>
-	</div><!-- end bg -->
+        $vs_current_sort = $vo_result_context->getCurrentSort();
+        $vs_current_sort_direction = $vo_result_context->getCurrentSortDirection();
+        if (is_array($this->getVar("sorts")) && (sizeof($this->getVar("sorts")) > 0)) {
+            foreach ($this->getVar("sorts") as $vs_sort => $vs_option) {
+                print "<option value='" . $vs_sort . "'" . (($vs_current_sort == $vs_sort) ? " SELECTED" : "") . ">" . $vs_option . "</option>";
+            }
+        }
+        print "</select>\n";
+
+        print caHTMLSelect(
+            'direction',
+            array(
+                '↑' => 'asc',
+                '↓' => 'desc'
+            ),
+            null,
+            array('value' => $vs_current_sort_direction)
+        );
+
+        print "</div>";
+
+        print "<div class='col'>";
+        $va_items_per_page = $this->getVar("items_per_page");
+        $vn_current_items_per_page = (int)$vo_result_context->getItemsPerPage();
+        print _t("#/page") . ": <select name='n' style='width: 50px;'>\n";
+        if (is_array($va_items_per_page) && sizeof($va_items_per_page) > 0) {
+            foreach ($va_items_per_page as $vn_items_per_p) {
+                print "<option value='" . (int)$vn_items_per_p . "' " . (((int)$vn_items_per_p == $vn_current_items_per_page) ? "SELECTED='1'" : "") . ">{$vn_items_per_p}</option>\n";
+            }
+        }
+        print "</select>\n";
+        print "</div>";
+
+        print "<div class='col'>";
+        $va_views = $this->getVar("views");
+        $vs_current_view = $vo_result_context->getCurrentView();
+        print _t("Layout") . ": <select name='view' style='width: 100px;'>\n";
+        if (is_array($va_views) && sizeof($va_views) > 0) {
+            foreach ($va_views as $vs_view => $vs_name) {
+                print "<option value='" . $vs_view . "' " . (($vs_view == $vs_current_view) ? "SELECTED='1'" : "") . ">{$vs_name}</option>\n";
+            }
+        }
+        print "</select>\n";
+        print "</div>";
+
+        print "<div class='col'>";
+        $va_display_lists = $this->getVar("display_lists");
+        print _t("Display") . ": <select name='display_id' style='width: 100px;'>\n";
+        if (is_array($va_display_lists) && sizeof($va_display_lists) > 0) {
+            foreach ($va_display_lists as $vn_display_id => $vs_display_name) {
+                print "<option value='" . $vn_display_id . "' " . (($vn_display_id == $this->getVar(
+                            "current_display_list"
+                        )) ? "SELECTED='1'" : "") . ">{$vs_display_name}</option>\n";
+            }
+        }
+        print "</select>\n";
+        print "</div>";
+        ?>
+        <div class="clear"></div>
+
+        <a href='#' id='hideOptions_<?php print $this->getVar('interstitialPrefix'); ?>'
+           onclick='return caHandleResultsUIBoxes_<?php print $this->getVar(
+               'interstitialPrefix'
+           ); ?>("display", "hide"); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+        <a href='#' id='saveOptions_<?php print $this->getVar('interstitialPrefix'); ?>'
+           onclick='jQuery("#caSearchOptionsForm_<?php print $this->getVar(
+               'interstitialPrefix'
+           ); ?>").submit(); return false;'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+        </form>
+
+        <div style='clear:both;height:1px;'>&nbsp;</div>
+    </div><!-- end bg -->
 </div><!-- end searchOptionsBox -->
 <?php
-	TooltipManager::add('#showOptions_'.$this->getVar('interstitialPrefix'), _t("Display Options"));
-	TooltipManager::add('#showRefine_'.$this->getVar('interstitialPrefix'), _t("Refine Results"));
-	TooltipManager::add('#showTools_'.$this->getVar('interstitialPrefix'), _t("Export Tools"));
+TooltipManager::add('#showOptions_' . $this->getVar('interstitialPrefix'), _t("Display Options"));
+TooltipManager::add('#showRefine_' . $this->getVar('interstitialPrefix'), _t("Refine Results"));
+TooltipManager::add('#showTools_' . $this->getVar('interstitialPrefix'), _t("Export Tools"));
 ?>
 <script type="text/javascript">
-	function caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>(mode, action) {
-		var boxes = ['searchOptionsBox_<?php print $this->getVar('interstitialPrefix'); ?>', 'searchRefineBox_<?php print $this->getVar('interstitialPrefix'); ?>', 'searchToolsBox_<?php print $this->getVar('interstitialPrefix'); ?>'];
-		var showButtons = ['showOptions_<?php print $this->getVar('interstitialPrefix'); ?>', 'showRefine_<?php print $this->getVar('interstitialPrefix'); ?>', 'showTools_<?php print $this->getVar('interstitialPrefix'); ?>'];
-		
-		var currentBox, currentShowButton, currentHideButton;
-		
-		jQuery("input.addItemToSetControl").hide(); 
-		switch(mode) {
-			case 'display':
-				if (action == 'show') {
-					currentBox = "searchOptionsBox_<?php print $this->getVar('interstitialPrefix'); ?>";
-					currentShowButton = "showOptions_<?php print $this->getVar('interstitialPrefix'); ?>";
-				}
-				break;
-			case 'refine':
-				if (action == 'show') {
-				
-					currentBox = "searchRefineBox_<?php print $this->getVar('interstitialPrefix'); ?>";
-					currentShowButton = "showRefine_<?php print $this->getVar('interstitialPrefix'); ?>";
-				} 
-				break;
-			case 'tools':
-				if (action == 'show') {
-				
-					currentBox = "searchToolsBox_<?php print $this->getVar('interstitialPrefix'); ?>";
-					currentShowButton = "showTools_<?php print $this->getVar('interstitialPrefix'); ?>";
-					jQuery("input.addItemToSetControl").show(); 
-				} 
-				break;
-		}
-		
-		for (var i=0; i< boxes.length; i++) {
-			if (boxes[i] != currentBox) { jQuery("#" + boxes[i]).slideUp(250); }
-		}
-		jQuery("#" + currentBox).slideDown(250);
-		for (var i=0; i < showButtons.length; i++) {
-			if (showButtons[i] != currentShowButton) { jQuery("#" + showButtons[i]).show(); }
-		}
-		jQuery("#" + currentShowButton).hide();
-		
-		
-		return false;
-	}
+    function caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>(mode, action) {
+        var boxes = ['searchOptionsBox_<?php print $this->getVar(
+            'interstitialPrefix'
+        ); ?>', 'searchRefineBox_<?php print $this->getVar(
+            'interstitialPrefix'
+        ); ?>', 'searchToolsBox_<?php print $this->getVar('interstitialPrefix'); ?>'];
+        var showButtons = ['showOptions_<?php print $this->getVar(
+            'interstitialPrefix'
+        ); ?>', 'showRefine_<?php print $this->getVar('interstitialPrefix'); ?>', 'showTools_<?php print $this->getVar(
+            'interstitialPrefix'
+        ); ?>'];
+
+        var currentBox, currentShowButton, currentHideButton;
+
+        jQuery("input.addItemToSetControl").hide();
+        switch (mode) {
+            case 'display':
+                if (action == 'show') {
+                    currentBox = "searchOptionsBox_<?php print $this->getVar('interstitialPrefix'); ?>";
+                    currentShowButton = "showOptions_<?php print $this->getVar('interstitialPrefix'); ?>";
+                }
+                break;
+            case 'refine':
+                if (action == 'show') {
+
+                    currentBox = "searchRefineBox_<?php print $this->getVar('interstitialPrefix'); ?>";
+                    currentShowButton = "showRefine_<?php print $this->getVar('interstitialPrefix'); ?>";
+                }
+                break;
+            case 'tools':
+                if (action == 'show') {
+
+                    currentBox = "searchToolsBox_<?php print $this->getVar('interstitialPrefix'); ?>";
+                    currentShowButton = "showTools_<?php print $this->getVar('interstitialPrefix'); ?>";
+                    jQuery("input.addItemToSetControl").show();
+                }
+                break;
+        }
+
+        for (var i = 0; i < boxes.length; i++) {
+            if (boxes[i] != currentBox) {
+                jQuery("#" + boxes[i]).slideUp(250);
+            }
+        }
+        jQuery("#" + currentBox).slideDown(250);
+        for (var i = 0; i < showButtons.length; i++) {
+            if (showButtons[i] != currentShowButton) {
+                jQuery("#" + showButtons[i]).show();
+            }
+        }
+        jQuery("#" + currentShowButton).hide();
+
+
+        return false;
+    }
 </script>

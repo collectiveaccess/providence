@@ -83,24 +83,39 @@ class Zend_Pdf_Resource_GraphicsState extends Zend_Pdf_Resource
      *
      * @param float $alpha
      * @param string $mode
-     * @throws Zend_Pdf_Exception
      * @return Zend_Pdf_Canvas_Interface
+     * @throws Zend_Pdf_Exception
      */
     public function setAlpha($alpha, $mode = 'Normal')
     {
-        if (!in_array($mode, array('Normal', 'Multiply', 'Screen', 'Overlay', 'Darken', 'Lighten', 'ColorDodge',
-                                   'ColorBurn', 'HardLight', 'SoftLight', 'Difference', 'Exclusion'))) {
+        if (!in_array(
+            $mode,
+            array(
+                'Normal',
+                'Multiply',
+                'Screen',
+                'Overlay',
+                'Darken',
+                'Lighten',
+                'ColorDodge',
+                'ColorBurn',
+                'HardLight',
+                'SoftLight',
+                'Difference',
+                'Exclusion'
+            )
+        )) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Unsupported transparency mode.');
         }
-        if (!is_numeric($alpha)  ||  $alpha < 0  ||  $alpha > 1) {
+        if (!is_numeric($alpha) || $alpha < 0 || $alpha > 1) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Alpha value must be numeric between 0 (transparent) and 1 (opaque).');
         }
 
-        $this->_resource->BM   = new Zend_Pdf_Element_Name($mode);
-        $this->_resource->CA   = new Zend_Pdf_Element_Numeric($alpha);
-        $this->_resource->ca   = new Zend_Pdf_Element_Numeric($alpha);
+        $this->_resource->BM = new Zend_Pdf_Element_Name($mode);
+        $this->_resource->CA = new Zend_Pdf_Element_Numeric($alpha);
+        $this->_resource->ca = new Zend_Pdf_Element_Numeric($alpha);
     }
 
 

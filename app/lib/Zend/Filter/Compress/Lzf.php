@@ -48,7 +48,7 @@ class Zend_Filter_Compress_Lzf implements Zend_Filter_Compress_CompressInterface
     /**
      * Compresses the given content
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function compress($content)
@@ -65,7 +65,7 @@ class Zend_Filter_Compress_Lzf implements Zend_Filter_Compress_CompressInterface
     /**
      * Decompresses the given content
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function decompress($content)

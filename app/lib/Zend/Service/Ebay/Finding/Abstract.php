@@ -55,7 +55,7 @@ abstract class Zend_Service_Ebay_Finding_Abstract
     protected $_attributes = array();
 
     /**
-     * @param  DOMElement $dom
+     * @param DOMElement $dom
      * @return void
      */
     public function __construct(DOMElement $dom)
@@ -66,8 +66,8 @@ abstract class Zend_Service_Ebay_Finding_Abstract
     }
 
     /**
-     * @param  string $tag
-     * @param  string $attribute
+     * @param string $tag
+     * @param string $attribute
      * @return mixed
      */
     public function attributes($tag, $attribute = null)
@@ -102,8 +102,8 @@ abstract class Zend_Service_Ebay_Finding_Abstract
     /**
      * Load DOMXPath for current DOM object.
      *
-     * @see    Zend_Service_Ebay_Finding::_parseResponse()
      * @return void
+     * @see    Zend_Service_Ebay_Finding::_parseResponse()
      */
     protected function _initXPath()
     {
@@ -135,18 +135,18 @@ abstract class Zend_Service_Ebay_Finding_Abstract
     }
 
     /**
-     * @param  string $path
-     * @param  string $type
-     * @param  string $array When true means it expects more than one node occurence
+     * @param string $path
+     * @param string $type
+     * @param string $array When true means it expects more than one node occurence
      * @return mixed
      */
     protected function _query($path, $type, $array = false)
     {
         // find values
         $values = array();
-        $nodes  = $this->_xPath->query($path, $this->_dom);
+        $nodes = $this->_xPath->query($path, $this->_dom);
         foreach ($nodes as $node) {
-            $value    = (string) $node->nodeValue;
+            $value = (string)$node->nodeValue;
             $values[] = Zend_Service_Ebay_Abstract::toPhpValue($value, $type);
             if (!$array) {
                 break;

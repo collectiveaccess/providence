@@ -32,9 +32,9 @@ require_once 'Zend/Validate/Abstract.php';
  */
 class Zend_Validate_Digits extends Zend_Validate_Abstract
 {
-    const NOT_DIGITS   = 'notDigits';
+    const NOT_DIGITS = 'notDigits';
     const STRING_EMPTY = 'digitsStringEmpty';
-    const INVALID      = 'digitsInvalid';
+    const INVALID = 'digitsInvalid';
 
     /**
      * Digits filter used for validation
@@ -49,9 +49,9 @@ class Zend_Validate_Digits extends Zend_Validate_Abstract
      * @var array
      */
     protected $_messageTemplates = array(
-        self::NOT_DIGITS   => "'%value%' must contain only digits",
+        self::NOT_DIGITS => "'%value%' must contain only digits",
         self::STRING_EMPTY => "'%value%' is an empty string",
-        self::INVALID      => "Invalid type given. String, integer or float expected",
+        self::INVALID => "Invalid type given. String, integer or float expected",
     );
 
     /**
@@ -59,7 +59,7 @@ class Zend_Validate_Digits extends Zend_Validate_Abstract
      *
      * Returns true if and only if $value only contains digit characters
      *
-     * @param  string $value
+     * @param string $value
      * @return boolean
      */
     public function isValid($value)
@@ -69,7 +69,7 @@ class Zend_Validate_Digits extends Zend_Validate_Abstract
             return false;
         }
 
-        $this->_setValue((string) $value);
+        $this->_setValue((string)$value);
 
         if ('' === $this->_value) {
             $this->_error(self::STRING_EMPTY);

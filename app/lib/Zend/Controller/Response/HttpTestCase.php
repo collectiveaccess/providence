@@ -46,7 +46,7 @@ class Zend_Controller_Response_HttpTestCase extends Zend_Controller_Response_Htt
         }
         foreach ($this->_headers as $header) {
             $name = $header['name'];
-            $key  = strtolower($name);
+            $key = strtolower($name);
             if (array_key_exists($name, $headers)) {
                 if ($header['replace']) {
                     $headers[$key] = $header['name'] . ': ' . $header['value'];
@@ -61,7 +61,7 @@ class Zend_Controller_Response_HttpTestCase extends Zend_Controller_Response_Htt
     /**
      * Can we send headers?
      *
-     * @param  bool $throw
+     * @param bool $throw
      * @return void
      */
     public function canSendHeaders($throw = false)
@@ -86,7 +86,7 @@ class Zend_Controller_Response_HttpTestCase extends Zend_Controller_Response_Htt
     /**
      * Get body and/or body segments
      *
-     * @param  bool|string $spec
+     * @param bool|string $spec
      * @return string|array|null
      */
     public function getBody($spec = false)

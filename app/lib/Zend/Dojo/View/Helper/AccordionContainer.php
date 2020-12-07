@@ -31,14 +31,14 @@ require_once 'Zend/Dojo/View/Helper/DijitContainer.php';
  * @subpackage View
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
-  */
+ */
 class Zend_Dojo_View_Helper_AccordionContainer extends Zend_Dojo_View_Helper_DijitContainer
 {
     /**
      * Dijit being used
      * @var string
      */
-    protected $_dijit  = 'dijit.layout.AccordionContainer';
+    protected $_dijit = 'dijit.layout.AccordionContainer';
 
     /**
      * Dojo module to use
@@ -49,10 +49,10 @@ class Zend_Dojo_View_Helper_AccordionContainer extends Zend_Dojo_View_Helper_Dij
     /**
      * dijit.layout.AccordionContainer
      *
-     * @param  string $id
-     * @param  string $content
-     * @param  array $params  Parameters to use for dijit creation
-     * @param  array $attribs HTML attributes
+     * @param string $id
+     * @param string $content
+     * @param array $params Parameters to use for dijit creation
+     * @param array $attribs HTML attributes
      * @return string
      */
     public function accordionContainer($id = null, $content = '', array $params = array(), array $attribs = array())

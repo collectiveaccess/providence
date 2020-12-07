@@ -50,18 +50,18 @@ class Zend_Controller_Action_Helper_Json extends Zend_Controller_Action_Helper_A
      * 'application/json', and disables layouts and viewRenderer (if being
      * used).
      *
-     * @param  mixed   $data
-     * @param  boolean $keepLayouts
-     * @param  boolean|array $keepLayouts
-     * @param  boolean $encodeData Provided data is already JSON
+     * @param mixed $data
+     * @param boolean $keepLayouts
+     * @param boolean|array $keepLayouts
+     * @param boolean $encodeData Provided data is already JSON
      * NOTE:   if boolean, establish $keepLayouts to true|false
      *         if array, admit params for Zend_Json::encode as enableJsonExprFinder=>true|false
      *         if $keepLayouts and parmas for Zend_Json::encode are required
      *         then, the array can contains a 'keepLayout'=>true|false and/or 'encodeData'=>true|false
      *         that will not be passed to Zend_Json::encode method but will be passed
      *         to Zend_View_Helper_Json
-     * @throws Zend_Controller_Action_Helper_Json
      * @return string
+     * @throws Zend_Controller_Action_Helper_Json
      */
     public function encodeJson($data, $keepLayouts = false, $encodeData = true)
     {
@@ -86,8 +86,8 @@ class Zend_Controller_Action_Helper_Json extends Zend_Controller_Action_Helper_A
     /**
      * Encode JSON response and immediately send
      *
-     * @param  mixed   $data
-     * @param  boolean|array $keepLayouts
+     * @param mixed $data
+     * @param boolean|array $keepLayouts
      * @param  $encodeData Encode $data as JSON?
      * NOTE:   if boolean, establish $keepLayouts to true|false
      *         if array, admit params for Zend_Json::encode as enableJsonExprFinder=>true|false
@@ -117,10 +117,10 @@ class Zend_Controller_Action_Helper_Json extends Zend_Controller_Action_Helper_A
      * Allows encoding JSON. If $sendNow is true, immediately sends JSON
      * response.
      *
-     * @param  mixed   $data
-     * @param  boolean $sendNow
-     * @param  boolean $keepLayouts
-     * @param  boolean $encodeData Encode $data as JSON?
+     * @param mixed $data
+     * @param boolean $sendNow
+     * @param boolean $keepLayouts
+     * @param boolean $encodeData Encode $data as JSON?
      * @return string|void
      */
     public function direct($data, $sendNow = true, $keepLayouts = false, $encodeData = true)

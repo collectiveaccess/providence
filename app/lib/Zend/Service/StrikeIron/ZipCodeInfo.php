@@ -36,10 +36,12 @@ class Zend_Service_StrikeIron_ZipCodeInfo extends Zend_Service_StrikeIron_Base
      * Configuration options
      * @param array
      */
-    protected $_options = array('username' => null,
-                                'password' => null,
-                                'client'   => null,
-                                'options'  => null,
-                                'headers'  => null,
-                                'wsdl'     => 'http://sdpws.strikeiron.com/zf1.StrikeIron/sdpZIPCodeInfo?WSDL');
+    protected $_options = array(
+        'username' => null,
+        'password' => null,
+        'client' => null,
+        'options' => null,
+        'headers' => null,
+        'wsdl' => 'http://sdpws.strikeiron.com/zf1.StrikeIron/sdpZIPCodeInfo?WSDL'
+    );
 }

@@ -36,7 +36,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Constructor
      *
-     * @param  array $categories Categories columns and in iTunes Music Store Browse
+     * @param array $categories Categories columns and in iTunes Music Store Browse
      * @return void
      */
     public function __construct(array $categories)
@@ -55,7 +55,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
      *      )
      * </code>
      *
-     * @param  array $categories
+     * @param array $categories
      * @return Zend_Feed_Builder_Header_Itunes
      * @throws Zend_Feed_Builder_Exception
      */
@@ -92,7 +92,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Sets the artist value, default to the feed's author value
      *
-     * @param  string $author
+     * @param string $author
      * @return Zend_Feed_Builder_Header_Itunes
      */
     public function setAuthor($author)
@@ -104,8 +104,8 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Sets the owner of the postcast
      *
-     * @param  string $name  default to the feed's author value
-     * @param  string $email default to the feed's email value
+     * @param string $name default to the feed's author value
+     * @param string $email default to the feed's email value
      * @return Zend_Feed_Builder_Header_Itunes
      * @throws Zend_Feed_Builder_Exception
      */
@@ -122,7 +122,9 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
                  * @see Zend_Feed_Builder_Exception
                  */
                 require_once 'Zend/Feed/Builder/Exception.php';
-                throw new Zend_Feed_Builder_Exception("you have to set a valid email address into the itunes owner's email property");
+                throw new Zend_Feed_Builder_Exception(
+                    "you have to set a valid email address into the itunes owner's email property"
+                );
             }
         }
         $this->offsetSet('owner', array('name' => $name, 'email' => $email));
@@ -133,7 +135,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
      * Sets the album/podcast art picture
      * Default to the feed's image value
      *
-     * @param  string $image
+     * @param string $image
      * @return Zend_Feed_Builder_Header_Itunes
      */
     public function setImage($image)
@@ -146,7 +148,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
      * Sets the short description of the podcast
      * Default to the feed's description
      *
-     * @param  string $subtitle
+     * @param string $subtitle
      * @return Zend_Feed_Builder_Header_Itunes
      */
     public function setSubtitle($subtitle)
@@ -159,7 +161,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
      * Sets the longer description of the podcast
      * Default to the feed's description
      *
-     * @param  string $summary
+     * @param string $summary
      * @return Zend_Feed_Builder_Header_Itunes
      */
     public function setSummary($summary)
@@ -171,7 +173,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Prevent a feed from appearing
      *
-     * @param  string $block can be 'yes' or 'no'
+     * @param string $block can be 'yes' or 'no'
      * @return Zend_Feed_Builder_Header_Itunes
      * @throws Zend_Feed_Builder_Exception
      */
@@ -192,7 +194,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Configuration of the parental advisory graphic
      *
-     * @param  string $explicit can be 'yes', 'no' or 'clean'
+     * @param string $explicit can be 'yes', 'no' or 'clean'
      * @return Zend_Feed_Builder_Header_Itunes
      * @throws Zend_Feed_Builder_Exception
      */
@@ -213,7 +215,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Sets a comma separated list of 12 keywords maximum
      *
-     * @param  string $keywords
+     * @param string $keywords
      * @return Zend_Feed_Builder_Header_Itunes
      */
     public function setKeywords($keywords)
@@ -225,7 +227,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Sets the new feed URL location
      *
-     * @param  string $url
+     * @param string $url
      * @return Zend_Feed_Builder_Header_Itunes
      */
     public function setNewFeedUrl($url)
@@ -237,13 +239,13 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Read only properties accessor
      *
-     * @param  string $name property to read
+     * @param string $name property to read
      * @return mixed
      */
     public function __get($name)
     {
         if (!$this->offsetExists($name)) {
-            return NULL;
+            return null;
         }
 
         return $this->offsetGet($name);
@@ -252,8 +254,8 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Write properties accessor
      *
-     * @param  string $name  name of the property to set
-     * @param  mixed  $value value to set
+     * @param string $name name of the property to set
+     * @param mixed $value value to set
      * @return void
      */
     public function __set($name, $value)
@@ -264,7 +266,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Isset accessor
      *
-     * @param  string $key
+     * @param string $key
      * @return boolean
      */
     public function __isset($key)
@@ -275,7 +277,7 @@ class Zend_Feed_Builder_Header_Itunes extends ArrayObject
     /**
      * Unset accessor
      *
-     * @param  string $key
+     * @param string $key
      * @return void
      */
     public function __unset($key)

@@ -25,16 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
-  
-  	$vo_result_context 			= $this->getVar('result_context');
- 	$vo_result					= $this->getVar('result');
+
+$vo_result_context = $this->getVar('result_context');
+$vo_result = $this->getVar('result');
 ?>
 <h3 class='entities'>
-	<?php print _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
+    <?php print _t("Browse %1", $this->getVar('mode_type_plural')) . "<br/>\n"; ?>
 </h3>
-<?php 
-	if ($vo_result) {
-		print $this->render('Results/current_sort_html.php');
-		print $this->render('Search/search_sets_html.php'); 
-	}
+<?php
+if ($vo_result) {
+    print $this->render('Results/current_sort_html.php');
+    print $this->render('Search/search_sets_html.php');
+}
 ?>

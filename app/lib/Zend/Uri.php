@@ -48,8 +48,8 @@ abstract class Zend_Uri
     /**
      * Return a string representation of this URI.
      *
-     * @see    getUri()
      * @return string
+     * @see    getUri()
      */
     public function __toString()
     {
@@ -66,7 +66,7 @@ abstract class Zend_Uri
      * by validating it but not returning an object.  Returns TRUE if
      * $uri is a well-formed URI, or FALSE otherwise.
      *
-     * @param  string $uri The URI to check
+     * @param string $uri The URI to check
      * @return boolean
      */
     public static function check($uri)
@@ -84,20 +84,20 @@ abstract class Zend_Uri
      * Create a new Zend_Uri object for a URI.  If building a new URI, then $uri should contain
      * only the scheme (http, ftp, etc).  Otherwise, supply $uri with the complete URI.
      *
-     * @param  string $uri       The URI form which a Zend_Uri instance is created
-     * @param  string $className The name of the class to use in order to manipulate URI
-     * @throws Zend_Uri_Exception When an empty string was supplied for the scheme
+     * @param string $uri The URI form which a Zend_Uri instance is created
+     * @param string $className The name of the class to use in order to manipulate URI
+     * @return Zend_Uri
      * @throws Zend_Uri_Exception When an illegal scheme is supplied
      * @throws Zend_Uri_Exception When the scheme is not supported
      * @throws Zend_Uri_Exception When $className doesn't exist or doesn't implements Zend_Uri
-     * @return Zend_Uri
+     * @throws Zend_Uri_Exception When an empty string was supplied for the scheme
      * @link   http://www.faqs.org/rfcs/rfc2396.html
      */
     public static function factory($uri = 'http', $className = null)
     {
         // Separate the scheme from the scheme-specific parts
-        $uri            = explode(':', $uri, 2);
-        $scheme         = strtolower($uri[0]);
+        $uri = explode(':', $uri, 2);
+        $scheme = strtolower($uri[0]);
         $schemeSpecific = isset($uri[1]) === true ? $uri[1] : '';
 
         if (strlen($scheme) === 0) {
@@ -142,7 +142,7 @@ abstract class Zend_Uri
 
         $schemeHandler = new $className($scheme, $schemeSpecific);
 
-        if (! $schemeHandler instanceof Zend_Uri) {
+        if (!$schemeHandler instanceof Zend_Uri) {
             require_once 'Zend/Uri/Exception.php';
             throw new Zend_Uri_Exception("\"$className\" is not an instance of Zend_Uri");
         }
@@ -186,7 +186,7 @@ abstract class Zend_Uri
      * Zend_Uri and its subclasses cannot be instantiated directly.
      * Use Zend_Uri::factory() to return a new Zend_Uri object.
      *
-     * @param string $scheme         The scheme of the URI
+     * @param string $scheme The scheme of the URI
      * @param string $schemeSpecific The scheme-specific part of the URI
      */
     abstract protected function __construct($scheme, $schemeSpecific = '');

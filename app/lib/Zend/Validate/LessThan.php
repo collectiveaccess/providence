@@ -58,7 +58,7 @@ class Zend_Validate_LessThan extends Zend_Validate_Abstract
     /**
      * Sets validator options
      *
-     * @param  mixed|Zend_Config $max
+     * @param mixed|Zend_Config $max
      * @return void
      */
     public function __construct($max)
@@ -92,7 +92,7 @@ class Zend_Validate_LessThan extends Zend_Validate_Abstract
     /**
      * Sets the max option
      *
-     * @param  mixed $max
+     * @param mixed $max
      * @return Zend_Validate_LessThan Provides a fluent interface
      */
     public function setMax($max)
@@ -106,7 +106,7 @@ class Zend_Validate_LessThan extends Zend_Validate_Abstract
      *
      * Returns true if and only if $value is less than max option
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return boolean
      */
     public function isValid($value)

@@ -52,7 +52,7 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     /**
      * Sets the data
      *
-     * @param  array $data
+     * @param array $data
      * @return Zend_Ldap_Node_Schema_Item Provides a fluid interface
      */
     public function setData(array $data)
@@ -74,7 +74,7 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     /**
      * Gets a specific attribute from this item
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function __get($name)
@@ -89,7 +89,7 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     /**
      * Checks whether a specific attribute exists.
      *
-     * @param  string $name
+     * @param string $name
      * @return boolean
      */
     public function __isset($name)
@@ -103,8 +103,8 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
      *
      * This method is needed for a full implementation of ArrayAccess
      *
-     * @param  string $name
-     * @param  mixed $value
+     * @param string $name
+     * @param mixed $value
      * @return null
      * @throws BadMethodCallException
      */
@@ -116,7 +116,7 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     /**
      * Gets a specific attribute from this item
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function offsetGet($name)
@@ -130,7 +130,7 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
      *
      * This method is needed for a full implementation of ArrayAccess
      *
-     * @param  string $name
+     * @param string $name
      * @return null
      * @throws BadMethodCallException
      */
@@ -142,7 +142,7 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     /**
      * Checks whether a specific attribute exists.
      *
-     * @param  string $name
+     * @param string $name
      * @return boolean
      */
     public function offsetExists($name)

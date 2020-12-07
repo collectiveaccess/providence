@@ -44,7 +44,7 @@ class Zend_Service_Amazon_EditorialReview
     /**
      * Assigns values to properties relevant to EditorialReview
      *
-     * @param  DOMElement $dom
+     * @param DOMElement $dom
      * @return void
      */
     public function __construct(DOMElement $dom)
@@ -52,7 +52,7 @@ class Zend_Service_Amazon_EditorialReview
         $xpath = new DOMXPath($dom->ownerDocument);
         $xpath->registerNamespace('az', 'http://webservices.amazon.com/AWSECommerceService/2011-08-01');
         foreach (array('Source', 'Content') as $el) {
-            $this->$el = (string) $xpath->query("./az:$el/text()", $dom)->item(0)->data;
+            $this->$el = (string)$xpath->query("./az:$el/text()", $dom)->item(0)->data;
         }
     }
 }

@@ -162,9 +162,11 @@ class Zend_Mail_Storage_Folder_Maildir extends Zend_Mail_Storage_Maildir impleme
                     array_push($folderStack, $parentFolder);
                     $parentFolder = $folder;
                     break;
-                } else if ($stack) {
-                    $parent = array_pop($stack);
-                    $parentFolder = array_pop($folderStack);
+                } else {
+                    if ($stack) {
+                        $parent = array_pop($stack);
+                        $parentFolder = array_pop($folderStack);
+                    }
                 }
             } while ($stack);
             if (!$stack) {
@@ -232,7 +234,7 @@ class Zend_Mail_Storage_Folder_Maildir extends Zend_Mail_Storage_Maildir impleme
 
         try {
             $this->_openMaildir($this->_rootdir . '.' . $folder->getGlobalName());
-        } catch(Zend_Mail_Storage_Exception $e) {
+        } catch (Zend_Mail_Storage_Exception $e) {
             // check what went wrong
             if (!$folder->isSelectable()) {
                 /**
@@ -247,8 +249,10 @@ class Zend_Mail_Storage_Folder_Maildir extends Zend_Mail_Storage_Maildir impleme
              * @see Zend_Mail_Storage_Exception
              */
             require_once 'Zend/Mail/Storage/Exception.php';
-            throw new Zend_Mail_Storage_Exception('seems like the maildir has vanished, I\'ve rebuild the ' .
-                                                         'folder tree, search for an other folder and try again', 0, $e);
+            throw new Zend_Mail_Storage_Exception(
+                'seems like the maildir has vanished, I\'ve rebuild the ' .
+                'folder tree, search for an other folder and try again', 0, $e
+            );
         }
     }
 

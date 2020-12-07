@@ -39,7 +39,7 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
     /**
      * Instantiates route based on passed Zend_Config structure
      *
-     * @param  Zend_Config $config Configuration object
+     * @param Zend_Config $config Configuration object
      * @return Zend_Controller_Router_Route_Chain
      */
     public static function getInstance(Zend_Config $config)
@@ -51,33 +51,32 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
     /**
      * Add a route to this chain
      *
-     * @param  Zend_Controller_Router_Route_Abstract $route
-     * @param  string                                $separator
+     * @param Zend_Controller_Router_Route_Abstract $route
+     * @param string $separator
      * @return Zend_Controller_Router_Route_Chain
      */
     public function chain(Zend_Controller_Router_Route_Abstract $route, $separator = self::URI_DELIMITER)
     {
-        $this->_routes[]     = $route;
+        $this->_routes[] = $route;
         $this->_separators[] = $separator;
 
         return $this;
-
     }
 
     /**
      * Matches a user submitted path with a previously defined route.
      * Assigns and returns an array of defaults on a successful match.
      *
-     * @param  Zend_Controller_Request_Http $request Request to get the path info from
-     * @param  null                         $partial
+     * @param Zend_Controller_Request_Http $request Request to get the path info from
+     * @param null $partial
      * @return array|false An array of assigned values or a false on a mismatch
      */
     public function match($request, $partial = null)
     {
-        $path        = trim($request->getPathInfo(), self::URI_DELIMITER);
-        $subPath     = $path;
-        $values      = array();
-        $numRoutes   = count($this->_routes);
+        $path = trim($request->getPathInfo(), self::URI_DELIMITER);
+        $subPath = $path;
+        $values = array();
+        $numRoutes = count($this->_routes);
         $matchedPath = null;
 
         foreach ($this->_routes as $key => $route) {
@@ -111,8 +110,8 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
             $matchedPath = $route->getMatchedPath();
 
             if ($matchedPath !== null) {
-                $subPath     = substr($subPath, strlen($matchedPath));
-                $separator   = substr($subPath, 0, strlen($this->_separators[$key]));
+                $subPath = substr($subPath, strlen($matchedPath));
+                $separator = substr($subPath, 0, strlen($this->_separators[$key]));
             }
 
             $values = $res + $values;
@@ -130,14 +129,14 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
     /**
      * Assembles a URL path defined by this route
      *
-     * @param  array $data An array of variable and value pairs used as parameters
-     * @param  bool  $reset
-     * @param  bool  $encode
+     * @param array $data An array of variable and value pairs used as parameters
+     * @param bool $reset
+     * @param bool $encode
      * @return string Route path with user submitted parameters
      */
     public function assemble($data = array(), $reset = false, $encode = false)
     {
-        $value     = '';
+        $value = '';
         $numRoutes = count($this->_routes);
 
         foreach ($this->_routes as $key => $route) {
@@ -162,7 +161,7 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
     /**
      * Set the request object for this and the child routes
      *
-     * @param  Zend_Controller_Request_Abstract|null $request
+     * @param Zend_Controller_Request_Abstract|null $request
      * @return void
      */
     public function setRequest(Zend_Controller_Request_Abstract $request = null)
@@ -175,11 +174,11 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
             }
         }
     }
-    
+
     /**
      * Return a single parameter of route's defaults
      *
-     * @param  string $name Array key of the parameter
+     * @param string $name Array key of the parameter
      * @return string Previously set default
      */
     public function getDefault($name)

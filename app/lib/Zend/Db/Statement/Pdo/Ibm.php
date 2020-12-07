@@ -40,17 +40,17 @@ require_once 'Zend/Db/Statement/Pdo.php';
 class Zend_Db_Statement_Pdo_Ibm extends Zend_Db_Statement_Pdo
 {
     /**
-    * Returns an array containing all of the result set rows.
-    *
-    * Behaves like parent, but if limit()
-    * is used, the final result removes the extra column
-    * 'zend_db_rownum'
-    *
-    * @param int $style OPTIONAL Fetch mode.
-    * @param int $col   OPTIONAL Column number, if fetch mode is by column.
-    * @return array Collection of rows, each in a format by the fetch mode.
-    * @throws Zend_Db_Statement_Exception
-    */
+     * Returns an array containing all of the result set rows.
+     *
+     * Behaves like parent, but if limit()
+     * is used, the final result removes the extra column
+     * 'zend_db_rownum'
+     *
+     * @param int $style OPTIONAL Fetch mode.
+     * @param int $col OPTIONAL Column number, if fetch mode is by column.
+     * @return array Collection of rows, each in a format by the fetch mode.
+     * @throws Zend_Db_Statement_Exception
+     */
     public function fetchAll($style = null, $col = null)
     {
         $data = parent::fetchAll($style, $col);
@@ -70,10 +70,10 @@ class Zend_Db_Statement_Pdo_Ibm extends Zend_Db_Statement_Pdo
      * Binds a parameter to the specified variable name.
      *
      * @param mixed $parameter Name the parameter, either integer or string.
-     * @param mixed $variable  Reference to PHP variable containing the value.
-     * @param mixed $type      OPTIONAL Datatype of SQL parameter.
-     * @param mixed $length    OPTIONAL Length of SQL parameter.
-     * @param mixed $options   OPTIONAL Other options.
+     * @param mixed $variable Reference to PHP variable containing the value.
+     * @param mixed $type OPTIONAL Datatype of SQL parameter.
+     * @param mixed $length OPTIONAL Length of SQL parameter.
+     * @param mixed $options OPTIONAL Other options.
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */

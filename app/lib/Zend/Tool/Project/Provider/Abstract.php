@@ -59,7 +59,7 @@ abstract class Zend_Tool_Project_Provider_Abstract
 {
 
     const NO_PROFILE_THROW_EXCEPTION = true;
-    const NO_PROFILE_RETURN_FALSE    = false;
+    const NO_PROFILE_RETURN_FALSE = false;
 
     /**
      * @var bool
@@ -77,14 +77,15 @@ abstract class Zend_Tool_Project_Provider_Abstract
     {
         // initialize the ZF Contexts (only once per php request)
         if (!self::$_isInitialized) {
-
             // load all base contexts ONCE
             $contextRegistry = Zend_Tool_Project_Context_Repository::getInstance();
             $contextRegistry->addContextsFromDirectory(
-                dirname(dirname(__FILE__)) . '/Context/Zf/', 'Zend_Tool_Project_Context_Zf_'
+                dirname(dirname(__FILE__)) . '/Context/Zf/',
+                'Zend_Tool_Project_Context_Zf_'
             );
             $contextRegistry->addContextsFromDirectory(
-                dirname(dirname(__FILE__)) . '/Context/Filesystem/', 'Zend_Tool_Project_Context_Filesystem_'
+                dirname(dirname(__FILE__)) . '/Context/Filesystem/',
+                'Zend_Tool_Project_Context_Filesystem_'
             );
 
             // determine if there are project specfic providers ONCE
@@ -103,7 +104,6 @@ abstract class Zend_Tool_Project_Provider_Abstract
         if ($contextClasses = $this->getContextClasses()) {
             $this->_loadContextClassesIntoRegistry($contextClasses);
         }
-
     }
 
     public function getContextClasses()
@@ -118,13 +118,16 @@ abstract class Zend_Tool_Project_Provider_Abstract
      *    - if an enpoint variable has been registered in teh client registry - key=workingDirectory
      *    - if an ENV variable with the key ZFPROJECT_PATH is found
      *
-     * @param bool   $loadProfileFlag         Whether or not to throw an exception when no profile is found
-     * @param string $projectDirectory        The project directory to use to search
-     * @param bool   $searchParentDirectories Whether or not to search upper level direcotries
+     * @param bool $loadProfileFlag Whether or not to throw an exception when no profile is found
+     * @param string $projectDirectory The project directory to use to search
+     * @param bool $searchParentDirectories Whether or not to search upper level direcotries
      * @return Zend_Tool_Project_Profile
      */
-    protected function _loadProfile($loadProfileFlag = self::NO_PROFILE_THROW_EXCEPTION, $projectDirectory = null, $searchParentDirectories = true)
-    {
+    protected function _loadProfile(
+        $loadProfileFlag = self::NO_PROFILE_THROW_EXCEPTION,
+        $projectDirectory = null,
+        $searchParentDirectories = true
+    ) {
         $foundPath = $this->_findProfileDirectory($projectDirectory, $searchParentDirectories);
 
         if ($foundPath == false) {
@@ -188,7 +191,9 @@ abstract class Zend_Tool_Project_Provider_Abstract
         $profile = $this->_loadProfile();
         if ($profile === false) {
             require_once 'Zend/Tool/Project/Provider/Exception.php';
-            throw new Zend_Tool_Project_Provider_Exception('A project profile was not found in the current working directory.');
+            throw new Zend_Tool_Project_Provider_Exception(
+                'A project profile was not found in the current working directory.'
+            );
         }
         return $profile;
     }
@@ -201,7 +206,9 @@ abstract class Zend_Tool_Project_Provider_Abstract
     protected function _getProfile($loadProfileFlag = self::NO_PROFILE_THROW_EXCEPTION)
     {
         if (!$this->_loadedProfile) {
-            if (($this->_loadProfile($loadProfileFlag) === false) && ($loadProfileFlag === self::NO_PROFILE_RETURN_FALSE)) {
+            if (($this->_loadProfile(
+                        $loadProfileFlag
+                    ) === false) && ($loadProfileFlag === self::NO_PROFILE_RETURN_FALSE)) {
                 return false;
             }
         }

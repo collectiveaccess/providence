@@ -221,12 +221,14 @@ class Zend_Feed_Reader_Extension_Podcast_Feed extends Zend_Feed_Reader_Extension
         $owner = null;
 
         $email = $this->_xpath->evaluate('string(' . $this->getXpathPrefix() . '/itunes:owner/itunes:email)');
-        $name  = $this->_xpath->evaluate('string(' . $this->getXpathPrefix() . '/itunes:owner/itunes:name)');
+        $name = $this->_xpath->evaluate('string(' . $this->getXpathPrefix() . '/itunes:owner/itunes:name)');
 
         if (!empty($email)) {
             $owner = $email . (empty($name) ? '' : ' (' . $name . ')');
-        } else if (!empty($name)) {
-            $owner = $name;
+        } else {
+            if (!empty($name)) {
+                $owner = $name;
+            }
         }
 
         if (!$owner) {

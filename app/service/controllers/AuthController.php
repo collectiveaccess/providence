@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/service/controllers/AuthController.php :
  * ----------------------------------------------------------------------
@@ -25,37 +26,43 @@
  *
  * ----------------------------------------------------------------------
  */
-	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/Service/ModelService.php');
+require_once(__CA_LIB_DIR__ . '/Service/BaseServiceController.php');
+require_once(__CA_LIB_DIR__ . '/Service/ModelService.php');
 
-	class AuthController extends BaseServiceController {
-		# -------------------------------------------------------
-		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
-		# -------------------------------------------------------
-		public function login() {
-			if(!Session::getSessionID()) {
-				$this->view->setVar("errors", array("Invalid session"));
-				$this->render("json_error.php");
-				return;
-			}
+class AuthController extends BaseServiceController
+{
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
 
-			$this->view->setVar("content",array('authToken' => Session::getServiceAuthToken()));
-			$this->render('json.php');
-		}
-		# -------------------------------------------------------
-		public function logout() {
-			if(!Session::getSessionID()) {
-				$this->view->setVar("errors", array("Invalid session"));
-				$this->render("json_error.php");
-				return;
-			}
+    # -------------------------------------------------------
+    public function login()
+    {
+        if (!Session::getSessionID()) {
+            $this->view->setVar("errors", array("Invalid session"));
+            $this->render("json_error.php");
+            return;
+        }
 
-			Session::deleteSession();
+        $this->view->setVar("content", array('authToken' => Session::getServiceAuthToken()));
+        $this->render('json.php');
+    }
 
-			$this->view->setVar("content",array('authToken' => Session::getServiceAuthToken()));
-			$this->render('json.php');
-		}
-		# -------------------------------------------------------
-	}
+    # -------------------------------------------------------
+    public function logout()
+    {
+        if (!Session::getSessionID()) {
+            $this->view->setVar("errors", array("Invalid session"));
+            $this->render("json_error.php");
+            return;
+        }
+
+        Session::deleteSession();
+
+        $this->view->setVar("content", array('authToken' => Session::getServiceAuthToken()));
+        $this->render('json.php');
+    }
+    # -------------------------------------------------------
+}

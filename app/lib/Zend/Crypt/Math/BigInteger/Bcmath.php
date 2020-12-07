@@ -179,20 +179,20 @@ class Zend_Crypt_Math_BigInteger_Bcmath implements Zend_Crypt_Math_BigInteger_In
     }
 
     /**public function integerToBinary($operand)
-    {
-        $return = '';
-        while(bccomp($operand, '0')) {
-            $return .= chr(bcmod($operand, '256'));
-            $operand = bcdiv($operand, '256');
-        }
-        return $return;
-    }**/ // Prior version for referenced offset
+     * {
+     * $return = '';
+     * while(bccomp($operand, '0')) {
+     * $return .= chr(bcmod($operand, '256'));
+     * $operand = bcdiv($operand, '256');
+     * }
+     * return $return;
+     * }**/ // Prior version for referenced offset
 
 
     public function hexToDecimal($operand)
     {
         $return = '0';
-        while(strlen($hex)) {
+        while (strlen($hex)) {
             $hex = hexdec(substr($operand, 0, 4));
             $dec = bcadd(bcmul($return, 65536), $hex);
             $operand = substr($operand, 4);

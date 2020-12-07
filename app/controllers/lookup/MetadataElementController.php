@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/MetadataElementController.php : 
  * ----------------------------------------------------------------------
@@ -25,14 +26,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class MetadataElementController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_metadata_elements';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'element';
- 		protected $ops_search_class = null;
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once(__CA_LIB_DIR__ . "/BaseLookupController.php");
+
+class MetadataElementController extends BaseLookupController
+{
+    # -------------------------------------------------------
+    protected $opb_uses_hierarchy_browser = false;
+    protected $ops_table_name = 'ca_metadata_elements';        // name of "subject" table (what we're editing)
+    protected $ops_name_singular = 'element';
+    protected $ops_search_class = null;
+    # -------------------------------------------------------
+}
+
+?>

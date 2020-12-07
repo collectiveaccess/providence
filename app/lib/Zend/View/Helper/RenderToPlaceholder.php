@@ -32,7 +32,6 @@ require_once 'Zend/View/Helper/Abstract.php';
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-
 class Zend_View_Helper_RenderToPlaceholder extends Zend_View_Helper_Abstract
 {
 

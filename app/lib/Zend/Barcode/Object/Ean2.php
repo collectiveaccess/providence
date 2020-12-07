@@ -42,10 +42,10 @@ class Zend_Barcode_Object_Ean2 extends Zend_Barcode_Object_Ean5
 {
 
     protected $_parities = array(
-        0 => array('A','A'),
-        1 => array('A','B'),
-        2 => array('B','A'),
-        3 => array('B','B')
+        0 => array('A', 'A'),
+        1 => array('A', 'B'),
+        2 => array('B', 'A'),
+        3 => array('B', 'B')
     );
 
     /**

@@ -37,8 +37,8 @@ interface Zend_Db_Statement_Interface
      *
      * @param string $column Name the column in the result set, either by
      *                       position or by name.
-     * @param mixed  $param  Reference to the PHP variable containing the value.
-     * @param mixed  $type   OPTIONAL
+     * @param mixed $param Reference to the PHP variable containing the value.
+     * @param mixed $type OPTIONAL
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */
@@ -48,10 +48,10 @@ interface Zend_Db_Statement_Interface
      * Binds a parameter to the specified variable name.
      *
      * @param mixed $parameter Name the parameter, either integer or string.
-     * @param mixed $variable  Reference to PHP variable containing the value.
-     * @param mixed $type      OPTIONAL Datatype of SQL parameter.
-     * @param mixed $length    OPTIONAL Length of SQL parameter.
-     * @param mixed $options   OPTIONAL Other options.
+     * @param mixed $variable Reference to PHP variable containing the value.
+     * @param mixed $type OPTIONAL Datatype of SQL parameter.
+     * @param mixed $length OPTIONAL Length of SQL parameter.
+     * @param mixed $options OPTIONAL Other options.
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */
@@ -61,8 +61,8 @@ interface Zend_Db_Statement_Interface
      * Binds a value to a parameter.
      *
      * @param mixed $parameter Name the parameter, either integer or string.
-     * @param mixed $value     Scalar value to bind to the parameter.
-     * @param mixed $type      OPTIONAL Datatype of the parameter.
+     * @param mixed $value Scalar value to bind to the parameter.
+     * @param mixed $type OPTIONAL Datatype of the parameter.
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */
@@ -115,7 +115,7 @@ interface Zend_Db_Statement_Interface
     /**
      * Fetches a row from the result set.
      *
-     * @param int $style  OPTIONAL Fetch mode for this fetch operation.
+     * @param int $style OPTIONAL Fetch mode for this fetch operation.
      * @param int $cursor OPTIONAL Absolute, relative, or other.
      * @param int $offset OPTIONAL Number for absolute or relative cursors.
      * @return mixed Array, object, or scalar depending on fetch mode.
@@ -127,7 +127,7 @@ interface Zend_Db_Statement_Interface
      * Returns an array containing all of the result set rows.
      *
      * @param int $style OPTIONAL Fetch mode.
-     * @param int $col   OPTIONAL Column number, if fetch mode is by column.
+     * @param int $col OPTIONAL Column number, if fetch mode is by column.
      * @return array Collection of rows, each in a format by the fetch mode.
      * @throws Zend_Db_Statement_Exception
      */
@@ -145,8 +145,8 @@ interface Zend_Db_Statement_Interface
     /**
      * Fetches the next row and returns it as an object.
      *
-     * @param string $class  OPTIONAL Name of the class to create.
-     * @param array  $config OPTIONAL Constructor arguments for the class.
+     * @param string $class OPTIONAL Name of the class to create.
+     * @param array $config OPTIONAL Constructor arguments for the class.
      * @return mixed One object instance of the specified class.
      * @throws Zend_Db_Statement_Exception
      */
@@ -185,7 +185,7 @@ interface Zend_Db_Statement_Interface
      * Set a statement attribute.
      *
      * @param string $key Attribute name.
-     * @param mixed  $val Attribute value.
+     * @param mixed $val Attribute value.
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */
@@ -194,7 +194,7 @@ interface Zend_Db_Statement_Interface
     /**
      * Set the default fetch mode for this statement.
      *
-     * @param int   $mode The fetch mode.
+     * @param int $mode The fetch mode.
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */

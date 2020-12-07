@@ -26,48 +26,61 @@
  * ----------------------------------------------------------------------
  */
 
-	/** @var RequestHTTP $po_request */
- 	$po_request				= $this->getVar('request');
-	$va_settings 			= $this->getVar('settings');
-	$vs_widget_id 			= $this->getVar('widget_id');
-	$va_notification_list	= $this->getVar('notification_list');
+/** @var RequestHTTP $po_request */
+$po_request = $this->getVar('request');
+$va_settings = $this->getVar('settings');
+$vs_widget_id = $this->getVar('widget_id');
+$va_notification_list = $this->getVar('notification_list');
 
-	if(!is_array($va_notification_list) || !sizeof($va_notification_list)) {
-		print "<div class=\"dashboardWidgetContentContainer dashboardWidgetScrollMedium\">"._t("You have no new notifications")."</div>";
-	} else {
-?>
-		<div class="dashboardWidgetContentContainer dashboardWidgetScrollLarge" style="width:430px">
-			<table class='dashboardWidgetTable'>
-				<tr>
-					<th>&nbsp;</th>
-					<th><?php print _t('Date/time'); ?></th>
-					<th><?php print _t('Message'); ?></th>
-				</tr>
+if (!is_array($va_notification_list) || !sizeof($va_notification_list)) {
+    print "<div class=\"dashboardWidgetContentContainer dashboardWidgetScrollMedium\">" . _t(
+            "You have no new notifications"
+        ) . "</div>";
+} else {
+    ?>
+    <div class="dashboardWidgetContentContainer dashboardWidgetScrollLarge" style="width:430px">
+        <table class='dashboardWidgetTable'>
+            <tr>
+                <th>&nbsp;</th>
+                <th><?php print _t('Date/time'); ?></th>
+                <th><?php print _t('Message'); ?></th>
+            </tr>
 
-<?php
-				foreach ($va_notification_list as $vn_notification_id => $va_notification) {
-					print "<tr>";
-					print "<td><a href='#' onclick='caMarkNotificationAsRead(" . $va_notification['subject_id'] . ", " . $vn_notification_id . "); return false;'>" . caNavIcon(__CA_NAV_ICON_CLOSE__, '14px') . "</a></td>";
-					print "<td>" .$va_notification['datetime_display'] . "</td>";
-					print "<td id='notificationWidgetMessage{$vn_notification_id}'>";
-					print "<div>" . $va_notification['message'] . "</div>";
-					if ($va_notification['delivery_email_sent_on'] > 0) {
-						print "<div class='dashboardWidgetContentSmallNote'>("._t("Email sent on %1", $va_notification['delivery_email_sent_on_display']).")</div>";
-					}
-					print "</td>";
-					print "</tr>\n";
-				}
-?>
-			</table>
-		</div>
+            <?php
+            foreach ($va_notification_list as $vn_notification_id => $va_notification) {
+                print "<tr>";
+                print "<td><a href='#' onclick='caMarkNotificationAsRead(" . $va_notification['subject_id'] . ", " . $vn_notification_id . "); return false;'>" . caNavIcon(
+                        __CA_NAV_ICON_CLOSE__,
+                        '14px'
+                    ) . "</a></td>";
+                print "<td>" . $va_notification['datetime_display'] . "</td>";
+                print "<td id='notificationWidgetMessage{$vn_notification_id}'>";
+                print "<div>" . $va_notification['message'] . "</div>";
+                if ($va_notification['delivery_email_sent_on'] > 0) {
+                    print "<div class='dashboardWidgetContentSmallNote'>(" . _t(
+                            "Email sent on %1",
+                            $va_notification['delivery_email_sent_on_display']
+                        ) . ")</div>";
+                }
+                print "</td>";
+                print "</tr>\n";
+            }
+            ?>
+        </table>
+    </div>
 
-<?php
-	}
+    <?php
+}
 ?>
 
 <script type="text/javascript">
-	function caMarkNotificationAsRead(subject_id, notification_id) {
-		jQuery.get("<?php print caNavUrl($po_request, 'manage', 'Notifications', 'markAsRead')?>", { subject_id: subject_id });
-		jQuery('#notificationWidgetMessage' + notification_id).parent().hide();
-	}
+    function caMarkNotificationAsRead(subject_id, notification_id) {
+        jQuery.get("<?php print caNavUrl(
+            $po_request,
+            'manage',
+            'Notifications',
+            'markAsRead'
+        )?>", {subject_id: subject_id});
+        jQuery('#notificationWidgetMessage' + notification_id).parent().hide();
+    }
 </script>

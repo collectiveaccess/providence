@@ -29,165 +29,186 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
-    
-include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
 
-abstract class BaseInformationServicePlugin Extends WLPlug {
-	// properties for this plugin instance
-	protected $properties = array(
-		
-	);
-	
-	// app config
-	protected $opo_config;
-	
-	
+/**
+ *
+ */
 
-	// plugin info
-	protected $info = array(
-		"NAME" => "InformationService",
-		"PROPERTIES" => array(
-			'id' => 'W'
-		)
-	);
-	
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function init() {
-	
-	}
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct() {
-		$this->opo_config = Configuration::load();
-	}
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function register() {
-		$this->opo_config = Configuration::load();
-		
-		$this->info["INSTANCE"] = $this;
-		return $this->info;
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns status of plugin. Normally this is overriden by the plugin subclass
-	 *
-	 * @return array - status info array; 'available' key determines if the plugin should be loaded or not
-	 */
-	public function checkStatus() {
-		$va_status = parent::checkStatus();
-		
-		if ($this->register()) {
-			$va_status['available'] = true;
-		}
-		
-		return $va_status;
-	}
-	# ----------------------------------------------------------
-	/**
-	 * Get map property
-	 *
-	 * @param $property - name of property - must be defined as a property in the plugin's 'PROPERTIES' array
-	 * @return string - the value of the property or null if the property is not valid
-	 */
-	public function get($property) {
-		if ($this->info["PROPERTIES"][$property]) {
-			return $this->properties[$property];
-		} else {
-			//print "Invalid property";
-			return null;
-		}
-	}
-	# ----------------------------------------------------------
-	/**
-	 *
-	 */
-	public function set($property, $value) {
-		if ($this->info["PROPERTIES"][$property]) {
-			switch($property) {
-				default:
-					if ($this->info["PROPERTIES"][$property] == 'W') {
-						$this->properties[$property] = $value;
-					} else {
-						# read only
-						return '';
-					}
-					break;
-			}
-		} else {
-			# invalid property
-			$this->postError(1650, _t("Can't set property %1", $property), "WLPlugInformationServiceGoogleMaps->set()");
-			return '';
-		}
-		return true;
-	}
-	# -------------------------------------------------------
-	/**
-	 * 
-	 * 
-	 * @return string
-	 */
-	public function getDisplayName() {
-		return $this->info['NAME'];
-	}
-	# -------------------------------------------------------
-	/**
-	 * 
-	 * 
-	 * @return string
-	 */
-	public function getDescription() {
-		return $this->description;
-	}
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function cleanup() {
-		return;
-	}
-	# ------------------------------------------------
-	/**
-	 * Should be overridden in implementation
-	 * @param array $pa_settings
-	 * @param string $ps_url
-	 * @return array
-	 */
-	public function getDataForSearchIndexing($pa_settings, $ps_url) {
-		return array();
-	}
-	# ------------------------------------------------
-	/**
-	 * Extract a display value from the lookup text
-	 * @param string $ps_text
-	 * @return string
-	 */
-	public function getDisplayValueFromLookupText($ps_text) {
-		return $ps_text;
-	}
-	# ------------------------------------------------
-	/**
-	 * Can be overriden in implementation to store addition bits of
-	 * information about the value which is then available via get()
-	 * @param array $pa_settings element settings
-	 * @param string $ps_url
-	 * @return array
-	 */
-	public function getExtraInfo($pa_settings, $ps_url) {
-		return array();
-	}
-	# ------------------------------------------------
+include_once(__CA_LIB_DIR__ . "/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
+include_once(__CA_LIB_DIR__ . "/Configuration.php");
+
+abstract class BaseInformationServicePlugin Extends WLPlug
+{
+    // properties for this plugin instance
+    protected $properties = array();
+
+    // app config
+    protected $opo_config;
+
+
+    // plugin info
+    protected $info = array(
+        "NAME" => "InformationService",
+        "PROPERTIES" => array(
+            'id' => 'W'
+        )
+    );
+
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function init()
+    {
+    }
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+        $this->opo_config = Configuration::load();
+    }
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function register()
+    {
+        $this->opo_config = Configuration::load();
+
+        $this->info["INSTANCE"] = $this;
+        return $this->info;
+    }
+    # ------------------------------------------------
+
+    /**
+     * Returns status of plugin. Normally this is overriden by the plugin subclass
+     *
+     * @return array - status info array; 'available' key determines if the plugin should be loaded or not
+     */
+    public function checkStatus()
+    {
+        $va_status = parent::checkStatus();
+
+        if ($this->register()) {
+            $va_status['available'] = true;
+        }
+
+        return $va_status;
+    }
+    # ----------------------------------------------------------
+
+    /**
+     * Get map property
+     *
+     * @param $property - name of property - must be defined as a property in the plugin's 'PROPERTIES' array
+     * @return string - the value of the property or null if the property is not valid
+     */
+    public function get($property)
+    {
+        if ($this->info["PROPERTIES"][$property]) {
+            return $this->properties[$property];
+        } else {
+            //print "Invalid property";
+            return null;
+        }
+    }
+    # ----------------------------------------------------------
+
+    /**
+     *
+     */
+    public function set($property, $value)
+    {
+        if ($this->info["PROPERTIES"][$property]) {
+            switch ($property) {
+                default:
+                    if ($this->info["PROPERTIES"][$property] == 'W') {
+                        $this->properties[$property] = $value;
+                    } else {
+                        # read only
+                        return '';
+                    }
+                    break;
+            }
+        } else {
+            # invalid property
+            $this->postError(1650, _t("Can't set property %1", $property), "WLPlugInformationServiceGoogleMaps->set()");
+            return '';
+        }
+        return true;
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     *
+     * @return string
+     */
+    public function getDisplayName()
+    {
+        return $this->info['NAME'];
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function cleanup()
+    {
+        return;
+    }
+    # ------------------------------------------------
+
+    /**
+     * Should be overridden in implementation
+     * @param array $pa_settings
+     * @param string $ps_url
+     * @return array
+     */
+    public function getDataForSearchIndexing($pa_settings, $ps_url)
+    {
+        return array();
+    }
+    # ------------------------------------------------
+
+    /**
+     * Extract a display value from the lookup text
+     * @param string $ps_text
+     * @return string
+     */
+    public function getDisplayValueFromLookupText($ps_text)
+    {
+        return $ps_text;
+    }
+    # ------------------------------------------------
+
+    /**
+     * Can be overriden in implementation to store addition bits of
+     * information about the value which is then available via get()
+     * @param array $pa_settings element settings
+     * @param string $ps_url
+     * @return array
+     */
+    public function getExtraInfo($pa_settings, $ps_url)
+    {
+        return array();
+    }
+    # ------------------------------------------------
 }

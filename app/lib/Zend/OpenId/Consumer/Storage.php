@@ -128,5 +128,5 @@ abstract class Zend_OpenId_Consumer_Storage
      *
      * @param string $date Date of expired data
      */
-    abstract public function purgeNonces($date=null);
+    abstract public function purgeNonces($date = null);
 }

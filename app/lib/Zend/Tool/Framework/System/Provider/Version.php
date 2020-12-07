@@ -42,7 +42,7 @@ class Zend_Tool_Framework_System_Provider_Version
 
     const MODE_MAJOR = 'major';
     const MODE_MINOR = 'minor';
-    const MODE_MINI  = 'mini';
+    const MODE_MINI = 'mini';
 
     protected $_specialties = array('MajorPart', 'MinorPart', 'MiniPart');
 
@@ -60,10 +60,9 @@ class Zend_Tool_Framework_System_Provider_Version
      */
     public function show($mode = self::MODE_MINI, $nameIncluded = true)
     {
-
         $versionInfo = $this->_splitVersion();
 
-        switch($mode) {
+        switch ($mode) {
             case self::MODE_MINOR:
                 unset($versionInfo['mini']);
                 break;
@@ -98,7 +97,7 @@ class Zend_Tool_Framework_System_Provider_Version
     public function showMiniPart($nameIncluded = true)
     {
         $versionNumbers = $this->_splitVersion();
-        $output = (($nameIncluded == true) ? 'ZF Mini Version: ' : null)  . $versionNumbers['mini'];
+        $output = (($nameIncluded == true) ? 'ZF Mini Version: ' : null) . $versionNumbers['mini'];
         $this->_registry->response->appendContent($output);
     }
 

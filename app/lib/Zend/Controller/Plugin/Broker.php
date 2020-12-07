@@ -44,8 +44,8 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
     /**
      * Register a plugin.
      *
-     * @param  Zend_Controller_Plugin_Abstract $plugin
-     * @param  int $stackIndex
+     * @param Zend_Controller_Plugin_Abstract $plugin
+     * @param int $stackIndex
      * @return Zend_Controller_Plugin_Broker
      */
     public function registerPlugin(Zend_Controller_Plugin_Abstract $plugin, $stackIndex = null)
@@ -55,7 +55,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
             throw new Zend_Controller_Exception('Plugin already registered');
         }
 
-        $stackIndex = (int) $stackIndex;
+        $stackIndex = (int)$stackIndex;
 
         if ($stackIndex) {
             if (isset($this->_plugins[$stackIndex])) {
@@ -116,7 +116,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
     /**
      * Is a plugin of a particular class registered?
      *
-     * @param  string $class
+     * @param string $class
      * @return bool
      */
     public function hasPlugin($class)
@@ -134,7 +134,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
     /**
      * Retrieve a plugin or plugins by class
      *
-     * @param  string $class Class name of plugin(s) desired
+     * @param string $class Class name of plugin(s) desired
      * @return false|Zend_Controller_Plugin_Abstract|array Returns false if none found, plugin if only one found, and array of plugins if multiple plugins of same class found
      */
     public function getPlugin($class)
@@ -250,7 +250,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
      * Called before Zend_Controller_Front exits its iterations over
      * the route set.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function routeShutdown(Zend_Controller_Request_Abstract $request)
@@ -277,7 +277,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
      * Zend_Controller_Dispatcher to dispatch the
      * Zend_Controller_Request_Abstract object to controllers/actions.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function dispatchLoopStartup(Zend_Controller_Request_Abstract $request)
@@ -299,7 +299,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
     /**
      * Called before an action is dispatched by Zend_Controller_Dispatcher.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function preDispatch(Zend_Controller_Request_Abstract $request)
@@ -312,8 +312,8 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
                     throw new Zend_Controller_Exception($e->getMessage() . $e->getTraceAsString(), $e->getCode(), $e);
                 } else {
                     $this->getResponse()->setException($e);
-					// skip rendering of normal dispatch give the error handler a try
-					$this->getRequest()->setDispatched(false);
+                    // skip rendering of normal dispatch give the error handler a try
+                    $this->getRequest()->setDispatched(false);
                 }
             }
         }
@@ -323,7 +323,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
     /**
      * Called after an action is dispatched by Zend_Controller_Dispatcher.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function postDispatch(Zend_Controller_Request_Abstract $request)
@@ -345,13 +345,13 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
     /**
      * Called before Zend_Controller_Front exits its dispatch loop.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function dispatchLoopShutdown()
     {
-       foreach ($this->_plugins as $plugin) {
-           try {
+        foreach ($this->_plugins as $plugin) {
+            try {
                 $plugin->dispatchLoopShutdown();
             } catch (Exception $e) {
                 if (Zend_Controller_Front::getInstance()->throwExceptions()) {
@@ -360,6 +360,6 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
                     $this->getResponse()->setException($e);
                 }
             }
-       }
+        }
     }
 }

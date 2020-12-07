@@ -90,29 +90,41 @@ class Zend_Service_Technorati_Author
     /**
      * Constructs a new object from DOM Element.
      *
-     * @param   DomElement $dom the ReST fragment for this object
+     * @param DomElement $dom the ReST fragment for this object
      */
     public function __construct(DomElement $dom)
     {
         $xpath = new DOMXPath($dom->ownerDocument);
 
         $result = $xpath->query('./firstname/text()', $dom);
-        if ($result->length == 1) $this->setFirstName($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setFirstName($result->item(0)->data);
+        }
 
         $result = $xpath->query('./lastname/text()', $dom);
-        if ($result->length == 1) $this->setLastName($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setLastName($result->item(0)->data);
+        }
 
         $result = $xpath->query('./username/text()', $dom);
-        if ($result->length == 1) $this->setUsername($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setUsername($result->item(0)->data);
+        }
 
         $result = $xpath->query('./description/text()', $dom);
-        if ($result->length == 1) $this->setDescription($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setDescription($result->item(0)->data);
+        }
 
         $result = $xpath->query('./bio/text()', $dom);
-        if ($result->length == 1) $this->setBio($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setBio($result->item(0)->data);
+        }
 
         $result = $xpath->query('./thumbnailpicture/text()', $dom);
-        if ($result->length == 1) $this->setThumbnailPicture($result->item(0)->data);
+        if ($result->length == 1) {
+            $this->setThumbnailPicture($result->item(0)->data);
+        }
     }
 
 
@@ -121,7 +133,8 @@ class Zend_Service_Technorati_Author
      *
      * @return  string  Author first name
      */
-    public function getFirstName() {
+    public function getFirstName()
+    {
         return $this->_firstName;
     }
 
@@ -130,7 +143,8 @@ class Zend_Service_Technorati_Author
      *
      * @return  string  Author last name
      */
-    public function getLastName() {
+    public function getLastName()
+    {
         return $this->_lastName;
     }
 
@@ -139,7 +153,8 @@ class Zend_Service_Technorati_Author
      *
      * @return  string  Technorati account username
      */
-    public function getUsername() {
+    public function getUsername()
+    {
         return $this->_username;
     }
 
@@ -148,7 +163,8 @@ class Zend_Service_Technorati_Author
      *
      * @return  string  Technorati account description
      */
-    public function getDescription() {
+    public function getDescription()
+    {
         return $this->_description;
     }
 
@@ -157,7 +173,8 @@ class Zend_Service_Technorati_Author
      *
      * @return  string  Technorati account biography
      */
-    public function getBio() {
+    public function getBio()
+    {
         return $this->_bio;
     }
 
@@ -166,7 +183,8 @@ class Zend_Service_Technorati_Author
      *
      * @return  null|Zend_Uri_Http  Technorati account thumbnail picture
      */
-    public function getThumbnailPicture() {
+    public function getThumbnailPicture()
+    {
         return $this->_thumbnailPicture;
     }
 
@@ -174,67 +192,73 @@ class Zend_Service_Technorati_Author
     /**
      * Sets author first name.
      *
-     * @param   string $input   first Name input value
+     * @param string $input first Name input value
      * @return  Zend_Service_Technorati_Author  $this instance
      */
-    public function setFirstName($input) {
-        $this->_firstName = (string) $input;
+    public function setFirstName($input)
+    {
+        $this->_firstName = (string)$input;
         return $this;
     }
 
     /**
      * Sets author last name.
      *
-     * @param   string $input   last Name input value
+     * @param string $input last Name input value
      * @return  Zend_Service_Technorati_Author  $this instance
      */
-    public function setLastName($input) {
-        $this->_lastName = (string) $input;
+    public function setLastName($input)
+    {
+        $this->_lastName = (string)$input;
         return $this;
     }
 
     /**
      * Sets Technorati account username.
      *
-     * @param   string $input   username input value
+     * @param string $input username input value
      * @return  Zend_Service_Technorati_Author  $this instance
      */
-    public function setUsername($input) {
-        $this->_username = (string) $input;
+    public function setUsername($input)
+    {
+        $this->_username = (string)$input;
         return $this;
     }
 
     /**
      * Sets Technorati account biography.
      *
-     * @param   string $input   biography input value
+     * @param string $input biography input value
      * @return  Zend_Service_Technorati_Author  $this instance
      */
-    public function setBio($input) {
-        $this->_bio = (string) $input;
+    public function setBio($input)
+    {
+        $this->_bio = (string)$input;
         return $this;
     }
 
     /**
      * Sets Technorati account description.
      *
-     * @param   string $input   description input value
+     * @param string $input description input value
      * @return  Zend_Service_Technorati_Author  $this instance
      */
-    public function setDescription($input) {
-        $this->_description = (string) $input;
+    public function setDescription($input)
+    {
+        $this->_description = (string)$input;
         return $this;
     }
 
     /**
      * Sets Technorati account thumbnail picture.
      *
-     * @param   string|Zend_Uri_Http $input thumbnail picture URI
+     * @param string|Zend_Uri_Http $input thumbnail picture URI
      * @return  Zend_Service_Technorati_Author  $this instance
      * @throws  Zend_Service_Technorati_Exception if $input is an invalid URI
      *          (via Zend_Service_Technorati_Utils::normalizeUriHttp)
      */
-    public function setThumbnailPicture($input) {
+    public function setThumbnailPicture($input)
+    {
         $this->_thumbnailPicture = Zend_Service_Technorati_Utils::normalizeUriHttp($input);
         return $this;
     }

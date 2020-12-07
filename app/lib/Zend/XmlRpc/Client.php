@@ -122,9 +122,9 @@ class Zend_XmlRpc_Client
     /**
      * Create a new XML-RPC client to a remote server
      *
-     * @param  string $server      Full address of the XML-RPC service
+     * @param string $server Full address of the XML-RPC service
      *                             (e.g. http://time.xmlrpc.com/RPC2)
-     * @param  Zend_Http_Client $httpClient HTTP Client to use for requests
+     * @param Zend_Http_Client $httpClient HTTP Client to use for requests
      * @return void
      */
     public function __construct($server, Zend_Http_Client $httpClient = null)
@@ -135,7 +135,7 @@ class Zend_XmlRpc_Client
             $this->_httpClient = $httpClient;
         }
 
-        $this->_introspector  = new Zend_XmlRpc_Client_ServerIntrospection($this);
+        $this->_introspector = new Zend_XmlRpc_Client_ServerIntrospection($this);
         $this->_serverAddress = $server;
     }
 
@@ -143,7 +143,7 @@ class Zend_XmlRpc_Client
     /**
      * Sets the HTTP client object to use for connecting the XML-RPC server.
      *
-     * @param  Zend_Http_Client $httpClient
+     * @param Zend_Http_Client $httpClient
      * @return Zend_Http_Client
      */
     public function setHttpClient(Zend_Http_Client $httpClient)
@@ -166,7 +166,7 @@ class Zend_XmlRpc_Client
     /**
      * Sets the object used to introspect remote servers
      *
-     * @param  Zend_XmlRpc_Client_ServerIntrospection
+     * @param Zend_XmlRpc_Client_ServerIntrospection
      * @return Zend_XmlRpc_Client_ServerIntrospection
      */
     public function setIntrospector(Zend_XmlRpc_Client_ServerIntrospection $introspector)
@@ -186,7 +186,7 @@ class Zend_XmlRpc_Client
     }
 
 
-   /**
+    /**
      * The request of the last method call
      *
      * @return Zend_XmlRpc_Request
@@ -211,7 +211,7 @@ class Zend_XmlRpc_Client
     /**
      * Returns a proxy object for more convenient method calls
      *
-     * @param string $namespace  Namespace to proxy or empty string for none
+     * @param string $namespace Namespace to proxy or empty string for none
      * @return Zend_XmlRpc_Client_ServerProxy
      */
     public function getProxy($namespace = '')
@@ -226,12 +226,12 @@ class Zend_XmlRpc_Client
     /**
      * Set skip system lookup flag
      *
-     * @param  bool $flag
+     * @param bool $flag
      * @return Zend_XmlRpc_Client
      */
     public function setSkipSystemLookup($flag = true)
     {
-        $this->_skipSystemLookup = (bool) $flag;
+        $this->_skipSystemLookup = (bool)$flag;
         return $this;
     }
 
@@ -262,14 +262,16 @@ class Zend_XmlRpc_Client
         iconv_set_encoding('internal_encoding', 'UTF-8');
 
         $http = $this->getHttpClient();
-        if($http->getUri() === null) {
+        if ($http->getUri() === null) {
             $http->setUri($this->_serverAddress);
         }
 
-        $http->setHeaders(array(
-            'Content-Type: text/xml; charset=utf-8',
-            'Accept: text/xml',
-        ));
+        $http->setHeaders(
+            array(
+                'Content-Type: text/xml; charset=utf-8',
+                'Accept: text/xml',
+            )
+        );
 
         if ($http->getHeader('user-agent') === null) {
             $http->setHeaders(array('User-Agent: Zend_XmlRpc_Client'));
@@ -279,15 +281,16 @@ class Zend_XmlRpc_Client
         $http->setRawData($xml);
         $httpResponse = $http->request(Zend_Http_Client::POST);
 
-        if (! $httpResponse->isSuccessful()) {
+        if (!$httpResponse->isSuccessful()) {
             /**
              * Exception thrown when an HTTP error occurs
              * @see Zend_XmlRpc_Client_HttpException
              */
             require_once 'Zend/XmlRpc/Client/HttpException.php';
             throw new Zend_XmlRpc_Client_HttpException(
-                                    $httpResponse->getMessage(),
-                                    $httpResponse->getStatus());
+                $httpResponse->getMessage(),
+                $httpResponse->getStatus()
+            );
         }
 
         if ($response === null) {
@@ -300,12 +303,12 @@ class Zend_XmlRpc_Client
     /**
      * Send an XML-RPC request to the service (for a specific method)
      *
-     * @param  string $method Name of the method we want to call
-     * @param  array $params Array of parameters for the method
+     * @param string $method Name of the method we want to call
+     * @param array $params Array of parameters for the method
      * @return mixed
      * @throws Zend_XmlRpc_Client_FaultException
      */
-    public function call($method, $params=array())
+    public function call($method, $params = array())
     {
         if (!$this->skipSystemLookup() && ('system.' != substr($method, 0, 7))) {
             // Ensure empty array/struct params are cast correctly
@@ -334,8 +337,7 @@ class Zend_XmlRpc_Client
                     $params = array($params);
                 }
 
-                foreach ($params as $key => $param)
-                {
+                foreach ($params as $key => $param) {
                     if ($param instanceof Zend_XmlRpc_Value) {
                         continue;
                     }
@@ -378,8 +380,10 @@ class Zend_XmlRpc_Client
              * @see Zend_XmlRpc_Client_FaultException
              */
             require_once 'Zend/XmlRpc/Client/FaultException.php';
-            throw new Zend_XmlRpc_Client_FaultException($fault->getMessage(),
-                                                        $fault->getCode());
+            throw new Zend_XmlRpc_Client_FaultException(
+                $fault->getMessage(),
+                $fault->getCode()
+            );
         }
 
         return $this->_lastResponse->getReturnValue();

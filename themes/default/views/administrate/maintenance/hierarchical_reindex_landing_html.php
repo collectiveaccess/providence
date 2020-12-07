@@ -25,16 +25,33 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print "<h1>"._t("Rebuild hierarchical indices")."</h1>\n";
 
-	print "<div class='searchReindexHelpText'>";
-	print _t("<p>CollectiveAccess relies upon special <em>indices</em> to speed retrieval of hierarchical data such as multi-level lists and storage locations. Occasionally these indices can get out of sync with the actual hierarchical structure of your data. When this occurs you may experience odd behavior adding, moving or deleting items in a hierarchy. If you are experiencing issues with hierarchies you can rebuild the indices using this tool.</p> 
+print "<h1>" . _t("Rebuild hierarchical indices") . "</h1>\n";
+
+print "<div class='searchReindexHelpText'>";
+print _t(
+    "<p>CollectiveAccess relies upon special <em>indices</em> to speed retrieval of hierarchical data such as multi-level lists and storage locations. Occasionally these indices can get out of sync with the actual hierarchical structure of your data. When this occurs you may experience odd behavior adding, moving or deleting items in a hierarchy. If you are experiencing issues with hierarchies you can rebuild the indices using this tool.</p> 
 <p>Note that depending upon the size of your database rebuilding can take from a few seconds to several minutes. During the rebuilding process the system will remain usable but hierarchical functions may return inconsistent results.</p>
-	");
-	
-	print caFormTag($this->request, 'reindex', 'caHierarchicalReindexForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Rebuild hierarchical indices"), 'caHierarchicalReindexForm', array())."</div>";
-	print "</form>";
-	print "</div>\n";
+	"
+);
+
+print caFormTag(
+    $this->request,
+    'reindex',
+    'caHierarchicalReindexForm',
+    null,
+    'post',
+    'multipart/form-data',
+    '_top',
+    array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true)
+);
+print "<div style='text-align: center'>" . caFormSubmitButton(
+        $this->request,
+        __CA_NAV_ICON_GO__,
+        _t("Rebuild hierarchical indices"),
+        'caHierarchicalReindexForm',
+        array()
+    ) . "</div>";
+print "</form>";
+print "</div>\n";
 ?>

@@ -129,9 +129,9 @@ class Zend_Pdf_ElementFactory_Proxy implements Zend_Pdf_ElementFactory_Interface
     /**
      * Calculate object enumeration shift.
      *
-     * @internal
      * @param Zend_Pdf_ElementFactory_Interface $factory
      * @return integer
+     * @internal
      */
     public function calculateShift(Zend_Pdf_ElementFactory_Interface $factory)
     {

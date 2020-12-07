@@ -25,17 +25,34 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print "<h1>"._t("Reload sort values")."</h1>\n";
 
-	print "<div class='searchReindexHelpText'>";
-	print _t("<p>CollectiveAccess relies upon <em>sort values</em> when sorting values that should not sort alphabetically, such as titles with articles (eg. <em>The Man Who Fell to Earth</em> should sort as <em>Man Who Fell to Earth, The</em>) and alphanumeric identifiers (eg. <em>2011.001</em> and <em>2011.2</em> should sort next to each other with leading zeros in the first ignored).</p>
+print "<h1>" . _t("Reload sort values") . "</h1>\n";
+
+print "<div class='searchReindexHelpText'>";
+print _t(
+    "<p>CollectiveAccess relies upon <em>sort values</em> when sorting values that should not sort alphabetically, such as titles with articles (eg. <em>The Man Who Fell to Earth</em> should sort as <em>Man Who Fell to Earth, The</em>) and alphanumeric identifiers (eg. <em>2011.001</em> and <em>2011.2</em> should sort next to each other with leading zeros in the first ignored).</p>
 <p>Sort values are derived from corresponding values in your database. The internal format of sort values can vary between versions of CollectiveAccess causing erroneous sorting behavior after an upgrade. If you notice values such as titles and identifiers are sorting incorrectly, you may need to reload sort values from your data.</p> 
 <p>Note that depending upon the size of your database reloading sort values can take from a few minutes to an hour or more. During the reloading process the system will remain usable but search and browse functions may return incorrectly sorted results. </p>
-	");
-	
-	print caFormTag($this->request, 'reload', 'caSortValuesReloadForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Reload sort values"), 'caSortValuesReloadForm', array())."</div>";
-	print "</form>";
-	print "</div>\n";
+	"
+);
+
+print caFormTag(
+    $this->request,
+    'reload',
+    'caSortValuesReloadForm',
+    null,
+    'post',
+    'multipart/form-data',
+    '_top',
+    array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true)
+);
+print "<div style='text-align: center'>" . caFormSubmitButton(
+        $this->request,
+        __CA_NAV_ICON_GO__,
+        _t("Reload sort values"),
+        'caSortValuesReloadForm',
+        array()
+    ) . "</div>";
+print "</form>";
+print "</div>\n";
 ?>

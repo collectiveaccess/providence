@@ -73,11 +73,11 @@ class Zend_Filter_RealPath implements Zend_Filter_Interface
 
         if (is_array($exists)) {
             if (isset($exists['exists'])) {
-                $exists = (boolean) $exists['exists'];
+                $exists = (boolean)$exists['exists'];
             }
         }
 
-        $this->_exists = (boolean) $exists;
+        $this->_exists = (boolean)$exists;
         return $this;
     }
 
@@ -86,12 +86,12 @@ class Zend_Filter_RealPath implements Zend_Filter_Interface
      *
      * Returns realpath($value)
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     public function filter($value)
     {
-        $path = (string) $value;
+        $path = (string)$value;
         if ($this->_exists) {
             return realpath($path);
         }
@@ -107,7 +107,7 @@ class Zend_Filter_RealPath implements Zend_Filter_Interface
             if (preg_match('/([a-zA-Z]\:)(.*)/', $path, $matches)) {
                 list($fullMatch, $drive, $path) = $matches;
             } else {
-                $cwd   = getcwd();
+                $cwd = getcwd();
                 $drive = substr($cwd, 0, 2);
                 if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
                     $path = substr($cwd, 3) . DIRECTORY_SEPARATOR . $path;

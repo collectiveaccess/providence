@@ -96,18 +96,18 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
 
         $this->_fontNames = $fontParser->names;
 
-        $this->_isBold       = $fontParser->isBold;
-        $this->_isItalic     = $fontParser->isItalic;
+        $this->_isBold = $fontParser->isBold;
+        $this->_isItalic = $fontParser->isItalic;
         $this->_isMonospaced = $fontParser->isMonospaced;
 
-        $this->_underlinePosition  = $fontParser->underlinePosition;
+        $this->_underlinePosition = $fontParser->underlinePosition;
         $this->_underlineThickness = $fontParser->underlineThickness;
-        $this->_strikePosition     = $fontParser->strikePosition;
-        $this->_strikeThickness    = $fontParser->strikeThickness;
+        $this->_strikePosition = $fontParser->strikePosition;
+        $this->_strikeThickness = $fontParser->strikeThickness;
 
         $this->_unitsPerEm = $fontParser->unitsPerEm;
 
-        $this->_ascent  = $fontParser->ascent;
+        $this->_ascent = $fontParser->ascent;
         $this->_descent = $fontParser->descent;
         $this->_lineGap = $fontParser->lineGap;
 
@@ -126,23 +126,23 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
          */
         /* Constract characters widths array using font CMap and glyphs widths array */
         $glyphWidths = $fontParser->glyphWidths;
-        $charGlyphs  = $this->_cmap->getCoveredCharactersGlyphs();
-        $charWidths  = array();
+        $charGlyphs = $this->_cmap->getCoveredCharactersGlyphs();
+        $charWidths = array();
         foreach ($charGlyphs as $charCode => $glyph) {
-            if(isset($glyphWidths[$glyph]) && !is_null($glyphWidths[$glyph])) {
+            if (isset($glyphWidths[$glyph]) && !is_null($glyphWidths[$glyph])) {
                 $charWidths[$charCode] = $glyphWidths[$glyph];
             }
         }
-        $this->_charWidths       = $charWidths;
+        $this->_charWidths = $charWidths;
         $this->_missingCharWidth = $glyphWidths[0];
 
         /* Width array optimization. Step1: extract default value */
         $widthFrequencies = array_count_values($charWidths);
-        $defaultWidth          = null;
+        $defaultWidth = null;
         $defaultWidthFrequency = -1;
         foreach ($widthFrequencies as $width => $frequency) {
             if ($frequency > $defaultWidthFrequency) {
-                $defaultWidth          = $width;
+                $defaultWidth = $width;
                 $defaultWidthFrequency = $frequency;
             }
         }
@@ -166,11 +166,13 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
             if ($lastCharCode == -1) {
                 $charCodesSequense = array();
                 $sequenceStartCode = $charCode;
-            } else if ($charCode != $lastCharCode + 1) {
-                // New chracters sequence detected
-                $widthsSequences[$sequenceStartCode] = $charCodesSequense;
-                $charCodesSequense = array();
-                $sequenceStartCode = $charCode;
+            } else {
+                if ($charCode != $lastCharCode + 1) {
+                    // New chracters sequence detected
+                    $widthsSequences[$sequenceStartCode] = $charCodesSequense;
+                    $charCodesSequense = array();
+                    $sequenceStartCode = $charCode;
+                }
             }
             $charCodesSequense[] = $width;
             $lastCharCode = $charCode;
@@ -183,16 +185,20 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
         $pdfCharsWidths = array();
         foreach ($widthsSequences as $startCode => $widthsSequence) {
             /* Width array optimization. Step3: Compact widths sequences */
-            $pdfWidths        = array();
-            $lastWidth        = -1;
+            $pdfWidths = array();
+            $lastWidth = -1;
             $widthsInSequence = 0;
             foreach ($widthsSequence as $width) {
                 if ($lastWidth != $width) {
                     // New width is detected
                     if ($widthsInSequence != 0) {
                         // Previous width value was a part of the widths sequence. Save it as 'c_1st c_last w'.
-                        $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric($startCode);                         // First character code
-                        $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric($startCode + $widthsInSequence - 1); // Last character code
+                        $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric(
+                            $startCode
+                        );                         // First character code
+                        $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric(
+                            $startCode + $widthsInSequence - 1
+                        ); // Last character code
                         $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric($this->toEmSpace($lastWidth));       // Width
 
                         // Reset widths sequence
@@ -238,12 +244,18 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
                 // Save it as 'c_1st [w1 w2 ... wn]'.
                 $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric($startCode); // First character code
                 $pdfCharsWidths[] = new Zend_Pdf_Element_Array($pdfWidths);   // Widths array
-            } else if ($widthsInSequence != 0){
-                // We have widths sequence
-                // Save it as 'c_1st c_last w'.
-                $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric($startCode);                         // First character code
-                $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric($startCode + $widthsInSequence - 1); // Last character code
-                $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric($this->toEmSpace($lastWidth));       // Width
+            } else {
+                if ($widthsInSequence != 0) {
+                    // We have widths sequence
+                    // Save it as 'c_1st c_last w'.
+                    $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric(
+                        $startCode
+                    );                         // First character code
+                    $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric(
+                        $startCode + $widthsInSequence - 1
+                    ); // Last character code
+                    $pdfCharsWidths[] = new Zend_Pdf_Element_Numeric($this->toEmSpace($lastWidth));       // Width
+                }
             }
         }
 
@@ -257,13 +269,12 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
 
         /* CIDSystemInfo dictionary */
         $cidSystemInfo = new Zend_Pdf_Element_Dictionary();
-        $cidSystemInfo->Registry   = new Zend_Pdf_Element_String('Adobe');
-        $cidSystemInfo->Ordering   = new Zend_Pdf_Element_String('UCS');
+        $cidSystemInfo->Registry = new Zend_Pdf_Element_String('Adobe');
+        $cidSystemInfo->Ordering = new Zend_Pdf_Element_String('UCS');
         $cidSystemInfo->Supplement = new Zend_Pdf_Element_Numeric(0);
-        $cidSystemInfoObject            = $this->_objectFactory->newObject($cidSystemInfo);
+        $cidSystemInfoObject = $this->_objectFactory->newObject($cidSystemInfo);
         $this->_resource->CIDSystemInfo = $cidSystemInfoObject;
     }
-
 
 
     /**
@@ -287,7 +298,9 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
          * Throw an exception.
          */
         require_once 'Zend/Pdf/Exception.php';
-        throw new Zend_Pdf_Exception('CIDFont PDF objects could not be used as the operand of the text drawing operators');
+        throw new Zend_Pdf_Exception(
+            'CIDFont PDF objects could not be used as the operand of the text drawing operators'
+        );
     }
 
     /**
@@ -312,7 +325,9 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
          * Throw an exception.
          */
         require_once 'Zend/Pdf/Exception.php';
-        throw new Zend_Pdf_Exception('CIDFont PDF objects could not be used as the operand of the text drawing operators');
+        throw new Zend_Pdf_Exception(
+            'CIDFont PDF objects could not be used as the operand of the text drawing operators'
+        );
     }
 
 
@@ -423,7 +438,9 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
          * Throw an exception.
          */
         require_once 'Zend/Pdf/Exception.php';
-        throw new Zend_Pdf_Exception('CIDFont PDF objects could not be used as the operand of the text drawing operators');
+        throw new Zend_Pdf_Exception(
+            'CIDFont PDF objects could not be used as the operand of the text drawing operators'
+        );
     }
 
     /**
@@ -445,7 +462,9 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
          * Throw an exception.
          */
         require_once 'Zend/Pdf/Exception.php';
-        throw new Zend_Pdf_Exception('CIDFont PDF objects could not be used as the operand of the text drawing operators');
+        throw new Zend_Pdf_Exception(
+            'CIDFont PDF objects could not be used as the operand of the text drawing operators'
+        );
     }
 
     /**
@@ -466,7 +485,9 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
          * Throw an exception.
          */
         require_once 'Zend/Pdf/Exception.php';
-        throw new Zend_Pdf_Exception('CIDFont PDF objects could not be used as the operand of the text drawing operators');
+        throw new Zend_Pdf_Exception(
+            'CIDFont PDF objects could not be used as the operand of the text drawing operators'
+        );
     }
 
     /**
@@ -487,6 +508,8 @@ abstract class Zend_Pdf_Resource_Font_CidFont extends Zend_Pdf_Resource_Font
          * Throw an exception.
          */
         require_once 'Zend/Pdf/Exception.php';
-        throw new Zend_Pdf_Exception('CIDFont PDF objects could not be used as the operand of the text drawing operators');
+        throw new Zend_Pdf_Exception(
+            'CIDFont PDF objects could not be used as the operand of the text drawing operators'
+        );
     }
 }

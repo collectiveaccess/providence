@@ -78,7 +78,7 @@ class Zend_Gdata_Analytics_AccountEntry extends Zend_Gdata_Entry
     protected function takeChildFromDOM($child)
     {
         $absoluteNodeName = $child->namespaceURI . ':' . $child->localName;
-        switch ($absoluteNodeName){
+        switch ($absoluteNodeName) {
             case $this->lookupNamespace('analytics') . ':' . 'property';
                 $property = new Zend_Gdata_Analytics_Extension_Property();
                 $property->transferFromDOM($child);

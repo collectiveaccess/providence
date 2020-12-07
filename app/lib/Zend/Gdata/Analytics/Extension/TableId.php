@@ -76,7 +76,7 @@ class Zend_Gdata_Analytics_Extension_TableId extends Zend_Gdata_Extension
      */
     protected function takeChildFromDOM($child)
     {
-       $this->_value = $child->nodeValue;
+        $this->_value = $child->nodeValue;
     }
 
     /**

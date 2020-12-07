@@ -75,7 +75,7 @@ class Zend_XmlRpc_Client_ServerIntrospection
      * This is a boxcar feature of XML-RPC and is found on fewer servers.  However,
      * can significantly improve performance if present.
      *
-     * @param  array $methods
+     * @param array $methods
      * @return array array(array(return, param, param, param...))
      */
     public function getSignatureForEachMethodByMulticall($methods = null)
@@ -86,13 +86,15 @@ class Zend_XmlRpc_Client_ServerIntrospection
 
         $multicallParams = array();
         foreach ($methods as $method) {
-            $multicallParams[] = array('methodName' => 'system.methodSignature',
-                                       'params'     => array($method));
+            $multicallParams[] = array(
+                'methodName' => 'system.methodSignature',
+                'params' => array($method)
+            );
         }
 
         $serverSignatures = $this->_system->multicall($multicallParams);
 
-        if (! is_array($serverSignatures)) {
+        if (!is_array($serverSignatures)) {
             $type = gettype($serverSignatures);
             $error = "Multicall return is malformed.  Expected array, got $type";
             require_once 'Zend/XmlRpc/Client/IntrospectException.php';
@@ -138,7 +140,7 @@ class Zend_XmlRpc_Client_ServerIntrospection
     /**
      * Call system.methodSignature() for the given method
      *
-     * @param  array  $method
+     * @param array $method
      * @return array  array(array(return, param, param, param...))
      */
     public function getMethodSignature($method)
@@ -155,7 +157,7 @@ class Zend_XmlRpc_Client_ServerIntrospection
     /**
      * Call system.listMethods()
      *
-     * @param  array  $method
+     * @param array $method
      * @return array  array(method, method, method...)
      */
     public function listMethods()

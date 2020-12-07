@@ -32,7 +32,8 @@ require_once 'Zend/Mime.php';
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Mime_Part {
+class Zend_Mime_Part
+{
 
     public $type = Zend_Mime::TYPE_OCTETSTREAM;
     public $encoding = Zend_Mime::ENCODING_8BIT;
@@ -53,7 +54,7 @@ class Zend_Mime_Part {
      * The (unencoded) content of the Part as passed
      * as a string or stream
      *
-     * @param mixed $content  String or Stream containing the content
+     * @param mixed $content String or Stream containing the content
      */
     public function __construct($content)
     {
@@ -79,7 +80,7 @@ class Zend_Mime_Part {
      */
     public function isStream()
     {
-      return $this->_isStream;
+        return $this->_isStream;
     }
 
     /**
@@ -104,7 +105,7 @@ class Zend_Mime_Part {
                     'convert.quoted-printable-encode',
                     STREAM_FILTER_READ,
                     array(
-                        'line-length'      => 76,
+                        'line-length' => 76,
                         'line-break-chars' => Zend_Mime::LINEEND
                     )
                 );
@@ -119,7 +120,7 @@ class Zend_Mime_Part {
                     'convert.base64-encode',
                     STREAM_FILTER_READ,
                     array(
-                        'line-length'      => 76,
+                        'line-length' => 76,
                         'line-break-chars' => Zend_Mime::LINEEND
                     )
                 );
@@ -146,7 +147,7 @@ class Zend_Mime_Part {
             return Zend_Mime::encode($this->_content, $this->encoding, $EOL);
         }
     }
-    
+
     /**
      * Get the RAW unencoded content from this part
      * @return string
@@ -177,7 +178,7 @@ class Zend_Mime_Part {
 
         if ($this->boundary) {
             $contentType .= ';' . $EOL
-                          . " boundary=\"" . $this->boundary . '"';
+                . " boundary=\"" . $this->boundary . '"';
         }
 
         $headers[] = array('Content-Type', $contentType);
@@ -187,7 +188,7 @@ class Zend_Mime_Part {
         }
 
         if ($this->id) {
-            $headers[]  = array('Content-ID', '<' . $this->id . '>');
+            $headers[] = array('Content-ID', '<' . $this->id . '>');
         }
 
         if ($this->disposition) {
@@ -206,7 +207,7 @@ class Zend_Mime_Part {
             $headers[] = array('Content-Location', $this->location);
         }
 
-        if ($this->language){
+        if ($this->language) {
             $headers[] = array('Content-Language', $this->language);
         }
 

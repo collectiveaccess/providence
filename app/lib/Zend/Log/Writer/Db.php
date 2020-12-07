@@ -57,14 +57,14 @@ class Zend_Log_Writer_Db extends Zend_Log_Writer_Abstract
     /**
      * Class constructor
      *
-     * @param Zend_Db_Adapter $db   Database adapter instance
-     * @param string $table         Log table in database
+     * @param Zend_Db_Adapter $db Database adapter instance
+     * @param string $table Log table in database
      * @param array $columnMap
      * @return void
      */
     public function __construct($db, $table, $columnMap = null)
     {
-        $this->_db    = $db;
+        $this->_db = $db;
         $this->_table = $table;
         $this->_columnMap = $columnMap;
     }
@@ -72,17 +72,20 @@ class Zend_Log_Writer_Db extends Zend_Log_Writer_Abstract
     /**
      * Create a new instance of Zend_Log_Writer_Db
      *
-     * @param  array|Zend_Config $config
+     * @param array|Zend_Config $config
      * @return Zend_Log_Writer_Db
      */
     static public function factory($config)
     {
         $config = self::_parseConfig($config);
-        $config = array_merge(array(
-            'db'        => null,
-            'table'     => null,
-            'columnMap' => null,
-        ), $config);
+        $config = array_merge(
+            array(
+                'db' => null,
+                'table' => null,
+                'columnMap' => null,
+            ),
+            $config
+        );
 
         if (isset($config['columnmap'])) {
             $config['columnMap'] = $config['columnmap'];
@@ -120,7 +123,7 @@ class Zend_Log_Writer_Db extends Zend_Log_Writer_Abstract
     /**
      * Write a message to the log.
      *
-     * @param  array  $event  event data
+     * @param array $event event data
      * @return void
      * @throws Zend_Log_Exception
      */

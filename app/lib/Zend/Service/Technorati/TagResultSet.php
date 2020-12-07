@@ -57,22 +57,26 @@ class Zend_Service_Technorati_TagResultSet extends Zend_Service_Technorati_Resul
     /**
      * Parses the search response and retrieve the results for iteration.
      *
-     * @param   DomDocument $dom    the ReST fragment for this object
-     * @param   array $options      query options as associative array
+     * @param DomDocument $dom the ReST fragment for this object
+     * @param array $options query options as associative array
      */
     public function __construct(DomDocument $dom, $options = array())
     {
         parent::__construct($dom, $options);
 
         $result = $this->_xpath->query('/tapi/document/result/postsmatched/text()');
-        if ($result->length == 1) $this->_postsMatched = (int) $result->item(0)->data;
+        if ($result->length == 1) {
+            $this->_postsMatched = (int)$result->item(0)->data;
+        }
 
         $result = $this->_xpath->query('/tapi/document/result/blogsmatched/text()');
-        if ($result->length == 1) $this->_blogsMatched = (int) $result->item(0)->data;
+        if ($result->length == 1) {
+            $this->_blogsMatched = (int)$result->item(0)->data;
+        }
 
-        $this->_totalResultsReturned  = (int) $this->_xpath->evaluate("count(/tapi/document/item)");
+        $this->_totalResultsReturned = (int)$this->_xpath->evaluate("count(/tapi/document/item)");
         /** @todo Validate the following assertion */
-        $this->_totalResultsAvailable = (int) $this->getPostsMatched();
+        $this->_totalResultsAvailable = (int)$this->getPostsMatched();
     }
 
 
@@ -81,7 +85,8 @@ class Zend_Service_Technorati_TagResultSet extends Zend_Service_Technorati_Resul
      *
      * @return  int
      */
-    public function getPostsMatched() {
+    public function getPostsMatched()
+    {
         return $this->_postsMatched;
     }
 
@@ -90,7 +95,8 @@ class Zend_Service_Technorati_TagResultSet extends Zend_Service_Technorati_Resul
      *
      * @return  int
      */
-    public function getBlogsMatched() {
+    public function getBlogsMatched()
+    {
         return $this->_blogsMatched;
     }
 

@@ -26,19 +26,22 @@
  * ----------------------------------------------------------------------
  */
 
-	$vb_success = $this->getVar('alternate_destination_success');
-	$vs_display_name = $this->getVar('dest_display_name');
+$vb_success = $this->getVar('alternate_destination_success');
+$vs_display_name = $this->getVar('dest_display_name');
 
-    print "<div>";
-    switch($vb_success) {
-        case null:
-            print _t("Upload to <i>%1</i> has already completed", $vs_display_name);
-            break;
-        case true:
-            print _t("Upload to <i>%1</i> successful", $vs_display_name);
-            break;
-        case false:
-        default:
-            print _t("There was an error while uploading to <i>%1</i>. Check the events log for more information.", $vs_display_name);
-            break;
-    }
+print "<div>";
+switch ($vb_success) {
+    case null:
+        print _t("Upload to <i>%1</i> has already completed", $vs_display_name);
+        break;
+    case true:
+        print _t("Upload to <i>%1</i> successful", $vs_display_name);
+        break;
+    case false:
+    default:
+        print _t(
+            "There was an error while uploading to <i>%1</i>. Check the events log for more information.",
+            $vs_display_name
+        );
+        break;
+}

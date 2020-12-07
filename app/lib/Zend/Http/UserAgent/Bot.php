@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework
  *
@@ -29,7 +30,6 @@ require_once 'Zend/Http/UserAgent/AbstractDevice.php';
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-
 class Zend_Http_UserAgent_Bot extends Zend_Http_UserAgent_AbstractDevice
 {
 
@@ -108,8 +108,8 @@ class Zend_Http_UserAgent_Bot extends Zend_Http_UserAgent_AbstractDevice
     /**
      * Comparison of the UserAgent chain and browser signatures
      *
-     * @param  string $userAgent User Agent chain
-     * @param  array $server $_SERVER like param
+     * @param string $userAgent User Agent chain
+     * @param array $server $_SERVER like param
      * @return bool
      */
     public static function match($userAgent, $server)

@@ -25,6 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
+
 ?>
 
 <h2><?php print _t('Vimeo integration is now set up and ready to go!'); ?></h2>

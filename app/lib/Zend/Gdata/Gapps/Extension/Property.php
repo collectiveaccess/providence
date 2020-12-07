@@ -71,7 +71,6 @@ class Zend_Gdata_Gapps_Extension_Property extends Zend_Gdata_Extension
         parent::__construct();
         $this->_name = $name;
         $this->_value = $value;
-
     }
 
 
@@ -96,7 +95,6 @@ class Zend_Gdata_Gapps_Extension_Property extends Zend_Gdata_Extension
         }
 
         return $element;
-
     }
 
     /**
@@ -109,22 +107,22 @@ class Zend_Gdata_Gapps_Extension_Property extends Zend_Gdata_Extension
     protected function takeAttributeFromDOM($attribute)
     {
         switch ($attribute->localName) {
-        case 'name':
-            $this->_name = $attribute->nodeValue;
-            break;
-        case 'value':
-            $this->_value = $attribute->nodeValue;
-            break;
-        default:
-            parent::takeAttributeFromDOM($attribute);
+            case 'name':
+                $this->_name = $attribute->nodeValue;
+                break;
+            case 'value':
+                $this->_value = $attribute->nodeValue;
+                break;
+            default:
+                parent::takeAttributeFromDOM($attribute);
         }
     }
 
     /**
      * Get the value for this element's name attribute.
      *
-     * @see setName
      * @return string The requested attribute.
+     * @see setName
      */
     public function getName()
     {
@@ -145,8 +143,8 @@ class Zend_Gdata_Gapps_Extension_Property extends Zend_Gdata_Extension
     /**
      * Get the value for this element's value attribute.
      *
-     * @see setName
      * @return string The requested attribute.
+     * @see setName
      */
     public function getValue()
     {
@@ -174,6 +172,6 @@ class Zend_Gdata_Gapps_Extension_Property extends Zend_Gdata_Extension
     public function __toString()
     {
         return "Property Name: " . $this->getName() .
-               "\nProperty Value: " . $this->getValue();
+            "\nProperty Value: " . $this->getValue();
     }
 }

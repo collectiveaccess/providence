@@ -91,27 +91,30 @@ abstract class Zend_Controller_Plugin_Abstract
      * @return void
      */
     public function routeStartup(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called after Zend_Controller_Router exits.
      *
      * Called after Zend_Controller_Front exits from the router.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function routeShutdown(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called before Zend_Controller_Front enters its dispatch loop.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function dispatchLoopStartup(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called before an action is dispatched by Zend_Controller_Dispatcher.
@@ -121,11 +124,12 @@ abstract class Zend_Controller_Plugin_Abstract
      * {@link Zend_Controller_Request_Abstract::setDispatched() setDispatched(false)}),
      * the current action may be skipped.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function preDispatch(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called after an action is dispatched by Zend_Controller_Dispatcher.
@@ -135,11 +139,12 @@ abstract class Zend_Controller_Plugin_Abstract
      * {@link Zend_Controller_Request_Abstract::setDispatched() setDispatched(false)}),
      * a new action may be specified for dispatching.
      *
-     * @param  Zend_Controller_Request_Abstract $request
+     * @param Zend_Controller_Request_Abstract $request
      * @return void
      */
     public function postDispatch(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called before Zend_Controller_Front exits its dispatch loop.
@@ -147,5 +152,6 @@ abstract class Zend_Controller_Plugin_Abstract
      * @return void
      */
     public function dispatchLoopShutdown()
-    {}
+    {
+    }
 }

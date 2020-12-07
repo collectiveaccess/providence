@@ -1,3 +1,4 @@
 <?php
-	print $this->getVar('content');
+
+print $this->getVar('content');
 ?>

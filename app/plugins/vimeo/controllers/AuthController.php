@@ -26,61 +26,71 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_LIB_DIR__.'/Configuration.php');
- 	include_once(__CA_LIB_DIR__."/Vimeo/vimeo.php");
+require_once(__CA_LIB_DIR__ . '/Configuration.php');
+include_once(__CA_LIB_DIR__ . "/Vimeo/vimeo.php");
 
- 	class AuthController extends ActionController {
- 		# -------------------------------------------------------
- 		protected $opo_config;		// plugin configuration file
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 			$this->opo_config = Configuration::load(__CA_APP_DIR__.'/plugins/vimeo/conf/vimeo.conf');
- 		}
- 		# -------------------------------------------------------
- 		public function Index() {
- 			$vo_vimeo = new phpVimeo($this->opo_config->get('consumer_key'), $this->opo_config->get('consumer_secret'));
+class AuthController extends ActionController
+{
+    # -------------------------------------------------------
+    protected $opo_config;        // plugin configuration file
+    # -------------------------------------------------------
+    #
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+        $this->opo_config = Configuration::load(__CA_APP_DIR__ . '/plugins/vimeo/conf/vimeo.conf');
+    }
 
- 			// get stored request or access token if we have one
- 			if(file_exists(__CA_APP_DIR__.'/tmp/vimeo.token')){
- 				$va_token = unserialize(file_get_contents(__CA_APP_DIR__.'/tmp/vimeo.token'));
- 				$vb_had_stored_token = true;
- 			} else { // if we don't, we need a fresh access token
- 				$va_token = $vo_vimeo->getRequestToken();
- 				$va_token['type'] = 'request';
- 			}
+    # -------------------------------------------------------
+    public function Index()
+    {
+        $vo_vimeo = new phpVimeo($this->opo_config->get('consumer_key'), $this->opo_config->get('consumer_secret'));
 
-			$this->view->setVar('authorize_link', $vs_authorize_link = $vo_vimeo->getAuthorizeUrl($va_token['oauth_token'], 'delete'));
- 			$this->view->setVar('token',$va_token);
- 			$this->view->setVar('had_stored_token', $vb_had_stored_token);
+        // get stored request or access token if we have one
+        if (file_exists(__CA_APP_DIR__ . '/tmp/vimeo.token')) {
+            $va_token = unserialize(file_get_contents(__CA_APP_DIR__ . '/tmp/vimeo.token'));
+            $vb_had_stored_token = true;
+        } else { // if we don't, we need a fresh access token
+            $va_token = $vo_vimeo->getRequestToken();
+            $va_token['type'] = 'request';
+        }
 
- 			file_put_contents(__CA_APP_DIR__.'/tmp/vimeo.token', serialize($va_token));
- 			
- 			$this->render('auth_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function verify() {
- 			$vo_vimeo = new phpVimeo($this->opo_config->get('consumer_key'), $this->opo_config->get('consumer_secret'));
+        $this->view->setVar(
+            'authorize_link',
+            $vs_authorize_link = $vo_vimeo->getAuthorizeUrl($va_token['oauth_token'], 'delete')
+        );
+        $this->view->setVar('token', $va_token);
+        $this->view->setVar('had_stored_token', $vb_had_stored_token);
 
- 			if(file_exists(__CA_APP_DIR__.'/tmp/vimeo.token')){
- 				$va_token = unserialize(file_get_contents(__CA_APP_DIR__.'/tmp/vimeo.token'));
+        file_put_contents(__CA_APP_DIR__ . '/tmp/vimeo.token', serialize($va_token));
 
- 				// exchange request token for access token by verifying with the code from vimeo
- 				if($va_token['type'] == 'request'){
- 					$vo_vimeo->setToken($va_token['oauth_token'], $va_token['oauth_token_secret']);
-	 				$vs_verify_code = $this->request->getParameter('verify_code',pString);
+        $this->render('auth_html.php');
+    }
 
-	 				$va_token = $vo_vimeo->getAccessToken($vs_verify_code);
-	 				$va_token['type'] = 'access';
+    # -------------------------------------------------------
+    public function verify()
+    {
+        $vo_vimeo = new phpVimeo($this->opo_config->get('consumer_key'), $this->opo_config->get('consumer_secret'));
 
-	 				file_put_contents(__CA_APP_DIR__.'/tmp/vimeo.token', serialize($va_token));	
- 				}
- 			}
+        if (file_exists(__CA_APP_DIR__ . '/tmp/vimeo.token')) {
+            $va_token = unserialize(file_get_contents(__CA_APP_DIR__ . '/tmp/vimeo.token'));
 
- 			$this->render('verify.php');
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+            // exchange request token for access token by verifying with the code from vimeo
+            if ($va_token['type'] == 'request') {
+                $vo_vimeo->setToken($va_token['oauth_token'], $va_token['oauth_token_secret']);
+                $vs_verify_code = $this->request->getParameter('verify_code', pString);
+
+                $va_token = $vo_vimeo->getAccessToken($vs_verify_code);
+                $va_token['type'] = 'access';
+
+                file_put_contents(__CA_APP_DIR__ . '/tmp/vimeo.token', serialize($va_token));
+            }
+        }
+
+        $this->render('verify.php');
+    }
+    # -------------------------------------------------------
+}
+
+?>

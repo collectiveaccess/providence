@@ -25,31 +25,31 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vn_moderated_comment_count = $this->getVar('moderated_comment_count');
-	$vn_unmoderated_comment_count = $this->getVar('unmoderated_comment_count');
-	$vn_total_comment_count = $this->getVar('total_comment_count');
+
+$vn_moderated_comment_count = $this->getVar('moderated_comment_count');
+$vn_unmoderated_comment_count = $this->getVar('unmoderated_comment_count');
+$vn_total_comment_count = $this->getVar('total_comment_count');
 ?>
-	<h3 class='comments'><?php print _t('User comments'); ?>:
-	<div><?php
-			if ($vn_unmoderated_comment_count == 1) {
-				print _t("1 comment needs moderation");
-			} else {
-				print _t("%1 comments need moderation", $vn_unmoderated_comment_count);
-			}
-	?></div>
-	<div><?php
-			if ($vn_moderated_comment_count == 1) {
-				print _t("1 moderated comment");
-			} else {
-				print _t("%1 moderated comments", $vn_moderated_comment_count);
-			}
-	?></div>
-	<div><?php
-			if ($vn_total_comment_count == 1) {
-				print _t("1 comment total");
-			} else {
-				print _t("%1 comments total", $vn_total_comment_count);
-			}
-	?></div>
-	</h3>
+<h3 class='comments'><?php print _t('User comments'); ?>:
+    <div><?php
+        if ($vn_unmoderated_comment_count == 1) {
+            print _t("1 comment needs moderation");
+        } else {
+            print _t("%1 comments need moderation", $vn_unmoderated_comment_count);
+        }
+        ?></div>
+    <div><?php
+        if ($vn_moderated_comment_count == 1) {
+            print _t("1 moderated comment");
+        } else {
+            print _t("%1 moderated comments", $vn_moderated_comment_count);
+        }
+        ?></div>
+    <div><?php
+        if ($vn_total_comment_count == 1) {
+            print _t("1 comment total");
+        } else {
+            print _t("%1 comments total", $vn_total_comment_count);
+        }
+        ?></div>
+</h3>

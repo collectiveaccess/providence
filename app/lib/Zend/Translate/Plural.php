@@ -39,8 +39,8 @@ class Zend_Translate_Plural
     /**
      * Returns the plural definition to use
      *
-     * @param  integer $number Number for plural selection
-     * @param  string  $locale Locale to use
+     * @param integer $number Number for plural selection
+     * @param string $locale Locale to use
      * @return integer Plural number to use
      */
     public static function getPlural($number, $locale)
@@ -64,7 +64,7 @@ class Zend_Translate_Plural
             return $return;
         }
 
-        switch($locale) {
+        switch ($locale) {
             case 'bo':
             case 'dz':
             case 'id':
@@ -199,7 +199,7 @@ class Zend_Translate_Plural
     /**
      * Set's a new plural rule
      *
-     * @param string $rule   Callback which acts as rule
+     * @param string $rule Callback which acts as rule
      * @param string $locale Locale which is used for this callback
      * @return null
      */

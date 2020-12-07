@@ -46,8 +46,8 @@ abstract class Zend_Service_DeveloperGarden_Response_SendSms_SendSmsAbstract
     /**
      * parse the response data and throws exceptions
      *
-     * @throws Zend_Service_DeveloperGarden_Response_Exception
      * @return Zend_Service_DeveloperGarden_Response_ResponseAbstract
+     * @throws Zend_Service_DeveloperGarden_Response_Exception
      */
     public function parse()
     {
@@ -98,7 +98,7 @@ abstract class Zend_Service_DeveloperGarden_Response_SendSms_SendSmsAbstract
     public function isValid()
     {
         return ($this->return === null
-                || $this->return->status == '0000');
+            || $this->return->status == '0000');
     }
 
     /**

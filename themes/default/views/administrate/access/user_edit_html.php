@@ -26,109 +26,187 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_user = $this->getVar('t_user');
-	$vn_user_id = $this->getVar('user_id');
-	
-	$va_roles = $this->getVar('roles');
-	$va_groups = $this->getVar('groups');
+$t_user = $this->getVar('t_user');
+$vn_user_id = $this->getVar('user_id');
+
+$va_roles = $this->getVar('roles');
+$va_groups = $this->getVar('groups');
 ?>
 <div class="sectionBox">
-<?php
-	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'UsersForm').' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Users', 'ListUsers', array('user_id' => 0)), 
-		'', 
-		($vn_user_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $vn_user_id)) : ''
-	);
-?>
-<?php
-	print caFormTag($this->request, 'Save', 'UsersForm');
+    <?php
+    print $vs_control_box = caFormControlBox(
+        caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'UsersForm') . ' ' .
+        caFormNavButton(
+            $this->request,
+            __CA_NAV_ICON_CANCEL__,
+            _t("Cancel"),
+            '',
+            'administrate/access',
+            'Users',
+            'ListUsers',
+            array('user_id' => 0)
+        ),
+        '',
+        ($vn_user_id > 0) ? caFormNavButton(
+            $this->request,
+            __CA_NAV_ICON_DELETE__,
+            _t("Delete"),
+            '',
+            'administrate/access',
+            'Users',
+            'Delete',
+            array('user_id' => $vn_user_id)
+        ) : ''
+    );
+    ?>
+    <?php
+    print caFormTag($this->request, 'Save', 'UsersForm');
 
-		// ca_users fields
-		foreach($t_user->getFormFields() as $vs_f => $va_user_info) {
-			
-			switch($vs_f) {
-				case 'password':
-					if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
-						// display password confirmation
-						print $t_user->htmlFormElement($vs_f, null, array('value' => '', 'placeholder' => _t('Change password'), 'field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
-						print $t_user->htmlFormElement($vs_f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('value' => '', 'placeholder' => _t('Confirm password'), 'name' => 'password_confirm', 'LABEL' => 'Confirm password'));
-					}
-					break;
-				case 'entity_id':
-					print "<div class='formLabel'><span id='_ca_user_entity_id_'>".($vs_entity_label = $t_user->getFieldInfo('entity_id', 'LABEL'))."</span><br/>";
-					$vs_template = join($this->request->config->get('ca_entities_lookup_delimiter'), $this->request->config->get('ca_entities_lookup_settings'));
-					print caHTMLTextInput('entity_id_lookup', array('class' => 'lookupBg', 'size' => 70, 'id' => 'ca_users_entity_id_lookup', 'value' => caProcessTemplateForIDs($vs_template, 'ca_entities', array($vn_entity_id = $t_user->get('entity_id')))));
-					if ($vn_entity_id) { print "<a href='#' onclick='caClearUserEntityID(); return false;'>"._t('Clear')." &rsaquo;</a>\n"; }
-					print caHTMLHiddenInput('entity_id', array('value' => $vn_entity_id, 'id' => 'ca_users_entity_id_value'));
-					print "</div>\n";
-					
-					ToolTipManager::add(
-						'#_ca_user_entity_id_', "<h3>{$vs_entity_label}</h3>\n".$t_user->getFieldInfo('entity_id', 'DESCRIPTION')
-					);
-					break;
-				default:
-					print $t_user->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
-					break;
-			}
-		}
-?>
-		<table style="width: 700px;">
-			<tr valign="top">
-				<td>
-<?php
-		// roles
-		print $t_user->roleListAsHTMLFormElement(array('name' => 'roles', 'size' => 6));
-?>
-				</td>
-				<td>
-<?php
-		// groups
-		print $t_user->groupListAsHTMLFormElement(array('name' => 'groups', 'size' => 6));
-?>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="2">
-<?php
-		// Output user profile settings if defined
-		$va_user_profile_settings = $this->getVar('profile_settings');
-		if (is_array($va_user_profile_settings) && sizeof($va_user_profile_settings)) {
-			foreach($va_user_profile_settings as $vs_field => $va_info) {
-				if($va_errors[$vs_field]){
-					print "<div class='formErrors' style='text-align: left;'>".$va_errors[$vs_field]."</div>";
-				}
-				print $va_info['element']."\n";
-			}
-		}
-?>				
-				</td>
-			</tr>
-		</table>
-	</form>
-<?php
-	print $vs_control_box;
-?>
+    // ca_users fields
+    foreach ($t_user->getFormFields() as $vs_f => $va_user_info) {
+        switch ($vs_f) {
+            case 'password':
+                if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
+                    // display password confirmation
+                    print $t_user->htmlFormElement(
+                        $vs_f,
+                        null,
+                        array(
+                            'value' => '',
+                            'placeholder' => _t('Change password'),
+                            'field_errors' => $this->request->getActionErrors(
+                                'field_' . $vs_f
+                            )
+                        )
+                    );
+                    print $t_user->htmlFormElement(
+                        $vs_f,
+                        str_replace(
+                            '^LABEL',
+                            _t("Confirm password"),
+                            $this->appconfig->get('form_element_display_format')
+                        ),
+                        array(
+                            'value' => '',
+                            'placeholder' => _t('Confirm password'),
+                            'name' => 'password_confirm',
+                            'LABEL' => 'Confirm password'
+                        )
+                    );
+                }
+                break;
+            case 'entity_id':
+                print "<div class='formLabel'><span id='_ca_user_entity_id_'>" . ($vs_entity_label = $t_user->getFieldInfo(
+                        'entity_id',
+                        'LABEL'
+                    )) . "</span><br/>";
+                $vs_template = join(
+                    $this->request->config->get('ca_entities_lookup_delimiter'),
+                    $this->request->config->get('ca_entities_lookup_settings')
+                );
+                print caHTMLTextInput(
+                    'entity_id_lookup',
+                    array(
+                        'class' => 'lookupBg',
+                        'size' => 70,
+                        'id' => 'ca_users_entity_id_lookup',
+                        'value' => caProcessTemplateForIDs(
+                            $vs_template,
+                            'ca_entities',
+                            array(
+                                $vn_entity_id = $t_user->get(
+                                    'entity_id'
+                                )
+                            )
+                        )
+                    )
+                );
+                if ($vn_entity_id) {
+                    print "<a href='#' onclick='caClearUserEntityID(); return false;'>" . _t(
+                            'Clear'
+                        ) . " &rsaquo;</a>\n";
+                }
+                print caHTMLHiddenInput(
+                    'entity_id',
+                    array('value' => $vn_entity_id, 'id' => 'ca_users_entity_id_value')
+                );
+                print "</div>\n";
+
+                ToolTipManager::add(
+                    '#_ca_user_entity_id_',
+                    "<h3>{$vs_entity_label}</h3>\n" . $t_user->getFieldInfo('entity_id', 'DESCRIPTION')
+                );
+                break;
+            default:
+                print $t_user->htmlFormElement(
+                    $vs_f,
+                    null,
+                    array(
+                        'field_errors' => $this->request->getActionErrors(
+                            'field_' . $vs_f
+                        )
+                    )
+                );
+                break;
+        }
+    }
+    ?>
+    <table style="width: 700px;">
+        <tr valign="top">
+            <td>
+                <?php
+                // roles
+                print $t_user->roleListAsHTMLFormElement(array('name' => 'roles', 'size' => 6));
+                ?>
+            </td>
+            <td>
+                <?php
+                // groups
+                print $t_user->groupListAsHTMLFormElement(array('name' => 'groups', 'size' => 6));
+                ?>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <?php
+                // Output user profile settings if defined
+                $va_user_profile_settings = $this->getVar('profile_settings');
+                if (is_array($va_user_profile_settings) && sizeof($va_user_profile_settings)) {
+                    foreach ($va_user_profile_settings as $vs_field => $va_info) {
+                        if ($va_errors[$vs_field]) {
+                            print "<div class='formErrors' style='text-align: left;'>" . $va_errors[$vs_field] . "</div>";
+                        }
+                        print $va_info['element'] . "\n";
+                    }
+                }
+                ?>
+            </td>
+        </tr>
+    </table>
+    </form>
+    <?php
+    print $vs_control_box;
+    ?>
 </div>
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
+<div class="editorBottomPadding"><!-- empty --></div>
+
 <script type='text/javascript'>
-	jQuery(document).ready(function() {
- 		jQuery('#ca_users_entity_id_lookup').autocomplete( 
-			{ 
-				minLength: 3, delay: 800,
-				source: '<?php print caNavUrl($this->request, 'lookup', 'Entity', 'Get', array()); ?>',	
-				select: function(event,ui) {
-					if (parseInt(ui.item.id) >= 0) {
-						jQuery('#ca_users_entity_id_value').val(parseInt(ui.item.id));
-					}
-				}
-			}
-		);
-	});
-	
-	function caClearUserEntityID() {
-		jQuery('#ca_users_entity_id_lookup').val('');
-		jQuery('#ca_users_entity_id_value').val(0);
-	}	
- </script>
+    jQuery(document).ready(function () {
+        jQuery('#ca_users_entity_id_lookup').autocomplete(
+            {
+                minLength: 3, delay: 800,
+                source: '<?php print caNavUrl($this->request, 'lookup', 'Entity', 'Get', array()); ?>',
+                select: function (event, ui) {
+                    if (parseInt(ui.item.id) >= 0) {
+                        jQuery('#ca_users_entity_id_value').val(parseInt(ui.item.id));
+                    }
+                }
+            }
+        );
+    });
+
+    function caClearUserEntityID() {
+        jQuery('#ca_users_entity_id_lookup').val('');
+        jQuery('#ca_users_entity_id_value').val(0);
+    }
+</script>

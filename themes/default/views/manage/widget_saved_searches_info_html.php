@@ -25,14 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- $vn_search_count 	= $this->getVar('search_count');
+
+$vn_search_count = $this->getVar('search_count');
 ?>
-	<h3 class='savedSearches'><?php print _t('Your saved searches'); ?>
-<div><?php
-	if ($vn_search_count == 1) {
-		print _t("1 saved search");
-	} else {
-		print _t("%1 saved searches", $vn_search_count);
-	}
-?></div></h3>
+<h3 class='savedSearches'><?php print _t('Your saved searches'); ?>
+    <div><?php
+        if ($vn_search_count == 1) {
+            print _t("1 saved search");
+        } else {
+            print _t("%1 saved searches", $vn_search_count);
+        }
+        ?></div>
+</h3>

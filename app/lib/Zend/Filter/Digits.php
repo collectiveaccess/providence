@@ -61,7 +61,7 @@ class Zend_Filter_Digits implements Zend_Filter_Interface
      *
      * Returns the string $value, removing all but digit characters
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     public function filter($value)
@@ -69,14 +69,16 @@ class Zend_Filter_Digits implements Zend_Filter_Interface
         if (!self::$_unicodeEnabled) {
             // POSIX named classes are not supported, use alternative 0-9 match
             $pattern = '/[^0-9]/';
-        } else if (extension_loaded('mbstring')) {
-            // Filter for the value with mbstring
-            $pattern = '/[^[:digit:]]/';
         } else {
-            // Filter for the value without mbstring
-            $pattern = '/[\p{^N}]/';
+            if (extension_loaded('mbstring')) {
+                // Filter for the value with mbstring
+                $pattern = '/[^[:digit:]]/';
+            } else {
+                // Filter for the value without mbstring
+                $pattern = '/[\p{^N}]/';
+            }
         }
 
-        return preg_replace($pattern, '', (string) $value);
+        return preg_replace($pattern, '', (string)$value);
     }
 }

@@ -17,7 +17,7 @@
  * - 7 Unit Stop Character
  * - 10 Unit Quiet Zone
  *
- * I originally wrote this algorithm in Visual Basic 6 for a Rapid 
+ * I originally wrote this algorithm in Visual Basic 6 for a Rapid
  * Software Development class, where we printed Code128 B bar codes
  * to read using Cue Cat bar code readers.  I rewrote the algorithm
  * using PHP for inclusion in the PEAR Barcode project.
@@ -52,18 +52,18 @@ class Barcode_code128 extends Barcode
 {
     var $_type = 'code128';
     var $_barcodeheight = 60;
-    var $_font = 2;  
+    var $_font = 2;
     var $_barwidth = 1;
     var $code;
-  	
-  	var $_printText = false; // print number below barcode?
+
+    var $_printText = false; // print number below barcode?
 
 
     /**
      * Draws a Code128 image barcode
      *
-     * @param  string $text     A text that should be in the image barcode
-     * @param  string $imgtype  The image type that will be generated
+     * @param string $text A text that should be in the image barcode
+     * @param string $imgtype The image type that will be generated
      *
      * @return image            The corresponding interleaved 2 of 5 image barcode
      *
@@ -80,12 +80,11 @@ class Barcode_code128 extends Barcode
      */
     function &draw($text, $imgtype = 'png')
     {
-
         // We start with the Code128 Start Code character.  We
         // initialize checksum to 104, rather than calculate it.
         // We then add the startcode to $allbars, the main string
         // containing the bar sizes for the entire code.
-        $startcode= $this->getStartCode();
+        $startcode = $this->getStartCode();
         $checksum = 104;
         $allbars = $startcode;
 
@@ -96,7 +95,7 @@ class Barcode_code128 extends Barcode
         // In addition, we continually add the character's value
         // to the checksum
         $bars = '';
-        for ($i=0; $i < strlen($text); ++$i) {
+        for ($i = 0; $i < strlen($text); ++$i) {
             $char = $text[$i];
             $val = $this->getCharNumber($char);
 
@@ -136,18 +135,18 @@ class Barcode_code128 extends Barcode
         // total $barcodewidth.  The height of the barcode is
         // calculated by taking the bar height plus the font height.
 
-        for ($i=0; $i < strlen($allbars); ++$i) {
+        for ($i = 0; $i < strlen($allbars); ++$i) {
             $nval = $allbars[$i];
             $barcodewidth += ($nval * $this->_barwidth);
         }
-        $barcodelongheight = (int) (imagefontheight($this->_font) / 2) + $this->_barcodeheight;
+        $barcodelongheight = (int)(imagefontheight($this->_font) / 2) + $this->_barcodeheight;
 
 
         // Then, we create the image, allocate the colors, and fill
         // the image with a nice, white background, ready for printing
         // our black bars and the text.
 
-        $img = ImageCreate($barcodewidth, $barcodelongheight+ imagefontheight($this->_font)+1);
+        $img = ImageCreate($barcodewidth, $barcodelongheight + imagefontheight($this->_font) + 1);
         $black = ImageColorAllocate($img, 0, 0, 0);
         $white = ImageColorAllocate($img, 255, 255, 255);
         imagefill($img, 0, 0, $white);
@@ -160,15 +159,15 @@ class Barcode_code128 extends Barcode
 
         // First, print the image, centered across the bottom.
         if ($this->_printText) {
-			imagestring(
-				$img,
-				$this->_font,
-				$barcodewidth / 2 - strlen($text) / 2 * (imagefontwidth($this->_font)),
-				$this->_barcodeheight + imagefontheight($this->_font) / 2,
-				$text,
-				$black
-			);
-		}
+            imagestring(
+                $img,
+                $this->_font,
+                $barcodewidth / 2 - strlen($text) / 2 * (imagefontwidth($this->_font)),
+                $this->_barcodeheight + imagefontheight($this->_font) / 2,
+                $text,
+                $black
+            );
+        }
 
         // We set $xpos to 10 so we start bar printing after 
         // position 10 to simulate the 10 pixel "Quiet Zone"
@@ -178,12 +177,12 @@ class Barcode_code128 extends Barcode
         // array.  The number in each position is read and then alternating
         // black bars and spaces are drawn with the corresponding width.
         $bar = 1;
-        for ($i=0; $i < strlen($allbars); ++$i) {
+        for ($i = 0; $i < strlen($allbars); ++$i) {
             $nval = $allbars[$i];
             $width = $nval * $this->_barwidth;
 
-            if ($bar==1) {
-                imagefilledrectangle($img, $xpos, 0, $xpos + $width-1, $barcodelongheight, $black);
+            if ($bar == 1) {
+                imagefilledrectangle($img, $xpos, 0, $xpos + $width - 1, $barcodelongheight, $black);
                 $xpos += $width;
                 $bar = 0;
             } else {
@@ -197,11 +196,11 @@ class Barcode_code128 extends Barcode
 
 
     /**
-    * @internal
-    * In the Barcode_code128 constructor, we initialize
-    * the $code array, containing the bar and space pattern
-    * for the Code128 B character set.
-    */
+     * @internal
+     * In the Barcode_code128 constructor, we initialize
+     * the $code array, containing the bar and space pattern
+     * for the Code128 B character set.
+     */
     function Barcode_code128()
     {
         $this->code[0] = "212222";  // " "
@@ -310,39 +309,44 @@ class Barcode_code128 extends Barcode
     }
 
     /**
-    * Return the Code128 code for a character
-    */
-    function getCharCode($c) {
+     * Return the Code128 code for a character
+     */
+    function getCharCode($c)
+    {
         $retval = $this->code[ord($c) - 32];
         return $retval;
     }
 
     /**
-    * Return the Start Code for Code128
-    */
-    function getStartCode() {
+     * Return the Start Code for Code128
+     */
+    function getStartCode()
+    {
         return '211214';
     }
 
     /**
-    * Return the Stop Code for Code128
-    */
-    function getStopCode() {
+     * Return the Stop Code for Code128
+     */
+    function getStopCode()
+    {
         return '2331112';
     }
 
     /**
-    * Return the Code128 code equivalent of a character number
-    */
-    function getNumCode($index) {
+     * Return the Code128 code equivalent of a character number
+     */
+    function getNumCode($index)
+    {
         $retval = $this->code[$index];
         return $retval;
     }
 
     /**
-    * Return the Code128 numerical equivalent of a character.
-    */
-    function getCharNumber($c) {
+     * Return the Code128 numerical equivalent of a character.
+     */
+    function getCharNumber($c)
+    {
         $retval = ord($c) - 32;
         return $retval;
     }

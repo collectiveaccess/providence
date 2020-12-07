@@ -25,38 +25,46 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	
-	$t_user = $this->getVar('t_user');
-	$vs_group = $this->getVar('group');
- 
- ?>
-<div class="sectionBox">
-<?php
-	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'PreferencesForm').' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), '', 'system', 'Preferences', $this->request->getAction(), array()), 
-		'', 
-		''
-	);
 
-	$va_group_info = $t_user->getPreferenceGroupInfo($vs_group);
-	print "<h1>"._t("Preferences").": "._t($va_group_info['name'])."</h1>\n";
-	
-	print caFormTag($this->request, 'Save', 'PreferencesForm');
-	
-	$va_prefs = $t_user->getValidPreferences($vs_group);
-	
-	
-	
-	foreach($va_prefs as $vs_pref) {
-		print $t_user->preferenceHtmlFormElement($vs_pref, null, array());
-	}
+
+$t_user = $this->getVar('t_user');
+$vs_group = $this->getVar('group');
+
 ?>
-		<input type="hidden" name="action" value="<?php print $this->request->getAction(); ?>"/>
-	</form>
-<?php
-	print $vs_control_box;
-?>
+<div class="sectionBox">
+    <?php
+    print $vs_control_box = caFormControlBox(
+        caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'PreferencesForm') . ' ' .
+        caFormNavButton(
+            $this->request,
+            __CA_NAV_ICON_CANCEL__,
+            _t("Reset"),
+            '',
+            'system',
+            'Preferences',
+            $this->request->getAction(),
+            array()
+        ),
+        '',
+        ''
+    );
+
+    $va_group_info = $t_user->getPreferenceGroupInfo($vs_group);
+    print "<h1>" . _t("Preferences") . ": " . _t($va_group_info['name']) . "</h1>\n";
+
+    print caFormTag($this->request, 'Save', 'PreferencesForm');
+
+    $va_prefs = $t_user->getValidPreferences($vs_group);
+
+
+    foreach ($va_prefs as $vs_pref) {
+        print $t_user->preferenceHtmlFormElement($vs_pref, null, array());
+    }
+    ?>
+    <input type="hidden" name="action" value="<?php print $this->request->getAction(); ?>"/>
+    </form>
+    <?php
+    print $vs_control_box;
+    ?>
 </div>
-	<div class="editorBottomPadding"><!-- empty --></div>
+<div class="editorBottomPadding"><!-- empty --></div>

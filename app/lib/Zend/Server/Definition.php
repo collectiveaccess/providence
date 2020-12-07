@@ -43,7 +43,7 @@ class Zend_Server_Definition implements Countable, Iterator
     /**
      * Constructor
      *
-     * @param  null|array $methods
+     * @param null|array $methods
      * @return void
      */
     public function __construct($methods = null)
@@ -61,15 +61,15 @@ class Zend_Server_Definition implements Countable, Iterator
      */
     public function setOverwriteExistingMethods($flag)
     {
-        $this->_overwriteExistingMethods = (bool) $flag;
+        $this->_overwriteExistingMethods = (bool)$flag;
         return $this;
     }
 
     /**
      * Add method to definition
      *
-     * @param  array|Zend_Server_Method_Definition $method
-     * @param  null|string $name
+     * @param array|Zend_Server_Method_Definition $method
+     * @param null|string $name
      * @return Zend_Server_Definition
      * @throws Zend_Server_Exception if duplicate or invalid method provided
      */
@@ -107,7 +107,7 @@ class Zend_Server_Definition implements Countable, Iterator
     /**
      * Add multiple methods
      *
-     * @param  array $methods Array of Zend_Server_Method_Definition objects or arrays
+     * @param array $methods Array of Zend_Server_Method_Definition objects or arrays
      * @return Zend_Server_Definition
      */
     public function addMethods(array $methods)
@@ -121,7 +121,7 @@ class Zend_Server_Definition implements Countable, Iterator
     /**
      * Set all methods at once (overwrite)
      *
-     * @param  array $methods Array of Zend_Server_Method_Definition objects or arrays
+     * @param array $methods Array of Zend_Server_Method_Definition objects or arrays
      * @return Zend_Server_Definition
      */
     public function setMethods(array $methods)
@@ -134,7 +134,7 @@ class Zend_Server_Definition implements Countable, Iterator
     /**
      * Does the definition have the given method?
      *
-     * @param  string $method
+     * @param string $method
      * @return bool
      */
     public function hasMethod($method)
@@ -145,7 +145,7 @@ class Zend_Server_Definition implements Countable, Iterator
     /**
      * Get a given method definition
      *
-     * @param  string $method
+     * @param string $method
      * @return null|Zend_Server_Method_Definition
      */
     public function getMethod($method)
@@ -169,7 +169,7 @@ class Zend_Server_Definition implements Countable, Iterator
     /**
      * Remove a method definition
      *
-     * @param  string $method
+     * @param string $method
      * @return Zend_Server_Definition
      */
     public function removeMethod($method)
@@ -262,6 +262,6 @@ class Zend_Server_Definition implements Countable, Iterator
      */
     public function valid()
     {
-        return (bool) $this->current();
+        return (bool)$this->current();
     }
 }

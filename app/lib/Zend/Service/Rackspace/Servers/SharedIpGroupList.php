@@ -49,58 +49,65 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
      * @var Zend_Service_Rackspace_Servers
      */
     protected $service;
+
     /**
      * Construct
      *
-     * @param  Zend_Service_Rackspace_Servers $service
-     * @param  array $list
+     * @param Zend_Service_Rackspace_Servers $service
+     * @param array $list
      * @return void
      */
-    public function __construct($service,$list = array())
+    public function __construct($service, $list = array())
     {
         if (!($service instanceof Zend_Service_Rackspace_Servers) || !is_array($list)) {
             require_once 'Zend/Service/Rackspace/Servers/Exception.php';
-            throw new Zend_Service_Rackspace_Servers_Exception("You must pass a Zend_Service_Rackspace_Servers object and an array");
+            throw new Zend_Service_Rackspace_Servers_Exception(
+                "You must pass a Zend_Service_Rackspace_Servers object and an array"
+            );
         }
-        $this->service= $service;
+        $this->service = $service;
         $this->constructFromArray($list);
     }
+
     /**
      * Transforms the array to array of Shared Ip Group
      *
-     * @param  array $list
+     * @param array $list
      * @return void
      */
     private function constructFromArray(array $list)
     {
         foreach ($list as $share) {
-            $this->addSharedIpGroup(new Zend_Service_Rackspace_Servers_SharedIpGroup($this->service,$share));
+            $this->addSharedIpGroup(new Zend_Service_Rackspace_Servers_SharedIpGroup($this->service, $share));
         }
     }
+
     /**
      * Add a shared Ip group
      *
-     * @param  Zend_Service_Rackspace_Servers_SharedIpGroup $shared
+     * @param Zend_Service_Rackspace_Servers_SharedIpGroup $shared
      * @return Zend_Service_Rackspace_Servers_SharedIpGroupList
      */
-    protected function addSharedIpGroup (Zend_Service_Rackspace_Servers_SharedIpGroup $share)
+    protected function addSharedIpGroup(Zend_Service_Rackspace_Servers_SharedIpGroup $share)
     {
         $this->shared[] = $share;
         return $this;
     }
+
     /**
      * To Array
-     * 
-     * @return array 
+     *
+     * @return array
      */
     public function toArray()
     {
-        $array= array();
+        $array = array();
         foreach ($this->shared as $share) {
-            $array[]= $share->toArray();
+            $array[] = $share->toArray();
         }
         return $array;
     }
+
     /**
      * Return number of shared Ip Groups
      *
@@ -112,6 +119,7 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
     {
         return count($this->shared);
     }
+
     /**
      * Return the current element
      *
@@ -123,6 +131,7 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
     {
         return $this->shared[$this->iteratorKey];
     }
+
     /**
      * Return the key of the current element
      *
@@ -134,6 +143,7 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
     {
         return $this->iteratorKey;
     }
+
     /**
      * Move forward to next element
      *
@@ -145,6 +155,7 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
     {
         $this->iteratorKey += 1;
     }
+
     /**
      * Rewind the Iterator to the first element
      *
@@ -156,6 +167,7 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
     {
         $this->iteratorKey = 0;
     }
+
     /**
      * Check if there is a current element after calls to rewind() or next()
      *
@@ -172,26 +184,28 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
             return false;
         }
     }
+
     /**
      * Whether the offset exists
      *
      * Implement ArrayAccess::offsetExists()
      *
-     * @param   int     $offset
+     * @param int $offset
      * @return  boolean
      */
     public function offsetExists($offset)
     {
         return ($offset < $this->count());
     }
+
     /**
      * Return value at given offset
      *
      * Implement ArrayAccess::offsetGet()
      *
-     * @param   int  $offset
-     * @throws  Zend_Service_Rackspace_Servers_Exception
+     * @param int $offset
      * @return  Zend_Service_Rackspace_Servers_SharedIpGroup
+     * @throws  Zend_Service_Rackspace_Servers_Exception
      */
     public function offsetGet($offset)
     {
@@ -208,8 +222,8 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
      *
      * Implement ArrayAccess::offsetSet()
      *
-     * @param   int     $offset
-     * @param   string  $value
+     * @param int $offset
+     * @param string $value
      * @throws  Zend_Service_Rackspace_Servers_Exception
      */
     public function offsetSet($offset, $value)
@@ -223,7 +237,7 @@ class Zend_Service_Rackspace_Servers_SharedIpGroupList implements Countable, Ite
      *
      * Implement ArrayAccess::offsetUnset()
      *
-     * @param  int $offset
+     * @param int $offset
      * @throws Zend_Service_Rackspace_Servers_Exception
      */
     public function offsetUnset($offset)

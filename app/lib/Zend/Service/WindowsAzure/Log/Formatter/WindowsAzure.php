@@ -43,7 +43,7 @@ class Zend_Service_WindowsAzure_Log_Formatter_WindowsAzure
     /**
      * Write a message to the table storage
      *
-     * @param  array $event
+     * @param array $event
      *
      * @return Zend_Service_WindowsAzure_Storage_DynamicTableEntity
      */

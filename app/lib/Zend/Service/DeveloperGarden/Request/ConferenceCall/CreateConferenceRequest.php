@@ -73,16 +73,18 @@ class Zend_Service_DeveloperGarden_Request_ConferenceCall_CreateConferenceReques
      * @param Zend_Service_DeveloperGarden_ConferenceCall_ConferenceSchedule $conferenceSchedule
      * @param integer $account
      */
-    public function __construct($environment, $ownerId,
+    public function __construct(
+        $environment,
+        $ownerId,
         Zend_Service_DeveloperGarden_ConferenceCall_ConferenceDetail $conferenceDetails,
         Zend_Service_DeveloperGarden_ConferenceCall_ConferenceSchedule $conferenceSchedule = null,
         $account = null
     ) {
         parent::__construct($environment);
         $this->setOwnerId($ownerId)
-             ->setDetail($conferenceDetails)
-             ->setSchedule($conferenceSchedule)
-             ->setAccount($account);
+            ->setDetail($conferenceDetails)
+            ->setSchedule($conferenceSchedule)
+            ->setAccount($account);
     }
 
     /**

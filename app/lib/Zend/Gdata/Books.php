@@ -90,7 +90,7 @@ class Zend_Gdata_Books extends Zend_Gdata
         $this->registerPackage('Zend_Gdata_Books_Extension');
         parent::__construct($client, $applicationId);
         $this->_httpClient->setParameterPost('service', self::AUTH_SERVICE_NAME);
-     }
+    }
 
     /**
      * Retrieves a feed of volumes.
@@ -105,10 +105,12 @@ class Zend_Gdata_Books extends Zend_Gdata
     {
         if ($location == null) {
             $uri = self::VOLUME_FEED_URI;
-        } else if ($location instanceof Zend_Gdata_Query) {
-            $uri = $location->getQueryUrl();
         } else {
-            $uri = $location;
+            if ($location instanceof Zend_Gdata_Query) {
+                $uri = $location->getQueryUrl();
+            } else {
+                $uri = $location;
+            }
         }
         return parent::getFeed($uri, 'Zend_Gdata_Books_VolumeFeed');
     }
@@ -127,10 +129,12 @@ class Zend_Gdata_Books extends Zend_Gdata
     {
         if ($volumeId !== null) {
             $uri = self::VOLUME_FEED_URI . "/" . $volumeId;
-        } else if ($location instanceof Zend_Gdata_Query) {
-            $uri = $location->getQueryUrl();
         } else {
-            $uri = $location;
+            if ($location instanceof Zend_Gdata_Query) {
+                $uri = $location->getQueryUrl();
+            } else {
+                $uri = $location;
+            }
         }
         return parent::getEntry($uri, 'Zend_Gdata_Books_VolumeEntry');
     }
@@ -187,7 +191,10 @@ class Zend_Gdata_Books extends Zend_Gdata
             $uri = $location;
         }
         return parent::insertEntry(
-            $entry, $uri, 'Zend_Gdata_Books_VolumeEntry');
+            $entry,
+            $uri,
+            'Zend_Gdata_Books_VolumeEntry'
+        );
     }
 
     /**

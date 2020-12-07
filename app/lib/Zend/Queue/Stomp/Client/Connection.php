@@ -56,11 +56,11 @@ class Zend_Queue_Stomp_Client_Connection
     /**
      * open() opens a socket to the Stomp server
      *
-     * @param  array $options ('scheme', 'host', 'port')
-     * @param  string $scheme
-     * @param  string $host
-     * @param  int $port
-     * @param  array $options Accepts "timeout_sec" and "timeout_usec" keys
+     * @param array $options ('scheme', 'host', 'port')
+     * @param string $scheme
+     * @param string $host
+     * @param int $port
+     * @param array $options Accepts "timeout_sec" and "timeout_usec" keys
      * @return true;
      * @throws Zend_Queue_Exception
      */
@@ -81,7 +81,7 @@ class Zend_Queue_Stomp_Client_Connection
         if (!isset($options['timeout_sec'])) {
             $options['timeout_sec'] = self::READ_TIMEOUT_DEFAULT_SEC;
         }
-        if (! isset($options['timeout_usec'])) {
+        if (!isset($options['timeout_usec'])) {
             $options['timeout_usec'] = self::READ_TIMEOUT_DEFAULT_USEC;
         }
 
@@ -102,7 +102,7 @@ class Zend_Queue_Stomp_Client_Connection
     /**
      * Close connection
      *
-     * @param  boolean $destructor
+     * @param boolean $destructor
      * @return void
      */
     public function close($destructor = false)
@@ -123,7 +123,6 @@ class Zend_Queue_Stomp_Client_Connection
         if (is_resource($this->_socket)) {
             // fclose($this->_socket);
         }
-
         // $this->_socket = null;
     }
 
@@ -171,17 +170,17 @@ class Zend_Queue_Stomp_Client_Connection
      */
     public function canRead()
     {
-        $read   = array($this->_socket);
-        $write  = null;
+        $read = array($this->_socket);
+        $write = null;
         $except = null;
 
         return stream_select(
-            $read,
-            $write,
-            $except,
-            $this->_options['timeout_sec'],
-            $this->_options['timeout_usec']
-        ) == 1;
+                $read,
+                $write,
+                $except,
+                $this->_options['timeout_sec'],
+                $this->_options['timeout_usec']
+            ) == 1;
         // see http://us.php.net/manual/en/function.stream-select.php
     }
 
@@ -196,7 +195,7 @@ class Zend_Queue_Stomp_Client_Connection
         $this->ping();
 
         $response = '';
-        $prev     = '';
+        $prev = '';
 
         // while not end of file.
         while (!feof($this->_socket)) {
@@ -233,7 +232,7 @@ class Zend_Queue_Stomp_Client_Connection
      *
      * This must be a Zend_Queue_Stomp_FrameInterface.
      *
-     * @param  string $classname - class is an instance of Zend_Queue_Stomp_FrameInterface
+     * @param string $classname - class is an instance of Zend_Queue_Stomp_FrameInterface
      * @return $this;
      */
     public function setFrameClass($classname)
@@ -272,7 +271,9 @@ class Zend_Queue_Stomp_Client_Connection
 
         if (!$frame instanceof Zend_Queue_Stomp_FrameInterface) {
             require_once 'Zend/Queue/Exception.php';
-            throw new Zend_Queue_Exception('Invalid Frame class provided; must implement Zend_Queue_Stomp_FrameInterface');
+            throw new Zend_Queue_Exception(
+                'Invalid Frame class provided; must implement Zend_Queue_Stomp_FrameInterface'
+            );
         }
 
         return $frame;

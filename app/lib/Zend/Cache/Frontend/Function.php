@@ -58,7 +58,7 @@ class Zend_Cache_Frontend_Function extends Zend_Cache_Core
     /**
      * Constructor
      *
-     * @param  array $options Associative array of options
+     * @param array $options Associative array of options
      * @return void
      */
     public function __construct(array $options = array())
@@ -72,15 +72,20 @@ class Zend_Cache_Frontend_Function extends Zend_Cache_Core
     /**
      * Main method : call the specified function or get the result from cache
      *
-     * @param  callback $callback         A valid callback
-     * @param  array    $parameters       Function parameters
-     * @param  array    $tags             Cache tags
-     * @param  int      $specificLifetime If != false, set a specific lifetime for this cache record (null => infinite lifetime)
-     * @param  int      $priority         integer between 0 (very low priority) and 10 (maximum priority) used by some particular backends
+     * @param callback $callback A valid callback
+     * @param array $parameters Function parameters
+     * @param array $tags Cache tags
+     * @param int $specificLifetime If != false, set a specific lifetime for this cache record (null => infinite lifetime)
+     * @param int $priority integer between 0 (very low priority) and 10 (maximum priority) used by some particular backends
      * @return mixed Result
      */
-    public function call($callback, array $parameters = array(), $tags = array(), $specificLifetime = false, $priority = 8)
-    {
+    public function call(
+        $callback,
+        array $parameters = array(),
+        $tags = array(),
+        $specificLifetime = false,
+        $priority = 8
+    ) {
         if (!is_callable($callback, true, $name)) {
             Zend_Cache::throwException('Invalid callback');
         }
@@ -95,7 +100,7 @@ class Zend_Cache_Frontend_Function extends Zend_Cache_Core
         }
 
         $id = $this->_makeId($callback, $parameters);
-        if ( ($rs = $this->load($id)) && isset($rs[0], $rs[1])) {
+        if (($rs = $this->load($id)) && isset($rs[0], $rs[1])) {
             // A cache is available
             $output = $rs[0];
             $return = $rs[1];
@@ -126,10 +131,10 @@ class Zend_Cache_Frontend_Function extends Zend_Cache_Core
     /**
      * Make a cache id from the function name and parameters
      *
-     * @param  callback $callback A valid callback
-     * @param  array    $args     Function parameters
-     * @throws Zend_Cache_Exception
+     * @param callback $callback A valid callback
+     * @param array $args Function parameters
      * @return string Cache id
+     * @throws Zend_Cache_Exception
      */
     public function makeId($callback, array $args = array())
     {
@@ -156,7 +161,7 @@ class Zend_Cache_Frontend_Function extends Zend_Cache_Core
                 $lastErr = error_get_last();
                 Zend_Cache::throwException("Can't serialize callback object to generate id: {$lastErr['message']}");
             }
-            $name.= '__' . $tmp;
+            $name .= '__' . $tmp;
         }
 
         // generate a unique id for arguments

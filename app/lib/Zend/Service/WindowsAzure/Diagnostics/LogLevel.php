@@ -30,10 +30,10 @@
  */
 class Zend_Service_WindowsAzure_Diagnostics_LogLevel
 {
-	const UNDEFINED 	= 'Undefined';
-	const CRITICAL 		= 'Critical';
-	const ERROR 		= 'Error';
-	const WARNING 		= 'Warning';
-	const INFORMATION 	= 'Information';
-	const VERBOSE 		= 'Verbose';
+    const UNDEFINED = 'Undefined';
+    const CRITICAL = 'Critical';
+    const ERROR = 'Error';
+    const WARNING = 'Warning';
+    const INFORMATION = 'Information';
+    const VERBOSE = 'Verbose';
 }

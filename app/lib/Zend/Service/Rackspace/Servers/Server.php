@@ -25,11 +25,11 @@ require_once 'Zend/Service/Rackspace/Servers.php';
 class Zend_Service_Rackspace_Servers_Server
 {
     const ERROR_PARAM_CONSTRUCT = 'You must pass a Zend_Service_Rackspace_Servers object and an array';
-    const ERROR_PARAM_NO_NAME   = 'You must pass the server\'s name in the array (name)';
-    const ERROR_PARAM_NO_ID     = 'You must pass the server\'s id in the array (id)';
+    const ERROR_PARAM_NO_NAME = 'You must pass the server\'s name in the array (name)';
+    const ERROR_PARAM_NO_ID = 'You must pass the server\'s id in the array (id)';
     /**
      * Server's name
-     * 
+     *
      * @var string
      */
     protected $name;
@@ -47,38 +47,38 @@ class Zend_Service_Rackspace_Servers_Server
     protected $imageId;
     /**
      * Flavor id of the server
-     * 
-     * @var string 
+     *
+     * @var string
      */
     protected $flavorId;
     /**
      * Host id
-     * 
+     *
      * @var string
      */
     protected $hostId;
     /**
      * Server's status
-     * 
-     * @var string 
+     *
+     * @var string
      */
     protected $status;
     /**
      * Progress of the status
-     * 
+     *
      * @var integer
      */
     protected $progress;
     /**
      * Admin password, generated on a new server
-     * 
-     * @var string 
+     *
+     * @var string
      */
     protected $adminPass;
     /**
      * Public and private IP addresses
-     * 
-     * @var array 
+     *
+     * @var array
      */
     protected $addresses = array();
     /**
@@ -91,11 +91,12 @@ class Zend_Service_Rackspace_Servers_Server
      * @var Zend_Service_Rackspace_Servers
      */
     protected $service;
+
     /**
      * Constructor
      *
-     * @param  Zend_Service_Rackspace_Servers $service
-     * @param  array $data
+     * @param Zend_Service_Rackspace_Servers $service
+     * @param array $data
      * @return void
      */
     public function __construct($service, $data)
@@ -116,30 +117,31 @@ class Zend_Service_Rackspace_Servers_Server
         $this->name = $data['name'];
         $this->id = $data['id'];
         if (isset($data['imageId'])) {
-            $this->imageId= $data['imageId'];
+            $this->imageId = $data['imageId'];
         }
         if (isset($data['flavorId'])) {
-            $this->flavorId= $data['flavorId'];
+            $this->flavorId = $data['flavorId'];
         }
         if (isset($data['hostId'])) {
-            $this->hostId= $data['hostId'];
+            $this->hostId = $data['hostId'];
         }
         if (isset($data['status'])) {
-            $this->status= $data['status'];
+            $this->status = $data['status'];
         }
         if (isset($data['progress'])) {
-            $this->progress= $data['progress'];
+            $this->progress = $data['progress'];
         }
         if (isset($data['adminPass'])) {
-            $this->adminPass= $data['adminPass'];
+            $this->adminPass = $data['adminPass'];
         }
         if (isset($data['addresses']) && is_array($data['addresses'])) {
-            $this->addresses= $data['addresses'];
+            $this->addresses = $data['addresses'];
         }
         if (isset($data['metadata']) && is_array($data['metadata'])) {
-            $this->metadata= $data['metadata'];
-        } 
+            $this->metadata = $data['metadata'];
+        }
     }
+
     /**
      * Get the name of the server
      *
@@ -149,84 +151,92 @@ class Zend_Service_Rackspace_Servers_Server
     {
         return $this->name;
     }
+
     /**
      * Get the server's id
-     * 
-     * @return string 
+     *
+     * @return string
      */
     public function getId()
     {
         return $this->id;
     }
+
     /**
      * Get the server's image Id
-     * 
-     * @return string 
+     *
+     * @return string
      */
     public function getImageId()
     {
         return $this->imageId;
     }
+
     /**
      * Get the server's flavor Id
-     * 
-     * @return string 
+     *
+     * @return string
      */
     public function getFlavorId()
     {
         return $this->flavorId;
     }
+
     /**
      * Get the server's host Id
-     * 
-     * @return string 
+     *
+     * @return string
      */
     public function getHostId()
     {
         return $this->hostId;
     }
+
     /**
      * Ge the server's admin password
-     * 
-     * @return string 
+     *
+     * @return string
      */
     public function getAdminPass()
     {
         return $this->adminPass;
     }
+
     /**
      * Get the server's status
-     * 
+     *
      * @return string|boolean
      */
     public function getStatus()
     {
-        $data= $this->service->getServer($this->id);
-        if ($data!==false) {
-            $data= $data->toArray();
-            $this->status= $data['status'];
+        $data = $this->service->getServer($this->id);
+        if ($data !== false) {
+            $data = $data->toArray();
+            $this->status = $data['status'];
             return $this->status;
         }
         return false;
     }
+
     /**
      * Get the progress's status
-     * 
+     *
      * @return integer|boolean
      */
     public function getProgress()
     {
-        $data= $this->service->getServer($this->id);
-        if ($data!==false) {
-            $data= $data->toArray();
-            $this->progress= $data['progress'];
+        $data = $this->service->getServer($this->id);
+        if ($data !== false) {
+            $data = $data->toArray();
+            $this->progress = $data['progress'];
             return $this->progress;
         }
         return false;
     }
+
     /**
      * Get the private IPs
-     * 
+     *
      * @return array|boolean
      */
     public function getPrivateIp()
@@ -236,9 +246,10 @@ class Zend_Service_Rackspace_Servers_Server
         }
         return false;
     }
+
     /**
      * Get the public IPs
-     * 
+     *
      * @return array|boolean
      */
     public function getPublicIp()
@@ -248,6 +259,7 @@ class Zend_Service_Rackspace_Servers_Server
         }
         return false;
     }
+
     /**
      * Get the metadata of the container
      *
@@ -256,70 +268,74 @@ class Zend_Service_Rackspace_Servers_Server
      * @param string $key
      * @return array|string
      */
-    public function getMetadata($key=null)
+    public function getMetadata($key = null)
     {
         if (!empty($key) && isset($this->metadata[$key])) {
             return $this->metadata[$key];
         }
         return $this->metadata;
     }
+
     /**
      * Change the name of the server
-     * 
+     *
      * @param string $name
-     * @return boolean 
+     * @return boolean
      */
-    public function changeName($name) 
+    public function changeName($name)
     {
-        $result= $this->service->changeServerName($this->id, $name);
-        if ($result!==false) {
-            $this->name= $name;
+        $result = $this->service->changeServerName($this->id, $name);
+        if ($result !== false) {
+            $this->name = $name;
             return true;
         }
         return false;
     }
+
     /**
      * Change the admin password of the server
-     * 
+     *
      * @param string $password
-     * @return boolean 
+     * @return boolean
      */
     public function changePassword($password)
     {
-        $result=  $this->service->changeServerPassword($this->id, $password);
-        if ($result!==false) {
-            $this->adminPass= $password;
+        $result = $this->service->changeServerPassword($this->id, $password);
+        if ($result !== false) {
+            $this->adminPass = $password;
             return true;
         }
         return false;
     }
+
     /**
      * Reboot the server
-     * 
-     * @return boolean 
+     *
+     * @return boolean
      */
-    public function reboot($hard=false)
+    public function reboot($hard = false)
     {
-        return $this->service->rebootServer($this->id,$hard);
+        return $this->service->rebootServer($this->id, $hard);
     }
+
     /**
      * To Array
-     * 
-     * @return array 
+     *
+     * @return array
      */
     public function toArray()
     {
-        return array (
-            'name'      => $this->name,
-            'id'        => $this->id,
-            'imageId'   => $this->imageId,
-            'flavorId'  => $this->flavorId,
-            'hostId'    => $this->hostId,
-            'status'    => $this->status,
-            'progress'  => $this->progress,
+        return array(
+            'name' => $this->name,
+            'id' => $this->id,
+            'imageId' => $this->imageId,
+            'flavorId' => $this->flavorId,
+            'hostId' => $this->hostId,
+            'status' => $this->status,
+            'progress' => $this->progress,
             'adminPass' => $this->adminPass,
             'addresses' => $this->addresses,
-            'metadata'  => $this->metadata
+            'metadata' => $this->metadata
         );
     }
 }

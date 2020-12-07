@@ -45,13 +45,13 @@ class Zend_View_Helper_Json extends Zend_View_Helper_Abstract
      * If $keepLayouts is true, does not disable layouts.
      * If $encodeJson is false, does not JSON-encode $data
      *
-     * @param  mixed $data
-     * @param  bool $keepLayouts
+     * @param mixed $data
+     * @param bool $keepLayouts
      * NOTE:   if boolean, establish $keepLayouts to true|false
      *         if array, admit params for Zend_Json::encode as enableJsonExprFinder=>true|false
      *         this array can contains a 'keepLayout'=>true|false and/or 'encodeData'=>true|false
      *         that will not be passed to Zend_Json::encode method but will be used here
-     * @param  bool $encodeData
+     * @param bool $encodeData
      * @return string|void
      */
     public function json($data, $keepLayouts = false, $encodeData = true)

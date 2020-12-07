@@ -44,9 +44,9 @@ class Zend_Pdf_Filter_Compression_Lzw extends Zend_Pdf_Filter_Compression
         if (isset($params['EarlyChange'])) {
             $earlyChange = $params['EarlyChange'];
 
-            if ($earlyChange != 0  &&  $earlyChange != 1) {
+            if ($earlyChange != 0 && $earlyChange != 1) {
                 require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception('Invalid value of \'EarlyChange\' decode param - ' . $earlyChange . '.' );
+                throw new Zend_Pdf_Exception('Invalid value of \'EarlyChange\' decode param - ' . $earlyChange . '.');
             }
             return $earlyChange;
         } else {

@@ -42,19 +42,19 @@ class Zend_Dojo_Form_Decorator_DijitForm extends Zend_Dojo_Form_Decorator_DijitC
      *
      * Replaces $content entirely from currently set element.
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function render($content)
     {
         $element = $this->getElement();
-        $view    = $element->getView();
+        $view = $element->getView();
         if (null === $view) {
             return $content;
         }
 
         $dijitParams = $this->getDijitParams();
-        $attribs     = array_merge($this->getAttribs(), $this->getOptions());
+        $attribs = array_merge($this->getAttribs(), $this->getOptions());
 
         // Enforce id attribute of form for dojo events
         if (!isset($attribs['name']) || !$attribs['name']) {

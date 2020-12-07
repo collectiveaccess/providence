@@ -36,9 +36,9 @@ class Zend_View_Helper_Fieldset extends Zend_View_Helper_FormElement
     /**
      * Render HTML form
      *
-     * @param  string $name Form name
-     * @param  string $content Form content
-     * @param  array $attribs HTML form attributes
+     * @param string $name Form name
+     * @param string $content Form content
+     * @param array $attribs HTML form attributes
      * @return string
      */
     public function fieldset($name, $content, $attribs = null)
@@ -52,8 +52,8 @@ class Zend_View_Helper_Fieldset extends Zend_View_Helper_FormElement
             $legendString = trim($attribs['legend']);
             if (!empty($legendString)) {
                 $legend = '<legend>'
-                        . (($escape) ? $this->view->escape($legendString) : $legendString)
-                        . '</legend>' . PHP_EOL;
+                    . (($escape) ? $this->view->escape($legendString) : $legendString)
+                    . '</legend>' . PHP_EOL;
             }
             unset($attribs['legend']);
         }
@@ -67,12 +67,12 @@ class Zend_View_Helper_Fieldset extends Zend_View_Helper_FormElement
 
         // render fieldset
         $xhtml = '<fieldset'
-               . $id
-               . $this->_htmlAttribs($attribs)
-               . '>'
-               . $legend
-               . $content
-               . '</fieldset>';
+            . $id
+            . $this->_htmlAttribs($attribs)
+            . '>'
+            . $legend
+            . $content
+            . '</fieldset>';
 
         return $xhtml;
     }

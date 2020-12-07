@@ -46,7 +46,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
 
     /**
      * Data key value pairs
-     * 
+     *
      * @var array
      */
     protected $_data = array();
@@ -60,7 +60,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
 
     /**
      * Time to live in seconds
-     * 
+     *
      * @var int
      */
     protected $_ttl = 0;
@@ -68,7 +68,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
     /**
      * Add a Token
      *
-     * @param  string $token
+     * @param string $token
      * @return Zend_Mobile_Push_Message_Gcm
      * @throws Zend_Mobile_Push_Message_Exception
      */
@@ -78,7 +78,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
             throw new Zend_Mobile_Push_Message_Exception('$token must be a string');
         }
         if (!in_array($token, $this->_token)) {
-           $this->_token[] = $token;
+            $this->_token[] = $token;
         }
         return $this;
     }
@@ -86,7 +86,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
     /**
      * Set Token
      *
-     * @param  string|array $token
+     * @param string|array $token
      * @return Zend_Mobile_Push_Message_Gcm
      * @throws Zend_Mobile_Push_Message_Exception
      */
@@ -95,9 +95,11 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
         $this->clearToken();
         if (is_string($token)) {
             $this->addToken($token);
-        } else if (is_array($token)) {
-            foreach ($token as $t) {
-                $this->addToken($t);
+        } else {
+            if (is_array($token)) {
+                foreach ($token as $t) {
+                    $this->addToken($t);
+                }
             }
         }
         return $this;
@@ -118,8 +120,8 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
     /**
      * Add Data
      *
-     * @param  string $key
-     * @param  string $value
+     * @param string $key
+     * @param string $value
      * @return Zend_Mobile_Push_Message_Gcm
      * @throws Zend_Mobile_Push_Message_Exception
      */
@@ -203,7 +205,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
      * If $secs is set to 0 it will be handled as
      * not being set.
      *
-     * @param  int $secs
+     * @param int $secs
      * @return Zend_Mobile_Push_Message_Gcm
      */
     public function setTtl($secs)
@@ -211,7 +213,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
         if (!is_numeric($secs)) {
             throw new Zend_Mobile_Push_Message_Exception('$secs must be numeric');
         }
-        $this->_ttl = (int) $secs;
+        $this->_ttl = (int)$secs;
         return $this;
     }
 
@@ -238,7 +240,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
         }
         if ($this->_ttl > 0 &&
             (!is_scalar($this->_id) ||
-            strlen($this->_id) === 0)) {
+                strlen($this->_id) === 0)) {
             return false;
         }
         return true;
@@ -258,7 +260,7 @@ class Zend_Mobile_Push_Message_Gcm extends Zend_Mobile_Push_Message_Abstract
             $json['registration_ids'] = $this->_token;
         }
         if ($this->_id) {
-            $json['collapse_key'] = (string) $this->_id;
+            $json['collapse_key'] = (string)$this->_id;
         }
         if ($this->_data) {
             $json['data'] = $this->_data;

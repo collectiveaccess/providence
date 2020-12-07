@@ -51,7 +51,7 @@ class Zend_Pdf_Destination_FitBoundingBox extends Zend_Pdf_Destination_Explicit
     /**
      * Create destination object
      *
-     * @param Zend_Pdf_Page|integer $page  Page object or page number
+     * @param Zend_Pdf_Page|integer $page Page object or page number
      * @return Zend_Pdf_Destination_FitBoundingBox
      * @throws Zend_Pdf_Exception
      */
@@ -61,11 +61,13 @@ class Zend_Pdf_Destination_FitBoundingBox extends Zend_Pdf_Destination_Explicit
 
         if ($page instanceof Zend_Pdf_Page) {
             $destinationArray->items[] = $page->getPageDictionary();
-        } else if (is_integer($page)) {
-            $destinationArray->items[] = new Zend_Pdf_Element_Numeric($page);
         } else {
-            require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception('Page entry must be a Zend_Pdf_Page object or a page number.');
+            if (is_integer($page)) {
+                $destinationArray->items[] = new Zend_Pdf_Element_Numeric($page);
+            } else {
+                require_once 'Zend/Pdf/Exception.php';
+                throw new Zend_Pdf_Exception('Page entry must be a Zend_Pdf_Page object or a page number.');
+            }
         }
 
         $destinationArray->items[] = new Zend_Pdf_Element_Name('FitB');

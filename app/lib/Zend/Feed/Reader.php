@@ -50,30 +50,30 @@ class Zend_Feed_Reader
     /**
      * Namespace constants
      */
-    const NAMESPACE_ATOM_03  = 'http://purl.org/atom/ns#';
-    const NAMESPACE_ATOM_10  = 'http://www.w3.org/2005/Atom';
-    const NAMESPACE_RDF      = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
-    const NAMESPACE_RSS_090  = 'http://my.netscape.com/rdf/simple/0.9/';
-    const NAMESPACE_RSS_10   = 'http://purl.org/rss/1.0/';
+    const NAMESPACE_ATOM_03 = 'http://purl.org/atom/ns#';
+    const NAMESPACE_ATOM_10 = 'http://www.w3.org/2005/Atom';
+    const NAMESPACE_RDF = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+    const NAMESPACE_RSS_090 = 'http://my.netscape.com/rdf/simple/0.9/';
+    const NAMESPACE_RSS_10 = 'http://purl.org/rss/1.0/';
 
     /**
      * Feed type constants
      */
-    const TYPE_ANY              = 'any';
-    const TYPE_ATOM_03          = 'atom-03';
-    const TYPE_ATOM_10          = 'atom-10';
-    const TYPE_ATOM_10_ENTRY    = 'atom-10-entry';
-    const TYPE_ATOM_ANY         = 'atom';
-    const TYPE_RSS_090          = 'rss-090';
-    const TYPE_RSS_091          = 'rss-091';
+    const TYPE_ANY = 'any';
+    const TYPE_ATOM_03 = 'atom-03';
+    const TYPE_ATOM_10 = 'atom-10';
+    const TYPE_ATOM_10_ENTRY = 'atom-10-entry';
+    const TYPE_ATOM_ANY = 'atom';
+    const TYPE_RSS_090 = 'rss-090';
+    const TYPE_RSS_091 = 'rss-091';
     const TYPE_RSS_091_NETSCAPE = 'rss-091n';
     const TYPE_RSS_091_USERLAND = 'rss-091u';
-    const TYPE_RSS_092          = 'rss-092';
-    const TYPE_RSS_093          = 'rss-093';
-    const TYPE_RSS_094          = 'rss-094';
-    const TYPE_RSS_10           = 'rss-10';
-    const TYPE_RSS_20           = 'rss-20';
-    const TYPE_RSS_ANY          = 'rss';
+    const TYPE_RSS_092 = 'rss-092';
+    const TYPE_RSS_093 = 'rss-093';
+    const TYPE_RSS_094 = 'rss-094';
+    const TYPE_RSS_10 = 'rss-10';
+    const TYPE_RSS_20 = 'rss-20';
+    const TYPE_RSS_ANY = 'rss';
 
     /**
      * Cache instance
@@ -147,7 +147,7 @@ class Zend_Feed_Reader
      *
      * Sets the HTTP client object to use for retrieving the feeds.
      *
-     * @param  Zend_Http_Client $httpClient
+     * @param Zend_Http_Client $httpClient
      * @return void
      */
     public static function setHttpClient(Zend_Http_Client $httpClient)
@@ -184,7 +184,7 @@ class Zend_Feed_Reader
      * X-Method-Override header will be sent with a value of PUT or
      * DELETE as appropriate.
      *
-     * @param  boolean $override Whether to override PUT and DELETE.
+     * @param boolean $override Whether to override PUT and DELETE.
      * @return void
      */
     public static function setHttpMethodOverride($override = true)
@@ -205,7 +205,7 @@ class Zend_Feed_Reader
     /**
      * Set the flag indicating whether or not to use HTTP conditional GET
      *
-     * @param  bool $bool
+     * @param bool $bool
      * @return void
      */
     public static function useHttpConditionalGet($bool = true)
@@ -216,17 +216,17 @@ class Zend_Feed_Reader
     /**
      * Import a feed by providing a URL
      *
-     * @param  string $url The URL to the feed
-     * @param  string $etag OPTIONAL Last received ETag for this resource
-     * @param  string $lastModified OPTIONAL Last-Modified value for this resource
+     * @param string $url The URL to the feed
+     * @param string $etag OPTIONAL Last received ETag for this resource
+     * @param string $lastModified OPTIONAL Last-Modified value for this resource
      * @return Zend_Feed_Reader_FeedInterface
      */
     public static function import($uri, $etag = null, $lastModified = null)
     {
-        $cache       = self::getCache();
-        $feed        = null;
+        $cache = self::getCache();
+        $feed = null;
         $responseXml = '';
-        $client      = self::getHttpClient();
+        $client = self::getHttpClient();
         $client->resetParameters();
         $client->setHeaders('If-None-Match', null);
         $client->setHeaders('If-Modified-Since', null);
@@ -237,10 +237,10 @@ class Zend_Feed_Reader
             $data = $cache->load($cacheId);
             if ($data) {
                 if ($etag === null) {
-                    $etag = $cache->load($cacheId.'_etag');
+                    $etag = $cache->load($cacheId . '_etag');
                 }
                 if ($lastModified === null) {
-                    $lastModified = $cache->load($cacheId.'_lastmodified');
+                    $lastModified = $cache->load($cacheId . '_lastmodified');
                 }
                 if ($etag) {
                     $client->setHeaders('If-None-Match', $etag);
@@ -260,10 +260,10 @@ class Zend_Feed_Reader
                 $responseXml = $response->getBody();
                 $cache->save($responseXml, $cacheId);
                 if ($response->getHeader('ETag')) {
-                    $cache->save($response->getHeader('ETag'), $cacheId.'_etag');
+                    $cache->save($response->getHeader('ETag'), $cacheId . '_etag');
                 }
                 if ($response->getHeader('Last-Modified')) {
-                    $cache->save($response->getHeader('Last-Modified'), $cacheId.'_lastmodified');
+                    $cache->save($response->getHeader('Last-Modified'), $cacheId . '_lastmodified');
                 }
             }
             if (empty($responseXml)) {
@@ -308,12 +308,12 @@ class Zend_Feed_Reader
     /**
      * Import a feed by providing a Zend_Feed_Abstract object
      *
-     * @param  Zend_Feed_Abstract $feed A fully instantiated Zend_Feed object
+     * @param Zend_Feed_Abstract $feed A fully instantiated Zend_Feed object
      * @return Zend_Feed_Reader_FeedInterface
      */
     public static function importFeed(Zend_Feed_Abstract $feed)
     {
-        $dom  = $feed->getDOM()->ownerDocument;
+        $dom = $feed->getDOM()->ownerDocument;
         $type = self::detectType($dom);
         self::_registerCoreExtensions();
         if (substr($type, 0, 3) == 'rss') {
@@ -328,7 +328,7 @@ class Zend_Feed_Reader
     /**
      * Import a feed froma string
      *
-     * @param  string $string
+     * @param string $string
      * @return Zend_Feed_Reader_FeedInterface
      */
     public static function importString($string)
@@ -373,8 +373,10 @@ class Zend_Feed_Reader
             $reader = new Zend_Feed_Reader_Feed_Atom($dom, $type);
         } else {
             require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception('The URI used does not point to a '
-            . 'valid Atom, RSS or RDF feed that Zend_Feed_Reader can parse.');
+            throw new Zend_Feed_Exception(
+                'The URI used does not point to a '
+                . 'valid Atom, RSS or RDF feed that Zend_Feed_Reader can parse.'
+            );
         }
         return $reader;
     }
@@ -382,9 +384,9 @@ class Zend_Feed_Reader
     /**
      * Imports a feed from a file located at $filename.
      *
-     * @param  string $filename
-     * @throws Zend_Feed_Exception
+     * @param string $filename
      * @return Zend_Feed_Reader_FeedInterface
+     * @throws Zend_Feed_Exception
      */
     public static function importFile($filename)
     {
@@ -442,8 +444,8 @@ class Zend_Feed_Reader
     /**
      * Detect the feed type of the provided feed
      *
-     * @param  Zend_Feed_Abstract|DOMDocument|string $feed
-     * @param  bool                                  $specOnly
+     * @param Zend_Feed_Abstract|DOMDocument|string $feed
+     * @param bool $specOnly
      * @return string
      * @throws Zend_Feed_Exception
      */
@@ -451,9 +453,9 @@ class Zend_Feed_Reader
     {
         if ($feed instanceof Zend_Feed_Reader_FeedInterface) {
             $dom = $feed->getDomDocument();
-        } elseif($feed instanceof DOMDocument) {
+        } elseif ($feed instanceof DOMDocument) {
             $dom = $feed;
-        } elseif(is_string($feed) && !empty($feed)) {
+        } elseif (is_string($feed) && !empty($feed)) {
             @ini_set('track_errors', 1);
             $oldValue = libxml_disable_entity_loader(true);
             $dom = new DOMDocument;
@@ -481,8 +483,10 @@ class Zend_Feed_Reader
             }
         } else {
             require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception('Invalid object/scalar provided: must'
-            . ' be of type Zend_Feed_Reader_FeedInterface, DomDocument or string');
+            throw new Zend_Feed_Exception(
+                'Invalid object/scalar provided: must'
+                . ' be of type Zend_Feed_Reader_FeedInterface, DomDocument or string'
+            );
         }
         $xpath = new DOMXPath($dom);
 
@@ -491,7 +495,7 @@ class Zend_Feed_Reader
             $version = $xpath->evaluate('string(/rss/@version)');
 
             if (strlen($version) > 0) {
-                switch($version) {
+                switch ($version) {
                     case '2.0':
                         $type = self::TYPE_RSS_20;
                         break;
@@ -568,7 +572,7 @@ class Zend_Feed_Reader
     /**
      * Set plugin loader for use with Extensions
      *
-     * @param  Zend_Loader_PluginLoader_Interface $loader
+     * @param Zend_Loader_PluginLoader_Interface $loader
      */
     public static function setPluginLoader(Zend_Loader_PluginLoader_Interface $loader)
     {
@@ -584,9 +588,11 @@ class Zend_Feed_Reader
     {
         if (!isset(self::$_pluginLoader)) {
             require_once 'Zend/Loader/PluginLoader.php';
-            self::$_pluginLoader = new Zend_Loader_PluginLoader(array(
-                'Zend_Feed_Reader_Extension_' => 'Zend/Feed/Reader/Extension/',
-            ));
+            self::$_pluginLoader = new Zend_Loader_PluginLoader(
+                array(
+                    'Zend_Feed_Reader_Extension_' => 'Zend/Feed/Reader/Extension/',
+                )
+            );
         }
         return self::$_pluginLoader;
     }
@@ -594,21 +600,21 @@ class Zend_Feed_Reader
     /**
      * Add prefix path for loading Extensions
      *
-     * @param  string $prefix
-     * @param  string $path
+     * @param string $prefix
+     * @param string $path
      * @return void
      */
     public static function addPrefixPath($prefix, $path)
     {
         $prefix = rtrim($prefix, '_');
-        $path   = rtrim($path, DIRECTORY_SEPARATOR);
+        $path = rtrim($path, DIRECTORY_SEPARATOR);
         self::getPluginLoader()->addPrefixPath($prefix, $path);
     }
 
     /**
      * Add multiple Extension prefix paths at once
      *
-     * @param  array $spec
+     * @param array $spec
      * @return void
      */
     public static function addPrefixPaths(array $spec)
@@ -626,13 +632,13 @@ class Zend_Feed_Reader
     /**
      * Register an Extension by name
      *
-     * @param  string $name
+     * @param string $name
      * @return void
      * @throws Zend_Feed_Exception if unable to resolve Extension class
      */
     public static function registerExtension($name)
     {
-        $feedName  = $name . '_Feed';
+        $feedName = $name . '_Feed';
         $entryName = $name . '_Entry';
         if (self::isRegistered($name)) {
             if (self::getPluginLoader()->isLoaded($feedName) ||
@@ -654,20 +660,22 @@ class Zend_Feed_Reader
             && !self::getPluginLoader()->isLoaded($entryName)
         ) {
             require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception('Could not load extension: ' . $name
-                . 'using Plugin Loader. Check prefix paths are configured and extension exists.');
+            throw new Zend_Feed_Exception(
+                'Could not load extension: ' . $name
+                . 'using Plugin Loader. Check prefix paths are configured and extension exists.'
+            );
         }
     }
 
     /**
      * Is a given named Extension registered?
      *
-     * @param  string $extensionName
+     * @param string $extensionName
      * @return boolean
      */
     public static function isRegistered($extensionName)
     {
-        $feedName  = $extensionName . '_Feed';
+        $feedName = $extensionName . '_Feed';
         $entryName = $extensionName . '_Entry';
         if (in_array($feedName, self::$_extensions['feed'])
             || in_array($entryName, self::$_extensions['entry'])
@@ -694,13 +702,13 @@ class Zend_Feed_Reader
      */
     public static function reset()
     {
-        self::$_cache              = null;
-        self::$_httpClient         = null;
+        self::$_cache = null;
+        self::$_httpClient = null;
         self::$_httpMethodOverride = false;
         self::$_httpConditionalGet = false;
-        self::$_pluginLoader       = null;
-        self::$_prefixPaths        = array();
-        self::$_extensions         = array(
+        self::$_pluginLoader = null;
+        self::$_prefixPaths = array();
+        self::$_extensions = array(
             'feed' => array(
                 'DublinCore_Feed',
                 'Atom_Feed'

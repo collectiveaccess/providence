@@ -35,7 +35,7 @@ interface Zend_Form_Decorator_Interface
      *
      * Accept options during initialization.
      *
-     * @param  array|Zend_Config $options
+     * @param array|Zend_Config $options
      * @return void
      */
     public function __construct($options = null);
@@ -46,7 +46,7 @@ interface Zend_Form_Decorator_Interface
      * While the name is "setElement", a form decorator could decorate either
      * an element or a form object.
      *
-     * @param  mixed $element
+     * @param mixed $element
      * @return Zend_Form_Decorator_Interface
      */
     public function setElement($element);
@@ -61,7 +61,7 @@ interface Zend_Form_Decorator_Interface
     /**
      * Set decorator options from an array
      *
-     * @param  array $options
+     * @param array $options
      * @return Zend_Form_Decorator_Interface
      */
     public function setOptions(array $options);
@@ -69,7 +69,7 @@ interface Zend_Form_Decorator_Interface
     /**
      * Set decorator options from a config object
      *
-     * @param  Zend_Config $config
+     * @param Zend_Config $config
      * @return Zend_Form_Decorator_Interface
      */
     public function setConfig(Zend_Config $config);
@@ -77,8 +77,8 @@ interface Zend_Form_Decorator_Interface
     /**
      * Set a single option
      *
-     * @param  string $key
-     * @param  mixed $value
+     * @param string $key
+     * @param mixed $value
      * @return Zend_Form_Decorator_Interface
      */
     public function setOption($key, $value);
@@ -86,7 +86,7 @@ interface Zend_Form_Decorator_Interface
     /**
      * Retrieve a single option
      *
-     * @param  string $key
+     * @param string $key
      * @return mixed
      */
     public function getOption($key);
@@ -101,7 +101,7 @@ interface Zend_Form_Decorator_Interface
     /**
      * Delete a single option
      *
-     * @param  string $key
+     * @param string $key
      * @return bool
      */
     public function removeOption($key);
@@ -116,7 +116,7 @@ interface Zend_Form_Decorator_Interface
     /**
      * Render the element
      *
-     * @param  string $content Content to decorate
+     * @param string $content Content to decorate
      * @return string
      */
     public function render($content);

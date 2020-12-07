@@ -42,7 +42,7 @@ abstract class Zend_Session_Validator_Abstract implements Zend_Session_Validator
      * will be needed in order to validate the session later in the validate() method.
      * These values are stored in the session in the __ZF namespace, in an array named VALID
      *
-     * @param  mixed $data
+     * @param mixed $data
      * @return void
      */
     protected function setValidData($data)

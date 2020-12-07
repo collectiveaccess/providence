@@ -66,15 +66,17 @@ class Zend_Feed_Writer_Extension_Content_Renderer_Entry
      */
     protected function _appendNamespaces()
     {
-        $this->getRootElement()->setAttribute('xmlns:content',
-            'http://purl.org/rss/1.0/modules/content/');
+        $this->getRootElement()->setAttribute(
+            'xmlns:content',
+            'http://purl.org/rss/1.0/modules/content/'
+        );
     }
 
     /**
      * Set entry content
      *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
+     * @param DOMDocument $dom
+     * @param DOMElement $root
      * @return void
      */
     protected function _setContent(DOMDocument $dom, DOMElement $root)

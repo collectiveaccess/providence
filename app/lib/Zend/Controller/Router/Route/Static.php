@@ -39,7 +39,8 @@ class Zend_Controller_Router_Route_Static extends Zend_Controller_Router_Route_A
     protected $_route = null;
     protected $_defaults = array();
 
-    public function getVersion() {
+    public function getVersion()
+    {
         return 1;
     }
 
@@ -63,7 +64,7 @@ class Zend_Controller_Router_Route_Static extends Zend_Controller_Router_Route_A
     public function __construct($route, $defaults = array())
     {
         $this->_route = trim($route, self::URI_DELIMITER);
-        $this->_defaults = (array) $defaults;
+        $this->_defaults = (array)$defaults;
     }
 
     /**
@@ -108,7 +109,8 @@ class Zend_Controller_Router_Route_Static extends Zend_Controller_Router_Route_A
      * @param string $name Array key of the parameter
      * @return string Previously set default
      */
-    public function getDefault($name) {
+    public function getDefault($name)
+    {
         if (isset($this->_defaults[$name])) {
             return $this->_defaults[$name];
         }
@@ -120,7 +122,8 @@ class Zend_Controller_Router_Route_Static extends Zend_Controller_Router_Route_A
      *
      * @return array Route defaults
      */
-    public function getDefaults() {
+    public function getDefaults()
+    {
         return $this->_defaults;
     }
 

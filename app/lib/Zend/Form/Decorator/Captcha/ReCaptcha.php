@@ -25,7 +25,7 @@ require_once 'Zend/Form/Decorator/Abstract.php';
 /**
  * ReCaptcha-based captcha decorator
  *
- * Adds hidden fields for challenge and response input, and JS for populating 
+ * Adds hidden fields for challenge and response input, and JS for populating
  * from known recaptcha IDs
  *
  * @category   Zend
@@ -39,7 +39,7 @@ class Zend_Form_Decorator_Captcha_ReCaptcha extends Zend_Form_Decorator_Abstract
     /**
      * Render captcha
      *
-     * @param  string $content
+     * @param string $content
      * @return string
      */
     public function render($content)
@@ -49,39 +49,43 @@ class Zend_Form_Decorator_Captcha_ReCaptcha extends Zend_Form_Decorator_Abstract
             return $content;
         }
 
-        $view    = $element->getView();
+        $view = $element->getView();
         if (null === $view) {
             return $content;
         }
 
-        $id            = $element->getId();
-        $name          = $element->getBelongsTo();
-        $placement     = $this->getPlacement();
-        $separator     = $this->getSeparator();
+        $id = $element->getId();
+        $name = $element->getBelongsTo();
+        $placement = $this->getPlacement();
+        $separator = $this->getSeparator();
         $challengeName = empty($name) ? 'recaptcha_challenge_field' : $name . '[recaptcha_challenge_field]';
-        $responseName  = empty($name) ? 'recaptcha_response_field'  : $name . '[recaptcha_response_field]';
-        $challengeId   = $id . '-challenge';
-        $responseId    = $id . '-response';
-        $captcha       = $element->getCaptcha();
-        $markup        = $captcha->render($view, $element);
+        $responseName = empty($name) ? 'recaptcha_response_field' : $name . '[recaptcha_response_field]';
+        $challengeId = $id . '-challenge';
+        $responseId = $id . '-response';
+        $captcha = $element->getCaptcha();
+        $markup = $captcha->render($view, $element);
 
         // Create hidden fields for holding the final recaptcha values
         // Placing "id" in "attribs" to ensure it is not overwritten with the name
-        $hidden = $view->formHidden(array(
-            'name'    => $challengeName,
-            'attribs' => array('id' => $challengeId),
-        ));
-        $hidden .= $view->formHidden(array(
-            'name'    => $responseName,
-            'attribs' => array('id'   => $responseId),
-        ));
+        $hidden = $view->formHidden(
+            array(
+                'name' => $challengeName,
+                'attribs' => array('id' => $challengeId),
+            )
+        );
+        $hidden .= $view->formHidden(
+            array(
+                'name' => $responseName,
+                'attribs' => array('id' => $responseId),
+            )
+        );
 
         // Create a window.onload event so that we can bind to the form.
         // Once bound, add an onsubmit event that will replace the hidden field 
         // values with those produced by ReCaptcha
         // zendBindEvent mediates between Mozilla's addEventListener and
         // IE's sole support for addEvent.
-        $js =<<<EOJ
+        $js = <<<EOJ
 <script type="text/javascript" language="JavaScript">
 function windowOnLoad(fn) {
     var old = window.onload;

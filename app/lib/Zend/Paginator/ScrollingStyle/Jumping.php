@@ -39,13 +39,13 @@ class Zend_Paginator_ScrollingStyle_Jumping implements Zend_Paginator_ScrollingS
     /**
      * Returns an array of "local" pages given a page number and range.
      *
-     * @param  Zend_Paginator $paginator
-     * @param  integer $pageRange Unused
+     * @param Zend_Paginator $paginator
+     * @param integer $pageRange Unused
      * @return array
      */
     public function getPages(Zend_Paginator $paginator, $pageRange = null)
     {
-        $pageRange  = $paginator->getPageRange();
+        $pageRange = $paginator->getPageRange();
         $pageNumber = $paginator->getCurrentPageNumber();
 
         $delta = $pageNumber % $pageRange;
@@ -54,7 +54,7 @@ class Zend_Paginator_ScrollingStyle_Jumping implements Zend_Paginator_ScrollingS
             $delta = $pageRange;
         }
 
-        $offset     = $pageNumber - $delta;
+        $offset = $pageNumber - $delta;
         $lowerBound = $offset + 1;
         $upperBound = $offset + $pageRange;
 

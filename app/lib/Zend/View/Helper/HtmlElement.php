@@ -85,7 +85,7 @@ abstract class Zend_View_Helper_HtmlElement extends Zend_View_Helper_Abstract
         $doctype = $this->view->doctype();
         return $doctype->isStrict();
     }
-    
+
     /**
      * Converts an associative array to a string of tag attributes.
      *
@@ -99,7 +99,7 @@ abstract class Zend_View_Helper_HtmlElement extends Zend_View_Helper_Abstract
     protected function _htmlAttribs($attribs)
     {
         $xhtml = '';
-        foreach ((array) $attribs as $key => $val) {
+        foreach ((array)$attribs as $key => $val) {
             $key = $this->view->escape($key);
 
             if (('on' == substr($key, 0, 2)) || ('constraints' == $key)) {
@@ -130,7 +130,6 @@ abstract class Zend_View_Helper_HtmlElement extends Zend_View_Helper_Abstract
             } else {
                 $xhtml .= " $key=\"$val\"";
             }
-
         }
         return $xhtml;
     }
@@ -138,7 +137,7 @@ abstract class Zend_View_Helper_HtmlElement extends Zend_View_Helper_Abstract
     /**
      * Normalize an ID
      *
-     * @param  string $value
+     * @param string $value
      * @return string
      */
     protected function _normalizeId($value)

@@ -24,13 +24,14 @@ require_once 'Zend/Service/Rackspace/Files.php';
 
 class Zend_Service_Rackspace_Files_Container
 {
-    const ERROR_PARAM_FILE_CONSTRUCT  = 'The Zend_Service_Rackspace_Files passed in construction is not valid';
+    const ERROR_PARAM_FILE_CONSTRUCT = 'The Zend_Service_Rackspace_Files passed in construction is not valid';
     const ERROR_PARAM_ARRAY_CONSTRUCT = 'The array passed in construction is not valid';
-    const ERROR_PARAM_NO_NAME         = 'The container name is empty';
+    const ERROR_PARAM_NO_NAME = 'The container name is empty';
     /**
      * @var string
      */
     protected $name;
+
     /**
      * Construct
      *
@@ -50,10 +51,11 @@ class Zend_Service_Rackspace_Files_Container
         if (!array_key_exists('name', $data)) {
             require_once 'Zend/Service/Rackspace/Files/Exception.php';
             throw new Zend_Service_Rackspace_Files_Exception(self::ERROR_PARAM_NO_NAME);
-        }    
+        }
         $this->service = $service;
         $this->name = $data['name'];
     }
+
     /**
      * Get the name of the container
      *
@@ -63,6 +65,7 @@ class Zend_Service_Rackspace_Files_Container
     {
         return $this->name;
     }
+
     /**
      * Get the size in bytes of the container
      *
@@ -76,6 +79,7 @@ class Zend_Service_Rackspace_Files_Container
         }
         return false;
     }
+
     /**
      * Get the total count of objects in the container
      *
@@ -89,9 +93,10 @@ class Zend_Service_Rackspace_Files_Container
         }
         return false;
     }
+
     /**
      * Return true if the container is CDN enabled
-     * 
+     *
      * @return boolean
      */
     public function isCdnEnabled()
@@ -102,12 +107,13 @@ class Zend_Service_Rackspace_Files_Container
         }
         return false;
     }
+
     /**
      * Get the TTL of the CDN
-     * 
-     * @return integer|boolean 
+     *
+     * @return integer|boolean
      */
-    public function getCdnTtl() 
+    public function getCdnTtl()
     {
         $data = $this->getCdnInfo();
         if (!isset($data['ttl'])) {
@@ -115,6 +121,7 @@ class Zend_Service_Rackspace_Files_Container
         }
         return false;
     }
+
     /**
      * Return true if the log retention is enabled for the CDN
      *
@@ -128,9 +135,10 @@ class Zend_Service_Rackspace_Files_Container
         }
         return false;
     }
+
     /**
      * Get the CDN URI
-     * 
+     *
      * @return string|boolean
      */
     public function getCdnUri()
@@ -141,6 +149,7 @@ class Zend_Service_Rackspace_Files_Container
         }
         return false;
     }
+
     /**
      * Get the CDN URI SSL
      *
@@ -154,6 +163,7 @@ class Zend_Service_Rackspace_Files_Container
         }
         return false;
     }
+
     /**
      * Get the metadata of the container
      *
@@ -162,7 +172,7 @@ class Zend_Service_Rackspace_Files_Container
      * @param string $key
      * @return array|string|boolean
      */
-    public function getMetadata($key=null)
+    public function getMetadata($key = null)
     {
         $result = $this->service->getMetadataContainer($this->getName());
         if (!empty($result) && is_array($result)) {
@@ -172,23 +182,25 @@ class Zend_Service_Rackspace_Files_Container
                 if (isset ($result['metadata'][$key])) {
                     return $result['metadata'][$key];
                 }
-            }    
-        }    
+            }
+        }
         return false;
     }
+
     /**
      * Get the information of the container (total of objects, total size)
-     * 
-     * @return array|boolean 
+     *
+     * @return array|boolean
      */
     public function getInfo()
     {
         $result = $this->service->getMetadataContainer($this->getName());
         if (!empty($result) && is_array($result)) {
-           return $result;
+            return $result;
         }
         return false;
     }
+
     /**
      * Get all the object of the container
      *
@@ -198,17 +210,19 @@ class Zend_Service_Rackspace_Files_Container
     {
         return $this->service->getObjects($this->getName());
     }
+
     /**
      * Get an object of the container
-     * 
+     *
      * @param string $name
      * @param array $headers
      * @return Zend_Service_Rackspace_Files_Object|boolean
      */
-    public function getObject($name, $headers=array())
+    public function getObject($name, $headers = array())
     {
         return $this->service->getObject($this->getName(), $name, $headers);
     }
+
     /**
      * Add an object in the container
      *
@@ -217,10 +231,11 @@ class Zend_Service_Rackspace_Files_Container
      * @param array $metadata
      * @return boolen
      */
-    public function addObject($name, $file, $metadata=array())
+    public function addObject($name, $file, $metadata = array())
     {
         return $this->service->storeObject($this->getName(), $name, $file, $metadata);
     }
+
     /**
      * Delete an object in the container
      *
@@ -231,6 +246,7 @@ class Zend_Service_Rackspace_Files_Container
     {
         return $this->service->deleteObject($this->getName(), $obj);
     }
+
     /**
      * Copy an object to another container
      *
@@ -241,10 +257,18 @@ class Zend_Service_Rackspace_Files_Container
      * @param string $content_type
      * @return boolean
      */
-    public function copyObject($obj_source, $container_dest, $obj_dest, $metadata=array(), $content_type=null)
+    public function copyObject($obj_source, $container_dest, $obj_dest, $metadata = array(), $content_type = null)
     {
-        return $this->service->copyObject($this->getName(), $obj_source, $container_dest, $obj_dest, $metadata, $content_type);
+        return $this->service->copyObject(
+            $this->getName(),
+            $obj_source,
+            $container_dest,
+            $obj_dest,
+            $metadata,
+            $content_type
+        );
     }
+
     /**
      * Get the metadata of an object in the container
      *
@@ -253,8 +277,9 @@ class Zend_Service_Rackspace_Files_Container
      */
     public function getMetadataObject($object)
     {
-        return $this->service->getMetadataObject($this->getName(),$object);
+        return $this->service->getMetadataObject($this->getName(), $object);
     }
+
     /**
      * Set the metadata of an object in the container
      *
@@ -262,67 +287,73 @@ class Zend_Service_Rackspace_Files_Container
      * @param array $metadata
      * @return boolean
      */
-    public function setMetadataObject($object,$metadata=array()) 
+    public function setMetadataObject($object, $metadata = array())
     {
-        return $this->service->setMetadataObject($this->getName(),$object,$metadata);
+        return $this->service->setMetadataObject($this->getName(), $object, $metadata);
     }
+
     /**
      * Enable the CDN for the container
      *
      * @param integer $ttl
      * @return array|boolean
      */
-    public function enableCdn($ttl=Zend_Service_Rackspace_Files::CDN_TTL_MIN) 
+    public function enableCdn($ttl = Zend_Service_Rackspace_Files::CDN_TTL_MIN)
     {
-        return $this->service->enableCdnContainer($this->getName(),$ttl);
+        return $this->service->enableCdnContainer($this->getName(), $ttl);
     }
+
     /**
      * Disable the CDN for the container
-     * 
+     *
      * @return boolean
      */
-    public function disableCdn() 
+    public function disableCdn()
     {
-        $result = $this->service->updateCdnContainer($this->getName(),null,false);
-        return ($result!==false);
+        $result = $this->service->updateCdnContainer($this->getName(), null, false);
+        return ($result !== false);
     }
+
     /**
      * Change the TTL for the CDN container
      *
      * @param integer $ttl
      * @return boolean
      */
-    public function changeTtlCdn($ttl) 
+    public function changeTtlCdn($ttl)
     {
-        $result =  $this->service->updateCdnContainer($this->getName(),$ttl);
-        return ($result!==false);
+        $result = $this->service->updateCdnContainer($this->getName(), $ttl);
+        return ($result !== false);
     }
+
     /**
      * Enable the log retention for the CDN
      *
      * @return boolean
      */
-    public function enableLogCdn() 
+    public function enableLogCdn()
     {
-        $result =  $this->service->updateCdnContainer($this->getName(),null,null,true);
-        return ($result!==false);
+        $result = $this->service->updateCdnContainer($this->getName(), null, null, true);
+        return ($result !== false);
     }
+
     /**
      * Disable the log retention for the CDN
      *
      * @return boolean
      */
-    public function disableLogCdn() 
+    public function disableLogCdn()
     {
-        $result =  $this->service->updateCdnContainer($this->getName(),null,null,false);
-        return ($result!==false);
+        $result = $this->service->updateCdnContainer($this->getName(), null, null, false);
+        return ($result !== false);
     }
+
     /**
      * Get the CDN information
      *
      * @return array|boolean
      */
-    public function getCdnInfo() 
+    public function getCdnInfo()
     {
         return $this->service->getInfoCdnContainer($this->getName());
     }

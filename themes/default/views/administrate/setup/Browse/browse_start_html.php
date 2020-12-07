@@ -26,7 +26,9 @@
  * ----------------------------------------------------------------------
  */
 
-	$va_facets 			= $this->getVar('available_facets');
-	
-	print (sizeof($va_facets) > 0) ? _t("Choose a selection above to begin browsing") : _t("No facets are available to browse by"); 
+$va_facets = $this->getVar('available_facets');
+
+print (sizeof($va_facets) > 0) ? _t("Choose a selection above to begin browsing") : _t(
+    "No facets are available to browse by"
+);
 ?>

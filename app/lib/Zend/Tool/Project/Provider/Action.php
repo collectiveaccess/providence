@@ -50,15 +50,22 @@ class Zend_Tool_Project_Provider_Action
      * @param string $moduleName
      * @return Zend_Tool_Project_Profile_Resource
      */
-    public static function createResource(Zend_Tool_Project_Profile $profile, $actionName, $controllerName, $moduleName = null)
-    {
-
+    public static function createResource(
+        Zend_Tool_Project_Profile $profile,
+        $actionName,
+        $controllerName,
+        $moduleName = null
+    ) {
         if (!is_string($actionName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Action::createResource() expects \"actionName\" is the name of a action resource to create.');
+            throw new Zend_Tool_Project_Provider_Exception(
+                'Zend_Tool_Project_Provider_Action::createResource() expects \"actionName\" is the name of a action resource to create.'
+            );
         }
 
         if (!is_string($controllerName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Action::createResource() expects \"controllerName\" is the name of a controller resource to create.');
+            throw new Zend_Tool_Project_Provider_Exception(
+                'Zend_Tool_Project_Provider_Action::createResource() expects \"controllerName\" is the name of a controller resource to create.'
+            );
         }
 
         $controllerFile = self::_getControllerFileResource($profile, $controllerName, $moduleName);
@@ -77,14 +84,22 @@ class Zend_Tool_Project_Provider_Action
      * @param string $moduleName
      * @return Zend_Tool_Project_Profile_Resource
      */
-    public static function hasResource(Zend_Tool_Project_Profile $profile, $actionName, $controllerName, $moduleName = null)
-    {
+    public static function hasResource(
+        Zend_Tool_Project_Profile $profile,
+        $actionName,
+        $controllerName,
+        $moduleName = null
+    ) {
         if (!is_string($actionName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Action::createResource() expects \"actionName\" is the name of a action resource to create.');
+            throw new Zend_Tool_Project_Provider_Exception(
+                'Zend_Tool_Project_Provider_Action::createResource() expects \"actionName\" is the name of a action resource to create.'
+            );
         }
 
         if (!is_string($controllerName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Action::createResource() expects \"controllerName\" is the name of a controller resource to create.');
+            throw new Zend_Tool_Project_Provider_Exception(
+                'Zend_Tool_Project_Provider_Action::createResource() expects \"controllerName\" is the name of a controller resource to create.'
+            );
         }
 
         $controllerFile = self::_getControllerFileResource($profile, $controllerName, $moduleName);
@@ -93,7 +108,9 @@ class Zend_Tool_Project_Provider_Action
             throw new Zend_Tool_Project_Provider_Exception('Controller ' . $controllerName . ' was not found.');
         }
 
-        return (($controllerFile->search(array('actionMethod' => array('actionName' => $actionName)))) instanceof Zend_Tool_Project_Profile_Resource);
+        return (($controllerFile->search(
+                array('actionMethod' => array('actionName' => $actionName))
+            )) instanceof Zend_Tool_Project_Profile_Resource);
     }
 
     /**
@@ -104,8 +121,11 @@ class Zend_Tool_Project_Provider_Action
      * @param string $moduleName
      * @return Zend_Tool_Project_Profile_Resource
      */
-    protected static function _getControllerFileResource(Zend_Tool_Project_Profile $profile, $controllerName, $moduleName = null)
-    {
+    protected static function _getControllerFileResource(
+        Zend_Tool_Project_Profile $profile,
+        $controllerName,
+        $moduleName = null
+    ) {
         $profileSearchParams = array();
 
         if ($moduleName != null && is_string($moduleName)) {
@@ -121,14 +141,13 @@ class Zend_Tool_Project_Provider_Action
     /**
      * create()
      *
-     * @param string $name           Action name for controller, in camelCase format.
+     * @param string $name Action name for controller, in camelCase format.
      * @param string $controllerName Controller name action should be applied to.
-     * @param bool $viewIncluded     Whether the view should the view be included.
-     * @param string $module         Module name action should be applied to.
+     * @param bool $viewIncluded Whether the view should the view be included.
+     * @param string $module Module name action should be applied to.
      */
     public function create($name, $controllerName = 'Index', $viewIncluded = true, $module = null)
     {
-
         $this->_loadProfile();
 
         // get request/response object
@@ -144,7 +163,7 @@ class Zend_Tool_Project_Provider_Action
             $response->appendContent(
                 'Note: PHPUnit is required in order to generate controller test stubs.',
                 array('color' => array('yellow'))
-                );
+            );
         }
 
         // Check that there is not a dash or underscore, return if doesnt match regex
@@ -162,14 +181,21 @@ class Zend_Tool_Project_Provider_Action
         $controllerName = ucfirst($controllerName);
 
         if (self::hasResource($this->_loadedProfile, $name, $controllerName, $module)) {
-            throw new Zend_Tool_Project_Provider_Exception('This controller (' . $controllerName . ') already has an action named (' . $name . ')');
+            throw new Zend_Tool_Project_Provider_Exception(
+                'This controller (' . $controllerName . ') already has an action named (' . $name . ')'
+            );
         }
 
         $actionMethodResource = self::createResource($this->_loadedProfile, $name, $controllerName, $module);
 
         $testActionMethodResource = null;
         if ($testingEnabled) {
-            $testActionMethodResource = Zend_Tool_Project_Provider_Test::createApplicationResource($this->_loadedProfile, $controllerName, $name, $module);
+            $testActionMethodResource = Zend_Tool_Project_Provider_Test::createApplicationResource(
+                $this->_loadedProfile,
+                $controllerName,
+                $name,
+                $module
+            );
         }
 
         // alert the user about inline converted names
@@ -178,19 +204,19 @@ class Zend_Tool_Project_Provider_Action
         if ($name !== $originalName) {
             $response->appendContent(
                 'Note: The canonical action name that ' . $tense
-                    . ' used with other providers is "' . $name . '";'
-                    . ' not "' . $originalName . '" as supplied',
+                . ' used with other providers is "' . $name . '";'
+                . ' not "' . $originalName . '" as supplied',
                 array('color' => array('yellow'))
-                );
+            );
         }
 
         if ($controllerName !== $originalControllerName) {
             $response->appendContent(
                 'Note: The canonical controller name that ' . $tense
-                    . ' used with other providers is "' . $controllerName . '";'
-                    . ' not "' . $originalControllerName . '" as supplied',
+                . ' used with other providers is "' . $controllerName . '";'
+                . ' not "' . $originalControllerName . '" as supplied',
                 array('color' => array('yellow'))
-                );
+            );
         }
 
         unset($tense);
@@ -199,21 +225,26 @@ class Zend_Tool_Project_Provider_Action
             $response->appendContent(
                 'Would create an action named ' . $name .
                 ' inside controller at ' . $actionMethodResource->getParentResource()->getContext()->getPath()
-                );
+            );
 
             if ($testActionMethodResource) {
-                $response->appendContent('Would create an action test in ' . $testActionMethodResource->getParentResource()->getContext()->getPath());
+                $response->appendContent(
+                    'Would create an action test in ' . $testActionMethodResource->getParentResource()->getContext(
+                    )->getPath()
+                );
             }
-
         } else {
             $response->appendContent(
                 'Creating an action named ' . $name .
                 ' inside controller at ' . $actionMethodResource->getParentResource()->getContext()->getPath()
-                );
+            );
             $actionMethodResource->create();
 
             if ($testActionMethodResource) {
-                $response->appendContent('Creating an action test in ' . $testActionMethodResource->getParentResource()->getContext()->getPath());
+                $response->appendContent(
+                    'Creating an action test in ' . $testActionMethodResource->getParentResource()->getContext(
+                    )->getPath()
+                );
                 $testActionMethodResource->create();
             }
 
@@ -221,22 +252,27 @@ class Zend_Tool_Project_Provider_Action
         }
 
         if ($viewIncluded) {
-            $viewResource = Zend_Tool_Project_Provider_View::createResource($this->_loadedProfile, $name, $controllerName, $module);
+            $viewResource = Zend_Tool_Project_Provider_View::createResource(
+                $this->_loadedProfile,
+                $name,
+                $controllerName,
+                $module
+            );
 
             if ($this->_registry->getRequest()->isPretend()) {
                 $response->appendContent(
-                    'Would create a view script for the ' . $name . ' action method at ' . $viewResource->getContext()->getPath()
-                    );
+                    'Would create a view script for the ' . $name . ' action method at ' . $viewResource->getContext(
+                    )->getPath()
+                );
             } else {
                 $response->appendContent(
-                    'Creating a view script for the ' . $name . ' action method at ' . $viewResource->getContext()->getPath()
-                    );
+                    'Creating a view script for the ' . $name . ' action method at ' . $viewResource->getContext(
+                    )->getPath()
+                );
                 $viewResource->create();
                 $this->_storeProfile();
             }
-
         }
-
     }
 
 }

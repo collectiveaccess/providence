@@ -34,8 +34,8 @@ interface Zend_Application_Bootstrap_ResourceBootstrapper
     /**
      * Register a resource with the bootstrap
      *
-     * @param  string|Zend_Application_Resource_Resource $resource
-     * @param  null|array|Zend_Config                     $options
+     * @param string|Zend_Application_Resource_Resource $resource
+     * @param null|array|Zend_Config $options
      * @return Zend_Application_Bootstrap_ResourceBootstrapper
      */
     public function registerPluginResource($resource, $options = null);
@@ -43,7 +43,7 @@ interface Zend_Application_Bootstrap_ResourceBootstrapper
     /**
      * Unregister a resource from the bootstrap
      *
-     * @param  string|Zend_Application_Resource_Resource $resource
+     * @param string|Zend_Application_Resource_Resource $resource
      * @return Zend_Application_Bootstrap_ResourceBootstrapper
      */
     public function unregisterPluginResource($resource);
@@ -51,7 +51,7 @@ interface Zend_Application_Bootstrap_ResourceBootstrapper
     /**
      * Is the requested resource registered?
      *
-     * @param  string $resource
+     * @param string $resource
      * @return bool
      */
     public function hasPluginResource($resource);
@@ -59,7 +59,7 @@ interface Zend_Application_Bootstrap_ResourceBootstrapper
     /**
      * Retrieve resource
      *
-     * @param  string $resource
+     * @param string $resource
      * @return Zend_Application_Resource_Resource
      */
     public function getPluginResource($resource);
@@ -81,7 +81,7 @@ interface Zend_Application_Bootstrap_ResourceBootstrapper
     /**
      * Set plugin loader to use to fetch resources
      *
-     * @param  Zend_Loader_PluginLoader_Interface Zend_Loader_PluginLoader
+     * @param Zend_Loader_PluginLoader_Interface Zend_Loader_PluginLoader
      * @return Zend_Application_Bootstrap_ResourceBootstrapper
      */
     public function setPluginLoader(Zend_Loader_PluginLoader_Interface $loader);

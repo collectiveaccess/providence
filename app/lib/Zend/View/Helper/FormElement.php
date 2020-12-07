@@ -48,13 +48,13 @@ abstract class Zend_View_Helper_FormElement extends Zend_View_Helper_HtmlElement
      */
     public function getTranslator()
     {
-         return $this->_translator;
+        return $this->_translator;
     }
 
     /**
      * Set translator
      *
-     * @param  Zend_Translate|Zend_Translate_Adapter|null $translator
+     * @param Zend_Translate|Zend_Translate_Adapter|null $translator
      * @return Zend_View_Helper_FormElement
      */
     public function setTranslator($translator = null)
@@ -71,7 +71,7 @@ abstract class Zend_View_Helper_FormElement extends Zend_View_Helper_HtmlElement
             $e->setView($this->view);
             throw $e;
         }
-         return $this;
+        return $this;
     }
 
     /**
@@ -88,22 +88,26 @@ abstract class Zend_View_Helper_FormElement extends Zend_View_Helper_HtmlElement
      * @return array An element info array with keys for name, value,
      * attribs, options, listsep, disable, and escape.
      */
-    protected function _getInfo($name, $value = null, $attribs = null,
-        $options = null, $listsep = null
+    protected function _getInfo(
+        $name,
+        $value = null,
+        $attribs = null,
+        $options = null,
+        $listsep = null
     ) {
         // the baseline info.  note that $name serves a dual purpose;
         // if an array, it's an element info array that will override
         // these baseline values.  as such, ignore it for the 'name'
         // if it's an array.
         $info = array(
-            'name'    => is_array($name) ? '' : $name,
-            'id'      => is_array($name) ? '' : $name,
-            'value'   => $value,
+            'name' => is_array($name) ? '' : $name,
+            'id' => is_array($name) ? '' : $name,
+            'value' => $value,
             'attribs' => $attribs,
             'options' => $options,
             'listsep' => $listsep,
             'disable' => false,
-            'escape'  => true,
+            'escape' => true,
         );
 
         // override with named args
@@ -131,27 +135,36 @@ abstract class Zend_View_Helper_FormElement extends Zend_View_Helper_HtmlElement
 
         // Disable attribute
         if (array_key_exists('disable', $attribs)) {
-           if (is_scalar($attribs['disable'])) {
+            if (is_scalar($attribs['disable'])) {
                 // disable the element
                 $info['disable'] = (bool)$attribs['disable'];
-            } else if (is_array($attribs['disable'])) {
-                $info['disable'] = $attribs['disable'];
+            } else {
+                if (is_array($attribs['disable'])) {
+                    $info['disable'] = $attribs['disable'];
+                }
             }
         }
 
         // Set ID for element
         if (array_key_exists('id', $attribs)) {
             $info['id'] = (string)$attribs['id'];
-        } else if ('' !== $info['name']) {
-            $info['id'] = trim(strtr($info['name'],
-                                     array('[' => '-', ']' => '')), '-');
+        } else {
+            if ('' !== $info['name']) {
+                $info['id'] = trim(
+                    strtr(
+                        $info['name'],
+                        array('[' => '-', ']' => '')
+                    ),
+                    '-'
+                );
+            }
         }
-        
+
         // Remove NULL name attribute override
         if (array_key_exists('name', $attribs) && is_null($attribs['name'])) {
-        	unset($attribs['name']);
+            unset($attribs['name']);
         }
-        
+
         // Override name in info if specified in attribs
         if (array_key_exists('name', $attribs) && $attribs['name'] != $info['name']) {
             $info['name'] = $attribs['name'];
@@ -190,15 +203,15 @@ abstract class Zend_View_Helper_FormElement extends Zend_View_Helper_HtmlElement
      *
      * @param string $name The element name.
      * @param string $value The element value.
-     * @param array  $attribs Attributes for the element.
+     * @param array $attribs Attributes for the element.
      *
      * @return string A hidden element.
      */
     protected function _hidden($name, $value = null, $attribs = null)
     {
         return '<input type="hidden"'
-             . ' name="' . $this->view->escape($name) . '"'
-             . ' value="' . $this->view->escape($value) . '"'
-             . $this->_htmlAttribs($attribs) . $this->getClosingBracket();
+            . ' name="' . $this->view->escape($name) . '"'
+            . ' value="' . $this->view->escape($value) . '"'
+            . $this->_htmlAttribs($attribs) . $this->getClosingBracket();
     }
 }

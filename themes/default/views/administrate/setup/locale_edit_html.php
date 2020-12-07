@@ -26,26 +26,48 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_locale = $this->getVar('t_locale');
-	$vn_locale_id = $this->getVar('locale_id');
+$t_locale = $this->getVar('t_locale');
+$vn_locale_id = $this->getVar('locale_id');
 ?>
 <div class="sectionBox">
-<?php
-	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'LocalesForm').' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Locales', 'ListLocales', array('locale_id' => 0)), 
-		'', 
-		caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $vn_locale_id))
-	);
-?>
-<?php
-	print caFormTag($this->request, 'Save', 'LocalesForm');
+    <?php
+    print $vs_control_box = caFormControlBox(
+        caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'LocalesForm') . ' ' .
+        caFormNavButton(
+            $this->request,
+            __CA_NAV_ICON_CANCEL__,
+            _t("Cancel"),
+            '',
+            'administrate/setup',
+            'Locales',
+            'ListLocales',
+            array('locale_id' => 0)
+        ),
+        '',
+        caFormNavButton(
+            $this->request,
+            __CA_NAV_ICON_DELETE__,
+            _t("Delete"),
+            '',
+            'administrate/setup',
+            'Locales',
+            'Delete',
+            array('locale_id' => $vn_locale_id)
+        )
+    );
+    ?>
+    <?php
+    print caFormTag($this->request, 'Save', 'LocalesForm');
 
-		foreach($t_locale->getFormFields() as $vs_f => $va_locale_info) {
-			print $t_locale->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
-		}
-?>
-	</form>
+    foreach ($t_locale->getFormFields() as $vs_f => $va_locale_info) {
+        print $t_locale->htmlFormElement(
+            $vs_f,
+            null,
+            array('field_errors' => $this->request->getActionErrors('field_' . $vs_f))
+        );
+    }
+    ?>
+    </form>
 </div>
 
 <div class="editorBottomPadding"><!-- empty --></div>

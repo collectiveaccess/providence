@@ -54,12 +54,12 @@ class Zend_Dojo_Form_Element_NumberTextBox extends Zend_Dojo_Form_Element_Valida
     /**
      * Set locale
      *
-     * @param  string $locale
+     * @param string $locale
      * @return Zend_Dojo_Form_Element_NumberTextBox
      */
     public function setLocale($locale)
     {
-        $this->setConstraint('locale', (string) $locale);
+        $this->setConstraint('locale', (string)$locale);
         return $this;
     }
 
@@ -76,12 +76,12 @@ class Zend_Dojo_Form_Element_NumberTextBox extends Zend_Dojo_Form_Element_Valida
     /**
      * Set numeric format pattern
      *
-     * @param  string $pattern
+     * @param string $pattern
      * @return Zend_Dojo_Form_Element_NumberTextBox
      */
     public function setPattern($pattern)
     {
-        $this->setConstraint('pattern', (string) $pattern);
+        $this->setConstraint('pattern', (string)$pattern);
         return $this;
     }
 
@@ -98,9 +98,9 @@ class Zend_Dojo_Form_Element_NumberTextBox extends Zend_Dojo_Form_Element_Valida
     /**
      * Set numeric format type
      *
-     * @see    $_allowedTypes
-     * @param  string $type
+     * @param string $type
      * @return Zend_Dojo_Form_Element_NumberTextBox
+     * @see    $_allowedTypes
      */
     public function setType($type)
     {
@@ -127,12 +127,12 @@ class Zend_Dojo_Form_Element_NumberTextBox extends Zend_Dojo_Form_Element_Valida
     /**
      * Set decimal places
      *
-     * @param  int $places
+     * @param int $places
      * @return Zend_Dojo_Form_Element_NumberTextBox
      */
     public function setPlaces($places)
     {
-        $this->setConstraint('places', (int) $places);
+        $this->setConstraint('places', (int)$places);
         return $this;
     }
 
@@ -149,12 +149,12 @@ class Zend_Dojo_Form_Element_NumberTextBox extends Zend_Dojo_Form_Element_Valida
     /**
      * Set strict flag
      *
-     * @param  bool $strict
+     * @param bool $strict
      * @return Zend_Dojo_Form_Element_NumberTextBox
      */
     public function setStrict($flag)
     {
-        $this->setConstraint('strict', (bool) $flag);
+        $this->setConstraint('strict', (bool)$flag);
         return $this;
     }
 

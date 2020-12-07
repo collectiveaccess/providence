@@ -43,15 +43,14 @@ class Zend_Server_Cache
      * Returns false on any error (typically, inability to write to file), true
      * on success.
      *
-     * @param  string $filename
-     * @param  Zend_Server_Interface $server
+     * @param string $filename
+     * @param Zend_Server_Interface $server
      * @return bool
      */
     public static function save($filename, Zend_Server_Interface $server)
     {
         if (!is_string($filename)
-            || (!file_exists($filename) && !is_writable(dirname($filename))))
-        {
+            || (!file_exists($filename) && !is_writable(dirname($filename)))) {
             return false;
         }
 
@@ -102,16 +101,15 @@ class Zend_Server_Cache
      * echo $response;
      * </code>
      *
-     * @param  string $filename
-     * @param  Zend_Server_Interface $server
+     * @param string $filename
+     * @param Zend_Server_Interface $server
      * @return bool
      */
     public static function get($filename, Zend_Server_Interface $server)
     {
         if (!is_string($filename)
             || !file_exists($filename)
-            || !is_readable($filename))
-        {
+            || !is_readable($filename)) {
             return false;
         }
 
@@ -132,7 +130,7 @@ class Zend_Server_Cache
     /**
      * Remove a cache file
      *
-     * @param  string $filename
+     * @param string $filename
      * @return boolean
      */
     public static function delete($filename)

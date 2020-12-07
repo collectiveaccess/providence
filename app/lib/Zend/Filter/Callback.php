@@ -50,20 +50,22 @@ class Zend_Filter_Callback implements Zend_Filter_Interface
      * Constructor
      *
      * @param string|array $callback Callback in a call_user_func format
-     * @param mixed        $options  (Optional) Default options for this filter
+     * @param mixed $options (Optional) Default options for this filter
      */
     public function __construct($options)
     {
         if ($options instanceof Zend_Config) {
             $options = $options->toArray();
-        } else if (!is_array($options) || !array_key_exists('callback', $options)) {
-            $options          = func_get_args();
-            $temp['callback'] = array_shift($options);
-            if (!empty($options)) {
-                $temp['options'] = array_shift($options);
-            }
+        } else {
+            if (!is_array($options) || !array_key_exists('callback', $options)) {
+                $options = func_get_args();
+                $temp['callback'] = array_shift($options);
+                if (!empty($options)) {
+                    $temp['options'] = array_shift($options);
+                }
 
-            $options = $temp;
+                $options = $temp;
+            }
         }
 
         if (!array_key_exists('callback', $options)) {

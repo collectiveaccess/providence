@@ -135,10 +135,10 @@ class Zend_Service_Ebay_Finding_SellerInfo extends Zend_Service_Ebay_Finding_Abs
         parent::_init();
         $ns = Zend_Service_Ebay_Finding::XMLNS_FINDING;
 
-        $this->feedbackRatingStar      = $this->_query(".//$ns:feedbackRatingStar[1]", 'string');
-        $this->feedbackScore           = $this->_query(".//$ns:feedbackScore[1]", 'integer');
+        $this->feedbackRatingStar = $this->_query(".//$ns:feedbackRatingStar[1]", 'string');
+        $this->feedbackScore = $this->_query(".//$ns:feedbackScore[1]", 'integer');
         $this->positiveFeedbackPercent = $this->_query(".//$ns:positiveFeedbackPercent[1]", 'float');
-        $this->sellerUserName          = $this->_query(".//$ns:sellerUserName[1]", 'string');
-        $this->topRatedSeller          = $this->_query(".//$ns:topRatedSeller[1]", 'boolean');
+        $this->sellerUserName = $this->_query(".//$ns:sellerUserName[1]", 'string');
+        $this->topRatedSeller = $this->_query(".//$ns:topRatedSeller[1]", 'boolean');
     }
 }

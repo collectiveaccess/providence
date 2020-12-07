@@ -47,16 +47,16 @@ class Zend_Cache_Backend_Static
      * @var array
      */
     protected $_options = array(
-        'public_dir'            => null,
-        'sub_dir'               => 'html',
-        'file_extension'        => '.html',
-        'index_filename'        => 'index',
-        'file_locking'          => true,
-        'cache_file_umask'      => 0600,
+        'public_dir' => null,
+        'sub_dir' => 'html',
+        'file_extension' => '.html',
+        'index_filename' => 'index',
+        'file_locking' => true,
+        'cache_file_umask' => 0600,
         'cache_directory_umask' => 0700,
-        'debug_header'          => false,
-        'tag_cache'             => null,
-        'disable_caching'       => false
+        'debug_header' => false,
+        'tag_cache' => null,
+        'disable_caching' => false
     );
 
     /**
@@ -76,8 +76,8 @@ class Zend_Cache_Backend_Static
      * Cache object is being set since it's not supported by the
      * standard backend interface
      *
-     * @param  string $name
-     * @param  mixed $value
+     * @param string $name
+     * @param mixed $value
      * @return Zend_Cache_Backend_Static
      */
     public function setOption($name, $value)
@@ -94,7 +94,7 @@ class Zend_Cache_Backend_Static
      * Retrieve any option via interception of the parent's statically held
      * options including the local option for a tag cache.
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function getOption($name)
@@ -113,8 +113,8 @@ class Zend_Cache_Backend_Static
      *
      * Note : return value is always "string" (unserialization is done by the core not by the backend)
      *
-     * @param  string  $id                     Cache id
-     * @param  boolean $doNotTestCacheValidity If set to true, the cache validity won't be tested
+     * @param string $id Cache id
+     * @param boolean $doNotTestCacheValidity If set to true, the cache validity won't be tested
      * @return string|false cached datas
      */
     public function load($id, $doNotTestCacheValidity = false)
@@ -128,7 +128,9 @@ class Zend_Cache_Backend_Static
             Zend_Cache::throwException('Invalid cache id: does not match expected public_dir path');
         }
         if ($doNotTestCacheValidity) {
-            $this->_log("Zend_Cache_Backend_Static::load() : \$doNotTestCacheValidity=true is unsupported by the Static backend");
+            $this->_log(
+                "Zend_Cache_Backend_Static::load() : \$doNotTestCacheValidity=true is unsupported by the Static backend"
+            );
         }
 
         $fileName = basename($id);
@@ -136,7 +138,7 @@ class Zend_Cache_Backend_Static
             $fileName = $this->_options['index_filename'];
         }
         $pathName = $this->_options['public_dir'] . dirname($id);
-        $file     = rtrim($pathName, '/') . '/' . $fileName . $this->_options['file_extension'];
+        $file = rtrim($pathName, '/') . '/' . $fileName . $this->_options['file_extension'];
         if (file_exists($file)) {
             $content = file_get_contents($file);
             return $content;
@@ -148,7 +150,7 @@ class Zend_Cache_Backend_Static
     /**
      * Test if a cache is available or not (for the given id)
      *
-     * @param  string $id cache id
+     * @param string $id cache id
      * @return bool
      */
     public function test($id)
@@ -175,7 +177,7 @@ class Zend_Cache_Backend_Static
         } else {
             $extension = $this->_options['file_extension'];
         }
-        $file     = $pathName . '/' . $fileName . $extension;
+        $file = $pathName . '/' . $fileName . $extension;
         if (file_exists($file)) {
             return true;
         }
@@ -188,10 +190,10 @@ class Zend_Cache_Backend_Static
      * Note : $data is always "string" (serialization is done by the
      * core not by the backend)
      *
-     * @param  string $data            Datas to cache
-     * @param  string $id              Cache id
-     * @param  array $tags             Array of strings, the cache record will be tagged by each string entry
-     * @param  int   $specificLifetime If != false, set a specific lifetime for this cache record (null => infinite lifetime)
+     * @param string $data Datas to cache
+     * @param string $id Cache id
+     * @param array $tags Array of strings, the cache record will be tagged by each string entry
+     * @param int $specificLifetime If != false, set a specific lifetime for this cache record (null => infinite lifetime)
      * @return boolean true if no problem
      */
     public function save($data, $id, $tags = array(), $specificLifetime = false)
@@ -226,7 +228,9 @@ class Zend_Cache_Backend_Static
             $data = $dataUnserialized['data'];
         }
         $ext = $this->_options['file_extension'];
-        if ($extension) $ext = $extension;
+        if ($extension) {
+            $ext = $extension;
+        }
         $file = rtrim($pathName, '/') . '/' . $fileName . $ext;
         if ($this->_options['file_locking']) {
             $result = file_put_contents($file, $data, LOCK_EX);
@@ -249,7 +253,7 @@ class Zend_Cache_Backend_Static
         $this->_tagged[$id]['tags'] = array_unique(array_merge($this->_tagged[$id]['tags'], $tags));
         $this->_tagged[$id]['extension'] = $ext;
         $this->getInnerCache()->save($this->_tagged, self::INNER_CACHE_NAME);
-        return (bool) $result;
+        return (bool)$result;
     }
 
     /**
@@ -259,7 +263,7 @@ class Zend_Cache_Backend_Static
     {
         if (!is_dir($path)) {
             $oldUmask = umask(0);
-            if ( !@mkdir($path, $this->_octdec($this->_options['cache_directory_umask']), true)) {
+            if (!@mkdir($path, $this->_octdec($this->_options['cache_directory_umask']), true)) {
                 $lastErr = error_get_last();
                 umask($oldUmask);
                 Zend_Cache::throwException("Can't create directory: {$lastErr['message']}");
@@ -285,7 +289,7 @@ class Zend_Cache_Backend_Static
     /**
      * Remove a cache record
      *
-     * @param  string $id Cache id
+     * @param string $id Cache id
      * @return boolean True if no problem
      */
     public function remove($id)
@@ -308,7 +312,7 @@ class Zend_Cache_Backend_Static
             $fileName = $this->_options['index_filename'];
         }
         $pathName = $this->_options['public_dir'] . dirname($id);
-        $file     = realpath($pathName) . '/' . $fileName . $extension;
+        $file = realpath($pathName) . '/' . $fileName . $extension;
         if (!file_exists($file)) {
             return false;
         }
@@ -320,7 +324,7 @@ class Zend_Cache_Backend_Static
      * REQUEST_URI based relative path (deletes the actual file matching this
      * in addition to the matching directory)
      *
-     * @param  string $id Cache id
+     * @param string $id Cache id
      * @return boolean True if no problem
      */
     public function removeRecursively($id)
@@ -332,8 +336,8 @@ class Zend_Cache_Backend_Static
         if ($fileName === '') {
             $fileName = $this->_options['index_filename'];
         }
-        $pathName  = $this->_options['public_dir'] . dirname($id);
-        $file      = $pathName . '/' . $fileName . $this->_options['file_extension'];
+        $pathName = $this->_options['public_dir'] . dirname($id);
+        $file = $pathName . '/' . $fileName . $this->_options['file_extension'];
         $directory = $pathName . '/' . $fileName;
         if (file_exists($directory)) {
             if (!is_writable($directory)) {
@@ -372,8 +376,8 @@ class Zend_Cache_Backend_Static
      * Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG => remove cache entries matching any given tags
      *                                               ($tags can be an array of strings or a single string)
      *
-     * @param  string $mode Clean mode
-     * @param  array  $tags Array of tags
+     * @param string $mode Clean mode
+     * @param array $tags Array of tags
      * @return boolean true if no problem
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
@@ -456,7 +460,7 @@ class Zend_Cache_Backend_Static
      * should be completely cleaned as the mapping of tags to caches will
      * have been irrevocably lost.
      *
-     * @param  Zend_Cache_Core
+     * @param Zend_Cache_Core
      * @return void
      */
     public function setInnerCache(Zend_Cache_Core $cache)
@@ -481,7 +485,7 @@ class Zend_Cache_Backend_Static
     /**
      * Verify path exists and is non-empty
      *
-     * @param  string $path
+     * @param string $path
      * @return bool
      */
     protected function _verifyPath($path)
@@ -506,9 +510,9 @@ class Zend_Cache_Backend_Static
      *
      * Throw an exception if a problem is found
      *
-     * @param  string $string Cache id or tag
-     * @throws Zend_Cache_Exception
+     * @param string $string Cache id or tag
      * @return void
+     * @throws Zend_Cache_Exception
      * @deprecated Not usable until perhaps ZF 2.0
      */
     protected static function _validateIdOrTag($string)
@@ -524,9 +528,9 @@ class Zend_Cache_Backend_Static
 
         // Validation assumes no query string, fragments or scheme included - only the path
         if (!preg_match(
-                '/^(?:\/(?:(?:%[[:xdigit:]]{2}|[A-Za-z0-9-_.!~*\'()\[\]:@&=+$,;])*)?)+$/',
-                $string
-            )
+            '/^(?:\/(?:(?:%[[:xdigit:]]{2}|[A-Za-z0-9-_.!~*\'()\[\]:@&=+$,;])*)?)+$/',
+            $string
+        )
         ) {
             Zend_Cache::throwException("Invalid id or tag '$string' : must be a valid URL path");
         }

@@ -57,10 +57,14 @@ class Zend_Server_Reflection_Method extends Zend_Server_Reflection_Function_Abst
      * @param array $argv
      * @return void
      */
-    public function __construct(Zend_Server_Reflection_Class $class, ReflectionMethod $r, $namespace = null, $argv = array())
-    {
+    public function __construct(
+        Zend_Server_Reflection_Class $class,
+        ReflectionMethod $r,
+        $namespace = null,
+        $argv = array()
+    ) {
         $this->_classReflection = $class;
-        $this->_reflection      = $r;
+        $this->_reflection = $r;
 
         $classNamespace = $class->getNamespace();
 
@@ -103,7 +107,11 @@ class Zend_Server_Reflection_Method extends Zend_Server_Reflection_Function_Abst
      */
     public function __wakeup()
     {
-        $this->_classReflection = new Zend_Server_Reflection_Class(new ReflectionClass($this->_class), $this->getNamespace(), $this->getInvokeArguments());
+        $this->_classReflection = new Zend_Server_Reflection_Class(
+            new ReflectionClass($this->_class),
+            $this->getNamespace(),
+            $this->getInvokeArguments()
+        );
         $this->_reflection = new ReflectionMethod($this->_classReflection->getName(), $this->getName());
     }
 

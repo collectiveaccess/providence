@@ -56,14 +56,14 @@ class Zend_Search_Lucene_Field
      *
      * @var boolean
      */
-    public $isStored    = false;
+    public $isStored = false;
 
     /**
      * Field is to be indexed, so that it may be searched on.
      *
      * @var boolean
      */
-    public $isIndexed   = true;
+    public $isIndexed = true;
 
     /**
      * Field should be tokenized as text prior to indexing.
@@ -76,7 +76,7 @@ class Zend_Search_Lucene_Field
      *
      * @var boolean
      */
-    public $isBinary    = false;
+    public $isBinary = false;
 
     /**
      * Field are stored as a term vector
@@ -113,23 +113,23 @@ class Zend_Search_Lucene_Field
      */
     public function __construct($name, $value, $encoding, $isStored, $isIndexed, $isTokenized, $isBinary = false)
     {
-        $this->name  = $name;
+        $this->name = $name;
         $this->value = $value;
 
         if (!$isBinary) {
-            $this->encoding    = $encoding;
+            $this->encoding = $encoding;
             $this->isTokenized = $isTokenized;
         } else {
-            $this->encoding    = '';
+            $this->encoding = '';
             $this->isTokenized = false;
         }
 
-        $this->isStored  = $isStored;
+        $this->isStored = $isStored;
         $this->isIndexed = $isIndexed;
-        $this->isBinary  = $isBinary;
+        $this->isBinary = $isBinary;
 
         $this->storeTermVector = false;
-        $this->boost           = 1.0;
+        $this->boost = 1.0;
     }
 
 
@@ -214,12 +214,15 @@ class Zend_Search_Lucene_Field
      */
     public function getUtf8Value()
     {
-        if (strcasecmp($this->encoding, 'utf8' ) == 0  ||
-            strcasecmp($this->encoding, 'utf-8') == 0 ) {
-                return $this->value;
+        if (strcasecmp($this->encoding, 'utf8') == 0 ||
+            strcasecmp($this->encoding, 'utf-8') == 0) {
+            return $this->value;
         } else {
-
-            return (PHP_OS != 'AIX') ? iconv($this->encoding, 'UTF-8', $this->value) : iconv('ISO8859-1', 'UTF-8', $this->value);
+            return (PHP_OS != 'AIX') ? iconv($this->encoding, 'UTF-8', $this->value) : iconv(
+                'ISO8859-1',
+                'UTF-8',
+                $this->value
+            );
         }
     }
 }

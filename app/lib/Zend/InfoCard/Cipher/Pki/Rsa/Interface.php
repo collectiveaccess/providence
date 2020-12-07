@@ -39,12 +39,17 @@ interface Zend_InfoCard_Cipher_Pki_Rsa_Interface
     /**
      * Decrypts RSA encrypted data using the given private key
      *
-     * @throws Zend_InfoCard_Cipher_Exception
      * @param string $encryptedData The encrypted data in binary format
      * @param string $privateKey The private key in binary format
      * @param string $password The private key passphrase
      * @param integer $padding The padding to use during decryption (of not provided object value will be used)
      * @return string The decrypted data
+     * @throws Zend_InfoCard_Cipher_Exception
      */
-    public function decrypt($encryptedData, $privateKey, $password = null, $padding = Zend_InfoCard_Cipher_Pki_Adapter_Abstract::NO_PADDING);
+    public function decrypt(
+        $encryptedData,
+        $privateKey,
+        $password = null,
+        $padding = Zend_InfoCard_Cipher_Pki_Adapter_Abstract::NO_PADDING
+    );
 }
