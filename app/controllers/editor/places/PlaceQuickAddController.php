@@ -42,4 +42,4 @@ class PlaceQuickAddController extends BaseQuickAddController
     # -------------------------------------------------------
 }
 
-?>
+

@@ -42,4 +42,4 @@ class CollectionQuickAddController extends BaseQuickAddController
     # -------------------------------------------------------
 }
 
-?>
+

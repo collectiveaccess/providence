@@ -42,4 +42,4 @@ class ObjectQuickAddController extends BaseQuickAddController
     # -------------------------------------------------------
 }
 
-?>
+

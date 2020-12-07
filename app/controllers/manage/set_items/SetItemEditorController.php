@@ -89,4 +89,4 @@ class SetItemEditorController extends BaseEditorController
     # -------------------------------------------------------
 }
 
-?>
+

@@ -42,4 +42,4 @@ class OccurrenceQuickAddController extends BaseQuickAddController
     # -------------------------------------------------------
 }
 
-?>
+

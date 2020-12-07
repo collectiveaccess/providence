@@ -64,5 +64,3 @@ class SortValuesReloadController extends ActionController
     }
     # ------------------------------------------------
 }
-
-?>

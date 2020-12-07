@@ -119,4 +119,4 @@ class SearchFormEditorController extends BaseEditorController
     # -------------------------------------------------------
 }
 
-?>
+

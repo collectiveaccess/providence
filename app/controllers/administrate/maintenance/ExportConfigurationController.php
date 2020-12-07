@@ -78,5 +78,3 @@ class ExportConfigurationController extends ActionController
     }
     # ------------------------------------------------
 }
-
-?>

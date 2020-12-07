@@ -82,4 +82,4 @@ class TourEditorController extends BaseEditorController
     # -------------------------------------------------------
 }
 
-?>
+

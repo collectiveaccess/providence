@@ -56,4 +56,4 @@ class SearchController extends ActionController
     # -------------------------------------------------------
 }
 
-?>
+

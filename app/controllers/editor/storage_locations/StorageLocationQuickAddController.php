@@ -42,4 +42,4 @@ class StorageLocationQuickAddController extends BaseQuickAddController
     # -------------------------------------------------------
 }
 
-?>
+

@@ -38,4 +38,4 @@ class EditorUIController extends BaseLookupController
     # -------------------------------------------------------
 }
 
-?>
+

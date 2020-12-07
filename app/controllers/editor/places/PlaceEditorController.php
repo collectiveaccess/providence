@@ -50,4 +50,4 @@ class PlaceEditorController extends BaseEditorController
     # -------------------------------------------------------
 }
 
-?>
+

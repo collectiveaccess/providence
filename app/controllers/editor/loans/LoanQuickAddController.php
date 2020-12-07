@@ -42,4 +42,4 @@ class LoanQuickAddController extends BaseQuickAddController
     # -------------------------------------------------------
 }
 
-?>
+

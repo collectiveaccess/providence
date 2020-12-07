@@ -55,4 +55,4 @@ class EditorUISearchResult extends BaseSearchResult
     # -------------------------------------
 }
 
-?>
+

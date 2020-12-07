@@ -50,4 +50,4 @@ class MovementEditorController extends BaseEditorController
     # -------------------------------------------------------
 }
 
-?>
+

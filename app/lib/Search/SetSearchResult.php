@@ -43,4 +43,4 @@ class SetSearchResult extends BaseSearchResult
     # -------------------------------------
 }
 
-?>
+

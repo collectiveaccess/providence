@@ -540,4 +540,4 @@ class EditorController extends ActionController
     # ------------------------------------------------------------------
 }
 
-?>
+

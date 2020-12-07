@@ -53,4 +53,4 @@ class RelationshipTypeController extends BaseLookupController
     # -------------------------------------------------------
 }
 
-?>
+

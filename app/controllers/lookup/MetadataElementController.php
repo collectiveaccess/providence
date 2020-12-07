@@ -38,4 +38,4 @@ class MetadataElementController extends BaseLookupController
     # -------------------------------------------------------
 }
 
-?>
+

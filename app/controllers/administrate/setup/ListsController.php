@@ -128,5 +128,3 @@ class ListsController extends BaseSearchController
     }
     # -------------------------------------------------------
 }
-
-?>

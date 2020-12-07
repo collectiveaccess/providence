@@ -207,4 +207,4 @@ class TaxonomyController extends ActionController
     # -------------------------------------------------------
 }
 
-?>
+

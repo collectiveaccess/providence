@@ -119,4 +119,4 @@ class BundleDisplayEditorController extends BaseEditorController
     # -------------------------------------------------------
 }
 
-?>
+

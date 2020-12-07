@@ -55,4 +55,4 @@ class LoanSearchResult extends BaseSearchResult
     # -------------------------------------
 }
 
-?>
+

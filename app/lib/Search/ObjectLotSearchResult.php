@@ -55,4 +55,4 @@ class ObjectLotSearchResult extends BaseSearchResult
     # -------------------------------------
 }
 
-?>
+

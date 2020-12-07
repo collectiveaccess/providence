@@ -503,4 +503,4 @@ class ObjectComponentController extends ActionController
     # ------------------------------------------------------------------
 }
 
-?>
+

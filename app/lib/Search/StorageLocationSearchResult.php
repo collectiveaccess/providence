@@ -55,4 +55,4 @@ class StorageLocationSearchResult extends BaseSearchResult
     # -------------------------------------
 }
 
-?>
+

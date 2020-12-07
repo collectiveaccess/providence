@@ -38,4 +38,4 @@ class LoanController extends BaseLookupController
     # -------------------------------------------------------
 }
 
-?>
+

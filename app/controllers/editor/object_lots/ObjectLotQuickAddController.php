@@ -42,4 +42,4 @@ class ObjectLotQuickAddController extends BaseQuickAddController
     # -------------------------------------------------------
 }
 
-?>
+

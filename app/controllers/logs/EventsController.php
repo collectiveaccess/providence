@@ -56,4 +56,4 @@ class EventsController extends ActionController
     # -------------------------------------------------------
 }
 
-?>
+

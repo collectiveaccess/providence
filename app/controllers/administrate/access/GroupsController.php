@@ -186,5 +186,3 @@ class GroupsController extends ActionController
     }
     # -------------------------------------------------------
 }
-
-?>

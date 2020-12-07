@@ -42,4 +42,4 @@ class EntityQuickAddController extends BaseQuickAddController
     # -------------------------------------------------------
 }
 
-?>
+

@@ -63,5 +63,3 @@ class HierarchicalReindexController extends ActionController
     }
     # ------------------------------------------------
 }
-
-?>

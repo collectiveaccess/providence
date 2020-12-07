@@ -55,4 +55,4 @@ class ObjectRepresentationSearch extends BaseSearch
     # ----------------------------------------------------------------------
 }
 
-?>
+

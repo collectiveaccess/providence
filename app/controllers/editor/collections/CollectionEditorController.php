@@ -52,4 +52,4 @@ class CollectionEditorController extends BaseEditorController
     # -------------------------------------------------------
 }
 
-?>
+

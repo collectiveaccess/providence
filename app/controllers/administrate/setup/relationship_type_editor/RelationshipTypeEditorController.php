@@ -128,4 +128,4 @@ class RelationshipTypeEditorController extends BaseEditorController
     # -------------------------------------------------------
 }
 
-?>
+

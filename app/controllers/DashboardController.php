@@ -143,5 +143,3 @@ class DashboardController extends ActionController
     }
     # -------------------------------------------------------
 }
-
-?>

@@ -89,4 +89,4 @@ class SearchFormController extends ActionController
     # -------------------------------------------------------
 }
 
-?>
+

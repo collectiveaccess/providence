@@ -247,4 +247,4 @@ class TagsController extends BaseSearchController
     # -------------------------------------------------------
 }
 
-?>
+

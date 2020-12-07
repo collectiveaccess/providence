@@ -155,4 +155,4 @@ class InformationServiceController extends ActionController
     # -------------------------------------------------------
 }
 
-?>
+

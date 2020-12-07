@@ -38,4 +38,4 @@ class SearchFormController extends BaseLookupController
     # -------------------------------------------------------
 }
 
-?>
+

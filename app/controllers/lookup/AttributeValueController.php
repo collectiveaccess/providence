@@ -174,4 +174,4 @@ class AttributeValueController extends ActionController
     # -------------------------------------------------------
 }
 
-?>
+

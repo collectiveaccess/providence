@@ -403,4 +403,4 @@ class PreferencesController extends ActionController
     # -------------------------------------------------------
 }
 
-?>
+
