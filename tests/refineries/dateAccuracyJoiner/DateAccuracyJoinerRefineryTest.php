@@ -23,12 +23,13 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+
 use PHPUnit\Framework\TestCase;
 
 require_once __CA_APP_DIR__ . '/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php';
@@ -40,11 +41,11 @@ class DateAccuracyJoinerRefineryTest extends TestCase {
 
 	private $opa_default_settings;
 
-	protected function setUp() : void {
-		$this->opo_refinery = new DateAccuracyJoinerRefinery();
+	protected function setUp(): void {
+		$this->opo_refinery         = new DateAccuracyJoinerRefinery();
 		$this->opa_default_settings = array_merge(
 			array_map(
-				function ($setting) {
+				function ( $setting ) {
 					return $setting['default'];
 				},
 				$this->opo_refinery->getRefinerySettings()
@@ -55,7 +56,7 @@ class DateAccuracyJoinerRefineryTest extends TestCase {
 		);
 	}
 
-	public function testValidSourceDateISO(){
+	public function testValidSourceDateISO() {
 		$this->assertEquals(
 			'2014-05-15',
 			$this->_generateRefinedValue(
@@ -84,7 +85,7 @@ class DateAccuracyJoinerRefineryTest extends TestCase {
 		);
 	}
 
-	public function testValidSourceDateCustom(){
+	public function testValidSourceDateCustom() {
 		$this->assertEquals(
 			'2014-05-15',
 			$this->_generateRefinedValue(
@@ -185,7 +186,7 @@ class DateAccuracyJoinerRefineryTest extends TestCase {
 				'140515',
 				'unknown value',
 				array(
-					'dateAccuracyJoiner_dateFormat' => 'ymd',
+					'dateAccuracyJoiner_dateFormat'                     => 'ymd',
 					'dateAccuracyJoiner_unknownAccuracyValueReturnMode' => 'normalised'
 				)
 			),
@@ -197,7 +198,7 @@ class DateAccuracyJoinerRefineryTest extends TestCase {
 				'140515',
 				'unknown value',
 				array(
-					'dateAccuracyJoiner_dateFormat' => 'ymd',
+					'dateAccuracyJoiner_dateFormat'                     => 'ymd',
 					'dateAccuracyJoiner_unknownAccuracyValueReturnMode' => 'null'
 				)
 			),
@@ -210,7 +211,7 @@ class DateAccuracyJoinerRefineryTest extends TestCase {
 				'140515',
 				'unknown value',
 				array(
-					'dateAccuracyJoiner_dateFormat' => 'ymd',
+					'dateAccuracyJoiner_dateFormat'                     => 'ymd',
 					'dateAccuracyJoiner_unknownAccuracyValueReturnMode' => 'original'
 				)
 			),
@@ -218,19 +219,20 @@ class DateAccuracyJoinerRefineryTest extends TestCase {
 		);
 	}
 
-	private function _generateRefinedValue($ps_date_value, $ps_date_accuracy, $pa_settings = array()) {
-		$va_item = array (
+	private function _generateRefinedValue( $ps_date_value, $ps_date_accuracy, $pa_settings = array() ) {
+		$va_item        = array(
 			'settings' => array_merge(
 				$this->opa_default_settings,
 				$pa_settings
 			),
-			'source' => 'dateValue'
+			'source'   => 'dateValue'
 		);
 		$va_source_data = array(
-			'dateValue' => $ps_date_value,
+			'dateValue'    => $ps_date_value,
 			'dateAccuracy' => $ps_date_accuracy
 		);
-		return $this->opo_refinery->refine($va_source_data, null, $va_item, $va_source_data);
+
+		return $this->opo_refinery->refine( $va_source_data, null, $va_item, $va_source_data );
 	}
 
 

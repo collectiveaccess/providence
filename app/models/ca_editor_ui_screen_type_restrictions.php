@@ -1,6 +1,7 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_editor_ui_screen_type_restrictions.php : table access class for table ca_editor_ui_screen_type_restrictions
+ * app/models/ca_editor_ui_screen_type_restrictions.php : table access class for table
+ * ca_editor_ui_screen_type_restrictions
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,90 +16,110 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage models
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 
-require_once(__CA_LIB_DIR__.'/ModelSettings.php');
+/**
+ *
+ */
+
+require_once( __CA_LIB_DIR__ . '/ModelSettings.php' );
 
 global $_ca_editor_ui_screen_type_restriction_settings;
-$_ca_editor_ui_screen_type_restriction_settings = array(
+$_ca_editor_ui_screen_type_restriction_settings = array();        // global
 
-);		// global
- 
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_screen_type_restrictions'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor ui screen type restriction'),
- 	'NAME_PLURAL' 		=> _t('editor ui screen type restrictions'),
- 	'FIELDS' 			=> array(
- 		'restriction_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Restriction id', 'DESCRIPTION' => 'Identifier for Restriction'
+	'NAME_SINGULAR' => _t( 'editor ui screen type restriction' ),
+	'NAME_PLURAL'   => _t( 'editor ui screen type restrictions' ),
+	'FIELDS'        => array(
+		'restriction_id'   => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_HIDDEN,
+			'IDENTITY'       => true,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Restriction id',
+			'DESCRIPTION'    => 'Identifier for Restriction'
 		),
-		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Table'), 'DESCRIPTION' => _t('Table this restriction binds the UI screen to'),
-				'BOUNDS_VALUE' => array(0,255)
+		'table_num'        => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Table' ),
+			'DESCRIPTION'    => _t( 'Table this restriction binds the UI screen to' ),
+			'BOUNDS_VALUE'   => array( 0, 255 )
 		),
-		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => 'Type id', 'DESCRIPTION' => 'Identifier for Type'
+		'type_id'          => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => true,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Type id',
+			'DESCRIPTION'    => 'Identifier for Type'
 		),
-		'screen_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Screen id', 'DESCRIPTION' => 'Identifier for Screen'
+		'screen_id'        => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Screen id',
+			'DESCRIPTION'    => 'Identifier for Screen'
 		),
 		'include_subtypes' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '0',
-				'LABEL' => _t('Include subtypes in restriction?'), 'DESCRIPTION' => _t('???')
+			'FIELD_TYPE'     => FT_BIT,
+			'DISPLAY_TYPE'   => DT_CHECKBOXES,
+			'DISPLAY_WIDTH'  => 40,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '0',
+			'LABEL'          => _t( 'Include subtypes in restriction?' ),
+			'DESCRIPTION'    => _t( '???' )
 		),
-		'settings' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Restriction settings')
+		'settings'         => array(
+			'FIELD_TYPE'     => FT_VARS,
+			'DISPLAY_TYPE'   => DT_OMIT,
+			'DISPLAY_WIDTH'  => 88,
+			'DISPLAY_HEIGHT' => 15,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Settings' ),
+			'DESCRIPTION'    => _t( 'Restriction settings' )
 		),
-		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the restriction when displayed in a list with other restrictions. Lower numbers indicate higher priority.')
+		'rank'             => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Sort order' ),
+			'DESCRIPTION'    => _t( 'The relative priority of the restriction when displayed in a list with other restrictions. Lower numbers indicate higher priority.' )
 		)
- 	)
+	)
 );
-	
+
 class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
@@ -112,7 +133,7 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_editor_ui_screen_type_restrictions';
-	      
+
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'restriction_id';
 
@@ -125,7 +146,7 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('restriction_id');
+	protected $LIST_FIELDS = array( 'restriction_id' );
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -141,10 +162,10 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('restriction_id');
+	protected $ORDER_BY = array( 'restriction_id' );
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -154,43 +175,42 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = 'rank';
-	
-	
+
+
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
-	protected $HIERARCHY_TYPE				=	null;
-	protected $HIERARCHY_LEFT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_RIGHT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_PARENT_ID_FLD		=	null;
-	protected $HIERARCHY_DEFINITION_TABLE	=	null;
-	protected $HIERARCHY_ID_FLD				=	null;
-	protected $HIERARCHY_POLY_TABLE			=	null;
-	
+	protected $HIERARCHY_TYPE = null;
+	protected $HIERARCHY_LEFT_INDEX_FLD = null;
+	protected $HIERARCHY_RIGHT_INDEX_FLD = null;
+	protected $HIERARCHY_PARENT_ID_FLD = null;
+	protected $HIERARCHY_DEFINITION_TABLE = null;
+	protected $HIERARCHY_ID_FLD = null;
+	protected $HIERARCHY_POLY_TABLE = null;
+
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
 	protected $LOG_CHANGES_TO_SELF = true;
-	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
-		"FOREIGN_KEYS" => array(
-			'screen_id'
-		),
-		"RELATED_TABLES" => array(
-		
-		)
-	);
+	protected $LOG_CHANGES_USING_AS_SUBJECT
+		= array(
+			"FOREIGN_KEYS"   => array(
+				'screen_id'
+			),
+			"RELATED_TABLES" => array()
+		);
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-	
+
 	/**
 	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
 	 */
 	public $SETTINGS;
-	
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -202,26 +222,28 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct( $pn_id = null ) {
 		global $_ca_editor_ui_screen_type_restriction_settings;
-		parent::__construct($pn_id);	# call superclass constructor
-		
+		parent::__construct( $pn_id );    # call superclass constructor
+
 		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_editor_ui_screen_type_restriction_settings);
+		$this->SETTINGS = new ModelSettings( $this, 'settings', $_ca_editor_ui_screen_type_restriction_settings );
 	}
+
 	# ------------------------------------------------------
 	public function __destruct() {
-		unset($this->SETTINGS);
+		unset( $this->SETTINGS );
 	}
 	# ------------------------------------------------------
+
 	/**
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+	public function __call( $ps_name, $pa_arguments ) {
+		if ( method_exists( $this->SETTINGS, $ps_name ) ) {
+			return call_user_func_array( array( $this->SETTINGS, $ps_name ), $pa_arguments );
 		}
-		die($this->tableName()." does not implement method {$ps_name}");
+		die( $this->tableName() . " does not implement method {$ps_name}" );
 	}
 	# ------------------------------------------------------
 }

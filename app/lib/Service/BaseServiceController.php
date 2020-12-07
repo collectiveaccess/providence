@@ -15,33 +15,32 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage WebServices
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 	
- 	class BaseServiceController extends ActionController {
- 		# -------------------------------------------------------
- 	
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 	}
+
+/**
+ *
+ */
+class BaseServiceController extends ActionController {
+	# -------------------------------------------------------
+
+	# -------------------------------------------------------
+	#
+	# -------------------------------------------------------
+	public function __construct( &$po_request, &$po_response, $pa_view_paths = null ) {
+		parent::__construct( $po_request, $po_response, $pa_view_paths );
+	}
+	# -------------------------------------------------------
+}

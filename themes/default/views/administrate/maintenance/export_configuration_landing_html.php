@@ -25,18 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print "<h1>"._t("Export system configuration as installation profile")."</h1>\n";
 
-	print "<div class='searchReindexHelpText'>";
-	print _t("<p>You can export the current configuration of this system as an <em>installation profile</em>. A profile is an XML document fully describing all of the metadata elements, lists, user interfaces, locales, search forms and displays present in your system. The <em>CollectiveAccess</em> installer can use installation profiles to create new, empty instances with specific configurations for use in new projects.</p>
+print "<h1>" . _t( "Export system configuration as installation profile" ) . "</h1>\n";
+
+print "<div class='searchReindexHelpText'>";
+print _t( "<p>You can export the current configuration of this system as an <em>installation profile</em>. A profile is an XML document fully describing all of the metadata elements, lists, user interfaces, locales, search forms and displays present in your system. The <em>CollectiveAccess</em> installer can use installation profiles to create new, empty instances with specific configurations for use in new projects.</p>
 	<p>Click on the \"Export\" button below to export and download the current system configuration as an installation profile.</p> 
 	<p>Note that for systems with complex configurations, generating the profile may take up to two minutes.</p>
-	");
-	
-	print caFormTag($this->request, 'export', 'caExportConfigurationForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Export and download system configuration"), 'caExportConfigurationForm', array())."</div>";
-	print caHTMLHiddenInput('download', array('value' => 1));
-	print "</form>";
-	print "</div>\n";
+	" );
+
+print caFormTag( $this->request, 'export', 'caExportConfigurationForm', null, 'post', 'multipart/form-data', '_top',
+	array( 'noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true ) );
+print "<div style='text-align: center'>" . caFormSubmitButton( $this->request, __CA_NAV_ICON_GO__,
+		_t( "Export and download system configuration" ), 'caExportConfigurationForm', array() ) . "</div>";
+print caHTMLHiddenInput( 'download', array( 'value' => 1 ) );
+print "</form>";
+print "</div>\n";
 ?>

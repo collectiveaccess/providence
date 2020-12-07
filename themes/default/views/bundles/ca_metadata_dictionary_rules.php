@@ -25,29 +25,31 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	AssetLoadManager::register('sortableUI');
 
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_entry 				= $this->getVar('t_entry');	
-	$t_rule					= $this->getVar('t_rule');
-	
-	$settings_values_list	= $this->getVar('settings_values_list');
-	$settings_tags			= $this->getVar('settings_tags');
+AssetLoadManager::register( 'sortableUI' );
 
-	$va_initial_values = $this->getVar('rules');	// list of existing rules
-	if(!is_array($va_initial_values)) { $va_initial_values = []; }
-	$va_errors = $va_failed_inserts = [];
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
- ?>
- <div id="<?php print $vs_id_prefix; ?>">
-<?php
+$vs_id_prefix = $this->getVar( 'placement_code' ) . $this->getVar( 'id_prefix' );
+$t_entry      = $this->getVar( 't_entry' );
+$t_rule       = $this->getVar( 't_rule' );
+
+$settings_values_list = $this->getVar( 'settings_values_list' );
+$settings_tags        = $this->getVar( 'settings_tags' );
+
+$va_initial_values = $this->getVar( 'rules' );    // list of existing rules
+if ( ! is_array( $va_initial_values ) ) {
+	$va_initial_values = [];
+}
+$va_errors = $va_failed_inserts = [];
+
+print caEditorBundleShowHideControl( $this->request, $vs_id_prefix );
+print caEditorBundleMetadataDictionary( $this->request, $vs_id_prefix, $va_settings );
+?>
+<div id="<?php print $vs_id_prefix; ?>">
+	<?php
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
-?>
+	?>
 	<textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
@@ -57,50 +59,81 @@
 						<div class="formLabel" id="{fieldNamePrefix}edit_name_{n}" style="display: block;">
 							<table>
 								<tr>
-									<td><?php print $t_rule->htmlFormElement('rule_code', "^LABEL<br/>^ELEMENT", array_merge([], array('name' => "{fieldNamePrefix}rule_code_{n}", 'id' => "{fieldNamePrefix}rule_code_{n}", "value" => "{{rule_code}}", 'no_tooltips' => true, 'readonly' => $vb_read_only))); ?></td>
-									<td><?php print $t_rule->htmlFormElement('rule_level', "^LABEL<br/>^ELEMENT", array_merge([], array('name' => "{fieldNamePrefix}rule_level_{n}", 'id' => "{fieldNamePrefix}rule_level_{n}", "value" => "{{rule_level}}", 'no_tooltips' => true, 'readonly' => $vb_read_only))); ?></td>
+									<td><?php print $t_rule->htmlFormElement( 'rule_code', "^LABEL<br/>^ELEMENT",
+											array_merge( [], array(
+												'name'        => "{fieldNamePrefix}rule_code_{n}",
+												'id'          => "{fieldNamePrefix}rule_code_{n}",
+												"value"       => "{{rule_code}}",
+												'no_tooltips' => true,
+												'readonly'    => $vb_read_only
+											) ) ); ?></td>
+									<td><?php print $t_rule->htmlFormElement( 'rule_level', "^LABEL<br/>^ELEMENT",
+											array_merge( [], array(
+												'name'        => "{fieldNamePrefix}rule_level_{n}",
+												'id'          => "{fieldNamePrefix}rule_level_{n}",
+												"value"       => "{{rule_level}}",
+												'no_tooltips' => true,
+												'readonly'    => $vb_read_only
+											) ) ); ?></td>
 								</tr>
 								<tr>
 									<td colspan="2">
-										<?php print $t_rule->htmlFormElement('expression', "^LABEL<br/>^ELEMENT", array_merge([], array('name' => "{fieldNamePrefix}expression_{n}", 'id' => "{fieldNamePrefix}expression_{n}", "value" => "{{expression}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only))); ?>
+										<?php print $t_rule->htmlFormElement( 'expression', "^LABEL<br/>^ELEMENT",
+											array_merge( [], array(
+												'name'            => "{fieldNamePrefix}expression_{n}",
+												'id'              => "{fieldNamePrefix}expression_{n}",
+												"value"           => "{{expression}}",
+												'no_tooltips'     => true,
+												'textAreaTagName' => 'textentry',
+												'readonly'        => $vb_read_only
+											) ) ); ?>
 									</td>
 								</tr>
 							</table>
-							<?php print str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('settings' => $settings_values_list, 'format' => "{$vs_id_prefix}_^setting_name_{n}", 'no_tooltips' => true))); ?>
+							<?php print str_replace( "textarea", "textentry", $t_rule->getHTMLSettingForm( array(
+								'settings'    => $settings_values_list,
+								'format'      => "{$vs_id_prefix}_^setting_name_{n}",
+								'no_tooltips' => true
+							) ) ); ?>
 						</div>
 					</td>
 					<td valign="top">
 						<div style="float:right;">
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon( __CA_NAV_ICON_DEL_BUNDLE__,
+									1 ); ?></a>
 						</div>
 					</td>
 				</tr>
 			</table>
 		</div>
 <?php
-	//print TooltipManager::getLoadHTML('bundle_ca_tour_stops_list');
+//print TooltipManager::getLoadHTML('bundle_ca_tour_stops_list');
 ?>
 	</textarea>
-	
+
 	<div class="bundleContainer">
 		<div class="caItemList">
-		
+
 		</div>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add rule"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon( __CA_NAV_ICON_ADD__,
+					'15px' ); ?> <?php print _t( "Add rule" ); ?> &rsaquo;</a></div>
 	</div>
 </div>
 <?php
-	// order element
+// order element
 ?>
-			
+
 <script type="text/javascript">
 	caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-		templateValues: ['rule_code', 'rule_level', 'expression', 'rule_id', 'typename', <?php print join(", ", array_map(function($v) { return "'{$v}'"; }, $settings_tags)); ?>],
-		initialValues: <?php print json_encode($va_initial_values); ?>,
-		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
-		errors: <?php print json_encode($va_errors); ?>,
-		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
+		templateValues: ['rule_code', 'rule_level', 'expression', 'rule_id', 'typename', <?php print join( ", ",
+			array_map( function ( $v ) {
+				return "'{$v}'";
+			}, $settings_tags ) ); ?>],
+		initialValues: <?php print json_encode( $va_initial_values ); ?>,
+		initialValueOrder: <?php print json_encode( array_keys( $va_initial_values ) ); ?>,
+		errors: <?php print json_encode( $va_errors ); ?>,
+		forceNewValues: <?php print json_encode( $va_failed_inserts ); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
 		itemListClassName: 'caItemList',

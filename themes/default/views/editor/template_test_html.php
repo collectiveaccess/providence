@@ -26,19 +26,21 @@
  * ----------------------------------------------------------------------
  */
 
-$t_item = $this->getVar('t_subject');
+$t_item = $this->getVar( 't_subject' );
 
 ?>
 
 <div style="width:100%">
-	<div class="title"><?php print _t('Display template debugger'); ?>&colon;</div>
+	<div class="title"><?php print _t( 'Display template debugger' ); ?>&colon;</div>
 	<table style="width:100%">
 		<tr>
 			<th>
-				<textarea id="displayTemplate" style="width: 300px; height: 200px;" placeholder="<?php print _t("Enter display template here ..."); ?>"></textarea>
+				<textarea id="displayTemplate" style="width: 300px; height: 200px;"
+				          placeholder="<?php print _t( "Enter display template here ..." ); ?>"></textarea>
 			</th>
 			<th>
-				<pre id="templatePreview" style="width: 420px; height: 200px; border: 1px solid grey; overflow: scroll; padding: 3px; font-weight: normal;"><?php print _t("Result will go here ..."); ?></pre>
+				<pre id="templatePreview"
+				     style="width: 420px; height: 200px; border: 1px solid grey; overflow: scroll; padding: 3px; font-weight: normal;"><?php print _t( "Result will go here ..." ); ?></pre>
 			</th>
 		</tr>
 	</table>
@@ -47,26 +49,27 @@ $t_item = $this->getVar('t_subject');
 <script type="text/javascript">
 
 	function caRunTemplate(template) {
-		jQuery.get("<?php print caNavUrl($this->request, 'lookup', 'DisplayTemplate', 'Get'); ?>", {
+		jQuery.get("<?php print caNavUrl( $this->request, 'lookup', 'DisplayTemplate', 'Get' ); ?>", {
 			table: "<?php print $t_item->tableName(); ?>",
 			id: <?php print $t_item->getPrimaryKey(); ?>,
 			template: template
-		}, function(data) {
+		}, function (data) {
 			jQuery('#templatePreview').html(data);
 		});
 	}
 
-	jQuery('#displayTemplate').keyup(function() {
-		delay(function(){
+	jQuery('#displayTemplate').keyup(function () {
+		delay(function () {
 			console.log("x", jQuery('#displayTemplate').val());
-			caRunTemplate(jQuery('#displayTemplate').val()); return false;
-		}, 300 );
+			caRunTemplate(jQuery('#displayTemplate').val());
+			return false;
+		}, 300);
 	});
 
-	var delay = (function(){
+	var delay = (function () {
 		var timer = 0;
-		return function(callback, ms){
-			clearTimeout (timer);
+		return function (callback, ms) {
+			clearTimeout(timer);
 			timer = setTimeout(callback, ms);
 		};
 	})();

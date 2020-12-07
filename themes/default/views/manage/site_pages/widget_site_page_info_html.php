@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	print caEditorInspector($this, array('backText' => _t('Back to list')));
- ?>
+
+print caEditorInspector( $this, array( 'backText' => _t( 'Back to list' ) ) );
+?>

@@ -23,9 +23,9 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Core
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -33,8 +33,6 @@
 /**
  *
  */
-
-
 class ApplicationException extends Exception {
 
 }

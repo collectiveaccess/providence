@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('tour_stop_list'));
+print json_encode( $this->getVar( 'tour_stop_list' ) );
 ?>

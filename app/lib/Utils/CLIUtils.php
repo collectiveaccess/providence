@@ -23,36 +23,36 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Utils
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
+/**
+ *
+ */
 
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIBaseUtils.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Maintenance.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Media.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Search.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/ImportExport.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/ContentManagement.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Cron.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Performance.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Statistics.php');
- 
-	class CLIUtils extends CLIBaseUtils {
-		use CLIUtilsMaintenance;
-		use CLIUtilsMedia;
-		use CLIUtilsSearch;
-		use CLIUtilsConfiguration;
-		use CLIUtilsImportExport;
-		use CLIUtilsContentManagement;
-		use CLIUtilsCron;
-		use CLIUtilsPerformance;
-		use CLIUtilsStatistics;
-	}
+require_once( __CA_LIB_DIR__ . '/Utils/CLIBaseUtils.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/Maintenance.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/Media.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/Search.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/Configuration.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/ImportExport.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/ContentManagement.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/Cron.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/Performance.php' );
+require_once( __CA_LIB_DIR__ . '/Utils/CLIUtils/Statistics.php' );
+
+class CLIUtils extends CLIBaseUtils {
+	use CLIUtilsMaintenance;
+	use CLIUtilsMedia;
+	use CLIUtilsSearch;
+	use CLIUtilsConfiguration;
+	use CLIUtilsImportExport;
+	use CLIUtilsContentManagement;
+	use CLIUtilsCron;
+	use CLIUtilsPerformance;
+	use CLIUtilsStatistics;
+}

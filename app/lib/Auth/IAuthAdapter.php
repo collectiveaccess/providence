@@ -23,17 +23,17 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Auth
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
-define('__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__', 1);
-define('__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__', 2);
-define('__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__', 3);
-define('__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__', 4);
+define( '__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__', 1 );
+define( '__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__', 2 );
+define( '__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__', 3 );
+define( '__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__', 4 );
 
 interface IAuthAdapter {
 
@@ -42,67 +42,77 @@ interface IAuthAdapter {
 	 *
 	 * @param string $ps_username user name
 	 * @param string $ps_password cleartext password
-	 * @param null $pa_options Associative array of options
+	 * @param null   $pa_options  Associative array of options
+	 *
 	 * @return boolean
 	 */
-	public function authenticate($ps_username, $ps_password="", $pa_options=null);
+	public function authenticate( $ps_username, $ps_password = "", $pa_options = null );
 
 	/**
 	 * Creates new user in back-end. Should throw AuthClassFeatureException if not implemented. Note that while this is
-	 * called when a new user is created in CollectiveAccess, it can be used to verify that the given credentials already exist in
-	 * the back-end in question. You could, for instance, use this to check group membership or other access restrictions. If
-	 * you want the CollectiveAccess user record insert() process to fail, throw an exception other than AuthClassFeatureException.
-	 * Otherwise the corresponding table record in ca_users will be created.
+	 * called when a new user is created in CollectiveAccess, it can be used to verify that the given credentials
+	 * already exist in the back-end in question. You could, for instance, use this to check group membership or other
+	 * access restrictions. If you want the CollectiveAccess user record insert() process to fail, throw an exception
+	 * other than AuthClassFeatureException. Otherwise the corresponding table record in ca_users will be created.
 	 *
 	 * @param string $ps_username user name
 	 * @param string $ps_password cleartext password
-	 * @return string|null The (preferrably hashed/encoded) password to store in the ca_users table. Can be left empty for
-	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth). Can also be used to store
-	 * authentication tokens. The password you store here will be passed to authenticate() as-is.
+	 *
+	 * @return string|null The (preferrably hashed/encoded) password to store in the ca_users table. Can be left empty
+	 *                     for back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or
+	 *                     OAuth). Can also be used to store authentication tokens. The password you store here will be
+	 *                     passed to authenticate() as-is.
 	 */
-	public function createUserAndGetPassword($ps_username, $ps_password);
+	public function createUserAndGetPassword( $ps_username, $ps_password );
 
 	/**
-	 * Get array containing field_name/value pairs for newly created records in the ca_users table, e.g. email, fname, lname.
+	 * Get array containing field_name/value pairs for newly created records in the ca_users table, e.g. email, fname,
+	 * lname.
 	 *
 	 * @param $ps_username
 	 * @param $ps_password
 	 * @param $pa_options
+	 *
 	 * @return array
 	 */
-	public function getUserInfo($ps_username, $ps_password, $pa_options=null);
+	public function getUserInfo( $ps_username, $ps_password, $pa_options = null );
 
 	/**
 	 * Deletes user. Should throw AuthClassFeatureException if not implemented.
 	 *
 	 * @param string $ps_username user name
+	 *
 	 * @return bool delete successful or not?
 	 */
-	public function deleteUser($ps_username);
+	public function deleteUser( $ps_username );
 
 	/**
 	 * Updates password for existing user and returns it. Should throw AuthClassFeatureException if not implemented.
 	 *
 	 * @param string $ps_username user name
 	 * @param string $ps_password cleartext password
+	 *
 	 * @return string|null The password to store in the ca_users table. Can be left empty for
 	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth).
 	 */
-	public function updatePassword($ps_username, $ps_password);
+	public function updatePassword( $ps_username, $ps_password );
 
 
 	/**
 	 * Indicates whether this Adapter supports a given feature. Adapter implementations should use these constants:
 	 *
-	 * __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__ = reset passwords programmatically. No support means CollectiveAccess'
-	 * 		own reset password feature will be disabled
-	 * __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__ = ability to automatically create CollectiveAccess users on first login
-	 * 		(e.g. by authenticating against and getting the user information from an external source like a directory service)
+	 * __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__ = reset passwords programmatically. No support means
+	 * CollectiveAccess' own reset password feature will be disabled
+	 * __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__ = ability to automatically create CollectiveAccess users on first
+	 * login
+	 *        (e.g. by authenticating against and getting the user information from an external source like a directory
+	 *        service)
 	 *
 	 * @param int $pn_feature The feature to check for
+	 *
 	 * @return bool Is it implemented or not?
 	 */
-	public function supports($pn_feature);
+	public function supports( $pn_feature );
 
 	/**
 	 * Gives implementations an option to place an account management link on the CollectiveAccess
@@ -117,4 +127,5 @@ interface IAuthAdapter {
 
 }
 
-class AuthClassFeatureException extends Exception {}
+class AuthClassFeatureException extends Exception {
+}

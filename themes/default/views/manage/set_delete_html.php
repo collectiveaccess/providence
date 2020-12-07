@@ -25,13 +25,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$sets = $this->getVar('sets');
+
+$sets = $this->getVar( 'sets' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		print caDeleteMultipleWarningBox($this->request, new ca_sets(), $sets, _t('%1 sets', sizeof($sets)), 'manage', 'Set', 'ListSets', []);
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
+		print caDeleteMultipleWarningBox( $this->request, new ca_sets(), $sets, _t( '%1 sets', sizeof( $sets ) ),
+			'manage', 'Set', 'ListSets', [] );
 	}
-?>
+	?>
 </div>

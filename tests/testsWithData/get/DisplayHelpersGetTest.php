@@ -23,16 +23,17 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
-require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php' );
+require_once( __CA_APP_DIR__ . '/helpers/displayHelpers.php' );
 
 class DisplayHelpersGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
@@ -43,11 +44,13 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 
 	/**
 	 * primary key ID of the last created entity
+	 *
 	 * @var int
 	 */
 	private $opn_entity_id = null;
+
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -55,135 +58,136 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_object_id = $this->addTestRecord('ca_objects', array(
+		$vn_object_id = $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test image",
+					"name"   => "My test image",
 				),
 			),
-		));
-		$this->assertGreaterThan(0, $vn_object_id);
-		$this->opt_object = new ca_objects($vn_object_id);
+		) );
+		$this->assertGreaterThan( 0, $vn_object_id );
+		$this->opt_object = new ca_objects( $vn_object_id );
 
-		$vn_entity_id = $this->addTestRecord('ca_entities', array(
-			'intrinsic_fields' => array(
+		$vn_entity_id = $this->addTestRecord( 'ca_entities', array(
+			'intrinsic_fields'    => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno'    => 'hjs',
 			),
-			'preferred_labels' => array(
+			'preferred_labels'    => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Homer",
+					"locale"     => "en_US",
+					"forename"   => "Homer",
 					"middlename" => "J.",
-					"surname" => "Simpson",
+					"surname"    => "Simpson",
 				),
 			),
 			'nonpreferred_labels' => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Max",
+					"locale"     => "en_US",
+					"forename"   => "Max",
 					"middlename" => "",
-					"surname" => "Power",
-					"type_id" => "alt",
+					"surname"    => "Power",
+					"type_id"    => "alt",
 				),
 			),
-			'related' => array(
+			'related'             => array(
 				'ca_objects' => array(
 					array(
-						'object_id' => $vn_object_id,
-						'type_id' => 'creator',
+						'object_id'      => $vn_object_id,
+						'type_id'        => 'creator',
 						'effective_date' => '2015',
-						'source_info' => 'Me'
+						'source_info'    => 'Me'
 					)
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_entity_id);
+		$this->assertGreaterThan( 0, $vn_entity_id );
 
-		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+		$vn_entity_id = $this->addTestRecord( 'ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'bs',
+				'idno'    => 'bs',
 			),
 			'preferred_labels' => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Bart",
+					"locale"     => "en_US",
+					"forename"   => "Bart",
 					"middlename" => "",
-					"surname" => "Simpson",
+					"surname"    => "Simpson",
 				),
 			),
-			'related' => array(
+			'related'          => array(
 				'ca_objects' => array(
 					array(
-						'object_id' => $vn_object_id,
-						'type_id' => 'publisher',
+						'object_id'      => $vn_object_id,
+						'type_id'        => 'publisher',
 						'effective_date' => '2014-2015',
-						'source_info' => 'Homer'
+						'source_info'    => 'Homer'
 					)
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_entity_id);
+		$this->assertGreaterThan( 0, $vn_entity_id );
 		$this->opn_entity_id = $vn_entity_id;
 	}
+
 	# -------------------------------------------------------
 	public function testExpressionTag() {
 		// unit tag inside expression
-		$this->assertEquals($this->opn_entity_id, caProcessTemplateForIDs(
+		$this->assertEquals( $this->opn_entity_id, caProcessTemplateForIDs(
 			'<expression>max(<unit relativeTo="ca_entities" delimiter=",">^ca_entities.entity_id</unit>)</expression>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// just a plain tag .. 'My test image' is 13 chars
-		$this->assertEquals(13, caProcessTemplateForIDs(
+		$this->assertEquals( 13, caProcessTemplateForIDs(
 			'<expression>length(^ca_objects.preferred_labels)</expression>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// plain old scalars
-		$this->assertEquals(9, caProcessTemplateForIDs(
+		$this->assertEquals( 9, caProcessTemplateForIDs(
 			'<expression>5 + 4</expression>',
-		'ca_objects', array($this->opt_object->getPrimaryKey())));
+			'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// get entity names and their string lengths
-		$this->assertEquals('Homer J. Simpson, 16; Bart Simpson, 12', caProcessTemplateForIDs(
+		$this->assertEquals( 'Homer J. Simpson, 16; Bart Simpson, 12', caProcessTemplateForIDs(
 			'<unit relativeTo="ca_entities">^ca_entities.preferred_labels, <expression>length(^ca_entities.preferred_labels)</expression></unit>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// scalars in ifdef (false)
-		$this->assertEmpty(caProcessTemplateForIDs(
+		$this->assertEmpty( caProcessTemplateForIDs(
 			'<ifdef code="ca_objects.description"><expression>5+9</expression></ifdef>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// scalars in ifdef (true)
-		$this->assertEquals(9, caProcessTemplateForIDs(
+		$this->assertEquals( 9, caProcessTemplateForIDs(
 			'<ifdef code="ca_entities"><expression>5+4</expression></ifdef>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// hacked up way to count number of relationships
-		$this->assertEquals(2, caProcessTemplateForIDs(
+		$this->assertEquals( 2, caProcessTemplateForIDs(
 			'<expression>sizeof(<unit relativeTo="ca_entities" delimiter=",">^ca_entities.entity_id</unit>)</expression>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// no relationships exist for collections
-		$this->assertEquals(0, caProcessTemplateForIDs(
+		$this->assertEquals( 0, caProcessTemplateForIDs(
 			'<expression>sizeof(<unit relativeTo="ca_collections" delimiter=",">^ca_collections.collection_id</unit>)</expression>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// no relationships exist for collections
-		$this->assertEquals(0, caProcessTemplateForIDs(
+		$this->assertEquals( 0, caProcessTemplateForIDs(
 			'<expression>sizeof(<unit relativeTo="ca_collections" delimiter=",">^ca_collections.collection_id</unit>)</expression>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 
 		// age calculation
-		$this->assertEquals(41, caProcessTemplateForIDs(
+		$this->assertEquals( 41, caProcessTemplateForIDs(
 			'<expression>age("23 June 1912", "7 June 1954")</expression>'
-		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+			, 'ca_objects', array( $this->opt_object->getPrimaryKey() ) ) );
 	}
 	# -------------------------------------------------------
 }

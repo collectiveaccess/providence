@@ -15,117 +15,151 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage models
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-require_once(__CA_LIB_DIR__.'/BaseModel.php');
+
+/**
+ *
+ */
+require_once( __CA_LIB_DIR__ . '/BaseModel.php' );
 
 
 BaseModel::$s_ca_models_definitions['ca_items_x_tags'] = array(
- 	'NAME_SINGULAR' 	=> _t('item ⇔ tag relationship'),
- 	'NAME_PLURAL' 		=> _t('item ⇔ tag relationships'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
+	'NAME_SINGULAR' => _t( 'item ⇔ tag relationship' ),
+	'NAME_PLURAL'   => _t( 'item ⇔ tag relationships' ),
+	'FIELDS'        => array(
+		'relation_id'          => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_HIDDEN,
+			'IDENTITY'       => true,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Relation id',
+			'DESCRIPTION'    => 'Identifier for Relation'
 		),
-		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Table tag applies to', 'DESCRIPTION' => 'The table number of the table this tag is applied to.',
-				'BOUNDS_LENGTH' => array(1,100)
+		'table_num'            => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Table tag applies to',
+			'DESCRIPTION'    => 'The table number of the table this tag is applied to.',
+			'BOUNDS_LENGTH'  => array( 1, 100 )
 		),
-		'row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Row ID', 'DESCRIPTION' => 'Primary key value of the row in the table specified by table_num that this tag applies to.'
+		'row_id'               => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Row ID',
+			'DESCRIPTION'    => 'Primary key value of the row in the table specified by table_num that this tag applies to.'
 		),
-		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DISPLAY_FIELD' => array('ca_users.lname', 'ca_users.fname'),
-				'DEFAULT' => '',
-				'LABEL' => _t('User'), 'DESCRIPTION' => _t('The user who applied the tag.')
+		'user_id'              => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_OMIT,
+			'DISPLAY_WIDTH'  => 40,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => true,
+			'DISPLAY_FIELD'  => array( 'ca_users.lname', 'ca_users.fname' ),
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'User' ),
+			'DESCRIPTION'    => _t( 'The user who applied the tag.' )
 		),
-		'tag_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Tag id', 'DESCRIPTION' => 'ID of referenced tag.'
+		'tag_id'               => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Tag id',
+			'DESCRIPTION'    => 'ID of referenced tag.'
 		),
-		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Not accessible to public') => 0,
-					_t('Accessible to public') => 1
-				),
-				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if the comment is accessible to the public or not.')
+		'access'               => array(
+			'FIELD_TYPE'         => FT_NUMBER,
+			'DISPLAY_TYPE'       => DT_SELECT,
+			'DISPLAY_WIDTH'      => 40,
+			'DISPLAY_HEIGHT'     => 1,
+			'IS_NULL'            => false,
+			'DEFAULT'            => 0,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t( 'Not accessible to public' ) => 0,
+				_t( 'Accessible to public' )     => 1
+			),
+			'LABEL'              => _t( 'Access' ),
+			'DESCRIPTION'        => _t( 'Indicates if the comment is accessible to the public or not.' )
 		),
-		'created_on' => array(
-				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Tagging date'), 'DESCRIPTION' => _t('The date and time the tag was applied.')
+		'created_on'           => array(
+			'FIELD_TYPE'     => FT_TIMESTAMP,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 20,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Tagging date' ),
+			'DESCRIPTION'    => _t( 'The date and time the tag was applied.' )
 		),
-		'ip_addr' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => _t('IP address of commenter'), 'DESCRIPTION' => _t('The IP address of the commenter.'),
-				'BOUNDS_LENGTH' => array(0,39)
+		'ip_addr'              => array(
+			'FIELD_TYPE'     => FT_TEXT,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 40,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => true,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'IP address of commenter' ),
+			'DESCRIPTION'    => _t( 'The IP address of the commenter.' ),
+			'BOUNDS_LENGTH'  => array( 0, 39 )
 		),
 		'moderated_by_user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DISPLAY_FIELD' => array('ca_users.lname', 'ca_users.fname'),
-				'DEFAULT' => null,
-				'LABEL' => _t('Moderator'), 'DESCRIPTION' => _t('The user who examined the tag for validity and applicability.')
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_OMIT,
+			'DISPLAY_WIDTH'  => 40,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => true,
+			'DISPLAY_FIELD'  => array( 'ca_users.lname', 'ca_users.fname' ),
+			'DEFAULT'        => null,
+			'LABEL'          => _t( 'Moderator' ),
+			'DESCRIPTION'    => _t( 'The user who examined the tag for validity and applicability.' )
 		),
-		'moderated_on' => array(
-				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => null,
-				'LABEL' => _t('Moderation date'), 'DESCRIPTION' => _t('The date and time the tag was examined for validity and applicability.')
+		'moderated_on'         => array(
+			'FIELD_TYPE'     => FT_DATETIME,
+			'DISPLAY_TYPE'   => DT_OMIT,
+			'DISPLAY_WIDTH'  => 20,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => true,
+			'DEFAULT'        => null,
+			'LABEL'          => _t( 'Moderation date' ),
+			'DESCRIPTION'    => _t( 'The date and time the tag was examined for validity and applicability.' )
 		),
-		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the tag when displayed in a list with other tags. Lower numbers indicate higher priority.')
+		'rank'                 => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_OMIT,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Sort order' ),
+			'DESCRIPTION'    => _t( 'The relative priority of the tag when displayed in a list with other tags. Lower numbers indicate higher priority.' )
 		)
- 	)
+	)
 );
 
 class ca_items_x_tags extends BaseModel {
@@ -141,7 +175,7 @@ class ca_items_x_tags extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_items_x_tags';
-	      
+
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 
@@ -154,7 +188,7 @@ class ca_items_x_tags extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('relation_id');
+	protected $LIST_FIELDS = array( 'relation_id' );
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -170,10 +204,10 @@ class ca_items_x_tags extends BaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('relation_id');
+	protected $ORDER_BY = array( 'relation_id' );
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -183,34 +217,31 @@ class ca_items_x_tags extends BaseModel {
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = 'rank';
-	
-	
+
+
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
-	protected $HIERARCHY_TYPE				=	null;
-	protected $HIERARCHY_LEFT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_RIGHT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_PARENT_ID_FLD		=	null;
-	protected $HIERARCHY_DEFINITION_TABLE	=	null;
-	protected $HIERARCHY_ID_FLD				=	null;
-	protected $HIERARCHY_POLY_TABLE			=	null;
-	
+	protected $HIERARCHY_TYPE = null;
+	protected $HIERARCHY_LEFT_INDEX_FLD = null;
+	protected $HIERARCHY_RIGHT_INDEX_FLD = null;
+	protected $HIERARCHY_PARENT_ID_FLD = null;
+	protected $HIERARCHY_DEFINITION_TABLE = null;
+	protected $HIERARCHY_ID_FLD = null;
+	protected $HIERARCHY_POLY_TABLE = null;
+
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
 	protected $LOG_CHANGES_TO_SELF = true;
-	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
-		"FOREIGN_KEYS" => array(
-		
-		),
-		"RELATED_TABLES" => array(
-		
-		)
-	);
-	
-	
+	protected $LOG_CHANGES_USING_AS_SUBJECT
+		= array(
+			"FOREIGN_KEYS"   => array(),
+			"RELATED_TABLES" => array()
+		);
+
+
 	# ------------------------------------------------------
 	# Search
 	# ------------------------------------------------------
@@ -219,7 +250,7 @@ class ca_items_x_tags extends BaseModel {
 	//
 	protected $SEARCH_CLASSNAME = 'InterstitialSearch';
 	protected $SEARCH_RESULT_CLASSNAME = 'InterstitialSearchResult';
-	
+
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
@@ -230,7 +261,7 @@ class ca_items_x_tags extends BaseModel {
 	# a text field 30 characters wide). See the documentation for BaseRelationshipModel.php for a complete list
 	# of field specifiers.
 	protected $FIELDS;
-	
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -242,27 +273,35 @@ class ca_items_x_tags extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct( $pn_id = null ) {
+		parent::__construct( $pn_id );    # call superclass constructor
+	}
+
+	# ------------------------------------------------------
+	public function insert( $pa_options = null ) {
+		$this->set( 'ip_addr', RequestHTTP::ip() );
+
+		return parent::insert( $pa_options );
 	}
 	# ------------------------------------------------------
-	public function insert($pa_options=null) {
-		$this->set('ip_addr', RequestHTTP::ip());
-		return parent::insert($pa_options);
-	}
-	# ------------------------------------------------------
+
 	/**
-	 * Marks the currently loaded row as moderated, setting the moderator as the $pn_user_id parameter and the moderated time as the current time.
-	 * "Moderated" status indicates that the comment has been reviewed for content; it does *not* indicate that the comment is ok for publication only
-	 * that is has been reviewed. The publication status is indicated by the value of the 'access' field.
+	 * Marks the currently loaded row as moderated, setting the moderator as the $pn_user_id parameter and the
+	 * moderated time as the current time.
+	 * "Moderated" status indicates that the comment has been reviewed for content; it does *not* indicate that the
+	 * comment is ok for publication only that is has been reviewed. The publication status is indicated by the value
+	 * of the 'access' field.
 	 *
 	 * @param $pn_user_id [integer] Valid ca_users.user_id value indicating the user who moderated the comment.
 	 */
-	public function moderate($pn_user_id) {
-		if (!$this->getPrimaryKey()) { return null; }
-		$this->setMode(ACCESS_WRITE);
-		$this->set('moderated_by_user_id', $pn_user_id);
-		$this->set('moderated_on', 'now');
+	public function moderate( $pn_user_id ) {
+		if ( ! $this->getPrimaryKey() ) {
+			return null;
+		}
+		$this->setMode( ACCESS_WRITE );
+		$this->set( 'moderated_by_user_id', $pn_user_id );
+		$this->set( 'moderated_on', 'now' );
+
 		return $this->update();
 	}
 	# ------------------------------------------------------

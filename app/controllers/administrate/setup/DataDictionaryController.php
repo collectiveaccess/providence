@@ -25,43 +25,47 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
-require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
-require_once(__CA_LIB_DIR__."/ResultContext.php");
+require_once( __CA_LIB_DIR__ . "/Controller/ActionController.php" );
+require_once( __CA_MODELS_DIR__ . '/ca_metadata_dictionary_entries.php' );
+require_once( __CA_MODELS_DIR__ . '/ca_metadata_dictionary_rules.php' );
+require_once( __CA_LIB_DIR__ . "/ResultContext.php" );
 
 class DataDictionaryController extends ActionController {
 	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
-		
- 		if (!$this->request->user->canDoAction("can_configure_data_dictionary")) { throw new ApplicationException(_t('Data dictionary is not available')); }
+	public function __construct( &$po_request, &$po_response, $pa_view_paths = null ) {
+		parent::__construct( $po_request, $po_response, $pa_view_paths );
+
+		if ( ! $this->request->user->canDoAction( "can_configure_data_dictionary" ) ) {
+			throw new ApplicationException( _t( 'Data dictionary is not available' ) );
+		}
 	}
+
 	# -------------------------------------------------------
 	public function ListEntries() {
-		AssetLoadManager::register('tableList');
+		AssetLoadManager::register( 'tableList' );
 
 		$t_rule = new ca_metadata_dictionary_entries();
-		$this->getView()->setVar('entries',  $entries = ca_metadata_dictionary_entries::getEntries());
+		$this->getView()->setVar( 'entries', $entries = ca_metadata_dictionary_entries::getEntries() );
 
-		$o_result_context = new ResultContext($this->getRequest(), 'ca_metadata_dictionary_entries', 'basic_search');
+		$o_result_context = new ResultContext( $this->getRequest(), 'ca_metadata_dictionary_entries', 'basic_search' );
 		$o_result_context->setAsLastFind();
-		$o_result_context->setResultList(is_array($entries) ? array_keys($entries) : []);
+		$o_result_context->setResultList( is_array( $entries ) ? array_keys( $entries ) : [] );
 		$o_result_context->saveContext();
 
-		$this->render('data_dictionary_list_html.php');
+		$this->render( 'data_dictionary_list_html.php' );
 	}
 	# -------------------------------------------------------
+
 	/**
 	 *
 	 */
 	public function Info() {
-		$t_rule = new ca_metadata_dictionary_rules();
+		$t_rule  = new ca_metadata_dictionary_rules();
 		$entries = ca_metadata_dictionary_entries::getEntries();
 
-		$this->getView()->setVar('entries', sizeof($entries));
+		$this->getView()->setVar( 'entries', sizeof( $entries ) );
 
-		return $this->render('widget_data_dictionary_info_html.php', true);
+		return $this->render( 'widget_data_dictionary_info_html.php', true );
 	}
 	# -------------------------------------------------------
 }

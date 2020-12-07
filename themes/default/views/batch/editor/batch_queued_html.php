@@ -25,23 +25,25 @@
  *
  * ----------------------------------------------------------------------
  */
-	AssetLoadManager::register("sortableUI");
+AssetLoadManager::register( "sortableUI" );
 ?>
-<h1><?php print _t('Batch queued for background processing'); ?></h1>
+<h1><?php print _t( 'Batch queued for background processing' ); ?></h1>
 
 <div class="batchProcessingHelpText">
-<?php 
-	print _t('Your batch edit has been queued and will be run shortly. You may continue to work while the batch is processed.'); 
-	if ((bool)$this->request->getParameter('send_email_when_done', pInteger) && (bool)$this->request->getParameter('send_sms_when_done', pInteger)) {
-		print ' '._t('You will receive email and SMS text messages when processing is complete.');
+	<?php
+	print _t( 'Your batch edit has been queued and will be run shortly. You may continue to work while the batch is processed.' );
+	if ( (bool) $this->request->getParameter( 'send_email_when_done', pInteger )
+	     && (bool) $this->request->getParameter( 'send_sms_when_done', pInteger )
+	) {
+		print ' ' . _t( 'You will receive email and SMS text messages when processing is complete.' );
 	} else {
-		if ((bool)$this->request->getParameter('send_email_when_done', pInteger)) {
-			print ' '._t('You will receive an email when processing is complete.');
+		if ( (bool) $this->request->getParameter( 'send_email_when_done', pInteger ) ) {
+			print ' ' . _t( 'You will receive an email when processing is complete.' );
 		}
-		if ((bool)$this->request->getParameter('send_sms_when_done', pInteger)) {
-			print ' '._t('You will receive an SMS text message when processing is complete.');
+		if ( (bool) $this->request->getParameter( 'send_sms_when_done', pInteger ) ) {
+			print ' ' . _t( 'You will receive an SMS text message when processing is complete.' );
 		}
 	}
-?>
-	
+	?>
+
 </div>

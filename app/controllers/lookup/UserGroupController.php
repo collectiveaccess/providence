@@ -25,18 +25,19 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class UserGroupController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_user_groups';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'user group';
- 		protected $ops_search_class = 'UserGroupSearch';
- 		protected $opa_filters = array();
- 		# -------------------------------------------------------
-		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			return parent::Get($pa_additional_query_params, $pa_options);
-		}
- 		# -------------------------------------------------------
- 	}
+require_once( __CA_LIB_DIR__ . "/BaseLookupController.php" );
+
+class UserGroupController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = false;
+	protected $ops_table_name = 'ca_user_groups';        // name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'user group';
+	protected $ops_search_class = 'UserGroupSearch';
+	protected $opa_filters = array();
+
+	# -------------------------------------------------------
+	public function Get( $pa_additional_query_params = null, $pa_options = null ) {
+		return parent::Get( $pa_additional_query_params, $pa_options );
+	}
+	# -------------------------------------------------------
+}

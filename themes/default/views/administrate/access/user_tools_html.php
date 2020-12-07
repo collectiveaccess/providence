@@ -25,37 +25,42 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- # --- NOTE:  Can't use a form here because the entire user list is wrapped in a form tag hence the js - forms within forms are a no-no
+
+# --- NOTE:  Can't use a form here because the entire user list is wrapped in a form tag hence the js - forms within forms are a no-no
 ?>
 <div id="searchToolsBox">
 	<div class="bg">
-	<div class="col">
-<?php
-		print _t("Download user report as").":<br/>";
-		$va_options = array(_t("Tab delimited") => "tab", _t("Comma delimited (CSV)") => "csv");
-		print caHTMLSelect('download_format', $va_options, array('id' => 'download_format', 'class' => 'searchToolsSelect'), array('width' => '110px'))."\n";
-?>
-		<a href="#" id="download_format_link" class="button"><?php print _t('Download'); ?></a>
-	</div>
+		<div class="col">
+			<?php
+			print _t( "Download user report as" ) . ":<br/>";
+			$va_options = array( _t( "Tab delimited" ) => "tab", _t( "Comma delimited (CSV)" ) => "csv" );
+			print caHTMLSelect( 'download_format', $va_options,
+					array( 'id' => 'download_format', 'class' => 'searchToolsSelect' ), array( 'width' => '110px' ) )
+			      . "\n";
+			?>
+			<a href="#" id="download_format_link" class="button"><?php print _t( 'Download' ); ?></a>
+		</div>
 
-		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 2); ?></a>
+		<a href='#' id='hideTools'
+		   onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); return false;'><?php print caNavIcon( __CA_NAV_ICON_COLLAPSE__,
+				2 ); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->
 
 <script language="JavaScript" type="text/javascript">
-/* <![CDATA[ */
-	var originalHref = "<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadUserReport', array('download' => 1)); ?>";
-	$(document).ready(function(){
+	/* <![CDATA[ */
+	var originalHref = "<?php print caNavUrl( $this->request, $this->request->getModulePath(),
+		$this->request->getController(), 'DownloadUserReport', array( 'download' => 1 ) ); ?>";
+	$(document).ready(function () {
 		var href = originalHref + "/" + $("#download_format").attr("name") + "/" + $("#download_format").val();
 		$("#download_format_link").attr('href', href);
 	});
-	
-	$("#download_format").change(function() {
+
+	$("#download_format").change(function () {
 		var href = originalHref + "/" + $("#download_format").attr("name") + "/" + $("#download_format").val();
 
 		$("#download_format_link").attr('href', href);
 	});
-/* ]]> */
+	/* ]]> */
 </script>

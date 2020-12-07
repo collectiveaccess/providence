@@ -15,23 +15,24 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
+
 use PHPUnit\Framework\TestCase;
- 
-require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
+
+require_once( __CA_APP_DIR__ . "/helpers/displayHelpers.php" );
 
 class DisplayHelpersTest extends TestCase {
 	# -------------------------------------------------------
@@ -40,11 +41,13 @@ class DisplayHelpersTest extends TestCase {
 		$this->assertEquals( 'ca_objects.idno', $va_tags[0] );
 		$this->assertEquals( 1, sizeof( $va_tags ) );
 
-		$va_tags = caGetTemplateTags('Here is a simple CA field spec with options: ^ca_objects.user_tags%delimiter=_➜_');
+		$va_tags
+			= caGetTemplateTags( 'Here is a simple CA field spec with options: ^ca_objects.user_tags%delimiter=_➜_' );
 		$this->assertEquals( 'ca_objects.user_tags%delimiter=_➜_', $va_tags[0] );
 		$this->assertEquals( 1, sizeof( $va_tags ) );
 
-		$va_tags = caGetTemplateTags('Here is a simple CA field spec with options: ^ca_objects.user_tags%delimiter=_➜_&maxLength=100');
+		$va_tags
+			= caGetTemplateTags( 'Here is a simple CA field spec with options: ^ca_objects.user_tags%delimiter=_➜_&maxLength=100' );
 		$this->assertEquals( 'ca_objects.user_tags%delimiter=_➜_&maxLength=100', $va_tags[0] );
 		$this->assertEquals( 1, sizeof( $va_tags ) );
 
@@ -66,14 +69,16 @@ class DisplayHelpersTest extends TestCase {
 		$this->assertEquals( '10', $va_tags[2] );
 		$this->assertEquals( 3, sizeof( $va_tags ) );
 
-		$va_tags = caGetTemplateTags("Here are XPath tags: ^/datafield[@tag='040']/subfield[@code='a'] ^/datafield[@tag='040']/title,meow ^/datafield[@tag='040']/subfield[@code='c']");
+		$va_tags
+			= caGetTemplateTags( "Here are XPath tags: ^/datafield[@tag='040']/subfield[@code='a'] ^/datafield[@tag='040']/title,meow ^/datafield[@tag='040']/subfield[@code='c']" );
 		$this->assertEquals( "/datafield[@tag='040']/subfield[@code='a']", $va_tags[0] );
 		$this->assertEquals( "/datafield[@tag='040']/title", $va_tags[1] );
 		$this->assertEquals( "/datafield[@tag='040']/subfield[@code='c']", $va_tags[2] );
 
 		$this->assertEquals( 3, sizeof( $va_tags ) );
 
-		$va_tags = caGetTemplateTags("Here are namespaced XPath tags: ^/tei:title[@tag='040']/subfield[@code='a'],foo ^/tei:title[@tag='040']/subfield[@code='b'] ^/tei:title[@tag='040']/title");
+		$va_tags
+			= caGetTemplateTags( "Here are namespaced XPath tags: ^/tei:title[@tag='040']/subfield[@code='a'],foo ^/tei:title[@tag='040']/subfield[@code='b'] ^/tei:title[@tag='040']/title" );
 		$this->assertEquals( "/tei:title[@tag='040']/subfield[@code='a']", $va_tags[0] );
 		$this->assertEquals( "/tei:title[@tag='040']/subfield[@code='b']", $va_tags[1] );
 		$this->assertEquals( "/tei:title[@tag='040']/title", $va_tags[2] );
@@ -84,33 +89,37 @@ class DisplayHelpersTest extends TestCase {
 		$this->assertEquals( '4~UPPER', $va_tags[1] );
 		$this->assertEquals( 2, sizeof( $va_tags ) );
 	}
+
 	# -------------------------------------------------------
 	public function testDisplayNameWithBothNames() {
 		$fname = 'Peter';
 		$lname = 'Perkins';
 
-		$this->assertEquals('Peter Perkins', caFormatPersonName($fname, $lname));
+		$this->assertEquals( 'Peter Perkins', caFormatPersonName( $fname, $lname ) );
 	}
+
 	# -------------------------------------------------------
 	public function testDisplayNameOnlyFirstName() {
 		$fname = 'Peter';
 		$lname = null;
 
-		$this->assertEquals('Peter', caFormatPersonName($fname, $lname));
+		$this->assertEquals( 'Peter', caFormatPersonName( $fname, $lname ) );
 	}
+
 	# -------------------------------------------------------
 	public function testDisplayNameOnlySurname() {
 		$fname = null;
 		$lname = 'Perkins';
 
-		$this->assertEquals('Perkins', caFormatPersonName($fname, $lname));
+		$this->assertEquals( 'Perkins', caFormatPersonName( $fname, $lname ) );
 	}
+
 	# -------------------------------------------------------
 	public function testDisplayNameDefault() {
 		$fname = null;
 		$lname = null;
 
-		$this->assertEquals('Faulty Default', caFormatPersonName($fname, $lname, 'Faulty Default'));
+		$this->assertEquals( 'Faulty Default', caFormatPersonName( $fname, $lname, 'Faulty Default' ) );
 	}
 	# -------------------------------------------------------
 }

@@ -15,69 +15,85 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage models
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-require_once(__CA_LIB_DIR__.'/BaseRepresentationRelationship.php');
-require_once(__CA_MODELS_DIR__."/ca_objects.php");
-require_once(__CA_LIB_DIR__."/Db/Transaction.php");
+
+/**
+ *
+ */
+require_once( __CA_LIB_DIR__ . '/BaseRepresentationRelationship.php' );
+require_once( __CA_MODELS_DIR__ . "/ca_objects.php" );
+require_once( __CA_LIB_DIR__ . "/Db/Transaction.php" );
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_object_representations'] = array(
- 	'NAME_SINGULAR' 	=> _t('object ⇔ object representation relationship'),
- 	'NAME_PLURAL' 		=> _t('object ⇔ object representation relationships'),
- 	'FIELDS' 			=> array(
- 		'relation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Link id', 'DESCRIPTION' => 'Identifier for Link'
+	'NAME_SINGULAR' => _t( 'object ⇔ object representation relationship' ),
+	'NAME_PLURAL'   => _t( 'object ⇔ object representation relationships' ),
+	'FIELDS'        => array(
+		'relation_id'       => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_HIDDEN,
+			'IDENTITY'       => true,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Link id',
+			'DESCRIPTION'    => 'Identifier for Link'
 		),
-		'object_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Object id', 'DESCRIPTION' => 'Identifier for Object'
+		'object_id'         => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Object id',
+			'DESCRIPTION'    => 'Identifier for Object'
 		),
 		'representation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Representation id', 'DESCRIPTION' => 'Identifier for representation'
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Representation id',
+			'DESCRIPTION'    => 'Identifier for representation'
 		),
-		'is_primary' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Is primary?'), 'DESCRIPTION' => _t('Indicates that the representation should be used to depict the object is situations where only a single representation can be displayed (eg. search results).')
+		'is_primary'        => array(
+			'FIELD_TYPE'     => FT_BIT,
+			'DISPLAY_TYPE'   => DT_SELECT,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Is primary?' ),
+			'DESCRIPTION'    => _t( 'Indicates that the representation should be used to depict the object is situations where only a single representation can be displayed (eg. search results).' )
 		),
-		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the representation when displayed in a list with other representations. Lower numbers indicate higher priority.')
+		'rank'              => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_OMIT,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Sort order' ),
+			'DESCRIPTION'    => _t( 'The relative priority of the representation when displayed in a list with other representations. Lower numbers indicate higher priority.' )
 		)
- 	)
+	)
 );
 
 class ca_objects_x_object_representations extends BaseRepresentationRelationship {
@@ -93,7 +109,7 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_objects_x_object_representations';
-	      
+
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
 
@@ -124,7 +140,7 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	protected $ORDER_BY = array();
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -134,33 +150,33 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = 'rank';
-	
-	
+
+
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
-	protected $HIERARCHY_TYPE				=	null;
-	protected $HIERARCHY_LEFT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_RIGHT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_PARENT_ID_FLD		=	null;
-	protected $HIERARCHY_DEFINITION_TABLE	=	null;
-	protected $HIERARCHY_ID_FLD				=	null;
-	protected $HIERARCHY_POLY_TABLE			=	null;
-	
+	protected $HIERARCHY_TYPE = null;
+	protected $HIERARCHY_LEFT_INDEX_FLD = null;
+	protected $HIERARCHY_RIGHT_INDEX_FLD = null;
+	protected $HIERARCHY_PARENT_ID_FLD = null;
+	protected $HIERARCHY_DEFINITION_TABLE = null;
+	protected $HIERARCHY_ID_FLD = null;
+	protected $HIERARCHY_POLY_TABLE = null;
+
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
 	protected $LOG_CHANGES_TO_SELF = true;
-	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
-		"FOREIGN_KEYS" => array(
-			'object_id', 'representation_id'
-		),
-		"RELATED_TABLES" => array(
-			
-		)
-	);
-	
+	protected $LOG_CHANGES_USING_AS_SUBJECT
+		= array(
+			"FOREIGN_KEYS"   => array(
+				'object_id',
+				'representation_id'
+			),
+			"RELATED_TABLES" => array()
+		);
+
 	# ------------------------------------------------------
 	# --- Relationship info
 	# ------------------------------------------------------
@@ -169,13 +185,13 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	protected $RELATIONSHIP_LEFT_FIELDNAME = 'object_id';
 	protected $RELATIONSHIP_RIGHT_FIELDNAME = 'representation_id';
 	protected $RELATIONSHIP_TYPE_FIELDNAME = null;
-	
+
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-	
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -187,8 +203,8 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct( $pn_id = null ) {
+		parent::__construct( $pn_id );    # call superclass constructor
 	}
 	# ------------------------------------------------------
 }

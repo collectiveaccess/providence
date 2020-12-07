@@ -15,94 +15,104 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Export
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
+require_once( __CA_LIB_DIR__ . '/Export/BaseExportFormat.php' );
 
 class ExportCSV extends BaseExportFormat {
 	# ------------------------------------------------------
-	
+
 	# ------------------------------------------------------
-	public function __construct(){
-		$this->ops_name = 'CSV';
-		$this->ops_element_description = _t('Values are column numbers (indexing starts at 1).');
+	public function __construct() {
+		$this->ops_name                = 'CSV';
+		$this->ops_element_description = _t( 'Values are column numbers (indexing starts at 1).' );
 		parent::__construct();
 	}
+
 	# ------------------------------------------------------
-	public function getFileExtension($pa_settings) {
+	public function getFileExtension( $pa_settings ) {
 		return 'csv';
 	}
+
 	# ------------------------------------------------------
-	public function getContentType($pa_settings) {
+	public function getContentType( $pa_settings ) {
 		return 'text/csv';
 	}
-	# ------------------------------------------------------
-	public function processExport($pa_data,$pa_options=array()){
-		$va_csv = array();
-		
-		foreach($pa_data as $pa_item){
-			$vn_column = intval($pa_item['element']);
-			$va_csv[$vn_column][] = $pa_item['text'];
-		}
-		$vs_delimiter = caGetOption('delimiter', $pa_options, '; ');
-		$va_csv = array_map(function($v) use ($vs_delimiter) { return is_array($v) ? join($vs_delimiter, $v) : $v; }, $va_csv);
-		
-		if(!sizeof($va_csv)) { return ''; }
 
-		$vn_rightmost_column = max(array_keys($va_csv));
+	# ------------------------------------------------------
+	public function processExport( $pa_data, $pa_options = array() ) {
+		$va_csv = array();
+
+		foreach ( $pa_data as $pa_item ) {
+			$vn_column              = intval( $pa_item['element'] );
+			$va_csv[ $vn_column ][] = $pa_item['text'];
+		}
+		$vs_delimiter = caGetOption( 'delimiter', $pa_options, '; ' );
+		$va_csv       = array_map( function ( $v ) use ( $vs_delimiter ) {
+			return is_array( $v ) ? join( $vs_delimiter, $v ) : $v;
+		}, $va_csv );
+
+		if ( ! sizeof( $va_csv ) ) {
+			return '';
+		}
+
+		$vn_rightmost_column = max( array_keys( $va_csv ) );
 
 		// fill empty indexes to allow more mapping flexibility
-		for($i=1; $i<=$vn_rightmost_column; $i++){
-			if(!isset($va_csv[$i])){
-				$va_csv[$i] = null;
+		for ( $i = 1; $i <= $vn_rightmost_column; $i ++ ) {
+			if ( ! isset( $va_csv[ $i ] ) ) {
+				$va_csv[ $i ] = null;
 			}
 		}
 
-		ksort($va_csv);
+		ksort( $va_csv );
 
-		$vs_delimiter = (isset($pa_options['settings']['CSV_delimiter']) ? $pa_options['settings']['CSV_delimiter'] : ',');
-		$vs_enclosure = (isset($pa_options['settings']['CSV_enclosure']) ? $pa_options['settings']['CSV_enclosure'] : '"');
+		$vs_delimiter = ( isset( $pa_options['settings']['CSV_delimiter'] ) ? $pa_options['settings']['CSV_delimiter']
+			: ',' );
+		$vs_enclosure = ( isset( $pa_options['settings']['CSV_enclosure'] ) ? $pa_options['settings']['CSV_enclosure']
+			: '"' );
 
-		if ($vs_enclosure == '"') {
+		if ( $vs_enclosure == '"' ) {
 			// Escape quotes
-			foreach($va_csv as $vn_i => $vs_csv) {
-				$va_csv[$vn_i] = str_replace('"', '""', $vs_csv);
+			foreach ( $va_csv as $vn_i => $vs_csv ) {
+				$va_csv[ $vn_i ] = str_replace( '"', '""', $vs_csv );
 			}
 		}
 
-		return $vs_enclosure . join($vs_enclosure.$vs_delimiter.$vs_enclosure,$va_csv) . $vs_enclosure;
+		return $vs_enclosure . join( $vs_enclosure . $vs_delimiter . $vs_enclosure, $va_csv ) . $vs_enclosure;
 	}
-	# ------------------------------------------------------
-	public function getMappingErrors($t_mapping){
-		$va_errors = array();
-		$va_top = $t_mapping->getTopLevelItems();
 
-		foreach($va_top as $va_item){
-			$t_item = new ca_data_exporter_items($va_item['item_id']);
+	# ------------------------------------------------------
+	public function getMappingErrors( $t_mapping ) {
+		$va_errors = array();
+		$va_top    = $t_mapping->getTopLevelItems();
+
+		foreach ( $va_top as $va_item ) {
+			$t_item = new ca_data_exporter_items( $va_item['item_id'] );
 
 			$vs_element = $va_item['element'];
-			if(!is_numeric($vs_element)){
+			if ( ! is_numeric( $vs_element ) ) {
 				//$va_errors[] = _t("Element %1 is not numeric",$vs_element);
 			}
-			if(intval($vs_element) <= 0){
+			if ( intval( $vs_element ) <= 0 ) {
 				//$va_errors[] = _t("Element %1 is not a positive number",$vs_element);	
 			}
 
-			if(sizeof($t_item->getHierarchyChildren())>0){
-				$va_errors[] = _t("CSV exports can't be hierarchical",$vs_element);
+			if ( sizeof( $t_item->getHierarchyChildren() ) > 0 ) {
+				$va_errors[] = _t( "CSV exports can't be hierarchical", $vs_element );
 			}
 		}
 
@@ -112,31 +122,34 @@ class ExportCSV extends BaseExportFormat {
 }
 
 BaseExportFormat::$s_format_settings['CSV'] = array(
-	'CSV_delimiter' => array(
-		'formatType' => FT_TEXT,
+	'CSV_delimiter'         => array(
+		'formatType'  => FT_TEXT,
 		'displayType' => DT_SELECT,
-		'width' => 40, 'height' => 1,
+		'width'       => 40,
+		'height'      => 1,
 		'takesLocale' => false,
-		'default' => ',',
-		'label' => _t('Delimiter'),
-		'description' => _t('Character used to separate values. Typical values include commas, semicolons or tabs.')
+		'default'     => ',',
+		'label'       => _t( 'Delimiter' ),
+		'description' => _t( 'Character used to separate values. Typical values include commas, semicolons or tabs.' )
 	),
-	'CSV_enclosure' => array(
-		'formatType' => FT_TEXT,
+	'CSV_enclosure'         => array(
+		'formatType'  => FT_TEXT,
 		'displayType' => DT_SELECT,
-		'width' => 40, 'height' => 1,
+		'width'       => 40,
+		'height'      => 1,
 		'takesLocale' => false,
-		'default' => '"',
-		'label' => _t('Enclosure'),
-		'description' => _t('Character used to enclose the text content in the export. Typical values are single or double quotes.')
+		'default'     => '"',
+		'label'       => _t( 'Enclosure' ),
+		'description' => _t( 'Character used to enclose the text content in the export. Typical values are single or double quotes.' )
 	),
 	'CSV_print_field_names' => array(
-		'formatType' => FT_TEXT,
+		'formatType'  => FT_TEXT,
 		'displayType' => DT_SELECT,
-		'width' => 40, 'height' => 1,
+		'width'       => 40,
+		'height'      => 1,
 		'takesLocale' => false,
-		'default' => '"',
-		'label' => _t('Print field names'),
-		'description' => _t('Print names of output fields in first row of output.')
+		'default'     => '"',
+		'label'       => _t( 'Print field names' ),
+		'description' => _t( 'Print names of output fields in first row of output.' )
 	),
 );

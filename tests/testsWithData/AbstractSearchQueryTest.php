@@ -23,16 +23,17 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+require_once( __CA_LIB_DIR__ . '/Service/ItemService.php' );
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php' );
 
 abstract class AbstractSearchQueryTest extends BaseTestWithData {
 
@@ -47,31 +48,36 @@ abstract class AbstractSearchQueryTest extends BaseTestWithData {
 	protected $opa_search_queries = array();
 
 	# -------------------------------------------------------
-	protected function setPrimaryTable($ps_table) {
-		if(!Datamodel::tableExists($ps_table)) {
-			$this->assertTrue(false, 'Invalid table '.$ps_table);
+	protected function setPrimaryTable( $ps_table ) {
+		if ( ! Datamodel::tableExists( $ps_table ) ) {
+			$this->assertTrue( false, 'Invalid table ' . $ps_table );
 		}
 
 		$this->ops_primary_table = $ps_table;
 	}
+
 	# -------------------------------------------------------
-	protected function setSearchQueries($pa_queries) {
-		if(is_array($pa_queries)) {
+	protected function setSearchQueries( $pa_queries ) {
+		if ( is_array( $pa_queries ) ) {
 			$this->opa_search_queries = $pa_queries;
 		} else {
-			$this->assertTrue(false, 'Invalid search query data');
+			$this->assertTrue( false, 'Invalid search query data' );
 		}
 	}
 	# -------------------------------------------------------
+
 	/**
 	 * Run all the search queries set by the implementation and check if the number of hits fits!
 	 */
 	public function testSearchQueries() {
-		if(!is_array($this->opa_search_queries)) { $this->assertTrue(false, 'no queries set up!'); }
-		foreach($this->opa_search_queries as $vs_query => $vn_expected_num_results) {
-			$o_search = caGetSearchInstance($this->ops_primary_table);
-			$o_result = $o_search->search($vs_query);
-			$this->assertEquals($vn_expected_num_results, $o_result->numHits(), 'Must match the expected number of search results. Query was: '.$vs_query);
+		if ( ! is_array( $this->opa_search_queries ) ) {
+			$this->assertTrue( false, 'no queries set up!' );
+		}
+		foreach ( $this->opa_search_queries as $vs_query => $vn_expected_num_results ) {
+			$o_search = caGetSearchInstance( $this->ops_primary_table );
+			$o_result = $o_search->search( $vs_query );
+			$this->assertEquals( $vn_expected_num_results, $o_result->numHits(),
+				'Must match the expected number of search results. Query was: ' . $vs_query );
 		}
 	}
 	# -------------------------------------------------------

@@ -25,22 +25,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	$t_item = $this->getVar('t_item');
- 	
- 	if (!$t_item->getPrimaryKey()) {
- 		$vn_interface_count = ca_editor_uis::getUICount();
+
+$t_item = $this->getVar( 't_item' );
+
+if ( ! $t_item->getPrimaryKey() ) {
+	$vn_interface_count = ca_editor_uis::getUICount();
+	?>
+	<h3 class='metalist'><?php print _t( 'Editing user interfaces' ); ?>:
+	<div><?php
+		if ( $vn_interface_count == 1 ) {
+			print _t( "1 user interface is defined" );
+		} else {
+			print _t( "%1 user interfaces are defined", $vn_interface_count );
+		}
+		?></div>
+	</h3><?php
+} else {
+	print caEditorInspector( $this, array( 'backText' => _t( 'Back to list' ) ) );
+}
 ?>
-<h3 class='metalist'><?php print _t('Editing user interfaces'); ?>:
-<div><?php
-	if ($vn_interface_count == 1) {
-		print _t("1 user interface is defined");
-	} else {
-		print _t("%1 user interfaces are defined", $vn_interface_count);
-	}
-?></div>
-</h3><?php
- 	} else {
-	 	print caEditorInspector($this, array('backText' => _t('Back to list')));
-	 }
- ?>

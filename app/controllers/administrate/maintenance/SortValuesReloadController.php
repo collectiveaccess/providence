@@ -26,32 +26,37 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
-require_once(__CA_LIB_DIR__."/Media.php");
-require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
-require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
-require_once(__CA_LIB_DIR__.'/SortValueReloadingProgress.php');
+require_once( __CA_LIB_DIR__ . "/Search/SearchEngine.php" );
+require_once( __CA_LIB_DIR__ . "/Media.php" );
+require_once( __CA_LIB_DIR__ . "/ApplicationPluginManager.php" );
+require_once( __CA_APP_DIR__ . "/helpers/configurationHelpers.php" );
+require_once( __CA_LIB_DIR__ . "/Search/SearchIndexer.php" );
+require_once( __CA_LIB_DIR__ . '/SortValueReloadingProgress.php' );
 
 class SortValuesReloadController extends ActionController {
 
 	# ------------------------------------------------	
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
-		
-		if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_search_reindex')) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 			return;
-		}	
+	public function __construct( &$po_request, &$po_response, $pa_view_paths = null ) {
+		parent::__construct( $po_request, $po_response, $pa_view_paths );
+
+		if ( ! $this->request->isLoggedIn() || ! $this->request->user->canDoAction( 'can_do_search_reindex' ) ) {
+			$this->response->setRedirect( $this->request->config->get( 'error_display_url' ) . '/n/2320?r='
+			                              . urlencode( $this->request->getFullUrlPath() ) );
+
+			return;
+		}
 	}
+
 	# ------------------------------------------------
-	public function Index(){
-		$this->render('sort_values_reload_landing_html.php');
+	public function Index() {
+		$this->render( 'sort_values_reload_landing_html.php' );
 	}
+
 	# ------------------------------------------------
-	public function Reload(){
-		$this->render('sort_values_reload_status_html.php');
+	public function Reload() {
+		$this->render( 'sort_values_reload_status_html.php' );
 	}
 	# ------------------------------------------------
 }
+
 ?>

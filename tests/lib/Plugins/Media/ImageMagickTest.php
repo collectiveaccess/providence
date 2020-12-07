@@ -51,9 +51,9 @@ class ImageMagickTest extends TestCase {
 	protected function setUp(): void {
 		$this->im_plugin = new WLPlugMediaImageMagick();
 		$this->im_plugin->register();
-		$this->im_plugin->setBasePath('/usr/bin');
+		$this->im_plugin->setBasePath( '/usr/bin' );
 	}
-	
+
 	# -------------------------------------------------------
 	public function testConvertCmd() {
 		$command = $this->im_plugin->command( 'convert' );

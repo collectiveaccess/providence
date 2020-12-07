@@ -25,23 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vn_group_count 	= $this->getVar('group_count');
-	$t_group			= $this->getVar('t_item');
-	
-	if ($t_group && $t_group->getPrimaryKey()) {
-		print caEditorInspector($this, array('backText' => _t('Back to list')));
-	} else {
-?>
-	<h3 class='groupList'><?php print _t('Your project teams'); ?>:
-	<div><?php
-			if ($vn_group_count == 1) {
-				print _t("1 team is available");
+
+$vn_group_count = $this->getVar( 'group_count' );
+$t_group        = $this->getVar( 't_item' );
+
+if ( $t_group && $t_group->getPrimaryKey() ) {
+	print caEditorInspector( $this, array( 'backText' => _t( 'Back to list' ) ) );
+} else {
+	?>
+	<h3 class='groupList'><?php print _t( 'Your project teams' ); ?>:
+		<div><?php
+			if ( $vn_group_count == 1 ) {
+				print _t( "1 team is available" );
 			} else {
-				print _t("%1 teams are available", $vn_group_count);
+				print _t( "%1 teams are available", $vn_group_count );
 			}
-	?></div>
+			?></div>
 	</h3>
-<?php
-	}
+	<?php
+}
 ?>

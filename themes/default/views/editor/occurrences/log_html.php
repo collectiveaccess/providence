@@ -25,17 +25,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_occurrence = $this->getVar('t_subject');
-	$vn_occurrence_id = $this->getVar('subject_id');
+$t_occurrence     = $this->getVar( 't_subject' );
+$vn_occurrence_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
+	<?php
 	print caFormControlBox(
-		'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caLog\').caFilterTable(this.value); return false;" size="20"/></div>', 
-		'', 
+		'<div class="list-filter">' . _t( 'Filter' )
+		. ': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caLog\').caFilterTable(this.value); return false;" size="20"/></div>',
+		'',
 		''
-	); 
-	print $this->getVar('log');
-?>
+	);
+	print $this->getVar( 'log' );
+	?>
 	<div class="editorBottomPadding"><!-- empty --></div>
 </div>

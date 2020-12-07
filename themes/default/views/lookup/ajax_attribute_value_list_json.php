@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('attribute_value_list'));
+print json_encode( $this->getVar( 'attribute_value_list' ) );
 ?>

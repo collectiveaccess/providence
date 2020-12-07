@@ -25,33 +25,36 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$va_form_element_list = $this->getVar('form_elements');
-	
-	$va_settings = $this->getVar('settings');
-	if (!($vn_num_columns = $va_settings['form_width'])) { $vn_num_columns = 2; }
-	
-	print "<div class='searchFormLineModeContainer'>
+
+$va_form_element_list = $this->getVar( 'form_elements' );
+
+$va_settings = $this->getVar( 'settings' );
+if ( ! ( $vn_num_columns = $va_settings['form_width'] ) ) {
+	$vn_num_columns = 2;
+}
+
+print "<div class='searchFormLineModeContainer'>
 <table>";
-	
-	$vn_c = 0;
-	foreach($va_form_element_list as $vn_index => $va_element) {
-		if ($vn_c == 0) {
-			print "<tr valign='top'>\n";
-		}
-		
-		print "<td class='searchFormGroupElementModeElement'><div class='searchFormLineModeElementLabel'>".$va_element['label']."</div>\n".$va_element['element']."</td>\n";
-	
-		if ($vn_c == ($vn_num_columns - 1)) {
-			$vn_c = 0;
-			print "</tr>\n";
-			continue;
-		}
-	
-		$vn_c++;
+
+$vn_c = 0;
+foreach ( $va_form_element_list as $vn_index => $va_element ) {
+	if ( $vn_c == 0 ) {
+		print "<tr valign='top'>\n";
 	}
-	if ($vn_c != ($vn_num_columns - 1)) {
+
+	print "<td class='searchFormGroupElementModeElement'><div class='searchFormLineModeElementLabel'>"
+	      . $va_element['label'] . "</div>\n" . $va_element['element'] . "</td>\n";
+
+	if ( $vn_c == ( $vn_num_columns - 1 ) ) {
+		$vn_c = 0;
 		print "</tr>\n";
+		continue;
 	}
-	print "</table></div>\n";
+
+	$vn_c ++;
+}
+if ( $vn_c != ( $vn_num_columns - 1 ) ) {
+	print "</tr>\n";
+}
+print "</table></div>\n";
 ?>

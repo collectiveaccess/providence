@@ -25,16 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class UserController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_users';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'user';
- 		protected $ops_search_class = 'UserSearch';
- 		protected $opa_filters = array(
- 			'ca_users.userclass' => array(0, 1)
- 		);
- 		# -------------------------------------------------------
- 	}
+require_once( __CA_LIB_DIR__ . "/BaseLookupController.php" );
+
+class UserController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = false;
+	protected $ops_table_name = 'ca_users';        // name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'user';
+	protected $ops_search_class = 'UserSearch';
+	protected $opa_filters
+		= array(
+			'ca_users.userclass' => array( 0, 1 )
+		);
+	# -------------------------------------------------------
+}

@@ -31,102 +31,105 @@ require_once 'Zend/Search/Lucene/Analysis/Analyzer/Common.php';
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
+class Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_Coords_CaseInsensitive
+	extends Zend_Search_Lucene_Analysis_Analyzer_Common {
+	/**
+	 * Current char position in an UTF-8 stream
+	 *
+	 * @var integer
+	 */
+	private $_position;
 
-class Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_Coords_CaseInsensitive extends Zend_Search_Lucene_Analysis_Analyzer_Common
-{
-    /**
-     * Current char position in an UTF-8 stream
-     *
-     * @var integer
-     */
-    private $_position;
+	/**
+	 * Current binary position in an UTF-8 stream
+	 *
+	 * @var integer
+	 */
+	private $_bytePosition;
 
-    /**
-     * Current binary position in an UTF-8 stream
-     *
-     * @var integer
-     */
-    private $_bytePosition;
+	/**
+	 * Object constructor
+	 *
+	 * @throws Zend_Search_Lucene_Exception
+	 */
+	public function __construct() {
+		if ( @preg_match( '/\pL/u', 'a' ) != 1 ) {
+			// PCRE unicode support is turned off
+			require_once 'Zend/Search/Lucene/Exception.php';
+			throw new Zend_Search_Lucene_Exception( 'Utf8Num analyzer needs PCRE unicode support to be enabled.' );
+		}
 
-    /**
-     * Object constructor
-     *
-     * @throws Zend_Search_Lucene_Exception
-     */
-    public function __construct()
-    {
-        if (@preg_match('/\pL/u', 'a') != 1) {
-            // PCRE unicode support is turned off
-            require_once 'Zend/Search/Lucene/Exception.php';
-            throw new Zend_Search_Lucene_Exception('Utf8Num analyzer needs PCRE unicode support to be enabled.');
-        }
-        
-       $this->addFilter(new Zend_Search_Lucene_Analysis_TokenFilter_LowerCaseUtf8());
-    }
+		$this->addFilter( new Zend_Search_Lucene_Analysis_TokenFilter_LowerCaseUtf8() );
+	}
 
-    /**
-     * Reset token stream
-     */
-    public function reset()
-    {
-        $this->_position     = 0;
-        $this->_bytePosition = 0;
+	/**
+	 * Reset token stream
+	 */
+	public function reset() {
+		$this->_position     = 0;
+		$this->_bytePosition = 0;
 
-        // convert input into UTF-8
-        if (strcasecmp($this->_encoding, 'utf8' ) != 0  &&
-            strcasecmp($this->_encoding, 'utf-8') != 0 ) {
-                $this->_input = iconv($this->_encoding, 'UTF-8', $this->_input);
-                $this->_encoding = 'UTF-8';
-        }
-    }
+		// convert input into UTF-8
+		if ( strcasecmp( $this->_encoding, 'utf8' ) != 0
+		     && strcasecmp( $this->_encoding, 'utf-8' ) != 0
+		) {
+			$this->_input    = iconv( $this->_encoding, 'UTF-8', $this->_input );
+			$this->_encoding = 'UTF-8';
+		}
+	}
 
-    /**
-     * Tokenization stream API
-     * Get next token
-     * Returns null at the end of stream
-     *
-     * @return Zend_Search_Lucene_Analysis_Token|null
-     */
-    public function nextToken()
-    {
-        if ($this->_input === null) {
-            return null;
-        }
+	/**
+	 * Tokenization stream API
+	 * Get next token
+	 * Returns null at the end of stream
+	 *
+	 * @return Zend_Search_Lucene_Analysis_Token|null
+	 */
+	public function nextToken() {
+		if ( $this->_input === null ) {
+			return null;
+		}
 
 		// REGEX HAS BEEN MODIFIED TO ALLOW DECIMAL NUMBERS AND COORDINATES
-        do {
-        	if (! preg_match('/[\p{Nd}]+[\p{L}]{1}[^\p{L}]{1}/u', $this->_input, $match, PREG_OFFSET_CAPTURE, $this->_bytePosition)) {
-				if (! preg_match('/[\p{Nd}]+[\p{Nd},\.\-\/]+/u', $this->_input, $match, PREG_OFFSET_CAPTURE, $this->_bytePosition)) {
-				
-					if (! preg_match('/[\p{L}\p{N}]+/u', $this->_input, $match, PREG_OFFSET_CAPTURE, $this->_bytePosition)) {
+		do {
+			if ( ! preg_match( '/[\p{Nd}]+[\p{L}]{1}[^\p{L}]{1}/u', $this->_input, $match, PREG_OFFSET_CAPTURE,
+				$this->_bytePosition )
+			) {
+				if ( ! preg_match( '/[\p{Nd}]+[\p{Nd},\.\-\/]+/u', $this->_input, $match, PREG_OFFSET_CAPTURE,
+					$this->_bytePosition )
+				) {
+
+					if ( ! preg_match( '/[\p{L}\p{N}]+/u', $this->_input, $match, PREG_OFFSET_CAPTURE,
+						$this->_bytePosition )
+					) {
 						// It covers both cases a) there are no matches (preg_match(...) === 0)
 						// b) error occured (preg_match(...) === FALSE)
 						return null;
 					}
 				}
 			}
-            // matched string
-            $matchedWord = $match[0][0];
-            
-            // binary position of the matched word in the input stream
-            $binStartPos = $match[0][1];
-            
-            // character position of the matched word in the input stream
-            $startPos = $this->_position + 
-                        iconv_strlen(substr($this->_input,
-                                            $this->_bytePosition,
-                                            $binStartPos - $this->_bytePosition),
-                                     'UTF-8');
-            // character postion of the end of matched word in the input stream
-            $endPos = $startPos + iconv_strlen($matchedWord, 'UTF-8');
+			// matched string
+			$matchedWord = $match[0][0];
 
-            $this->_bytePosition = $binStartPos + strlen($matchedWord);
-            $this->_position     = $endPos;
-            
-            $token = $this->normalize(new Zend_Search_Lucene_Analysis_Token($matchedWord, $startPos, $endPos));
-        } while ($token === null); // try again if token is skipped
+			// binary position of the matched word in the input stream
+			$binStartPos = $match[0][1];
 
-        return $token;
-    }
+			// character position of the matched word in the input stream
+			$startPos = $this->_position +
+			            iconv_strlen( substr( $this->_input,
+				            $this->_bytePosition,
+				            $binStartPos - $this->_bytePosition ),
+				            'UTF-8' );
+			// character postion of the end of matched word in the input stream
+			$endPos = $startPos + iconv_strlen( $matchedWord, 'UTF-8' );
+
+			$this->_bytePosition = $binStartPos + strlen( $matchedWord );
+			$this->_position     = $endPos;
+
+			$token = $this->normalize( new Zend_Search_Lucene_Analysis_Token( $matchedWord, $startPos, $endPos ) );
+		} while ( $token === null ); // try again if token is skipped
+
+		return $token;
+	}
 }
 

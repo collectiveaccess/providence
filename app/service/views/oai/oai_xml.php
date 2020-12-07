@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-	header("Content-type: text/xml");
+header( "Content-type: text/xml" );
 
-	$oaiData = $this->getVar('oaiData');
-	print $oaiData->saveXML();
+$oaiData = $this->getVar( 'oaiData' );
+print $oaiData->saveXML();

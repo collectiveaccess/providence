@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	print json_encode($this->getVar('id_list'));
+print json_encode( $this->getVar( 'id_list' ) );
 ?>

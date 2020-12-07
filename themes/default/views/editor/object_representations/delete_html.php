@@ -25,14 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_object_representation = $this->getVar('t_subject');
-	$vn_representation_id = $this->getVar('subject_id');
+$t_object_representation = $this->getVar( 't_subject' );
+$vn_representation_id    = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_object_representation, $this->getVar('subject_name'), 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit/'.$this->request->getActionExtra(), array('representation_id' => $vn_representation_id));
+		print caDeleteWarningBox( $this->request, $t_object_representation, $this->getVar( 'subject_name' ),
+			'editor/object_representations', 'ObjectRepresentationEditor', 'Edit/' . $this->request->getActionExtra(),
+			array( 'representation_id' => $vn_representation_id ) );
 	}
-?>
+	?>
 </div>

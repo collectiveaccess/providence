@@ -25,14 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_entity = $this->getVar('t_subject');
-	$vn_entity_id = $this->getVar('subject_id');
+$t_entity     = $this->getVar( 't_subject' );
+$vn_entity_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_entity, $this->getVar('subject_name'), 'editor/entities', 'EntityEditor', 'Edit/'.$this->request->getActionExtra(), array('entity_id' => $vn_entity_id));
+		print caDeleteWarningBox( $this->request, $t_entity, $this->getVar( 'subject_name' ), 'editor/entities',
+			'EntityEditor', 'Edit/' . $this->request->getActionExtra(), array( 'entity_id' => $vn_entity_id ) );
 	}
-?>
+	?>
 </div>

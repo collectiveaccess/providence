@@ -25,51 +25,58 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_alert = $this->getVar('t_subject');
-	$vn_entry_id = $this->getVar('subject_id');
-	$vn_table_num = $t_alert->get("table_num"); 
-	
-	$t_ui = $this->getVar('t_ui');	
+$t_alert      = $this->getVar( 't_subject' );
+$vn_entry_id  = $this->getVar( 'subject_id' );
+$vn_table_num = $t_alert->get( "table_num" );
+
+$t_ui = $this->getVar( 't_ui' );
 ?>
-	<div class="sectionBox">
-<?php
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'DataDictionaryEntryEditorForm').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Edit/'.$this->request->getActionExtra(), array('entry_id' => $vn_entry_id)),
-			'', 
-			(intval($vn_entry_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Delete/'.$this->request->getActionExtra(), array('entry_id' => $vn_entry_id)) : ''
-		);
-		
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/entry_id/'.$vn_entry_id, 'DataDictionaryEntryEditorForm', null, 'POST', 'multipart/form-data');
-			
-			$va_form_elements = $t_alert->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'DataDictionaryEntryEditorForm'));
-			
-			if (!$vn_entry_id) {
-				// For new forms, show mandatory fields...
-				// ... BUT ...
-				// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
-				// This allows us to set the content type for the form from the calling control
-				$va_mandatory_fields = $t_alert->getMandatoryFields();
-				if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
-					if ($vn_table_num) {
-						print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
-						unset($va_form_elements['table_num']);
-						unset($va_mandatory_fields[$vn_index]);
-					}
-				}
+<div class="sectionBox">
+	<?php
+	print $vs_control_box = caFormControlBox(
+		caFormSubmitButton( $this->request, __CA_NAV_ICON_SAVE__, _t( "Save" ), 'DataDictionaryEntryEditorForm' ) . ' '
+		.
+		caFormNavButton( $this->request, __CA_NAV_ICON_CANCEL__, _t( "Cancel" ), '',
+			'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor',
+			'Edit/' . $this->request->getActionExtra(), array( 'entry_id' => $vn_entry_id ) ),
+		'',
+		( intval( $vn_entry_id ) > 0 ) ? caFormNavButton( $this->request, __CA_NAV_ICON_DELETE__, _t( "Delete" ), '',
+			'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor',
+			'Delete/' . $this->request->getActionExtra(), array( 'entry_id' => $vn_entry_id ) ) : ''
+	);
+
+	print caFormTag( $this->request, 'Save/' . $this->request->getActionExtra() . '/entry_id/' . $vn_entry_id,
+		'DataDictionaryEntryEditorForm', null, 'POST', 'multipart/form-data' );
+
+	$va_form_elements = $t_alert->getBundleFormHTMLForScreen( $this->request->getActionExtra(), array(
+		'request'  => $this->request,
+		'formName' => 'DataDictionaryEntryEditorForm'
+	) );
+
+	if ( ! $vn_entry_id ) {
+		// For new forms, show mandatory fields...
+		// ... BUT ...
+		// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
+		// This allows us to set the content type for the form from the calling control
+		$va_mandatory_fields = $t_alert->getMandatoryFields();
+		if ( ( $vn_index = array_search( 'table_num', $va_mandatory_fields ) ) !== false ) {
+			if ( $vn_table_num ) {
+				print caHTMLHiddenInput( 'table_num', array( 'value' => $vn_table_num ) );
+				unset( $va_form_elements['table_num'] );
+				unset( $va_mandatory_fields[ $vn_index ] );
 			}
-			
-			print join("\n", $va_form_elements);
-			
-			print $vs_control_box;
-?>
-			<input type='hidden' name='table_num' value='<?php print $vn_table_num; ?>'/>
-			<input type='hidden' name='entry_id' value='<?php print $vn_entry_id; ?>'/>
-		</form>
-	
-		<div class="editorBottomPadding"><!-- empty --></div>
-	</div>
+		}
+	}
+
+	print join( "\n", $va_form_elements );
+
+	print $vs_control_box;
+	?>
+	<input type='hidden' name='table_num' value='<?php print $vn_table_num; ?>'/>
+	<input type='hidden' name='entry_id' value='<?php print $vn_entry_id; ?>'/>
+	</form>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>

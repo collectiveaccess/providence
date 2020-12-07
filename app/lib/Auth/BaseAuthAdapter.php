@@ -23,14 +23,14 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Auth
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/Auth/IAuthAdapter.php');
+require_once( __CA_LIB_DIR__ . '/Auth/IAuthAdapter.php' );
 
 abstract class BaseAuthAdapter implements IAuthAdapter {
 
@@ -39,11 +39,12 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 *
 	 * @param $ps_username
 	 * @param $ps_password
-	 * @throws AuthClassFeatureException
+	 *
 	 * @return string
+	 * @throws AuthClassFeatureException
 	 */
-	public function createUserAndGetPassword($ps_username, $ps_password) {
-		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support creating new users programmatically."));
+	public function createUserAndGetPassword( $ps_username, $ps_password ) {
+		throw new AuthClassFeatureException( _t( "Authentication back-end doesn't support creating new users programmatically." ) );
 	}
 
 	/**
@@ -52,10 +53,11 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * @param $ps_username
 	 * @param $ps_password
 	 * @param $pa_options
+	 *
 	 * @return array
 	 * @throws AuthClassFeatureException
 	 */
-	public function getUserInfo($ps_username, $ps_password, $pa_options=null) {
+	public function getUserInfo( $ps_username, $ps_password, $pa_options = null ) {
 		throw new AuthClassFeatureException();
 	}
 
@@ -64,11 +66,12 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * case for some external authentication methods like OpenLDAP/slapd or ADS
 	 *
 	 * @param $ps_username
-	 * @throws AuthClassFeatureException
+	 *
 	 * @return bool
+	 * @throws AuthClassFeatureException
 	 */
-	public function deleteUser($ps_username) {
-		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support deleting users programmatically."));
+	public function deleteUser( $ps_username ) {
+		throw new AuthClassFeatureException( _t( "Authentication back-end doesn't support deleting users programmatically." ) );
 	}
 
 	/**
@@ -77,20 +80,22 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 *
 	 * @param $ps_username
 	 * @param $ps_password
-	 * @throws AuthClassFeatureException
+	 *
 	 * @return string
+	 * @throws AuthClassFeatureException
 	 */
-	public function updatePassword($ps_username, $ps_password) {
-		throw new AuthClassFeatureException(_t("Authentication back-end doesn't updating existing users programmatically."));
+	public function updatePassword( $ps_username, $ps_password ) {
+		throw new AuthClassFeatureException( _t( "Authentication back-end doesn't updating existing users programmatically." ) );
 	}
 
 	/**
-	 * Fallback if authentication adapter doesn't implement supports(). For more info @see IAuthAdapter::supports()
+	 * Fallback if authentication adapter doesn't implement supports(). For more info @param int $pn_feature
 	 *
-	 * @param int $pn_feature
 	 * @return bool
+	 * @see IAuthAdapter::supports()
+	 *
 	 */
-	public function supports($pn_feature) {
+	public function supports( $pn_feature ) {
 		return false;
 	}
 
@@ -102,14 +107,14 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	public function getAccountManagementLink() {
 		return false;
 	}
-	
+
 
 	/**
 	 * Fallback for deauthenticate()
 	 *
 	 * @return false
 	 */
-	public function deauthenticate($pa_options=null) {
+	public function deauthenticate( $pa_options = null ) {
 		return false;
 	}
 }

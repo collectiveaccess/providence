@@ -25,16 +25,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_set = $this->getVar('t_subject');
-	$vn_form_id = $this->getVar('subject_id');
+$t_set      = $this->getVar( 't_subject' );
+$vn_form_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_set, $this->getVar('subject_name'), 'manage/search_forms', 'SearchFormEditor', 'Edit/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id));
+		print caDeleteWarningBox( $this->request, $t_set, $this->getVar( 'subject_name' ), 'manage/search_forms',
+			'SearchFormEditor', 'Edit/' . $this->request->getActionExtra(), array( 'form_id' => $vn_form_id ) );
 	} else {
-		print "<div align='center'>".caNavLink($this->request, _t('Back to search form list'), 'button', 'manage', 'SearchForm', 'ListForms')."</div>";
+		print "<div align='center'>" . caNavLink( $this->request, _t( 'Back to search form list' ), 'button', 'manage',
+				'SearchForm', 'ListForms' ) . "</div>";
 	}
-?>
+	?>
 </div>

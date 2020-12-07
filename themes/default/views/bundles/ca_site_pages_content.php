@@ -25,36 +25,42 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$vn_table_num 				= $this->getVar('table_num');
-	
-	$t_subject					= $this->getVar('t_subject');
-	$va_settings 				= $this->getVar('settings');
+$vs_id_prefix = $this->getVar( 'placement_code' ) . $this->getVar( 'id_prefix' );
+$vn_table_num = $this->getVar( 'table_num' );
 
-	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
-	
-	$va_history 				= $this->getVar('checkout_history');
-	$vn_checkout_count 			= $this->getVar('checkout_count');
-	$va_client_list 			= $this->getVar('client_list');
-	$vn_client_count 			= $this->getVar('client_count');
-	
-	$t_page						= $this->getVar('t_page');
-	$t_template 				= $this->getVar('t_template');
-	
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+$t_subject   = $this->getVar( 't_subject' );
+$va_settings = $this->getVar( 'settings' );
+
+$vb_read_only = ( isset( $va_settings['readonly'] ) && $va_settings['readonly'] );
+
+$va_history        = $this->getVar( 'checkout_history' );
+$vn_checkout_count = $this->getVar( 'checkout_count' );
+$va_client_list    = $this->getVar( 'client_list' );
+$vn_client_count   = $this->getVar( 'client_count' );
+
+$t_page     = $this->getVar( 't_page' );
+$t_template = $this->getVar( 't_template' );
+
+
+print caEditorBundleShowHideControl( $this->request, $vs_id_prefix );
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
-			<div class="labelInfo">		
-<?php
-	if(is_array($va_fields = $t_page->getHTMLFormElements(['tagnamePrefix' => $vs_id_prefix, 'lookupUrls' => $this->getVar('lookup_urls'), 'contentUrl' => caNavUrl($this->request, '*', '*', 'getMediaList', ['page_id' => $t_subject->getPrimaryKey()])]))) {
-		foreach($va_fields as $vs_field => $va_element_info) {
-			print $va_element_info['element_with_label']."\n";
-		}
-	}
-?>
+			<div class="labelInfo">
+				<?php
+				if ( is_array( $va_fields = $t_page->getHTMLFormElements( [
+					'tagnamePrefix' => $vs_id_prefix,
+					'lookupUrls'    => $this->getVar( 'lookup_urls' ),
+					'contentUrl'    => caNavUrl( $this->request, '*', '*', 'getMediaList',
+						[ 'page_id' => $t_subject->getPrimaryKey() ] )
+				] ) )
+				) {
+					foreach ( $va_fields as $vs_field => $va_element_info ) {
+						print $va_element_info['element_with_label'] . "\n";
+					}
+				}
+				?>
 			</div>
 		</div>
 	</div>

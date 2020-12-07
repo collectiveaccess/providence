@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode(['exists' => $this->getVar('exists')]);
+print json_encode( [ 'exists' => $this->getVar( 'exists' ) ] );

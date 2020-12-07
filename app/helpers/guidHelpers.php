@@ -23,26 +23,26 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage utils
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ApplicationVars.php');
+require_once( __CA_LIB_DIR__ . '/ApplicationVars.php' );
 
 /**
  * Ensure system GUID is set and set system-wide GUID constant
  */
 function caGetSystemGuid() {
 	$av = new ApplicationVars();
-	if(!($system_guid = $av->getVar('system_guid'))) {
+	if ( ! ( $system_guid = $av->getVar( 'system_guid' ) ) ) {
 		$system_guid = caGenerateGUID();
-		$av->setVar('system_guid', $system_guid);
+		$av->setVar( 'system_guid', $system_guid );
 		$av->save();
 	}
-	define('__CA_SYSTEM_GUID__', $system_guid);
-	
+	define( '__CA_SYSTEM_GUID__', $system_guid );
+
 	return $system_guid;
 }

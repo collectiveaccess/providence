@@ -15,17 +15,17 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Import
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -34,8 +34,8 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
-require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+require_once( __CA_LIB_DIR__ . '/Import/DataReaders/BaseXMLDataReader.php' );
+require_once( __CA_APP_DIR__ . '/helpers/displayHelpers.php' );
 
 class MARCXMLReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
@@ -85,17 +85,18 @@ class MARCXMLReader extends BaseXMLDataReader {
 	protected $opb_tag_names_as_case_insensitive = true;
 
 	# -------------------------------------------------------
+
 	/**
 	 *
 	 */
-	public function __construct($ps_source=null, $pa_options=null){
-		parent::__construct($ps_source, $pa_options);
-		
-		$this->ops_title = _t('MARC XML Reader');
-		$this->ops_display_name = _t('MARC XML');
-		$this->ops_description = _t('Reads MARC XML files');
-		
-		$this->opa_formats = array('marcxml');	// must be all lowercase to allow for case-insensitive matching
+	public function __construct( $ps_source = null, $pa_options = null ) {
+		parent::__construct( $ps_source, $pa_options );
+
+		$this->ops_title        = _t( 'MARC XML Reader' );
+		$this->ops_display_name = _t( 'MARC XML' );
+		$this->ops_description  = _t( 'Reads MARC XML files' );
+
+		$this->opa_formats = array( 'marcxml' );    // must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }

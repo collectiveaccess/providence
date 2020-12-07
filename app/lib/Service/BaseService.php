@@ -23,80 +23,87 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage WebServices
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-  
+/**
+ *
+ */
 class BaseService {
 	# -------------------------------------------------------
 	protected $opo_request;
+
 	# -------------------------------------------------------
-	public function  __construct($po_request) {
+	public function __construct( $po_request ) {
 		$this->opo_request = $po_request;
 	}
 	# -------------------------------------------------------
+
 	/**
 	 * Handles authentification
 	 *
 	 * @param string $username
 	 * @param string $password
+	 *
 	 * @return int
 	 */
-	public function auth($username="",$password=""){
-		if(($username != "") && ($password != "")){
+	public function auth( $username = "", $password = "" ) {
+		if ( ( $username != "" ) && ( $password != "" ) ) {
 			$va_options = array(
 				'noPublicUsers' => true,
-				"no_headers" => true,
+				"no_headers"    => true,
 				"dont_redirect" => true,
-				"options" => array(),
-				"user_name" => $username,
-				"password" => $password,
+				"options"       => array(),
+				"user_name"     => $username,
+				"password"      => $password,
 			);
 		} else {
 			$va_options = array(
 				'noPublicUsers' => true,
-				"no_headers" => true,
+				"no_headers"    => true,
 				"dont_redirect" => true,
-				"options" => array()
+				"options"       => array()
 			);
 		}
-		
-		$this->opo_request->doAuthentication($va_options);
+
+		$this->opo_request->doAuthentication( $va_options );
+
 		return $this->opo_request->getUserID();
 	}
 	# -------------------------------------------------------
+
 	/**
 	 * Log out
-	 * 
+	 *
 	 * @return boolean
 	 */
-	public function deauthenticate(){
+	public function deauthenticate() {
 		$this->opo_request->deauthenticate();
+
 		return true;
 	}
 	# -------------------------------------------------------
+
 	/**
 	 * Fetches the user ID of the current user (neq zero if logged in)
 	 *
 	 * @return int
 	 */
-	public function getUserID(){
+	public function getUserID() {
 		return $this->opo_request->getUserID();
 	}
 	# -------------------------------------------------------
+
 	/**
 	 * Fetches current date/time on the server and returns as Unix timestamp
 	 *
 	 * @return int
 	 */
-	public function getServerTime(){
+	public function getServerTime() {
 		return time();
 	}
 	# -------------------------------------------------------

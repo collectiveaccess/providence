@@ -26,32 +26,39 @@
  * ----------------------------------------------------------------------
  */
 
-	define("__CA_IS_SERVICE_REQUEST__", true);
-	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
-	require('./setup.php');
+define( "__CA_IS_SERVICE_REQUEST__", true );
+if ( ! file_exists( './setup.php' ) ) {
+	print "No setup.php file found!";
+	exit;
+}
+require( './setup.php' );
 
-	// connect to database
-	$o_db = new Db(null, null, false);
+// connect to database
+$o_db = new Db( null, null, false );
 
-	$app = AppController::getInstance();
+$app = AppController::getInstance();
 
-	$req = $app->getRequest();
-	$resp = $app->getResponse();
+$req = $app->getRequest();
+$resp = $app->getResponse();
 
-	// Prevent caching
-	$resp->addHeader('Access-Control-Allow-Origin', '*');
-	$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
-	$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
-	
-	$vb_auth_success = $req->doAuthentication(array('noPublicUsers' => true, "dont_redirect" => true, "no_headers" => true));
-	//
-	// Dispatch the request
-	//
-	$app->dispatch(true);
+// Prevent caching
+$resp->addHeader( 'Access-Control-Allow-Origin', '*' );
+$resp->addHeader( "Cache-Control", "no-cache, must-revalidate" );
+$resp->addHeader( "Expires", "Mon, 26 Jul 1997 05:00:00 GMT" );
 
-	//
-	// Send output to client
-	//
-	$resp->sendResponse();
+$vb_auth_success = $req->doAuthentication( array(
+	'noPublicUsers' => true,
+	"dont_redirect" => true,
+	"no_headers"    => true
+) );
+//
+// Dispatch the request
+//
+$app->dispatch( true );
 
-	$req->close();
+//
+// Send output to client
+//
+$resp->sendResponse();
+
+$req->close();

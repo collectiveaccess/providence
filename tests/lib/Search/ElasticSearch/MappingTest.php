@@ -23,27 +23,28 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Mapping.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/ElasticSearch/Mapping.php' );
+require_once( __CA_MODELS_DIR__ . '/ca_metadata_elements.php' );
 
 class MappingTest extends TestCase {
 	public function testGetFieldsToIndex() {
 
 		$o_mapping = new ElasticSearch\Mapping();
-		$va_fields = $o_mapping->getFieldsToIndex('ca_objects');
-		$this->assertIsArray($va_fields);
-		$this->assertEquals(122, sizeof($va_fields));
+		$va_fields = $o_mapping->getFieldsToIndex( 'ca_objects' );
+		$this->assertIsArray( $va_fields );
+		$this->assertEquals( 122, sizeof( $va_fields ) );
 
-		foreach($va_fields as $vs_fld => $va_options) {
-			$this->assertRegExp("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);
+		foreach ( $va_fields as $vs_fld => $va_options ) {
+			$this->assertRegExp( "/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld );
 		}
 	}
 
@@ -51,15 +52,18 @@ class MappingTest extends TestCase {
 		$o_mapping = new ElasticSearch\Mapping();
 
 		//$va_element_ids = $o_mapping->getElementIDsForTable('ca_objects');
-		$va_element_ids = array_reduce(array_keys($o_mapping->getFieldsToIndex('ca_objects')), function($c, $v) { 
-			if(preg_match("!^ca_objects.A([\d]+)$!", $v, $m)) {
-				$c[] = $m[1];
-			}
-			return $c;
-		 }, []);
-		 
-		foreach(array_keys(ca_metadata_elements::getElementsAsList(true, 'ca_objects')) as $vn_element_id) {
-			$this->assertTrue(in_array($vn_element_id, $va_element_ids), "Expected element id {$vn_element_id} to be part of " . print_r($va_element_ids, true));
+		$va_element_ids = array_reduce( array_keys( $o_mapping->getFieldsToIndex( 'ca_objects' ) ),
+			function ( $c, $v ) {
+				if ( preg_match( "!^ca_objects.A([\d]+)$!", $v, $m ) ) {
+					$c[] = $m[1];
+				}
+
+				return $c;
+			}, [] );
+
+		foreach ( array_keys( ca_metadata_elements::getElementsAsList( true, 'ca_objects' ) ) as $vn_element_id ) {
+			$this->assertTrue( in_array( $vn_element_id, $va_element_ids ),
+				"Expected element id {$vn_element_id} to be part of " . print_r( $va_element_ids, true ) );
 		}
 	}
 

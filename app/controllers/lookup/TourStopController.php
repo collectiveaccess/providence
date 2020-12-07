@@ -25,14 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class TourStopController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = true;
- 		protected $ops_table_name = 'ca_tour_stops';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'tour stop';
- 		protected $ops_search_class = 'TourStopSearch';
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once( __CA_LIB_DIR__ . "/BaseLookupController.php" );
+
+class TourStopController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = true;
+	protected $ops_table_name = 'ca_tour_stops';        // name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'tour stop';
+	protected $ops_search_class = 'TourStopSearch';
+	# -------------------------------------------------------
+}
+
+?>

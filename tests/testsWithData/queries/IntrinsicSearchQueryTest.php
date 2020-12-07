@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php' );
 
 /**
  * Class IntrinsicSearchQueryTest
@@ -39,52 +40,52 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class IntrinsicSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
 		// search subject table
-		$this->setPrimaryTable('ca_objects');
+		$this->setPrimaryTable( 'ca_objects' );
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$this->assertGreaterThan( 0, $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'access' => 1,
-				'status' => 4,
+				'access'  => 1,
+				'status'  => 4,
 			),
-		)));
+		) ) );
 
-		$vn_image_type_id = ca_lists::getItemID('object_types', 'image');
+		$vn_image_type_id = ca_lists::getItemID( 'object_types', 'image' );
 
 		// search queries
-		$this->setSearchQueries(array(
+		$this->setSearchQueries( array(
 			// type
-			'ca_objects.type_id:"image"' => 1,
-			'ca_objects.type_id:image' => 1,
-			'ca_objects.type_id:"'.$vn_image_type_id.'"' => 1,
-			'ca_objects.type_id:'.$vn_image_type_id => 1,
-			'ca_objects.type_id:"'.($vn_image_type_id-1).'"' => 0,
+			'ca_objects.type_id:"image"'                             => 1,
+			'ca_objects.type_id:image'                               => 1,
+			'ca_objects.type_id:"' . $vn_image_type_id . '"'         => 1,
+			'ca_objects.type_id:' . $vn_image_type_id                => 1,
+			'ca_objects.type_id:"' . ( $vn_image_type_id - 1 ) . '"' => 0,
 
 			// status
-			'ca_objects.status:4' => 1,
-			'ca_objects.status:"4"' => 1,
-			'ca_objects.status:44' => 0,
-			'ca_objects.status:"44"' => 0,
+			'ca_objects.status:4'                                    => 1,
+			'ca_objects.status:"4"'                                  => 1,
+			'ca_objects.status:44'                                   => 0,
+			'ca_objects.status:"44"'                                 => 0,
 
 			// access
-			'ca_objects.access:1' => 1,
-			'ca_objects.access:"1"' => 1,
-			'ca_objects.access:0' => 0,
-			'ca_objects.access:"0"' => 0,
+			'ca_objects.access:1'                                    => 1,
+			'ca_objects.access:"1"'                                  => 1,
+			'ca_objects.access:0'                                    => 0,
+			'ca_objects.access:"0"'                                  => 0,
 
 			// Search for something that was not explicitly set in the model, but has a default value
-			'ca_objects.is_deaccessioned:"0"' => 1,
-			'ca_objects.is_deaccessioned:0' => 1,
-		));
+			'ca_objects.is_deaccessioned:"0"'                        => 1,
+			'ca_objects.is_deaccessioned:0'                          => 1,
+		) );
 	}
 	# -------------------------------------------------------
 }

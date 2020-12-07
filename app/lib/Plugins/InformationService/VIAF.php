@@ -23,9 +23,9 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage InformationService
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -36,86 +36,88 @@
 
 use \GuzzleHttp\Client;
 
-require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
+require_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php" );
+require_once( __CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php" );
 
 
 global $g_information_service_settings_viaf;
 $g_information_service_settings_viaf = [];
 
 
-class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implements IWLPlugInformationService
-{
+class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implements IWLPlugInformationService {
 
-    # ------------------------------------------------
-    static $s_settings;
-    const VIAF_SERVICES_BASE_URL = 'http://www.viaf.org/viaf';
-    const VIAF_LOOKUP = 'search';
-    private $o_client;
-    # ------------------------------------------------
+	# ------------------------------------------------
+	static $s_settings;
+	const VIAF_SERVICES_BASE_URL = 'http://www.viaf.org/viaf';
+	const VIAF_LOOKUP = 'search';
+	private $o_client;
+	# ------------------------------------------------
 
-    /**
-     * WLPlugInformationServiceVIAF constructor.
-     */
-    public function __construct()
-    {
-        global $g_information_service_settings_viaf;
+	/**
+	 * WLPlugInformationServiceVIAF constructor.
+	 */
+	public function __construct() {
+		global $g_information_service_settings_viaf;
 
-        WLPlugInformationServiceVIAF::$s_settings = $g_information_service_settings_viaf;
-        parent::__construct();
-        $this->info['NAME'] = 'VIAF';
+		WLPlugInformationServiceVIAF::$s_settings = $g_information_service_settings_viaf;
+		parent::__construct();
+		$this->info['NAME'] = 'VIAF';
 
-        $this->description = _t('Provides access to VIAF service');
-    }
+		$this->description = _t( 'Provides access to VIAF service' );
+	}
 
-    public function getAvailableSettings()
-    {
-        return WLPlugInformationServiceVIAF::$s_settings;
-    }
+	public function getAvailableSettings() {
+		return WLPlugInformationServiceVIAF::$s_settings;
+	}
 
-    public function lookup($pa_settings, $ps_search, $pa_options = null)
-    {
-        $vo_client = $this->getClient();
-        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&httpAccept=application/json&query=".urlencode("cql.any all \"{$ps_search}\""), [
-            'headers' => [
-                'Accept' => 'application/json'
-            ]
-        ]);
-        $va_raw_resultlist = json_decode($vo_response->getBody(), true);
-    
-        $va_return = [];
-        if (is_array($response_data = $va_raw_resultlist['searchRetrieveResponse']['records'])) {
-			foreach ($response_data as $data){
-				if (!($label = $data['record']['recordData']['mainHeadings']['data'][0]['text'])) {
+	public function lookup( $pa_settings, $ps_search, $pa_options = null ) {
+		$vo_client         = $this->getClient();
+		$vo_response       = $vo_client->request( "GET", self::VIAF_SERVICES_BASE_URL . "/" . self::VIAF_LOOKUP
+		                                                 . "?maximumRecords=100&httpAccept=application/json&query="
+		                                                 . urlencode( "cql.any all \"{$ps_search}\"" ), [
+			'headers' => [
+				'Accept' => 'application/json'
+			]
+		] );
+		$va_raw_resultlist = json_decode( $vo_response->getBody(), true );
+
+		$va_return = [];
+		if ( is_array( $response_data = $va_raw_resultlist['searchRetrieveResponse']['records'] ) ) {
+			foreach ( $response_data as $data ) {
+				if ( ! ( $label = $data['record']['recordData']['mainHeadings']['data'][0]['text'] ) ) {
 					$label = $data['record']['recordData']['mainHeadings']['data']['text'];
 				}
-				$label = str_replace("|", ":", $label);
+				$label                  = str_replace( "|", ":", $label );
 				$va_return['results'][] = [
 					'label' => $label,
-					'url' => self::VIAF_SERVICES_BASE_URL."/".$data['record']['recordData']['viafID'],
-					'idno' => $data['record']['recordData']['viafID']
+					'url'   => self::VIAF_SERVICES_BASE_URL . "/" . $data['record']['recordData']['viafID'],
+					'idno'  => $data['record']['recordData']['viafID']
 				];
 			}
 		}
-        return $va_return;
-    }
 
-    public function getExtendedInformation($pa_settings, $ps_url)
-    {
-        return ['display' => "<p><a href='$ps_url' target='_blank'>$ps_url</a></p>"];
-    }
+		return $va_return;
+	}
 
-    /**
-     * @return Guzzle\Http\Client
-     */
-    public function getClient() {
-        if (!isset ($this->o_client))
-            $this->o_client = new \GuzzleHttp\Client(['base_uri' => self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP]);
+	public function getExtendedInformation( $pa_settings, $ps_url ) {
+		return [ 'display' => "<p><a href='$ps_url' target='_blank'>$ps_url</a></p>" ];
+	}
 
-        $o_conf = Configuration::load();
-        if($vs_proxy = $o_conf->get('web_services_proxy_url')) /* proxy server is configured */
-            $this->o_client->getConfig()->add('proxy', $vs_proxy);
+	/**
+	 * @return Guzzle\Http\Client
+	 */
+	public function getClient() {
+		if ( ! isset ( $this->o_client ) ) {
+			$this->o_client = new \GuzzleHttp\Client( [
+				'base_uri' => self::VIAF_SERVICES_BASE_URL . "/" . self::VIAF_LOOKUP
+			] );
+		}
 
-        return $this->o_client;
-    }
+		$o_conf = Configuration::load();
+		if ( $vs_proxy = $o_conf->get( 'web_services_proxy_url' ) ) /* proxy server is configured */ {
+			$this->o_client->getConfig()->add( 'proxy', $vs_proxy );
+		}
+
+		return $this->o_client;
+	}
 }

@@ -15,26 +15,26 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Search
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
-include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
+/**
+ *
+ */
+
+include_once( __CA_LIB_DIR__ . "/Search/BaseSearchResult.php" );
 
 class UserGroupSearchResult extends BaseSearchResult {
 	# -------------------------------------
@@ -43,22 +43,26 @@ class UserGroupSearchResult extends BaseSearchResult {
 	 */
 	protected $ops_table_name = 'ca_user_groups';
 	# -------------------------------------
+
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
 		parent::__construct();
 	}
-	
+
 	# -------------------------------------------------------
+
 	/**
 	 * Returns label(s) from current row ready for display (ie. in the current users locale)
 	 *
-	 * @param bool $pb_has_preferred_flag If set then only preferred label is returned, otherwise all labels for the users locale are returned. Default is true.
+	 * @param bool $pb_has_preferred_flag If set then only preferred label is returned, otherwise all labels for the
+	 *                                    users locale are returned. Default is true.
+	 *
 	 * @return array List of labels ready for display
 	 */
-	public function getDisplayLabels($pb_has_preferred_flag=true) {
-		return array(1 => "_dummy");
+	public function getDisplayLabels( $pb_has_preferred_flag = true ) {
+		return array( 1 => "_dummy" );
 	}
 	# -------------------------------------
 }

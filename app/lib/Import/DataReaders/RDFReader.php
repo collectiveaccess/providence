@@ -23,9 +23,9 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Import
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -34,8 +34,8 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
-require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+require_once( __CA_LIB_DIR__ . '/Import/DataReaders/BaseXMLDataReader.php' );
+require_once( __CA_APP_DIR__ . '/helpers/displayHelpers.php' );
 
 class RDFReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
@@ -85,17 +85,18 @@ class RDFReader extends BaseXMLDataReader {
 	protected $opb_tag_names_as_case_insensitive = true;
 
 	# -------------------------------------------------------
+
 	/**
 	 *
 	 */
-	public function __construct($ps_source=null, $pa_options=null){
-		parent::__construct($ps_source, $pa_options);
+	public function __construct( $ps_source = null, $pa_options = null ) {
+		parent::__construct( $ps_source, $pa_options );
 
-		$this->ops_title = _t('RDF (Resource Description Framework / DublinCore) XML Reader');
-		$this->ops_display_name = _t('RDF XML');
-		$this->ops_description = _t('Reads RDF XML files');
+		$this->ops_title        = _t( 'RDF (Resource Description Framework / DublinCore) XML Reader' );
+		$this->ops_display_name = _t( 'RDF XML' );
+		$this->ops_description  = _t( 'Reads RDF XML files' );
 
-		$this->opa_formats = array('rdf');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = array( 'rdf' );    // must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }

@@ -16,21 +16,21 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Utils
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
+
 // This script maintains compatibility with older installations that invoke processing of the
 // task queue by calling the now-deprecated processTaskQueue.php utility script.
 // That script has been subsumed into the caUtils command-line application.
@@ -39,20 +39,20 @@
 
 
 // Run process-task-queue utility
-	$vs_hostname = isset($argv[1]) ? $argv[1] : null;
-	$argv = array('caUtils', 'process-task-queue', '--quiet');
-	if ($vs_hostname) {
-		$argv[] = "--hostname={$vs_hostname}";
-	}
-	$argc = sizeof($argv);
-	$_SERVER['argv'] = $argv;
-	$_SERVER['argc'] = $argc;
-	
-	ob_start();
-	$va_cwd = explode("/", $_SERVER['SCRIPT_FILENAME']);
-	array_pop($va_cwd);
-	array_pop($va_cwd);
-	chdir(join("/", $va_cwd));
-	require(join("/", $va_cwd)."/bin/caUtils");
-	ob_clean();
+$vs_hostname = isset( $argv[1] ) ? $argv[1] : null;
+$argv        = array( 'caUtils', 'process-task-queue', '--quiet' );
+if ( $vs_hostname ) {
+	$argv[] = "--hostname={$vs_hostname}";
+}
+$argc            = sizeof( $argv );
+$_SERVER['argv'] = $argv;
+$_SERVER['argc'] = $argc;
+
+ob_start();
+$va_cwd = explode( "/", $_SERVER['SCRIPT_FILENAME'] );
+array_pop( $va_cwd );
+array_pop( $va_cwd );
+chdir( join( "/", $va_cwd ) );
+require( join( "/", $va_cwd ) . "/bin/caUtils" );
+ob_clean();
 ?>

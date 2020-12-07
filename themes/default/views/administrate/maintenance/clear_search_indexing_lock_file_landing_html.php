@@ -25,22 +25,26 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print "<h1>"._t("Clear search indexing queue lock file")."</h1>\n";
 
-	print "<div class='searchReindexHelpText'>";
-	
-	print _t("<p>The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to re-start. Lingering lock files may be removed by clicking the button below.</p>");
-	if (true) { //ca_search_indexing_queue::lockExists()) {
-	    if (true) {//ca_search_indexing_queue::lockCanBeRemoved()) {
-            print caFormTag($this->request, 'RemoveLock', 'caClearSearchIndexingLockFileForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-            print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Clear search indexing queue lock file"), 'caClearSearchIndexingLockFileForm', array())."</div>";
-            print "</form>";
-        } else {
-            print _t("<p>You cannot clear the lock file as <em>it is not writeable by the web server user.</em> Check file permissions and try again.</p>");
-        }
-    } else {
-        print _t("<p>You cannot clear the lock file as <em>no lock file is present at this time.</em></p>");
-    }
-	print "</div>\n";
+print "<h1>" . _t( "Clear search indexing queue lock file" ) . "</h1>\n";
+
+print "<div class='searchReindexHelpText'>";
+
+print _t( "<p>The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to re-start. Lingering lock files may be removed by clicking the button below.</p>" );
+if ( true ) { //ca_search_indexing_queue::lockExists()) {
+	if ( true ) {//ca_search_indexing_queue::lockCanBeRemoved()) {
+		print caFormTag( $this->request, 'RemoveLock', 'caClearSearchIndexingLockFileForm', null, 'post',
+			'multipart/form-data', '_top',
+			array( 'noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true ) );
+		print "<div style='text-align: center'>" . caFormSubmitButton( $this->request, __CA_NAV_ICON_GO__,
+				_t( "Clear search indexing queue lock file" ), 'caClearSearchIndexingLockFileForm', array() )
+		      . "</div>";
+		print "</form>";
+	} else {
+		print _t( "<p>You cannot clear the lock file as <em>it is not writeable by the web server user.</em> Check file permissions and try again.</p>" );
+	}
+} else {
+	print _t( "<p>You cannot clear the lock file as <em>no lock file is present at this time.</em></p>" );
+}
+print "</div>\n";
 ?>

@@ -26,193 +26,236 @@
  * ----------------------------------------------------------------------
  */
 
-$va_importer_list = $this->getVar('importer_list');
+$va_importer_list = $this->getVar( 'importer_list' );
 
-if (!$this->request->isAjax()) {
-?>
-<script language="JavaScript" type="text/javascript">
-	jQuery(document).ready(function(){
-		jQuery('#caItemList').caFormatListTable();
-	});
-</script>
-<div class="sectionBox">
-	<?php
-		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
-			'',
-			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add importers"), 'caAddImportersButton', array('onclick' => 'caOpenImporterUploadArea(true, true); return false;', 'id' => 'caAddImportersButton')).
-			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Close"), 'caCloseImportersButton', array('onclick' => 'caOpenImporterUploadArea(false, true); return false;', 'id' => 'caCloseImportersButton'))
-		);
+if ( ! $this->request->isAjax() ) {
 	?>
-	
-	
-	<div id="batchProcessingTableProgressGroup" style="display: none;">
-		<div class="batchProcessingStatus"><span id="batchProcessingTableStatus" > </span></div>
-		<div id="progressbar"></div>
-	</div>
-	
-	<div id="importerUploadArea" style="border: 1px dashed #ccc; text-align: center; padding: 10px; display: none;">
-		<span style="font-size: 16px; color: #333; "><?php print _t("Drag importer worksheets here to add or update"); ?></span>
-	</div>
-	<div style="margin: 10px 0 0 0;">
-<?php 
-			print caFormTag($this->request, 'Load', 'caLoadFromGoogleDrive', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'submitOnReturn' => true, 'noCSRFToken' => true]);
-			print _t('Load importer worksheet from GoogleDrive: %1', caHTMLTextInput('google_drive_url', ['class' => 'urlBg'], ['width' => '300px'])); 
-			print caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, "", 'caLoadFromGoogleDrive', ['size' => '24px']);
-?>
+	<script language="JavaScript" type="text/javascript">
+		jQuery(document).ready(function () {
+			jQuery('#caItemList').caFormatListTable();
+		});
+	</script>
+	<div class="sectionBox">
+		<?php
+		print caFormControlBox(
+			'<div class="list-filter">' . _t( 'Filter' )
+			. ': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'',
+			caFormJSButton( $this->request, __CA_NAV_ICON_ADD__, _t( "Add importers" ), 'caAddImportersButton', array(
+				'onclick' => 'caOpenImporterUploadArea(true, true); return false;',
+				'id'      => 'caAddImportersButton'
+			) ) .
+			caFormJSButton( $this->request, __CA_NAV_ICON_ADD__, _t( "Close" ), 'caCloseImportersButton', array(
+				'onclick' => 'caOpenImporterUploadArea(false, true); return false;',
+				'id'      => 'caCloseImportersButton'
+			) )
+		);
+		?>
+
+
+		<div id="batchProcessingTableProgressGroup" style="display: none;">
+			<div class="batchProcessingStatus"><span id="batchProcessingTableStatus"> </span></div>
+			<div id="progressbar"></div>
+		</div>
+
+		<div id="importerUploadArea" style="border: 1px dashed #ccc; text-align: center; padding: 10px; display: none;">
+			<span
+				style="font-size: 16px; color: #333; "><?php print _t( "Drag importer worksheets here to add or update" ); ?></span>
+		</div>
+		<div style="margin: 10px 0 0 0;">
+			<?php
+			print caFormTag( $this->request, 'Load', 'caLoadFromGoogleDrive', null, 'post', 'multipart/form-data',
+				'_top', [ 'disableUnsavedChangesWarning' => true, 'submitOnReturn' => true, 'noCSRFToken' => true ] );
+			print _t( 'Load importer worksheet from GoogleDrive: %1',
+				caHTMLTextInput( 'google_drive_url', [ 'class' => 'urlBg' ], [ 'width' => '300px' ] ) );
+			print caFormSubmitButton( $this->request, __CA_NAV_ICON_GO__, "", 'caLoadFromGoogleDrive',
+				[ 'size' => '24px' ] );
+			?>
 			</form>
-	</div>
-<?php
-}
-?>
-	<div id="caImporterListContainer">
-		<table id="caItemList" class="listtable">
-			<thead>
-			<tr>
-				<th>
-					<?php _p('Name'); ?>
-				</th>
-				<th>
-					<?php _p('Code'); ?>
-				</th>
-				<th>
-					<?php _p('Type'); ?>
-				</th>
-				<th>
-					<?php _p('Source'); ?>
-				</th>
-				<th>
-					<?php _p('Mapping'); ?>
-				</th>
-				<th>
-					<?php _p('Last modified'); ?>
-				</th>
-				<th class="{sorter: false} list-header-nosort">&nbsp;</th>
-			</tr>
-			</thead>
-			<tbody>
-<?php
-	if(sizeof($va_importer_list) == 0) {
-?>
-			<tr>
-				<td colspan='7'>
-					<div align="center"><?php print _t('No importers defined'); ?></div>
-				</td>
-			</tr>
-<?php
-	} else {
-		foreach($va_importer_list as $va_importer) {
-?>
-			<tr>
-				<td>
-					<?php print $va_importer['label']; ?>
-				</td>
-				<td>
-					<?php print $va_importer['importer_code']; ?>
-				</td>
-				<td>
-					<?php print $va_importer['importer_type']; ?>
-				</td>
-				<td>
-					<?php print (isset($va_importer['settings']['sourceUrl'])) ? _t('Google Drive') : _t('File upload'); ?>
-				</td>
-				<td>
-<?php  
-					print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; 
-
-					if(isset($va_importer['settings']['sourceUrl'])) {
-						print caNavButton($this->request, __CA_NAV_ICON_ROTATE__, _t("Reload"), '', 'batch', 'MetadataImport', 'Load', array('google_drive_url' => urlencode($va_importer['settings']['sourceUrl'])), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
-					}
-?>				</td>
-				<td>
-					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('timeOmit' => false, 'dateFormat' => 'delimited')); ?>
-				</td>
-				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'batch', 'MetadataImport', 'Delete', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-				</td>
-			</tr>
-<?php
+		</div>
+		<?php
 		}
-	}
-?>
-			</tbody>
-		</table>
-	</div>
-<?php
-if (!$this->request->isAjax()) {
-?>
-</div>
-<div class="editorBottomPadding"><!-- empty --></div>
-
-<script type="text/javascript">
-	var batchCookieJar = jQuery.cookieJar('caCookieJar');
-		
-	function caOpenImporterUploadArea(open, animate) {
-		batchCookieJar.set('importerUploadAreaIsOpen', open);
-		if (open) {
-			jQuery("#importerUploadArea").slideDown(animate ? 150 : 0);
-			jQuery("#caCloseImportersButton").show();
-			jQuery("#caAddImportersButton").hide();
-		} else {
-			jQuery("#importerUploadArea").slideUp(animate ? 150 : 0);
-			jQuery("#caCloseImportersButton").hide();
-			jQuery("#caAddImportersButton").show();
-		}
-	}
-	
-	function caImporterUploadAreaIsOpen() {
-		return batchCookieJar.get('importerUploadAreaIsOpen');
-	}
-	
-	jQuery(document).ready(function() {
-		jQuery('#progressbar').progressbar({ value: 0 });
-		
-		jQuery('#importerUploadArea').fileupload({
-			dataType: 'json',
-			url: '<?php print caNavUrl($this->request, 'batch', 'MetadataImport', 'UploadImporters'); ?>',
-			dropZone: jQuery('#importerUploadArea'),
-			singleFileUploads: false,
-			done: function (e, data) {
-				if (data.result.error) {
-					jQuery("#batchProcessingTableProgressGroup").show(250);
-					jQuery("#batchProcessingTableStatus").html(data.result.error);
-					setTimeout(function() {
-						jQuery("#batchProcessingTableProgressGroup").hide(250);
-					}, 3000);
+		?>
+		<div id="caImporterListContainer">
+			<table id="caItemList" class="listtable">
+				<thead>
+				<tr>
+					<th>
+						<?php _p( 'Name' ); ?>
+					</th>
+					<th>
+						<?php _p( 'Code' ); ?>
+					</th>
+					<th>
+						<?php _p( 'Type' ); ?>
+					</th>
+					<th>
+						<?php _p( 'Source' ); ?>
+					</th>
+					<th>
+						<?php _p( 'Mapping' ); ?>
+					</th>
+					<th>
+						<?php _p( 'Last modified' ); ?>
+					</th>
+					<th class="{sorter: false} list-header-nosort">&nbsp;</th>
+				</tr>
+				</thead>
+				<tbody>
+				<?php
+				if ( sizeof( $va_importer_list ) == 0 ) {
+					?>
+					<tr>
+						<td colspan='7'>
+							<div align="center"><?php print _t( 'No importers defined' ); ?></div>
+						</td>
+					</tr>
+					<?php
 				} else {
-					var msg = [];
-					
-					if (data.result.uploadMessage) {
-						msg.push(data.result.uploadMessage);
+					foreach ( $va_importer_list as $va_importer ) {
+						?>
+						<tr>
+							<td>
+								<?php print $va_importer['label']; ?>
+							</td>
+							<td>
+								<?php print $va_importer['importer_code']; ?>
+							</td>
+							<td>
+								<?php print $va_importer['importer_type']; ?>
+							</td>
+							<td>
+								<?php print ( isset( $va_importer['settings']['sourceUrl'] ) ) ? _t( 'Google Drive' )
+									: _t( 'File upload' ); ?>
+							</td>
+							<td>
+								<?php
+								print $va_importer['worksheet'] ? caNavButton( $this->request, __CA_NAV_ICON_DOWNLOAD__,
+									_t( "Download" ), '', 'batch', 'MetadataImport', 'Download',
+									array( 'importer_id' => $va_importer['importer_id'] ), array(), array(
+										'icon_position'     => __CA_NAV_ICON_ICON_POS_LEFT__,
+										'use_class'         => 'list-button',
+										'no_background'     => true,
+										'dont_show_content' => true
+									) ) : '';
+
+								if ( isset( $va_importer['settings']['sourceUrl'] ) ) {
+									print caNavButton( $this->request, __CA_NAV_ICON_ROTATE__, _t( "Reload" ), '',
+										'batch', 'MetadataImport', 'Load',
+										array( 'google_drive_url' => urlencode( $va_importer['settings']['sourceUrl'] ) ),
+										array(), array(
+											'icon_position'     => __CA_NAV_ICON_ICON_POS_LEFT__,
+											'use_class'         => 'list-button',
+											'no_background'     => true,
+											'dont_show_content' => true
+										) );
+								}
+								?>                </td>
+							<td>
+								<?php print caGetLocalizedDate( $va_importer['last_modified_on'],
+									array( 'timeOmit' => false, 'dateFormat' => 'delimited' ) ); ?>
+							</td>
+							<td class="listtableEditDelete">
+								<?php print caNavButton( $this->request, __CA_NAV_ICON_GO__, _t( "Import data" ), '',
+									'batch', 'MetadataImport', 'Run',
+									array( 'importer_id' => $va_importer['importer_id'] ), array(), array(
+										'icon_position'     => __CA_NAV_ICON_ICON_POS_LEFT__,
+										'use_class'         => 'list-button',
+										'no_background'     => true,
+										'dont_show_content' => true
+									) ); ?>
+								<?php print caNavButton( $this->request, __CA_NAV_ICON_DELETE__, _t( "Delete" ), '',
+									'batch', 'MetadataImport', 'Delete',
+									array( 'importer_id' => $va_importer['importer_id'] ), array(), array(
+										'icon_position'     => __CA_NAV_ICON_ICON_POS_LEFT__,
+										'use_class'         => 'list-button',
+										'no_background'     => true,
+										'dont_show_content' => true
+									) ); ?>
+							</td>
+						</tr>
+						<?php
 					}
-					if (data.result.skippedMessage) {
-						msg.push(data.result.skippedMessage);
-					}
-					jQuery("#batchProcessingTableStatus").html(msg.join('; '));
-					setTimeout(function() {
+				}
+				?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+		if ( ! $this->request->isAjax() ) {
+		?>
+	</div>
+	<div class="editorBottomPadding"><!-- empty --></div>
+
+	<script type="text/javascript">
+		var batchCookieJar = jQuery.cookieJar('caCookieJar');
+
+		function caOpenImporterUploadArea(open, animate) {
+			batchCookieJar.set('importerUploadAreaIsOpen', open);
+			if (open) {
+				jQuery("#importerUploadArea").slideDown(animate ? 150 : 0);
+				jQuery("#caCloseImportersButton").show();
+				jQuery("#caAddImportersButton").hide();
+			} else {
+				jQuery("#importerUploadArea").slideUp(animate ? 150 : 0);
+				jQuery("#caCloseImportersButton").hide();
+				jQuery("#caAddImportersButton").show();
+			}
+		}
+
+		function caImporterUploadAreaIsOpen() {
+			return batchCookieJar.get('importerUploadAreaIsOpen');
+		}
+
+		jQuery(document).ready(function () {
+			jQuery('#progressbar').progressbar({value: 0});
+
+			jQuery('#importerUploadArea').fileupload({
+				dataType: 'json',
+				url: '<?php print caNavUrl( $this->request, 'batch', 'MetadataImport', 'UploadImporters' ); ?>',
+				dropZone: jQuery('#importerUploadArea'),
+				singleFileUploads: false,
+				done: function (e, data) {
+					if (data.result.error) {
+						jQuery("#batchProcessingTableProgressGroup").show(250);
+						jQuery("#batchProcessingTableStatus").html(data.result.error);
+						setTimeout(function () {
+							jQuery("#batchProcessingTableProgressGroup").hide(250);
+						}, 3000);
+					} else {
+						var msg = [];
+
+						if (data.result.uploadMessage) {
+							msg.push(data.result.uploadMessage);
+						}
+						if (data.result.skippedMessage) {
+							msg.push(data.result.skippedMessage);
+						}
+						jQuery("#batchProcessingTableStatus").html(msg.join('; '));
+						setTimeout(function () {
 							jQuery("#batchProcessingTableProgressGroup").hide(250);
 							jQuery("#importerUploadArea").show(150);
 						}, 3000);
+					}
+					jQuery("#caImporterListContainer").load("<?php print caNavUrl( $this->request, 'batch',
+						'MetadataImport', 'Index' ); ?>");
+				},
+				progressall: function (e, data) {
+					jQuery("#importerUploadArea").hide(150);
+					if (jQuery("#batchProcessingTableProgressGroup").css('display') == 'none') {
+						jQuery("#batchProcessingTableProgressGroup").show(250);
+					}
+					var progress = parseInt(data.loaded / data.total * 100, 10);
+					jQuery('#progressbar').progressbar("value", progress);
+
+					var msg = "<?php print _t( "Progress: " ); ?>%1";
+					jQuery("#batchProcessingTableStatus").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
+
 				}
-				jQuery("#caImporterListContainer").load("<?php print caNavUrl($this->request, 'batch', 'MetadataImport', 'Index'); ?>");
-			},
-			progressall: function (e, data) {
-				jQuery("#importerUploadArea").hide(150);
-				if (jQuery("#batchProcessingTableProgressGroup").css('display') == 'none') {
-					jQuery("#batchProcessingTableProgressGroup").show(250);
-				}
-				var progress = parseInt(data.loaded / data.total * 100, 10);
-				jQuery('#progressbar').progressbar("value", progress);
-			
-				var msg = "<?php print _t("Progress: "); ?>%1";
-				jQuery("#batchProcessingTableStatus").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
-				
-			}
+			});
+
+			caOpenImporterUploadArea(batchCookieJar.get('importerUploadAreaIsOpen'), false);
 		});
-		
-		caOpenImporterUploadArea(batchCookieJar.get('importerUploadAreaIsOpen'), false);
-	});
-</script>
-<?php
+	</script>
+	<?php
 }

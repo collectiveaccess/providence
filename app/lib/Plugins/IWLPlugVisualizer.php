@@ -29,33 +29,42 @@
  *
  * ----------------------------------------------------------------------
  */
-	
-	interface IWLPlugVisualizer {
-		# -------------------------------------------------------
-		# Initialization and state
-		# -------------------------------------------------------
-		public function __construct();
-		public function register();
-		public function init();
-		public function cleanup();
-		
-		public function getDescription();
-		public function checkStatus();
-		
-		# -------------------------------------------------------
-		# Properties
-		# -------------------------------------------------------
-		public function setDimensions($pn_width, $pn_height);
-		public function getDimensions();
-		
-		public function get($ps_property);
-		public function set($ps_property, $ps_value);
-		
-		# -------------------------------------------------------
-		# Data
-		# -------------------------------------------------------
-		public function setData($po_data);
-		public function getData();
-		public function clearData();
-		public function canHandle($po_data, $pa_viz_settings);
-	}
+
+interface IWLPlugVisualizer {
+	# -------------------------------------------------------
+	# Initialization and state
+	# -------------------------------------------------------
+	public function __construct();
+
+	public function register();
+
+	public function init();
+
+	public function cleanup();
+
+	public function getDescription();
+
+	public function checkStatus();
+
+	# -------------------------------------------------------
+	# Properties
+	# -------------------------------------------------------
+	public function setDimensions( $pn_width, $pn_height );
+
+	public function getDimensions();
+
+	public function get( $ps_property );
+
+	public function set( $ps_property, $ps_value );
+
+	# -------------------------------------------------------
+	# Data
+	# -------------------------------------------------------
+	public function setData( $po_data );
+
+	public function getData();
+
+	public function clearData();
+
+	public function canHandle( $po_data, $pa_viz_settings );
+}

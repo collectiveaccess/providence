@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('tag_list'));
+print json_encode( $this->getVar( 'tag_list' ) );

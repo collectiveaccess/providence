@@ -25,38 +25,48 @@
  *
  * ----------------------------------------------------------------------
  */
-	
-	interface IWLPlugGeographicMap {
-		# -------------------------------------------------------
-		# Initialization and state
-		# -------------------------------------------------------
-		public function __construct();
-		public function register();
-		public function init();
-		public function cleanup();
-		
-		public function getDescription();
-		public function checkStatus();
-		
-		# -------------------------------------------------------
-		# Properties
-		# -------------------------------------------------------
-		public function setDimensions($pn_width, $pn_height);
-		public function getDimensions();
-		
-		public function setExtents($pn_north, $pn_south, $pn_east, $pn_west);
-		public function getExtents();
-		
-		public function get($ps_property);
-		public function set($ps_property, $ps_value);
-		
-		# -------------------------------------------------------
-		# Data
-		# -------------------------------------------------------
-		public function addMapItem($po_map_item);
-		public function addMapItems($pa_items);
-		public function clearMapItems();
-		
-		public function fitExtentsToMapItems($pa_options=null);
-	}
+
+interface IWLPlugGeographicMap {
+	# -------------------------------------------------------
+	# Initialization and state
+	# -------------------------------------------------------
+	public function __construct();
+
+	public function register();
+
+	public function init();
+
+	public function cleanup();
+
+	public function getDescription();
+
+	public function checkStatus();
+
+	# -------------------------------------------------------
+	# Properties
+	# -------------------------------------------------------
+	public function setDimensions( $pn_width, $pn_height );
+
+	public function getDimensions();
+
+	public function setExtents( $pn_north, $pn_south, $pn_east, $pn_west );
+
+	public function getExtents();
+
+	public function get( $ps_property );
+
+	public function set( $ps_property, $ps_value );
+
+	# -------------------------------------------------------
+	# Data
+	# -------------------------------------------------------
+	public function addMapItem( $po_map_item );
+
+	public function addMapItems( $pa_items );
+
+	public function clearMapItems();
+
+	public function fitExtentsToMapItems( $pa_options = null );
+}
+
 ?>

@@ -25,44 +25,47 @@
  *
  * ----------------------------------------------------------------------
  */
-	$va_group_list = $this->getVar('group_list');
+$va_group_list = $this->getVar( 'group_list' );
 
 ?>
 <script language="JavaScript" type="text/javascript">
-	$(document).ready(function(){
+	$(document).ready(function () {
 		$('#caItemList').caFormatListTable();
 	});
 </script>
 <div class="sectionBox">
-	<?php 
-		print caFormTag($this->request, 'ListGroups', 'caGroupListForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
-			'', 
-			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New group"), 'administrate/access', 'groups', 'Edit', array('group_id' => 0))
-		); 
+	<?php
+	print caFormTag( $this->request, 'ListGroups', 'caGroupListForm', null, 'post', 'multipart/form-data', '_top',
+		array( 'noCSRFToken' => true, 'disableUnsavedChangesWarning' => true ) );
+	print caFormControlBox(
+		'<div class="list-filter">' . _t( 'Filter' )
+		. ': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
+		'',
+		caNavHeaderButton( $this->request, __CA_NAV_ICON_ADD__, _t( "New group" ), 'administrate/access', 'groups',
+			'Edit', array( 'group_id' => 0 ) )
+	);
 	?>
-	
-		<table id="caItemList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
-			<thead>
-				<tr>
-					<th class="list-header-unsorted">
-						<?php print _t('Name'); ?>
-					</th>
-					<th class="list-header-unsorted">
-						<?php print _t('Code'); ?>
-					</th>
-					<th class="list-header-unsorted">
-						<?php print _t('Description'); ?>
-					</th>
-					<th class="{sorter: false} list-header-nosort listtableEditDelete">&nbsp;</th>
-				</tr>
-			</thead>
-			<tbody>
-<?php
-	if (sizeof($va_group_list)) {
-		foreach($va_group_list as $va_group) {
-?>
+
+	<table id="caItemList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<thead>
+		<tr>
+			<th class="list-header-unsorted">
+				<?php print _t( 'Name' ); ?>
+			</th>
+			<th class="list-header-unsorted">
+				<?php print _t( 'Code' ); ?>
+			</th>
+			<th class="list-header-unsorted">
+				<?php print _t( 'Description' ); ?>
+			</th>
+			<th class="{sorter: false} list-header-nosort listtableEditDelete">&nbsp;</th>
+		</tr>
+		</thead>
+		<tbody>
+		<?php
+		if ( sizeof( $va_group_list ) ) {
+			foreach ( $va_group_list as $va_group ) {
+				?>
 				<tr>
 					<td>
 						<?php print $va_group['name']; ?>
@@ -74,27 +77,41 @@
 						<?php print $va_group['description']; ?>
 					</td>
 					<td class="listtableEditDelete">
-						<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'groups', 'Edit', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-						<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'groups', 'Delete', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?php print caNavButton( $this->request, __CA_NAV_ICON_EDIT__, _t( "Edit" ), 'list-button',
+							'administrate/access', 'groups', 'Edit', array( 'group_id' => $va_group['group_id'] ),
+							array(), array(
+								'icon_position'     => __CA_NAV_ICON_ICON_POS_LEFT__,
+								'use_class'         => 'list-button',
+								'no_background'     => true,
+								'dont_show_content' => true
+							) ); ?>
+						<?php print caNavButton( $this->request, __CA_NAV_ICON_DELETE__, _t( "Delete" ), 'list-button',
+							'administrate/access', 'groups', 'Delete', array( 'group_id' => $va_group['group_id'] ),
+							array(), array(
+								'icon_position'     => __CA_NAV_ICON_ICON_POS_LEFT__,
+								'use_class'         => 'list-button',
+								'no_background'     => true,
+								'dont_show_content' => true
+							) ); ?>
 					</td>
 				</tr>
-<?php
-	TooltipManager::add('.deleteIcon', _t("Delete"));
-	TooltipManager::add('.editIcon', _t("Edit"));
+				<?php
+				TooltipManager::add( '.deleteIcon', _t( "Delete" ) );
+				TooltipManager::add( '.editIcon', _t( "Edit" ) );
+			}
+		} else {
+			?>
+			<tr>
+				<td colspan='4'>
+					<div align="center">
+						<?php print _t( 'No groups have been configured' ); ?>
+					</div>
+				</td>
+			</tr>
+			<?php
 		}
-	} else {
-?>
-				<tr>
-					<td colspan='4'>
-						<div align="center">
-							<?php print _t('No groups have been configured'); ?>
-						</div>
-					</td>
-				</tr>
-<?php
-	}
-?>
-			</tbody>
-		</table>
+		?>
+		</tbody>
+	</table>
 	</form>
 </div>

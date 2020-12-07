@@ -25,62 +25,68 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class SitePageController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_site_pages';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'page';
- 		protected $ops_search_class = null;
- 		
- 		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
-		public function Get($pa_additional_query_params=null, $pa_options=null) {
-		    // Not implemented
- 			return null;
-		}
- 		# -------------------------------------------------------
- 		/**
- 		 * 
- 		 */
- 		public function GetHierarchyLevel() {
- 		    // Not implemented
- 		    return null;
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
- 		public function GetHierarchyAncestorList() {
- 		    // Not implemented
- 			return null;
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * 
- 		 */
-		public function Intrinsic() {
-		    // Not implemented
- 			return null;
-		}
-		# -------------------------------------------------------
-		/**
-		 * 
-		 */
-		public function Attribute() {
-		    // Not implemented
- 			return null;
-		}
-		# -------------------------------------------------------
-		/**
-		 * 
-		 */
-		public function SetSortOrder() {
-		    // Not implemented
- 			return null;
-		}
- 		# -------------------------------------------------------
- 	}
+require_once( __CA_LIB_DIR__ . "/BaseLookupController.php" );
+
+class SitePageController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = false;
+	protected $ops_table_name = 'ca_site_pages';        // name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'page';
+	protected $ops_search_class = null;
+
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function Get( $pa_additional_query_params = null, $pa_options = null ) {
+		// Not implemented
+		return null;
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function GetHierarchyLevel() {
+		// Not implemented
+		return null;
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function GetHierarchyAncestorList() {
+		// Not implemented
+		return null;
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function Intrinsic() {
+		// Not implemented
+		return null;
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function Attribute() {
+		// Not implemented
+		return null;
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function SetSortOrder() {
+		// Not implemented
+		return null;
+	}
+	# -------------------------------------------------------
+}

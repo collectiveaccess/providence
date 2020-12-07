@@ -26,30 +26,30 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
+require_once( __CA_LIB_DIR__ . '/Logging/Eventlog.php' );
 
- 	class EventsController extends ActionController {
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function Index() {
- 			AssetLoadManager::register('tableList');
- 			
- 			$t_event_log = new Eventlog();
- 			
- 			$va_events_list = array();
- 			if (!($ps_search = $this->request->getParameter('search', pString))) {
- 				$ps_search = $this->request->user->getVar('events_log_search');
- 			} 
- 			
- 			if ($ps_search) {
- 				$va_events_list = $t_event_log->search($ps_search);
- 				$this->request->user->setVar('events_log_search', $ps_search);
- 			}
- 			$this->view->setVar('events_list', $va_events_list);
- 			$this->view->setVar('events_list_search', $ps_search);
- 			
- 			$this->render('events_html.php');
- 		}
- 		# -------------------------------------------------------
- 	}
+class EventsController extends ActionController {
+	# -------------------------------------------------------
+	#
+	# -------------------------------------------------------
+	public function Index() {
+		AssetLoadManager::register( 'tableList' );
+
+		$t_event_log = new Eventlog();
+
+		$va_events_list = array();
+		if ( ! ( $ps_search = $this->request->getParameter( 'search', pString ) ) ) {
+			$ps_search = $this->request->user->getVar( 'events_log_search' );
+		}
+
+		if ( $ps_search ) {
+			$va_events_list = $t_event_log->search( $ps_search );
+			$this->request->user->setVar( 'events_log_search', $ps_search );
+		}
+		$this->view->setVar( 'events_list', $va_events_list );
+		$this->view->setVar( 'events_list_search', $ps_search );
+
+		$this->render( 'events_html.php' );
+	}
+	# -------------------------------------------------------
+}

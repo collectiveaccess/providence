@@ -27,7 +27,7 @@
  */
 
 
-	$vo_soap_server = $this->getVar("autodiscover");
-	$vo_soap_server->handle();
+$vo_soap_server = $this->getVar( "autodiscover" );
+$vo_soap_server->handle();
 ?>
 

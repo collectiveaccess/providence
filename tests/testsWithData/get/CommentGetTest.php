@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php' );
 
 /**
  * Class CommentGetTest
@@ -43,8 +44,9 @@ class CommentGetTest extends BaseTestWithData {
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
 	private $opt_object = null;
+
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -52,31 +54,32 @@ class CommentGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_test_record = $this->addTestRecord('ca_objects', array(
+		$vn_test_record = $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'moving_image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test moving image",
+					"name"   => "My test moving image",
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_test_record);
+		$this->assertGreaterThan( 0, $vn_test_record );
 
-		$this->opt_object = new ca_objects($vn_test_record);
-		$t_comment = $this->opt_object->addComment("I like this very much.", 4);
+		$this->opt_object = new ca_objects( $vn_test_record );
+		$t_comment        = $this->opt_object->addComment( "I like this very much.", 4 );
 
 		// make sure the comment is deleted on tearDown() by adding it to the global record map
-		$this->setRecordMapEntry('ca_item_comments', $t_comment->getPrimaryKey());
+		$this->setRecordMapEntry( 'ca_item_comments', $t_comment->getPrimaryKey() );
 	}
+
 	# -------------------------------------------------------
 	public function testComment() {
-		$vm_ret = $this->opt_object->get('ca_item_comments.comment');
-		$this->assertEquals('I like this very much.', $vm_ret);
-		$this->assertTrue(!is_numeric($this->opt_object->get('ca_item_comments.created_on')));		// should always be current date/time as tex
+		$vm_ret = $this->opt_object->get( 'ca_item_comments.comment' );
+		$this->assertEquals( 'I like this very much.', $vm_ret );
+		$this->assertTrue( ! is_numeric( $this->opt_object->get( 'ca_item_comments.created_on' ) ) );        // should always be current date/time as tex
 	}
 	# -------------------------------------------------------
 }

@@ -25,41 +25,50 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
- 	require_once(__CA_LIB_DIR__."/ResultContext.php");
-	require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
-	require_once(__CA_MODELS_DIR__.'/ca_bundle_display_placements.php'); 
-	require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php'); 
- 	
- 	class SearchFormController extends ActionController {
- 		# -------------------------------------------------------
- 		public function ListForms() {
- 			AssetLoadManager::register('tableList');
-			
- 			$t_form = new ca_search_forms();
- 			$this->view->setVar('t_form', $t_form);
- 			$this->view->setVar('form_list', $va_forms = caExtractValuesByUserLocale($t_form->getForms(array('user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_EDIT_ACCESS__)), null, null, array()));
- 		
- 			$o_result_context = new ResultContext($this->request, 'ca_search_forms', 'basic_search');
-			$o_result_context->setAsLastFind();
-			$o_result_context->setResultList(is_array($va_forms) ? array_keys($va_forms) : array());
-			$o_result_context->saveContext();
-			
- 			$this->view->setVar('table_list', caFilterTableList($t_form->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST')));
- 			
- 			$this->render('search_form_list_html.php');
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * 
- 		 */
- 		public function Info() {
- 			$t_form = new ca_search_forms();
- 			$this->view->setVar('form_count', $t_form->getFormCount(array('user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_EDIT_ACCESS__)));
- 			
-			
- 			return $this->render('widget_search_form_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once( __CA_LIB_DIR__ . "/Controller/ActionController.php" );
+require_once( __CA_LIB_DIR__ . "/ResultContext.php" );
+require_once( __CA_MODELS_DIR__ . "/ca_search_forms.php" );
+require_once( __CA_MODELS_DIR__ . '/ca_bundle_display_placements.php' );
+require_once( __CA_MODELS_DIR__ . '/ca_bundle_displays_x_user_groups.php' );
+
+class SearchFormController extends ActionController {
+	# -------------------------------------------------------
+	public function ListForms() {
+		AssetLoadManager::register( 'tableList' );
+
+		$t_form = new ca_search_forms();
+		$this->view->setVar( 't_form', $t_form );
+		$this->view->setVar( 'form_list', $va_forms = caExtractValuesByUserLocale( $t_form->getForms( array(
+			'user_id' => $this->request->getUserID(),
+			'access'  => __CA_SEARCH_FORM_EDIT_ACCESS__
+		) ), null, null, array() ) );
+
+		$o_result_context = new ResultContext( $this->request, 'ca_search_forms', 'basic_search' );
+		$o_result_context->setAsLastFind();
+		$o_result_context->setResultList( is_array( $va_forms ) ? array_keys( $va_forms ) : array() );
+		$o_result_context->saveContext();
+
+		$this->view->setVar( 'table_list',
+			caFilterTableList( $t_form->getFieldInfo( 'table_num', 'BOUNDS_CHOICE_LIST' ) ) );
+
+		$this->render( 'search_form_list_html.php' );
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function Info() {
+		$t_form = new ca_search_forms();
+		$this->view->setVar( 'form_count', $t_form->getFormCount( array(
+			'user_id' => $this->request->getUserID(),
+			'access'  => __CA_SEARCH_FORM_EDIT_ACCESS__
+		) ) );
+
+
+		return $this->render( 'widget_search_form_info_html.php', true );
+	}
+	# -------------------------------------------------------
+}
+
+?>

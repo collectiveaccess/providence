@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php' );
 
 /**
  * Class SearchResultGetTest
@@ -39,7 +40,7 @@ require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
  */
 class SearchResultGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -48,48 +49,49 @@ class SearchResultGetTest extends BaseTestWithData {
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
 		$i = 0;
-		while($i < 10) {
-			$vn_test_record = $this->addTestRecord('ca_objects', array(
+		while ( $i < 10 ) {
+			$vn_test_record = $this->addTestRecord( 'ca_objects', array(
 				'intrinsic_fields' => array(
 					'type_id' => 'moving_image',
 				),
 				'preferred_labels' => array(
 					array(
 						"locale" => "en_US",
-						"name" => "My test moving image " . (string) $i,
+						"name"   => "My test moving image " . (string) $i,
 					),
 				),
-				'attributes' => array(
+				'attributes'       => array(
 					'duration' => array(
 						array(
 							'duration' => '00:23:28'
 						)
 					),
 				),
-			));
+			) );
 
-			$this->assertGreaterThan(0, $vn_test_record);
-			$i++;
+			$this->assertGreaterThan( 0, $vn_test_record );
+			$i ++;
 		}
 	}
+
 	# -------------------------------------------------------
 	public function testGets() {
 
-		$o_search = caGetSearchInstance('ca_objects');
-		$this->assertInstanceOf('SearchEngine', $o_search);
+		$o_search = caGetSearchInstance( 'ca_objects' );
+		$this->assertInstanceOf( 'SearchEngine', $o_search );
 
-		$o_res = $o_search->search('*', array('sort' => 'ca_object_labels.name'));
+		$o_res = $o_search->search( '*', array( 'sort' => 'ca_object_labels.name' ) );
 		/** @var SearchResult $o_res */
-		$this->assertInstanceOf('SearchResult', $o_res);
-		$this->assertEquals(10, $o_res->numHits());
+		$this->assertInstanceOf( 'SearchResult', $o_res );
+		$this->assertEquals( 10, $o_res->numHits() );
 
-		$i=0;
-		while($o_res->nextHit()) {
-			$vs_label = $o_res->getWithTemplate('^ca_objects.preferred_labels');
-			$this->assertGreaterThan(0, strlen($vs_label));
-			$this->assertRegExp("/$i$/", $vs_label);
+		$i = 0;
+		while ( $o_res->nextHit() ) {
+			$vs_label = $o_res->getWithTemplate( '^ca_objects.preferred_labels' );
+			$this->assertGreaterThan( 0, strlen( $vs_label ) );
+			$this->assertRegExp( "/$i$/", $vs_label );
 
-			$i++;
+			$i ++;
 		}
 	}
 	# -------------------------------------------------------

@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php' );
 
 /**
  * Class SimpleSearchQueryTest
@@ -39,28 +40,28 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class FieldHasValueSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
 		// search subject table
-		$this->setPrimaryTable('ca_objects');
+		$this->setPrimaryTable( 'ca_objects' );
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$this->assertGreaterThan( 0, $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test image",
+					"name"   => "My test image",
 				),
 			),
-			'attributes' => array(
+			'attributes'       => array(
 				// simple text attr
 				'internal_notes' => array(
 					array(
@@ -69,14 +70,14 @@ class FieldHasValueSearchQueryTest extends AbstractSearchQueryTest {
 				),
 
 				// text in a container
-				'external_link' => array(
+				'external_link'  => array(
 					array(
 						'url_source' => 'My URL source'
 					)
 				),
 
 				// Length
-				'dimensions' => array(
+				'dimensions'     => array(
 					array(
 						'dimensions_length' => '10 in',
 						'dimensions_weight' => '2 lbs'
@@ -84,7 +85,7 @@ class FieldHasValueSearchQueryTest extends AbstractSearchQueryTest {
 				),
 
 				// Integer
-				'integer_test' => array(
+				'integer_test'   => array(
 					array(
 						'integer_test' => 23,
 					),
@@ -94,54 +95,54 @@ class FieldHasValueSearchQueryTest extends AbstractSearchQueryTest {
 				),
 
 				// Currency
-				'currency_test' => array(
+				'currency_test'  => array(
 					array(
 						'currency_test' => '$100',
 					),
 				),
 
 				// coverageNotes
-				'coverageNotes' => array(
+				'coverageNotes'  => array(
 					array(
 						'coverageNotes' => '', // add blank value for [BLANK] search test
 					),
 				),
 			)
-		)));
+		) ) );
 
 		// search queries
-		$this->setSearchQueries(array(
-			'My Test Image' => 1,
+		$this->setSearchQueries( array(
+			'My Test Image'                        => 1,
 
 			// plain text
-			'Lorem ipsum' => 1,
+			'Lorem ipsum'                          => 1,
 
 			// SET values
-			'ca_object_labels.name:"[SET]"' => 1,
-			'ca_objects.coverageNotes:"[SET]"' => 0,		// actually has a blank value
-			'ca_objects.description:"[SET]"' => 0,			// has no value at all
+			'ca_object_labels.name:"[SET]"'        => 1,
+			'ca_objects.coverageNotes:"[SET]"'     => 0,        // actually has a blank value
+			'ca_objects.description:"[SET]"'       => 0,            // has no value at all
 			//'ca_objects.currency_test:"[SET]"' => 1,
-			'ca_objects.integer_test:"[SET]"' => 1,
+			'ca_objects.integer_test:"[SET]"'      => 1,
 			'ca_objects.dimensions_weight:"[SET]"' => 1,
 			'ca_objects.dimensions_length:"[SET]"' => 1,
-			'ca_objects.url_source:"[SET]"' => 1,
-			'ca_objects.internal_notes:"[SET]"' => 1,
+			'ca_objects.url_source:"[SET]"'        => 1,
+			'ca_objects.internal_notes:"[SET]"'    => 1,
 
 			// Same thing without quotes
 			// These are being replaces with a phrase search for "[SET]"
 			// in SearchEngine.php, but we should keep these tests around
 			// just in case somebody decides to remove that from the
 			// SearchEngine :-)
-			'ca_object_labels.name:[SET]' => 1,
-			'ca_objects.coverageNotes:[SET]' => 0,		// actually has a blank value
-			'ca_objects.description:[SET]' => 0,		// has no value at all
+			'ca_object_labels.name:[SET]'          => 1,
+			'ca_objects.coverageNotes:[SET]'       => 0,        // actually has a blank value
+			'ca_objects.description:[SET]'         => 0,        // has no value at all
 			//'ca_objects.currency_test:[SET]' => 1,
-			'ca_objects.integer_test:[SET]' => 1,
-			'ca_objects.dimensions_weight:[SET]' => 1,
-			'ca_objects.dimensions_length:[SET]' => 1,
-			'ca_objects.url_source:[SET]' => 1,
-			'ca_objects.internal_notes:[SET]' => 1
-		));
+			'ca_objects.integer_test:[SET]'        => 1,
+			'ca_objects.dimensions_weight:[SET]'   => 1,
+			'ca_objects.dimensions_length:[SET]'   => 1,
+			'ca_objects.url_source:[SET]'          => 1,
+			'ca_objects.internal_notes:[SET]'      => 1
+		) );
 	}
 	# -------------------------------------------------------
 }

@@ -25,31 +25,39 @@
  *
  * ----------------------------------------------------------------------
  */
-	
-	interface IWLPlugInformationService {
-		# -------------------------------------------------------
-		# Initialization and state
-		# -------------------------------------------------------
-		public function __construct();
-		public function register();
-		public function init();
-		public function cleanup();
-		
-		public function getDescription();
-		public function checkStatus();
-		
-		# -------------------------------------------------------
-		# Settings
-		# -------------------------------------------------------
-		public function getAvailableSettings();
-		
-		# -------------------------------------------------------
-		# Data
-		# -------------------------------------------------------
-		public function lookup($pa_settings, $ps_search, $pa_options=null);
-		public function getDisplayValueFromLookupText($ps_text);
-		public function getExtendedInformation($pa_settings, $ps_url);
-		public function getDataForSearchIndexing($pa_settings, $ps_url);
-		public function getExtraInfo($pa_settings, $ps_url);
-		# -------------------------------------------------------
-	}
+
+interface IWLPlugInformationService {
+	# -------------------------------------------------------
+	# Initialization and state
+	# -------------------------------------------------------
+	public function __construct();
+
+	public function register();
+
+	public function init();
+
+	public function cleanup();
+
+	public function getDescription();
+
+	public function checkStatus();
+
+	# -------------------------------------------------------
+	# Settings
+	# -------------------------------------------------------
+	public function getAvailableSettings();
+
+	# -------------------------------------------------------
+	# Data
+	# -------------------------------------------------------
+	public function lookup( $pa_settings, $ps_search, $pa_options = null );
+
+	public function getDisplayValueFromLookupText( $ps_text );
+
+	public function getExtendedInformation( $pa_settings, $ps_url );
+
+	public function getDataForSearchIndexing( $pa_settings, $ps_url );
+
+	public function getExtraInfo( $pa_settings, $ps_url );
+	# -------------------------------------------------------
+}

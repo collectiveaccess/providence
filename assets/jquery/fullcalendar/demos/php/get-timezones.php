@@ -6,4 +6,4 @@
 // Requires PHP 5.2.0 or higher.
 //--------------------------------------------------------------------------------------------------
 
-echo json_encode(DateTimeZone::listIdentifiers());
+echo json_encode( DateTimeZone::listIdentifiers() );

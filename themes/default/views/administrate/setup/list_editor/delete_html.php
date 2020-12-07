@@ -25,14 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_list = $this->getVar('t_subject');
-	$vn_list_id = $this->getVar('subject_id');
+$t_list     = $this->getVar( 't_subject' );
+$vn_list_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_list, $this->getVar('subject_name'), 'administrate/setup/list_editor', 'ListEditor', 'Edit/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id));
+		print caDeleteWarningBox( $this->request, $t_list, $this->getVar( 'subject_name' ),
+			'administrate/setup/list_editor', 'ListEditor', 'Edit/' . $this->request->getActionExtra(),
+			array( 'list_id' => $vn_list_id ) );
 	}
-?>
+	?>
 </div>

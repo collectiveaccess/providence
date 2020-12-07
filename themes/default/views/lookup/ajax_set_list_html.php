@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('set_list'));
+print json_encode( $this->getVar( 'set_list' ) );

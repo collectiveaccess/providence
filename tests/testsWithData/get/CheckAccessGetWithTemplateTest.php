@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php' );
 
 /**
  * Class CheckAccessGetWithTemplateTest
@@ -43,8 +44,9 @@ class CheckAccessGetWithTemplateTest extends BaseTestWithData {
 	 * @var ca_objects
 	 */
 	protected $opt_object;
+
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -53,99 +55,101 @@ class CheckAccessGetWithTemplateTest extends BaseTestWithData {
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
 
-		$vn_object_id = $this->addTestRecord('ca_objects', array(
+		$vn_object_id = $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'moving_image',
-				'access' => 1,
+				'access'  => 1,
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test moving image"
+					"name"   => "My test moving image"
 				),
 			)
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_object_id);
-		$this->opt_object = new ca_objects($vn_object_id);
+		$this->assertGreaterThan( 0, $vn_object_id );
+		$this->opt_object = new ca_objects( $vn_object_id );
 
-		$vn_entity_id = $this->addTestRecord('ca_entities', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'ind',
-				'idno' => 'hjs',
+		$vn_entity_id = $this->addTestRecord( 'ca_entities', array(
+			'intrinsic_fields'    => array(
+				'type_id'  => 'ind',
+				'idno'     => 'hjs',
 				'lifespan' => '12/17/1989 -',
-				'access' => 1,
+				'access'   => 1,
 			),
-			'preferred_labels' => array(
+			'preferred_labels'    => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Homer",
+					"locale"     => "en_US",
+					"forename"   => "Homer",
 					"middlename" => "J.",
-					"surname" => "Simpson",
+					"surname"    => "Simpson",
 				),
 			),
 			'nonpreferred_labels' => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Max",
+					"locale"     => "en_US",
+					"forename"   => "Max",
 					"middlename" => "",
-					"surname" => "Power",
-					"type_id" => "alt",
+					"surname"    => "Power",
+					"type_id"    => "alt",
 				),
 			),
-			'related' => array(
+			'related'             => array(
 				'ca_objects' => array(
 					array(
-						'object_id' => $vn_object_id,
-						'type_id' => 'creator',
+						'object_id'      => $vn_object_id,
+						'type_id'        => 'creator',
 						'effective_date' => '2015',
-						'source_info' => 'Me'
+						'source_info'    => 'Me'
 					)
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_entity_id);
+		$this->assertGreaterThan( 0, $vn_entity_id );
 
-		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+		$vn_entity_id = $this->addTestRecord( 'ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'bs',
-				'access' => 0,
+				'idno'    => 'bs',
+				'access'  => 0,
 			),
 			'preferred_labels' => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Bart",
+					"locale"     => "en_US",
+					"forename"   => "Bart",
 					"middlename" => "",
-					"surname" => "Simpson",
+					"surname"    => "Simpson",
 				),
 			),
-			'related' => array(
+			'related'          => array(
 				'ca_objects' => array(
 					array(
-						'object_id' => $vn_object_id,
-						'type_id' => 'publisher',
+						'object_id'      => $vn_object_id,
+						'type_id'        => 'publisher',
 						'effective_date' => '2014-2015',
-						'source_info' => 'Homer'
+						'source_info'    => 'Homer'
 					)
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_entity_id);
+		$this->assertGreaterThan( 0, $vn_entity_id );
 	}
+
 	# -------------------------------------------------------
 	public function testGets() {
 
 		$this->assertEquals(
 			'Homer J. Simpson; Bart Simpson',
-			$this->opt_object->getWithTemplate('<unit relativeTo="ca_entities">^ca_entities.preferred_labels</unit>')
+			$this->opt_object->getWithTemplate( '<unit relativeTo="ca_entities">^ca_entities.preferred_labels</unit>' )
 		);
 
 		$this->assertEquals(
 			'Homer J. Simpson',
-			$this->opt_object->getWithTemplate('<unit relativeTo="ca_entities">^ca_entities.preferred_labels</unit>', array('checkAccess' => array('1')))
+			$this->opt_object->getWithTemplate( '<unit relativeTo="ca_entities">^ca_entities.preferred_labels</unit>',
+				array( 'checkAccess' => array( '1' ) ) )
 		);
 
 	}

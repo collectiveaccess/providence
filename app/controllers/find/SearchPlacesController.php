@@ -25,104 +25,111 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
- 	require_once(__CA_LIB_DIR__."/Search/PlaceSearch.php");
- 	require_once(__CA_LIB_DIR__."/Browse/PlaceBrowse.php");
- 	
- 	class SearchPlacesController extends BaseSearchController {
- 		# -------------------------------------------------------
- 		/**
- 		 * Name of subject table (ex. for an object search this is 'ca_objects')
- 		 */
- 		protected $ops_tablename = 'ca_places';
- 		
- 		/** 
- 		 * Number of items per search results page
- 		 */
- 		protected $opa_items_per_page = array(10, 20, 30, 40, 50);
- 		
- 		/**
- 		 * List of search-result views supported for this find
- 		 * Is associative array: keys are view labels, values are view specifier to be incorporated into view name
- 		 */
- 		protected $opa_views;
- 		
- 		/**
- 		 * Name of "find" used to defined result context for ResultContext object
- 		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
- 		 */
- 		protected $ops_find_type = 'basic_search';
- 		
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
-			$this->opa_views = array(
-				'list' => _t('list')
-			 );
-			
-			$this->opo_browse = new PlaceBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
-		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Search handler (returns search form and results, if any)
- 		 * Most logic is contained in the BaseSearchController->Search() method; all you usually
- 		 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
- 		 * (eg. PlaceSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Search() 
- 		 */ 
- 		public function Index($pa_options=null) {
- 			$pa_options['search'] = $this->opo_browse;
- 			$this->opb_uses_hierarchy_browser = true;
- 			return parent::Index($pa_options);
- 		}
- 		# -------------------------------------------------------
- 		public function ViewHierarchy() {
- 			$this->view->setVar('force_hierarchy_browser_open', 1);
- 			$this->Index();
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		/**
- 		 * Returns "search tools" widget
- 		 */ 
- 		public function Tools($pa_parameters) {
- 			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of PlaceSearch()
- 			return parent::Tools($pa_parameters);
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
- 		public function _getSubTypeActionNav($pa_item) {
- 			return [
-				[
-					'displayName' => _t('Search'),
-					"default" => ['module' => 'find', 'controller' => 'SearchPlaces', 'action' => 'Index'],
-					'parameters' => array(
-						'type_id' => $pa_item['item_id'],
-						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					),
-					'is_enabled' => true,
+require_once( __CA_LIB_DIR__ . "/BaseSearchController.php" );
+require_once( __CA_LIB_DIR__ . "/Search/PlaceSearch.php" );
+require_once( __CA_LIB_DIR__ . "/Browse/PlaceBrowse.php" );
+
+class SearchPlacesController extends BaseSearchController {
+	# -------------------------------------------------------
+	/**
+	 * Name of subject table (ex. for an object search this is 'ca_objects')
+	 */
+	protected $ops_tablename = 'ca_places';
+
+	/**
+	 * Number of items per search results page
+	 */
+	protected $opa_items_per_page = array( 10, 20, 30, 40, 50 );
+
+	/**
+	 * List of search-result views supported for this find
+	 * Is associative array: keys are view labels, values are view specifier to be incorporated into view name
+	 */
+	protected $opa_views;
+
+	/**
+	 * Name of "find" used to defined result context for ResultContext object
+	 * Must be unique for the table and have a corresponding entry in find_navigation.conf
+	 */
+	protected $ops_find_type = 'basic_search';
+
+	# -------------------------------------------------------
+	public function __construct( &$po_request, &$po_response, $pa_view_paths = null ) {
+		parent::__construct( $po_request, $po_response, $pa_view_paths );
+		$this->opa_views = array(
+			'list' => _t( 'list' )
+		);
+
+		$this->opo_browse = new PlaceBrowse( $this->opo_result_context->getParameter( 'browse_id' ), 'providence' );
+	}
+	# -------------------------------------------------------
+
+	/**
+	 * Search handler (returns search form and results, if any)
+	 * Most logic is contained in the BaseSearchController->Search() method; all you usually
+	 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch
+	 * (eg. PlaceSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Search()
+	 */
+	public function Index( $pa_options = null ) {
+		$pa_options['search']             = $this->opo_browse;
+		$this->opb_uses_hierarchy_browser = true;
+
+		return parent::Index( $pa_options );
+	}
+
+	# -------------------------------------------------------
+	public function ViewHierarchy() {
+		$this->view->setVar( 'force_hierarchy_browser_open', 1 );
+		$this->Index();
+	}
+	# -------------------------------------------------------
+	# Sidebar info handler
+	# -------------------------------------------------------
+	/**
+	 * Returns "search tools" widget
+	 */
+	public function Tools( $pa_parameters ) {
+		// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of PlaceSearch()
+		return parent::Tools( $pa_parameters );
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function _getSubTypeActionNav( $pa_item ) {
+		return [
+			[
+				'displayName' => _t( 'Search' ),
+				"default"     => [ 'module' => 'find', 'controller' => 'SearchPlaces', 'action' => 'Index' ],
+				'parameters'  => array(
+					'type_id' => $pa_item['item_id'],
+					'reset'   => $this->request->getUser()->getPreference( 'persistent_search' )
+				),
+				'is_enabled'  => true,
+			],
+			[
+				'displayName'     => _t( 'Advanced search' ),
+				"default"         => [ 'module'     => 'find',
+				                       'controller' => 'SearchPlacesAdvanced',
+				                       'action'     => 'Index'
 				],
-				[
-					'displayName' => _t('Advanced search'),
-					"default" => ['module' => 'find', 'controller' => 'SearchPlacesAdvanced', 'action' => 'Index'],
-					'useActionInPath' => 1,
-					'parameters' => array(
-						'type_id' => $pa_item['item_id'],
-						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					),
-					'is_enabled' => true,
-				],
-				[
-					'displayName' => _t('Browse'),
-					"default" => ['module' => 'find', 'controller' => 'BrowsePlaces', 'action' => 'Index'],
-					'parameters' => array(
-						'type_id' => $pa_item['item_id']
-					),
-					'is_enabled' => true,
-				]
-			];
- 		}
- 		# -------------------------------------------------------
- 	}
+				'useActionInPath' => 1,
+				'parameters'      => array(
+					'type_id' => $pa_item['item_id'],
+					'reset'   => $this->request->getUser()->getPreference( 'persistent_search' )
+				),
+				'is_enabled'      => true,
+			],
+			[
+				'displayName' => _t( 'Browse' ),
+				"default"     => [ 'module' => 'find', 'controller' => 'BrowsePlaces', 'action' => 'Index' ],
+				'parameters'  => array(
+					'type_id' => $pa_item['item_id']
+				),
+				'is_enabled'  => true,
+			]
+		];
+	}
+	# -------------------------------------------------------
+}

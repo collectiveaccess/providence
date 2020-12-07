@@ -26,30 +26,30 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_LIB_DIR__.'/Logging/Searchlog.php');
+require_once( __CA_LIB_DIR__ . '/Logging/Searchlog.php' );
 
- 	class SearchController extends ActionController {
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function Index() {
- 			AssetLoadManager::register('tableList');
- 			
- 			$t_search_log = new Searchlog();
- 			
- 			$va_search_list = array();
- 			if (!($ps_search = $this->request->getParameter('search', pString))) {
- 				$ps_search = $this->request->user->getVar('search_log_search');
- 			} 
- 			
- 			if ($ps_search) {
- 				$va_search_list = $t_search_log->search($ps_search);
- 				$this->request->user->setVar('search_log_search', $ps_search);
- 			}
- 			$this->view->setVar('search_list', $va_search_list);
- 			$this->view->setVar('search_list_search', $ps_search);
- 			
- 			$this->render('search_html.php');
- 		}
- 		# -------------------------------------------------------
- 	}
+class SearchController extends ActionController {
+	# -------------------------------------------------------
+	#
+	# -------------------------------------------------------
+	public function Index() {
+		AssetLoadManager::register( 'tableList' );
+
+		$t_search_log = new Searchlog();
+
+		$va_search_list = array();
+		if ( ! ( $ps_search = $this->request->getParameter( 'search', pString ) ) ) {
+			$ps_search = $this->request->user->getVar( 'search_log_search' );
+		}
+
+		if ( $ps_search ) {
+			$va_search_list = $t_search_log->search( $ps_search );
+			$this->request->user->setVar( 'search_log_search', $ps_search );
+		}
+		$this->view->setVar( 'search_list', $va_search_list );
+		$this->view->setVar( 'search_list_search', $ps_search );
+
+		$this->render( 'search_html.php' );
+	}
+	# -------------------------------------------------------
+}

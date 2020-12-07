@@ -15,66 +15,68 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
-require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
-require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_LIB_DIR__ . "/Service/BaseJSONService.php" );
+require_once( __CA_LIB_DIR__ . "/Controller/Request/RequestHTTP.php" );
+require_once( __CA_LIB_DIR__ . "/Controller/Response/ResponseHTTP.php" );
 
 class BaseJSONServiceTest extends TestCase {
 	# -------------------------------------------------------
-	public function testProperInstantiation(){
+	public function testProperInstantiation() {
 		global $_SERVER; // emulate client request
 		$_SERVER["REQUEST_METHOD"] = "GET";
-		$_SERVER["SCRIPT_NAME"] = "/service.php";
+		$_SERVER["SCRIPT_NAME"]    = "/service.php";
 
 		$vo_response = new ResponseHTTP();
-		$vo_request = new RequestHTTP($vo_response, array("dont_create_new_session" => true));
-		$vo_request->setRawPostData('{"foo" : "bar"}');
-		$vo_request->setParameter("id",4711,"GET");
+		$vo_request  = new RequestHTTP( $vo_response, array( "dont_create_new_session" => true ) );
+		$vo_request->setRawPostData( '{"foo" : "bar"}' );
+		$vo_request->setParameter( "id", 4711, "GET" );
 
-		$vo_service = new BaseJSONService($vo_request,"ca_objects");
+		$vo_service = new BaseJSONService( $vo_request, "ca_objects" );
 
-		$this->assertFalse($vo_service->hasErrors());
-		$this->assertEquals("ca_objects",$vo_service->getTableName());
-		$this->assertEquals("GET",$vo_service->getRequestMethod());
-		$this->assertEquals(4711,$vo_service->getIdentifier());
-		$this->assertEquals(array("foo" => "bar"),$vo_service->getRequestBodyArray());
+		$this->assertFalse( $vo_service->hasErrors() );
+		$this->assertEquals( "ca_objects", $vo_service->getTableName() );
+		$this->assertEquals( "GET", $vo_service->getRequestMethod() );
+		$this->assertEquals( 4711, $vo_service->getIdentifier() );
+		$this->assertEquals( array( "foo" => "bar" ), $vo_service->getRequestBodyArray() );
 	}
+
 	# -------------------------------------------------------
-	public function testImproperInstantiation(){
+	public function testImproperInstantiation() {
 		global $_SERVER; // emulate client request
-		
-		$method = $_SERVER["REQUEST_METHOD"];
+
+		$method                    = $_SERVER["REQUEST_METHOD"];
 		$_SERVER["REQUEST_METHOD"] = "FOOBAR";
-		$_SERVER["SCRIPT_NAME"] = "/service.php";
+		$_SERVER["SCRIPT_NAME"]    = "/service.php";
 
 		$vo_response = new ResponseHTTP();
-		$vo_request = new RequestHTTP($vo_response, array("dont_create_new_session" => true));
-		$vo_request->setRawPostData('This is not JSON!');
+		$vo_request  = new RequestHTTP( $vo_response, array( "dont_create_new_session" => true ) );
+		$vo_request->setRawPostData( 'This is not JSON!' );
 
-		$vo_service = new BaseJSONService($vo_request,"invalid_table");
+		$vo_service = new BaseJSONService( $vo_request, "invalid_table" );
 
-		$this->assertTrue($vo_service->hasErrors());
+		$this->assertTrue( $vo_service->hasErrors() );
 		// we don't check error messages because they tend to change frequently but
 		// the above code should generate 3 errors (invalid table, no JSON request body
 		// and invalid request method)
-		$this->assertEquals(3,sizeof($vo_service->getErrors()));
-		
+		$this->assertEquals( 3, sizeof( $vo_service->getErrors() ) );
+
 		$_SERVER["REQUEST_METHOD"] = $method;
 	}
 	# -------------------------------------------------------

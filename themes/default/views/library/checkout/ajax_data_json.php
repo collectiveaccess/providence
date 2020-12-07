@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
-	print json_encode($this->getVar('data'));
+print json_encode( $this->getVar( 'data' ) );

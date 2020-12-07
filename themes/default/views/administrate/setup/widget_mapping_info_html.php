@@ -25,22 +25,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	$t_item = $this->getVar('t_item');
- 	
- 	if (!$t_item->getPrimaryKey()) {
- 		$vn_mapping_count = ca_bundle_mappings::getMappingCount();
+
+$t_item = $this->getVar( 't_item' );
+
+if ( ! $t_item->getPrimaryKey() ) {
+	$vn_mapping_count = ca_bundle_mappings::getMappingCount();
+	?>
+	<h3><?php print _t( 'Editing import/export mappings' ); ?>:
+	<div><?php
+		if ( $vn_mapping_count == 1 ) {
+			print _t( "1 mapping is defined" );
+		} else {
+			print _t( "%1 mappings are defined", $vn_mapping_count );
+		}
+		?></div>
+	</h3><?php
+} else {
+	print caEditorInspector( $this, array( 'backText' => _t( 'Back to list' ) ) );
+}
 ?>
-<h3><?php print _t('Editing import/export mappings'); ?>:
-<div><?php
-	if ($vn_mapping_count == 1) {
-		print _t("1 mapping is defined");
-	} else {
-		print _t("%1 mappings are defined", $vn_mapping_count);
-	}
-?></div>
-</h3><?php
- 	} else {
-	 	print caEditorInspector($this, array('backText' => _t('Back to list')));
-	 }
- ?>

@@ -73,14 +73,15 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		}
 
 		$va_service_conf = $this->opo_linked_data_conf->get( $this->getConfigName() );
-		$va_params = $this->_getParams( $pa_options, $va_service_conf );
-		$vs_search = $this->_rewriteSearch($ps_search, $pa_options, $va_params);
-		$vs_query = $this->_buildQuery($vs_search, $pa_options, $va_params);
+		$va_params       = $this->_getParams( $pa_options, $va_service_conf );
+		$vs_search       = $this->_rewriteSearch( $ps_search, $pa_options, $va_params );
+		$vs_query        = $this->_buildQuery( $vs_search, $pa_options, $va_params );
 
-		$curl_options[CURLOPT_CONNECTTIMEOUT] =  caGetOption( 'curlopt_connecttimeout', $va_service_conf, 2 );
-		$va_results = self::queryGetty( $vs_query, $curl_options );
+		$curl_options[ CURLOPT_CONNECTTIMEOUT ] = caGetOption( 'curlopt_connecttimeout', $va_service_conf, 2 );
+		$va_results                             = self::queryGetty( $vs_query, $curl_options );
 
-		$va_clean_results = $this->_cleanResults($va_results, $pa_options, $va_params);
+		$va_clean_results = $this->_cleanResults( $va_results, $pa_options, $va_params );
+
 		return $va_clean_results;
 	}
 
@@ -246,8 +247,9 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @param string|null $ps_node_uri        Optional related node URI to pull from
 	 * @param array       $pa_options         Available options are
 	 *                                        limit -> limit number of processed related notes, defaults to 10
-	 *                                        stripAfterLastComma -> strip everything after (and including) the last comma in the individual literal string
-	 *                                        this is useful for gvp:parentString where the top-most category is usually not very useful
+	 *                                        stripAfterLastComma -> strip everything after (and including) the last
+	 *                                        comma in the individual literal string this is useful for
+	 *                                        gvp:parentString where the top-most category is usually not very useful
 	 *
 	 * @return string|bool
 	 */
@@ -426,11 +428,11 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			? 'luc:text'
 			: 'luc:term';
 
-		$result['start'] = (int) caGetOption('start', $pa_options, 0);
+		$result['start']    = (int) caGetOption( 'start', $pa_options, 0 );
 		$result['isPhrase'] = (bool) caGetOption( 'phrase', $pa_options, false );
 
-		$result['isRaw']    = (bool) caGetOption( 'raw', $pa_options, false );
-		$result['limit']    = (int) caGetOption( 'limit', $pa_options,
+		$result['isRaw'] = (bool) caGetOption( 'raw', $pa_options, false );
+		$result['limit'] = (int) caGetOption( 'limit', $pa_options,
 			( $pa_service_conf['result_limit'] ) ? $pa_service_conf['result_limit'] : 50 );
 
 		return $result;
@@ -475,7 +477,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 *
 	 * @return mixed
 	 */
-	public function _rewriteSearch($ps_search, $pa_options=null, $params=null){
+	public function _rewriteSearch( $ps_search, $pa_options = null, $params = null ) {
 		/**
 		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
 		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
@@ -484,8 +486,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if ( is_numeric( $ps_search ) ) {
 			$vs_search = $ps_search;
 		} elseif ( isURL( $ps_search ) ) {
-			$vs_search = str_replace( caGetOption('serviceUrl', $params, null), '', $ps_search );
-		} elseif ( caGetOption('isPhrase', $params, false) ) {
+			$vs_search = str_replace( caGetOption( 'serviceUrl', $params, null ), '', $ps_search );
+		} elseif ( caGetOption( 'isPhrase', $params, false ) ) {
 			$vs_search = '\"' . $ps_search . '\"';
 		} else {
 			$va_search = preg_split( '/[\s]+/', $ps_search );

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * themes/default/views/system/configuration_error_schema_update_html.php : 
+ * themes/default/views/system/configuration_error_schema_update_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -23,14 +23,15 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Configuration
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess database update</title>
@@ -39,49 +40,51 @@
 	<link href="../assets/fontawesome/css/v4-shims.min.css" rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
-	<div id='box'>
+<div id='box'>
 	<div id="logo"><img src="<?php print __CA_THEME_URL__ ?>/graphics/logos/ca_logo.png"/></div><!-- end logo -->
 	<div id="content">
-		<div class='error'><?php print _t("Updating your database..."); ?></div>
-<?php
-flush();
-$va_messages = self::performDatabaseSchemaUpdate();
-?>
+		<div class='error'><?php print _t( "Updating your database..." ); ?></div>
+		<?php
+		flush();
+		$va_messages = self::performDatabaseSchemaUpdate();
+		?>
 
-<?php
-	$vb_has_error = false;
-	foreach($va_messages as $vs_key => $vs_message) {
-?>
-		<div class="permissionError">
-<?php
-		if(preg_match('!^error_!', $vs_key)) {
-			$vb_has_error = true;
-?>
-			<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
-<?php
-			print "{$vs_message}";
-		} else {
-?>
-			<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
-<?php
-			print "{$vs_message}";
+		<?php
+		$vb_has_error = false;
+		foreach ( $va_messages as $vs_key => $vs_message ) {
+			?>
+			<div class="permissionError">
+				<?php
+				if ( preg_match( '!^error_!', $vs_key ) ) {
+					$vb_has_error = true;
+					?>
+					<?php print caNavIcon( __CA_NAV_ICON_ALERT__, 2, array( 'class' => 'permissionErrorIcon' ) ); ?>
+					<?php
+					print "{$vs_message}";
+				} else {
+					?>
+					<?php print caNavIcon( __CA_NAV_ICON_ALERT__, 2, array( 'class' => 'permissionErrorIcon' ) ); ?>
+					<?php
+					print "{$vs_message}";
+				}
+				?>
+				<div style='clear:both; height:1px;'><!-- empty --></div>
+			</div>
+			<?php
 		}
-?>
-			<div style='clear:both; height:1px;'><!-- empty --></div>
-		</div>
-<?php
-	}
-?>
+		?>
 
-<div class='contentSuccess' style='align: center;'>
-<?php
-	if ($vb_has_error) {
-		print _t("Errors occurred while performing the update. <a href='%1/index.php'>Return to the login screen</a>.", __CA_URL_ROOT__); 
-	} else {
-		print _t("Update complete. You can now <a href='%1/index.php'>log into your system</a>", __CA_URL_ROOT__); 
-	}
-?>
-</div>
-</div><!-- end content --></div><!-- end box -->
+		<div class='contentSuccess' style='align: center;'>
+			<?php
+			if ( $vb_has_error ) {
+				print _t( "Errors occurred while performing the update. <a href='%1/index.php'>Return to the login screen</a>.",
+					__CA_URL_ROOT__ );
+			} else {
+				print _t( "Update complete. You can now <a href='%1/index.php'>log into your system</a>",
+					__CA_URL_ROOT__ );
+			}
+			?>
+		</div>
+	</div><!-- end content --></div><!-- end box -->
 </body>
 </html>

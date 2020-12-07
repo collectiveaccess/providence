@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print json_encode($this->getVar('jobinfo'));
+
+print json_encode( $this->getVar( 'jobinfo' ) );
 ?>

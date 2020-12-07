@@ -27,19 +27,19 @@
  */
 
 /** @var ResultContext $vo_result_context */
-$vo_result_context 			= $this->getVar('result_context');
+$vo_result_context = $this->getVar( 'result_context' );
 /** @var SearchResult $vo_result */
-$vo_result					= $this->getVar('result');
+$vo_result = $this->getVar( 'result' );
 
-$va_current_sort = caGetSortForDisplay($vo_result->getResultTableName(), $vo_result_context->getCurrentSort());
-if(is_array($va_current_sort) && (sizeof($va_current_sort) > 0)) {
-?>
-	<h3 class='currentSort'><?php print _t("Current sort"); ?>:
+$va_current_sort = caGetSortForDisplay( $vo_result->getResultTableName(), $vo_result_context->getCurrentSort() );
+if ( is_array( $va_current_sort ) && ( sizeof( $va_current_sort ) > 0 ) ) {
+	?>
+	<h3 class='currentSort'><?php print _t( "Current sort" ); ?>:
 		<div>
-<?php
-		print join(', ', $va_current_sort)
-?>
+			<?php
+			print join( ', ', $va_current_sort )
+			?>
 		</div>
 	</h3>
-<?php
+	<?php
 }

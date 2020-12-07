@@ -25,22 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-$va_media_list = $this->getVar('media_list');
+
+$va_media_list = $this->getVar( 'media_list' );
 
 ?>
-    <ul>
-<?php
-foreach($va_media_list as $va_item) {
-?>
-    <li class='mediaItem' data-idno='<?php print $va_item['idno']; ?>'>
-        <div style='float:left;'><?php print $va_item['tags']['icon']; ?></div>
-        <div>
-            <em><?php print $va_item['title']; ?></em> (<?php print $va_item['idno']; ?>)<br/>
-            <?php print $va_item['caption']; ?>
-        </div><br style='clear:both;'/>
-    </li>
-<?php
-}
-?>
-    </ul>
+<ul>
+	<?php
+	foreach ( $va_media_list as $va_item ) {
+		?>
+		<li class='mediaItem' data-idno='<?php print $va_item['idno']; ?>'>
+			<div style='float:left;'><?php print $va_item['tags']['icon']; ?></div>
+			<div>
+				<em><?php print $va_item['title']; ?></em> (<?php print $va_item['idno']; ?>)<br/>
+				<?php print $va_item['caption']; ?>
+			</div>
+			<br style='clear:both;'/>
+		</li>
+		<?php
+	}
+	?>
+</ul>

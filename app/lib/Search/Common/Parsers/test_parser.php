@@ -1,10 +1,10 @@
 <?php
 require_once '../../../../../../setup.php';
 
-require_once __CA_LIB_DIR__."/Search/Common/Parsers/LuceneSyntaxParser.php";
+require_once __CA_LIB_DIR__ . "/Search/Common/Parsers/LuceneSyntaxParser.php";
 
 $vo_old_parser = new Zend_Search_Lucene_Search_QueryParser();
-$vo_parser = new LuceneSyntaxParser();
+$vo_parser     = new LuceneSyntaxParser();
 
 $va_searches = array(
 	'accession:X91298',
@@ -29,12 +29,12 @@ $va_searches = array(
 	'\(1\+1\)\:2'
 );
 
-foreach($va_searches as $vs_search){
-	$vo_query = $vo_parser->parse($vs_search);
-	$vo_old_query = $vo_old_parser->parse($vs_search);
+foreach ( $va_searches as $vs_search ) {
+	$vo_query     = $vo_parser->parse( $vs_search );
+	$vo_old_query = $vo_old_parser->parse( $vs_search );
 
-	print ("SEARCH TEXT: {$vs_search}\n");
-	print("NEW QUERY PARSE TREE TO STRING: {$vo_query->__toString()}\n");
-	print("OLD QUERY PARSE TREE TO STRING: {$vo_old_query->__toString()}\n");
-	print("# ---------------------------------\n");
+	print ( "SEARCH TEXT: {$vs_search}\n" );
+	print( "NEW QUERY PARSE TREE TO STRING: {$vo_query->__toString()}\n" );
+	print( "OLD QUERY PARSE TREE TO STRING: {$vo_old_query->__toString()}\n" );
+	print( "# ---------------------------------\n" );
 }

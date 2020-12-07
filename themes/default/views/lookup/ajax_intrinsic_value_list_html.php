@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('intrinsic_value_list'));
+print json_encode( $this->getVar( 'intrinsic_value_list' ) );
 ?>

@@ -25,14 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_representation_annotation = $this->getVar('t_subject');
-	$vn_annotation_id = $this->getVar('subject_id');
+$t_representation_annotation = $this->getVar( 't_subject' );
+$vn_annotation_id            = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_representation_annotation, $this->getVar('subject_name'), 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit/'.$this->request->getActionExtra(), array('annotation_id' => $vn_annotation_id));
+		print caDeleteWarningBox( $this->request, $t_representation_annotation, $this->getVar( 'subject_name' ),
+			'editor/representation_annotations', 'RepresentationAnnotationEditor',
+			'Edit/' . $this->request->getActionExtra(), array( 'annotation_id' => $vn_annotation_id ) );
 	}
-?>
+	?>
 </div>

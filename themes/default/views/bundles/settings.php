@@ -25,26 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 
-	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$vn_table_num 				= $this->getVar('table_num');
-	
-	$t_subject					= $this->getVar('t_subject');
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+
+
+$vs_id_prefix = $this->getVar( 'placement_code' ) . $this->getVar( 'id_prefix' );
+$vn_table_num = $this->getVar( 'table_num' );
+
+$t_subject = $this->getVar( 't_subject' );
+
+print caEditorBundleShowHideControl( $this->request, $vs_id_prefix );
+print caEditorBundleMetadataDictionary( $this->request, $vs_id_prefix, $va_settings );
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList settingsBundle">
-<?php 
-				if ($vs_form = $t_subject->getHTMLSettingForm(array('id' => $this->getVar('id_prefix'), 'placement_code' => $this->getVar('placement_code')))) {
-					print $vs_form;
-				} else {
-					print _t('No settings');
-				}	
-?>
+			<?php
+			if ( $vs_form = $t_subject->getHTMLSettingForm( array( 'id'             => $this->getVar( 'id_prefix' ),
+			                                                       'placement_code' => $this->getVar( 'placement_code' )
+			) )
+			) {
+				print $vs_form;
+			} else {
+				print _t( 'No settings' );
+			}
+			?>
 		</div>
 	</div>
 </div>

@@ -23,58 +23,63 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Media
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
-	
-	print $this->getVar('viewerHTML');
+
+
+print $this->getVar( 'viewerHTML' );
 ?>
 <script type="text/javascript">
 	var caRepresentationAnnotationEditor;
-	jQuery(document).ready(function() {
+	jQuery(document).ready(function () {
 		if (caUI.initPanel) {
-			caRepresentationAnnotationEditor = caUI.initPanel({ 
+			caRepresentationAnnotationEditor = caUI.initPanel({
 				panelID: "caRepresentationAnnotationEditor",						/* DOM ID of the <div> enclosing the panel */
 				panelContentID: "caRepresentationAnnotationEditorContentArea",		/* DOM ID of the content area <div> in the panel */
-				panelTransitionSpeed: 400,						
+				panelTransitionSpeed: 400,
 				closeButtonSelector: ".close",
 				center: true,
 				useExpose: false,
-				onCloseCallback: function() {
+				onCloseCallback: function () {
 					jQuery(".tileviewer").tileviewer("refreshAnnnotations");
 				}
 			});
 		}
 	});
-	
+
 	function caAnnoEditorDisableAnnotationForm() {
 		caRepresentationAnnotationEditor.hidePanel();
 		return false;
 	}
+
 	function caAnnoEditorTlReload() {
 		// noop
 	}
+
 	function caAnnoEditorTlLoad() {
 		// noop
 	}
+
 	function caAnnoEditorEdit(annotation_id) {
 		caRepresentationAnnotationEditor.hidePanel();
 		return false;
 	}
+
 	function caAnnoEditorGetPlayerTime() {
 		return 0;
 	}
+
 	function caAnnoEditorTlRemove() {
 		// noop
 	}
 </script>
-<div id="caRepresentationAnnotationEditor" class="caRelationQuickAddPanel"> 
+<div id="caRepresentationAnnotationEditor" class="caRelationQuickAddPanel">
 	<div id="caRepresentationAnnotationEditorContentArea">
-	<div class='quickAddDialogHeader'><?php print _t('Edit annotation'); ?></div>
-	
+		<div class='quickAddDialogHeader'><?php print _t( 'Edit annotation' ); ?></div>
+
 	</div>
 </div>

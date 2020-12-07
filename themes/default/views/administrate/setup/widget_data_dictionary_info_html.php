@@ -25,15 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vn_rule_count 	= $this->getVar('rule_count');
+
+$vn_rule_count = $this->getVar( 'rule_count' );
 ?>
-<h3 class='searchForms'><?php print _t('Data dictionary'); ?>:
-<div><?php
-	if ($vn_rule_count == 1) {
-		print _t("1 rule is defined");
-	} else {
-		print _t("%1 rules are defined", $vn_rule_count);
-	}
-?></div>
+<h3 class='searchForms'><?php print _t( 'Data dictionary' ); ?>:
+	<div><?php
+		if ( $vn_rule_count == 1 ) {
+			print _t( "1 rule is defined" );
+		} else {
+			print _t( "%1 rules are defined", $vn_rule_count );
+		}
+		?></div>
 </h3>

@@ -35,33 +35,33 @@
 use PHPUnit\Framework\TestCase;
 
 class MediaPluginHelpersTest extends TestCase {
-    public function setUp(): void {
-    	// noop
-    }
+	public function setUp(): void {
+		// noop
+	}
 
-    public function testCaGetExternalApplicationPathForAppAsString() {
-    	$paths = caGetExternalApplicationPath("ghostscript_app", ['returnAsArray' => true]);
-        $this->assertSame("/usr/bin/gs", $paths[0]);
-    }
-    
-    public function testCaGetExternalApplicationPathForAppInList() {
-    	$paths = caGetExternalApplicationPath("ffmpeg_app", ['returnAsArray' => true]);
-        $this->assertSame("/usr/bin/ffmpeg", $paths[0]);
-        $this->assertSame("/usr/local/bin/ffmpeg", $paths[1]);
-    }
-    
-    public function testCaGetExternalApplicationPathForPathAsString() {
-    	$paths = caGetExternalApplicationPath("imagemagick_path", ['returnAsArray' => true]);
-        $this->assertSame("/usr/bin", $paths[0]);
-    }
+	public function testCaGetExternalApplicationPathForAppAsString() {
+		$paths = caGetExternalApplicationPath( "ghostscript_app", [ 'returnAsArray' => true ] );
+		$this->assertSame( "/usr/bin/gs", $paths[0] );
+	}
 
-    public function testCaGetExternalApplicationPathReturnsNullsForMissingApplication() {
-        $this->assertNull(caGetExternalApplicationPath("test"));
-    }
+	public function testCaGetExternalApplicationPathForAppInList() {
+		$paths = caGetExternalApplicationPath( "ffmpeg_app", [ 'returnAsArray' => true ] );
+		$this->assertSame( "/usr/bin/ffmpeg", $paths[0] );
+		$this->assertSame( "/usr/local/bin/ffmpeg", $paths[1] );
+	}
+
+	public function testCaGetExternalApplicationPathForPathAsString() {
+		$paths = caGetExternalApplicationPath( "imagemagick_path", [ 'returnAsArray' => true ] );
+		$this->assertSame( "/usr/bin", $paths[0] );
+	}
+
+	public function testCaGetExternalApplicationPathReturnsNullsForMissingApplication() {
+		$this->assertNull( caGetExternalApplicationPath( "test" ) );
+	}
 
 	// TODO: How do we reliably test detection of dependencies? Is ImageMagick installed on Travis-CI?
 	// 		Not sure what the correct strategy is for testing presence of this across various platforms.
-    // public function testCaMediaPluginImageMagickInstalledFails() {
+	// public function testCaMediaPluginImageMagickInstalledFails() {
 	//         $this->assertFalse(caMediaPluginImageMagickInstalled());
 	// }
 }

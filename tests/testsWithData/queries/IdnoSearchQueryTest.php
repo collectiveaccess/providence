@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php' );
 
 /**
  * Class IdnoSearchQueryTest
@@ -39,72 +40,72 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
 		// search subject table
-		$this->setPrimaryTable('ca_objects');
+		$this->setPrimaryTable( 'ca_objects' );
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$this->assertGreaterThan( 0, $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'D.99/2-38',
+				'idno'    => 'D.99/2-38',
 			),
-		)));
+		) ) );
 
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$this->assertGreaterThan( 0, $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'D.99/2-39',
+				'idno'    => 'D.99/2-39',
 			),
-		)));
+		) ) );
 
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$this->assertGreaterThan( 0, $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'D.99/0000001',
+				'idno'    => 'D.99/0000001',
 			),
-		)));
+		) ) );
 
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$this->assertGreaterThan( 0, $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => '2016.1.15',
+				'idno'    => '2016.1.15',
 			),
-		)));
+		) ) );
 
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$this->assertGreaterThan( 0, $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'CHS 34',
+				'idno'    => 'CHS 34',
 			),
-		)));
+		) ) );
 
 		// search queries
-		$this->setSearchQueries(array(
+		$this->setSearchQueries( array(
 			'ca_objects.idno:"D.99/2-38"' => 1,
 			'ca_objects.idno:"D.99/2-39"' => 1,
 			'ca_objects.idno:"D.99/2-40"' => 0,
-			'ca_objects.idno:"D.99/2-"' => 0,
+			'ca_objects.idno:"D.99/2-"'   => 0,
 			//'ca_objects.idno:D.99*' => 3, oops, this doesn't work in SqlSearch	
-			'ca_objects.idno:2016*' => 1,
+			'ca_objects.idno:2016*'       => 1,
 
-			'ca_objects.idno:"D.99"' => 3,
-    		'ca_objects.idno:"D"' => 3,
-    		'ca_objects.idno:"D.99/2"' => 2,
+			'ca_objects.idno:"D.99"'   => 3,
+			'ca_objects.idno:"D"'      => 3,
+			'ca_objects.idno:"D.99/2"' => 2,
 
 			'ca_objects.idno:"D.99/0000001"' => 1,
-			'ca_objects.idno:"D.99/1"' => 1,
+			'ca_objects.idno:"D.99/1"'       => 1,
 
 			'ca_objects.idno:"2016.1.15"' => 1,
 
 			//'ca_objects.idno:"CHS 34"' => 1,
-		));
+		) );
 	}
 	# -------------------------------------------------------
 }

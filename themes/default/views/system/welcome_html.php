@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	// Just print out the dashboard
- 	print $this->render('../dashboard/dashboard_html.php');
+
+// Just print out the dashboard
+print $this->render( '../dashboard/dashboard_html.php' );
 ?>

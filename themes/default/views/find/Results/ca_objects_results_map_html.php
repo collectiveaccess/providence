@@ -25,40 +25,48 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-AssetLoadManager::register("maps");
 
-$vo_result 				= $this->getVar('result');
-$vn_num_hits 			= $this->getVar('num_hits');
-$va_access_values 		= $this->getVar('access_values');
+AssetLoadManager::register( "maps" );
 
-if($vo_result && $this->request->config->get('ca_objects_map_attribute')){
-	$o_map = new GeographicMap(740, 450, 'map2');
-	
-	$va_map_stats = $o_map->mapFrom($vo_result, $this->request->config->get('ca_objects_map_attribute'), array("ajaxContentUrl" => caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getMapItemInfo'), 'request' => $this->request, 'checkAccess' => $va_access_values));
+$vo_result        = $this->getVar( 'result' );
+$vn_num_hits      = $this->getVar( 'num_hits' );
+$va_access_values = $this->getVar( 'access_values' );
+
+if ( $vo_result && $this->request->config->get( 'ca_objects_map_attribute' ) ) {
+	$o_map = new GeographicMap( 740, 450, 'map2' );
+
+	$va_map_stats = $o_map->mapFrom( $vo_result, $this->request->config->get( 'ca_objects_map_attribute' ), array(
+		"ajaxContentUrl" => caNavUrl( $this->request, $this->request->getModulePath(), $this->request->getController(),
+			'getMapItemInfo' ),
+		'request'        => $this->request,
+		'checkAccess'    => $va_access_values
+	) );
 	// map_stats is an array with two keys: 'points' = number of unique markers; 'items' = number of results hits than were plotted at least once on the map
 
-	if ($va_map_stats['points'] > 0) {
-		if($va_map_stats['items'] < $vn_num_hits){
-?>
+	if ( $va_map_stats['points'] > 0 ) {
+		if ( $va_map_stats['items'] < $vn_num_hits ) {
+			?>
 			<script type="text/javascript">
-				jQuery('div.searchNav').html('<?php print _t("%1 of %2 results have been mapped.  To see all results chose a different display.", $va_map_stats['items'], $vn_num_hits)."</div>"; ?>');
+				jQuery('div.searchNav').html('<?php print _t( "%1 of %2 results have been mapped.  To see all results chose a different display.",
+						$va_map_stats['items'], $vn_num_hits ) . "</div>"; ?>');
 			</script>
-<?php
+			<?php
 		} else {
-?>
+			?>
 			<script type="text/javascript">
-				jQuery('div.searchNav').html('<?php print _t("Found %1 results.", $va_map_stats['items'])."</div>"; ?>');
+				jQuery('div.searchNav').html('<?php print _t( "Found %1 results.", $va_map_stats['items'] )
+				                                          . "</div>"; ?>');
 			</script>
-<?php		
+			<?php
 		}
-		print "<div id='map2' style='width: 740px; height: 450px;'> </div><div>".$o_map->render('HTML', array('delimiter' => "<br/>"))."</div>";
+		print "<div id='map2' style='width: 740px; height: 450px;'> </div><div>" . $o_map->render( 'HTML',
+				array( 'delimiter' => "<br/>" ) ) . "</div>";
 	} else {
-?>
-	<div>
-		<?php print _t('It is not possible to show a map of the results because none of the items found have map coordinates.'); ?>
-	</div>
-<?php
+		?>
+		<div>
+			<?php print _t( 'It is not possible to show a map of the results because none of the items found have map coordinates.' ); ?>
+		</div>
+		<?php
 	}
 }
 ?>

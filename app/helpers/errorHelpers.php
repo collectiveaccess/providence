@@ -23,123 +23,154 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage utils
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */	
+ */
 # --------------------------------------------------------------------------------------------
 /**
  * Display exception error screen
+ *
  * @param Exception $e
  */
-function caDisplayException(Exception $e) {
-    if (defined("__CA_LIB_DIR__")) { require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php'); }
-	if(!is_a($e, "DatabaseException") && class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
-
-	$pn_errno = 0;
-	$ps_errstr = $e->getMessage();
-	$ps_errfile = $e->getFile();
-	$pn_errline = $e->getLine();
-	$pa_errcontext = $e->getTrace();
-	$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
-	$pa_request_params = caExtractRequestParams();
-
-	$o_conf = Configuration::load();
-	$vs_log_dir = $o_conf->get('batch_metadata_import_log_directory');
-	if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-		$o_log = new KLogger($vs_log_dir, KLogger::DEBUG);
-	} else {
-		$o_log = new KLogger($vs_log_dir, KLogger::ERR);
+function caDisplayException( Exception $e ) {
+	if ( defined( "__CA_LIB_DIR__" ) ) {
+		require_once( __CA_LIB_DIR__ . '/Logging/KLogger/KLogger.php' );
+	}
+	if ( ! is_a( $e, "DatabaseException" ) && class_exists( 'AppController' ) ) {
+		AppController::getInstance()->removeAllPlugins();
 	}
 
-	$o_log->logError(get_class($e) . ': ' . $e->getMessage());
-	$o_log->logDebug(print_r($e->getTrace(), true));
+	$pn_errno           = 0;
+	$ps_errstr          = $e->getMessage();
+	$ps_errfile         = $e->getFile();
+	$pn_errline         = $e->getLine();
+	$pa_errcontext      = $e->getTrace();
+	$pa_errcontext_args = caExtractStackTraceArguments( $pa_errcontext );
+	$pa_request_params  = caExtractRequestParams();
 
-	require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__.'/../../themes/default').'/views/system/fatal_error_html.php');
+	$o_conf     = Configuration::load();
+	$vs_log_dir = $o_conf->get( 'batch_metadata_import_log_directory' );
+	if ( defined( '__CA_ENABLE_DEBUG_OUTPUT__' ) && __CA_ENABLE_DEBUG_OUTPUT__ ) {
+		$o_log = new KLogger( $vs_log_dir, KLogger::DEBUG );
+	} else {
+		$o_log = new KLogger( $vs_log_dir, KLogger::ERR );
+	}
+
+	$o_log->logError( get_class( $e ) . ': ' . $e->getMessage() );
+	$o_log->logDebug( print_r( $e->getTrace(), true ) );
+
+	require_once( ( defined( "__CA_THEME_DIR__" ) ? __CA_THEME_DIR__ : __DIR__ . '/../../themes/default' )
+	              . '/views/system/fatal_error_html.php' );
 	exit;
 }
+
 # --------------------------------------------------------------------------------------------
 /**
  * Display fatal error screen
- * @param int $pn_errno
+ *
+ * @param int    $pn_errno
  * @param string $ps_errstr
  * @param string $ps_errfile
- * @param int $pn_errline
- * @param array $pa_symboltable
+ * @param int    $pn_errline
+ * @param array  $pa_symboltable
  */
-function caDisplayFatalError($pn_errno, $ps_errstr, $ps_errfile, $pn_errline, $pa_symboltable) {
+function caDisplayFatalError( $pn_errno, $ps_errstr, $ps_errfile, $pn_errline, $pa_symboltable ) {
 
 	$pa_errcontext = debug_backtrace();
-	array_shift($pa_errcontext); // remove entry for error handler
-	$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
-	$pa_request_params = caExtractRequestParams();
+	array_shift( $pa_errcontext ); // remove entry for error handler
+	$pa_errcontext_args = caExtractStackTraceArguments( $pa_errcontext );
+	$pa_request_params  = caExtractRequestParams();
 
-	switch($pn_errno) {
+	switch ( $pn_errno ) {
 		case E_WARNING:
 		case E_NOTICE:
 		case E_STRICT:
 		case E_DEPRECATED:
 			break;
 		default:
-			if(class_exists('AppController')) { $o_app = AppController::getInstance()->removeAllPlugins(); }
-			require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__."/../../themes/default")."/views/system/fatal_error_html.php");
+			if ( class_exists( 'AppController' ) ) {
+				$o_app = AppController::getInstance()->removeAllPlugins();
+			}
+			require_once( ( defined( "__CA_THEME_DIR__" ) ? __CA_THEME_DIR__ : __DIR__ . "/../../themes/default" )
+			              . "/views/system/fatal_error_html.php" );
 			exit;
 	}
 }
+
 # --------------------------------------------------------------------------------------------
 /**
  * extract stack trace arguments from error context
+ *
  * @param array $pa_errcontext
+ *
  * @return array
  */
-function caExtractStackTraceArguments($pa_errcontext) {
-	if(!is_array($pa_errcontext)) { return []; }
-	
+function caExtractStackTraceArguments( $pa_errcontext ) {
+	if ( ! is_array( $pa_errcontext ) ) {
+		return [];
+	}
+
 	$o_purifier = new HTMLPurifier();
-	$pa_args = [];
-	
-	foreach($pa_errcontext as $vn_i => $va_trace) {
-		if(!is_array($va_trace)) { return []; }
-		if(!isset($va_trace['args']) || !is_array($va_trace['args'])) { return []; }
-		$pa_args[$vn_i] = [];
-		foreach($va_trace['args'] as $vn_j => $vm_arg) {
-			if (is_object($vm_arg)) {
-				$pa_args[$vn_i][] = 'Object '.get_class($vm_arg);
-			} elseif(is_array($vm_arg)) {
-				$pa_args[$vn_i][] = 'Array('.sizeof($vm_arg).')';
-			} elseif(is_resource($vm_arg)) {
-				$pa_args[$vn_i][] = 'Resource';
-			} elseif(is_bool($vm_arg)) {
-				$pa_args[$vn_i][] = $vm_arg ? "true" : "false";
-			} elseif(is_string($vm_arg)) {
-				$vm_arg = $o_purifier->purify((string)$vm_arg);
-				$pa_args[$vn_i][] = "'{$vm_arg}'";
+	$pa_args    = [];
+
+	foreach ( $pa_errcontext as $vn_i => $va_trace ) {
+		if ( ! is_array( $va_trace ) ) {
+			return [];
+		}
+		if ( ! isset( $va_trace['args'] ) || ! is_array( $va_trace['args'] ) ) {
+			return [];
+		}
+		$pa_args[ $vn_i ] = [];
+		foreach ( $va_trace['args'] as $vn_j => $vm_arg ) {
+			if ( is_object( $vm_arg ) ) {
+				$pa_args[ $vn_i ][] = 'Object ' . get_class( $vm_arg );
+			} elseif ( is_array( $vm_arg ) ) {
+				$pa_args[ $vn_i ][] = 'Array(' . sizeof( $vm_arg ) . ')';
+			} elseif ( is_resource( $vm_arg ) ) {
+				$pa_args[ $vn_i ][] = 'Resource';
+			} elseif ( is_bool( $vm_arg ) ) {
+				$pa_args[ $vn_i ][] = $vm_arg ? "true" : "false";
+			} elseif ( is_string( $vm_arg ) ) {
+				$vm_arg             = $o_purifier->purify( (string) $vm_arg );
+				$pa_args[ $vn_i ][] = "'{$vm_arg}'";
 			} else {
-				$vm_arg = $o_purifier->purify((string)$vm_arg);
-				$pa_args[$vn_i][] = $vm_arg;
+				$vm_arg             = $o_purifier->purify( (string) $vm_arg );
+				$pa_args[ $vn_i ][] = $vm_arg;
 			}
 		}
 	}
+
 	return $pa_args;
 }
+
 # --------------------------------------------------------------------------------------------
 /**
  * extract request parameters
+ *
  * @return array
  */
 function caExtractRequestParams() {
-	if(!include_once(pathinfo(__FILE__, PATHINFO_DIRNAME).'/../../vendor/autoload.php')) { return []; }
+	if ( ! include_once( pathinfo( __FILE__, PATHINFO_DIRNAME ) . '/../../vendor/autoload.php' ) ) {
+		return [];
+	}
 
-	if(!is_array($_REQUEST)) { return []; }
+	if ( ! is_array( $_REQUEST ) ) {
+		return [];
+	}
 
 	$o_purifier = new HTMLPurifier();
-	$pa_params = [];
-	foreach($_REQUEST as $vs_k => $vm_val) {
-		if(is_array($vs_k)) { $vs_k = join(',', caFlattenArray($vs_k));}
-		if($vs_k == 'password') { continue; } // don't dump plain text passwords on screen
-		$pa_params[$o_purifier->purify($vs_k)] = $o_purifier->purify($vm_val);
+	$pa_params  = [];
+	foreach ( $_REQUEST as $vs_k => $vm_val ) {
+		if ( is_array( $vs_k ) ) {
+			$vs_k = join( ',', caFlattenArray( $vs_k ) );
+		}
+		if ( $vs_k == 'password' ) {
+			continue;
+		} // don't dump plain text passwords on screen
+		$pa_params[ $o_purifier->purify( $vs_k ) ] = $o_purifier->purify( $vm_val );
 	}
 
 	return $pa_params;

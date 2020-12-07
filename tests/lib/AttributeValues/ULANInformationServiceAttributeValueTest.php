@@ -15,47 +15,48 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_LIB_DIR__."/Plugins/InformationService/ULAN.php");
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_LIB_DIR__ . "/Plugins/InformationService/ULAN.php" );
 
 class ULANInformationServiceAttributeValueTest extends TestCase {
 
 	public function testBasic() {
 		$o_service = new WLPlugInformationServiceULAN();
-		$va_return = $o_service->lookup(array(), 'Keith Haring');
-		$this->assertIsArray($va_return['results']);
-		$this->assertEquals(1, sizeof($va_return['results']));
+		$va_return = $o_service->lookup( array(), 'Keith Haring' );
+		$this->assertIsArray( $va_return['results'] );
+		$this->assertEquals( 1, sizeof( $va_return['results'] ) );
 	}
 
 	public function testGetExtendedInfo() {
 		$o_service = new WLPlugInformationServiceULAN();
-		$vm_ret = $o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/ulan/500024253');
+		$vm_ret    = $o_service->getExtendedInformation( array(), 'http://vocab.getty.edu/ulan/500024253' );
 
-		$this->assertArrayHasKey('display', $vm_ret);
-		$this->assertIsString($vm_ret['display']);
-		$this->assertNotEmpty($vm_ret['display']);
+		$this->assertArrayHasKey( 'display', $vm_ret );
+		$this->assertIsString( $vm_ret['display'] );
+		$this->assertNotEmpty( $vm_ret['display'] );
 	}
 
 	public function testGetIndexingInfo() {
 		$o_service = new WLPlugInformationServiceULAN();
-		$vm_ret = $o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/ulan/500024253');
+		$vm_ret    = $o_service->getDataForSearchIndexing( array(), 'http://vocab.getty.edu/ulan/500024253' );
 
-		$this->assertIsArray($vm_ret);
-		$this->assertGreaterThan(0, sizeof($vm_ret));
+		$this->assertIsArray( $vm_ret );
+		$this->assertGreaterThan( 0, sizeof( $vm_ret ) );
 	}
 }

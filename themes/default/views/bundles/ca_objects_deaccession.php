@@ -25,75 +25,120 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$vn_table_num 				= $this->getVar('table_num');
-	
-	$t_subject					= $this->getVar('t_subject');
-	$va_settings 				= $this->getVar('settings');
 
-	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
-	
-	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
+$vs_id_prefix = $this->getVar( 'placement_code' ) . $this->getVar( 'id_prefix' );
+$vn_table_num = $this->getVar( 'table_num' );
 
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, (bool)$t_subject->get('is_deaccessioned'), ((bool)$t_subject->get('is_deaccessioned') ? _t('Yes') : _t('No')));
-?>
-<div id="<?php print $vs_id_prefix; ?>">
-	<div class="bundleContainer">
-		<div class="caItemList">
-			<div class="labelInfo">	
-				<div style="margin-bottom: 10px;">
-<?php
-	if ($vb_read_only) {
-?>
-		<div class='formLabel'><?php print _t('Deaccessioned: %1', ((bool)$t_subject->get('is_deaccessioned')) ? _t('Yes') : _t('No')); ?></div>
-<?php
-	} else {
-		print $t_subject->htmlFormElement('is_deaccessioned', '^ELEMENT '._t('Deaccessioned'), array('name' => "{$vs_id_prefix}is_deaccessioned", 'id' => "{$vs_id_prefix}IsDeaccessioned", 'onclick' => 'return caShowDeaccessionControls(); '));
-	}
-?>
-				</div>
-				<div id='<?php print $vs_id_prefix; ?>DeaccessionContainer' <?php print ((bool)$t_subject->get('is_deaccessioned') ? "" : "style='display: none;'"); ?>>
-<?php
-	print $t_subject->htmlFormElement('deaccession_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_date", 'id' => "{$vs_id_prefix}DeaccessionDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only, 'timeOmit' => true));
-	
-	if ($this->request->config->get('deaccession_use_disposal_date')) {
-	    print $t_subject->htmlFormElement('deaccession_disposal_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_disposal_date", 'id' => "{$vs_id_prefix}DeaccessionDisposalDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only, 'timeOmit' => true));
-    }
-	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA"._t('Disposal type')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID", 'readonly' => $vb_read_only));
-?>
-	<br class="clear"/>
-<?php
-	print $t_subject->htmlFormElement('deaccession_authorized_by', "<div class='formLabel'>^EXTRA"._t('Authorized by')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_authorized_by", 'id' => "{$vs_id_prefix}DeaccessionAuthorizedBy", 'readonly' => $vb_read_only));
+$t_subject   = $this->getVar( 't_subject' );
+$va_settings = $this->getVar( 'settings' );
 
-	print $t_subject->htmlFormElement('deaccession_notes', "<div class='formLabel'>^EXTRA"._t('Notes')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_notes", 'id' => "{$vs_id_prefix}DeaccessionNotes", 'readonly' => $vb_read_only));
+$vb_read_only = ( isset( $va_settings['readonly'] ) && $va_settings['readonly'] );
+
+if ( ! ( $vs_add_label = $this->getVar( 'add_label' ) ) ) {
+	$vs_add_label = _t( 'Update location' );
+}
+
+
+print caEditorBundleShowHideControl( $this->request, $vs_id_prefix, $va_settings,
+	(bool) $t_subject->get( 'is_deaccessioned' ),
+	( (bool) $t_subject->get( 'is_deaccessioned' ) ? _t( 'Yes' ) : _t( 'No' ) ) );
 ?>
+	<div id="<?php print $vs_id_prefix; ?>">
+		<div class="bundleContainer">
+			<div class="caItemList">
+				<div class="labelInfo">
+					<div style="margin-bottom: 10px;">
+						<?php
+						if ( $vb_read_only ) {
+							?>
+							<div class='formLabel'><?php print _t( 'Deaccessioned: %1',
+									( (bool) $t_subject->get( 'is_deaccessioned' ) ) ? _t( 'Yes' )
+										: _t( 'No' ) ); ?></div>
+							<?php
+						} else {
+							print $t_subject->htmlFormElement( 'is_deaccessioned', '^ELEMENT ' . _t( 'Deaccessioned' ),
+								array(
+									'name'    => "{$vs_id_prefix}is_deaccessioned",
+									'id'      => "{$vs_id_prefix}IsDeaccessioned",
+									'onclick' => 'return caShowDeaccessionControls(); '
+								) );
+						}
+						?>
+					</div>
+					<div
+						id='<?php print $vs_id_prefix; ?>DeaccessionContainer' <?php print ( (bool) $t_subject->get( 'is_deaccessioned' )
+						? "" : "style='display: none;'" ); ?>>
+						<?php
+						print $t_subject->htmlFormElement( 'deaccession_date',
+							"<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array(
+								'name'      => "{$vs_id_prefix}deaccession_date",
+								'id'        => "{$vs_id_prefix}DeaccessionDate",
+								'classname' => 'dateBg',
+								'readonly'  => $vb_read_only,
+								'timeOmit'  => true
+							) );
+
+						if ( $this->request->config->get( 'deaccession_use_disposal_date' ) ) {
+							print $t_subject->htmlFormElement( 'deaccession_disposal_date',
+								"<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array(
+									'name'      => "{$vs_id_prefix}deaccession_disposal_date",
+									'id'        => "{$vs_id_prefix}DeaccessionDisposalDate",
+									'classname' => 'dateBg',
+									'readonly'  => $vb_read_only,
+									'timeOmit'  => true
+								) );
+						}
+						print $t_subject->htmlFormElement( 'deaccession_type_id',
+							"<div class='formLabel' style='float: left;'>^EXTRA" . _t( 'Disposal type' )
+							. "<br/>^ELEMENT</div>", array(
+								'name'     => "{$vs_id_prefix}deaccession_type_id",
+								'id'       => "{$vs_id_prefix}DeaccessionTypeID",
+								'readonly' => $vb_read_only
+							) );
+						?>
+						<br class="clear"/>
+						<?php
+						print $t_subject->htmlFormElement( 'deaccession_authorized_by',
+							"<div class='formLabel'>^EXTRA" . _t( 'Authorized by' ) . "<br/>^ELEMENT</div>", array(
+								'name'     => "{$vs_id_prefix}deaccession_authorized_by",
+								'id'       => "{$vs_id_prefix}DeaccessionAuthorizedBy",
+								'readonly' => $vb_read_only
+							) );
+
+						print $t_subject->htmlFormElement( 'deaccession_notes',
+							"<div class='formLabel'>^EXTRA" . _t( 'Notes' ) . "<br/>^ELEMENT</div>", array(
+								'name'     => "{$vs_id_prefix}deaccession_notes",
+								'id'       => "{$vs_id_prefix}DeaccessionNotes",
+								'readonly' => $vb_read_only
+							) );
+						?>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-</div>
 
 <?php
-	if (!$vb_read_only) {
-?>
-<script type="text/javascript">
-	function caShowDeaccessionControls() {
-		jQuery('#<?php print $vs_id_prefix; ?>IsDeaccessioned').is(':checked') ? jQuery('#<?php print $vs_id_prefix; ?>DeaccessionContainer').slideDown(250) : jQuery('#<?php print $vs_id_prefix; ?>DeaccessionContainer').slideUp(250);
-		return true;
-	}
-	jQuery(document).ready(function() {
-		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDate').datepicker({constrainInput: false});
-		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDisposalDate').datepicker({constrainInput: false});
-		
-		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionAuthorizedBy').autocomplete( 
-						{ 
-							source: '<?= caNavUrl($this->request, 'lookup', 'Intrinsic', 'Get', ['max' => 500, 'bundle' => 'ca_objects.deaccession_authorized_by']); ?>',
-							minLength: 3, delay: 800
-						}
-					);
-	});
-</script>
-<?php
-	}
+if ( ! $vb_read_only ) {
+	?>
+	<script type="text/javascript">
+		function caShowDeaccessionControls() {
+			jQuery('#<?php print $vs_id_prefix; ?>IsDeaccessioned').is(':checked') ? jQuery('#<?php print $vs_id_prefix; ?>DeaccessionContainer').slideDown(250) : jQuery('#<?php print $vs_id_prefix; ?>DeaccessionContainer').slideUp(250);
+			return true;
+		}
+
+		jQuery(document).ready(function () {
+			jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDate').datepicker({constrainInput: false});
+			jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDisposalDate').datepicker({constrainInput: false});
+
+			jQuery('#<?php print $vs_id_prefix; ?>DeaccessionAuthorizedBy').autocomplete(
+				{
+					source: '<?= caNavUrl( $this->request, 'lookup', 'Intrinsic', 'Get',
+						[ 'max' => 500, 'bundle' => 'ca_objects.deaccession_authorized_by' ] ); ?>',
+					minLength: 3, delay: 800
+				}
+			);
+		});
+	</script>
+	<?php
+}

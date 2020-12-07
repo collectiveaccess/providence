@@ -26,31 +26,41 @@
  * ----------------------------------------------------------------------
  */
 
-$vs_filename = ($this->getVar('file_name') ? $this->getVar('file_name') : $vn_id);
-$va_destinations = $this->getVar('exporter_alternate_destinations');
-$vs_tmp_file = "File: ".$this->getVar('export_file');
-print "<h2>"._t("The export has been processed. Configure your download below.")."</h2>\n";
+$vs_filename = ( $this->getVar( 'file_name' ) ? $this->getVar( 'file_name' ) : $vn_id );
+$va_destinations = $this->getVar( 'exporter_alternate_destinations' );
+$vs_tmp_file = "File: " . $this->getVar( 'export_file' );
+print "<h2>" . _t( "The export has been processed. Configure your download below." ) . "</h2>\n";
 print $vs_tmp_file;
 ?>
 <table>
 	<tr>
-		<td><span class='formLabelPlain'><?php print _t("File name"); ?>&colon;</td>
-		<td><?php print caHTMLTextInput('file_name', array('id' => 'file_name', 'value' => $vs_filename, 'size' => 40)); ?></td>
+		<td><span class='formLabelPlain'><?php print _t( "File name" ); ?>&colon;</td>
+		<td><?php print caHTMLTextInput( 'file_name',
+				array( 'id' => 'file_name', 'value' => $vs_filename, 'size' => 40 ) ); ?></td>
 	</tr>
 	<tr>
-		<td style="vertical-align: top;"><span class='formLabelPlain'><?php print _t("Destination(s)"); ?>&colon;</td>
+		<td style="vertical-align: top;"><span class='formLabelPlain'><?php print _t( "Destination(s)" ); ?>&colon;</td>
 		<td>
-			<div><?php print caJSButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t('Download'), 'file_download', array('id' => 'file_download', 'onclick' => 'caProcessDestination("file_download");')); ?></div>
-<?php
-			if(is_array($va_destinations)) {
-				foreach($va_destinations as $vs_code => $va_dest) {
-					if(!isset($va_dest['type']) || !in_array($va_dest['type'], ['github', 'ResourceSpace'])) { continue; } // we only support github and ResourceSpace atm
-					if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
+			<div><?php print caJSButton( $this->request, __CA_NAV_ICON_DOWNLOAD__, _t( 'Download' ), 'file_download',
+					array( 'id' => 'file_download', 'onclick' => 'caProcessDestination("file_download");' ) ); ?></div>
+			<?php
+			if ( is_array( $va_destinations ) ) {
+				foreach ( $va_destinations as $vs_code => $va_dest ) {
+					if ( ! isset( $va_dest['type'] )
+					     || ! in_array( $va_dest['type'], [ 'github', 'ResourceSpace' ] )
+					) {
+						continue;
+					} // we only support github and ResourceSpace atm
+					if ( ! isset( $va_dest['display'] ) || ! $va_dest['display'] ) {
+						$va_dest['display'] = "???";
+					}
 
-						print "<div>".caJSButton($this->request, __CA_NAV_ICON_UPDATE__, $va_dest['display'], $vs_code, array('onclick' => 'caProcessDestination("'.$vs_code.'"); return false;'))."<div/>\n";
+					print "<div>" . caJSButton( $this->request, __CA_NAV_ICON_UPDATE__, $va_dest['display'], $vs_code,
+							array( 'onclick' => 'caProcessDestination("' . $vs_code . '"); return false;' ) )
+					      . "<div/>\n";
 				}
 			}
-?>
+			?>
 		</td>
 	</tr>
 </table>
@@ -58,8 +68,8 @@ print $vs_tmp_file;
 
 
 <script type="text/javascript">
-	jQuery("#file_name").keyup(function(event){
-		if(event.keyCode == 13){
+	jQuery("#file_name").keyup(function (event) {
+		if (event.keyCode == 13) {
 			jQuery("#file_download").click();
 		}
 	});
@@ -67,13 +77,15 @@ print $vs_tmp_file;
 	function caProcessDestination(dest_code) {
 		var file_name = jQuery('#file_name').val();
 
-		if(dest_code == 'file_download') { // for file download, really redirect to action
-			window.location.href = "<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>?file_name=" + encodeURIComponent(file_name) + "&destination=file_download";
+		if (dest_code == 'file_download') { // for file download, really redirect to action
+			window.location.href = "<?php print caNavUrl( $this->request, 'manage', 'MetadataExport',
+				'ProcessDestination' ); ?>?file_name=" + encodeURIComponent(file_name) + "&destination=file_download";
 		} else { // for other destinations like github, load async
-			jQuery('#caExporterDestinationFeedback').html("<?php print caBusyIndicatorIcon($this->request); ?>");
+			jQuery('#caExporterDestinationFeedback').html("<?php print caBusyIndicatorIcon( $this->request ); ?>");
 			console.log(file_name);
 			console.log(dest_code);
-			jQuery("#caExporterDestinationFeedback").load('<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>', { file_name : file_name, destination : dest_code });
+			jQuery("#caExporterDestinationFeedback").load('<?php print caNavUrl( $this->request, 'manage',
+				'MetadataExport', 'ProcessDestination' ); ?>', {file_name: file_name, destination: dest_code});
 		}
 	}
 </script>

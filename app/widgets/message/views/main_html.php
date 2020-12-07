@@ -25,15 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request 			= $this->getVar('request');
-	$vs_widget_id 			= $this->getVar('widget_id');
-	$vs_message				= $this->getVar('message');
+
+$po_request   = $this->getVar( 'request' );
+$vs_widget_id = $this->getVar( 'widget_id' );
+$vs_message   = $this->getVar( 'message' );
 ?>
 <div class="dashboardWidgetContentContainer">
-<?php
-		if($vs_message){
-			print "<div class='dashboardWidgetHeading'>".$vs_message."</div>";
-		}
-?>
+	<?php
+	if ( $vs_message ) {
+		print "<div class='dashboardWidgetHeading'>" . $vs_message . "</div>";
+	}
+	?>
 </div>

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/Visualizer/BaseCurrencyConversionPlugin.php : 
+ * app/lib/Plugins/Visualizer/BaseCurrencyConversionPlugin.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -23,40 +23,41 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Geographic
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
-    
-include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugCurrencyConversion.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
+
+/**
+ *
+ */
+
+include_once( __CA_LIB_DIR__ . "/Plugins/WLPlug.php" );
+include_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugCurrencyConversion.php" );
+include_once( __CA_LIB_DIR__ . "/Configuration.php" );
 
 abstract class BaseCurrencyConversionPlugin Extends WLPlug {
 	# ------------------------------------------------
 	// properties for this plugin instance
-	protected $properties = array(
-		
-	);
-	
+	protected $properties
+		= array();
+
 	// app config
 	protected $opo_config;
-	
+
 	// plugin info
-	protected $info = array(
-		"NAME" => "?",
-		"PROPERTIES" => array(
-			'id' => 'W'
-		)
-	);
-	
+	protected $info
+		= array(
+			"NAME"       => "?",
+			"PROPERTIES" => array(
+				'id' => 'W'
+			)
+		);
+
 	# ------------------------------------------------
+
 	/**
 	 *
 	 */
@@ -64,16 +65,19 @@ abstract class BaseCurrencyConversionPlugin Extends WLPlug {
 		$this->opo_config = Configuration::load();
 	}
 	# ------------------------------------------------
+
 	/**
 	 *
 	 */
 	public function register() {
 		$this->opo_config = Configuration::load();
-		
+
 		$this->info["INSTANCE"] = $this;
+
 		return $this->info;
 	}
 	# ------------------------------------------------
+
 	/**
 	 * Returns status of plugin. Normally this is overriden by the plugin subclass
 	 *
@@ -81,24 +85,26 @@ abstract class BaseCurrencyConversionPlugin Extends WLPlug {
 	 */
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
-		
-		if ($this->register()) {
+
+		if ( $this->register() ) {
 			$va_status['available'] = true;
 		}
-		
+
 		return $va_status;
 	}
 	# ------------------------------------------------
+
 	/**
-	 * 
 	 *
-	 * 
+	 *
+	 *
 	 */
-	public static function normalizeCurrencySpecifier($ps_currency_specifier) {		
-		switch($ps_currency_specifier) {
+	public static function normalizeCurrencySpecifier( $ps_currency_specifier ) {
+		switch ( $ps_currency_specifier ) {
 			case '$':
-				$o_config = Configuration::load();
-				$ps_currency_specifier = ($vs_dollars_are_this = $o_config->get('default_dollar_currency')) ? $vs_dollars_are_this : 'USD';
+				$o_config              = Configuration::load();
+				$ps_currency_specifier = ( $vs_dollars_are_this = $o_config->get( 'default_dollar_currency' ) )
+					? $vs_dollars_are_this : 'USD';
 				break;
 			case '¥':
 				$ps_currency_specifier = 'JPY';
@@ -110,12 +116,14 @@ abstract class BaseCurrencyConversionPlugin Extends WLPlug {
 				$ps_currency_specifier = 'EUR';
 				break;
 			default:
-				$ps_currency_specifier = strtoupper($ps_currency_specifier);
+				$ps_currency_specifier = strtoupper( $ps_currency_specifier );
 				break;
 		}
+
 		return $ps_currency_specifier;
 	}
 	# ------------------------------------------------
+
 	/**
 	 *
 	 */
@@ -123,6 +131,7 @@ abstract class BaseCurrencyConversionPlugin Extends WLPlug {
 		return;
 	}
 	# ------------------------------------------------
+
 	/**
 	 *
 	 */
@@ -131,4 +140,5 @@ abstract class BaseCurrencyConversionPlugin Extends WLPlug {
 	}
 	# ------------------------------------------------
 }
+
 ?>

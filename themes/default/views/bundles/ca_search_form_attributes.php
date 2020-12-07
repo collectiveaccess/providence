@@ -25,31 +25,35 @@
  *
  * ----------------------------------------------------------------------
  */
-	
-	$va_elements =			$this->getVar('elements');
-	$va_element_ids = 		$this->getVar('element_ids');
-	$vs_element_set_label = $this->getVar('element_set_label');
-	
-?>
-		<div>				
-<?php
-			foreach($va_elements as $vn_container_id => $va_element_list) {
-				if ($vn_container_id === '_locale_id') { continue; }
-?>
-				<table class="attributeListItem" cellpadding="0px" cellspacing="0px">
-					<tr>
-<?php
-						foreach($va_element_list as $vs_element) {
-							print '<tr><td class="attributeListItem"><div class="searchFormLineModeElementSubLabel">'.$vs_element."</div></td></tr>\n";
-						}
-?>
-					</tr>
-				</table>
-<?php
-			}
 
-			if (isset($va_elements['_locale_id'])) {
-				print ($va_elements['_locale_id']['hidden']) ? $va_elements['_locale_id']['element'] : '<div class="formLabel">'._t('Locale ').$va_elements['_locale_id']['element'].'</div>';
-			}
+$va_elements          = $this->getVar( 'elements' );
+$va_element_ids       = $this->getVar( 'element_ids' );
+$vs_element_set_label = $this->getVar( 'element_set_label' );
+
 ?>
-		</div>
+<div>
+	<?php
+	foreach ( $va_elements as $vn_container_id => $va_element_list ) {
+		if ( $vn_container_id === '_locale_id' ) {
+			continue;
+		}
+		?>
+		<table class="attributeListItem" cellpadding="0px" cellspacing="0px">
+			<tr>
+				<?php
+				foreach ( $va_element_list as $vs_element ) {
+					print '<tr><td class="attributeListItem"><div class="searchFormLineModeElementSubLabel">'
+					      . $vs_element . "</div></td></tr>\n";
+				}
+				?>
+			</tr>
+		</table>
+		<?php
+	}
+
+	if ( isset( $va_elements['_locale_id'] ) ) {
+		print ( $va_elements['_locale_id']['hidden'] ) ? $va_elements['_locale_id']['element']
+			: '<div class="formLabel">' . _t( 'Locale ' ) . $va_elements['_locale_id']['element'] . '</div>';
+	}
+	?>
+</div>

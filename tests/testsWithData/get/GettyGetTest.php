@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php' );
 
 /**
  * Class GettyGetTest
@@ -43,8 +44,9 @@ class GettyGetTest extends BaseTestWithData {
 	 * @var ca_objects
 	 */
 	private $opt_object = null;
+
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -52,11 +54,11 @@ class GettyGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_test_record = $this->addTestRecord('ca_objects', array(
+		$vn_test_record = $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
 			),
-			'attributes' => array(
+			'attributes'       => array(
 
 				// AAT
 				'aat' => array(
@@ -67,18 +69,19 @@ class GettyGetTest extends BaseTestWithData {
 					),
 				),
 			)
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_test_record);
+		$this->assertGreaterThan( 0, $vn_test_record );
 
-		$this->opt_object = new ca_objects($vn_test_record);
+		$this->opt_object = new ca_objects( $vn_test_record );
 	}
+
 	# -------------------------------------------------------
 	public function testGets() {
-		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('Image', $vm_ret);
+		$vm_ret = $this->opt_object->get( 'ca_objects.type_id', array( 'convertCodesToDisplayText' => true ) );
+		$this->assertEquals( 'Image', $vm_ret );
 
-		$this->assertEquals('helmets (protective wear)', $this->opt_object->get('ca_objects.aat'));
+		$this->assertEquals( 'helmets (protective wear)', $this->opt_object->get( 'ca_objects.aat' ) );
 	}
 	# -------------------------------------------------------
 }

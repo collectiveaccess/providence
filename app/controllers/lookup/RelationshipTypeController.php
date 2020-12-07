@@ -25,25 +25,30 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 	
- 	class RelationshipTypeController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = true;
- 		protected $ops_table_name = 'ca_relationship_types';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'relationship_type';
- 		protected $ops_search_class = 'RelationshipTypeSearch';
- 		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
-		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			if ($pn_table_num = (int)$this->request->getParameter('table_num', pInteger)) {
-				if(!is_array($pa_additional_query_params)) { $pa_additional_query_params = array(); }
-				$pa_options['filters'] = array(array("ca_relationship_types.table_num", "=", $pn_table_num));
+require_once( __CA_LIB_DIR__ . "/BaseLookupController.php" );
+
+class RelationshipTypeController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = true;
+	protected $ops_table_name = 'ca_relationship_types';        // name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'relationship_type';
+	protected $ops_search_class = 'RelationshipTypeSearch';
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function Get( $pa_additional_query_params = null, $pa_options = null ) {
+		if ( $pn_table_num = (int) $this->request->getParameter( 'table_num', pInteger ) ) {
+			if ( ! is_array( $pa_additional_query_params ) ) {
+				$pa_additional_query_params = array();
 			}
-			return parent::Get($pa_additional_query_params, $pa_options);
+			$pa_options['filters'] = array( array( "ca_relationship_types.table_num", "=", $pn_table_num ) );
 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+
+		return parent::Get( $pa_additional_query_params, $pa_options );
+	}
+	# -------------------------------------------------------
+}
+
+?>

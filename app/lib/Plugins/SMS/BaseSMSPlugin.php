@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/SMS/BaseSMSPlugIn.php : 
+ * app/lib/Plugins/SMS/BaseSMSPlugIn.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -23,41 +23,40 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage SMS
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
-    
-include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugSMS.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
+
+/**
+ *
+ */
+
+include_once( __CA_LIB_DIR__ . "/Plugins/WLPlug.php" );
+include_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugSMS.php" );
+include_once( __CA_LIB_DIR__ . "/Configuration.php" );
 
 abstract class BaseSMSPlugIn Extends WLPlug {
 	// properties for this plugin instance
-	protected $properties = array(
-		
-	);
-	
+	protected $properties
+		= array();
+
 	// app config
 	protected $opo_config;
-	
+
 	// map item list
 
 	// plugin info
-	protected $info = array(
-		"NAME" => "BaseSMSPlugin",
-		"PROPERTIES" => array(
-			
-		)
-	);
-	
+	protected $info
+		= array(
+			"NAME"       => "BaseSMSPlugin",
+			"PROPERTIES" => array()
+		);
+
 	# ------------------------------------------------
+
 	/**
 	 *
 	 */
@@ -66,4 +65,5 @@ abstract class BaseSMSPlugIn Extends WLPlug {
 	}
 	# ------------------------------------------------
 }
+
 ?>

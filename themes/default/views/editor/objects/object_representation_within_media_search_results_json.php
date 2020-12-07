@@ -26,10 +26,10 @@
  * ----------------------------------------------------------------------
  */
 
-	$pn_object_id 			= $this->getVar('object_id');
-	$pn_representation_id 	= $this->getVar('representation_id');
-	$pa_results 			= $this->getVar('results');
-	
-	header("Content-type: application/json");
-	print json_encode($pa_results);
+$pn_object_id         = $this->getVar( 'object_id' );
+$pn_representation_id = $this->getVar( 'representation_id' );
+$pa_results           = $this->getVar( 'results' );
+
+header( "Content-type: application/json" );
+print json_encode( $pa_results );
 ?>

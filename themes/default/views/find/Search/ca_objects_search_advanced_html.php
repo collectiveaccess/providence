@@ -25,47 +25,51 @@
  *
  * ----------------------------------------------------------------------
  */
- 	 
-	$vo_result = $this->getVar('result');
-	
-	
- 	print $this->render('Search/search_advanced_controls_html.php');
- ?>
-	<div id="quickLookOverlay"> 
-		<div id="quickLookOverlayContent">
-		
-		</div>
-	</div>
-	
- 	<div id="resultBox">
-<?php
-	if($vo_result) {
-		$vs_view = $this->getVar('current_view');
-		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
-		print $this->render('Results/paging_controls_html.php');
-		print $this->render('Results/search_options_html.php');
-?>
 
-	<div class="sectionBox">
-<?php
-		switch($vs_view) {
-			case 'full':
-				print $this->render('Results/ca_objects_results_full_html.php');
-				break;
-			case 'list':
-				print $this->render('Results/ca_objects_results_list_html.php');
-				break;
-			case 'no_results':
-				print $this->render('Results/no_results_html.php');
-				break;
-			default:
-				print $this->render('Results/ca_objects_results_thumbnail_html.php');
-				break;
-		}
-?>		
-	</div><!-- end sectionbox -->
-<?php
-		if ($vs_view != 'map') { print $this->render('Results/paging_controls_minimal_html.php'); }
-	}
+$vo_result = $this->getVar( 'result' );
+
+
+print $this->render( 'Search/search_advanced_controls_html.php' );
 ?>
+<div id="quickLookOverlay">
+	<div id="quickLookOverlayContent">
+
+	</div>
+</div>
+
+<div id="resultBox">
+	<?php
+	if ( $vo_result ) {
+		$vs_view = $this->getVar( 'current_view' );
+		if ( $vo_result->numHits() == 0 ) {
+			$vs_view = 'no_results';
+		}
+		print $this->render( 'Results/paging_controls_html.php' );
+		print $this->render( 'Results/search_options_html.php' );
+		?>
+
+		<div class="sectionBox">
+			<?php
+			switch ( $vs_view ) {
+				case 'full':
+					print $this->render( 'Results/ca_objects_results_full_html.php' );
+					break;
+				case 'list':
+					print $this->render( 'Results/ca_objects_results_list_html.php' );
+					break;
+				case 'no_results':
+					print $this->render( 'Results/no_results_html.php' );
+					break;
+				default:
+					print $this->render( 'Results/ca_objects_results_thumbnail_html.php' );
+					break;
+			}
+			?>
+		</div><!-- end sectionbox -->
+		<?php
+		if ( $vs_view != 'map' ) {
+			print $this->render( 'Results/paging_controls_minimal_html.php' );
+		}
+	}
+	?>
 </div><!-- end resultbox -->

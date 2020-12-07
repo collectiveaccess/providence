@@ -23,16 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Sync
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
 namespace CA\Sync\LogEntry;
 
-require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Bundlable.php');
+require_once( __CA_LIB_DIR__ . '/Sync/LogEntry/Bundlable.php' );
 
 class Representation extends Bundlable {
 
@@ -42,56 +42,59 @@ class Representation extends Bundlable {
 	 * @throws InvalidLogEntryException
 	 */
 	public function checkModelInstanceForErrors() {
-		if(!($this->getModelInstance() instanceof \BaseModel)) {
-			throw new InvalidLogEntryException('no model instance found');
+		if ( ! ( $this->getModelInstance() instanceof \BaseModel ) ) {
+			throw new InvalidLogEntryException( 'no model instance found' );
 		}
 
-		if($this->getModelInstance()->numErrors() > 0) { // is this critical or not? hmm
+		if ( $this->getModelInstance()->numErrors() > 0 ) { // is this critical or not? hmm
 
 			// Catch case where there was no media specified. odds are this is a log entry where the media since
 			// was overwritten and nuked. In this case we just insert a static image which will (likely) later be overwritten
-			if($this->getModelInstance()->numErrors() == 1) {
+			if ( $this->getModelInstance()->numErrors() == 1 ) {
 				/** @var \ApplicationError $o_e */
-				$o_e = array_shift($this->getModelInstance()->errors());
-				
+				$o_e = array_shift( $this->getModelInstance()->errors() );
+
 				// 2710 = No media specified for new representation
 				// 1600 = File type is not supported for this field (happens when the index.php "clean url" rewrite rule kicks in)
-				if(in_array($o_e->getErrorNumber(), [1600, 2710])) { 
-					$this->getModelInstance()->set('media', __CA_THEME_DIR__.'/graphics/icons/info.png');
+				if ( in_array( $o_e->getErrorNumber(), [ 1600, 2710 ] ) ) {
+					$this->getModelInstance()->set( 'media', __CA_THEME_DIR__ . '/graphics/icons/info.png' );
 					// try insert again!
-					if($this->isInsert()) {
-						$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
-					} elseif($this->isUpdate()) {
+					if ( $this->isInsert() ) {
+						$this->getModelInstance()->insert( array( 'setGUIDTo' => $this->getGUID() ) );
+					} elseif ( $this->isUpdate() ) {
 						$this->getModelInstance()->update();
 					}
 
 					// check again!
-					if($this->getModelInstance()->numErrors() > 0) {
+					if ( $this->getModelInstance()->numErrors() > 0 ) {
 						throw new InvalidLogEntryException(
-							_t("There were errors processing record from log entry on second try %1: %2",
-								$this->getLogId(), join(' ', $this->getModelInstance()->getErrors()))
+							_t( "There were errors processing record from log entry on second try %1: %2",
+								$this->getLogId(), join( ' ', $this->getModelInstance()->getErrors() ) )
 						);
 					}
+
 					return;
 				}
 			}
 
 			throw new InvalidLogEntryException(
-				_t("There were errors processing record from log entry %1: %2",
-					$this->getLogId(), join(' ', $this->getModelInstance()->getErrors()))
+				_t( "There were errors processing record from log entry %1: %2",
+					$this->getLogId(), join( ' ', $this->getModelInstance()->getErrors() ) )
 			);
 		}
-		
+
 		$va_snapshot = $this->getSnapshot();
-		if (isset($va_snapshot['media_media_desc']) && is_array($va_snapshot['media_media_desc'])) {
-			if(is_array($va_snapshot['media_media_desc']['_CENTER'])) {
-				\ReplicationService::$s_logger->log("Set media center to ".print_R($va_snapshot['media_media_desc']['_CENTER'], true));
-				$this->getModelInstance()->setMediaCenter('media', $va_snapshot['media_media_desc']['_CENTER']['x'], $va_snapshot['media_media_desc']['_CENTER']['y']);
+		if ( isset( $va_snapshot['media_media_desc'] ) && is_array( $va_snapshot['media_media_desc'] ) ) {
+			if ( is_array( $va_snapshot['media_media_desc']['_CENTER'] ) ) {
+				\ReplicationService::$s_logger->log( "Set media center to "
+				                                     . print_R( $va_snapshot['media_media_desc']['_CENTER'], true ) );
+				$this->getModelInstance()->setMediaCenter( 'media', $va_snapshot['media_media_desc']['_CENTER']['x'],
+					$va_snapshot['media_media_desc']['_CENTER']['y'] );
 				$this->getModelInstance()->update();
-				if($this->getModelInstance()->numErrors() > 0) {
+				if ( $this->getModelInstance()->numErrors() > 0 ) {
 					throw new InvalidLogEntryException(
-						_t("There were errors processing record from log entry while trying to set media center %1: %2",
-							$this->getLogId(), join(' ', $this->getModelInstance()->getErrors()))
+						_t( "There were errors processing record from log entry while trying to set media center %1: %2",
+							$this->getLogId(), join( ' ', $this->getModelInstance()->getErrors() ) )
 					);
 				}
 			}
@@ -104,16 +107,18 @@ class Representation extends Bundlable {
 		$va_snapshot = $this->getSnapshot();
 
 		// is checksum? -> dig actual file out from stashed files if possible
-		if(isset($va_snapshot['media']) && (strlen($va_snapshot['media']) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot['media'])) {
+		if ( isset( $va_snapshot['media'] ) && ( strlen( $va_snapshot['media'] ) == 32 )
+		     && preg_match( "/^[a-f0-9]+$/", $va_snapshot['media'] )
+		) {
 			$o_app_vars = new \ApplicationVars();
-			$va_files = $o_app_vars->getVar('pushMediaFiles');
-			if(!isset($va_files[$va_snapshot['media']])) {
+			$va_files   = $o_app_vars->getVar( 'pushMediaFiles' );
+			if ( ! isset( $va_files[ $va_snapshot['media'] ] ) ) {
 				//throw new InvalidLogEntryException('Could not find media reference for checksum');
-				throw new IrrelevantLogEntry(_t("Could not find media reference for checksum"));
+				throw new IrrelevantLogEntry( _t( "Could not find media reference for checksum" ) );
 			}
 
-			if(!file_exists($va_files[$va_snapshot['media']])) {
-				throw new InvalidLogEntryException('Could not find stashed media for checksum');
+			if ( ! file_exists( $va_files[ $va_snapshot['media'] ] ) ) {
+				throw new InvalidLogEntryException( 'Could not find stashed media for checksum' );
 			}
 		}
 	}
@@ -127,35 +132,39 @@ class Representation extends Bundlable {
 		$va_snapshot = $this->getSnapshot();
 
 		// is checksum? -> dig actual file out from stashed files if possible
-		if(isset($va_snapshot['media']) && (strlen($va_snapshot['media']) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot['media'])) {
+		if ( isset( $va_snapshot['media'] ) && ( strlen( $va_snapshot['media'] ) == 32 )
+		     && preg_match( "/^[a-f0-9]+$/", $va_snapshot['media'] )
+		) {
 			$o_app_vars = new \ApplicationVars();
-			$va_files = $o_app_vars->getVar('pushMediaFiles');
-			
-			
-			if(isset($va_files[$va_snapshot['media']])) {
-				$this->getModelInstance()->set('media', $va_files[$va_snapshot['media']]);
+			$va_files   = $o_app_vars->getVar( 'pushMediaFiles' );
+
+
+			if ( isset( $va_files[ $va_snapshot['media'] ] ) ) {
+				$this->getModelInstance()->set( 'media', $va_files[ $va_snapshot['media'] ] );
 			} else {
 				//throw new InvalidLogEntryException('Could not find media for checksum');
-				throw new IrrelevantLogEntry(_t("Could not find media for checksum"));
+				throw new IrrelevantLogEntry( _t( "Could not find media for checksum" ) );
 			}
 		}
 	}
 
-	public function apply(array $pa_options = array()) {
-		$vm_ret = parent::apply($pa_options);
+	public function apply( array $pa_options = array() ) {
+		$vm_ret = parent::apply( $pa_options );
 
 		$va_snapshot = $this->getSnapshot();
 
 		// was checksum? -> clean up stashed file
-		if(isset($va_snapshot['media']) && (strlen($va_snapshot['media']) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot['media'])) {
+		if ( isset( $va_snapshot['media'] ) && ( strlen( $va_snapshot['media'] ) == 32 )
+		     && preg_match( "/^[a-f0-9]+$/", $va_snapshot['media'] )
+		) {
 			$o_app_vars = new \ApplicationVars();
-			$va_files = $o_app_vars->getVar('pushMediaFiles');
-			if(isset($va_files[$va_snapshot['media']])) {
-				@unlink($va_files[$va_snapshot['media']]);
-				unset($va_files[$va_snapshot['media']]);
+			$va_files   = $o_app_vars->getVar( 'pushMediaFiles' );
+			if ( isset( $va_files[ $va_snapshot['media'] ] ) ) {
+				@unlink( $va_files[ $va_snapshot['media'] ] );
+				unset( $va_files[ $va_snapshot['media'] ] );
 			}
 
-			$o_app_vars->setVar('pushMediaFiles', $va_files);
+			$o_app_vars->setVar( 'pushMediaFiles', $va_files );
 			$o_app_vars->save();
 		}
 

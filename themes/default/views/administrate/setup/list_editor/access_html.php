@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
-	print caEditorACLEditor($this, $this->getVar('t_subject'));
+
+print caEditorACLEditor( $this, $this->getVar( 't_subject' ) );
 ?>

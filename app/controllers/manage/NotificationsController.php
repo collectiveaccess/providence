@@ -25,20 +25,24 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
-require_once(__CA_MODELS_DIR__.'/ca_notifications.php');
+require_once( __CA_LIB_DIR__ . "/Controller/ActionController.php" );
+require_once( __CA_MODELS_DIR__ . '/ca_notifications.php' );
 
 class NotificationsController extends ActionController {
 	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+	public function __construct( &$po_request, &$po_response, $pa_view_paths = null ) {
+		parent::__construct( $po_request, $po_response, $pa_view_paths );
 	}
+
 	# -------------------------------------------------------
 	public function markAsRead() {
-		$pn_subject_id = $this->getRequest()->getParameter('subject_id', pInteger);
-		if(!$pn_subject_id) { return false; }
-		if (!ca_notifications::markAsRead($pn_subject_id, $this->request->getUserID())) {
-			$this->notification->addNotification(_t("Could not mark notification as read"), __NOTIFICATION_TYPE_ERROR__);
+		$pn_subject_id = $this->getRequest()->getParameter( 'subject_id', pInteger );
+		if ( ! $pn_subject_id ) {
+			return false;
+		}
+		if ( ! ca_notifications::markAsRead( $pn_subject_id, $this->request->getUserID() ) ) {
+			$this->notification->addNotification( _t( "Could not mark notification as read" ),
+				__NOTIFICATION_TYPE_ERROR__ );
 		}
 	}
 	# -------------------------------------------------------

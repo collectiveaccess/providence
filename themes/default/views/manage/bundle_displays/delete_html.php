@@ -25,14 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_set = $this->getVar('t_subject');
-	$vn_display_id = $this->getVar('subject_id');
+$t_set         = $this->getVar( 't_subject' );
+$vn_display_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_set, $this->getVar('subject_name'), 'manage/bundle_displays', 'BundleDisplayEditor', 'Edit/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id));
+		print caDeleteWarningBox( $this->request, $t_set, $this->getVar( 'subject_name' ), 'manage/bundle_displays',
+			'BundleDisplayEditor', 'Edit/' . $this->request->getActionExtra(),
+			array( 'display_id' => $vn_display_id ) );
 	}
-?>
+	?>
 </div>

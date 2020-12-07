@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	print caBatchEditorInspector($this, array());
+
+print caBatchEditorInspector( $this, array() );
 ?>

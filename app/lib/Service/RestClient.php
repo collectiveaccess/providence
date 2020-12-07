@@ -23,31 +23,31 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage WebServices
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-  
-
+/**
+ *
+ */
 class RestClient extends Zend_Rest_Client {
 	# -------------------------------------------------------
 	/**
-	 * @param string $ps_url The url to connect to
-	 * @param array $ps_options An array of options:
-	 *		timeout = the number of seconds to wait for a response before throwing an exception. Default is 30 seconds.
+	 * @param string $ps_url     The url to connect to
+	 * @param array  $ps_options An array of options:
+	 *                           timeout = the number of seconds to wait for a response before throwing an exception.
+	 *                           Default is 30 seconds.
 	 */
-	public function  __construct($ps_uri = null, $pa_options=null) {
-		self::getHttpClient()->setCookieJar(true);
-		self::getHttpClient()->setConfig(array(
-			"timeout" => (isset($pa_options['timeout']) && ((int)$pa_options['timeout'] > 0)) ? (int)$pa_options['timeout'] : 30
-		));
-		parent::__construct($ps_uri);
+	public function __construct( $ps_uri = null, $pa_options = null ) {
+		self::getHttpClient()->setCookieJar( true );
+		self::getHttpClient()->setConfig( array(
+			"timeout" => ( isset( $pa_options['timeout'] ) && ( (int) $pa_options['timeout'] > 0 ) )
+				? (int) $pa_options['timeout'] : 30
+		) );
+		parent::__construct( $ps_uri );
 	}
 	# -------------------------------------------------------
 }

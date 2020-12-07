@@ -25,76 +25,81 @@
  *
  * ----------------------------------------------------------------------
  */
-	$va_events_list = $this->getVar('events_list');
+$va_events_list = $this->getVar( 'events_list' );
 
 ?>
 <script language="JavaScript" type="text/javascript">
-/* <![CDATA[ */
-	$(document).ready(function(){
+	/* <![CDATA[ */
+	$(document).ready(function () {
 		$('#caItemList').caFormatListTable();
 	});
-/* ]]> */
+	/* ]]> */
 </script>
 <div class="sectionBox">
-<?php 
-		print caFormTag($this->request, 'Index', 'eventsLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
-			'', 
-			_t('From %1', caHTMLTextInput('search', array('size' => 12, 'value' => $this->getVar('events_list_search'), 'class' => 'dateBg'))).caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'eventsLogSearch')
-		); 
-		print "</form>";
-?>	
+	<?php
+	print caFormTag( $this->request, 'Index', 'eventsLogSearch', null, 'post', 'multipart/form-data', '_top',
+		array( 'noCSRFToken' => true, 'disableUnsavedChangesWarning' => true ) );
+	print caFormControlBox(
+		'<div class="list-filter">' . _t( 'Filter' )
+		. ': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
+		'',
+		_t( 'From %1', caHTMLTextInput( 'search',
+			array( 'size' => 12, 'value' => $this->getVar( 'events_list_search' ), 'class' => 'dateBg' ) ) )
+		. caFormSubmitButton( $this->request, __CA_NAV_ICON_SEARCH__, "", 'eventsLogSearch' )
+	);
+	print "</form>";
+	?>
 	<table id="caItemList" class="listtable">
 		<thead>
-			<tr>
-				<th class="list-header-unsorted">
-					<?php print _t('Date/time'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Type'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Description'); ?>
-				</th>
-				<th class="list-header-unsorted">
-					<?php print _t('Source'); ?>
-				</th>
-			</tr>
+		<tr>
+			<th class="list-header-unsorted">
+				<?php print _t( 'Date/time' ); ?>
+			</th>
+			<th class="list-header-unsorted">
+				<?php print _t( 'Type' ); ?>
+			</th>
+			<th class="list-header-unsorted">
+				<?php print _t( 'Description' ); ?>
+			</th>
+			<th class="list-header-unsorted">
+				<?php print _t( 'Source' ); ?>
+			</th>
+		</tr>
 		</thead>
 		<tbody>
-<?php
-	if (sizeof($va_events_list)) {
-		foreach($va_events_list as $va_event) {
-?>
+		<?php
+		if ( sizeof( $va_events_list ) ) {
+			foreach ( $va_events_list as $va_event ) {
+				?>
+				<tr>
+					<td>
+						<?php print caGetLocalizedDate( $va_event['date_time'] ); ?>
+					</td>
+					<td>
+						<?php print $va_event['code']; ?>
+					</td>
+					<td>
+						<?php print $va_event['message']; ?>
+					</td>
+					<td>
+						<?php print $va_event['source']; ?>
+					</td>
+				</tr>
+				<?php
+			}
+		} else {
+			?>
 			<tr>
-				<td>
-					<?php print caGetLocalizedDate($va_event['date_time']); ?>
-				</td>
-				<td>
-					<?php print $va_event['code']; ?>
-				</td>
-				<td>
-					<?php print $va_event['message']; ?>
-				</td>
-				<td>
-					<?php print $va_event['source']; ?>
+				<td colspan='4'>
+					<div align="center">
+						<?php print ( trim( $this->getVar( 'events_list_search' ) ) ) ? _t( 'No events found' )
+							: _t( 'Enter a date to display events from above' ); ?>
+					</div>
 				</td>
 			</tr>
-<?php
+			<?php
 		}
-	} else {
-?>
-		<tr>
-			<td colspan='4'>
-				<div align="center">
-					<?php print (trim($this->getVar('events_list_search'))) ? _t('No events found') : _t('Enter a date to display events from above'); ?>
-				</div>
-			</td>
-		</tr>
-<?php
-	}
-?>
+		?>
 		</tbody>
 	</table>
 </div>

@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('vocabulary_list'));
+print json_encode( $this->getVar( 'vocabulary_list' ) );
 ?>

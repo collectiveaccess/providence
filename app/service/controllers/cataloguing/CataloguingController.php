@@ -25,44 +25,48 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/Service/deprecated/CataloguingService.php');
-	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+require_once( __CA_LIB_DIR__ . '/Service/deprecated/CataloguingService.php' );
+require_once( __CA_LIB_DIR__ . '/Service/BaseServiceController.php' );
 
-	class CataloguingController extends BaseServiceController {
-		# -------------------------------------------------------
-		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
-		# -------------------------------------------------------
-		public function soap(){
-			$vs_wsdl =
-				$this->request->config->get("site_host").
-				__CA_URL_ROOT__.
-				"/service.php/cataloguing/Cataloguing/soapWSDL";
-			$vo_soapserver = new Zend_Soap_Server($vs_wsdl,array("soap_version" => SOAP_1_2));
-			$vo_soapserver->setClass('CataloguingService',$this->request);
-			$this->view->setVar("soap_server",$vo_soapserver);
-			$this->render("cataloguing_soap.php");
-		}
-		# -------------------------------------------------------
-		public function soapWSDL(){
-			$vs_service =
-				$this->request->config->get("site_host").
-				__CA_URL_ROOT__.
-				"/service.php/cataloguing/Cataloguing/soap";
-			$vo_autodiscover = new Zend_Soap_AutoDiscover(true,$vs_service);
-			$vo_autodiscover->setClass('CataloguingService',$this->request);
-			$this->view->setVar("autodiscover",$vo_autodiscover);
-			$this->render("cataloguing_soap_wsdl.php");
-		}
-		# -------------------------------------------------------
-		public function rest(){
-			$vo_restserver = new Zend_Rest_Server();
-			$vo_restserver->returnResponse(true);
-			$vo_restserver->setClass('CataloguingService',null,array($this->request));
-			$this->view->setVar("rest_server",$vo_restserver);
-			$this->render("cataloguing_rest.php");
-		}
-		# -------------------------------------------------------
+class CataloguingController extends BaseServiceController {
+	# -------------------------------------------------------
+	public function __construct( &$po_request, &$po_response, $pa_view_paths ) {
+		parent::__construct( $po_request, $po_response, $pa_view_paths );
 	}
+
+	# -------------------------------------------------------
+	public function soap() {
+		$vs_wsdl
+			           = $this->request->config->get( "site_host" ) .
+			             __CA_URL_ROOT__ .
+			             "/service.php/cataloguing/Cataloguing/soapWSDL";
+		$vo_soapserver = new Zend_Soap_Server( $vs_wsdl, array( "soap_version" => SOAP_1_2 ) );
+		$vo_soapserver->setClass( 'CataloguingService', $this->request );
+		$this->view->setVar( "soap_server", $vo_soapserver );
+		$this->render( "cataloguing_soap.php" );
+	}
+
+	# -------------------------------------------------------
+	public function soapWSDL() {
+		$vs_service
+			             = $this->request->config->get( "site_host" ) .
+			               __CA_URL_ROOT__ .
+			               "/service.php/cataloguing/Cataloguing/soap";
+		$vo_autodiscover = new Zend_Soap_AutoDiscover( true, $vs_service );
+		$vo_autodiscover->setClass( 'CataloguingService', $this->request );
+		$this->view->setVar( "autodiscover", $vo_autodiscover );
+		$this->render( "cataloguing_soap_wsdl.php" );
+	}
+
+	# -------------------------------------------------------
+	public function rest() {
+		$vo_restserver = new Zend_Rest_Server();
+		$vo_restserver->returnResponse( true );
+		$vo_restserver->setClass( 'CataloguingService', null, array( $this->request ) );
+		$this->view->setVar( "rest_server", $vo_restserver );
+		$this->render( "cataloguing_rest.php" );
+	}
+	# -------------------------------------------------------
+}
+
 ?>

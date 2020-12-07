@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/BaseTestWithData.php' );
 
 /**
  * Class DedupTest
@@ -48,8 +49,9 @@ class DedupTest extends BaseTestWithData {
 	private $opt_entity_1 = null;
 	/** @var ca_entities */
 	private $opt_entity_2 = null;
+
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -57,192 +59,195 @@ class DedupTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_object_id = $this->addTestRecord('ca_objects', array(
+		$vn_object_id = $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'TEST.1'
+				'idno'    => 'TEST.1'
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test image",
+					"name"   => "My test image",
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_object_id);
+		$this->assertGreaterThan( 0, $vn_object_id );
 
-		$vn_rel_object_id = $this->addTestRecord('ca_objects', array(
+		$vn_rel_object_id = $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'TEST.2'
+				'idno'    => 'TEST.2'
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "Another image",
+					"name"   => "Another image",
 				),
 			),
-		));
-		$this->assertGreaterThan(0, $vn_rel_object_id);
+		) );
+		$this->assertGreaterThan( 0, $vn_rel_object_id );
 
-		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+		$vn_entity_id = $this->addTestRecord( 'ca_entities', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'type_id'  => 'ind',
+				'idno'     => 'hjs',
 				'lifespan' => '12/17/1989 -'
 			),
 			'preferred_labels' => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Homer",
+					"locale"     => "en_US",
+					"forename"   => "Homer",
 					"middlename" => "J.",
-					"surname" => "Simpson",
+					"surname"    => "Simpson",
 				),
 			),
-			'attributes' => array(
-				'address' => array(
+			'attributes'       => array(
+				'address'        => array(
 					array(
 						'address1' => 'Foo Bar',
-						'city' => 'Springfield',
+						'city'     => 'Springfield',
 					)
 				),
 				'internal_notes' => array(
 					array(
-						'locale' => 'en_US',
+						'locale'         => 'en_US',
 						'internal_notes' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.'
 					)
 				),
 			),
-			'related' => array(
+			'related'          => array(
 				'ca_objects' => array(
 					array(
-						'object_id' => $vn_object_id,
-						'type_id' => 'creator',
+						'object_id'      => $vn_object_id,
+						'type_id'        => 'creator',
 						'effective_date' => '2015',
-						'source_info' => 'Me'
+						'source_info'    => 'Me'
 					),
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_entity_id);
-		$this->opt_entity_1 = new ca_entities($vn_entity_id);
+		$this->assertGreaterThan( 0, $vn_entity_id );
+		$this->opt_entity_1 = new ca_entities( $vn_entity_id );
 
-		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+		$vn_entity_id = $this->addTestRecord( 'ca_entities', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'type_id'  => 'ind',
+				'idno'     => 'hjs',
 				'lifespan' => '12/17/1989 -'
 			),
 			'preferred_labels' => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Homer",
+					"locale"     => "en_US",
+					"forename"   => "Homer",
 					"middlename" => "J.",
-					"surname" => "Simpson",
+					"surname"    => "Simpson",
 				),
 			),
-			'attributes' => array(
-				'address' => array(
+			'attributes'       => array(
+				'address'        => array(
 					array(
 						'address1' => 'Foo Bar',
-						'city' => 'Springfield',
+						'city'     => 'Springfield',
 					)
 				),
 				'internal_notes' => array(
 					array(
-						'locale' => 'en_US',
+						'locale'         => 'en_US',
 						'internal_notes' => 'Bacon'
 					),
 					array(
-						'locale' => 'en_US',
+						'locale'         => 'en_US',
 						'internal_notes' => 'Steak'
 					),
 				),
 			),
-			'related' => array(
+			'related'          => array(
 				'ca_objects' => array(
 					array(
-						'object_id' => $vn_object_id,
-						'type_id' => 'creator',
+						'object_id'      => $vn_object_id,
+						'type_id'        => 'creator',
 						'effective_date' => '2015',
-						'source_info' => 'Me'
+						'source_info'    => 'Me'
 					),
 					array(
-						'object_id' => $vn_rel_object_id,
-						'type_id' => 'publisher',
+						'object_id'      => $vn_rel_object_id,
+						'type_id'        => 'publisher',
 						'effective_date' => '2014',
-						'source_info' => 'Me'
+						'source_info'    => 'Me'
 					)
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_entity_id);
-		$this->opt_entity_2 = new ca_entities($vn_entity_id);
+		$this->assertGreaterThan( 0, $vn_entity_id );
+		$this->opt_entity_2 = new ca_entities( $vn_entity_id );
 
 		// this record looks the same but is not actually a dupe -- has no lifespan!
 		// we don't really care about this record so it's not assigned to a class property
-		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+		$vn_entity_id = $this->addTestRecord( 'ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno'    => 'hjs',
 			),
 			'preferred_labels' => array(
 				array(
-					"locale" => "en_US",
-					"forename" => "Homer",
+					"locale"     => "en_US",
+					"forename"   => "Homer",
 					"middlename" => "J.",
-					"surname" => "Simpson",
+					"surname"    => "Simpson",
 				),
 			),
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_entity_id);
+		$this->assertGreaterThan( 0, $vn_entity_id );
 
 	}
+
 	# -------------------------------------------------------
 	public function testDupe() {
 		$va_dupe_list = ca_entities::listPotentialDupes();
-		$this->assertEquals(1, sizeof($va_dupe_list), 'We expect two of the entered entities to be duplicates');
+		$this->assertEquals( 1, sizeof( $va_dupe_list ), 'We expect two of the entered entities to be duplicates' );
 
-		$this->assertEquals(1, sizeof($this->opt_entity_1->getRelatedItems('ca_objects')));
-		$this->assertEquals(2, sizeof($this->opt_entity_2->getRelatedItems('ca_objects')));
+		$this->assertEquals( 1, sizeof( $this->opt_entity_1->getRelatedItems( 'ca_objects' ) ) );
+		$this->assertEquals( 2, sizeof( $this->opt_entity_2->getRelatedItems( 'ca_objects' ) ) );
 
-		$this->assertEquals(2, sizeof($this->opt_entity_1->getAttributes(['noCache' => true])));
-		$this->assertEquals(3, sizeof($this->opt_entity_2->getAttributes(['noCache' => true])));
+		$this->assertEquals( 2, sizeof( $this->opt_entity_1->getAttributes( [ 'noCache' => true ] ) ) );
+		$this->assertEquals( 3, sizeof( $this->opt_entity_2->getAttributes( [ 'noCache' => true ] ) ) );
 
-		foreach($va_dupe_list as $va_dupes) {
-			if(sizeof($va_dupes) > 1) {
-				$vn_entity_id = ca_entities::mergeRecords($va_dupes);
+		foreach ( $va_dupe_list as $va_dupes ) {
+			if ( sizeof( $va_dupes ) > 1 ) {
+				$vn_entity_id = ca_entities::mergeRecords( $va_dupes );
 			}
 			//$this->assertGreaterThan(0, $vn_entity_id);
 		}
 
 		// one relationship was effectively a dupe so it should still be there. only one should have been moved
-		$this->assertEquals(2, sizeof($this->opt_entity_1->getRelatedItems('ca_objects')));
-		$this->assertEquals(1, sizeof($this->opt_entity_2->getRelatedItems('ca_objects')));
+		$this->assertEquals( 2, sizeof( $this->opt_entity_1->getRelatedItems( 'ca_objects' ) ) );
+		$this->assertEquals( 1, sizeof( $this->opt_entity_2->getRelatedItems( 'ca_objects' ) ) );
 
 		// of the 5 total attributes, one is a dupe
-		$this->assertEquals(4, sizeof($this->opt_entity_1->getAttributes(['noCache' => true])));
-		$this->assertEquals(0, sizeof($this->opt_entity_2->getAttributes(['noCache' => true])));
+		$this->assertEquals( 4, sizeof( $this->opt_entity_1->getAttributes( [ 'noCache' => true ] ) ) );
+		$this->assertEquals( 0, sizeof( $this->opt_entity_2->getAttributes( [ 'noCache' => true ] ) ) );
 	}
 	# -------------------------------------------------------
+
 	/**
-	 * 
+	 *
 	 */
 	public function testInvalidMergeListString() {
-		$this->expectException('Exception');
-		ca_entities::mergeRecords(['foo']);
+		$this->expectException( 'Exception' );
+		ca_entities::mergeRecords( [ 'foo' ] );
 	}
 	# -------------------------------------------------------
+
 	/**
-	 * 
+	 *
 	 */
 	public function testInvalidMergeListInvalidID() {
-		$this->expectException('Exception');
-		ca_entities::mergeRecords([time()]);
+		$this->expectException( 'Exception' );
+		ca_entities::mergeRecords( [ time() ] );
 	}
 	# -------------------------------------------------------
 }

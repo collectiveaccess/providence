@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-print caBatchMetadataExportInspector($this);
+
+print caBatchMetadataExportInspector( $this );

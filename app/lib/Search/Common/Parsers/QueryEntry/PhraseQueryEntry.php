@@ -38,10 +38,9 @@ class PhraseQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	 * @param string $phrase
 	 * @param string $field
 	 */
-	public function __construct($phrase, $field)
-	{
-	    $this->_phrase = $phrase;
-	    $this->_field  = $field;
+	public function __construct( $phrase, $field ) {
+		$this->_phrase = $phrase;
+		$this->_field  = $field;
 	}
 
 	/**
@@ -49,53 +48,53 @@ class PhraseQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	 *
 	 * @param mixed $parameter
 	 */
-	public function processFuzzyProximityModifier($parameter = null)
-	{
-	    $this->_proximityQuery = true;
+	public function processFuzzyProximityModifier( $parameter = null ) {
+		$this->_proximityQuery = true;
 
-	    if ($parameter !== null) {
-		$this->_wordsDistance = $parameter;
-	    }
+		if ( $parameter !== null ) {
+			$this->_wordsDistance = $parameter;
+		}
 	}
 
 	/**
 	 * Transform entry to a subquery
 	 *
 	 * @param string $encoding
+	 *
 	 * @return Zend_Search_Lucene_Search_Query
 	 * @throws Zend_Search_Lucene_Search_QueryParserException
 	 */
-	public function getQuery($encoding) {
-		if (strpos($this->_phrase, '?') !== false || strpos($this->_phrase, '*') !== false) {
-		    throw new Zend_Search_Lucene_Search_QueryParserException('Wildcards are only allowed in a single terms.');
+	public function getQuery( $encoding ) {
+		if ( strpos( $this->_phrase, '?' ) !== false || strpos( $this->_phrase, '*' ) !== false ) {
+			throw new Zend_Search_Lucene_Search_QueryParserException( 'Wildcards are only allowed in a single terms.' );
 		}
 
-		$tokens = explode(" ",$this->_phrase);
+		$tokens = explode( " ", $this->_phrase );
 
-		if (count($tokens) == 0) {
-		    return new Zend_Search_Lucene_Search_Query_Insignificant();
+		if ( count( $tokens ) == 0 ) {
+			return new Zend_Search_Lucene_Search_Query_Insignificant();
 		}
 
-		if (count($tokens) == 1) {
-		    $term  = new Zend_Search_Lucene_Index_Term(strtolower($tokens[0]), $this->_field);
-		    $query = new Zend_Search_Lucene_Search_Query_Term($term);
-		    $query->setBoost($this->_boost);
+		if ( count( $tokens ) == 1 ) {
+			$term  = new Zend_Search_Lucene_Index_Term( strtolower( $tokens[0] ), $this->_field );
+			$query = new Zend_Search_Lucene_Search_Query_Term( $term );
+			$query->setBoost( $this->_boost );
 
-		    return $query;
+			return $query;
 		}
 
 		//It's not empty or one term query
 		$query = new Zend_Search_Lucene_Search_Query_Phrase();
-		foreach ($tokens as $token) {
-		    $term = new Zend_Search_Lucene_Index_Term(strtolower($token), $this->_field);
-		    $query->addTerm($term);
+		foreach ( $tokens as $token ) {
+			$term = new Zend_Search_Lucene_Index_Term( strtolower( $token ), $this->_field );
+			$query->addTerm( $term );
 		}
 
-		if ($this->_proximityQuery) {
-		    $query->setSlop($this->_wordsDistance);
+		if ( $this->_proximityQuery ) {
+			$query->setSlop( $this->_wordsDistance );
 		}
 
-		$query->setBoost($this->_boost);
+		$query->setBoost( $this->_boost );
 
 		return $query;
 	}

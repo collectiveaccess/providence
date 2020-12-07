@@ -23,21 +23,25 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Media
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 ?>
-<div id="caMediaOverlayContent" ><?php print $this->render($this->getVar('viewer').".php"); ?></div>	
-<?php if ($this->getVar('hideOverlayControls')) { ?>
-<div class="caMediaOverlayControlsMinimal">
-	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
-</div>
+<div id="caMediaOverlayContent"><?php print $this->render( $this->getVar( 'viewer' ) . ".php" ); ?></div>
+<?php if ( $this->getVar( 'hideOverlayControls' ) ) { ?>
+	<div class="caMediaOverlayControlsMinimal">
+		<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;"
+		                      title="close"><?php print caNavIcon( __CA_NAV_ICON_CLOSE__, "18px", [],
+						[ 'color' => 'white' ] ) . ' ' . _t( 'Close' ); ?></a></div>
+	</div>
 <?php } else { ?>
-<div class="caMediaOverlayControls">
-	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
-	<?php print $this->getVar('controls'); ?>
-</div>
+	<div class="caMediaOverlayControls">
+		<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;"
+		                      title="close"><?php print caNavIcon( __CA_NAV_ICON_CLOSE__, "18px", [],
+						[ 'color' => 'white' ] ) . ' ' . _t( 'Close' ); ?></a></div>
+		<?php print $this->getVar( 'controls' ); ?>
+	</div>
 <?php } ?>

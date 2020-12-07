@@ -26,11 +26,12 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_locale = $this->getVar('t_locale');
-	$vn_locale_id = $this->getVar('locale_id');
+$t_locale     = $this->getVar( 't_locale' );
+$vn_locale_id = $this->getVar( 'locale_id' );
 ?>
 <div class="sectionBox">
-<?php
-	print caDeleteWarningBox($this->request, $t_locale, $t_locale->getName(), 'administrate/setup', 'Locales', 'Listlocales', array('locale_id' => $vn_locale_id));
-?>
+	<?php
+	print caDeleteWarningBox( $this->request, $t_locale, $t_locale->getName(), 'administrate/setup', 'Locales',
+		'Listlocales', array( 'locale_id' => $vn_locale_id ) );
+	?>
 </div>

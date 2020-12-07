@@ -1,5 +1,5 @@
 <?php
-	header("Content-type: application/json");
+header( "Content-type: application/json" );
 
-	print json_encode(['dupe' => $this->getVar('dupe')]);
-	exit;
+print json_encode( [ 'dupe' => $this->getVar( 'dupe' ) ] );
+exit;

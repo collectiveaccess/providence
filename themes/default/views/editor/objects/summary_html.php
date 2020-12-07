@@ -25,72 +25,114 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_item 				= $this->getVar('t_subject');
-	$vn_item_id 			= $this->getVar('subject_id');
-	
-	$t_display 				= $this->getVar('t_display');
-	$va_placements 			= $this->getVar("placements");
-	$va_reps 				= $t_item->getRepresentations(array("thumbnail", "small", "medium"));
+$t_item     = $this->getVar( 't_subject' );
+$vn_item_id = $this->getVar( 'subject_id' );
+
+$t_display     = $this->getVar( 't_display' );
+$va_placements = $this->getVar( "placements" );
+$va_reps       = $t_item->getRepresentations( array( "thumbnail", "small", "medium" ) );
 ?>
-    <div id="summary" style="clear: both;">
+	<div id="summary" style="clear: both;">
+		<?php
+		print caEditorPrintSummaryControls( $this );
+		print caEditorFieldList( $this->request, $t_item, [], [] );
+		?>
+		<div id="title">
+			<?php print $t_item->getLabelForDisplay(); ?>
+		</div><!-- end title -->
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr class='summaryImages'>
+				<td valign="top" align="center" width="744">
+					<?php
+					if ( is_array( $va_reps ) ) {
+						foreach ( $va_reps as $va_rep ) {
+							if ( sizeof( $va_reps ) > 1 ) {
+								# --- more than one rep show thumbnails
+								$vn_padding_top = ( ( 120 - $va_rep["info"]["thumbnail"]["HEIGHT"] ) / 2 ) + 5;
+								print "<table style='float:left; margin: 0px 16px 10px 0px; " . $vs_clear
+								      . "' cellpadding='0' cellspacing='0'><tr><td align='center' valign='middle'><div class='thumbnailsImageContainer' id='container"
+								      . $va_rep['representation_id'] . "' style='padding: " . $vn_padding_top
+								      . "px 5px " . $vn_padding_top . "px 5px;' onmouseover='$(\".download"
+								      . $va_rep['representation_id'] . "\").show();' onmouseout='$(\".download"
+								      . $va_rep['representation_id'] . "\").hide();'>";
+								print "<a href='#' onclick='caMediaPanel.showPanel(\"" . caNavUrl( $this->request,
+										'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array(
+											'object_id'         => $vn_item_id,
+											'representation_id' => $va_rep['representation_id']
+										) ) . "\");'>" . $va_rep['tags']['thumbnail'] . "</a>\n";
+
+								if ( $this->request->user->canDoAction( 'can_download_ca_object_representations' ) ) {
+									print "<div class='download" . $va_rep['representation_id']
+									      . " downloadMediaContainer'>" . caNavLink( $this->request,
+											caNavIcon( __CA_NAV_ICON_DOWNLOAD__, 1 ), 'downloadMedia', 'editor/objects',
+											'ObjectEditor', 'DownloadMedia', array(
+												'object_id'         => $vn_item_id,
+												'representation_id' => $va_rep['representation_id'],
+												'version'           => 'original'
+											) ) . "</div>\n";
+								}
+								print "</div></td></tr></table>\n";
+							} else {
+								# --- one rep - show medium rep
+								print "<div id='container" . $va_rep['representation_id']
+								      . "' class='oneThumbContainer' onmouseover='$(\".download"
+								      . $va_rep['representation_id'] . "\").show();' onmouseout='$(\".download"
+								      . $va_rep['representation_id'] . "\").hide();'>";
+								print "<a href='#' onclick='caMediaPanel.showPanel(\"" . caNavUrl( $this->request,
+										'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array(
+											'object_id'         => $vn_item_id,
+											'representation_id' => $va_rep['representation_id']
+										) ) . "\");'>" . $va_rep['tags']['medium'] . "</a>\n";
+								if ( $this->request->user->canDoAction( 'can_download_ca_object_representations' ) ) {
+									print "<div class='download" . $va_rep['representation_id']
+									      . " downloadMediaContainer'>" . caNavLink( $this->request,
+											caNavIcon( __CA_NAV_ICON_DOWNLOAD__, 1 ), 'downloadMedia', 'editor/objects',
+											'ObjectEditor', 'DownloadMedia', array(
+												'object_id'         => $vn_item_id,
+												'representation_id' => $va_rep['representation_id'],
+												'version'           => 'original'
+											) ) . "</div>\n";
+								}
+								print "</div>";
+							}
+						}
+					}
+
+					?>
+				</td>
+			</tr>
+			<tr>
+				<td valign="top" align="left" style="padding-right:10px;">
+					<?php
+					foreach ( $va_placements as $vn_placement_id => $va_info ) {
+						$vs_class = "";
+						$va_tmp   = explode( '.', $va_info['bundle_name'] );
+						if ( ( in_array( $va_tmp[0], array( 'ca_object_representations' ) )
+						       && ( ! $va_tmp[1]
+						            || ( $va_tmp[1] === 'media' ) ) )
+						) {
+							continue;
+						} // skip object representations because we always output it above
+
+						if ( ! strlen( $vs_display_value = $t_display->getDisplayValue( $t_item, $vn_placement_id,
+							array_merge( array( 'request' => $this->request ),
+								is_array( $va_info['settings'] ) ? $va_info['settings'] : array() ) ) )
+						) {
+							if ( ! (bool) $t_display->getSetting( 'show_empty_values' ) ) {
+								continue;
+							}
+							$vs_display_value = "<" . _t( 'not defined' ) . ">";
+							$vs_class         = " notDefined";
+						}
+						print "<div class=\"unit" . $vs_class . "\"><span class=\"heading" . $vs_class . "\">"
+						      . caTruncateStringWithEllipsis( $va_info['display'], 26 )
+						      . "</span><span class='summaryData'> " . $vs_display_value . "</span></div>\n";
+					}
+					?>
+				</td>
+			</tr>
+		</table>
+	</div><!-- end summary -->
 <?php
-    print caEditorPrintSummaryControls($this);
-    print caEditorFieldList($this->request, $t_item, [], []);
-?>
-	<div id="title">
-		<?php print $t_item->getLabelForDisplay(); ?>
-	</div><!-- end title -->
-	<table border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr class='summaryImages'>
-			<td valign="top" align="center" width="744">
-<?php
-	if (is_array($va_reps)) {
-		foreach($va_reps as $va_rep) {
-			if(sizeof($va_reps) > 1){
-				# --- more than one rep show thumbnails
-				$vn_padding_top = ((120 - $va_rep["info"]["thumbnail"]["HEIGHT"])/2) + 5;
-				print "<table style='float:left; margin: 0px 16px 10px 0px; ".$vs_clear."' cellpadding='0' cellspacing='0'><tr><td align='center' valign='middle'><div class='thumbnailsImageContainer' id='container".$va_rep['representation_id']."' style='padding: ".$vn_padding_top."px 5px ".$vn_padding_top."px 5px;' onmouseover='$(\".download".$va_rep['representation_id']."\").show();' onmouseout='$(\".download".$va_rep['representation_id']."\").hide();'>";
-				print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id']))."\");'>".$va_rep['tags']['thumbnail']."</a>\n";
-				
-				if ($this->request->user->canDoAction('can_download_ca_object_representations')) {
-					print "<div class='download".$va_rep['representation_id']." downloadMediaContainer'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1), 'downloadMedia', 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id'], 'version' => 'original'))."</div>\n";
-				}
-				print "</div></td></tr></table>\n";
-			}else{
-				# --- one rep - show medium rep
-				print "<div id='container".$va_rep['representation_id']."' class='oneThumbContainer' onmouseover='$(\".download".$va_rep['representation_id']."\").show();' onmouseout='$(\".download".$va_rep['representation_id']."\").hide();'>";
-				print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id']))."\");'>".$va_rep['tags']['medium']."</a>\n";
-				if ($this->request->user->canDoAction('can_download_ca_object_representations')) {
-					print "<div class='download".$va_rep['representation_id']." downloadMediaContainer'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1), 'downloadMedia', 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id'], 'version' => 'original'))."</div>\n";
-				}
-				print "</div>";
-			}
-		}
-	}
-	
-?>
-			</td>
-		</tr>
-		<tr>			
-			<td valign="top" align="left" style="padding-right:10px;">
-<?php
-		foreach($va_placements as $vn_placement_id => $va_info) {
-			$vs_class="";
-			$va_tmp = explode('.', $va_info['bundle_name']);
-			if ((in_array($va_tmp[0], array('ca_object_representations')) && (!$va_tmp[1] || ($va_tmp[1] === 'media')))) { continue; } // skip object representations because we always output it above
-			
-			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
-				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-				$vs_display_value = "<"._t('not defined').">";
-				$vs_class = " notDefined";
-			}
-			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".caTruncateStringWithEllipsis($va_info['display'], 26)."</span><span class='summaryData'> ".$vs_display_value."</span></div>\n";
-		}
-?>
-			</td>
-		</tr>
-	</table>
-</div><!-- end summary -->
-<?php
-		TooltipManager::add('#printButton', _t("Download Summary as PDF"));
-		TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
+TooltipManager::add( '#printButton', _t( "Download Summary as PDF" ) );
+TooltipManager::add( 'a.downloadMediaContainer', _t( "Download Media" ) );

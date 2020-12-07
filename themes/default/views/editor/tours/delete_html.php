@@ -25,14 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_tour = $this->getVar('t_subject');
-	$vn_tour_id = $this->getVar('subject_id');
+$t_tour     = $this->getVar( 't_subject' );
+$vn_tour_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_tour, $this->getVar('subject_name'), 'editor/tours', 'TourEditor', 'Edit/'.$this->request->getActionExtra(), array('tour_id' => $vn_tour_id));
+		print caDeleteWarningBox( $this->request, $t_tour, $this->getVar( 'subject_name' ), 'editor/tours',
+			'TourEditor', 'Edit/' . $this->request->getActionExtra(), array( 'tour_id' => $vn_tour_id ) );
 	}
-?>
+	?>
 </div>

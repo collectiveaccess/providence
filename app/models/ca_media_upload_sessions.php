@@ -15,108 +15,143 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage models
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+ *
+ */
 
 BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
- 	'NAME_SINGULAR' 	=> _t('Media upload'),
- 	'NAME_PLURAL' 		=> _t('Media uploads'),
- 	'FIELDS' 			=> array(
- 		'session_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '','LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this upload')
+	'NAME_SINGULAR' => _t( 'Media upload' ),
+	'NAME_PLURAL'   => _t( 'Media uploads' ),
+	'FIELDS'        => array(
+		'session_id'       => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_HIDDEN,
+			'IDENTITY'       => true,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'CollectiveAccess id' ),
+			'DESCRIPTION'    => _t( 'Unique numeric identifier used by CollectiveAccess internally to identify this upload' )
 		),
-		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => null,
-				'DONT_ALLOW_IN_UI' => true,
-				'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this upload.')
+		'user_id'          => array(
+			'FIELD_TYPE'       => FT_NUMBER,
+			'DISPLAY_TYPE'     => DT_OMIT,
+			'DISPLAY_WIDTH'    => 10,
+			'DISPLAY_HEIGHT'   => 1,
+			'IS_NULL'          => false,
+			'DEFAULT'          => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL'            => _t( 'Submitted by user' ),
+			'DESCRIPTION'      => _t( 'User submitting this upload.' )
 		),
-		'cancelled' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Is cancelled?'), 'DESCRIPTION' => _t('Indicates that the upload is cancelled.')
+		'cancelled'        => array(
+			'FIELD_TYPE'     => FT_BIT,
+			'DISPLAY_TYPE'   => DT_SELECT,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Is cancelled?' ),
+			'DESCRIPTION'    => _t( 'Indicates that the upload is cancelled.' )
 		),
-		'created_on' => array(
-				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => null,
-				'LABEL' => _t('Upload creation date'), 'DESCRIPTION' => _t('The date and time the upload was started.')
+		'created_on'       => array(
+			'FIELD_TYPE'     => FT_TIMESTAMP,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 20,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => null,
+			'LABEL'          => _t( 'Upload creation date' ),
+			'DESCRIPTION'    => _t( 'The date and time the upload was started.' )
 		),
-		'completed_on' => array(
-				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => null,
-				'LABEL' => _t('Upload completion date'), 'DESCRIPTION' => _t('The date and time the upload was completed on. An empty value indicates an incomplete upload.')
+		'completed_on'     => array(
+			'FIELD_TYPE'     => FT_DATETIME,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 20,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => true,
+			'DEFAULT'        => null,
+			'LABEL'          => _t( 'Upload completion date' ),
+			'DESCRIPTION'    => _t( 'The date and time the upload was completed on. An empty value indicates an incomplete upload.' )
 		),
 		'last_activity_on' => array(
-				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => null,
-				'LABEL' => _t('Date of last upload activity'), 'DESCRIPTION' => _t('The date and time activity was last recorded on the upload.')
+			'FIELD_TYPE'     => FT_DATETIME,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 20,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => true,
+			'DEFAULT'        => null,
+			'LABEL'          => _t( 'Date of last upload activity' ),
+			'DESCRIPTION'    => _t( 'The date and time activity was last recorded on the upload.' )
 		),
-		'session_key' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Upload key'), 'DESCRIPTION' => _t('Unique key for the upload.'),
-				'BOUNDS_LENGTH' => array(1,36)
+		'session_key'      => array(
+			'FIELD_TYPE'     => FT_TEXT,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 40,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Upload key' ),
+			'DESCRIPTION'    => _t( 'Unique key for the upload.' ),
+			'BOUNDS_LENGTH'  => array( 1, 36 )
 		),
-		'num_files' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('File count'), 'DESCRIPTION' => _t('Number of files in upload.')
+		'num_files'        => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => 0,
+			'LABEL'          => _t( 'File count' ),
+			'DESCRIPTION'    => _t( 'Number of files in upload.' )
 		),
-		'total_bytes' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Total upload size'), 'DESCRIPTION' => _t('The total size of the upload for all files, in bytes.')
+		'total_bytes'      => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => 0,
+			'LABEL'          => _t( 'Total upload size' ),
+			'DESCRIPTION'    => _t( 'The total size of the upload for all files, in bytes.' )
 		),
-		'error_code' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Error code'), 'DESCRIPTION' => _t('Error code. Zero if no error.')
+		'error_code'       => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => 0,
+			'LABEL'          => _t( 'Error code' ),
+			'DESCRIPTION'    => _t( 'Error code. Zero if no error.' )
 		),
-		'progress' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Upload progress'), 'DESCRIPTION' => _t('Data regarding upload process of individual files.')
+		'progress'         => array(
+			'FIELD_TYPE'     => FT_VARS,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => 0,
+			'LABEL'          => _t( 'Upload progress' ),
+			'DESCRIPTION'    => _t( 'Data regarding upload process of individual files.' )
 		)
- 	)
+	)
 );
 
 class ca_media_upload_sessions extends BaseModel {
@@ -132,7 +167,7 @@ class ca_media_upload_sessions extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_media_upload_sessions';
-	      
+
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'session_id';
 
@@ -145,7 +180,7 @@ class ca_media_upload_sessions extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('session_key');
+	protected $LIST_FIELDS = array( 'session_key' );
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -161,10 +196,10 @@ class ca_media_upload_sessions extends BaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('created_on');
+	protected $ORDER_BY = array( 'created_on' );
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -174,34 +209,35 @@ class ca_media_upload_sessions extends BaseModel {
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = '';
-	
-	
+
+
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
-	protected $HIERARCHY_TYPE				=	null;
-	protected $HIERARCHY_LEFT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_RIGHT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_PARENT_ID_FLD		=	null;
-	protected $HIERARCHY_DEFINITION_TABLE	=	null;
-	protected $HIERARCHY_ID_FLD				=	null;
-	protected $HIERARCHY_POLY_TABLE			=	null;
-	
+	protected $HIERARCHY_TYPE = null;
+	protected $HIERARCHY_LEFT_INDEX_FLD = null;
+	protected $HIERARCHY_RIGHT_INDEX_FLD = null;
+	protected $HIERARCHY_PARENT_ID_FLD = null;
+	protected $HIERARCHY_DEFINITION_TABLE = null;
+	protected $HIERARCHY_ID_FLD = null;
+	protected $HIERARCHY_POLY_TABLE = null;
+
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
 	protected $LOG_CHANGES_TO_SELF = false;
-	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
-		"FOREIGN_KEYS" => [],
-		"RELATED_TABLES" => []
-	);
+	protected $LOG_CHANGES_USING_AS_SUBJECT
+		= array(
+			"FOREIGN_KEYS"   => [],
+			"RELATED_TABLES" => []
+		);
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-	
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -213,29 +249,38 @@ class ca_media_upload_sessions extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct( $pn_id = null ) {
+		parent::__construct( $pn_id );    # call superclass constructor
 	}
 	# ------------------------------------------------------
+
 	/**
 	 * Check if currently loaded upload is marked as complete
 	 *
-	 * @return int Unix timestamp for date/time completed, null if no upload is loaded, or false if the uploaf is not complete.
+	 * @return int Unix timestamp for date/time completed, null if no upload is loaded, or false if the uploaf is not
+	 *             complete.
 	 */
 	public function isComplete() {
-		if(!$this->isLoaded()) { return null; }
-		$completed_on = $this->get('completed_on', ['getDirectDate' => true]);
-		return ($completed_on > 0) ? $completed_on : false;
+		if ( ! $this->isLoaded() ) {
+			return null;
+		}
+		$completed_on = $this->get( 'completed_on', [ 'getDirectDate' => true ] );
+
+		return ( $completed_on > 0 ) ? $completed_on : false;
 	}
 	# ------------------------------------------------------
+
 	/**
 	 * Check if currently loaded upload is marked as errored
 	 *
 	 * @return int Error code, or false if no error
 	 */
 	public function hasError() {
-		if(!$this->isLoaded()) { return null; }
-		return ($error_code = (int)$this->get('error_code')) ? $error_code : false;
+		if ( ! $this->isLoaded() ) {
+			return null;
+		}
+
+		return ( $error_code = (int) $this->get( 'error_code' ) ) ? $error_code : false;
 	}
 	# ------------------------------------------------------
 }

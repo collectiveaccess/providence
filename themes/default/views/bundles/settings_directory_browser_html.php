@@ -25,40 +25,44 @@
  *
  * ----------------------------------------------------------------------
  */
-	AssetLoadManager::register("directoryBrowser");
- 					
-	$vs_id = $this->getVar('id');
-	$vs_default = $this->getVar('defaultPath');
+AssetLoadManager::register( "directoryBrowser" );
+
+$vs_id      = $this->getVar( 'id' );
+$vs_default = $this->getVar( 'defaultPath' );
 ?>
 <div id="<?php print $vs_id; ?>directoryBrowser" class='directoryBrowserSmall'>
 	<!-- Content for directory browser is dynamically inserted here by ca.hierbrowser -->
 </div><!-- end directoryBrowser -->
 <?php
-	print caHTMLHiddenInput($vs_id, array('value' => '', 'id' => $vs_id));	
+print caHTMLHiddenInput( $vs_id, array( 'value' => '', 'id' => $vs_id ) );
 ?>
 <script type="text/javascript">
 	var oDirBrowser;
-	jQuery(document).ready(function() {
+	jQuery(document).ready(function () {
 		oDirBrowser = caUI.initDirectoryBrowser('<?php print $vs_id; ?>directoryBrowser', {
-			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
-			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
-			
-			openDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
-			disabledDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1, array('class' => 'disabled')); ?>",
-			
-			folderIcon: "<?php print caNavIcon(__CA_NAV_ICON_FOLDER__, 1); ?>",
-			fileIcon: "<?php print caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
-			
+			levelDataUrl: '<?php print caNavUrl( $this->request, 'batch', 'MediaImport', 'GetDirectoryLevel' ); ?>',
+			initDataUrl: '<?php print caNavUrl( $this->request, 'batch', 'MediaImport',
+				'GetDirectoryAncestorList' ); ?>',
+
+			openDirectoryIcon: "<?php print caNavIcon( __CA_NAV_ICON_RIGHT_ARROW__, 1 ); ?>",
+			disabledDirectoryIcon: "<?php print caNavIcon( __CA_NAV_ICON_DOT__, 1,
+				array( 'class' => 'disabled' ) ); ?>",
+
+			folderIcon: "<?php print caNavIcon( __CA_NAV_ICON_FOLDER__, 1 ); ?>",
+			fileIcon: "<?php print caNavIcon( __CA_NAV_ICON_FILE__, 1 ); ?>",
+
 			displayFiles: true,
 			allowFileSelection: false,
-			
+
 			initItemID: '<?php print $vs_default; ?>',
-			indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
-			
+			indicator: "<?php print caNavIcon( __CA_NAV_ICON_SPINNER__, 1 ); ?>",
+
 			currentSelectionDisplayID: 'browseCurrentSelection',
-			
-			onSelection: function(item_id, path, name, type) {
-				if (type == 'DIR') { jQuery('#<?php print $vs_id; ?>').val(path); }
+
+			onSelection: function (item_id, path, name, type) {
+				if (type == 'DIR') {
+					jQuery('#<?php print $vs_id; ?>').val(path);
+				}
 			}
 		});
 	});

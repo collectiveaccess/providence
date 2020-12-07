@@ -23,14 +23,14 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Auth
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
+require_once( __CA_LIB_DIR__ . '/Auth/BaseAuthAdapter.php' );
 
 class AuthenticationManager {
 	/**
@@ -52,21 +52,25 @@ class AuthenticationManager {
 	 *
 	 * @throws AuthClassDoesNotExistException
 	 */
-	public static function init($ps_adapter=null) {
-		if(!is_null($ps_adapter) || (self::$g_authentication_adapter === null)) {
-			AuthenticationManager::$g_authentication_conf = $o_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+	public static function init( $ps_adapter = null ) {
+		if ( ! is_null( $ps_adapter ) || ( self::$g_authentication_adapter === null ) ) {
+			AuthenticationManager::$g_authentication_conf
+				= $o_auth_config = Configuration::load( __CA_APP_DIR__ . "/conf/authentication.conf" );
 
-			$vs_auth_adapter = (!is_null($ps_adapter)) ? $ps_adapter : $o_auth_config->get('auth_adapter');
-            
-		    if ($is_local = (isset($_REQUEST['local']) && $_REQUEST['local'])) { $vs_auth_adapter = 'CaUsers'; }
-		
-			$vs_auth_adapter_file = __CA_LIB_DIR__."/Auth/Adapters/".$vs_auth_adapter.".php";
-			if(file_exists($vs_auth_adapter_file)) {
-				require_once($vs_auth_adapter_file);
+			$vs_auth_adapter = ( ! is_null( $ps_adapter ) ) ? $ps_adapter : $o_auth_config->get( 'auth_adapter' );
+
+			if ( $is_local = ( isset( $_REQUEST['local'] ) && $_REQUEST['local'] ) ) {
+				$vs_auth_adapter = 'CaUsers';
+			}
+
+			$vs_auth_adapter_file = __CA_LIB_DIR__ . "/Auth/Adapters/" . $vs_auth_adapter . ".php";
+			if ( file_exists( $vs_auth_adapter_file ) ) {
+				require_once( $vs_auth_adapter_file );
 
 				$vs_auth_class_name = $vs_auth_adapter . 'AuthAdapter';
-				if(class_exists($vs_auth_class_name)) {
+				if ( class_exists( $vs_auth_class_name ) ) {
 					self::$g_authentication_adapter = new $vs_auth_class_name();
+
 					return;
 				}
 			}
@@ -80,20 +84,25 @@ class AuthenticationManager {
 	 *
 	 * @param string $ps_username User name (must be unique across all users)
 	 * @param string $ps_password Password
-	 * @param null $pa_options Associative array of options
+	 * @param null   $pa_options  Associative array of options
+	 *
 	 * @return bool auth successful or not?
 	 */
-	public static function authenticate($ps_username, $ps_password="", $pa_options=null) {
+	public static function authenticate( $ps_username, $ps_password = "", $pa_options = null ) {
 		self::init();
-		if ($vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options)) {
+		if ( $vn_rc = self::$g_authentication_adapter->authenticate( $ps_username, $ps_password, $pa_options ) ) {
 			return $vn_rc;
 		}
 
-		if ((AuthenticationManager::$g_authentication_conf->get('allow_fallback_to_ca_users_auth')) && !self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
+		if ( ( AuthenticationManager::$g_authentication_conf->get( 'allow_fallback_to_ca_users_auth' ) )
+		     && ! self::$g_authentication_adapter instanceof CaUsersAuthAdapter
+		) {
 			// fall back to ca_users "native" authentication
-			self::init('CaUsers');
-			$vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options);
+			self::init( 'CaUsers' );
+			$vn_rc                          = self::$g_authentication_adapter->authenticate( $ps_username, $ps_password,
+				$pa_options );
 			self::$g_authentication_adapter = null;
+
 			return $vn_rc;
 		}
 
@@ -105,25 +114,27 @@ class AuthenticationManager {
 	 *
 	 * @param string $ps_username user name (must be unique across all users)
 	 * @param string $ps_password Clear-text password
+	 *
 	 * @return string|null The password to store in the ca_users table. Can be left empty for
 	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth).
 	 */
-	public static function createUserAndGetPassword($ps_username, $ps_password) {
+	public static function createUserAndGetPassword( $ps_username, $ps_password ) {
 		self::init();
 
-		return self::$g_authentication_adapter->createUserAndGetPassword($ps_username, $ps_password);
+		return self::$g_authentication_adapter->createUserAndGetPassword( $ps_username, $ps_password );
 	}
 
 	/**
 	 * Delete existing user using authentication adapter from authentication.conf
 	 *
 	 * @param string $ps_username user name (must be unique across all users)
+	 *
 	 * @return bool
 	 */
-	public static function deleteUser($ps_username) {
+	public static function deleteUser( $ps_username ) {
 		self::init();
 
-		return self::$g_authentication_adapter->deleteUser($ps_username);
+		return self::$g_authentication_adapter->deleteUser( $ps_username );
 	}
 
 	/**
@@ -138,18 +149,19 @@ class AuthenticationManager {
 	 *      directory service)
 	 *
 	 * @param int $pn_feature The feature to check for
+	 *
 	 * @return bool
 	 */
-	public static function supports($pn_feature) {
+	public static function supports( $pn_feature ) {
 		self::init();
 
-		if ($pn_feature == __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__) {
-			if (!AuthenticationManager::$g_authentication_conf->get('auth_allow_password_reset')) {
+		if ( $pn_feature == __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__ ) {
+			if ( ! AuthenticationManager::$g_authentication_conf->get( 'auth_allow_password_reset' ) ) {
 				return false;
 			}
 		}
 
-		return self::$g_authentication_adapter->supports($pn_feature);
+		return self::$g_authentication_adapter->supports( $pn_feature );
 	}
 
 	/**
@@ -168,12 +180,13 @@ class AuthenticationManager {
 	 *
 	 * @param string $ps_username
 	 * @param string $ps_password
+	 *
 	 * @return bool
 	 */
-	public static function updatePassword($ps_username, $ps_password) {
+	public static function updatePassword( $ps_username, $ps_password ) {
 		self::init();
 
-		return self::$g_authentication_adapter->updatePassword($ps_username, $ps_password);
+		return self::$g_authentication_adapter->updatePassword( $ps_username, $ps_password );
 	}
 
 	/**
@@ -181,55 +194,64 @@ class AuthenticationManager {
 	 *
 	 * @param string $ps_username
 	 * @param string $ps_password
-	 * @param array $pa_options Options include:
-	 *		minimal = Return minimal info, at least the user name. [Default is false]
+	 * @param array  $pa_options Options include:
+	 *                           minimal = Return minimal info, at least the user name. [Default is false]
+	 *
 	 * @return array
 	 */
-	public static function getUserInfo($ps_username, $ps_password, $pa_options=null) {
+	public static function getUserInfo( $ps_username, $ps_password, $pa_options = null ) {
 		self::init();
 
-        try {
-            if ($vn_rc = self::$g_authentication_adapter->getUserInfo($ps_username, $ps_password, $pa_options)) {
-                return $vn_rc;
-            }
-        } catch(Exception $e) {
-            // noop
-        }
+		try {
+			if ( $vn_rc = self::$g_authentication_adapter->getUserInfo( $ps_username, $ps_password, $pa_options ) ) {
+				return $vn_rc;
+			}
+		} catch ( Exception $e ) {
+			// noop
+		}
 
-		if ((AuthenticationManager::$g_authentication_conf->get('allow_fallback_to_ca_users_auth')) && !self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
+		if ( ( AuthenticationManager::$g_authentication_conf->get( 'allow_fallback_to_ca_users_auth' ) )
+		     && ! self::$g_authentication_adapter instanceof CaUsersAuthAdapter
+		) {
 			// fall back to ca_users "native" authentication
-			self::init('CaUsers');
-			$vn_rc = self::$g_authentication_adapter->getUserInfo($ps_username, $ps_password);
+			self::init( 'CaUsers' );
+			$vn_rc                          = self::$g_authentication_adapter->getUserInfo( $ps_username,
+				$ps_password );
 			self::$g_authentication_adapter = null;
+
 			return $vn_rc;
 		}
 
 		return null;
 	}
-	
+
 	/**
 	 * Deauthentication using authentication adapter from authentication.conf
 	 *
 	 * @param null $pa_options Associative array of options
+	 *
 	 * @return bool auth successful or not?
 	 */
-	public static function deauthenticate($pa_options=null) {
+	public static function deauthenticate( $pa_options = null ) {
 		self::init();
 
-		if ($vn_rc = self::$g_authentication_adapter->deauthenticate($pa_options)) {
+		if ( $vn_rc = self::$g_authentication_adapter->deauthenticate( $pa_options ) ) {
 			return $vn_rc;
 		}
 
 		return null;
 	}
-	
+
 	/**
 	 * Callback handler for adapters that require a callback for control flow (Eg. Okta)
 	 */
-	public static function callback($pa_options=null) {
+	public static function callback( $pa_options = null ) {
 		self::init();
 
-		if (method_exists(self::$g_authentication_adapter, "callback") && ($vn_rc = self::$g_authentication_adapter->callback($pa_options))) {
+		if ( method_exists( self::$g_authentication_adapter, "callback" )
+		     && ( $vn_rc
+				= self::$g_authentication_adapter->callback( $pa_options ) )
+		) {
 			return $vn_rc;
 		}
 
@@ -237,4 +259,5 @@ class AuthenticationManager {
 	}
 }
 
-class AuthClassDoesNotExistException extends Exception {}
+class AuthClassDoesNotExistException extends Exception {
+}

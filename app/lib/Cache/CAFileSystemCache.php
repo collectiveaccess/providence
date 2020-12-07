@@ -23,9 +23,9 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Cache
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -36,12 +36,14 @@ class CAFileSystemCache extends FilesystemCache {
 
 	/**
 	 * Override file name logic in Doctrine\Common\Cache\FileCache
+	 *
 	 * @param string $ps_key cache key
+	 *
 	 * @return string
 	 */
-	protected function getFilename($ps_key) {
-		$vs_hash = md5($ps_key);
-		$vs_path = implode(str_split($vs_hash, 12), DIRECTORY_SEPARATOR);
+	protected function getFilename( $ps_key ) {
+		$vs_hash = md5( $ps_key );
+		$vs_path = implode( str_split( $vs_hash, 12 ), DIRECTORY_SEPARATOR );
 		$vs_path = $this->directory . DIRECTORY_SEPARATOR . $vs_path;
 
 		return $vs_path . DIRECTORY_SEPARATOR . $vs_hash . $this->getExtension();

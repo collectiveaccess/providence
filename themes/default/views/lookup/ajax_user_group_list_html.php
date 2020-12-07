@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('user_group_list'));
+print json_encode( $this->getVar( 'user_group_list' ) );
 ?>

@@ -25,18 +25,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request 			= $this->getVar('request');
-	$va_instances			= $this->getVar('instances');
-	$va_settings				= $this->getVar('settings');
-	$vs_widget_id 			= $this->getVar('widget_id');
- 
+
+$po_request   = $this->getVar( 'request' );
+$va_instances = $this->getVar( 'instances' );
+$va_settings  = $this->getVar( 'settings' );
+$vs_widget_id = $this->getVar( 'widget_id' );
+
 
 ?>
 <div class="dashboardWidgetContentContainer">
-<?php 
-		//print $this->getVar("item_title");
-		//print "<br/>";
-		print $this->getVar("item_image");
-?>	
+	<?php
+	//print $this->getVar("item_title");
+	//print "<br/>";
+	print $this->getVar( "item_image" );
+	?>
 </div>

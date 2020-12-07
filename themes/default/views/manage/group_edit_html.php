@@ -26,31 +26,45 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_group 				= $this->getVar('t_group');
-	$vn_group_id 		= $this->getVar('group_id');
+$t_group     = $this->getVar( 't_group' );
+$vn_group_id = $this->getVar( 'group_id' );
 ?>
 <div class="sectionBox">
-<?php
+	<?php
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'GroupsForm').' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage', 'groups', 'ListGroups', array('group_id' => 0)), 
-		'', 
-		caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'groups', 'Delete', array('group_id' => $vn_group_id))
+		caFormSubmitButton( $this->request, __CA_NAV_ICON_SAVE__, _t( "Save" ), 'GroupsForm' ) . ' ' .
+		caFormNavButton( $this->request, __CA_NAV_ICON_CANCEL__, _t( "Cancel" ), '', 'manage', 'groups', 'ListGroups',
+			array( 'group_id' => 0 ) ),
+		'',
+		caFormNavButton( $this->request, __CA_NAV_ICON_DELETE__, _t( "Delete" ), '', 'manage', 'groups', 'Delete',
+			array( 'group_id' => $vn_group_id ) )
 	);
-?>
-<?php
-	print caFormTag($this->request, 'Save', 'GroupsForm');
+	?>
+	<?php
+	print caFormTag( $this->request, 'Save', 'GroupsForm' );
 
-		foreach($t_group->getFormFields() as $vs_f => $va_group_info) {
-			print $t_group->htmlFormElement($vs_f, null, array('readonly' => ($vs_f == 'code'), 'field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
-		}
-		
-		// users
-		if (!is_array($va_group_users = $t_group->getGroupUsers())) { $va_group_users = array(); }
-		print $this->request->user->userListAsHTMLFormElement(array('userclass' => array(0, 1), 'sort' => 'lname', 'sort_direction' => 'asc', 'name' => 'group_users', 'label' => 'Members', 'selected' => array_keys($va_group_users)));
-?>	
+	foreach ( $t_group->getFormFields() as $vs_f => $va_group_info ) {
+		print $t_group->htmlFormElement( $vs_f, null, array(
+			'readonly'     => ( $vs_f == 'code' ),
+			'field_errors' => $this->request->getActionErrors( 'field_' . $vs_f )
+		) );
+	}
+
+	// users
+	if ( ! is_array( $va_group_users = $t_group->getGroupUsers() ) ) {
+		$va_group_users = array();
+	}
+	print $this->request->user->userListAsHTMLFormElement( array(
+		'userclass'      => array( 0, 1 ),
+		'sort'           => 'lname',
+		'sort_direction' => 'asc',
+		'name'           => 'group_users',
+		'label'          => 'Members',
+		'selected'       => array_keys( $va_group_users )
+	) );
+	?>
 	</form>
-<?php
+	<?php
 	print $vs_control_box;
-?>
+	?>
 </div>

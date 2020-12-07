@@ -26,11 +26,12 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_user = $this->getVar('t_user');
-	$vn_user_id = $this->getVar('user_id');
+$t_user     = $this->getVar( 't_user' );
+$vn_user_id = $this->getVar( 'user_id' );
 ?>
 <div class="sectionBox">
-<?php
-	print caDeleteWarningBox($this->request, $t_user, $t_user->getName(), 'administrate/access', 'users', 'ListUsers', array('user_id' => $vn_user_id));
-?>
+	<?php
+	print caDeleteWarningBox( $this->request, $t_user, $t_user->getName(), 'administrate/access', 'users', 'ListUsers',
+		array( 'user_id' => $vn_user_id ) );
+	?>
 </div>

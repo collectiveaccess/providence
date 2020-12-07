@@ -32,37 +32,41 @@ AppController::getInstance()->removeAllPlugins();
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-	<title><?php print $this->request->config->get("app_display_name"); ?></title>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title><?php print $this->request->config->get( "app_display_name" ); ?></title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 
-	<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/login.css" rel="stylesheet" type="text/css" />
+	<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/login.css" rel="stylesheet" type="text/css"/>
 	<?php
-	print AssetLoadManager::getLoadHTML($this->request);
+	print AssetLoadManager::getLoadHTML( $this->request );
 	?>
 
 	<script type="text/javascript">
 		// initialize CA Utils
-		jQuery(document).ready(function() { caUI.initUtils({disableUnsavedChangesWarning: true}); });
+		jQuery(document).ready(function () {
+			caUI.initUtils({disableUnsavedChangesWarning: true});
+		});
 	</script>
 </head>
 <body>
 <div align="center">
 	<div id="loginBox">
 		<div align="center">
-			<img src="<?php print $this->request->getThemeUrlPath()."/graphics/logos/".$this->request->config->get('login_logo');?>" border="0">
+			<img src="<?php print $this->request->getThemeUrlPath() . "/graphics/logos/"
+			                      . $this->request->config->get( 'login_logo' ); ?>" border="0">
 		</div>
 		<div id="systemTitle">
-			<?php print $this->request->config->get("app_display_name"); ?>
+			<?php print $this->request->config->get( "app_display_name" ); ?>
 			<p class="smallContent">
-				<?php print _t("Enter your CollectiveAccess user name below to request a new password. We will send you an email with further instructions."); ?>
+				<?php print _t( "Enter your CollectiveAccess user name below to request a new password. We will send you an email with further instructions." ); ?>
 			</p>
 		</div><!-- end  systemTitle -->
 		<div id="loginForm">
-			<?php print caFormTag($this->request, 'RequestPassword', 'forgot'); ?>
-			<div class="loginFormElement"><?php print _t("User Name"); ?>:<br/>
+			<?php print caFormTag( $this->request, 'RequestPassword', 'forgot' ); ?>
+			<div class="loginFormElement"><?php print _t( "User Name" ); ?>:<br/>
 				<input type="text" name="username" size="25"/>
 			</div>
-			<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Submit"),'forgot', array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
+			<div class="loginSubmitButton"><?php print caFormSubmitButton( $this->request, __CA_NAV_ICON_LOGIN__,
+					_t( "Submit" ), 'forgot', array( 'icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__ ) ); ?></div>
 			</form>
 		</div><!-- end loginForm -->
 	</div><!-- end loginBox -->

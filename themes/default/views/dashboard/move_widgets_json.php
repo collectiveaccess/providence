@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print json_encode(array('status' => 'ok'));
+
+print json_encode( array( 'status' => 'ok' ) );
 ?>

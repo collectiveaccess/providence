@@ -25,14 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class EditorUIController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_editor_uis';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'editor ui';
- 		protected $ops_search_class = null;
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once( __CA_LIB_DIR__ . "/BaseLookupController.php" );
+
+class EditorUIController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = false;
+	protected $ops_table_name = 'ca_editor_uis';        // name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'editor ui';
+	protected $ops_search_class = null;
+	# -------------------------------------------------------
+}
+
+?>

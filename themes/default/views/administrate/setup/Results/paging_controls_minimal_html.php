@@ -25,38 +25,44 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vo_result 					= $this->getVar('result');
-	$vs_controller_name 		= $this->getVar('controller');
-	$vn_num_hits				= $this->getVar('num_hits');
-	
-	$va_previous_link_params 	= array('page' => $this->getVar('page') - 1);
-	$va_next_link_params 		= array('page' => $this->getVar('page') + 1);
-	$va_jump_to_params 			= array();
+
+$vo_result          = $this->getVar( 'result' );
+$vs_controller_name = $this->getVar( 'controller' );
+$vn_num_hits        = $this->getVar( 'num_hits' );
+
+$va_previous_link_params = array( 'page' => $this->getVar( 'page' ) - 1 );
+$va_next_link_params     = array( 'page' => $this->getVar( 'page' ) + 1 );
+$va_jump_to_params       = array();
 ?>
-	<br/><div class='divide'><!-- empty --></div>
+<br/>
+<div class='divide'><!-- empty --></div>
 <?php
-	if ($vn_type_id = intval($this->getVar('type_id'))) {
-		$va_previous_link_params['type_id'] = $vn_type_id;
-		$va_next_link_params['type_id'] = $vn_type_id;
-		$va_jump_to_params['type_id'] = $vn_type_id;
+if ( $vn_type_id = intval( $this->getVar( 'type_id' ) ) ) {
+	$va_previous_link_params['type_id'] = $vn_type_id;
+	$va_next_link_params['type_id']     = $vn_type_id;
+	$va_jump_to_params['type_id']       = $vn_type_id;
+}
+
+$vs_searchNav = "<div class='searchNav'>";
+
+if ( ( $this->getVar( 'num_pages' ) > 1 ) && ! $this->getVar( 'dontShowPages' ) ) {
+	$vs_searchNav .= "<div class='nav'>";
+	if ( $this->getVar( 'page' ) > 1 ) {
+		$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"" . caNavUrl( $this->request, 'find',
+				$this->request->getController(), $this->request->getAction(), $va_previous_link_params )
+		                 . "\"); return false;' class='button'>&lsaquo; " . _t( "Previous" ) . "</a>";
 	}
-	
-	$vs_searchNav = "<div class='searchNav'>";
-		
-	if(($this->getVar('num_pages') > 1) && !$this->getVar('dontShowPages')){
-		$vs_searchNav .= "<div class='nav'>";
-		if ($this->getVar('page') > 1) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_previous_link_params)."\"); return false;' class='button'>&lsaquo; "._t("Previous")."</a>";
-		}
-		$vs_searchNav .= '&nbsp;&nbsp;&nbsp;Page '.$this->getVar('page').'/'.$this->getVar('num_pages').'&nbsp;&nbsp;&nbsp;';
-		if ($this->getVar('page') < $this->getVar('num_pages')) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\"); return false;' class='button'>"._t("Next")." &rsaquo;</a>";
-		}
-		$vs_searchNav .= "</div>";
+	$vs_searchNav .= '&nbsp;&nbsp;&nbsp;Page ' . $this->getVar( 'page' ) . '/' . $this->getVar( 'num_pages' )
+	                 . '&nbsp;&nbsp;&nbsp;';
+	if ( $this->getVar( 'page' ) < $this->getVar( 'num_pages' ) ) {
+		$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"" . caNavUrl( $this->request, 'find',
+				$this->request->getController(), $this->request->getAction(), $va_next_link_params )
+		                 . "\"); return false;' class='button'>" . _t( "Next" ) . " &rsaquo;</a>";
 	}
 	$vs_searchNav .= "</div>";
-	print $vs_searchNav;
+}
+$vs_searchNav .= "</div>";
+print $vs_searchNav;
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>
 <div class="editorBottomPadding"><!-- empty --></div>

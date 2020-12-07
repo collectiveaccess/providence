@@ -25,14 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class LoanController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_loans';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'loan';
- 		protected $ops_search_class = 'LoanSearch';
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once( __CA_LIB_DIR__ . "/BaseLookupController.php" );
+
+class LoanController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = false;
+	protected $ops_table_name = 'ca_loans';        // name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'loan';
+	protected $ops_search_class = 'LoanSearch';
+	# -------------------------------------------------------
+}
+
+?>

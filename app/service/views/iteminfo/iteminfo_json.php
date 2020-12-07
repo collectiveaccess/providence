@@ -26,15 +26,16 @@
  * ----------------------------------------------------------------------
  */
 
-	$vs_smd = $this->getVar("smd");
-	$vo_server = $this->getVar("json_server");
-	
-	if($this->getVar("show_smd")){
-		header('Content-Type: application/json');
-		print $vo_server->getServiceMap();
-		return;
-	} else {
-		$vo_server->handle();
-	}
-	
+$vs_smd    = $this->getVar( "smd" );
+$vo_server = $this->getVar( "json_server" );
+
+if ( $this->getVar( "show_smd" ) ) {
+	header( 'Content-Type: application/json' );
+	print $vo_server->getServiceMap();
+
+	return;
+} else {
+	$vo_server->handle();
+}
+
 ?>

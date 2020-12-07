@@ -25,28 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_MODELS_DIR__.'/ca_site_pages.php');
- 	
+require_once( __CA_MODELS_DIR__ . '/ca_site_pages.php' );
 
- 	class ShowController extends ActionController {
- 		# -------------------------------------------------------
- 		/**
-		 *
-		 */
- 		public function __call($ps_method, $pa_path) {
- 			$this->view->setVar('response', $this->response);
- 			
- 			$page = new ca_site_pages((int)$this->request->getAction());
- 			if (!$page->isLoaded()) {
- 				throw new ApplicationException(_t('Cannot load page'));
- 			}
- 			if ($page->get('path') !== 'PROVIDENCE_HELP_MENU') {
- 				throw new ApplicationException(_t('Is not help menu page'));
- 			}
- 			if ($vs_content = $page->render($this, ['incrementViewCount' => true])) {
- 				$this->response->addContent($vs_content);
- 				return;
- 			}
- 		}
- 		# -------------------------------------------------------		
- 	}
+
+class ShowController extends ActionController {
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __call( $ps_method, $pa_path ) {
+		$this->view->setVar( 'response', $this->response );
+
+		$page = new ca_site_pages( (int) $this->request->getAction() );
+		if ( ! $page->isLoaded() ) {
+			throw new ApplicationException( _t( 'Cannot load page' ) );
+		}
+		if ( $page->get( 'path' ) !== 'PROVIDENCE_HELP_MENU' ) {
+			throw new ApplicationException( _t( 'Is not help menu page' ) );
+		}
+		if ( $vs_content = $page->render( $this, [ 'incrementViewCount' => true ] ) ) {
+			$this->response->addContent( $vs_content );
+
+			return;
+		}
+	}
+	# -------------------------------------------------------
+}

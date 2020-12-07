@@ -120,6 +120,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
 } LIMIT ' . $pa_params['limit'] );
+
 		return $vs_query;
 	}
 

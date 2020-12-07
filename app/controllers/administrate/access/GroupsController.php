@@ -26,137 +26,150 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
+require_once( __CA_MODELS_DIR__ . '/ca_user_groups.php' );
 
- 	class GroupsController extends ActionController {
- 		# -------------------------------------------------------
- 		private $pt_group;
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function Edit() {
- 			$t_group = $this->getGroupObject();
+class GroupsController extends ActionController {
+	# -------------------------------------------------------
+	private $pt_group;
+	# -------------------------------------------------------
+	#
+	# -------------------------------------------------------
+	public function Edit() {
+		$t_group = $this->getGroupObject();
 
- 			$this->render('group_edit_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function Save() {
- 			AssetLoadManager::register('tableList');
- 			
- 			$t_group = $this->getGroupObject();
- 			$t_group->setMode(ACCESS_WRITE);
- 			foreach($t_group->getFormFields() as $vs_f => $va_field_info) {
- 				$t_group->set($vs_f, $_REQUEST[$vs_f]);
- 				if ($t_group->numErrors()) {
- 					$this->request->addActionErrors($t_group->errors(), 'field_'.$vs_f);
- 				}
- 			}
- 			
- 			$t_group->set('user_id', null);
+		$this->render( 'group_edit_html.php' );
+	}
 
- 			if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {
- 				$this->request->addActionError(new ApplicationError(1050, _t("Password does not match confirmation. Please try again."), "administrate/GroupsController->Save()", '', false, false), 'field_password');
- 			} 
- 			
- 			AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache since changes may affect content
- 			
- 			if($this->request->numActionErrors() == 0) {
-				if (!$t_group->getPrimaryKey()) {
-					$t_group->insert();
-					$vs_message = _t("Added group");
-				} else {
-					$t_group->update();
-					$vs_message = _t("Saved changes to group");
-				}
+	# -------------------------------------------------------
+	public function Save() {
+		AssetLoadManager::register( 'tableList' );
 
-				if ($t_group->numErrors()) {
-					foreach ($t_group->errors() as $o_e) {
-						$this->request->addActionError($o_e, 'general');
-						
-						$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
-					}
-				} else {
-					// Save roles
-					$va_set_group_roles = $this->request->getParameter('roles', pArray);
-					if(!is_array($va_set_group_roles)) { $va_set_group_roles = array(); }
-					
-					$va_existing_group_roles = $t_group->getGroupRoles();
-					$va_role_list = $t_group->getRoleList();
-					
-					foreach($va_role_list as $vn_role_id => $va_role_info) {
-						if ($va_existing_group_roles[$vn_role_id] && !in_array($vn_role_id, $va_set_group_roles)) {
-							// remove role
-							$t_group->removeRoles($vn_role_id);
-							continue;
-						}
-						
-						if (!$va_existing_group_roles[$vn_role_id] && in_array($vn_role_id, $va_set_group_roles)) {
-							// add role
-							$t_group->addRoles($vn_role_id);
-							continue;
-						}
-					}
-					
-					$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
-				}
+		$t_group = $this->getGroupObject();
+		$t_group->setMode( ACCESS_WRITE );
+		foreach ( $t_group->getFormFields() as $vs_f => $va_field_info ) {
+			$t_group->set( $vs_f, $_REQUEST[ $vs_f ] );
+			if ( $t_group->numErrors() ) {
+				$this->request->addActionErrors( $t_group->errors(), 'field_' . $vs_f );
+			}
+		}
+
+		$t_group->set( 'user_id', null );
+
+		if ( $this->request->getParameter( 'password', pString ) != $this->request->getParameter( 'password_confirm',
+				pString )
+		) {
+			$this->request->addActionError( new ApplicationError( 1050,
+				_t( "Password does not match confirmation. Please try again." ),
+				"administrate/GroupsController->Save()", '', false, false ), 'field_password' );
+		}
+
+		AppNavigation::clearMenuBarCache( $this->request );    // clear menu bar cache since changes may affect content
+
+		if ( $this->request->numActionErrors() == 0 ) {
+			if ( ! $t_group->getPrimaryKey() ) {
+				$t_group->insert();
+				$vs_message = _t( "Added group" );
 			} else {
-				$this->notification->addNotification(_t("Your entry has errors. See below for details."), __NOTIFICATION_TYPE_ERROR__);
+				$t_group->update();
+				$vs_message = _t( "Saved changes to group" );
 			}
 
-			if ($this->request->numActionErrors()) {
-				$this->render('group_edit_html.php');
-			} else {
-				// success
- 				$this->view->setVar('group_list', $t_group->getGroupList());
+			if ( $t_group->numErrors() ) {
+				foreach ( $t_group->errors() as $o_e ) {
+					$this->request->addActionError( $o_e, 'general' );
 
- 				$this->render('group_list_html.php');
- 			}
- 		}
- 		# -------------------------------------------------------
- 		public function ListGroups() {
- 			AssetLoadManager::register('tableList');
- 			
- 			$t_group = $this->getGroupObject();
- 			$vs_sort_field = $this->request->getParameter('sort', pString);
- 			$this->view->setVar('group_list', $t_group->getGroupList($vs_sort_field, 'asc'));
-
- 			$this->render('group_list_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function Delete() {
- 			$t_group = $this->getGroupObject();
- 			if ($this->request->getParameter('confirm', pInteger)) {
- 				$t_group->setMode(ACCESS_WRITE);
- 				$t_group->delete(true);
-
- 				if ($t_group->numErrors()) {
- 					foreach ($t_group->errors() as $o_e) {
-						$this->request->addActionError($o_e, 'general');
-					}
- 				}
- 				$this->ListGroups();
- 				return;
- 			} else {
- 				$this->render('group_delete_html.php');
- 			}
- 		}
- 		# -------------------------------------------------------
- 		# Utilities
- 		# -------------------------------------------------------
- 		private function getGroupObject($pb_set_view_vars=true, $pn_group_id=null) {
- 			if (!($t_group = $this->pt_group)) {
-				if (!($vn_group_id = $this->request->getParameter('group_id', pInteger))) {
-					$vn_group_id = $pn_group_id;
+					$this->notification->addNotification( $o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__ );
 				}
-				$t_group = new ca_user_groups($vn_group_id);
+			} else {
+				// Save roles
+				$va_set_group_roles = $this->request->getParameter( 'roles', pArray );
+				if ( ! is_array( $va_set_group_roles ) ) {
+					$va_set_group_roles = array();
+				}
+
+				$va_existing_group_roles = $t_group->getGroupRoles();
+				$va_role_list            = $t_group->getRoleList();
+
+				foreach ( $va_role_list as $vn_role_id => $va_role_info ) {
+					if ( $va_existing_group_roles[ $vn_role_id ] && ! in_array( $vn_role_id, $va_set_group_roles ) ) {
+						// remove role
+						$t_group->removeRoles( $vn_role_id );
+						continue;
+					}
+
+					if ( ! $va_existing_group_roles[ $vn_role_id ] && in_array( $vn_role_id, $va_set_group_roles ) ) {
+						// add role
+						$t_group->addRoles( $vn_role_id );
+						continue;
+					}
+				}
+
+				$this->notification->addNotification( $vs_message, __NOTIFICATION_TYPE_INFO__ );
 			}
- 			if ($pb_set_view_vars){
- 				$this->view->setVar('group_id', $vn_group_id);
- 				$this->view->setVar('t_group', $t_group);
- 			}
- 			$this->pt_group = $t_group;
- 			return $t_group;
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+		} else {
+			$this->notification->addNotification( _t( "Your entry has errors. See below for details." ),
+				__NOTIFICATION_TYPE_ERROR__ );
+		}
+
+		if ( $this->request->numActionErrors() ) {
+			$this->render( 'group_edit_html.php' );
+		} else {
+			// success
+			$this->view->setVar( 'group_list', $t_group->getGroupList() );
+
+			$this->render( 'group_list_html.php' );
+		}
+	}
+
+	# -------------------------------------------------------
+	public function ListGroups() {
+		AssetLoadManager::register( 'tableList' );
+
+		$t_group       = $this->getGroupObject();
+		$vs_sort_field = $this->request->getParameter( 'sort', pString );
+		$this->view->setVar( 'group_list', $t_group->getGroupList( $vs_sort_field, 'asc' ) );
+
+		$this->render( 'group_list_html.php' );
+	}
+
+	# -------------------------------------------------------
+	public function Delete() {
+		$t_group = $this->getGroupObject();
+		if ( $this->request->getParameter( 'confirm', pInteger ) ) {
+			$t_group->setMode( ACCESS_WRITE );
+			$t_group->delete( true );
+
+			if ( $t_group->numErrors() ) {
+				foreach ( $t_group->errors() as $o_e ) {
+					$this->request->addActionError( $o_e, 'general' );
+				}
+			}
+			$this->ListGroups();
+
+			return;
+		} else {
+			$this->render( 'group_delete_html.php' );
+		}
+	}
+	# -------------------------------------------------------
+	# Utilities
+	# -------------------------------------------------------
+	private function getGroupObject( $pb_set_view_vars = true, $pn_group_id = null ) {
+		if ( ! ( $t_group = $this->pt_group ) ) {
+			if ( ! ( $vn_group_id = $this->request->getParameter( 'group_id', pInteger ) ) ) {
+				$vn_group_id = $pn_group_id;
+			}
+			$t_group = new ca_user_groups( $vn_group_id );
+		}
+		if ( $pb_set_view_vars ) {
+			$this->view->setVar( 'group_id', $vn_group_id );
+			$this->view->setVar( 't_group', $t_group );
+		}
+		$this->pt_group = $t_group;
+
+		return $t_group;
+	}
+	# -------------------------------------------------------
+}
+
+?>

@@ -15,90 +15,116 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage models
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+ *
+ */
 
 
 BaseModel::$s_ca_models_definitions['ca_relationship_relationships'] = array(
- 	'NAME_SINGULAR' 	=> _t('relationship relationship'),
- 	'NAME_PLURAL' 		=> _t('relationship relationships'),
- 	'FIELDS' 			=> array(
- 		'reification_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Reification id', 'DESCRIPTION' => 'Identifier for Reification'
+	'NAME_SINGULAR' => _t( 'relationship relationship' ),
+	'NAME_PLURAL'   => _t( 'relationship relationships' ),
+	'FIELDS'        => array(
+		'reification_id'         => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_HIDDEN,
+			'IDENTITY'       => true,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Reification id',
+			'DESCRIPTION'    => 'Identifier for Reification'
 		),
-		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Type id', 'DESCRIPTION' => 'Identifier for Type',
-				'BOUNDS_VALUE' => array(0,65535)
+		'type_id'                => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Type id',
+			'DESCRIPTION'    => 'Identifier for Type',
+			'BOUNDS_VALUE'   => array( 0, 65535 )
 		),
 		'relationship_table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Relationship table', 'DESCRIPTION' => 'Table number for relationship table this relationship is bound to',
-				'BOUNDS_VALUE' => array(0,255)
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Relationship table',
+			'DESCRIPTION'    => 'Table number for relationship table this relationship is bound to',
+			'BOUNDS_VALUE'   => array( 0, 255 )
 		),
-		'relation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
+		'relation_id'            => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Relation id',
+			'DESCRIPTION'    => 'Identifier for Relation'
 		),
-		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Table num', 'DESCRIPTION' => 'Table num'
+		'table_num'              => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Table num',
+			'DESCRIPTION'    => 'Table num'
 		),
-		'row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier for Row'
+		'row_id'                 => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Row id',
+			'DESCRIPTION'    => 'Identifier for Row'
 		),
-		'source_info' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
+		'source_info'            => array(
+			'FIELD_TYPE'     => FT_TEXT,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 88,
+			'DISPLAY_HEIGHT' => 15,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Source information',
+			'DESCRIPTION'    => 'Source information'
 		),
-		'effective_date' => array(
-				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'START' => 'sdatetime', 'END' => 'edatetime',
-				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
+		'effective_date'         => array(
+			'FIELD_TYPE'     => FT_HISTORIC_DATERANGE,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 40,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => true,
+			'DEFAULT'        => '',
+			'START'          => 'sdatetime',
+			'END'            => 'edatetime',
+			'LABEL'          => _t( 'Effective dates' ),
+			'DESCRIPTION'    => _t( 'Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.' )
 		)
- 	)
+	)
 );
 
 class ca_relationship_relationships extends BaseModel {
@@ -114,7 +140,7 @@ class ca_relationship_relationships extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_relationship_relationships';
-	      
+
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'reification_id';
 
@@ -127,7 +153,7 @@ class ca_relationship_relationships extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('source_info');
+	protected $LIST_FIELDS = array( 'source_info' );
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -142,10 +168,10 @@ class ca_relationship_relationships extends BaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('source_info');
+	protected $ORDER_BY = array( 'source_info' );
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -155,38 +181,35 @@ class ca_relationship_relationships extends BaseModel {
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = '';
-	
-	
+
+
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
-	protected $HIERARCHY_TYPE				=	null;
-	protected $HIERARCHY_LEFT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_RIGHT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_PARENT_ID_FLD		=	null;
-	protected $HIERARCHY_DEFINITION_TABLE	=	null;
-	protected $HIERARCHY_ID_FLD				=	null;
-	protected $HIERARCHY_POLY_TABLE			=	null;
-	
+	protected $HIERARCHY_TYPE = null;
+	protected $HIERARCHY_LEFT_INDEX_FLD = null;
+	protected $HIERARCHY_RIGHT_INDEX_FLD = null;
+	protected $HIERARCHY_PARENT_ID_FLD = null;
+	protected $HIERARCHY_DEFINITION_TABLE = null;
+	protected $HIERARCHY_ID_FLD = null;
+	protected $HIERARCHY_POLY_TABLE = null;
+
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
 	protected $LOG_CHANGES_TO_SELF = false;
-	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
-		"FOREIGN_KEYS" => array(
-		
-		),
-		"RELATED_TABLES" => array(
-		
-		)
-	);
+	protected $LOG_CHANGES_USING_AS_SUBJECT
+		= array(
+			"FOREIGN_KEYS"   => array(),
+			"RELATED_TABLES" => array()
+		);
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-	
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -198,9 +221,10 @@ class ca_relationship_relationships extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct( $pn_id = null ) {
+		parent::__construct( $pn_id );    # call superclass constructor
 	}
 	# ------------------------------------------------------
 }
+
 ?>

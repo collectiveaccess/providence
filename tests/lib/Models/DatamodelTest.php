@@ -15,42 +15,43 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
+ *
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_LIB_DIR__.'/Datamodel.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_LIB_DIR__ . '/Datamodel.php' );
 
 class DatamodelTest extends TestCase {
 	public function testInstantiateAllModels() {
 		$va_tables = Datamodel::getTableNames();
 
-		foreach($va_tables as $vs_table) {
+		foreach ( $va_tables as $vs_table ) {
 			// we do multiple calls to get some cache hits
-			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table, true));
+			$this->assertInstanceOf( $vs_table, Datamodel::getInstance( $vs_table ) );
+			$this->assertInstanceOf( $vs_table, Datamodel::getInstance( $vs_table, true ) );
 
-			$vn_table_num = Datamodel::getTableNum($vs_table);
+			$vn_table_num = Datamodel::getTableNum( $vs_table );
 
-			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vn_table_num));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vn_table_num, true));
+			$this->assertInstanceOf( $vs_table, Datamodel::getInstance( $vn_table_num ) );
+			$this->assertInstanceOf( $vs_table, Datamodel::getInstance( $vn_table_num, true ) );
 
-			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table, true));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vn_table_num));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vn_table_num, true));
+			$this->assertInstanceOf( $vs_table, Datamodel::getInstance( $vs_table ) );
+			$this->assertInstanceOf( $vs_table, Datamodel::getInstance( $vs_table, true ) );
+			$this->assertInstanceOf( $vs_table, Datamodel::getInstance( $vn_table_num ) );
+			$this->assertInstanceOf( $vs_table, Datamodel::getInstance( $vn_table_num, true ) );
 		}
 	}
 }

@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
- 
-require_once(__CA_LIB_DIR__."/Db.php");
+
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_LIB_DIR__ . "/Db.php" );
 
 class DbTest extends TestCase {
 
@@ -40,55 +41,59 @@ class DbTest extends TestCase {
 	 */
 	var $db = null;
 
-	protected function setUp() : void {
+	protected function setUp(): void {
 		$this->db = new Db();
-		$this->db->query("CREATE TABLE IF NOT EXISTS foo (
+		$this->db->query( "CREATE TABLE IF NOT EXISTS foo (
 			id INT,
 			comment VARCHAR(255)
-		)");
-		$this->db->query("CREATE TABLE IF NOT EXISTS bar (
+		)" );
+		$this->db->query( "CREATE TABLE IF NOT EXISTS bar (
 			id INT,
 			comment VARCHAR(255)
-		)");
+		)" );
 
 	}
 
 	public function testSelectWithINParam() {
 		$this->checkIfFooIsEmpty();
 
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 1, 'bar' ) );
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 2, 'baz' ) );
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 3, 'foo' ) );
 
-		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)))", array(array(1,2,3),array(1,2,3)));
-		$this->assertEquals(3, $qr_select->numRows());
+		$qr_select = $this->db->query( "SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)))",
+			array( array( 1, 2, 3 ), array( 1, 2, 3 ) ) );
+		$this->assertEquals( 3, $qr_select->numRows() );
 
-		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2,3),array(1,2,3), 'foo'));
-		$this->assertEquals(1, $qr_select->numRows());
+		$qr_select = $this->db->query( "SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)",
+			array( array( 1, 2, 3 ), array( 1, 2, 3 ), 'foo' ) );
+		$this->assertEquals( 1, $qr_select->numRows() );
 
-		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2),array(2,3), 'baz'));
-		$this->assertEquals(1, $qr_select->numRows());
+		$qr_select = $this->db->query( "SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)",
+			array( array( 1, 2 ), array( 2, 3 ), 'baz' ) );
+		$this->assertEquals( 1, $qr_select->numRows() );
 
-		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2),array(2,3), 'foo'));
-		$this->assertEquals(0, $qr_select->numRows());
+		$qr_select = $this->db->query( "SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)",
+			array( array( 1, 2 ), array( 2, 3 ), 'foo' ) );
+		$this->assertEquals( 0, $qr_select->numRows() );
 
-		$this->db->query("DELETE FROM foo");
+		$this->db->query( "DELETE FROM foo" );
 		$this->checkIfFooIsEmpty();
 	}
 
 	public function testSimpleInsertSelectDeleteCycle() {
 		$this->checkIfFooIsEmpty();
 
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (1, 'bar')");
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (1, 'bar')" );
 
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertIsObject( $qr_select);
-		$this->assertTrue($qr_select->nextRow());
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertIsObject( $qr_select );
+		$this->assertTrue( $qr_select->nextRow() );
 
-		$this->assertEquals(1, $qr_select->get('id'));
-		$this->assertEquals('bar', $qr_select->get('comment'));
+		$this->assertEquals( 1, $qr_select->get( 'id' ) );
+		$this->assertEquals( 'bar', $qr_select->get( 'comment' ) );
 
-		$this->db->query("DELETE FROM foo");
+		$this->db->query( "DELETE FROM foo" );
 
 		$this->checkIfFooIsEmpty();
 	}
@@ -96,16 +101,16 @@ class DbTest extends TestCase {
 	public function testInsertSelectDeleteCycleWithParamsArray() {
 		$this->checkIfFooIsEmpty();
 
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 1, 'bar' ) );
 
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertIsObject( $qr_select);
-		$this->assertTrue($qr_select->nextRow());
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertIsObject( $qr_select );
+		$this->assertTrue( $qr_select->nextRow() );
 
-		$this->assertEquals(1, $qr_select->get('id'));
-		$this->assertEquals('bar', $qr_select->get('comment'));
+		$this->assertEquals( 1, $qr_select->get( 'id' ) );
+		$this->assertEquals( 'bar', $qr_select->get( 'comment' ) );
 
-		$this->db->query("DELETE FROM foo");
+		$this->db->query( "DELETE FROM foo" );
 
 		$this->checkIfFooIsEmpty();
 	}
@@ -113,11 +118,11 @@ class DbTest extends TestCase {
 	public function testInsertWithInvalidParamsArray() {
 		$this->checkIfFooIsEmpty();
 
-		$this->db->dieOnError(false);
-		
+		$this->db->dieOnError( false );
+
 		try {
-			$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar', 'foo'));
-		} catch (DatabaseException $e) {
+			$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 1, 'bar', 'foo' ) );
+		} catch ( DatabaseException $e ) {
 			// noop
 		}
 		$this->checkIfFooIsEmpty();
@@ -126,17 +131,17 @@ class DbTest extends TestCase {
 	public function testInsertWithPreparedStatement() {
 		$this->checkIfFooIsEmpty();
 
-		$o_stmt = $this->db->prepare("INSERT INTO foo (id, comment) VALUES (?, ?)");
-		$o_stmt->execute(array(1,'bar'));
+		$o_stmt = $this->db->prepare( "INSERT INTO foo (id, comment) VALUES (?, ?)" );
+		$o_stmt->execute( array( 1, 'bar' ) );
 
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertIsObject( $qr_select);
-		$this->assertTrue($qr_select->nextRow());
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertIsObject( $qr_select );
+		$this->assertTrue( $qr_select->nextRow() );
 
-		$this->assertEquals(1, $qr_select->get('id'));
-		$this->assertEquals('bar', $qr_select->get('comment'));
+		$this->assertEquals( 1, $qr_select->get( 'id' ) );
+		$this->assertEquals( 'bar', $qr_select->get( 'comment' ) );
 
-		$this->db->query("DELETE FROM foo");
+		$this->db->query( "DELETE FROM foo" );
 
 		$this->checkIfFooIsEmpty();
 	}
@@ -144,25 +149,25 @@ class DbTest extends TestCase {
 	public function testSelectiveDelete() {
 		$this->checkIfFooIsEmpty();
 
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 1, 'bar' ) );
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 2, 'baz' ) );
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 3, 'foo' ) );
 
-		$this->db->query("DELETE FROM foo WHERE id=?", 1);
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertEquals(2, $qr_select->numRows());
+		$this->db->query( "DELETE FROM foo WHERE id=?", 1 );
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertEquals( 2, $qr_select->numRows() );
 
-		$this->db->query("DELETE FROM foo WHERE id=?", 1);
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertEquals(2, $qr_select->numRows());
+		$this->db->query( "DELETE FROM foo WHERE id=?", 1 );
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertEquals( 2, $qr_select->numRows() );
 
-		$this->db->query("DELETE FROM foo WHERE id=?", 2);
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertEquals(1, $qr_select->numRows());
+		$this->db->query( "DELETE FROM foo WHERE id=?", 2 );
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertEquals( 1, $qr_select->numRows() );
 
-		$this->db->query("DELETE FROM foo WHERE id=?", 3);
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertEquals(0, $qr_select->numRows());
+		$this->db->query( "DELETE FROM foo WHERE id=?", 3 );
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertEquals( 0, $qr_select->numRows() );
 
 		$this->checkIfFooIsEmpty();
 	}
@@ -170,27 +175,27 @@ class DbTest extends TestCase {
 	public function testGetTables() {
 		$va_tables = $this->db->getTables();
 
-		$this->assertContains('foo', $va_tables);
-		$this->assertContains('bar', $va_tables);
-		
-		$this->assertEquals(228, sizeof($va_tables)); // 226 CA tables plus 2 we created!
+		$this->assertContains( 'foo', $va_tables );
+		$this->assertContains( 'bar', $va_tables );
+
+		$this->assertEquals( 228, sizeof( $va_tables ) ); // 226 CA tables plus 2 we created!
 	}
 
 	public function testQuote() {
-		$vm_ret = $this->db->escape("Editeur d'item de liste");
-		$this->assertEquals("Editeur d\'item de liste", $vm_ret);
+		$vm_ret = $this->db->escape( "Editeur d'item de liste" );
+		$this->assertEquals( "Editeur d\'item de liste", $vm_ret );
 
-		$vm_ret = $this->db->escape('bar "foo"');
-		$this->assertEquals('bar \"foo\"', $vm_ret);
+		$vm_ret = $this->db->escape( 'bar "foo"' );
+		$this->assertEquals( 'bar \"foo\"', $vm_ret );
 	}
 
 	public function testTxAbort() {
 		$this->checkIfFooIsEmpty();
 		$this->db->beginTransaction();
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
-		$this->assertEquals(1, $this->db->getTransactionCount());
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 1, 'bar' ) );
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 2, 'baz' ) );
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 3, 'foo' ) );
+		$this->assertEquals( 1, $this->db->getTransactionCount() );
 		$this->db->rollbackTransaction();
 		$this->checkIfFooIsEmpty();
 	}
@@ -198,93 +203,93 @@ class DbTest extends TestCase {
 	public function testTxCommit() {
 		$this->checkIfFooIsEmpty();
 		$this->db->beginTransaction();
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 1, 'bar' ) );
 		$this->db->commitTransaction();
 
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertIsObject( $qr_select);
-		$this->assertTrue($qr_select->nextRow());
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertIsObject( $qr_select );
+		$this->assertTrue( $qr_select->nextRow() );
 
-		$this->assertEquals(1, $qr_select->get('id'));
-		$this->assertEquals('bar', $qr_select->get('comment'));
+		$this->assertEquals( 1, $qr_select->get( 'id' ) );
+		$this->assertEquals( 'bar', $qr_select->get( 'comment' ) );
 
-		$this->db->query("DELETE FROM foo");
+		$this->db->query( "DELETE FROM foo" );
 
 		$this->checkIfFooIsEmpty();
 	}
 
 	public function testGetAllFieldValues() {
 		$this->checkIfFooIsEmpty();
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 1, 'bar' ) );
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 2, 'baz' ) );
+		$this->db->query( "INSERT INTO foo (id, comment) VALUES (?, ?)", array( 3, 'foo' ) );
 
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$va_ret = $qr_select->getAllFieldValues('id');
-		$this->assertEquals(array(1, 2, 3), $va_ret);
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$va_ret    = $qr_select->getAllFieldValues( 'id' );
+		$this->assertEquals( array( 1, 2, 3 ), $va_ret );
 
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$va_ret = $qr_select->getAllFieldValues(array('id', 'comment'));
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$va_ret    = $qr_select->getAllFieldValues( array( 'id', 'comment' ) );
 
-		$this->assertArrayHasKey('id', $va_ret);
-		$this->assertArrayHasKey('comment', $va_ret);
+		$this->assertArrayHasKey( 'id', $va_ret );
+		$this->assertArrayHasKey( 'comment', $va_ret );
 
-		$this->assertEquals(array(1, 2, 3), $va_ret['id']);
-		$this->assertEquals(array('bar', 'baz', 'foo'), $va_ret['comment']);
+		$this->assertEquals( array( 1, 2, 3 ), $va_ret['id'] );
+		$this->assertEquals( array( 'bar', 'baz', 'foo' ), $va_ret['comment'] );
 
-		$this->db->query("DELETE FROM foo");
+		$this->db->query( "DELETE FROM foo" );
 		$this->checkIfFooIsEmpty();
 	}
 
 	public function testGetFieldsFromTable() {
-		$va_field_info = $this->db->getFieldsFromTable('foo');
+		$va_field_info = $this->db->getFieldsFromTable( 'foo' );
 
-		foreach($va_field_info as $va_field) {
-			$this->assertTrue(in_array($va_field['fieldname'], array('id', 'comment')));
+		foreach ( $va_field_info as $va_field ) {
+			$this->assertTrue( in_array( $va_field['fieldname'], array( 'id', 'comment' ) ) );
 		}
 
-		$va_field = $this->db->getFieldsFromTable('foo', 'id');
-		$this->assertEquals('id', $va_field['fieldname']);
+		$va_field = $this->db->getFieldsFromTable( 'foo', 'id' );
+		$this->assertEquals( 'id', $va_field['fieldname'] );
 
 		// this is an alias for getFieldsFromTable()
-		$va_field = $this->db->getFieldInfo('foo', 'comment');
-		$this->assertEquals('comment', $va_field['fieldname']);
+		$va_field = $this->db->getFieldInfo( 'foo', 'comment' );
+		$this->assertEquals( 'comment', $va_field['fieldname'] );
 	}
 
 	public function testGetIndices() {
-		$va_indexes = $this->db->getIndices('ca_objects'); // not asking for foo this time!
+		$va_indexes = $this->db->getIndices( 'ca_objects' ); // not asking for foo this time!
 
-		$this->assertIsArray($va_indexes);
+		$this->assertIsArray( $va_indexes );
 
-		foreach($va_indexes as $va_index) {
-			$this->assertEquals('ca_objects', $va_index['Table']);
+		foreach ( $va_indexes as $va_index ) {
+			$this->assertEquals( 'ca_objects', $va_index['Table'] );
 
-			$this->assertArrayHasKey('Non_unique', $va_index);
-			$this->assertArrayHasKey('Key_name', $va_index);
-			$this->assertArrayHasKey('Seq_in_index', $va_index);
-			$this->assertArrayHasKey('Collation', $va_index);
-			$this->assertArrayHasKey('Cardinality', $va_index);
-			$this->assertArrayHasKey('Sub_part', $va_index);
-			$this->assertArrayHasKey('Packed', $va_index);
-			$this->assertArrayHasKey('Null', $va_index);
-			$this->assertArrayHasKey('Index_type', $va_index);
-			$this->assertArrayHasKey('Comment', $va_index);
-			$this->assertArrayHasKey('Index_comment', $va_index);
+			$this->assertArrayHasKey( 'Non_unique', $va_index );
+			$this->assertArrayHasKey( 'Key_name', $va_index );
+			$this->assertArrayHasKey( 'Seq_in_index', $va_index );
+			$this->assertArrayHasKey( 'Collation', $va_index );
+			$this->assertArrayHasKey( 'Cardinality', $va_index );
+			$this->assertArrayHasKey( 'Sub_part', $va_index );
+			$this->assertArrayHasKey( 'Packed', $va_index );
+			$this->assertArrayHasKey( 'Null', $va_index );
+			$this->assertArrayHasKey( 'Index_type', $va_index );
+			$this->assertArrayHasKey( 'Comment', $va_index );
+			$this->assertArrayHasKey( 'Index_comment', $va_index );
 		}
 	}
 
 	# ----------------------------
 
-	protected function tearDown() : void {
-		$this->db->query("DROP TABLE IF EXISTS foo");
-		$this->db->query("DROP TABLE IF EXISTS bar");
+	protected function tearDown(): void {
+		$this->db->query( "DROP TABLE IF EXISTS foo" );
+		$this->db->query( "DROP TABLE IF EXISTS bar" );
 	}
 
 	public function checkIfFooIsEmpty() {
-		$this->assertEquals(0, $this->db->getTransactionCount());
-		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertIsObject( $qr_select);
-		$this->assertFalse($qr_select->nextRow());
-		$this->assertEquals(0, $qr_select->numRows());
+		$this->assertEquals( 0, $this->db->getTransactionCount() );
+		$qr_select = $this->db->query( "SELECT * FROM foo" );
+		$this->assertIsObject( $qr_select );
+		$this->assertFalse( $qr_select->nextRow() );
+		$this->assertEquals( 0, $qr_select->numRows() );
 	}
 }

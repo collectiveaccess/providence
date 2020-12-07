@@ -25,14 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_set_item = $this->getVar('t_subject');
-	$vn_item_id = $this->getVar('subject_id');
+$t_set_item = $this->getVar( 't_subject' );
+$vn_item_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_set_item, $this->getVar('subject_name'), 'manage/set_items', 'SetItemEditor', 'Edit/'.$this->request->getActionExtra(), array('item_id' => $vn_item_id));
+		print caDeleteWarningBox( $this->request, $t_set_item, $this->getVar( 'subject_name' ), 'manage/set_items',
+			'SetItemEditor', 'Edit/' . $this->request->getActionExtra(), array( 'item_id' => $vn_item_id ) );
 	}
-?>
+	?>
 </div>

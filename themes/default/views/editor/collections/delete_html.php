@@ -25,14 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_collection = $this->getVar('t_subject');
-	$vn_collection_id = $this->getVar('subject_id');
+$t_collection     = $this->getVar( 't_subject' );
+$vn_collection_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_collection, $this->getVar('subject_name'), 'editor/collections', 'CollectionEditor', 'Edit/'.$this->request->getActionExtra(), array('collection_id' => $vn_collection_id));
+		print caDeleteWarningBox( $this->request, $t_collection, $this->getVar( 'subject_name' ), 'editor/collections',
+			'CollectionEditor', 'Edit/' . $this->request->getActionExtra(),
+			array( 'collection_id' => $vn_collection_id ) );
 	}
-?>
+	?>
 </div>

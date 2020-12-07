@@ -23,16 +23,17 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
-require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php' );
+require_once( __CA_LIB_DIR__ . "/Search/SearchIndexer.php" );
 
 /**
  * Class RelatedAttributeValueSearchQueryTest
@@ -40,31 +41,31 @@ require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
  */
 class RelatedAttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
 		// search subject table
-		$this->setPrimaryTable('ca_objects');
+		$this->setPrimaryTable( 'ca_objects' );
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_lot_id = $this->addTestRecord('ca_object_lots', array(
+		$vn_lot_id = $this->addTestRecord( 'ca_object_lots', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'purchase',
-				'idno_stub' => 'test_purchase',
+				'type_id'       => 'purchase',
+				'idno_stub'     => 'test_purchase',
 				'lot_status_id' => 'accessioned'
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "A test purchase",
+					"name"   => "A test purchase",
 				),
 			),
-			'attributes' => array(
-				'description' => array(
+			'attributes'       => array(
+				'description'      => array(
 					array(
 						'description' => 'Bacon ipsum dolor amet turkey brisket hamburger drumstick pork belly beef flank ham tongue'
 					)
@@ -75,45 +76,45 @@ class RelatedAttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 					)
 				),
 			)
-		));
+		) );
 
-		$this->assertGreaterThan(0, $vn_lot_id);
+		$this->assertGreaterThan( 0, $vn_lot_id );
 
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$this->assertGreaterThan( 0, $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'lot_id' => $vn_lot_id,
+				'lot_id'  => $vn_lot_id,
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test image",
+					"name"   => "My test image",
 				),
 			)
-		)));
+		) ) );
 
 
 		// search queries
-		$this->setSearchQueries(array(
+		$this->setSearchQueries( array(
 			'My Test Image' => 1,
 
-			'"Bacon ipsum"' => 1,
+			'"Bacon ipsum"'                            => 1,
 			'ca_object_lots.description:"Bacon ipsum"' => 1,
-			'ca_object_lots.acquisition_date:"1985"' => 1,
-			'ca_object_lots.acquisition_date:"1984"' => 0,
+			'ca_object_lots.acquisition_date:"1985"'   => 1,
+			'ca_object_lots.acquisition_date:"1984"'   => 0,
 
 			'(ca_object_lots.description:"Bacon") AND (ca_object_lots.acquisition_date:1985)' => 1,
-			'(ca_object_lots.description:bacon) AND (ca_object_lots.acquisition_date:1985)' => 1,
+			'(ca_object_lots.description:bacon) AND (ca_object_lots.acquisition_date:1985)'   => 1,
 			'(ca_object_lots.acquisition_date:1985) AND (ca_object_lots.description:"Bacon")' => 1,
-			'(ca_object_lots.acquisition_date:1985) AND (ca_object_lots.description:bacon)' => 1,
+			'(ca_object_lots.acquisition_date:1985) AND (ca_object_lots.description:bacon)'   => 1,
 
 			'(ca_object_lots.description:"Bacon") OR (ca_object_lots.acquisition_date:1985)' => 1,
-			'(ca_object_lots.description:bacon) OR (ca_object_lots.acquisition_date:1985)' => 1,
+			'(ca_object_lots.description:bacon) OR (ca_object_lots.acquisition_date:1985)'   => 1,
 			'(ca_object_lots.acquisition_date:1985) OR (ca_object_lots.description:"Bacon")' => 1,
-			'(ca_object_lots.acquisition_date:1985) OR (ca_object_lots.description:bacon)' => 1,
+			'(ca_object_lots.acquisition_date:1985) OR (ca_object_lots.description:bacon)'   => 1,
 
 			'(ca_object_lots.type_id:1) AND (ca_object_lots.acquisition_date:1985)' => 0,
-		));
+		) );
 	}
 	# -------------------------------------------------------
 }

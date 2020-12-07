@@ -15,17 +15,17 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Import
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -34,8 +34,8 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
-require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+require_once( __CA_LIB_DIR__ . '/Import/DataReaders/BaseXMLDataReader.php' );
+require_once( __CA_APP_DIR__ . '/helpers/displayHelpers.php' );
 
 class VernonDataReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
@@ -45,29 +45,29 @@ class VernonDataReader extends BaseXMLDataReader {
 	 * If set then the XPath used to select data to read can omit the root XML tag
 	 */
 	protected $opb_register_root_tag = false;
-	
+
 	/**
 	 * XML namespace URL used by data
 	 */
 	protected $ops_xml_namespace = '';
-	
+
 	/**
 	 * XML namespace prefix to pair with namespace URL
 	 * For files that use a namespace this should match that actually used in the file;
 	 * For files that don't use a namespace this should be set to *something* – doesn't really matter what
 	 */
 	protected $ops_xml_namespace_prefix = '';
-	
+
 	/**
 	 * XPath to select data for reading
 	 */
 	protected $ops_xpath = '/vernon/object';
-	
+
 	/**
-	 * 
+	 *
 	 */
 	protected $ops_root_tag = 'object';
-	
+
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
 	 *
@@ -75,7 +75,7 @@ class VernonDataReader extends BaseXMLDataReader {
 	 * referred to in import mappings as plain old record values
 	 */
 	protected $opb_use_row_tag_attributes_as_row_level_values = false;
-	
+
 	/**
 	 * Treat tag names as case insensitive?
 	 *
@@ -83,20 +83,22 @@ class VernonDataReader extends BaseXMLDataReader {
 	 * Setting this to true will cause all tag names to be matched without regard to case for the format
 	 */
 	protected $opb_tag_names_as_case_insensitive = true;
-	
+
 	# -------------------------------------------------------
+
 	/**
 	 *
 	 */
-	public function __construct($ps_source=null, $pa_options=null){
-		parent::__construct($ps_source, $pa_options);
-		
-		$this->ops_title = _t('Vernon XML Reader');
-		$this->ops_display_name = _t('Vernon XML');
-		$this->ops_description = _t('Reads Vernon XML files');
-		
-		$this->opa_formats = array('vernon');	// must be all lowercase to allow for case-insensitive matching
+	public function __construct( $ps_source = null, $pa_options = null ) {
+		parent::__construct( $ps_source, $pa_options );
+
+		$this->ops_title        = _t( 'Vernon XML Reader' );
+		$this->ops_display_name = _t( 'Vernon XML' );
+		$this->ops_description  = _t( 'Reads Vernon XML files' );
+
+		$this->opa_formats = array( 'vernon' );    // must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }
+
 ?>

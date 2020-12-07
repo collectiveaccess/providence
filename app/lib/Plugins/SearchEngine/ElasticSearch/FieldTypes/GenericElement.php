@@ -23,38 +23,41 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Search
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
 namespace ElasticSearch\FieldTypes;
 
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php');
+require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php' );
 
 class GenericElement extends FieldType {
 
 	/**
 	 * Metadata element code
+	 *
 	 * @var string
 	 */
 	protected $ops_element_code;
 
 	/**
 	 * Table name
+	 *
 	 * @var string
 	 */
 	protected $ops_table_name;
 
 	/**
 	 * Generic constructor.
+	 *
 	 * @param string $ps_table_name
 	 * @param string $ps_element_code
 	 */
-	public function __construct($ps_table_name, $ps_element_code) {
-		$this->ops_table_name = $ps_table_name;
+	public function __construct( $ps_table_name, $ps_element_code ) {
+		$this->ops_table_name   = $ps_table_name;
 		$this->ops_element_code = $ps_element_code;
 	}
 
@@ -68,7 +71,7 @@ class GenericElement extends FieldType {
 	/**
 	 * @param string $ps_element_code
 	 */
-	public function setElementCode($ps_element_code) {
+	public function setElementCode( $ps_element_code ) {
 		$this->ops_element_code = $ps_element_code;
 	}
 
@@ -82,15 +85,20 @@ class GenericElement extends FieldType {
 	/**
 	 * @param mixed $pm_content
 	 * @param array $pa_options
+	 *
 	 * @return array
 	 */
-	public function getIndexingFragment($pm_content, $pa_options) {
-		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
+	public function getIndexingFragment( $pm_content, $pa_options ) {
+		if ( is_array( $pm_content ) ) {
+			$pm_content = serialize( $pm_content );
+		}
 		// make sure empty strings are indexed as null, so ElasticSearch's
 		// _missing_ and _exists_ filters work as expected. If a field type
 		// needs to have them indexed differently, it can do so in its own
 		// FieldType implementation
-		if($pm_content === '') { $pm_content = null; }
+		if ( $pm_content === '' ) {
+			$pm_content = null;
+		}
 
 		return array(
 			$this->getTableName() . '/' . $this->getElementCode() => $pm_content
@@ -99,22 +107,23 @@ class GenericElement extends FieldType {
 
 	/**
 	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 *
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
-	public function getRewrittenTerm($po_term) {
-		$va_tmp = explode('\\/', $po_term->field);
-		if(sizeof($va_tmp) == 3) {
-			unset($va_tmp[1]);
+	public function getRewrittenTerm( $po_term ) {
+		$va_tmp = explode( '\\/', $po_term->field );
+		if ( sizeof( $va_tmp ) == 3 ) {
+			unset( $va_tmp[1] );
 			$po_term = new \Zend_Search_Lucene_Index_Term(
-				$po_term->text, join('\\/', $va_tmp)
+				$po_term->text, join( '\\/', $va_tmp )
 			);
 		}
 
-		if(strtolower($po_term->text) === '[blank]') {
+		if ( strtolower( $po_term->text ) === '[blank]' ) {
 			return new \Zend_Search_Lucene_Index_Term(
 				$po_term->field, '_missing_'
 			);
-		} elseif(strtolower($po_term->text) === '[set]') {
+		} elseif ( strtolower( $po_term->text ) === '[set]' ) {
 			return new \Zend_Search_Lucene_Index_Term(
 				$po_term->field, '_exists_'
 			);

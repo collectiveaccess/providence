@@ -25,54 +25,57 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
- 	require_once(__CA_LIB_DIR__.'/IWidget.php');
- 
-	class linksWidget extends BaseWidget implements IWidget {
-		# -------------------------------------------------------
-		private $opo_config;
-		
-		static $s_widget_settings = array();
-		# -------------------------------------------------------
-		public function __construct($ps_widget_path, $pa_settings) {
-			$this->title = _t('Links');
-			$this->description = _t('Displays CollectiveAccess project links');
-			parent::__construct($ps_widget_path, $pa_settings);
-			
-			$this->opo_config = Configuration::load($ps_widget_path.'/conf/links.conf');
-		}
-		# -------------------------------------------------------
-		/**
-		 * Override checkStatus() to return true
-		 */
-		public function checkStatus() {
-			return array(
-				'description' => $this->getDescription(),
-				'errors' => array(),
-				'warnings' => array(),
-				'available' => ((bool)$this->opo_config->get('enabled'))
-			);
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public function renderWidget($ps_widget_id, &$pa_settings) {
-			parent::renderWidget($ps_widget_id, $pa_settings);
-			
-			return $this->opo_view->render('main_html.php');
-		}
-		# -------------------------------------------------------
-		/**
-		 * Get widget user actions
-		 */
-		static public function getRoleActionList() {
-			return array();
-		}
-		# -------------------------------------------------------
+require_once( __CA_LIB_DIR__ . '/BaseWidget.php' );
+require_once( __CA_LIB_DIR__ . '/IWidget.php' );
+
+class linksWidget extends BaseWidget implements IWidget {
+	# -------------------------------------------------------
+	private $opo_config;
+
+	static $s_widget_settings = array();
+
+	# -------------------------------------------------------
+	public function __construct( $ps_widget_path, $pa_settings ) {
+		$this->title       = _t( 'Links' );
+		$this->description = _t( 'Displays CollectiveAccess project links' );
+		parent::__construct( $ps_widget_path, $pa_settings );
+
+		$this->opo_config = Configuration::load( $ps_widget_path . '/conf/links.conf' );
 	}
-	
-	BaseWidget::$s_widget_settings['linksWidget'] = array(		
-	);
-	
+	# -------------------------------------------------------
+
+	/**
+	 * Override checkStatus() to return true
+	 */
+	public function checkStatus() {
+		return array(
+			'description' => $this->getDescription(),
+			'errors'      => array(),
+			'warnings'    => array(),
+			'available'   => ( (bool) $this->opo_config->get( 'enabled' ) )
+		);
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function renderWidget( $ps_widget_id, &$pa_settings ) {
+		parent::renderWidget( $ps_widget_id, $pa_settings );
+
+		return $this->opo_view->render( 'main_html.php' );
+	}
+	# -------------------------------------------------------
+
+	/**
+	 * Get widget user actions
+	 */
+	static public function getRoleActionList() {
+		return array();
+	}
+	# -------------------------------------------------------
+}
+
+BaseWidget::$s_widget_settings['linksWidget'] = array();
+
 ?>

@@ -25,48 +25,58 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_LIB_DIR__."/Media.php");
- 	require_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
- 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
- 	require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
- 	require_once(__CA_LIB_DIR__."/Search/ListItemSearch.php");
- 	require_once(__CA_MODELS_DIR__."/ca_objects.php");
- 	require_once(__CA_LIB_DIR__."/BaseLookupController.php");
- 
- 	class VocabularyController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = true;
- 		protected $ops_table_name = 'ca_list_items';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'vocabulary';
- 		protected $ops_search_class = 'ListItemSearch';
- 		# -------------------------------------------------------
- 		public function Get($pa_additional_query_params=null, $pa_options=null) {
- 			$pa_options = array();
- 			$pa_additional_query_params = array('ca_lists.use_as_vocabulary:1');
- 			if ($ps_list = $this->request->getParameter('list', pString)) {
-				if(!is_array($pa_additional_query_params)) { $pa_additional_query_params = array(); }
-				
-				$pa_additional_query_params[] = "ca_lists.list_code:{$ps_list}";
-			} else {
-				if ($ps_lists = $this->request->getParameter('lists', pString)) {
-					if(!is_array($pa_additional_query_params)) { $pa_additional_query_params = array(); }
-					
-					$va_lists = explode(";", $ps_lists);
-					$va_tmp = array();
-					$pa_options['filters'] = array();
-					foreach($va_lists as $vs_list) {
-						if ($vs_list = trim($vs_list)) {
-							$va_tmp[(int)preg_replace("![\"']+!", "", $vs_list)] = true;
-						}
-					}
-					if (is_array($va_tmp) && sizeof($va_tmp)) {
-						$pa_options['filters'][] = array("ca_list_items.list_id", "IN", join(",", array_keys($va_tmp)));
+
+require_once( __CA_LIB_DIR__ . "/Media.php" );
+require_once( __CA_LIB_DIR__ . "/Media/MediaProcessingSettings.php" );
+require_once( __CA_LIB_DIR__ . "/BaseEditorController.php" );
+require_once( __CA_APP_DIR__ . "/helpers/displayHelpers.php" );
+require_once( __CA_LIB_DIR__ . "/Search/ListItemSearch.php" );
+require_once( __CA_MODELS_DIR__ . "/ca_objects.php" );
+require_once( __CA_LIB_DIR__ . "/BaseLookupController.php" );
+
+class VocabularyController extends BaseLookupController {
+	# -------------------------------------------------------
+	protected $opb_uses_hierarchy_browser = true;
+	protected $ops_table_name = 'ca_list_items';        // name of "subject" table (what we're editing)
+	protected $ops_name_singular = 'vocabulary';
+	protected $ops_search_class = 'ListItemSearch';
+
+	# -------------------------------------------------------
+	public function Get( $pa_additional_query_params = null, $pa_options = null ) {
+		$pa_options                 = array();
+		$pa_additional_query_params = array( 'ca_lists.use_as_vocabulary:1' );
+		if ( $ps_list = $this->request->getParameter( 'list', pString ) ) {
+			if ( ! is_array( $pa_additional_query_params ) ) {
+				$pa_additional_query_params = array();
+			}
+
+			$pa_additional_query_params[] = "ca_lists.list_code:{$ps_list}";
+		} else {
+			if ( $ps_lists = $this->request->getParameter( 'lists', pString ) ) {
+				if ( ! is_array( $pa_additional_query_params ) ) {
+					$pa_additional_query_params = array();
+				}
+
+				$va_lists              = explode( ";", $ps_lists );
+				$va_tmp                = array();
+				$pa_options['filters'] = array();
+				foreach ( $va_lists as $vs_list ) {
+					if ( $vs_list = trim( $vs_list ) ) {
+						$va_tmp[ (int) preg_replace( "![\"']+!", "", $vs_list ) ] = true;
 					}
 				}
+				if ( is_array( $va_tmp ) && sizeof( $va_tmp ) ) {
+					$pa_options['filters'][] = array(
+						"ca_list_items.list_id",
+						"IN",
+						join( ",", array_keys( $va_tmp ) )
+					);
+				}
 			}
-			
- 			return parent::Get($pa_additional_query_params, $pa_options);	// only lookup items in lists with use_as_vocabulary set
- 		}
- 		# -------------------------------------------------------
- 	}
+		}
+
+		return parent::Get( $pa_additional_query_params,
+			$pa_options );    // only lookup items in lists with use_as_vocabulary set
+	}
+	# -------------------------------------------------------
+}

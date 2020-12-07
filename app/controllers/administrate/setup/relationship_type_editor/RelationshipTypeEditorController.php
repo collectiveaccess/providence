@@ -25,80 +25,93 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
- 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
- 	require_once(__CA_LIB_DIR__."/Search/RelationshipTypeSearch.php");
- 	require_once(__CA_LIB_DIR__."/ResultContext.php");
- 	
- 
- 	class RelationshipTypeEditorController extends BaseEditorController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_relationship_types';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		public function Edit($pa_values=null, $pa_options=null) {
- 			$o_result_context = new ResultContext($this->request, 'ca_relationship_types', 'basic_search');
- 			
- 			$va_cur_result = $o_result_context->getResultList();
- 			$vn_id = $this->request->getParameter('type_id', pInteger);
- 			$vn_parent_id = $this->request->getParameter('parent_id', pInteger);
- 				
- 			// If we're creating a new record we'll need to establish the table_num
- 			// from the parent (there's always a parent)
- 			if (!$vn_id) {
- 				$t_parent = new ca_relationship_types($vn_parent_id);
- 				if (!$t_parent->getPrimaryKey()) {
- 					$this->postError(1230, _t("Invalid parent"),"RelationshipTypeEditorController->Edit()");
- 					return;
- 				}
- 				$this->request->setParameter('table_num', $t_parent->get('table_num'));
- 			}
- 			
- 			if (!is_array($va_cur_result) || !in_array($vn_id, $va_cur_result)) {
-				//
-				// Set "results list" navigation to all types in the same level as the currently selected type
-				//
-				$t_instance = new ca_relationship_types();
-				if (is_array($va_siblings = $t_instance->getHierarchySiblings($this->request->getParameter('type_id', pInteger), array('idsOnly' => true)))) {
-					$o_result_context->setResultList($va_siblings);
-					$o_result_context->saveContext();
-				}
+require_once( __CA_MODELS_DIR__ . "/ca_relationship_types.php" );
+require_once( __CA_LIB_DIR__ . "/BaseEditorController.php" );
+require_once( __CA_LIB_DIR__ . "/Search/RelationshipTypeSearch.php" );
+require_once( __CA_LIB_DIR__ . "/ResultContext.php" );
+
+
+class RelationshipTypeEditorController extends BaseEditorController {
+	# -------------------------------------------------------
+	protected $ops_table_name = 'ca_relationship_types';        // name of "subject" table (what we're editing)
+
+	# -------------------------------------------------------
+	public function __construct( &$po_request, &$po_response, $pa_view_paths = null ) {
+		parent::__construct( $po_request, $po_response, $pa_view_paths );
+	}
+
+	# -------------------------------------------------------
+	public function Edit( $pa_values = null, $pa_options = null ) {
+		$o_result_context = new ResultContext( $this->request, 'ca_relationship_types', 'basic_search' );
+
+		$va_cur_result = $o_result_context->getResultList();
+		$vn_id         = $this->request->getParameter( 'type_id', pInteger );
+		$vn_parent_id  = $this->request->getParameter( 'parent_id', pInteger );
+
+		// If we're creating a new record we'll need to establish the table_num
+		// from the parent (there's always a parent)
+		if ( ! $vn_id ) {
+			$t_parent = new ca_relationship_types( $vn_parent_id );
+			if ( ! $t_parent->getPrimaryKey() ) {
+				$this->postError( 1230, _t( "Invalid parent" ), "RelationshipTypeEditorController->Edit()" );
+
+				return;
 			}
-			
- 			parent::Edit();
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		public function info($pa_parameters) {
- 			parent::info($pa_parameters);
- 			
- 			
- 			$t_item = $this->view->getVar('t_item');
- 			$vn_item_id = $t_item->getPrimaryKey();
- 			
- 			// get parent items
-			$va_ancestors = array_reverse(caExtractValuesByUserLocaleFromHierarchyAncestorList(
-				$t_item->getHierarchyAncestors(null, array(
-					'additionalTableToJoin' => 'ca_relationship_type_labels',
-					'additionalTableJoinType' => 'LEFT',
-					'additionalTableSelectFields' => array('typename', 'typename_reverse', 'description', 'description_reverse', 'locale_id'),
-					'includeSelf' => false
+			$this->request->setParameter( 'table_num', $t_parent->get( 'table_num' ) );
+		}
+
+		if ( ! is_array( $va_cur_result ) || ! in_array( $vn_id, $va_cur_result ) ) {
+			//
+			// Set "results list" navigation to all types in the same level as the currently selected type
+			//
+			$t_instance = new ca_relationship_types();
+			if ( is_array(
+				$va_siblings = $t_instance->getHierarchySiblings( $this->request->getParameter( 'type_id', pInteger ),
+					array( 'idsOnly' => true ) ) )
+			) {
+				$o_result_context->setResultList( $va_siblings );
+				$o_result_context->saveContext();
+			}
+		}
+
+		parent::Edit();
+	}
+	# -------------------------------------------------------
+	# Sidebar info handler
+	# -------------------------------------------------------
+	public function info( $pa_parameters ) {
+		parent::info( $pa_parameters );
+
+
+		$t_item     = $this->view->getVar( 't_item' );
+		$vn_item_id = $t_item->getPrimaryKey();
+
+		// get parent items
+		$va_ancestors = array_reverse( caExtractValuesByUserLocaleFromHierarchyAncestorList(
+			$t_item->getHierarchyAncestors( null, array(
+					'additionalTableToJoin'       => 'ca_relationship_type_labels',
+					'additionalTableJoinType'     => 'LEFT',
+					'additionalTableSelectFields' => array(
+						'typename',
+						'typename_reverse',
+						'description',
+						'description_reverse',
+						'locale_id'
+					),
+					'includeSelf'                 => false
 				)
-			), 'type_id', 'typename', 'type_code'));
-			
-			
-			$vn_rel_table_num = $t_item->get('table_num');
-			
- 			array_shift($va_ancestors); // get rid of hierarchy root record, which should not be displayed
- 			$this->view->setVar('ancestors', $va_ancestors);
- 			
- 			
- 			return $this->render('widget_relationship_type_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+			), 'type_id', 'typename', 'type_code' ) );
+
+
+		$vn_rel_table_num = $t_item->get( 'table_num' );
+
+		array_shift( $va_ancestors ); // get rid of hierarchy root record, which should not be displayed
+		$this->view->setVar( 'ancestors', $va_ancestors );
+
+
+		return $this->render( 'widget_relationship_type_info_html.php', true );
+	}
+	# -------------------------------------------------------
+}
+
+?>

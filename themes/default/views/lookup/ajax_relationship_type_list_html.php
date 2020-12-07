@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('relationship_type_list'));
+print json_encode( $this->getVar( 'relationship_type_list' ) );
 ?>

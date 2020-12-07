@@ -25,20 +25,25 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$o_widget_manager = $this->getVar('widget_manager');
-	$va_widget_list = $o_widget_manager->getWidgetNames();
-	
-	print caFormTag($this->request, 'addWidget', 'caWidgetManagerForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+
+$o_widget_manager = $this->getVar( 'widget_manager' );
+$va_widget_list   = $o_widget_manager->getWidgetNames();
+
+print caFormTag( $this->request, 'addWidget', 'caWidgetManagerForm', null, 'post', 'multipart/form-data', '_top',
+	array( 'noCSRFToken' => true, 'disableUnsavedChangesWarning' => true ) );
 ?>
-		<input type="hidden" name="widget" value="" id='caWidgetManagerFormWidgetValue'/>
+<input type="hidden" name="widget" value="" id='caWidgetManagerFormWidgetValue'/>
 <?php
-	foreach($va_widget_list as $vs_widget_name) {
-		$va_status = WidgetManager::checkWidgetStatus($vs_widget_name);
-		if(!$va_status["available"]) continue;
-		
-		print "<a href='#' onclick='jQuery(\"#caWidgetManagerFormWidgetValue\").val(\"{$vs_widget_name}\"); jQuery(\"#caWidgetManagerForm\").submit();'>".caNavIcon(__CA_NAV_ICON_ADD_WIDGET__, 1)."  ".$o_widget_manager->getWidgetTitle($vs_widget_name)."</a><br/>\n";
-		print "<div id='widgetDescription'>".$o_widget_manager->getWidgetDescription($vs_widget_name)."</div>";
+foreach ( $va_widget_list as $vs_widget_name ) {
+	$va_status = WidgetManager::checkWidgetStatus( $vs_widget_name );
+	if ( ! $va_status["available"] ) {
+		continue;
 	}
+
+	print "<a href='#' onclick='jQuery(\"#caWidgetManagerFormWidgetValue\").val(\"{$vs_widget_name}\"); jQuery(\"#caWidgetManagerForm\").submit();'>"
+	      . caNavIcon( __CA_NAV_ICON_ADD_WIDGET__, 1 ) . "  " . $o_widget_manager->getWidgetTitle( $vs_widget_name )
+	      . "</a><br/>\n";
+	print "<div id='widgetDescription'>" . $o_widget_manager->getWidgetDescription( $vs_widget_name ) . "</div>";
+}
 ?>
-	</form>
+</form>

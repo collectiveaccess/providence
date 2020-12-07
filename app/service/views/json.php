@@ -26,11 +26,12 @@
  * ----------------------------------------------------------------------
  */
 
-	header('Content-type: application/json');
-	$va_return = array_replace(array("ok" => true), caSanitizeArray($this->getVar('content'),array('allowStdClass' => true)));
+header( 'Content-type: application/json' );
+$va_return = array_replace( array( "ok" => true ),
+	caSanitizeArray( $this->getVar( 'content' ), array( 'allowStdClass' => true ) ) );
 
-	if($this->getVar('pretty_print')){
-		print caFormatJson(json_encode($va_return));
-	} else {
-		print json_encode($va_return);
-	}
+if ( $this->getVar( 'pretty_print' ) ) {
+	print caFormatJson( json_encode( $va_return ) );
+} else {
+	print json_encode( $va_return );
+}

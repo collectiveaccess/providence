@@ -32,67 +32,67 @@
 
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_APP_DIR__ . "/helpers/CLIHelpers.php");
+require_once( __CA_APP_DIR__ . "/helpers/CLIHelpers.php" );
 
 class CliHelpersTest extends TestCase {
 
-    private $opa_options;
+	private $opa_options;
 
-    protected function setUp(): void {
-        $this->opa_options = array(
-                "hostname-s" => 'Hostname of installation. If omitted default installation is used.',
-                "hostname=s" => 'Hostname of installation. If omitted default installation is used.',
-                "hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
-                "hostname|h=s" => 'Hostname of installation. If omitted default installation is used.',
-                "hostname" => 'Hostname of installation. If omitted default installation is used.',
-        );
-    }
+	protected function setUp(): void {
+		$this->opa_options = array(
+			"hostname-s"   => 'Hostname of installation. If omitted default installation is used.',
+			"hostname=s"   => 'Hostname of installation. If omitted default installation is used.',
+			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
+			"hostname|h=s" => 'Hostname of installation. If omitted default installation is used.',
+			"hostname"     => 'Hostname of installation. If omitted default installation is used.',
+		);
+	}
 
-    /**
-     * Delete all records we created for this test to avoid side effects with other tests
-     */
-    protected function tearDown() : void {
-    }
+	/**
+	 * Delete all records we created for this test to avoid side effects with other tests
+	 */
+	protected function tearDown(): void {
+	}
 
-    # -------------------------------------------------------
-    public function testDisplayFormatWithNoAliasOptional() {
-        // some real-world examples
-        $vs_key = "hostname-s";
+	# -------------------------------------------------------
+	public function testDisplayFormatWithNoAliasOptional() {
+		// some real-world examples
+		$vs_key = "hostname-s";
 
-        $result = caFormatCmdOptionsForDisplay($vs_key, $this->opa_options[$vs_key]);
-        $this->assertStringContainsString("--hostname     ", $result);
-    }
+		$result = caFormatCmdOptionsForDisplay( $vs_key, $this->opa_options[ $vs_key ] );
+		$this->assertStringContainsString( "--hostname     ", $result );
+	}
 
-    public function testDisplayFormatWithNoAliasMandatory() {
-        // some real-world examples
-        $vs_key = "hostname=s";
+	public function testDisplayFormatWithNoAliasMandatory() {
+		// some real-world examples
+		$vs_key = "hostname=s";
 
-        $result = caFormatCmdOptionsForDisplay($vs_key, $this->opa_options[$vs_key]);
-        $this->assertStringContainsString("--hostname     ", $result);
-    }
+		$result = caFormatCmdOptionsForDisplay( $vs_key, $this->opa_options[ $vs_key ] );
+		$this->assertStringContainsString( "--hostname     ", $result );
+	}
 
-    public function testDisplayFormatWithAliasOptional() {
-        // some real-world examples
-        $vs_key = "hostname|h-s";
+	public function testDisplayFormatWithAliasOptional() {
+		// some real-world examples
+		$vs_key = "hostname|h-s";
 
-        $result = caFormatCmdOptionsForDisplay($vs_key, $this->opa_options[$vs_key]);
-        $this->assertStringContainsString("--hostname (-h)     ", $result);
-    }
+		$result = caFormatCmdOptionsForDisplay( $vs_key, $this->opa_options[ $vs_key ] );
+		$this->assertStringContainsString( "--hostname (-h)     ", $result );
+	}
 
-    public function testDisplayFormatWithAliasMandatory() {
-        // some real-world examples
-        $vs_key = "hostname|h=s";
+	public function testDisplayFormatWithAliasMandatory() {
+		// some real-world examples
+		$vs_key = "hostname|h=s";
 
-        $result = caFormatCmdOptionsForDisplay($vs_key, $this->opa_options[$vs_key]);
-        $this->assertStringContainsString("--hostname (-h)     ", $result);
-    }
+		$result = caFormatCmdOptionsForDisplay( $vs_key, $this->opa_options[ $vs_key ] );
+		$this->assertStringContainsString( "--hostname (-h)     ", $result );
+	}
 
-    public function testDisplayFormatNoArgs() {
-        // some real-world examples
-        $vs_key = "hostname";
+	public function testDisplayFormatNoArgs() {
+		// some real-world examples
+		$vs_key = "hostname";
 
-        $result = caFormatCmdOptionsForDisplay($vs_key, $this->opa_options[$vs_key]);
-        $this->assertStringContainsString("--hostname     ", $result);
-    }
+		$result = caFormatCmdOptionsForDisplay( $vs_key, $this->opa_options[ $vs_key ] );
+		$this->assertStringContainsString( "--hostname     ", $result );
+	}
 
 }

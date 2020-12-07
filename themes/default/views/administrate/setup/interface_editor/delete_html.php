@@ -25,14 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_ui = $this->getVar('t_subject');
-	$vn_ui_id = $this->getVar('subject_id');
+$t_ui     = $this->getVar( 't_subject' );
+$vn_ui_id = $this->getVar( 'subject_id' );
 ?>
 <div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
+	<?php
+	if ( ! $this->getVar( 'confirmed' ) ) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_ui, $this->getVar('subject_name'), 'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit/'.$this->request->getActionExtra(), array('ui_id' => $vn_ui_id));
+		print caDeleteWarningBox( $this->request, $t_ui, $this->getVar( 'subject_name' ),
+			'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit/' . $this->request->getActionExtra(),
+			array( 'ui_id' => $vn_ui_id ) );
 	}
-?>
+	?>
 </div>

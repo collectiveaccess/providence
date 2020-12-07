@@ -23,16 +23,17 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
 
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/DateRange.php');
+use PHPUnit\Framework\TestCase;
+
+require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php' );
+require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/ElasticSearch/FieldTypes/DateRange.php' );
 
 class DateRangeTest extends TestCase {
 	public function testDateRanges() {
@@ -40,46 +41,46 @@ class DateRangeTest extends TestCase {
 			'ca_objects', 'dates_value'
 		);
 
-		$va_ret = $o_range->getIndexingFragment('2015/02/28 to 2015/03/01', []);
+		$va_ret = $o_range->getIndexingFragment( '2015/02/28 to 2015/03/01', [] );
 
-		$this->assertEquals(array(
+		$this->assertEquals( array(
 			'ca_objects/dates_value_text' => '2015/02/28 to 2015/03/01',
-			'ca_objects/dates_value' => array(
+			'ca_objects/dates_value'      => array(
 				0 => '2015-02-28T00:00:00Z',
 				1 => '2015-03-01T23:59:59Z'
 			)
-		), $va_ret);
+		), $va_ret );
 	}
-	
+
 	public function testBeforeDateRange() {
 		$o_range = new ElasticSearch\FieldTypes\DateRange(
 			'ca_objects', 'dates_value'
 		);
 
-		$va_ret = $o_range->getIndexingFragment('before 2012', []);
+		$va_ret = $o_range->getIndexingFragment( 'before 2012', [] );
 
-		$this->assertEquals(array(
+		$this->assertEquals( array(
 			'ca_objects/dates_value_text' => 'before 2012',
-			'ca_objects/dates_value' => array(
+			'ca_objects/dates_value'      => array(
 				0 => 'BC 9999-01-01T00:00:00Z',
 				1 => '2012-12-31T23:59:59Z'
 			)
-		), $va_ret);
+		), $va_ret );
 	}
-	
+
 	public function testAfterDateRange() {
 		$o_range = new ElasticSearch\FieldTypes\DateRange(
 			'ca_objects', 'dates_value'
 		);
 
-		$va_ret = $o_range->getIndexingFragment('after 2012', []);
+		$va_ret = $o_range->getIndexingFragment( 'after 2012', [] );
 
-		$this->assertEquals(array(
+		$this->assertEquals( array(
 			'ca_objects/dates_value_text' => 'after 2012',
-			'ca_objects/dates_value' => array(
+			'ca_objects/dates_value'      => array(
 				0 => '2012-01-01T00:00:00Z',
 				1 => '9999-12-31T23:59:59Z'
 			)
-		), $va_ret);
+		), $va_ret );
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Parsers/MediaMetadata/XMPMediaMetadata.php : 
+ * app/lib/Parsers/MediaMetadata/XMPMediaMetadata.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,25 +15,24 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Core
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
+
+/**
+ *
+ */
 abstract class BaseMediaMetadataParser {
 	# -------------------------------------------------------
 
@@ -41,18 +40,22 @@ abstract class BaseMediaMetadataParser {
 	public function __construct() {
 		// noop
 	}
+
 	# -------------------------------------------------------
-	public function parse($ps_filepath) {
+	public function parse( $ps_filepath ) {
 		return false;
 	}
+
 	# -------------------------------------------------------
-	public function write($ps_filepath=null) {
+	public function write( $ps_filepath = null ) {
 		return false;
 	}
+
 	# -------------------------------------------------------
-	public function set($ps_field, $ps_value) {
+	public function set( $ps_field, $ps_value ) {
 		return false;
 	}
 	# -------------------------------------------------------
 }
+
 ?>

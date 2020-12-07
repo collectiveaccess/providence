@@ -23,9 +23,9 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Search
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -34,22 +34,25 @@ namespace ElasticSearch;
 
 use ElasticSearch\FieldTypes\FieldType;
 
-require_once(__CA_APP_DIR__.'/helpers/listHelpers.php');
+require_once( __CA_APP_DIR__ . '/helpers/listHelpers.php' );
 
 class Field {
 
 	/**
 	 * Content table num
+	 *
 	 * @var int
 	 */
 	protected $opn_content_tablenum;
 	/**
 	 * Content table name
+	 *
 	 * @var string
 	 */
 	protected $ops_content_tablename;
 	/**
 	 * Field name from search indexer (e.g. I3 or A5)
+	 *
 	 * @var string
 	 */
 	protected $ops_indexing_fieldname;
@@ -60,22 +63,26 @@ class Field {
 
 	/**
 	 * Field constructor.
-	 * @param int $opn_content_tablenum
+	 *
+	 * @param int    $opn_content_tablenum
 	 * @param string $ops_indexing_fieldname
+	 *
 	 * @throws \Exception
 	 */
-	public function __construct($opn_content_tablenum, $ops_indexing_fieldname) {
-		$this->opn_content_tablenum = $opn_content_tablenum;
-		$this->ops_content_tablename = \Datamodel::getTableName($this->getContentTableNum());
+	public function __construct( $opn_content_tablenum, $ops_indexing_fieldname ) {
+		$this->opn_content_tablenum  = $opn_content_tablenum;
+		$this->ops_content_tablename = \Datamodel::getTableName( $this->getContentTableNum() );
 
-		if(!$this->ops_content_tablename) {
-			throw new \Exception(_t('Invalid table num %1', $opn_content_tablenum));
+		if ( ! $this->ops_content_tablename ) {
+			throw new \Exception( _t( 'Invalid table num %1', $opn_content_tablenum ) );
 		}
 
-		$this->opo_field_type = FieldTypes\FieldType::getInstance($this->getContentTableName(), $ops_indexing_fieldname);
+		$this->opo_field_type = FieldTypes\FieldType::getInstance( $this->getContentTableName(),
+			$ops_indexing_fieldname );
 
-		if(!($this->opo_field_type instanceof FieldTypes\FieldType)) {
-			throw new \Exception(_t('Could not disambiguate field type for content table name %1 indexing field name %2', $opn_content_tablenum, $ops_indexing_fieldname));
+		if ( ! ( $this->opo_field_type instanceof FieldTypes\FieldType ) ) {
+			throw new \Exception( _t( 'Could not disambiguate field type for content table name %1 indexing field name %2',
+				$opn_content_tablenum, $ops_indexing_fieldname ) );
 		}
 	}
 
@@ -96,9 +103,10 @@ class Field {
 	/**
 	 * @param mixed $pm_content
 	 * @param array $pa_options
+	 *
 	 * @return array
 	 */
-	public function getIndexingFragment($pm_content, $pa_options=array()) {
-		return $this->opo_field_type->getIndexingFragment($pm_content, $pa_options);
+	public function getIndexingFragment( $pm_content, $pa_options = array() ) {
+		return $this->opo_field_type->getIndexingFragment( $pm_content, $pa_options );
 	}
 }

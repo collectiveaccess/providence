@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	print json_encode($this->getVar('storage_location_list'));
+print json_encode( $this->getVar( 'storage_location_list' ) );
 ?>

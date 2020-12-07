@@ -23,22 +23,22 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Geographic
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */ 
-    
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugGeographicMap.php");
-include_once(__CA_LIB_DIR__."/Plugins/GeographicMap/BaseGeographicMapPlugin.php");
+/**
+ *
+ */
+
+include_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugGeographicMap.php" );
+include_once( __CA_LIB_DIR__ . "/Plugins/GeographicMap/BaseGeographicMapPlugin.php" );
 
 class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLPlugGeographicMap {
-	
+
 	# ------------------------------------------------
 	/**
 	 *
@@ -46,172 +46,257 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 	public function __construct() {
 		parent::__construct();
 		$this->info['NAME'] = 'Leaflet';
-		
-		$this->description = _t('Generates maps using the Leaflet JS Library');
-		
-		AssetLoadManager::register("leaflet");
+
+		$this->description = _t( 'Generates maps using the Leaflet JS Library' );
+
+		AssetLoadManager::register( "leaflet" );
 	}
 	# ------------------------------------------------
+
 	/**
 	 * Generate map output in specified format using Leaflet
 	 *
-	 * @param $ps_format - specifies format to generate output in. Currently only 'HTML' is supported.
+	 * @param $ps_format  - specifies format to generate output in. Currently only 'HTML' is supported.
 	 * @param $pa_options - array of options to use when rendering output. Supported options are:
-	 *		showScaleControls = if true, scale controls are displayed; default is to use 'leaflet_maps_show_scale_controls' setting in app.conf
-	 *		delimiter = Delimiter to use to separate content for different items being plotted in the same location (and therefore being put in the same marker detail balloon); default is an HTML line break tag ("<br/>")
-	 *		minZoomLevel = Minimum zoom level to allow; leave null if you don't want to enforce a limit
-	 *		maxZoomLevel = Maximum zoom level to allow; leave null if you don't want to enforce a limit
-	 *		noWrap = Prevent wrapping of map tile background when pan; leave null to allow wrapping
-	 *		zoomLevel = Zoom map to specified level rather than fitting all markers into view; leave null if you don't want to specify a zoom level. IF this option is set minZoomLevel and maxZoomLevel will be ignored.
-	 *		pathColor = used for paths and circles; default is to use 'leaflet_maps_path_color' setting in app.conf
-	 *		pathWeight = used for paths and circles; default is to use 'leaflet_maps_path_weight' setting in app.conf
-	 *		pathOpacity = used for paths and circles; default is to use 'leaflet_maps_path_opacity' setting in app.conf
-	 *		fillColor = fill color for circles and polygons; default is to use 'leaflet_maps_fill_color' setting in app.conf
-	 *		fillOpacity = fill opacioty for circles and polygons; default is to use 'leaflet_maps_fill_opacity' setting in app.conf
+	 *                    showScaleControls = if true, scale controls are displayed; default is to use
+	 *                    'leaflet_maps_show_scale_controls' setting in app.conf delimiter = Delimiter to use to
+	 *                    separate content for different items being plotted in the same location (and therefore being
+	 *                    put in the same marker detail balloon); default is an HTML line break tag ("<br/>")
+	 *                    minZoomLevel = Minimum zoom level to allow; leave null if you don't want to enforce a limit
+	 *                    maxZoomLevel = Maximum zoom level to allow; leave null if you don't want to enforce a limit
+	 *                    noWrap = Prevent wrapping of map tile background when pan; leave null to allow wrapping
+	 *                    zoomLevel = Zoom map to specified level rather than fitting all markers into view; leave null
+	 *                    if you don't want to specify a zoom level. IF this option is set minZoomLevel and
+	 *                    maxZoomLevel will be ignored. pathColor = used for paths and circles; default is to use
+	 *                    'leaflet_maps_path_color' setting in app.conf pathWeight = used for paths and circles; default is to use 'leaflet_maps_path_weight' setting in app.conf pathOpacity = used for paths and circles; default is to use 'leaflet_maps_path_opacity' setting in app.conf fillColor = fill color for circles and polygons; default is to use 'leaflet_maps_fill_color' setting in app.conf fillOpacity = fill opacioty for circles and polygons; default is to use 'leaflet_maps_fill_opacity' setting in app.conf
 	 *
 	 * @return string
 	 */
-	public function render($ps_format, $pa_options=null) {
- 		AssetLoadManager::register('leaflet');
-		
-		list($vs_width, $vs_height) = $this->getDimensions();
-		list($vn_width, $vn_height) = $this->getDimensions(array('returnPixelValues' => true));
-		
-		
- 		$base_path = null;
- 		if ($request = caGetOption(['request'], $pa_options, null)) {
- 			$base_path = $request->getBaseUrlPath();
- 		}
- 		
- 		if (!($base_map_url = $this->opo_config->get('leaflet_base_layer'))) { 
- 			$base_map_url = 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png';
- 		}
-			
+	public function render( $ps_format, $pa_options = null ) {
+		AssetLoadManager::register( 'leaflet' );
+
+		list( $vs_width, $vs_height ) = $this->getDimensions();
+		list( $vn_width, $vn_height ) = $this->getDimensions( array( 'returnPixelValues' => true ) );
+
+
+		$base_path = null;
+		if ( $request = caGetOption( [ 'request' ], $pa_options, null ) ) {
+			$base_path = $request->getBaseUrlPath();
+		}
+
+		if ( ! ( $base_map_url = $this->opo_config->get( 'leaflet_base_layer' ) ) ) {
+			$base_map_url = 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png';
+		}
+
 		$va_map_items = $this->getMapItems();
-		$va_extents = $this->getExtents();
-		
-		$vb_show_scale_controls = (bool)caGetOption('showScaleControls', $pa_options, (bool)$this->opo_config->get('leaflet_maps_show_scale_controls'));
-		$vs_delimiter = caGetOption('delimiter', $pa_options, '<br/>');
-		$vn_zoom_level = caGetOption('zoomLevel', $pa_options, null);
-		$we_set_zoom = false;
-		if (!$vn_zoom_level) { $vn_zoom_level = 8; $we_set_zoom = true; }
-		
-		$vn_min_zoom_level = caGetOption('minZoomLevel', $pa_options, 0);
-		$vn_max_zoom_level = caGetOption('maxZoomLevel', $pa_options, 18);
-		$vb_no_wrap = (bool)caGetOption('noWrap', $pa_options, null);
-		
-		if (!($vs_path_color = caGetOption('pathColor', $pa_options, $this->opo_config->get('leaflet_maps_path_color')))) { $vs_path_color = '#ff0000'; }
-		if (($vn_path_weight = caGetOption('pathWeight', $pa_options, $this->opo_config->get('leaflet_maps_path_weight'))) < 1) { $vn_path_weight = 1; }
-		if (($vn_path_opacity = caGetOption('pathOpacity', $pa_options, $this->opo_config->get('leaflet_maps_path_opacity'))) < 0) { $vn_path_opacity = 1; }
-		
-		if (!($vs_fill_color = caGetOption('fillColor', $pa_options, $this->opo_config->get('leaflet_maps_fill_color')))) { $vs_fill_color = '#ff0000'; }
-		if (($vn_fill_opacity = caGetOption('fillOpacity', $pa_options, $this->opo_config->get('leaflet_maps_fill_opacity'))) < 0) { $vn_fill_opacity = 1; }
-		
-		if (!$vs_id = trim($this->get('id'))) { $vs_id = 'map'; }
-		
-		
+		$va_extents   = $this->getExtents();
+
+		$vb_show_scale_controls = (bool) caGetOption( 'showScaleControls', $pa_options,
+			(bool) $this->opo_config->get( 'leaflet_maps_show_scale_controls' ) );
+		$vs_delimiter           = caGetOption( 'delimiter', $pa_options, '<br/>' );
+		$vn_zoom_level          = caGetOption( 'zoomLevel', $pa_options, null );
+		$we_set_zoom            = false;
+		if ( ! $vn_zoom_level ) {
+			$vn_zoom_level = 8;
+			$we_set_zoom   = true;
+		}
+
+		$vn_min_zoom_level = caGetOption( 'minZoomLevel', $pa_options, 0 );
+		$vn_max_zoom_level = caGetOption( 'maxZoomLevel', $pa_options, 18 );
+		$vb_no_wrap        = (bool) caGetOption( 'noWrap', $pa_options, null );
+
+		if ( ! ( $vs_path_color = caGetOption( 'pathColor', $pa_options,
+			$this->opo_config->get( 'leaflet_maps_path_color' ) ) )
+		) {
+			$vs_path_color = '#ff0000';
+		}
+		if ( ( $vn_path_weight = caGetOption( 'pathWeight', $pa_options,
+				$this->opo_config->get( 'leaflet_maps_path_weight' ) ) ) < 1
+		) {
+			$vn_path_weight = 1;
+		}
+		if ( ( $vn_path_opacity = caGetOption( 'pathOpacity', $pa_options,
+				$this->opo_config->get( 'leaflet_maps_path_opacity' ) ) ) < 0
+		) {
+			$vn_path_opacity = 1;
+		}
+
+		if ( ! ( $vs_fill_color = caGetOption( 'fillColor', $pa_options,
+			$this->opo_config->get( 'leaflet_maps_fill_color' ) ) )
+		) {
+			$vs_fill_color = '#ff0000';
+		}
+		if ( ( $vn_fill_opacity = caGetOption( 'fillOpacity', $pa_options,
+				$this->opo_config->get( 'leaflet_maps_fill_opacity' ) ) ) < 0
+		) {
+			$vn_fill_opacity = 1;
+		}
+
+		if ( ! $vs_id = trim( $this->get( 'id' ) ) ) {
+			$vs_id = 'map';
+		}
+
+
 		$points = $paths = $circles = [];
-		foreach($va_map_items as $o_map_item) {
+		foreach ( $va_map_items as $o_map_item ) {
 			$va_coords = $o_map_item->getCoordinates();
-			if (sizeof($va_coords) > 1) {
+			if ( sizeof( $va_coords ) > 1 ) {
 				// path
-				$paths[] = ['path' => $va_coords, 'label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID()];
-			} elseif($va_coords[0]['radius'] > 0) { // circle
-				$va_coord = array_shift($va_coords);
-				$r = (float)$va_coord['radius'];
-				
-				$circles[$va_coord['latitude']][$va_coord['longitude']][] =['radius' => $r, 'label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID()];
+				$paths[] = [
+					'path'           => $va_coords,
+					'label'          => $o_map_item->getLabel(),
+					'content'        => $o_map_item->getContent(),
+					'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(),
+					'ajaxContentID'  => $o_map_item->getAjaxContentID()
+				];
+			} elseif ( $va_coords[0]['radius'] > 0 ) { // circle
+				$va_coord = array_shift( $va_coords );
+				$r        = (float) $va_coord['radius'];
+
+				$circles[ $va_coord['latitude'] ][ $va_coord['longitude'] ][] = [
+					'radius'         => $r,
+					'label'          => $o_map_item->getLabel(),
+					'content'        => $o_map_item->getContent(),
+					'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(),
+					'ajaxContentID'  => $o_map_item->getAjaxContentID()
+				];
 			} else {
 				// point
-				$va_coord = array_shift($va_coords);
-				$angle = isset($va_coord['angle']) ? (float)$va_coord['angle'] : null;
-				$points[$va_coord['latitude']][$va_coord['longitude']][] = ['label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID(), 'angle' => $angle];
+				$va_coord                                                    = array_shift( $va_coords );
+				$angle                                                       = isset( $va_coord['angle'] )
+					? (float) $va_coord['angle'] : null;
+				$points[ $va_coord['latitude'] ][ $va_coord['longitude'] ][] = [
+					'label'          => $o_map_item->getLabel(),
+					'content'        => $o_map_item->getContent(),
+					'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(),
+					'ajaxContentID'  => $o_map_item->getAjaxContentID(),
+					'angle'          => $angle
+				];
 			}
 		}
-		
-		$vn_c = 0;
-		
-		$pointList = [];
-		foreach($points as $lat => $va_locs_by_longitude) {
-			foreach($va_locs_by_longitude as $lng => $content_items) {
-				$va_buf = $va_ajax_ids = [];
-				$vs_label = $vs_ajax_content_url = '';
-				
-				foreach($content_items as $content_item) {
-					if (!$vs_label) {
-						$vs_label = $content_item['label'];
-					} else { // if there are multiple items in one location, we want to add the labels of the 2nd and all following items to the 'content' part of the overlay, while still not duplicating content (hence, md5)
-						$va_buf[md5($content_item['label'])] = $content_item['label'];
-					}
-					if (!$vs_ajax_content_url) { $vs_ajax_content_url = $content_item['ajaxContentUrl']; }
-					$va_ajax_ids[] = $content_item['ajaxContentID'];
-					$va_buf[md5($content_item['content'])] = $content_item['content'];	// md5 is to ensure there is no duplicate content (eg. if something is mapped to the same location twice)
-				}	
-				
-				if (!($lat && $lng)) { continue; }
-				if (($lat < -90) || ($lat > 90)) { continue; }
-				if (($lng < -180) || ($lng > 180)) { continue; }
-				
-				$vn_angle = isset($content_item['angle']) ? (float)$content_item['angle'] : null;
-				$vs_label = preg_replace("![\n\r]+!", " ", $vs_label);
-				$vs_content = preg_replace("![\n\r]+!", " ", join($vs_delimiter, $va_buf));
-				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? ($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
-				
-        		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label, 'content' => $vs_content];
-        		if ($vn_angle !== 0) { $l['angle'] = $vn_angle; }
-        		if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
-        		$pointList[] = $l;
-			}
-			$vn_c++;
-		}
-		
-		$circleList = [];
-		foreach($circles as $lat => $va_locs_by_longitude) {
-			foreach($va_locs_by_longitude as $lng => $content_items) {
-				$va_buf = $va_ajax_ids = [];
-				$vs_label = $vs_ajax_content_url = ''; $vn_radius = null;
-				
-				foreach($content_items as $content_item) {
-					if (!$vn_radius) { $vn_radius = $content_item['radius']; }
-					if (!$vs_label) {
-						$vs_label = $content_item['label'];
-					} else { // if there are multiple items in one location, we want to add the labels of the 2nd and all following items to the 'content' part of the overlay, while still not duplicating content (hence, md5)
-						$va_buf[md5($content_item['label'])] = $content_item['label'];
-					}
-					if (!$vs_ajax_content_url) { $vs_ajax_content_url = $content_item['ajaxContentUrl']; }
-					$va_ajax_ids[] = $content_item['ajaxContentID'];
-					$va_buf[md5($content_item['content'])] = $content_item['content'];	// md5 is to ensure there is no duplicate content (eg. if something is mapped to the same location twice)
-				}	
-				
-				if (!($lat && $lng)) { continue; }
-				$vs_label = preg_replace("![\n\r]+!", " ", $vs_label);
-				$vs_content = preg_replace("![\n\r]+!", " ", join($vs_delimiter, $va_buf));
-				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? ($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
-				
-        		$l = ['lat' => $lat, 'lng' => $lng, 'label' => $vs_label,  'content' => $vs_content, 'radius' => $vn_radius];
 
-        		if ($vs_ajax_url) { $l['ajaxUrl'] = $vs_ajax_url; } else { $l['content'] = $vs_content; }
-        		$circleList[] = $l;
+		$vn_c = 0;
+
+		$pointList = [];
+		foreach ( $points as $lat => $va_locs_by_longitude ) {
+			foreach ( $va_locs_by_longitude as $lng => $content_items ) {
+				$va_buf   = $va_ajax_ids = [];
+				$vs_label = $vs_ajax_content_url = '';
+
+				foreach ( $content_items as $content_item ) {
+					if ( ! $vs_label ) {
+						$vs_label = $content_item['label'];
+					} else { // if there are multiple items in one location, we want to add the labels of the 2nd and all following items to the 'content' part of the overlay, while still not duplicating content (hence, md5)
+						$va_buf[ md5( $content_item['label'] ) ] = $content_item['label'];
+					}
+					if ( ! $vs_ajax_content_url ) {
+						$vs_ajax_content_url = $content_item['ajaxContentUrl'];
+					}
+					$va_ajax_ids[] = $content_item['ajaxContentID'];
+					$va_buf[ md5( $content_item['content'] ) ]
+					               = $content_item['content'];    // md5 is to ensure there is no duplicate content (eg. if something is mapped to the same location twice)
+				}
+
+				if ( ! ( $lat && $lng ) ) {
+					continue;
+				}
+				if ( ( $lat < - 90 ) || ( $lat > 90 ) ) {
+					continue;
+				}
+				if ( ( $lng < - 180 ) || ( $lng > 180 ) ) {
+					continue;
+				}
+
+				$vn_angle    = isset( $content_item['angle'] ) ? (float) $content_item['angle'] : null;
+				$vs_label    = preg_replace( "![\n\r]+!", " ", $vs_label );
+				$vs_content  = preg_replace( "![\n\r]+!", " ", join( $vs_delimiter, $va_buf ) );
+				$vs_ajax_url = preg_replace( "![\n\r]+!", " ",
+					( $vs_ajax_content_url ? ( $vs_ajax_content_url . "/id/" . join( ';', $va_ajax_ids ) ) : '' ) );
+
+				$l = [ 'lat' => $lat, 'lng' => $lng, 'label' => $vs_label, 'content' => $vs_content ];
+				if ( $vn_angle !== 0 ) {
+					$l['angle'] = $vn_angle;
+				}
+				if ( $vs_ajax_url ) {
+					$l['ajaxUrl'] = $vs_ajax_url;
+				} else {
+					$l['content'] = $vs_content;
+				}
+				$pointList[] = $l;
 			}
-			$vn_c++;
+			$vn_c ++;
 		}
-		
-		switch(strtoupper($ps_format)) {
+
+		$circleList = [];
+		foreach ( $circles as $lat => $va_locs_by_longitude ) {
+			foreach ( $va_locs_by_longitude as $lng => $content_items ) {
+				$va_buf    = $va_ajax_ids = [];
+				$vs_label  = $vs_ajax_content_url = '';
+				$vn_radius = null;
+
+				foreach ( $content_items as $content_item ) {
+					if ( ! $vn_radius ) {
+						$vn_radius = $content_item['radius'];
+					}
+					if ( ! $vs_label ) {
+						$vs_label = $content_item['label'];
+					} else { // if there are multiple items in one location, we want to add the labels of the 2nd and all following items to the 'content' part of the overlay, while still not duplicating content (hence, md5)
+						$va_buf[ md5( $content_item['label'] ) ] = $content_item['label'];
+					}
+					if ( ! $vs_ajax_content_url ) {
+						$vs_ajax_content_url = $content_item['ajaxContentUrl'];
+					}
+					$va_ajax_ids[] = $content_item['ajaxContentID'];
+					$va_buf[ md5( $content_item['content'] ) ]
+					               = $content_item['content'];    // md5 is to ensure there is no duplicate content (eg. if something is mapped to the same location twice)
+				}
+
+				if ( ! ( $lat && $lng ) ) {
+					continue;
+				}
+				$vs_label    = preg_replace( "![\n\r]+!", " ", $vs_label );
+				$vs_content  = preg_replace( "![\n\r]+!", " ", join( $vs_delimiter, $va_buf ) );
+				$vs_ajax_url = preg_replace( "![\n\r]+!", " ",
+					( $vs_ajax_content_url ? ( $vs_ajax_content_url . "/id/" . join( ';', $va_ajax_ids ) ) : '' ) );
+
+				$l = [
+					'lat'     => $lat,
+					'lng'     => $lng,
+					'label'   => $vs_label,
+					'content' => $vs_content,
+					'radius'  => $vn_radius
+				];
+
+				if ( $vs_ajax_url ) {
+					$l['ajaxUrl'] = $vs_ajax_url;
+				} else {
+					$l['content'] = $vs_content;
+				}
+				$circleList[] = $l;
+			}
+			$vn_c ++;
+		}
+
+		switch ( strtoupper( $ps_format ) ) {
 			# ---------------------------------
 			case 'HTML':
 			default:
-				if(!strpos($vn_width, "%")){
-					$vn_width = intval($vn_width);
-					if ($vn_width < 1) { $vn_width = 200; }
-					$vn_width = $vn_width."px";
+				if ( ! strpos( $vn_width, "%" ) ) {
+					$vn_width = intval( $vn_width );
+					if ( $vn_width < 1 ) {
+						$vn_width = 200;
+					}
+					$vn_width = $vn_width . "px";
 				}
-				if(!strpos($vn_height, "%")){
-					$vn_height = intval($vn_height);
-					if ($vn_height < 1) { $vn_height = 200; }
-					$vn_height = $vn_height."px";
+				if ( ! strpos( $vn_height, "%" ) ) {
+					$vn_height = intval( $vn_height );
+					if ( $vn_height < 1 ) {
+						$vn_height = 200;
+					}
+					$vn_height = $vn_height . "px";
 				}
-				
-				
+
+
 				$vs_buf = "<div style='width:{$vs_width}; height:{$vs_height}' id='map_{$vs_id}'> </div>\n
 <script type='text/javascript'>
 		var arrowIcon = L.icon({
@@ -221,11 +306,11 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 			iconAnchor: [12, 50],
 			popupAnchor: [-3, -50]
 		});
-		var pointList{$vs_id} = ".json_encode($pointList).";
-		var circleList{$vs_id} = ".json_encode($circleList).";
-		var pathList{$vs_id} = ".json_encode($paths).";
-		var map = L.map('map_{$vs_id}', { zoomControl: ".($vb_show_scale_controls ? "true" : "false").", attributionControl: false, minZoom: {$vn_min_zoom_level}, maxZoom: {$vn_max_zoom_level} }).setView([0, 0], {$vn_zoom_level});
-		var b = L.tileLayer('{$base_map_url}', {noWrap: ".($vb_no_wrap ? "true" : "false")."}).addTo(map);	
+		var pointList{$vs_id} = " . json_encode( $pointList ) . ";
+		var circleList{$vs_id} = " . json_encode( $circleList ) . ";
+		var pathList{$vs_id} = " . json_encode( $paths ) . ";
+		var map = L.map('map_{$vs_id}', { zoomControl: " . ( $vb_show_scale_controls ? "true" : "false" ) . ", attributionControl: false, minZoom: {$vn_min_zoom_level}, maxZoom: {$vn_max_zoom_level} }).setView([0, 0], {$vn_zoom_level});
+		var b = L.tileLayer('{$base_map_url}', {noWrap: " . ( $vb_no_wrap ? "true" : "false" ) . "}).addTo(map);	
 		var g = new L.featureGroup();
 		g.addTo(map);
 		
@@ -298,41 +383,43 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		});
 			
 		var bounds = g.getBounds();
-		if (bounds.isValid()) { map.fitBounds(bounds)".((strlen($vn_zoom_level) && !$we_set_zoom) ? ".setZoom({$vn_zoom_level})" : "")."; }
-</script>\n"; 
+		if (bounds.isValid()) { map.fitBounds(bounds)" . ( ( strlen( $vn_zoom_level ) && ! $we_set_zoom )
+						? ".setZoom({$vn_zoom_level})" : "" ) . "; }
+</script>\n";
 				break;
 			# ---------------------------------
 		}
-		
+
 		return $vs_buf;
 	}
 	# ------------------------------------------------
+
 	/**
 	 *
 	 */
-	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
- 		AssetLoadManager::register('leaflet');
-		
-		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth']);
-		$vn_element_width = $va_element_width['dimension'];
-		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight']);
+	public function getAttributeBundleHTML( $pa_element_info, $pa_options = null ) {
+		AssetLoadManager::register( 'leaflet' );
+
+		$va_element_width  = caParseFormElementDimension( $pa_element_info['settings']['fieldWidth'] );
+		$vn_element_width  = $va_element_width['dimension'];
+		$va_element_height = caParseFormElementDimension( $pa_element_info['settings']['fieldHeight'] );
 		$vn_element_height = $va_element_height['dimension'];
-		
-		$points_are_directional = (bool)$pa_element_info['settings']['pointsAreDirectional'] ? 1 : 0;
-		$autoDropPin = (bool)$pa_element_info['settings']['autoDropPin'] ? 1 : 0;
- 		
- 		$element_id = (int)$pa_element_info['element_id'];
- 		$vs_id = $pa_element_info['element_id']."_{n}";
- 		
- 		if (!($base_map_url = $this->opo_config->get('leaflet_base_layer'))) { 
- 			$base_map_url = 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png';
- 		}
- 		
- 		$base_path = null;
- 		if ($request = caGetOption(['request'], $pa_options, null)) {
- 			$base_path = $request->getBaseUrlPath();
- 		}
-		$vs_element = 	"
+
+		$points_are_directional = (bool) $pa_element_info['settings']['pointsAreDirectional'] ? 1 : 0;
+		$autoDropPin            = (bool) $pa_element_info['settings']['autoDropPin'] ? 1 : 0;
+
+		$element_id = (int) $pa_element_info['element_id'];
+		$vs_id      = $pa_element_info['element_id'] . "_{n}";
+
+		if ( ! ( $base_map_url = $this->opo_config->get( 'leaflet_base_layer' ) ) ) {
+			$base_map_url = 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}{r}.png';
+		}
+
+		$base_path = null;
+		if ( $request = caGetOption( [ 'request' ], $pa_options, null ) ) {
+			$base_path = $request->getBaseUrlPath();
+		}
+		$vs_element = "
 <div id='mapholder_{$element_id}_{n}' class='mapholder' style='z-index:0;'>
 	 <div class='map' style='width:695px; height:400px;'></div>
 </div>
@@ -359,7 +446,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		var map = L.map('mapholder_{$element_id}_{n}', { attributionControl: false, maxZoom: 18 }).setView([0, 0], 8);
 		jQuery('#mapholder_{$element_id}_{n}').data('map', map); // stash map reference in <div> to allow redraw by bundle visibility manager
 		var b = L.tileLayer('{$base_map_url}').addTo(map);	
-		map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false, callback: function(results) {
+		map.addControl(new L.Control.OSMGeocoder({ text: '" . _t( 'Go' ) . "', 'collapsed': false, callback: function(results) {
 			var bbox = results[0].boundingbox,
 				mid = new L.LatLng((parseFloat(bbox[0]) + parseFloat(bbox[1]))/2, (parseFloat(bbox[2]) + parseFloat(bbox[3]))/2),
 				bounds = new L.LatLngBounds([new L.LatLng(bbox[0], bbox[2]), new L.LatLng(bbox[1], bbox[3])]);
@@ -561,6 +648,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 </script>
 	<input class='coordinates mapCoordinateDisplay' type='text' name='{fieldNamePrefix}{$element_id}_{n}' id='{fieldNamePrefix}{$element_id}_{n}' size='80' value='{{$element_id}}'/>
 ";
+
 		return $vs_element;
 	}
 	# ------------------------------------------------

@@ -26,11 +26,12 @@
  * ----------------------------------------------------------------------
  */
 
-	$t_exporter = $this->getVar('t_exporter');
-	$vn_exporter_id = $this->getVar('exporter_id');
+$t_exporter     = $this->getVar( 't_exporter' );
+$vn_exporter_id = $this->getVar( 'exporter_id' );
 ?>
 <div class="sectionBox">
-<?php
-	print caDeleteWarningBox($this->request, $t_exporter, $t_exporter->getLabelForDisplay(false), 'batch', 'MetadataImport', 'Index', array('exporter_id' => $vn_exporter_id));
-?>
+	<?php
+	print caDeleteWarningBox( $this->request, $t_exporter, $t_exporter->getLabelForDisplay( false ), 'batch',
+		'MetadataImport', 'Index', array( 'exporter_id' => $vn_exporter_id ) );
+	?>
 </div>

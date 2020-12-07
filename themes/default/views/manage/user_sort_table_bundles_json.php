@@ -26,6 +26,6 @@
  * ----------------------------------------------------------------------
  */
 
-$va_fields = $this->getVar('available_sort_fields');
-header("Content-type: application/json");
-print json_encode($va_fields);
+$va_fields = $this->getVar( 'available_sort_fields' );
+header( "Content-type: application/json" );
+print json_encode( $va_fields );

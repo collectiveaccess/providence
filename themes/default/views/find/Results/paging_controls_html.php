@@ -25,37 +25,47 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vo_result 					= $this->getVar('result');
-	$vs_controller_name 		= $this->getVar('controller');
-	$vn_num_hits				= $this->getVar('num_hits');
-	
-	$va_previous_link_params 	= array('page' => $this->getVar('page') - 1);
-	$va_next_link_params 		= array('page' => $this->getVar('page') + 1);
-	$va_jump_to_params 			= array();
-	
-	if ($vn_type_id = intval($this->getVar('type_id'))) {
-		$va_previous_link_params['type_id'] = $vn_type_id;
-		$va_next_link_params['type_id'] = $vn_type_id;
-		$va_jump_to_params['type_id'] = $vn_type_id;
+
+$vo_result          = $this->getVar( 'result' );
+$vs_controller_name = $this->getVar( 'controller' );
+$vn_num_hits        = $this->getVar( 'num_hits' );
+
+$va_previous_link_params = array( 'page' => $this->getVar( 'page' ) - 1 );
+$va_next_link_params     = array( 'page' => $this->getVar( 'page' ) + 1 );
+$va_jump_to_params       = array();
+
+if ( $vn_type_id = intval( $this->getVar( 'type_id' ) ) ) {
+	$va_previous_link_params['type_id'] = $vn_type_id;
+	$va_next_link_params['type_id']     = $vn_type_id;
+	$va_jump_to_params['type_id']       = $vn_type_id;
+}
+
+$vs_searchNav = "<div class='searchNav'>";
+
+if ( ( $this->getVar( 'num_pages' ) > 1 ) && ! $this->getVar( 'dontShowPages' ) ) {
+	$vs_searchNav .= "<div class='nav'>";
+	if ( $this->getVar( 'page' ) > 1 ) {
+		$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"" . caNavUrl( $this->request, 'find',
+				$this->request->getController(), $this->request->getAction(), $va_previous_link_params )
+		                 . "\"); return false;' class='button'>&lsaquo; " . _t( "Previous" ) . "</a>";
 	}
-	
-	$vs_searchNav = "<div class='searchNav'>";
-		
-	if(($this->getVar('num_pages') > 1) && !$this->getVar('dontShowPages')){
-		$vs_searchNav .= "<div class='nav'>";
-		if ($this->getVar('page') > 1) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_previous_link_params)."\"); return false;' class='button'>&lsaquo; "._t("Previous")."</a>";
-		}
-		$vs_searchNav .= '&nbsp;&nbsp;&nbsp;'._t("Page").' '.$this->getVar('page').'/'.$this->getVar('num_pages').'&nbsp;&nbsp;&nbsp;';
-		if ($this->getVar('page') < $this->getVar('num_pages')) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\"); return false;' class='button'>"._t("Next")." &rsaquo;</a>";
-		}
-		$vs_searchNav .= "</div>";
-		$vs_searchNav .= '<form action="#">'._t('Jump to page').': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'.caNavIcon(__CA_NAV_ICON_GO__, "14px").'</a></form>';
+	$vs_searchNav .= '&nbsp;&nbsp;&nbsp;' . _t( "Page" ) . ' ' . $this->getVar( 'page' ) . '/'
+	                 . $this->getVar( 'num_pages' ) . '&nbsp;&nbsp;&nbsp;';
+	if ( $this->getVar( 'page' ) < $this->getVar( 'num_pages' ) ) {
+		$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"" . caNavUrl( $this->request, 'find',
+				$this->request->getController(), $this->request->getAction(), $va_next_link_params )
+		                 . "\"); return false;' class='button'>" . _t( "Next" ) . " &rsaquo;</a>";
 	}
-	$vs_searchNav .= _t('Your %1 found', $this->getVar('mode_name')).' '.$vn_num_hits.' '.$this->getVar(($vn_num_hits == 1) ? 'mode_type_singular' : 'mode_type_plural');
 	$vs_searchNav .= "</div>";
-	print $vs_searchNav;
+	$vs_searchNav .= '<form action="#">' . _t( 'Jump to page' )
+	                 . ': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'
+	                 . caNavUrl( $this->request, 'find', $this->request->getController(), $this->request->getAction(),
+			$va_jump_to_params ) . '/page/" + jQuery("#jumpToPageNum").val());\' class="button">'
+	                 . caNavIcon( __CA_NAV_ICON_GO__, "14px" ) . '</a></form>';
+}
+$vs_searchNav .= _t( 'Your %1 found', $this->getVar( 'mode_name' ) ) . ' ' . $vn_num_hits . ' '
+                 . $this->getVar( ( $vn_num_hits == 1 ) ? 'mode_type_singular' : 'mode_type_plural' );
+$vs_searchNav .= "</div>";
+print $vs_searchNav;
 ?>
-	<div class="divide"><!-- empty --></div>
+<div class="divide"><!-- empty --></div>

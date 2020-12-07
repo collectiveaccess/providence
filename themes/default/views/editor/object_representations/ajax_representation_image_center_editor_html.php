@@ -25,37 +25,42 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_rep 						= $this->getVar('t_subject');
-	$vn_representation_id 		= $this->getVar('subject_id');
+$t_rep                = $this->getVar( 't_subject' );
+$vn_representation_id = $this->getVar( 'subject_id' );
 
-	$vb_can_edit	 			= $t_rep->isSaveable($this->request);
-	$vb_can_delete				= $t_rep->isDeletable($this->request);
-	
-	$vn_image_width 			= $this->getVar('image_width');	
-	$vn_image_height 			= $this->getVar('image_height');
-	
-	$vn_center_x_pixel			= floor($vn_image_width * $this->getVar('center_x'));
-	$vn_center_y_pixel			= floor($vn_image_height * $this->getVar('center_y'));
-	
-	
-	$t_media = new Media();
-	$vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'));
+$vb_can_edit   = $t_rep->isSaveable( $this->request );
+$vb_can_delete = $t_rep->isDeletable( $this->request );
+
+$vn_image_width  = $this->getVar( 'image_width' );
+$vn_image_height = $this->getVar( 'image_height' );
+
+$vn_center_x_pixel = floor( $vn_image_width * $this->getVar( 'center_x' ) );
+$vn_center_y_pixel = floor( $vn_image_height * $this->getVar( 'center_y' ) );
+
+
+$t_media       = new Media();
+$vs_media_type = $t_media->getMimetypeTypename(
+	$vs_mime_type = $t_rep->getMediaInfo( 'media', 'original', 'MIMETYPE' ) );
 ?>
 
 <div class="caMediaOverlayControls">
-	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
-	<div class="objectInfo"><?php print "{$vs_media_type}; ".caGetRepresentationDimensionsForDisplay($t_rep, 'original'); ?></div>
+	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;"
+	                      title="close"><?php print caNavIcon( __CA_NAV_ICON_CLOSE__, "18px", [],
+					[ 'color' => 'white' ] ) . ' ' . _t( 'Close' ); ?></a></div>
+	<div class="objectInfo"><?php print "{$vs_media_type}; " . caGetRepresentationDimensionsForDisplay( $t_rep,
+				'original' ); ?></div>
 </div>
-	
-<div class="caObjectRepresentationSetCenterContainer" style="width: <?php print $vn_image_width; ?>px; height: <?php print $vn_image_height; ?>px;">
-<div id="caObjectRepresentationSetCenterMarker"><?= caNavIcon(__CA_NAV_ICON_CROSSHAIRS__, 3); ?></div>
-<?php
-	print $this->getVar('image');
-?>
+
+<div class="caObjectRepresentationSetCenterContainer"
+     style="width: <?php print $vn_image_width; ?>px; height: <?php print $vn_image_height; ?>px;">
+	<div id="caObjectRepresentationSetCenterMarker"><?= caNavIcon( __CA_NAV_ICON_CROSSHAIRS__, 3 ); ?></div>
+	<?php
+	print $this->getVar( 'image' );
+	?>
 </div>
 
 <script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery("#caObjectRepresentationSetCenterMarker").css("top", <?php print $vn_center_y_pixel; ?> + "px").css("left", <?php print $vn_center_x_pixel; ?> + "px").draggable({'containment' : 'parent'});
+	jQuery(document).ready(function () {
+		jQuery("#caObjectRepresentationSetCenterMarker").css("top", <?php print $vn_center_y_pixel; ?> +"px").css("left", <?php print $vn_center_x_pixel; ?> +"px").draggable({'containment': 'parent'});
 	});
 </script>

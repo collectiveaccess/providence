@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * themes/default/views/system/configuration_error_intstall_html.php : 
+ * themes/default/views/system/configuration_error_intstall_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -23,27 +23,27 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Configuration
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 ?>
-<?php print _t("<div class='error'>An error in your system configuration has been detected</div>
+<?php print _t( "<div class='error'>An error in your system configuration has been detected</div>
 	    General installation instructions can be found
 	    <a href='http://wiki.collectiveaccess.org/index.php?title=Installation_(Providence)' target='_blank'>here</a>.
-	    For more specific hints on the existing issues please have a look at the messages below."); ?>
-	<br/><br/>
+	    For more specific hints on the existing issues please have a look at the messages below." ); ?>
+<br/><br/>
 <?php
-foreach (self::$opa_error_messages as $vs_message):
-?>
-		<div class="permissionError">
-			<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
-			<?php print $vs_message; ?>
-			<div style='clear:both; height:1px;'><!-- empty --></div>
-		</div>
-		<br/>
+foreach ( self::$opa_error_messages as $vs_message ):
+	?>
+	<div class="permissionError">
+		<?php print caNavIcon( __CA_NAV_ICON_ALERT__, 2, array( 'class' => 'permissionErrorIcon' ) ); ?>
+		<?php print $vs_message; ?>
+		<div style='clear:both; height:1px;'><!-- empty --></div>
+	</div>
+	<br/>
 <?php
 endforeach;
 ?>

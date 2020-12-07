@@ -26,25 +26,25 @@
  * ----------------------------------------------------------------------
  */
 
-	/** @var ca_metadata_alert_triggers $t_trigger */
-	$t_trigger = $this->getVar('t_trigger');
-	$vs_id_prefix = $this->getVar('id_prefix');
-	$vn_trigger_id = $t_trigger->getPrimaryKey();	
-	$vn_element_id = $this->getVar('element_id');	
-	
-	if ($va_filters = $this->getVar('filters')) {
-?>
-		<div class="formLabel">
-			<?php print _t('Limit to elements with'); ?><br/>
-			<?php print join("; ", $va_filters); ?>
-		</div>
-	
-	
-		<script type="text/javascript">
-			jQuery(document).ready(function() {
-			
-			});
-		</script>
-<?php
-		print TooltipManager::getLoadHTML();
-	}
+/** @var ca_metadata_alert_triggers $t_trigger */
+$t_trigger     = $this->getVar( 't_trigger' );
+$vs_id_prefix  = $this->getVar( 'id_prefix' );
+$vn_trigger_id = $t_trigger->getPrimaryKey();
+$vn_element_id = $this->getVar( 'element_id' );
+
+if ( $va_filters = $this->getVar( 'filters' ) ) {
+	?>
+	<div class="formLabel">
+		<?php print _t( 'Limit to elements with' ); ?><br/>
+		<?php print join( "; ", $va_filters ); ?>
+	</div>
+
+
+	<script type="text/javascript">
+		jQuery(document).ready(function () {
+
+		});
+	</script>
+	<?php
+	print TooltipManager::getLoadHTML();
+}

@@ -25,60 +25,64 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$t_form 								= $this->getVar('t_form');
-	$vs_id_prefix 							= $this->getVar('placement_code').$this->getVar('id_prefix');
-	
-	$va_available_display_items 			= $t_form->getAvailableBundles();
-	
-	foreach($va_available_display_items as $vs_bundle => $va_item) {
-		unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
-	}
-	
-	//getTemplatePlaceholderListForBundle
-	$va_to_display_items  					= $t_form->getPlacementsInForm(array('noCache' => true));
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+
+$t_form       = $this->getVar( 't_form' );
+$vs_id_prefix = $this->getVar( 'placement_code' ) . $this->getVar( 'id_prefix' );
+
+$va_available_display_items = $t_form->getAvailableBundles();
+
+foreach ( $va_available_display_items as $vs_bundle => $va_item ) {
+	unset( $va_available_display_items[ $vs_bundle ]['settings'] );    // strip lists of valid settings - we don't need to send them to the client and they can be fairly large
+}
+
+//getTemplatePlaceholderListForBundle
+$va_to_display_items = $t_form->getPlacementsInForm( array( 'noCache' => true ) );
+
+print caEditorBundleShowHideControl( $this->request, $vs_id_prefix );
+print caEditorBundleMetadataDictionary( $this->request, $vs_id_prefix, $va_settings );
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
-		<div class="bundleDisplayPlacementEditorHelpText"><?php print _t("Drag your selection from column to column to edit the contents of the search form."); ?></div>
+		<div
+			class="bundleDisplayPlacementEditorHelpText"><?php print _t( "Drag your selection from column to column to edit the contents of the search form." ); ?></div>
 		<table>
 			<tr valign="top">
 				<td>
-					<div><?php print _t("Available search items"); ?></div>
-		
-					<div id="bundleDisplayEditorAvailableList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
+					<div><?php print _t( "Available search items" ); ?></div>
+
+					<div id="bundleDisplayEditorAvailableList" class="bundleDisplayEditorPlacementList">
+						<!-- empty --></div>
 				</td>
 				<td>
-					<div><?php print _t("Items to search"); ?></div>
-					
-					<div id="bundleDisplayEditorToDisplayList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
+					<div><?php print _t( "Items to search" ); ?></div>
+
+					<div id="bundleDisplayEditorToDisplayList" class="bundleDisplayEditorPlacementList">
+						<!-- empty --></div>
 				</td>
 			</tr>
 		</table>
-		
-		
-		<input type="hidden" id="<?php print $vs_id_prefix; ?>displayBundleList" name="<?php print $vs_id_prefix; ?>displayBundleList" value=""/>
+
+
+		<input type="hidden" id="<?php print $vs_id_prefix; ?>displayBundleList"
+		       name="<?php print $vs_id_prefix; ?>displayBundleList" value=""/>
 	</div>
-	
+
 	<script type="text/javascript">
 		var bundleDisplayOps = null;
-		jQuery(document).ready(function() {
+		jQuery(document).ready(function () {
 			bundleDisplayOps = caUI.bundlelisteditor({
 				availableListID: 'bundleDisplayEditorAvailableList',
 				toDisplayListID: 'bundleDisplayEditorToDisplayList',
-				
-				availableDisplayList: <?php print json_encode($va_available_display_items); ?>,
-				initialDisplayList: 	<?php print json_encode($va_to_display_items); ?>,
-				initialDisplayListOrder : <?php print json_encode(array_keys($va_to_display_items)); ?>,
-				
+
+				availableDisplayList: <?php print json_encode( $va_available_display_items ); ?>,
+				initialDisplayList:    <?php print json_encode( $va_to_display_items ); ?>,
+				initialDisplayListOrder: <?php print json_encode( array_keys( $va_to_display_items ) ); ?>,
+
 				displayBundleListID: '<?php print $vs_id_prefix; ?>displayBundleList',
-				
-				settingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
-				saveSettingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
-			});		
+
+				settingsIcon: "<?php print caNavIcon( __CA_NAV_ICON_INFO__, 1 ); ?>",
+				saveSettingsIcon: "<?php print caNavIcon( __CA_NAV_ICON_GO__, 1 ); ?>"
+			});
 		});
 	</script>
 </div>

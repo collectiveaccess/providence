@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print json_encode($this->getVar('ancestors'));
+
+print json_encode( $this->getVar( 'ancestors' ) );
 ?>

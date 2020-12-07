@@ -15,64 +15,73 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage AppPlugin
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- interface IApplicationTool {
- 	
- 	/**
- 	 * Settings
- 	 */ 
+
+/**
+ *
+ */
+interface IApplicationTool {
+
+	/**
+	 * Settings
+	 */
 	public function getToolSettings();
-	
+
 	/**
 	 * Configuration
 	 */
 	public function getAppConfig();
+
 	public function getToolConfig();
-	 
-	 /**
-	  * Logging
-	  */
+
+	/**
+	 * Logging
+	 */
 	public function getLogger();
+
 	public function getLogLevel();
-	public function setLogLevel($pn_log_level);
+
+	public function setLogLevel( $pn_log_level );
+
 	public function getLogPath();
-	public function setLogPath($ps_log_path);
-	 
+
+	public function setLogPath( $ps_log_path );
+
 	/**
 	 * Help
 	 */
-	public function getShortHelpText($ps_command);
-	public function getHelpText($ps_command);
-	
+	public function getShortHelpText( $ps_command );
+
+	public function getHelpText( $ps_command );
+
 	/**
 	 * Progress bar
- 	 */
-	public function getProgressBar($pn_total=null);
-	public function setMode($ps_mode);
+	 */
+	public function getProgressBar( $pn_total = null );
+
+	public function setMode( $ps_mode );
+
 	public function getMode();
-	 
+
 	/**
- 	 * Execution
- 	 */ 
+	 * Execution
+	 */
 	public function getCommands();
-	public function run($ps_command);
- }
+
+	public function run( $ps_command );
+}
+
 ?>

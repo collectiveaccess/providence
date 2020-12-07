@@ -25,6 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print $this->getVar('hierarchy_display');
+
+print $this->getVar( 'hierarchy_display' );
 ?>

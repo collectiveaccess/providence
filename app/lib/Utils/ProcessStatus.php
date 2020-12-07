@@ -15,26 +15,26 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Utils
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
-require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+/**
+ *
+ */
+
+require_once( __CA_APP_DIR__ . '/helpers/utilityHelpers.php' );
 
 class ProcessStatus {
 	# ---------------------------------------------------------------------------
@@ -46,16 +46,16 @@ class ProcessStatus {
 	# must be installed separately.
 	#
 	function canDetectProcesses() {
-		switch(caGetOSFamily()) {
+		switch ( caGetOSFamily() ) {
 			case OS_WIN32:
-				if (function_exists('win32_ps_stat_proc')) {
+				if ( function_exists( 'win32_ps_stat_proc' ) ) {
 					return true;
 				} else {
 					return false;
 				}
 				break;
 			default:
-				if (function_exists('posix_kill')) {
+				if ( function_exists( 'posix_kill' ) ) {
 					return true;
 				} else {
 					return false;
@@ -67,12 +67,14 @@ class ProcessStatus {
 	# Returns ID of current process; null if it is not possible to get the ID
 	#
 	function getProcessID() {
-		if (!$this->canDetectProcesses()) { return null; }
-		
-		switch(caGetOSFamily()) {
+		if ( ! $this->canDetectProcesses() ) {
+			return null;
+		}
+
+		switch ( caGetOSFamily() ) {
 			case OS_WIN32:
 				$va_proc_info = win32_ps_stat_proc();
-				if (is_array($va_proc_info)) {
+				if ( is_array( $va_proc_info ) ) {
 					return $va_proc_info['pid'];
 				} else {
 					return null;
@@ -86,19 +88,23 @@ class ProcessStatus {
 	# ---------------------------------------------------------------------------
 	# Returns true if specified process number exists
 	#
-	function processExists($pn_proc_id) {
-		if (!$this->canDetectProcesses()) { return null; }
-		
-		switch(caGetOSFamily()) {
+	function processExists( $pn_proc_id ) {
+		if ( ! $this->canDetectProcesses() ) {
+			return null;
+		}
+
+		switch ( caGetOSFamily() ) {
 			case OS_WIN32:
-				$va_proc_info = win32_ps_stat_proc($pn_proc_id);
-				return is_array($va_proc_info);
+				$va_proc_info = win32_ps_stat_proc( $pn_proc_id );
+
+				return is_array( $va_proc_info );
 				break;
 			default:
-				return posix_kill($pn_proc_id, 0) ? true : false;
+				return posix_kill( $pn_proc_id, 0 ) ? true : false;
 				break;
 		}
 	}
 	# ---------------------------------------------------------------------------
 }
+
 ?>

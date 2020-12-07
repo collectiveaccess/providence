@@ -15,29 +15,29 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Core
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
-require_once(__CA_LIB_DIR__."/Db/DbBase.php");
-require_once(__CA_LIB_DIR__."/Db/DbStatement.php");
-require_once(__CA_LIB_DIR__."/Db/DbResult.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
+/**
+ *
+ */
+
+require_once( __CA_LIB_DIR__ . "/Db/DbBase.php" );
+require_once( __CA_LIB_DIR__ . "/Db/DbStatement.php" );
+require_once( __CA_LIB_DIR__ . "/Db/DbResult.php" );
+require_once( __CA_LIB_DIR__ . "/Datamodel.php" );
 
 /**
  * Database abstraction statement class (supercedes ancient Db_Sql class)
@@ -62,14 +62,14 @@ class DbStatement extends DbBase {
 	 *
 	 * @access private
 	 */
-	var $opn_limit ;
+	var $opn_limit;
 
 	/**
 	 * starting record to return for SELECT statements
 	 *
 	 * @access private
 	 */
-	var $opn_offset ;
+	var $opn_offset;
 
 	/**
 	 * The id generated from the previous SQL INSERT operation
@@ -84,8 +84,8 @@ class DbStatement extends DbBase {
 	 * @access private
 	 */
 	var $opa_options;
-	
-	
+
+
 	/**
 	 * Native statement object for database drivers that can natively prepare statements with placeholders.
 	 * If set then DbStatement will wrap the native object rather than emulate placeholder functionality
@@ -96,26 +96,26 @@ class DbStatement extends DbBase {
 	/**
 	 * Constructor
 	 *
-	 * @param mixed $po_db instance of the db driver you are using
-	 * @param string $ps_sql the SQL statement
-	 * @param array $po_options options array
+	 * @param mixed  $po_db      instance of the db driver you are using
+	 * @param string $ps_sql     the SQL statement
+	 * @param array  $po_options options array
 	 */
-	function __construct($po_db, $ps_sql, $po_options=null) {
-		$this->opo_db = $po_db;
+	function __construct( $po_db, $ps_sql, $po_options = null ) {
+		$this->opo_db  = $po_db;
 		$this->ops_sql = $ps_sql;
-	
-		$this->opo_native_statement = caGetOption('native_statement', $po_options, null);
+
+		$this->opo_native_statement = caGetOption( 'native_statement', $po_options, null );
 
 		$this->opa_options = $po_options;
 	}
-	
+
 	/**
 	 * Set database connection
 	 *
 	 * @param mixed $po_db instance of the db driver you are using
 	 */
-	function setDb($po_db) {
-		$this->opo_db = $po_db;	
+	function setDb( $po_db ) {
+		$this->opo_db = $po_db;
 	}
 
 	/**
@@ -127,30 +127,37 @@ class DbStatement extends DbBase {
 	function execute() {
 		$this->clearErrors();
 		$va_args = func_get_args();
-		if (is_array($va_args[0])) { 
+		if ( is_array( $va_args[0] ) ) {
 			$va_args = $va_args[0];
 		}
-		
-		if ($vr_res = $this->opo_db->execute($this, $this->opo_native_statement ? $this->opo_native_statement : $this, $this->ops_sql, $va_args)) {
-			$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this);
+
+		if ( $vr_res = $this->opo_db->execute( $this, $this->opo_native_statement ? $this->opo_native_statement : $this,
+			$this->ops_sql, $va_args )
+		) {
+			$this->opn_last_insert_id = $this->opo_db->getLastInsertID( $this );
 		}
+
 		return $vr_res;
 	}
 
 	/**
 	 * Executes a stored statement (same as above) but in this case you can pass options as array.
 	 *
-	 * @see DbStatement::execute()
 	 * @param array $pa_params
 	 * @param array $pa_options
+	 *
 	 * @return DbResult result
+	 * @see DbStatement::execute()
 	 */
-	function executeWithParamsAsArray($pa_params, $pa_options=null) {
+	function executeWithParamsAsArray( $pa_params, $pa_options = null ) {
 		$this->clearErrors();
 
-		if ($o_res = $this->opo_db->execute($this, $this->opo_native_statement ? $this->opo_native_statement : $this, $this->ops_sql, $pa_params, $pa_options)) {
-			$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this);
+		if ( $o_res = $this->opo_db->execute( $this, $this->opo_native_statement ? $this->opo_native_statement : $this,
+			$this->ops_sql, $pa_params, $pa_options )
+		) {
+			$this->opn_last_insert_id = $this->opo_db->getLastInsertID( $this );
 		}
+
 		return $o_res;
 	}
 
@@ -170,17 +177,19 @@ class DbStatement extends DbBase {
 	 *
 	 * @param int $pn_limit
 	 * @param int $pn_offset
+	 *
 	 * @return bool success state
 	 */
-	function setLimit($pn_limit, $pn_offset=0) {
-		if (!$this->opo_db->supports($this, "limit")) {
-			$this->postError(212, _t("Driver does not support LIMIT"), "DbStatement->setLimit()");
+	function setLimit( $pn_limit, $pn_offset = 0 ) {
+		if ( ! $this->opo_db->supports( $this, "limit" ) ) {
+			$this->postError( 212, _t( "Driver does not support LIMIT" ), "DbStatement->setLimit()" );
+
 			return false;
 		}
 
-		if (($pn_limit >= 0) || ($pn_offset >= 0)) {
-			$this->opn_limit = intval($pn_limit);
-			$this->opn_offset = intval($pn_offset);
+		if ( ( $pn_limit >= 0 ) || ( $pn_offset >= 0 ) ) {
+			$this->opn_limit  = intval( $pn_limit );
+			$this->opn_offset = intval( $pn_offset );
 
 			return true;
 		} else {
@@ -191,15 +200,17 @@ class DbStatement extends DbBase {
 	/**
 	 * How big is the current limit?
 	 *
-	 * @return array associative array with "limit" and "offset" options as keys (known from SQL statements); false on error
+	 * @return array associative array with "limit" and "offset" options as keys (known from SQL statements); false on
+	 *               error
 	 */
 	function getLimit() {
-		if (!$this->opo_db->supports($this, "limit")) {
-			$this->postError(212, _t("Driver does not support LIMIT"), "DbStatement->getLimit()");
+		if ( ! $this->opo_db->supports( $this, "limit" ) ) {
+			$this->postError( 212, _t( "Driver does not support LIMIT" ), "DbStatement->getLimit()" );
+
 			return false;
 		}
 
-		return array("limit" => $this->opn_limit, "offset" => $this->opn_offset);
+		return array( "limit" => $this->opn_limit, "offset" => $this->opn_offset );
 	}
 
 	/**
@@ -208,17 +219,18 @@ class DbStatement extends DbBase {
 	 * @return bool success state
 	 */
 	function removeLimit() {
-		return $this->setLimit(0,0);
+		return $this->setLimit( 0, 0 );
 	}
 
 	/**
 	 * Set a common option which is considered (if valid) when your statement is executed.
 	 *
-	 * @param string $ps_key name of the option
+	 * @param string $ps_key   name of the option
 	 * @param string $ps_value option value
 	 */
-	public function setOption($ps_key, $ps_value) {
-		$this->opa_options[$ps_key] = $ps_value;
+	public function setOption( $ps_key, $ps_value ) {
+		$this->opa_options[ $ps_key ] = $ps_value;
+
 		return true;
 	}
 
@@ -226,10 +238,11 @@ class DbStatement extends DbBase {
 	 * Fetch an option value
 	 *
 	 * @param string $ps_key name of the option
+	 *
 	 * @return string option value
 	 */
-	public function getOption($ps_key) {
-		return $this->opa_options[$ps_key];
+	public function getOption( $ps_key ) {
+		return $this->opa_options[ $ps_key ];
 	}
 
 	/**

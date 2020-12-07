@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print $this->getVar('processed_template');
+
+print $this->getVar( 'processed_template' );

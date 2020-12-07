@@ -25,22 +25,22 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	$t_item = $this->getVar('t_item');
- 	
- 	if (!$t_item->getPrimaryKey()) {
- 		$vn_element_count = ca_metadata_elements::getElementCount(true);
+
+$t_item = $this->getVar( 't_item' );
+
+if ( ! $t_item->getPrimaryKey() ) {
+	$vn_element_count = ca_metadata_elements::getElementCount( true );
+	?>
+	<h3 class='metalist'><?php print _t( 'Metadata elements' ); ?>:
+	<div><?php
+		if ( $vn_element_count == 1 ) {
+			print "<div>" . _t( "1 element is defined" ) . "</div>";
+		} else {
+			print "<div>" . _t( "%1 elements are defined", $vn_element_count ) . "</div>";
+		}
+		?></div>
+	</h3><?php
+} else {
+	print caEditorInspector( $this, array( 'backText' => _t( 'Back to list' ) ) );
+}
 ?>
-<h3 class='metalist'><?php print _t('Metadata elements'); ?>:
-<div><?php
-	if ($vn_element_count == 1) {
-		print "<div>"._t("1 element is defined")."</div>";
-	} else {
-		print "<div>"._t("%1 elements are defined", $vn_element_count)."</div>";
-	}
-?></div>
-</h3><?php
- 	} else {
-	 	print caEditorInspector($this, array('backText' => _t('Back to list')));
-	 }
- ?>

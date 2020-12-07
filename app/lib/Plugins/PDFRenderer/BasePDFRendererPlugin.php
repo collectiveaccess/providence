@@ -23,48 +23,49 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Print
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
-    
-include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugPDFRenderer.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
-include_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
+
+/**
+ *
+ */
+
+include_once( __CA_LIB_DIR__ . "/Plugins/WLPlug.php" );
+include_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugPDFRenderer.php" );
+include_once( __CA_LIB_DIR__ . "/Configuration.php" );
+include_once( __CA_LIB_DIR__ . "/Print/PDFRenderer.php" );
 
 abstract class BasePDFRendererPlugin Extends WLPlug {
 	# ------------------------------------------------
 	/**
 	 * properties for this plugin instance
 	 */
-	protected $properties = array(
-		
-	);
-	
+	protected $properties
+		= array();
+
 	/**
 	 * app config
 	 */
 	protected $opo_config;
-	
+
 	/**
 	 * plugin info
 	 */
-	protected $info = array(
-		"NAME" => "?",
-		"PROPERTIES" => array(
-			"CODE" => "W",
-		)
-	);
-	
-	
+	protected $info
+		= array(
+			"NAME"       => "?",
+			"PROPERTIES" => array(
+				"CODE" => "W",
+			)
+		);
+
+
 	# ------------------------------------------------
+
 	/**
 	 *
 	 */
@@ -72,16 +73,19 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 		$this->opo_config = Configuration::load();
 	}
 	# ------------------------------------------------
+
 	/**
 	 * Initialize plugin and create new instance
 	 */
 	public function register() {
 		$this->opo_config = Configuration::load();
-		
+
 		$this->info["INSTANCE"] = $this;
+
 		return $this->info;
 	}
 	# ------------------------------------------------
+
 	/**
 	 * Returns status of plugin. Normally this is overriden by the plugin subclass
 	 *
@@ -89,43 +93,46 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 	 */
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
-		
-		if ($this->register()) {
+
+		if ( $this->register() ) {
 			$va_status['available'] = true;
 		}
-		
+
 		return $va_status;
 	}
 	# ----------------------------------------------------------
+
 	/**
 	 * Get map property
 	 *
 	 * @param $property - name of property - must be defined as a property in the plugin's 'PROPERTIES' array
+	 *
 	 * @return string - the value of the property or null if the property is not valid
 	 */
-	public function get($property) {
-		if ($this->info["PROPERTIES"][$property]) {
-			return $this->properties[$property];
+	public function get( $property ) {
+		if ( $this->info["PROPERTIES"][ $property ] ) {
+			return $this->properties[ $property ];
 		} else {
 			//print "Invalid property";
 			return null;
 		}
 	}
 	# ----------------------------------------------------------
+
 	/**
 	 * Set plugin property
 	 *
 	 * @param string $property
-	 * @param mixed $value
+	 * @param mixed  $value
 	 *
 	 * @return bool True on success, false on failure
 	 */
-	public function set($property, $value) {
-		if ($this->info["PROPERTIES"][$property]) {
-			switch($property) {
+	public function set( $property, $value ) {
+		if ( $this->info["PROPERTIES"][ $property ] ) {
+			switch ( $property ) {
 				default:
-					if ($this->info["PROPERTIES"][$property] == 'W') {
-						$this->properties[$property] = $value;
+					if ( $this->info["PROPERTIES"][ $property ] == 'W' ) {
+						$this->properties[ $property ] = $value;
 					} else {
 						# read only
 						return '';
@@ -134,12 +141,15 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 			}
 		} else {
 			# invalid property
-			$this->postError(1650, _t("Can't set property %1", $property), "BasePDFRendererPlugin->set()");
+			$this->postError( 1650, _t( "Can't set property %1", $property ), "BasePDFRendererPlugin->set()" );
+
 			return false;
 		}
+
 		return true;
 	}
 	# ------------------------------------------------
+
 	/**
 	 * Initialize plugin values (stub)
 	 *
@@ -149,6 +159,7 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 		return true;
 	}
 	# ------------------------------------------------
+
 	/**
 	 * Clean up on deallocation (stub)
 	 *

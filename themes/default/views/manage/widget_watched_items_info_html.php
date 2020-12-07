@@ -27,27 +27,28 @@
  */
 
 /** @var ca_watch_list $t_watch_list */
-$t_watch_list = $this->getVar('t_watch_list');
+$t_watch_list = $this->getVar( 't_watch_list' );
 
 ?>
-<h3 class='watchedItems'><?php print _t('Your watched items'); ?></h3>
+<h3 class='watchedItems'><?php print _t( 'Your watched items' ); ?></h3>
 <div id="watchedItemsSetControls">
 	<div class="col">
 		<?php
-		print "<span class='header'>"._t("Create set").":</span><br/>";
+		print "<span class='header'>" . _t( "Create set" ) . ":</span><br/>";
 		?>
-		<?php print caFormTag($this->request, 'CreateSet', 'caCreateSetFromWatchedItems'); ?>
-			<?php
-			print caHTMLTextInput('set_name', array(
-				'id' => 'caCreateSetFromWatchedItemsInput',
-				'class' => 'searchSetsTextInput',
-				'value' => _t('watchlist').'_'.$this->request->getUser()->get('user_name').'_'.date('Y-m-d')
-			), array('width' => '150px'));
-			print _t("containing watched");
-			print $t_watch_list->getWatchedTablesAsHTMLSelect($this->request->getUserID(), 'set_table');
-			print caBusyIndicatorIcon($this->request, array('id' => 'caCreateSetFromResultsIndicator'))."\n";
-			?>
-			<a href='#' onclick="jQuery('#caCreateSetFromWatchedItems').submit(); return false;" class="button"><?php print _t('Create'); ?> &rsaquo;</a>
+		<?php print caFormTag( $this->request, 'CreateSet', 'caCreateSetFromWatchedItems' ); ?>
+		<?php
+		print caHTMLTextInput( 'set_name', array(
+			'id'    => 'caCreateSetFromWatchedItemsInput',
+			'class' => 'searchSetsTextInput',
+			'value' => _t( 'watchlist' ) . '_' . $this->request->getUser()->get( 'user_name' ) . '_' . date( 'Y-m-d' )
+		), array( 'width' => '150px' ) );
+		print _t( "containing watched" );
+		print $t_watch_list->getWatchedTablesAsHTMLSelect( $this->request->getUserID(), 'set_table' );
+		print caBusyIndicatorIcon( $this->request, array( 'id' => 'caCreateSetFromResultsIndicator' ) ) . "\n";
+		?>
+		<a href='#' onclick="jQuery('#caCreateSetFromWatchedItems').submit(); return false;"
+		   class="button"><?php print _t( 'Create' ); ?> &rsaquo;</a>
 		</form>
 	</div>
 </div>

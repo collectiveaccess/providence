@@ -23,26 +23,29 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_APP_DIR__.'/helpers/configurationHelpers.php');
-require_once(dirname(__FILE__).'/../../install/inc/Installer.php');
+require_once( __CA_APP_DIR__ . '/helpers/configurationHelpers.php' );
+require_once( dirname( __FILE__ ) . '/../../install/inc/Installer.php' );
 
 class ProfileSchemaTest extends TestCase {
 
 	public function testAvailableProfilesConformToSchema() {
-		$va_profiles = caGetAvailableXMLProfiles(dirname(__FILE__).'/../../install/');
-		$this->assertGreaterThan(0, sizeof($va_profiles));
+		$va_profiles = caGetAvailableXMLProfiles( dirname( __FILE__ ) . '/../../install/' );
+		$this->assertGreaterThan( 0, sizeof( $va_profiles ) );
 
-		foreach($va_profiles as $vs_profile) {
-			$vo_installer = new Installer(dirname(__FILE__).'/../../install/profiles/xml/', $vs_profile, 'info@collectiveaccess.org', false, false);
-			$this->assertEquals(0, $vo_installer->numErrors(), "The profile '$vs_profile' doesn't conform to the XML schema");
+		foreach ( $va_profiles as $vs_profile ) {
+			$vo_installer = new Installer( dirname( __FILE__ ) . '/../../install/profiles/xml/', $vs_profile,
+				'info@collectiveaccess.org', false, false );
+			$this->assertEquals( 0, $vo_installer->numErrors(),
+				"The profile '$vs_profile' doesn't conform to the XML schema" );
 		}
 	}
 }

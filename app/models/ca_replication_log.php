@@ -23,9 +23,9 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage models
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -35,44 +35,60 @@
  */
 
 BaseModel::$s_ca_models_definitions['ca_replication_log'] = array(
-	'NAME_SINGULAR' 	=> _t('globally unique identifier'),
-	'NAME_PLURAL' 		=> _t('globally unique identifiers'),
-	'FIELDS' 			=> array(
-		'entry_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
-			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this log entry')
+	'NAME_SINGULAR' => _t( 'globally unique identifier' ),
+	'NAME_PLURAL'   => _t( 'globally unique identifiers' ),
+	'FIELDS'        => array(
+		'entry_id'           => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_HIDDEN,
+			'IDENTITY'       => true,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'CollectiveAccess id' ),
+			'DESCRIPTION'    => _t( 'Unique numeric identifier used by CollectiveAccess internally to identify this log entry' )
 		),
 		'source_system_guid' => array(
-			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => 'GUID', 'DESCRIPTION' => 'GUID of the data source (usually another CollectiveAccess system)'
+			'FIELD_TYPE'     => FT_TEXT,
+			'DISPLAY_TYPE'   => DT_OMIT,
+			'DISPLAY_WIDTH'  => 88,
+			'DISPLAY_HEIGHT' => 15,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'GUID',
+			'DESCRIPTION'    => 'GUID of the data source (usually another CollectiveAccess system)'
 		),
-		'log_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of the last successfully applied log entry'
+		'log_id'             => array(
+			'FIELD_TYPE'     => FT_NUMBER,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 10,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Row id',
+			'DESCRIPTION'    => 'Identifier of the last successfully applied log entry'
 		),
-		'status' => array(
-			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 1, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => _t('Action'), 'DESCRIPTION' => 'Status flag for this replication entry',
-			'BOUNDS_LENGTH' => array(0,1)
+		'status'             => array(
+			'FIELD_TYPE'     => FT_TEXT,
+			'DISPLAY_TYPE'   => DT_FIELD,
+			'DISPLAY_WIDTH'  => 1,
+			'DISPLAY_HEIGHT' => 1,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => _t( 'Action' ),
+			'DESCRIPTION'    => 'Status flag for this replication entry',
+			'BOUNDS_LENGTH'  => array( 0, 1 )
 		),
-		'vars' => array(
-			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => 'Replication log variable storage', 'DESCRIPTION' => 'Storage area for variables'
+		'vars'               => array(
+			'FIELD_TYPE'     => FT_VARS,
+			'DISPLAY_TYPE'   => DT_OMIT,
+			'DISPLAY_WIDTH'  => 88,
+			'DISPLAY_HEIGHT' => 15,
+			'IS_NULL'        => false,
+			'DEFAULT'        => '',
+			'LABEL'          => 'Replication log variable storage',
+			'DESCRIPTION'    => 'Storage area for variables'
 		),
 	)
 );
@@ -103,7 +119,7 @@ class ca_replication_log extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('source_system_guid', 'log_id', 'status');
+	protected $LIST_FIELDS = array( 'source_system_guid', 'log_id', 'status' );
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -118,7 +134,7 @@ class ca_replication_log extends BaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('entry_id', 'source_system_guid');
+	protected $ORDER_BY = array( 'entry_id', 'source_system_guid' );
 
 	# Maximum number of record to display per page in a listing
 	protected $MAX_RECORDS_PER_PAGE = 20;
@@ -136,27 +152,24 @@ class ca_replication_log extends BaseModel {
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
-	protected $HIERARCHY_TYPE				=	null;
-	protected $HIERARCHY_LEFT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_RIGHT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_PARENT_ID_FLD		=	null;
-	protected $HIERARCHY_DEFINITION_TABLE	=	null;
-	protected $HIERARCHY_ID_FLD				=	null;
-	protected $HIERARCHY_POLY_TABLE			=	null;
+	protected $HIERARCHY_TYPE = null;
+	protected $HIERARCHY_LEFT_INDEX_FLD = null;
+	protected $HIERARCHY_RIGHT_INDEX_FLD = null;
+	protected $HIERARCHY_PARENT_ID_FLD = null;
+	protected $HIERARCHY_DEFINITION_TABLE = null;
+	protected $HIERARCHY_ID_FLD = null;
+	protected $HIERARCHY_POLY_TABLE = null;
 
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
 	protected $LOG_CHANGES_TO_SELF = false;
-	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
-		"FOREIGN_KEYS" => array(
-
-		),
-		"RELATED_TABLES" => array(
-
-		)
-	);
+	protected $LOG_CHANGES_USING_AS_SUBJECT
+		= array(
+			"FOREIGN_KEYS"   => array(),
+			"RELATED_TABLES" => array()
+		);
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
@@ -179,28 +192,30 @@ class ca_replication_log extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct( $pn_id = null ) {
+		parent::__construct( $pn_id );    # call superclass constructor
 	}
+
 	# ------------------------------------------------------
-	public function insert($pa_options=null) {
+	public function insert( $pa_options = null ) {
 		// if status wasn't set, set to "Complete"
-		if(!$this->get('status')) {
-			$this->set('status', 'C');
+		if ( ! $this->get( 'status' ) ) {
+			$this->set( 'status', 'C' );
 		}
 
-		return parent::insert($pa_options);
+		return parent::insert( $pa_options );
 	}
+
 	# ------------------------------------------------------
-	public static function getLastReplicatedLogID($ps_source_system_guid) {
-		$o_db = new Db();
-		$qr_res = $o_db->query('
+	public static function getLastReplicatedLogID( $ps_source_system_guid ) {
+		$o_db   = new Db();
+		$qr_res = $o_db->query( '
 			SELECT max(log_id) as max_log_id FROM ca_replication_log
 			WHERE status=? AND source_system_guid=?
-		', 'C', $ps_source_system_guid);
+		', 'C', $ps_source_system_guid );
 
-		if($qr_res->nextRow()) {
-			return (int) $qr_res->get('max_log_id');
+		if ( $qr_res->nextRow() ) {
+			return (int) $qr_res->get( 'max_log_id' );
 		} else {
 			return 0;
 		}

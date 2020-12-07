@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
-	print json_encode($this->getVar('taxonomy_list'));
+print json_encode( $this->getVar( 'taxonomy_list' ) );

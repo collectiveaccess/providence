@@ -24,13 +24,14 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */	
- 
- 	$t_subject = $this->getVar('t_subject');
- 	$vs_search = $this->getVar('search');
-?>	
+ */
+
+$t_subject = $this->getVar( 't_subject' );
+$vs_search = $this->getVar( 'search' );
+?>
 <div id="resultBox">
 	<div class="subTitle">
-		<?php print $this->getVar('search') ? _t("Your search found no %1", $this->getVar('mode_type_plural')) : _t("Please enter a search"); ?>
+		<?php print $this->getVar( 'search' ) ? _t( "Your search found no %1", $this->getVar( 'mode_type_plural' ) )
+			: _t( "Please enter a search" ); ?>
 	</div>
 </div><!-- end resultbox -->

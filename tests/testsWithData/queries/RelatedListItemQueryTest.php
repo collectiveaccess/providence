@@ -23,15 +23,16 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+require_once( __CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php' );
 
 /**
  * Class RelatedListItemQueryTest
@@ -39,32 +40,32 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class RelatedListItemQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	protected function setUp() : void {
+	protected function setUp(): void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
 		// search subject table
-		$this->setPrimaryTable('ca_objects');
+		$this->setPrimaryTable( 'ca_objects' );
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
 
-		$vn_test_vocab_item_id = caGetListItemID('test_vocab', 'test');
-		$this->assertGreaterThan(0, $vn_test_vocab_item_id);
+		$vn_test_vocab_item_id = caGetListItemID( 'test_vocab', 'test' );
+		$this->assertGreaterThan( 0, $vn_test_vocab_item_id );
 
-		$vn_image_id = $this->addTestRecord('ca_objects', array(
+		$vn_image_id = $this->addTestRecord( 'ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "Just an image",
+					"name"   => "Just an image",
 				),
 			),
-			'related' => array(
+			'related'          => array(
 				'ca_list_items' => array(
 					array(
 						'item_id' => $vn_test_vocab_item_id,
@@ -72,28 +73,28 @@ class RelatedListItemQueryTest extends AbstractSearchQueryTest {
 					)
 				),
 			),
-		));
-		$this->assertGreaterThan(0, $vn_image_id);
+		) );
+		$this->assertGreaterThan( 0, $vn_image_id );
 
 		// search queries
-		$this->setSearchQueries(array(
+		$this->setSearchQueries( array(
 			// establish we're actually searching objects
 			'Just an image' => 1,
 
 			// search on list item data
-			'Foo' => 1,
-			'"Foo"' => 1,
-			'Bar' => 1,
-			'"Bar"' => 1,
+			'Foo'           => 1,
+			'"Foo"'         => 1,
+			'Bar'           => 1,
+			'"Bar"'         => 1,
 
 			'ca_list_item_labels.name_singular:"Foo"' => 1,
 			'ca_list_item_labels.name_singular:"Bar"' => 1,
 
 			// doesn't exist
-			'Baz' => 0,
-			'"Baz"' => 0,
+			'Baz'                                     => 0,
+			'"Baz"'                                   => 0,
 			'ca_list_item_labels.name_singular:"Baz"' => 0,
-		));
+		) );
 	}
 	# -------------------------------------------------------
 }

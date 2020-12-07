@@ -23,9 +23,9 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
+ * @package    CollectiveAccess
  * @subpackage Media
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -33,29 +33,33 @@
 /**
  *
  */
- 
 class pdfjs extends BaseMediaViewer implements IMediaViewer {
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public static function getViewerHTML($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
-		if ($o_view = BaseMediaViewer::getView($po_request)) {
-			$o_view->setVar('identifier', $ps_identifier);
-			
-			$va_params = ['identifier' => $ps_identifier, 'context' => caGetOption('context', $pa_options, $po_request->getAction())];
-			
-			// Pass subject key when getting viewer data
-			if ($pa_data['t_subject']) { $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); }
-			
-			$o_view->setVar('viewer', 'pdfjs');
-			$o_view->setVar('width', caGetOption('width', $pa_data['display'], null));
-			$o_view->setVar('height', caGetOption('height', $pa_data['display'], null));
+	public static function getViewerHTML( $po_request, $ps_identifier, $pa_data = null, $pa_options = null ) {
+		if ( $o_view = BaseMediaViewer::getView( $po_request ) ) {
+			$o_view->setVar( 'identifier', $ps_identifier );
 
-			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
+			$va_params = [
+				'identifier' => $ps_identifier,
+				'context'    => caGetOption( 'context', $pa_options, $po_request->getAction() )
+			];
+
+			// Pass subject key when getting viewer data
+			if ( $pa_data['t_subject'] ) {
+				$va_params[ $pa_data['t_subject']->primaryKey() ] = $pa_data['t_subject']->getPrimaryKey();
+			}
+
+			$o_view->setVar( 'viewer', 'pdfjs' );
+			$o_view->setVar( 'width', caGetOption( 'width', $pa_data['display'], null ) );
+			$o_view->setVar( 'height', caGetOption( 'height', $pa_data['display'], null ) );
+
+			$t_instance = isset( $pa_data['t_instance'] ) ? $pa_data['t_instance'] : null;
 		}
-		
-		return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data, $pa_options);
+
+		return BaseMediaViewer::prepareViewerHTML( $po_request, $o_view, $pa_data, $pa_options );
 	}
 	# -------------------------------------------------------
 }

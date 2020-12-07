@@ -25,54 +25,63 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_subject 			= $this->getVar('t_subject');
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$va_settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
-	
-	$t_item = new ca_item_comments();
 
-	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly']));
-	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
-	
-	$vs_color 			= 	((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
-	$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
-	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
+$vs_id_prefix      = $this->getVar( 'placement_code' ) . $this->getVar( 'id_prefix' );
+$t_subject         = $this->getVar( 't_subject' );
+$va_settings       = $this->getVar( 'settings' );
+$vs_add_label      = $this->getVar( 'add_label' );
+$vs_placement_code = $this->getVar( 'placement_code' );
+$vn_placement_id   = (int) $va_settings['placement_id'];
+$vb_batch          = $this->getVar( 'batch' );
 
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
-	
-	
-	$va_errors = array();
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
-	}
+$t_item = new ca_item_comments();
+
+$vs_sort          = ( ( isset( $va_settings['sort'] ) && $va_settings['sort'] ) ) ? $va_settings['sort'] : '';
+$vb_read_only     = ( ( isset( $va_settings['readonly'] ) && $va_settings['readonly'] ) );
+$vb_dont_show_del = ( ( isset( $va_settings['dontShowDeleteButton'] ) && $va_settings['dontShowDeleteButton'] ) ) ? true
+	: false;
+
+$vs_color       = ( ( isset( $va_settings['colorItem'] ) && $va_settings['colorItem'] ) ) ? $va_settings['colorItem']
+	: '';
+$vs_first_color = ( ( isset( $va_settings['colorFirstItem'] ) && $va_settings['colorFirstItem'] ) )
+	? $va_settings['colorFirstItem'] : '';
+$vs_last_color  = ( ( isset( $va_settings['colorLastItem'] ) && $va_settings['colorLastItem'] ) )
+	? $va_settings['colorLastItem'] : '';
+
+if ( $vb_batch ) {
+	print caBatchEditorRelationshipModeControl( $t_item, $vs_id_prefix );
+} else {
+	print caEditorBundleShowHideControl( $this->request, $vs_id_prefix . $t_item->tableNum() . '_rel', $va_settings,
+		caInitialValuesArrayHasValue( $vs_id_prefix . $t_item->tableNum() . '_rel',
+			$this->getVar( 'initialValues' ) ) );
+}
+print caEditorBundleMetadataDictionary( $this->request, $vs_id_prefix . $t_item->tableNum() . '_rel', $va_settings );
+
+
+$va_errors = array();
+foreach ( $va_action_errors = $this->request->getActionErrors( $vs_placement_code ) as $o_error ) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
-    <div class='bundleSubLabel'>
-        <div style='clear:both;'></div></div><!-- end bundleSubLabel -->
-<?php
+<div id="<?php print $vs_id_prefix . $t_item->tableNum() . '_rel'; ?>" <?php print $vb_batch
+	? "class='editorBatchBundleContent'" : ''; ?>>
+	<div class='bundleSubLabel'>
+		<div style='clear:both;'></div>
+	</div><!-- end bundleSubLabel -->
+	<?php
 	//
 	// Template to generate display for existing items
 	//
-?>
+	?>
 	<textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
-	if (!$vb_read_only && !$vb_dont_show_del) {
-?>				
-			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
-<?php
-	}
+if ( ! $vb_read_only && ! $vb_dont_show_del ) {
+	?>
+	<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon( __CA_NAV_ICON_DEL_BUNDLE__,
+			1 ); ?></a>
+	<?php
+}
 ?>
 			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 			    {{created_on_display}} by {{name}} ({{email}})
@@ -82,20 +91,21 @@
 				
 				{{moderation_message}}
 			</span>
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_comment_id{n}" value="{comment_id}"/>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}"
+			       id="<?php print $vs_id_prefix; ?>_comment_id{n}" value="{comment_id}"/>
 		</div>
 
 	</textarea>
 
 	<div class="bundleContainer">
 		<div class="caItemList">
-<?php
-	if (sizeof($va_errors)) {
-?>
-		    <span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
-<?php
-	}
-?>
+			<?php
+			if ( sizeof( $va_errors ) ) {
+				?>
+				<span class="formLabelError"><?php print join( "; ", $va_errors ); ?><br class="clear"/></span>
+				<?php
+			}
+			?>
 		</div>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 	</div>
@@ -103,14 +113,22 @@
 
 <script type="text/javascript">
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
-	jQuery(document).ready(function() {
-		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
-		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
-		
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+	jQuery(document).ready(function () {
+		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function () {
+			jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200);
+			return false;
+		});
+		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function () {
+			jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200);
+			return false;
+		});
+
+		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix
+		                                                                                      . $t_item->tableNum()
+		                                                                                      . '_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
-			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
+			initialValues: <?php print json_encode( $this->getVar( 'initialValues' ) ); ?>,
+			initialValueOrder: <?php print json_encode( array_keys( $this->getVar( 'initialValues' ) ) ); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
 			placementID: '<?php print $vn_placement_id; ?>',
 			initialValueTemplateClassName: 'caItemTemplate',
@@ -119,9 +137,9 @@
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 0,
 			returnTextValues: true,
-			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
-			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
+			restrictToAccessPoint: <?php print json_encode( $va_settings['restrict_to_access_point'] ); ?>,
+			restrictToSearch: <?php print json_encode( $va_settings['restrict_to_search'] ); ?>,
+			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle( $this->getVar( 'initialValues' ) ); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: false,
 
