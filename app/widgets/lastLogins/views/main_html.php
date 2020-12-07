@@ -25,29 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request				= $this->getVar('request');
-	$va_settings 			= $this->getVar('settings');
-	$vs_widget_id 			= $this->getVar('widget_id');
-	$va_login_list			= $this->getVar('login_list');
+
+$po_request = $this->getVar('request');
+$va_settings = $this->getVar('settings');
+$vs_widget_id = $this->getVar('widget_id');
+$va_login_list = $this->getVar('login_list');
 ?>
 
 <div class="dashboardWidgetContentContainer dashboardWidgetScrollMedium">
-	<table class='dashboardWidgetTable'>
-		<tr>
-			<th><?php print _t('Date/time');?></th>
-			<th><?php print _t('User');?></th>
-			<th><?php print _t('IP address');?></th>
-		</tr>
-			
-<?php
-	foreach($va_login_list as $vn_i => $va_login) {
-		print "<tr>";
-		print "<td>".date("n/d/y, g:iA T", $va_login['date_time'])."</td>";
-		print "<td>".$va_login['fname'].' '.$va_login['lname'].' ('.$va_login['username'].")</td>";
-		print "<td>".$va_login['ip']."</td>";
-		print "</tr>\n";
-	}
-?>
-	</table>
+    <table class='dashboardWidgetTable'>
+        <tr>
+            <th><?php print _t('Date/time'); ?></th>
+            <th><?php print _t('User'); ?></th>
+            <th><?php print _t('IP address'); ?></th>
+        </tr>
+
+        <?php
+        foreach ($va_login_list as $vn_i => $va_login) {
+            print "<tr>";
+            print "<td>" . date("n/d/y, g:iA T", $va_login['date_time']) . "</td>";
+            print "<td>" . $va_login['fname'] . ' ' . $va_login['lname'] . ' (' . $va_login['username'] . ")</td>";
+            print "<td>" . $va_login['ip'] . "</td>";
+            print "</tr>\n";
+        }
+        ?>
+    </table>
 </div>

@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,16 +29,21 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-	
-	interface IWLPlugTaskQueueHandler {
-		public function __construct();
-		public function getHandlerName();
-		public function getParametersForDisplay($pa_rec);
-		public function process($pa_parameters);
-		public function cancel($pn_task_id, $pa_parameters);
-	}
+
+/**
+ *
+ */
+interface IWLPlugTaskQueueHandler
+{
+    public function __construct();
+
+    public function getHandlerName();
+
+    public function getParametersForDisplay($pa_rec);
+
+    public function process($pa_parameters);
+
+    public function cancel($pn_task_id, $pa_parameters);
+}
+
 ?>

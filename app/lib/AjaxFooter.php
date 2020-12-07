@@ -25,39 +25,52 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_LIB_DIR__.'/Controller/AppController/AppControllerPlugin.php');
- 	require_once(__CA_LIB_DIR__.'/View.php');
- 
-	class AjaxFooter extends AppControllerPlugin {
-		# -------------------------------------------------------
-		
-		# -------------------------------------------------------
-		public function routeStartup() {
-			//$this->getResponse()->addContent("<p>routeStartup() called</p>\n");
-		}
-		# -------------------------------------------------------
-		public function routeShutdown() {
-			//$this->getResponse()->addContent("<p>routeShutdown() called</p>\n");
-		}
-		# -------------------------------------------------------
-		public function dispatchLoopStartup() {
-			//$this->getResponse()->addContent("<p>dispatchLoopStartup() called</p>\n");
-		}
-		# -------------------------------------------------------
-		public function preDispatch() {
-			//$this->getResponse()->addContent("<p>preDispatch() called</p>\n");
-		}
-		# -------------------------------------------------------
-		public function postDispatch() {
-			$o_view = new View($this->getRequest(), $this->getRequest()->config->get('views_directory'));
 
-			$this->getResponse()->appendContent($o_view->render('ajaxFooter/ajaxFooter.php'), 'footer');
-		}
-		# -------------------------------------------------------
-		public function dispatchLoopShutdown() {
-			//$this->getResponse()->addContent("<p>dispatchLoopShutdown() called</p>\n");
-		}
-		# -------------------------------------------------------
-	}
+require_once(__CA_LIB_DIR__ . '/Controller/AppController/AppControllerPlugin.php');
+require_once(__CA_LIB_DIR__ . '/View.php');
+
+class AjaxFooter extends AppControllerPlugin
+{
+    # -------------------------------------------------------
+
+    # -------------------------------------------------------
+    public function routeStartup()
+    {
+        //$this->getResponse()->addContent("<p>routeStartup() called</p>\n");
+    }
+
+    # -------------------------------------------------------
+    public function routeShutdown()
+    {
+        //$this->getResponse()->addContent("<p>routeShutdown() called</p>\n");
+    }
+
+    # -------------------------------------------------------
+    public function dispatchLoopStartup()
+    {
+        //$this->getResponse()->addContent("<p>dispatchLoopStartup() called</p>\n");
+    }
+
+    # -------------------------------------------------------
+    public function preDispatch()
+    {
+        //$this->getResponse()->addContent("<p>preDispatch() called</p>\n");
+    }
+
+    # -------------------------------------------------------
+    public function postDispatch()
+    {
+        $o_view = new View($this->getRequest(), $this->getRequest()->config->get('views_directory'));
+
+        $this->getResponse()->appendContent($o_view->render('ajaxFooter/ajaxFooter.php'), 'footer');
+    }
+
+    # -------------------------------------------------------
+    public function dispatchLoopShutdown()
+    {
+        //$this->getResponse()->addContent("<p>dispatchLoopShutdown() called</p>\n");
+    }
+    # -------------------------------------------------------
+}
+
 ?>

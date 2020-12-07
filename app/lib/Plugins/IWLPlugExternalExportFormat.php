@@ -25,27 +25,32 @@
  *
  * ----------------------------------------------------------------------
  */
-	
-interface IWLPlugExternalExportFormat {
-	# -------------------------------------------------------
-	# Initialization and state
-	# -------------------------------------------------------
-	public function __construct();
-	public function register();
-	public function init();
-	public function cleanup();
-	
-	public function getDescription();
-	public function checkStatus();
-	
-	# -------------------------------------------------------
-	# Settings
-	# -------------------------------------------------------
-	public function getAvailableSettings();
-	
-	# -------------------------------------------------------
-	# Processing
-	# -------------------------------------------------------
-	public function process($t_instance, $target_info, $options=null);
-	# -------------------------------------------------------
+
+interface IWLPlugExternalExportFormat
+{
+    # -------------------------------------------------------
+    # Initialization and state
+    # -------------------------------------------------------
+    public function __construct();
+
+    public function register();
+
+    public function init();
+
+    public function cleanup();
+
+    public function getDescription();
+
+    public function checkStatus();
+
+    # -------------------------------------------------------
+    # Settings
+    # -------------------------------------------------------
+    public function getAvailableSettings();
+
+    # -------------------------------------------------------
+    # Processing
+    # -------------------------------------------------------
+    public function process($t_instance, $target_info, $options = null);
+    # -------------------------------------------------------
 }

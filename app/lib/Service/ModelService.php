@@ -30,108 +30,122 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
-require_once(__CA_MODELS_DIR__."/ca_lists.php");
-require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
+require_once(__CA_LIB_DIR__ . "/Service/BaseJSONService.php");
+require_once(__CA_MODELS_DIR__ . "/ca_lists.php");
+require_once(__CA_MODELS_DIR__ . "/ca_relationship_types.php");
 
-class ModelService extends BaseJSONService {
-	# -------------------------------------------------------
-	public function __construct($po_request,$ps_table=""){
-		parent::__construct($po_request,$ps_table);
-	}
-	# -------------------------------------------------------
-	public function dispatch(){
-		$va_post = $this->getRequestBodyArray();
+class ModelService extends BaseJSONService
+{
+    # -------------------------------------------------------
+    public function __construct($po_request, $ps_table = "")
+    {
+        parent::__construct($po_request, $ps_table);
+    }
 
-		switch($this->getRequestMethod()){
-			case "GET":
-				if(sizeof($va_post)==0){
-					return $this->getModelInfoForTypes();
-				} else {
-					if(is_array($va_post["types"])){
-						return $this->getModelInfoForTypes($va_post["types"]);
-					} else {
-						$this->addError(_t("Invalid request body format"));
-						return false;
-					}
-				}
-				break;
-			default:
-				$this->addError(_t("Invalid HTTP request method for this service"));
-				return false;
-		}
-	}
-	# -------------------------------------------------------
-	private function getModelInfoForTypes($pa_types=null){
-		$va_post = $this->getRequestBodyArray();
-		$t_instance = $this->_getTableInstance($this->getTableName());
-		$va_return = array();
+    # -------------------------------------------------------
+    public function dispatch()
+    {
+        $va_post = $this->getRequestBodyArray();
 
-		if(is_null($pa_types)){
-			$va_types = $t_instance->getTypeList();
-			foreach($va_types as $va_type){
-				$va_return[$va_type["idno"]] = $this->getModelInfoForType($va_type["idno"]);
-			}
-		} else if(is_array($pa_types)){
-			foreach($pa_types as $vs_type){
-				$va_return[$vs_type] = $this->getModelInfoForType($vs_type);
-			}
-		} else {
-			$this->addError(_t("Invalid request body format"));
-		}
+        switch ($this->getRequestMethod()) {
+            case "GET":
+                if (sizeof($va_post) == 0) {
+                    return $this->getModelInfoForTypes();
+                } else {
+                    if (is_array($va_post["types"])) {
+                        return $this->getModelInfoForTypes($va_post["types"]);
+                    } else {
+                        $this->addError(_t("Invalid request body format"));
+                        return false;
+                    }
+                }
+                break;
+            default:
+                $this->addError(_t("Invalid HTTP request method for this service"));
+                return false;
+        }
+    }
 
-		return $va_return;
-	}
-	# -------------------------------------------------------
-	private function getModelInfoForType($ps_type){
-		$t_instance = $this->_getTableInstance($this->getTableName());
-		$t_list = new ca_lists();
-		$va_return = array();
+    # -------------------------------------------------------
+    private function getModelInfoForTypes($pa_types = null)
+    {
+        $va_post = $this->getRequestBodyArray();
+        $t_instance = $this->_getTableInstance($this->getTableName());
+        $va_return = array();
 
-		$vs_type_list_code = $t_instance->getTypeListCode();
+        if (is_null($pa_types)) {
+            $va_types = $t_instance->getTypeList();
+            foreach ($va_types as $va_type) {
+                $va_return[$va_type["idno"]] = $this->getModelInfoForType($va_type["idno"]);
+            }
+        } else {
+            if (is_array($pa_types)) {
+                foreach ($pa_types as $vs_type) {
+                    $va_return[$vs_type] = $this->getModelInfoForType($vs_type);
+                }
+            } else {
+                $this->addError(_t("Invalid request body format"));
+            }
+        }
 
-		// type info
+        return $va_return;
+    }
 
-		$va_item = $t_list->getItemFromList($vs_type_list_code,$ps_type);
-		$va_return["type_info"] = $va_item;
-		$va_return["type_info"]["display_label"] = $t_list->getItemFromListForDisplay($vs_type_list_code,$ps_type);
+    # -------------------------------------------------------
+    private function getModelInfoForType($ps_type)
+    {
+        $t_instance = $this->_getTableInstance($this->getTableName());
+        $t_list = new ca_lists();
+        $va_return = array();
 
-		// applicable element codes and related info
+        $vs_type_list_code = $t_instance->getTypeListCode();
 
-		$va_elements = array();
-		$va_codes = $t_instance->getApplicableElementCodes($va_item["item_id"]);
-		$va_codes = array_flip($va_codes);
+        // type info
 
-		foreach($va_codes as $vs_code => $va_junk){
-			// subelements
-			$t_element = ca_metadata_elements::getInstance($vs_code);
-			foreach($t_element->getElementsInSet() as $va_element_in_set){
-				if($va_element_in_set["datatype"]==0) continue; // don't include sub-containers
-				$va_element_in_set["datatype"] = ca_metadata_elements::getAttributeNameForTypeCode($va_element_in_set["datatype"]);
-				$va_elements[$vs_code]["elements_in_set"][$va_element_in_set["element_code"]] = $va_element_in_set;
-			}
+        $va_item = $t_list->getItemFromList($vs_type_list_code, $ps_type);
+        $va_return["type_info"] = $va_item;
+        $va_return["type_info"]["display_label"] = $t_list->getItemFromListForDisplay($vs_type_list_code, $ps_type);
 
-			// element label and description
-			$va_label = $t_instance->getAttributeLabelAndDescription($vs_code);
-			$va_elements[$vs_code]["name"] = $va_label["name"];
-			if(isset($va_label["description"])){
-				$va_elements[$vs_code]["description"] = $va_label["description"];
-			}
-		}
+        // applicable element codes and related info
 
-		$va_return["elements"] = $va_elements;
+        $va_elements = array();
+        $va_codes = $t_instance->getApplicableElementCodes($va_item["item_id"]);
+        $va_codes = array_flip($va_codes);
 
-		// possible relationships with "valid tables" (i.e. those that are accessible via services)
-		$t_rel_types = new ca_relationship_types();
-		foreach($this->opa_valid_tables as $vs_table){
-			$vs_rel_table = $t_rel_types->getRelationshipTypeTable($this->getTableName(),$vs_table);
-			$va_info = $t_rel_types->getRelationshipInfo($vs_rel_table);
-			foreach($va_info as $va_tmp){
-				$va_return["relationship_types"][$vs_table][$va_tmp["type_code"]] = $va_tmp;
-			}
-		}
+        foreach ($va_codes as $vs_code => $va_junk) {
+            // subelements
+            $t_element = ca_metadata_elements::getInstance($vs_code);
+            foreach ($t_element->getElementsInSet() as $va_element_in_set) {
+                if ($va_element_in_set["datatype"] == 0) {
+                    continue;
+                } // don't include sub-containers
+                $va_element_in_set["datatype"] = ca_metadata_elements::getAttributeNameForTypeCode(
+                    $va_element_in_set["datatype"]
+                );
+                $va_elements[$vs_code]["elements_in_set"][$va_element_in_set["element_code"]] = $va_element_in_set;
+            }
 
-		return $va_return;
-	}
-	# -------------------------------------------------------
+            // element label and description
+            $va_label = $t_instance->getAttributeLabelAndDescription($vs_code);
+            $va_elements[$vs_code]["name"] = $va_label["name"];
+            if (isset($va_label["description"])) {
+                $va_elements[$vs_code]["description"] = $va_label["description"];
+            }
+        }
+
+        $va_return["elements"] = $va_elements;
+
+        // possible relationships with "valid tables" (i.e. those that are accessible via services)
+        $t_rel_types = new ca_relationship_types();
+        foreach ($this->opa_valid_tables as $vs_table) {
+            $vs_rel_table = $t_rel_types->getRelationshipTypeTable($this->getTableName(), $vs_table);
+            $va_info = $t_rel_types->getRelationshipInfo($vs_rel_table);
+            foreach ($va_info as $va_tmp) {
+                $va_return["relationship_types"][$vs_table][$va_tmp["type_code"]] = $va_tmp;
+            }
+        }
+
+        return $va_return;
+    }
+    # -------------------------------------------------------
 }

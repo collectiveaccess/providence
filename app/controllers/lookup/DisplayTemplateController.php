@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/DisplayTemplateController.php :
  * ----------------------------------------------------------------------
@@ -27,23 +28,25 @@
  */
 require_once(__CA_LIB_DIR__ . '/Controller/ActionController.php');
 
-class DisplayTemplateController extends ActionController {
-	# -------------------------------------------------------
-	public function Get() {
-		$ps_template = $this->getRequest()->getParameter('template', pString, 'GET', ['urldecode' => false]);
-		$ps_table = $this->getRequest()->getParameter('table', pString);
-		$pn_id = $this->getRequest()->getParameter('id', pString);
+class DisplayTemplateController extends ActionController
+{
+    # -------------------------------------------------------
+    public function Get()
+    {
+        $ps_template = $this->getRequest()->getParameter('template', pString, 'GET', ['urldecode' => false]);
+        $ps_table = $this->getRequest()->getParameter('table', pString);
+        $pn_id = $this->getRequest()->getParameter('id', pString);
 
-		$t_instance = Datamodel::getInstance($ps_table);
-		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			return false;
-		}
+        $t_instance = Datamodel::getInstance($ps_table);
+        if (!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+            return false;
+        }
 
-		if(!($t_instance->load($pn_id))) {
-			return false;
-		}
+        if (!($t_instance->load($pn_id))) {
+            return false;
+        }
 
-		print @$t_instance->getWithTemplate($ps_template);
-	}
-	# -------------------------------------------------------
+        print @$t_instance->getWithTemplate($ps_template);
+    }
+    # -------------------------------------------------------
 }

@@ -32,95 +32,105 @@
  * ----------------------------------------------------------------------
  */
 
-  /**
-    *
-    */ 
-    
-    
-require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
+/**
+ *
+ */
+
+
+require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
 
 global $g_information_service_settings_Iconclass;
 $g_information_service_settings_Iconclass = [];
 
-class WLPlugInformationServiceIconclass Extends BaseInformationServicePlugin Implements IWLPlugInformationService {
-	# ------------------------------------------------
-	static $s_settings;
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct() {
-		global $g_information_service_settings_Iconclass;
+class WLPlugInformationServiceIconclass Extends BaseInformationServicePlugin Implements IWLPlugInformationService
+{
+    # ------------------------------------------------
+    static public $s_settings;
+    # ------------------------------------------------
 
-		WLPlugInformationServiceIconclass::$s_settings = $g_information_service_settings_Iconclass;
-		parent::__construct();
-		$this->info['NAME'] = 'Iconclass';
-		
-		$this->description = _t('Provides access to Iconclass service');
-	}
-	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceIconclass::$s_settings;
-	}
-	# ------------------------------------------------
-	# Data
-	# ------------------------------------------------
-	/** 
-	 * Perform lookup on Iconclass-based data service
-	 *
-	 * @param array $pa_settings Plugin settings values
-	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options (none defined yet)
-	 * @return array
-	 */
-	public function lookup($pa_settings, $ps_search, $pa_options=null) {
-		global $g_ui_locale;
-		if ($vs_locale = ($g_ui_locale) ? $g_ui_locale : __CA_DEFAULT_LOCALE__) {
-			$vs_lang = strtolower(array_shift(explode("_", $vs_locale)));
-		} else {
-			$vs_lang = 'en';
-		}
-		
-		
-		$vs_content = caQueryExternalWebservice(
-            $vs_url = 'http://iconclass.org/rkd/9/?q='.urlencode($ps_search).'&q_s=1&fmt=json'
-		);
+    /**
+     *
+     */
+    public function __construct()
+    {
+        global $g_information_service_settings_Iconclass;
 
-		$va_content = @json_decode($vs_content, true);
-		if(!isset($va_content['records']) || !is_array($va_content['records'])) { return []; }
+        WLPlugInformationServiceIconclass::$s_settings = $g_information_service_settings_Iconclass;
+        parent::__construct();
+        $this->info['NAME'] = 'Iconclass';
 
-		// the top two levels are 'diagnostic' and 'records'
-		$va_results = $va_content['records'];
-		$va_return = [];
+        $this->description = _t('Provides access to Iconclass service');
+    }
+    # ------------------------------------------------
 
-		foreach($va_results as $va_result) {
-			$va_return['results'][] = [
-				'label' => isset($va_result['txt'][$vs_lang]) ? $va_result['txt'][$vs_lang] : $va_result['txt']['en'],
-				'url' => 'http://iconclass.org/'.$va_result['n'],
-				'idno' => $va_result['n'],
-			];
-		}
+    /**
+     * Get all settings settings defined by this plugin as an array
+     *
+     * @return array
+     */
+    public function getAvailableSettings()
+    {
+        return WLPlugInformationServiceIconclass::$s_settings;
+    }
+    # ------------------------------------------------
+    # Data
+    # ------------------------------------------------
+    /**
+     * Perform lookup on Iconclass-based data service
+     *
+     * @param array $pa_settings Plugin settings values
+     * @param string $ps_search The expression with which to query the remote data service
+     * @param array $pa_options Lookup options (none defined yet)
+     * @return array
+     */
+    public function lookup($pa_settings, $ps_search, $pa_options = null)
+    {
+        global $g_ui_locale;
+        if ($vs_locale = ($g_ui_locale) ? $g_ui_locale : __CA_DEFAULT_LOCALE__) {
+            $vs_lang = strtolower(array_shift(explode("_", $vs_locale)));
+        } else {
+            $vs_lang = 'en';
+        }
 
-		return $va_return;
-	}
-	# ------------------------------------------------
-	/** 
-	 * Fetch details about a specific item from a Iconclass-based data service for "more info" panel
-	 *
-	 * @param array $pa_settings Plugin settings values
-	 * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
-	 * @return array An array of data from the data server defining the item.
-	 */
-	public function getExtendedInformation($pa_settings, $ps_url) {
-		$vs_display = "<p><a href='{$ps_url}' target='_blank'>{$ps_url}</a></p>";
 
-		return ['display' => $vs_display];
-	}
-	# ------------------------------------------------
+        $vs_content = caQueryExternalWebservice(
+            $vs_url = 'http://iconclass.org/rkd/9/?q=' . urlencode($ps_search) . '&q_s=1&fmt=json'
+        );
+
+        $va_content = @json_decode($vs_content, true);
+        if (!isset($va_content['records']) || !is_array($va_content['records'])) {
+            return [];
+        }
+
+        // the top two levels are 'diagnostic' and 'records'
+        $va_results = $va_content['records'];
+        $va_return = [];
+
+        foreach ($va_results as $va_result) {
+            $va_return['results'][] = [
+                'label' => isset($va_result['txt'][$vs_lang]) ? $va_result['txt'][$vs_lang] : $va_result['txt']['en'],
+                'url' => 'http://iconclass.org/' . $va_result['n'],
+                'idno' => $va_result['n'],
+            ];
+        }
+
+        return $va_return;
+    }
+    # ------------------------------------------------
+
+    /**
+     * Fetch details about a specific item from a Iconclass-based data service for "more info" panel
+     *
+     * @param array $pa_settings Plugin settings values
+     * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
+     * @return array An array of data from the data server defining the item.
+     */
+    public function getExtendedInformation($pa_settings, $ps_url)
+    {
+        $vs_display = "<p><a href='{$ps_url}' target='_blank'>{$ps_url}</a></p>";
+
+        return ['display' => $vs_display];
+    }
+    # ------------------------------------------------
 }

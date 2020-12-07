@@ -30,112 +30,149 @@
  * ----------------------------------------------------------------------
  */
 
-class MemoryCache {
-	# ------------------------------------------------
-	private static $opa_caches = array();
-	# ------------------------------------------------
-	/**
-	 * Fetches an entry from the cache.
-	 * @param string $ps_key
-	 * @param string $ps_namespace
-	 * @return mixed The cached data or FALSE, if no cache entry exists for the given key.
-	 * @throws MemoryCacheInvalidParameterException
-	 */
-	public static function fetch($ps_key, $ps_namespace='default') {
-		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
+class MemoryCache
+{
+    # ------------------------------------------------
+    private static $opa_caches = array();
+    # ------------------------------------------------
 
-		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
+    /**
+     * Fetches an entry from the cache.
+     * @param string $ps_key
+     * @param string $ps_namespace
+     * @return mixed The cached data or FALSE, if no cache entry exists for the given key.
+     * @throws MemoryCacheInvalidParameterException
+     */
+    public static function fetch($ps_key, $ps_namespace = 'default')
+    {
+        if (!$ps_namespace) {
+            throw new MemoryCacheInvalidParameterException('Namespace cannot be empty');
+        }
 
-		if(isset(self::$opa_caches[$ps_namespace][$ps_key])) {
-			return self::$opa_caches[$ps_namespace][$ps_key];
-		} else {
-			return null;
-		}
-	}
-	# ------------------------------------------------
-	/**
-	 * Puts data into the cache. Overwrites existing items!
-	 * @param string $ps_key
-	 * @param mixed $pm_data
-	 * @param string $ps_namespace
-	 * @return bool success state
-	 * @throws MemoryCacheInvalidParameterException
-	 */
-	public static function save($ps_key, $pm_data, $ps_namespace='default') {
-		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
+        if (!strlen($ps_key)) {
+            throw new MemoryCacheInvalidParameterException('Key cannot be empty');
+        }
 
-		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
+        if (isset(self::$opa_caches[$ps_namespace][$ps_key])) {
+            return self::$opa_caches[$ps_namespace][$ps_key];
+        } else {
+            return null;
+        }
+    }
+    # ------------------------------------------------
 
-		self::$opa_caches[$ps_namespace][$ps_key] = $pm_data;
-		return true;
-	}
-	# ------------------------------------------------
-	/**
-	 * Test if an entry exists in the cache.
-	 * @param string $ps_key
-	 * @param string $ps_namespace
-	 * @return bool
-	 * @throws MemoryCacheInvalidParameterException
-	 */
-	public static function contains($ps_key, $ps_namespace='default') {
-		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
+    /**
+     * Puts data into the cache. Overwrites existing items!
+     * @param string $ps_key
+     * @param mixed $pm_data
+     * @param string $ps_namespace
+     * @return bool success state
+     * @throws MemoryCacheInvalidParameterException
+     */
+    public static function save($ps_key, $pm_data, $ps_namespace = 'default')
+    {
+        if (!$ps_namespace) {
+            throw new MemoryCacheInvalidParameterException('Namespace cannot be empty');
+        }
 
-		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
+        if (!strlen($ps_key)) {
+            throw new MemoryCacheInvalidParameterException('Key cannot be empty');
+        }
 
-		return (isset(self::$opa_caches[$ps_namespace]) && array_key_exists($ps_key, self::$opa_caches[$ps_namespace]));
-	}
-	# ------------------------------------------------
-	/**
-	 * Remove a given key from cache
-	 * @param string $ps_key
-	 * @param string $ps_namespace
-	 * @return bool success state
-	 * @throws MemoryCacheInvalidParameterException
-	 */
-	public static function delete($ps_key, $ps_namespace='default') {
-		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
-		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
+        self::$opa_caches[$ps_namespace][$ps_key] = $pm_data;
+        return true;
+    }
+    # ------------------------------------------------
 
-		if(!isset(self::$opa_caches[$ps_namespace])) { return false; }
+    /**
+     * Test if an entry exists in the cache.
+     * @param string $ps_key
+     * @param string $ps_namespace
+     * @return bool
+     * @throws MemoryCacheInvalidParameterException
+     */
+    public static function contains($ps_key, $ps_namespace = 'default')
+    {
+        if (!$ps_namespace) {
+            throw new MemoryCacheInvalidParameterException('Namespace cannot be empty');
+        }
 
-		if(array_key_exists($ps_key, self::$opa_caches[$ps_namespace])) {
-			unset(self::$opa_caches[$ps_namespace][$ps_key]);
-			return true;
-		} else {
-			return false;
-		}
-	}
-	# ------------------------------------------------
-	/**
-	 * Get number of items for a given namespace. Compared to other cache operations this is very slow so use with caution!
-	 * @param string $ps_namespace
-	 * @return int
-	 * @throws MemoryCacheInvalidParameterException
-	 */
-	public static function itemCountForNamespace($ps_namespace='default') {
-		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
+        if (!strlen($ps_key)) {
+            throw new MemoryCacheInvalidParameterException('Key cannot be empty');
+        }
 
-		if(is_array(self::$opa_caches[$ps_namespace])) {
-			return sizeof(self::$opa_caches[$ps_namespace]);
-		} else {
-			return 0;
-		}
-	}
-	# ------------------------------------------------
-	/**
-	 * Flush cache
-	 * @param string|null $ps_namespace Optional namespace definition. If given, only this namespace is wiped.
-	 * @throws MemoryCacheInvalidParameterException
-	 */
-	public static function flush($ps_namespace=null) {
-		if(!$ps_namespace) {
-			self::$opa_caches = array();
-		} else {
-			if(!is_string($ps_namespace)) { throw new MemoryCacheInvalidParameterException('Namespace has to be a string'); }
-			self::$opa_caches[$ps_namespace] = array();
-		}
-	}
-	# ------------------------------------------------
+        return (isset(self::$opa_caches[$ps_namespace]) && array_key_exists($ps_key, self::$opa_caches[$ps_namespace]));
+    }
+    # ------------------------------------------------
+
+    /**
+     * Remove a given key from cache
+     * @param string $ps_key
+     * @param string $ps_namespace
+     * @return bool success state
+     * @throws MemoryCacheInvalidParameterException
+     */
+    public static function delete($ps_key, $ps_namespace = 'default')
+    {
+        if (!$ps_namespace) {
+            throw new MemoryCacheInvalidParameterException('Namespace cannot be empty');
+        }
+        if (!strlen($ps_key)) {
+            throw new MemoryCacheInvalidParameterException('Key cannot be empty');
+        }
+
+        if (!isset(self::$opa_caches[$ps_namespace])) {
+            return false;
+        }
+
+        if (array_key_exists($ps_key, self::$opa_caches[$ps_namespace])) {
+            unset(self::$opa_caches[$ps_namespace][$ps_key]);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    # ------------------------------------------------
+
+    /**
+     * Get number of items for a given namespace. Compared to other cache operations this is very slow so use with caution!
+     * @param string $ps_namespace
+     * @return int
+     * @throws MemoryCacheInvalidParameterException
+     */
+    public static function itemCountForNamespace($ps_namespace = 'default')
+    {
+        if (!$ps_namespace) {
+            throw new MemoryCacheInvalidParameterException('Namespace cannot be empty');
+        }
+
+        if (is_array(self::$opa_caches[$ps_namespace])) {
+            return sizeof(self::$opa_caches[$ps_namespace]);
+        } else {
+            return 0;
+        }
+    }
+    # ------------------------------------------------
+
+    /**
+     * Flush cache
+     * @param string|null $ps_namespace Optional namespace definition. If given, only this namespace is wiped.
+     * @throws MemoryCacheInvalidParameterException
+     */
+    public static function flush($ps_namespace = null)
+    {
+        if (!$ps_namespace) {
+            self::$opa_caches = array();
+        } else {
+            if (!is_string($ps_namespace)) {
+                throw new MemoryCacheInvalidParameterException('Namespace has to be a string');
+            }
+            self::$opa_caches[$ps_namespace] = array();
+        }
+    }
+    # ------------------------------------------------
 }
 
-class MemoryCacheInvalidParameterException extends Exception {}
+class MemoryCacheInvalidParameterException extends Exception
+{
+}

@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/MetadataElementController.php : 
  * ----------------------------------------------------------------------
@@ -25,65 +26,68 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
- 	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
- 
- 	//
- 	// This lookup controller doesn't extend BaseLookupController
- 	// since direct lookups on attributes are handled specially – not via the search engine
- 	class AttributeValueController extends ActionController {
- 		# -------------------------------------------------------
- 		# AJAX handlers
- 		# -------------------------------------------------------
-		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			$ps_query = $this->request->getParameter('term', pString);
-			$ps_bundle = $this->request->getParameter('bundle', pString);
-			
-			$va_tmp = explode('.', $ps_bundle);
-			
-			
-			if (!($t_table = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
-				// bad table name
-				print _t("Invalid table name");
-				return null;
-			}
-			
-			$t_element = new ca_metadata_elements();
-			if (!($t_element->load(array('element_code' => $va_tmp[1])))) {
-				print _t("Invalid element code");
-				return null;
-			}
-			
-			if ((int)$t_element->getSetting('suggestExistingValues') !== 1) {
-				print _t("Value suggestion is not supported for this metadata element");
-				return null;
-			}
-			
-			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $va_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
-				print _t("You do not have access to this bundle");
-				return null;
-			}
-			
-			$va_type_restrictions = $t_element->getTypeRestrictions($t_table->tableNum());
-			if (!$va_type_restrictions || !is_array($va_type_restrictions) || !sizeof($va_type_restrictions)) {
-				print _t("Element code is not bound to the specified table");
-				return null;
-			}
-			
-			$o_db = new Db();
-			
-			switch($t_element->getSetting('suggestExistingValueSort')) {
-				case 'recent':		// date/time entered
-					$vs_sort_field = 'value_id DESC';
-					$vn_max_returned_values = 10;
-					break;
-				default:				// alphabetically
-					$vs_sort_field = 'value_longtext1 ASC';
-					$vn_max_returned_values = 50;
-					break;
-			}
-			
-			$qr_res = $o_db->query("
+require_once(__CA_LIB_DIR__ . "/Controller/ActionController.php");
+require_once(__CA_MODELS_DIR__ . "/ca_metadata_elements.php");
+
+//
+// This lookup controller doesn't extend BaseLookupController
+// since direct lookups on attributes are handled specially – not via the search engine
+class AttributeValueController extends ActionController
+{
+    # -------------------------------------------------------
+    # AJAX handlers
+    # -------------------------------------------------------
+    public function Get($pa_additional_query_params = null, $pa_options = null)
+    {
+        $ps_query = $this->request->getParameter('term', pString);
+        $ps_bundle = $this->request->getParameter('bundle', pString);
+
+        $va_tmp = explode('.', $ps_bundle);
+
+
+        if (!($t_table = Datamodel::getInstanceByTableName($va_tmp[0], true))) {
+            // bad table name
+            print _t("Invalid table name");
+            return null;
+        }
+
+        $t_element = new ca_metadata_elements();
+        if (!($t_element->load(array('element_code' => $va_tmp[1])))) {
+            print _t("Invalid element code");
+            return null;
+        }
+
+        if ((int)$t_element->getSetting('suggestExistingValues') !== 1) {
+            print _t("Value suggestion is not supported for this metadata element");
+            return null;
+        }
+
+        if ($this->request->user->getBundleAccessLevel($va_tmp[0], $va_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
+            print _t("You do not have access to this bundle");
+            return null;
+        }
+
+        $va_type_restrictions = $t_element->getTypeRestrictions($t_table->tableNum());
+        if (!$va_type_restrictions || !is_array($va_type_restrictions) || !sizeof($va_type_restrictions)) {
+            print _t("Element code is not bound to the specified table");
+            return null;
+        }
+
+        $o_db = new Db();
+
+        switch ($t_element->getSetting('suggestExistingValueSort')) {
+            case 'recent':        // date/time entered
+                $vs_sort_field = 'value_id DESC';
+                $vn_max_returned_values = 10;
+                break;
+            default:                // alphabetically
+                $vs_sort_field = 'value_longtext1 ASC';
+                $vn_max_returned_values = 50;
+                break;
+        }
+
+        $qr_res = $o_db->query(
+            "
 				SELECT DISTINCT value_longtext1
 				FROM ca_attribute_values
 				WHERE
@@ -93,67 +97,81 @@
 				ORDER BY
 					{$vs_sort_field}
 				LIMIT {$vn_max_returned_values}
-			", (int)$t_element->getPrimaryKey(), (string)$ps_query.'%');
-			
-			$this->view->setVar('attribute_value_list', $qr_res->getAllFieldValues('value_longtext1'));
-			return $this->render('ajax_attribute_value_list_json.php');
-		}
-		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
- 		public function ValueExists() {
- 			$ps_bundle = $this->request->getParameter('bundle', pString);
- 			$ps_value = $this->request->getParameter('n', pString);
-			
-			$va_tmp = explode('.', $ps_bundle);
-			
-			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $va_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
-				print _t("You do not have access to this bundle");
-				return null;
-			}
-			if (BaseModelWithAttributes::valueExistsForElement($va_tmp[1], $ps_value, [])) {
-				$this->view->setVar('exists', 1);	
-			} else {
-				$this->view->setVar('exists', 0);
-			}
-			return $this->render('ajax_attribute_value_exists_json.php');
- 		}
-		# -------------------------------------------------------
- 		/**
- 		 * Given a item_id (request parameter 'id') returns a list of direct children for use in the hierarchy browser
- 		 * Returned data is JSON format
- 		 */
- 		public function GetHierarchyLevel() {
- 			// Not implemented
- 			return null;
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Given a item_id (request parameter 'id') returns a list of ancestors for use in the hierarchy browser
- 		 * Returned data is JSON format
- 		 */
- 		public function GetHierarchyAncestorList() {
- 			// Not implemented
- 			return null;
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
-		public function IDNo() {
-			// Not implemented
-			return null;
-		}
-		# -------------------------------------------------------
- 		/**
- 		 * Checks value of instrinsic field and return list of primary keys that use the specified value
- 		 * Can be used to determine if a value that needs to be unique is actually unique.
- 		 */
-		public function Intrinsic() {
-			// Not implemented
-			return null;
-		}
- 		# -------------------------------------------------------
- 	}
- ?>
+			",
+            (int)$t_element->getPrimaryKey(),
+            (string)$ps_query . '%'
+        );
+
+        $this->view->setVar('attribute_value_list', $qr_res->getAllFieldValues('value_longtext1'));
+        return $this->render('ajax_attribute_value_list_json.php');
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     */
+    public function ValueExists()
+    {
+        $ps_bundle = $this->request->getParameter('bundle', pString);
+        $ps_value = $this->request->getParameter('n', pString);
+
+        $va_tmp = explode('.', $ps_bundle);
+
+        if ($this->request->user->getBundleAccessLevel($va_tmp[0], $va_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
+            print _t("You do not have access to this bundle");
+            return null;
+        }
+        if (BaseModelWithAttributes::valueExistsForElement($va_tmp[1], $ps_value, [])) {
+            $this->view->setVar('exists', 1);
+        } else {
+            $this->view->setVar('exists', 0);
+        }
+        return $this->render('ajax_attribute_value_exists_json.php');
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Given a item_id (request parameter 'id') returns a list of direct children for use in the hierarchy browser
+     * Returned data is JSON format
+     */
+    public function GetHierarchyLevel()
+    {
+        // Not implemented
+        return null;
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Given a item_id (request parameter 'id') returns a list of ancestors for use in the hierarchy browser
+     * Returned data is JSON format
+     */
+    public function GetHierarchyAncestorList()
+    {
+        // Not implemented
+        return null;
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     */
+    public function IDNo()
+    {
+        // Not implemented
+        return null;
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Checks value of instrinsic field and return list of primary keys that use the specified value
+     * Can be used to determine if a value that needs to be unique is actually unique.
+     */
+    public function Intrinsic()
+    {
+        // Not implemented
+        return null;
+    }
+    # -------------------------------------------------------
+}
+
+?>

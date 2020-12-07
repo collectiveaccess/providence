@@ -30,519 +30,635 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/Browse/BrowseEngine.php");
-require_once(__CA_APP_DIR__."/helpers/browseHelpers.php");
+require_once(__CA_LIB_DIR__ . "/Browse/BrowseEngine.php");
+require_once(__CA_APP_DIR__ . "/helpers/browseHelpers.php");
 
-class SimpleService {
-	# -------------------------------------------------------
-	static $s_key_cache = [];
-	static $s_simple_template_cache = [];
-	# -------------------------------------------------------
-	/**
-	 * Dispatch service call
-	 * @param string $ps_endpoint
-	 * @param RequestHTTP $po_request
-	 * @return array
-	 * @throws Exception
-	 */
-	public static function dispatch($ps_endpoint, $po_request) {
+class SimpleService
+{
+    # -------------------------------------------------------
+    static public $s_key_cache = [];
+    static public $s_simple_template_cache = [];
+    # -------------------------------------------------------
 
-		$vs_cache_key = $po_request->getHash();
+    /**
+     * Dispatch service call
+     * @param string $ps_endpoint
+     * @param RequestHTTP $po_request
+     * @return array
+     * @throws Exception
+     */
+    public static function dispatch($ps_endpoint, $po_request)
+    {
+        $vs_cache_key = $po_request->getHash();
 
-		if(!$po_request->getParameter('noCache', pInteger) && ($po_request->getParameter('sort', pString) !== '_random_')) {
-			if(ExternalCache::contains($vs_cache_key, "SimpleAPI_{$ps_endpoint}")) {
-				return ExternalCache::fetch($vs_cache_key, "SimpleAPI_{$ps_endpoint}");
-			}
-		}
+        if (!$po_request->getParameter('noCache', pInteger) && ($po_request->getParameter(
+                    'sort',
+                    pString
+                ) !== '_random_')) {
+            if (ExternalCache::contains($vs_cache_key, "SimpleAPI_{$ps_endpoint}")) {
+                return ExternalCache::fetch($vs_cache_key, "SimpleAPI_{$ps_endpoint}");
+            }
+        }
 
-		$va_endpoint_config = self::getEndpointConfig($ps_endpoint); // throws exception if it can't be found
+        $va_endpoint_config = self::getEndpointConfig($ps_endpoint); // throws exception if it can't be found
 
-		switch(strtolower($va_endpoint_config['type'])) {
-			case 'stats':
-				$vm_return = self::runStatsEndpoint($va_endpoint_config, $po_request);
-				break;
-			case 'refineablesearch':
-				$vm_return = self::runRefineableSearchEndpoint($va_endpoint_config, $po_request);
-				break;
-			case 'search':
-				$vm_return = self::runSearchEndpoint($va_endpoint_config, $po_request);
-				break;
-			case 'site_page':
-				$vm_return = self::runSitePageEndpoint($va_endpoint_config, $po_request);
-				break;
-			case 'detail':
-			default:
-				$vm_return = self::runDetailEndpoint($va_endpoint_config, $po_request);
-				break;
-		}
+        switch (strtolower($va_endpoint_config['type'])) {
+            case 'stats':
+                $vm_return = self::runStatsEndpoint($va_endpoint_config, $po_request);
+                break;
+            case 'refineablesearch':
+                $vm_return = self::runRefineableSearchEndpoint($va_endpoint_config, $po_request);
+                break;
+            case 'search':
+                $vm_return = self::runSearchEndpoint($va_endpoint_config, $po_request);
+                break;
+            case 'site_page':
+                $vm_return = self::runSitePageEndpoint($va_endpoint_config, $po_request);
+                break;
+            case 'detail':
+            default:
+                $vm_return = self::runDetailEndpoint($va_endpoint_config, $po_request);
+                break;
+        }
 
-		$vn_ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
-		ExternalCache::save($vs_cache_key, $vm_return, "SimpleAPI_{$ps_endpoint}", $vn_ttl);
-		return $vm_return;
-	}
-	# -------------------------------------------------------
-	/**
-	 * @param array $pa_config
-	 * @param RequestHTTP $po_request
-	 * @return array
-	 * @throws Exception
-	 */
-	private static function runDetailEndpoint($pa_config, $po_request) {
-		// load instance
-		$t_instance = Datamodel::getInstance($pa_config['table']);
-		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			throw new Exception('Invalid table');
-		}
+        $vn_ttl = defined(
+            '__CA_SERVICE_API_CACHE_TTL__'
+        ) ? __CA_SERVICE_API_CACHE_TTL__ : 60 * 60; // save for an hour by default
+        ExternalCache::save($vs_cache_key, $vm_return, "SimpleAPI_{$ps_endpoint}", $vn_ttl);
+        return $vm_return;
+    }
+    # -------------------------------------------------------
 
-		$va_get_options = [];
+    /**
+     * @param array $pa_config
+     * @param RequestHTTP $po_request
+     * @return array
+     * @throws Exception
+     */
+    private static function runDetailEndpoint($pa_config, $po_request)
+    {
+        // load instance
+        $t_instance = Datamodel::getInstance($pa_config['table']);
+        if (!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+            throw new Exception('Invalid table');
+        }
 
-		if ($pm_id = $po_request->getParameter('id', pString)) {
-			if(!$t_instance->load($pm_id)) {
-				$t_instance->load(array($t_instance->getProperty('ID_NUMBERING_ID_FIELD') => $pm_id));
-			}
-		} elseif($guid = $po_request->getParameter('guid', pString)) {
-			if (is_array($info = ca_guids::getInfoForGUID($guid)) && ((int)$info['table_num'] === (int)$t_instance->tableNum())) {
-				$t_instance->load($info['row_id']);
-			}
-		}
+        $va_get_options = [];
 
-		if(!$t_instance->getPrimaryKey()) {
-			throw new Exception('Could not load record');
-		}
+        if ($pm_id = $po_request->getParameter('id', pString)) {
+            if (!$t_instance->load($pm_id)) {
+                $t_instance->load(array($t_instance->getProperty('ID_NUMBERING_ID_FIELD') => $pm_id));
+            }
+        } elseif ($guid = $po_request->getParameter('guid', pString)) {
+            if (is_array(
+                    $info = ca_guids::getInfoForGUID($guid)
+                ) && ((int)$info['table_num'] === (int)$t_instance->tableNum())) {
+                $t_instance->load($info['row_id']);
+            }
+        }
 
-		// checkAccess
-		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
-			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
-			if(!in_array($t_instance->get('access'), $pa_config['checkAccess'])) {
-				throw new Exception('Invalid parameters');
-			}
-		}
+        if (!$t_instance->getPrimaryKey()) {
+            throw new Exception('Could not load record');
+        }
 
-		// restrictToTypes
-		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
-			if(!in_array($t_instance->getTypeCode(), $pa_config['restrictToTypes'])) {
-				throw new Exception('Invalid parameters');
-			}
-		}
+        // checkAccess
+        if (isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+            $va_get_options['checkAccess'] = $pa_config['checkAccess'];
+            if (!in_array($t_instance->get('access'), $pa_config['checkAccess'])) {
+                throw new Exception('Invalid parameters');
+            }
+        }
 
-		$va_return = [];
-		
-		foreach($pa_config['content'] as $vs_key => $vm_template) {
-			$va_return[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($t_instance, $vs_key, $vm_template, $va_get_options);
-		}
+        // restrictToTypes
+        if ($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof(
+                    $pa_config['restrictToTypes']
+                ) > 0)) {
+            if (!in_array($t_instance->getTypeCode(), $pa_config['restrictToTypes'])) {
+                throw new Exception('Invalid parameters');
+            }
+        }
 
-		return $va_return;
-	}
-	# -------------------------------------------------------
-	/**
-	 * @param array $pa_config
-	 * @param RequestHTTP $po_request
-	 * @return array
-	 * @throws Exception
-	 */
-	private static function runSitePageEndpoint($pa_config, $po_request) {
-		// load instance
-		$t_instance = Datamodel::getInstance('ca_site_pages');
-		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			throw new Exception('invalid table');
-		}
+        $va_return = [];
 
-		$va_get_options = array();
+        foreach ($pa_config['content'] as $vs_key => $vm_template) {
+            $va_return[self::sanitizeKey($vs_key)] = SimpleService::processContentKey(
+                $t_instance,
+                $vs_key,
+                $vm_template,
+                $va_get_options
+            );
+        }
 
-		$ps_path = $po_request->getParameter('path', pString);
-	
-		if(!$t_instance->load(array("path" => $ps_path))) {
-			throw new Exception('invalid path');
-		}
+        return $va_return;
+    }
+    # -------------------------------------------------------
 
-		if(!$t_instance->getPrimaryKey()) {
-			throw new Exception('Could not load record');
-		}
+    /**
+     * @param array $pa_config
+     * @param RequestHTTP $po_request
+     * @return array
+     * @throws Exception
+     */
+    private static function runSitePageEndpoint($pa_config, $po_request)
+    {
+        // load instance
+        $t_instance = Datamodel::getInstance('ca_site_pages');
+        if (!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+            throw new Exception('invalid table');
+        }
 
-		// checkAccess
-		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
-			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
-			if(!in_array($t_instance->get('access'), $pa_config['checkAccess'])) {
-				throw new Exception('Invalid parameters');
-			}
-		}
+        $va_get_options = array();
 
-		$va_return = array();
-		
-		# --- return all the configured tag/content for the page - nothing needs to be configured in services.conf
-		if($va_content = $t_instance->get("content")){
-			$va_return["data"] = $va_content;
-		}
+        $ps_path = $po_request->getParameter('path', pString);
 
-		return $va_return;
-	}
-	# -------------------------------------------------------
-	/**
-	 * @param array $pa_config
-	 * @param RequestHTTP $po_request
-	 * @return array
-	 * @throws Exception
-	 */
-	private static function runSearchEndpoint($pa_config, $po_request) {
-		
-		$vb_return_data_as_list = caGetOption('returnDataAsList', $pa_config, false, ['castTo' => 'bool']);
+        if (!$t_instance->load(array("path" => $ps_path))) {
+            throw new Exception('invalid path');
+        }
 
-		// load blank instance
-		$t_instance = Datamodel::getInstance($pa_config['table']);
-		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			throw new Exception('Invalid table');
-		}
+        if (!$t_instance->getPrimaryKey()) {
+            throw new Exception('Could not load record');
+        }
 
-		$from_log_id = $last_log_id = null;
-		$id_list = null;
-		
-		if ($from_timestamp = $po_request->getParameter('timestamp', pString)) {
-			if(!is_numeric($from_timestamp)) { 
-				if(is_array($pd = caDateToUnixTimestamps($from_timestamp))) {
-					$from_timestamp = array_shift($pd); 
-				} else {
-					$from_timestamp = null;
-				}
-			}
-			if ($from_timestamp) { 
-				$from_log_id = ca_change_log::getLogIDForTimestamp($from_timestamp);
-			}
-		}
-		if(!$from_log_id) { $from_log_id = $po_request->getParameter('log_id', pInteger); }
-		if ($from_log_id) {
-			$mode = strtoupper($po_request->getParameter('mode', pString));
-			if (!in_array($mode, ['A', 'I', 'U', 'D'], true)) {
-				$mode = 'A';
-			} 
-			
-			if ($from_log_id < 1) {
-				throw new Exception('Invalid log_id specified');
-			}
-			$log = ca_change_log::getLog($from_log_id, null, ['includeSubjectEntries' => true, 'onlyTables' => [$pa_config['table']]]);
-			
-			$tn = Datamodel::getTableNum($pa_config['table']);
-			$ids = [];
-			foreach($log as $l) {
-				if ($tn == $l['logged_table_num']) { $ids[$l['changetype']][] = (int)$l['logged_row_id']; }
-				
-				if(is_array($l['subjects'])) {
-					foreach($l['subjects'] as $s) {
-						if ($tn == $s['subject_table_num']) { $ids[$l['changetype']][] = (int)$s['subject_row_id']; }
-					}
-				}
-			}
-			$last = array_pop($log);
-			$last_log_id = (int)$last['log_id'];
-			
-			foreach($ids as $changetype => $values) {
-				$ids[$changetype] = array_unique($values);
-			}
-			if ($mode === 'A') {
-				if(!is_array($ids['I'])) { $ids['I'] = []; }
-				if(!is_array($ids['U'])) { $ids['U'] = []; }
-				$id_list = array_merge($ids['I'], $ids['U']);
-			} else {
-				$id_list = $ids[$mode];
-			}
-			
-			if (!is_array($id_list)) {
-				$id_list = [];
-			}
-			
-		} 
+        // checkAccess
+        if (isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+            $va_get_options['checkAccess'] = $pa_config['checkAccess'];
+            if (!in_array($t_instance->get('access'), $pa_config['checkAccess'])) {
+                throw new Exception('Invalid parameters');
+            }
+        }
 
-		if(!($ps_q = $po_request->getParameter('q', pString))) {
-			throw new Exception('No query specified');
-		}
+        $va_return = array();
 
-		$o_search = caGetSearchInstance($pa_config['table']);
-		if(!$o_search instanceof SearchEngine) {
-			throw new Exception('Invalid table in config');
-		}
+        # --- return all the configured tag/content for the page - nothing needs to be configured in services.conf
+        if ($va_content = $t_instance->get("content")) {
+            $va_return["data"] = $va_content;
+        }
 
-		// restrictToTypes
-		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
-			$o_search->setTypeRestrictions($pa_config['restrictToTypes']);
-		}
+        return $va_return;
+    }
+    # -------------------------------------------------------
 
-		/** @var SearchResult $o_res */
-		if ((trim($ps_q) === '*') && is_array($id_list) && sizeof($id_list)) {
-			// TODO: filter on type and access
-			$o_res = caMakeSearchResult($pa_config['table'], array_unique($id_list));
-		} else {		
-			$o_res = $o_search->search($ps_q, array(
-				'sort' => $sort = (($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort']),
-				'sortDirection' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'],
-				'checkAccess' => $pa_config['checkAccess'],
-			));
-			
-			if (is_array($id_list)) {
-				$found_ids = $o_res->getAllFieldValues($t_instance->primaryKey(true));
-				if (sizeof($found_ids = array_intersect($id_list, $found_ids)) > 0) {
-					$o_res = caMakeSearchResult($pa_config['table'], $found_ids);
-				} else {
-					return ['log' => ['start' => $from_log_id, 'end' => $last_log_id > 0 ? $last_log_id : $from_log_id]];
-				}
-			}
-			
-		}
-		if($vn_start = $po_request->getParameter('start', pInteger)) {
-			if(!$o_res->seek($vn_start)) {
-				return [];
-			}
-		}
+    /**
+     * @param array $pa_config
+     * @param RequestHTTP $po_request
+     * @return array
+     * @throws Exception
+     */
+    private static function runSearchEndpoint($pa_config, $po_request)
+    {
+        $vb_return_data_as_list = caGetOption('returnDataAsList', $pa_config, false, ['castTo' => 'bool']);
 
-		$vn_limit = $po_request->getParameter('limit', pInteger);
-		if(!$vn_limit) { $vn_limit = 0; }
+        // load blank instance
+        $t_instance = Datamodel::getInstance($pa_config['table']);
+        if (!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+            throw new Exception('Invalid table');
+        }
 
-		$va_return = [];
-		if (isset($pa_config['includeCount']) && $pa_config['includeCount']) {
-		    $va_return['resultCount'] = (is_array($id_list) && sizeof($id_list)) ? sizeof($id_list) : $o_res->numHits();
-		}
-		$va_get_options = [];
-		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
-			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
-		}
+        $from_log_id = $last_log_id = null;
+        $id_list = null;
 
-		if ($sort === '_random_') { $o_res->seek(rand(0, $o_res->numHits() - 1)); }
-		
-		while($o_res->nextHit()) {
-			$va_hit = [];
+        if ($from_timestamp = $po_request->getParameter('timestamp', pString)) {
+            if (!is_numeric($from_timestamp)) {
+                if (is_array($pd = caDateToUnixTimestamps($from_timestamp))) {
+                    $from_timestamp = array_shift($pd);
+                } else {
+                    $from_timestamp = null;
+                }
+            }
+            if ($from_timestamp) {
+                $from_log_id = ca_change_log::getLogIDForTimestamp($from_timestamp);
+            }
+        }
+        if (!$from_log_id) {
+            $from_log_id = $po_request->getParameter('log_id', pInteger);
+        }
+        if ($from_log_id) {
+            $mode = strtoupper($po_request->getParameter('mode', pString));
+            if (!in_array($mode, ['A', 'I', 'U', 'D'], true)) {
+                $mode = 'A';
+            }
 
-			foreach($pa_config['content'] as $vs_key => $vm_template) {
-				$va_hit[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($o_res, $vs_key, $vm_template, $va_get_options);
-			}
-			
-			if ($vb_return_data_as_list) {
-				$va_return['data'][] = $va_hit;
-				if($vn_limit && (sizeof($va_return['data']) >= $vn_limit)) { break; }
-			} else {
-				$va_return[$o_res->get($t_instance->primaryKey(true))] = $va_hit;
-				if($vn_limit && (sizeof($va_return) >= $vn_limit)) { break; }
-			}
-			
-		}
-		
-		if ($from_log_id) {
-			$va_return['log'] = ['start' => $from_log_id, 'end' => $last_log_id > 0 ? $last_log_id : $from_log_id];
-		}
+            if ($from_log_id < 1) {
+                throw new Exception('Invalid log_id specified');
+            }
+            $log = ca_change_log::getLog(
+                $from_log_id,
+                null,
+                ['includeSubjectEntries' => true, 'onlyTables' => [$pa_config['table']]]
+            );
 
-		return $va_return;
+            $tn = Datamodel::getTableNum($pa_config['table']);
+            $ids = [];
+            foreach ($log as $l) {
+                if ($tn == $l['logged_table_num']) {
+                    $ids[$l['changetype']][] = (int)$l['logged_row_id'];
+                }
 
-	}
-	# -------------------------------------------------------
-	/**
-	 * @param array $pa_config
-	 * @param RequestHTTP $po_request
-	 * @return array
-	 * @throws Exception
-	 */
-	private static function runRefineableSearchEndpoint($pa_config, $po_request) {
-		
-		$vb_return_data_as_list = caGetOption('returnDataAsList', $pa_config, false, ['castTo' => 'bool']);
+                if (is_array($l['subjects'])) {
+                    foreach ($l['subjects'] as $s) {
+                        if ($tn == $s['subject_table_num']) {
+                            $ids[$l['changetype']][] = (int)$s['subject_row_id'];
+                        }
+                    }
+                }
+            }
+            $last = array_pop($log);
+            $last_log_id = (int)$last['log_id'];
 
-		// load blank instance
-		$t_instance = Datamodel::getInstance($pa_config['table']);
-		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			throw new Exception('Invalid table');
-		}
+            foreach ($ids as $changetype => $values) {
+                $ids[$changetype] = array_unique($values);
+            }
+            if ($mode === 'A') {
+                if (!is_array($ids['I'])) {
+                    $ids['I'] = [];
+                }
+                if (!is_array($ids['U'])) {
+                    $ids['U'] = [];
+                }
+                $id_list = array_merge($ids['I'], $ids['U']);
+            } else {
+                $id_list = $ids[$mode];
+            }
 
-		if(!($ps_q = $po_request->getParameter('q', pString))) {
-			throw new Exception('No query specified');
-		}
+            if (!is_array($id_list)) {
+                $id_list = [];
+            }
+        }
 
-		$o_browse = caGetBrowseInstance($pa_config['table']);
-		if(!$o_browse instanceof BrowseEngine) {
-			throw new Exception('Invalid table in config');
-		}
-		
-		if (isset($pa_config['facet_group']) && $pa_config['facet_group']) {
-			$o_browse->setFacetGroup($pa_config['facet_group']);
-		}
+        if (!($ps_q = $po_request->getParameter('q', pString))) {
+            throw new Exception('No query specified');
+        }
 
-		// restrictToTypes
-		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
-			$o_browse->setTypeRestrictions($pa_config['restrictToTypes']);
-		}
-		$o_browse->addCriteria("_search", $ps_q);
-		
-		if(is_array($pa_criteria_to_add = $po_request->getParameter('criteria', pArray))) {
-			foreach($pa_criteria_to_add as $vs_facet_value) {
-				list($vs_facet, $vs_value) = explode(":", $vs_facet_value);
-				$o_browse->addCriteria($vs_facet, $vs_value);
-			}
-		}
+        $o_search = caGetSearchInstance($pa_config['table']);
+        if (!$o_search instanceof SearchEngine) {
+            throw new Exception('Invalid table in config');
+        }
 
-		
-		$va_search_opts = array(
-					'sort' => ($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort'], 
-					'sort_direction' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'], 
-					'appendToSearch' => $vs_append_to_search,
-					'checkAccess' => $pa_config['checkAccess'],
-					'no_cache' => true,
-					'dontCheckFacetAvailability' => true,
-					'filterNonPrimaryRepresentations' => true
-				);
-		$o_browse->execute();
-		
-		/** @var SearchResult $o_res */
-		$o_res = $o_browse->getResults();
-		
-		if($vn_start = $po_request->getParameter('start', pInteger)) {
-			if(!$o_res->seek($vn_start)) {
-				return [];
-			}
-		}
+        // restrictToTypes
+        if ($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof(
+                    $pa_config['restrictToTypes']
+                ) > 0)) {
+            $o_search->setTypeRestrictions($pa_config['restrictToTypes']);
+        }
 
-		$vn_limit = $po_request->getParameter('limit', pInteger);
-		if(!$vn_limit) { $vn_limit = 0; }
+        /** @var SearchResult $o_res */
+        if ((trim($ps_q) === '*') && is_array($id_list) && sizeof($id_list)) {
+            // TODO: filter on type and access
+            $o_res = caMakeSearchResult($pa_config['table'], array_unique($id_list));
+        } else {
+            $o_res = $o_search->search(
+                $ps_q,
+                array(
+                    'sort' => $sort = (($po_request->getParameter('sort', pString)) ? $po_request->getParameter(
+                        'sort',
+                        pString
+                    ) : $pa_config['sort']),
+                    'sortDirection' => ($po_request->getParameter(
+                        'sortDirection',
+                        pString
+                    )) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'],
+                    'checkAccess' => $pa_config['checkAccess'],
+                )
+            );
 
-		$va_return = ['resultCount' => $o_res->numHits()];
-		$va_get_options = [];
-		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
-			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
-		}
-		
-		if (!is_array($va_include_facets = $pa_config['facets'])) { $va_include_facets = []; }
-		
-		if (is_array($va_facets = $o_browse->getInfoForAvailableFacets())) {
-			foreach($va_facets as $vs_facet => $va_facet_info) {
-				if (sizeof($va_include_facets) && !in_array($vs_facet, $va_include_facets)) { continue; }
-			
-				if(!is_array($va_content = $o_browse->getFacetContent($vs_facet))) { continue; }
-				
-				$va_ret_content = [];
-				foreach($va_content as $vn_id => $va_content_item) {
-					$va_ret_content[] = [
-						'id' => $va_content_item['id'],
-						'label' => $va_content_item['label']
-					];
-				}
-				$va_return['facets'][$vs_facet] = [
-					'type' => $va_facet_info['type'],
-					'table' => isset($va_facet_info['table']) ? $va_facet_info['table'] : null,
-					'label_singular' => $va_facet_info['label_singular'],
-					'label_plural' => $va_facet_info['label_plural'],
-					'content' => $va_ret_content
-				];
-			}
-		}
+            if (is_array($id_list)) {
+                $found_ids = $o_res->getAllFieldValues($t_instance->primaryKey(true));
+                if (sizeof($found_ids = array_intersect($id_list, $found_ids)) > 0) {
+                    $o_res = caMakeSearchResult($pa_config['table'], $found_ids);
+                } else {
+                    return [
+                        'log' => [
+                            'start' => $from_log_id,
+                            'end' => $last_log_id > 0 ? $last_log_id : $from_log_id
+                        ]
+                    ];
+                }
+            }
+        }
+        if ($vn_start = $po_request->getParameter('start', pInteger)) {
+            if (!$o_res->seek($vn_start)) {
+                return [];
+            }
+        }
 
-		while($o_res->nextHit()) {
-			$va_hit = [];
+        $vn_limit = $po_request->getParameter('limit', pInteger);
+        if (!$vn_limit) {
+            $vn_limit = 0;
+        }
 
-			foreach($pa_config['content'] as $vs_key => $vm_template) {
-				$va_hit[self::sanitizeKey($vs_key)] = SimpleService::processContentKey($o_res, $vs_key, $vm_template, $va_get_options);
-			}
-			
-			if ($vb_return_data_as_list) {
-				$va_return['results']['data'][] = $va_hit;
-				if($vn_limit && (sizeof($va_return['results']['data']) >= $vn_limit)) { break; }
-			} else {
-				$va_return['results'][$o_res->get($t_instance->primaryKey(true))] = $va_hit;
-				if($vn_limit && (sizeof($va_return['results']) >= $vn_limit)) { break; }
-			}
-			
-		}
+        $va_return = [];
+        if (isset($pa_config['includeCount']) && $pa_config['includeCount']) {
+            $va_return['resultCount'] = (is_array($id_list) && sizeof($id_list)) ? sizeof($id_list) : $o_res->numHits();
+        }
+        $va_get_options = [];
+        if (isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+            $va_get_options['checkAccess'] = $pa_config['checkAccess'];
+        }
 
-		$va_return['criteria'] = $o_browse->getCriteriaWithLabels();
-		
-		$va_return['criteria_facet_names'] = [];
-		foreach($va_return['criteria'] as $vs_facet => $va_facet_values) {
-			if ($vs_facet == '_search') { continue; }
-			$va_facet_info = $o_browse->getInfoForFacet($vs_facet);
-			$va_return['criteria_facet_names'][$vs_facet] = $va_facet_info['label_plural'];
-		}
-		
-		return $va_return;
+        if ($sort === '_random_') {
+            $o_res->seek(rand(0, $o_res->numHits() - 1));
+        }
 
-	}
-	# -------------------------------------------------------
-	/**
-	 * Get configuration for endpoint. Also does config validation.
-	 * @param string $ps_endpoint
-	 * @return array
-	 * @throws Exception
-	 */
-	private static function getEndpointConfig($ps_endpoint) {
-		$o_app_conf = Configuration::load();
-		$o_service_conf = Configuration::load($o_app_conf->get('services_config'));
+        while ($o_res->nextHit()) {
+            $va_hit = [];
 
-		$va_endpoints = $o_service_conf->get('simple_api_endpoints');
+            foreach ($pa_config['content'] as $vs_key => $vm_template) {
+                $va_hit[self::sanitizeKey($vs_key)] = SimpleService::processContentKey(
+                    $o_res,
+                    $vs_key,
+                    $vm_template,
+                    $va_get_options
+                );
+            }
 
-		if(!is_array($va_endpoints) || !isset($va_endpoints[$ps_endpoint]) || !is_array($va_endpoints[$ps_endpoint])) {
-			throw new Exception('Invalid service endpoint');
-		}
+            if ($vb_return_data_as_list) {
+                $va_return['data'][] = $va_hit;
+                if ($vn_limit && (sizeof($va_return['data']) >= $vn_limit)) {
+                    break;
+                }
+            } else {
+                $va_return[$o_res->get($t_instance->primaryKey(true))] = $va_hit;
+                if ($vn_limit && (sizeof($va_return) >= $vn_limit)) {
+                    break;
+                }
+            }
+        }
 
-		if(!isset($va_endpoints[$ps_endpoint]['type']) || !in_array($va_endpoints[$ps_endpoint]['type'], array('search', 'detail', 'refineablesearch', 'stats', 'site_page'))) {
-			throw new Exception('Service endpoint config is invalid: type must be search or detail');
-		}
+        if ($from_log_id) {
+            $va_return['log'] = ['start' => $from_log_id, 'end' => $last_log_id > 0 ? $last_log_id : $from_log_id];
+        }
 
-		if(!isset($va_endpoints[$ps_endpoint]['content']) || !is_array($va_endpoints[$ps_endpoint]['content'])) {
-			throw new Exception('Service endpoint config is invalid: No display content defined');
-		}
+        return $va_return;
+    }
+    # -------------------------------------------------------
 
-		return $va_endpoints[$ps_endpoint];
-	}
-	# -------------------------------------------------------
-	private static function sanitizeKey($ps_key) {
-	    if(isset(SimpleService::$s_key_cache[$ps_key])) { return SimpleService::$s_key_cache[$ps_key]; }
-		return SimpleService::$s_key_cache[$ps_key] = preg_replace('[^A-Za-z0-9\-\_\.\:]', '', $ps_key);
-	}
-	# -------------------------------------------------------
-	private static function isSimpleTemplate($ps_template) {
-	    if(isset(SimpleService::$s_simple_template_cache[$ps_template])) { return SimpleService::$s_simple_template_cache[$ps_template]; }
-	    
-	    return SimpleService::$s_simple_template_cache[$ps_template] = preg_match("!^\^ca_[A-Za-z0-9_\-\.]+$!", $ps_template);
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	private static function processContentKey($pt_instance, $ps_key, $pm_template, $pa_options=null) {
-		if(is_array($pm_template)) {
-			$vs_return_as = caGetOption('returnAs', $pm_template, 'text', ['forceLowercase' => true]);
-			$vs_delimiter = caGetOption('delimiter', $pm_template, ";");
-			$vs_template = caGetOption('valueTemplate', $pm_template, 'No template');
-			
-			// Get values and break on delimiter
-			if (SimpleService::isSimpleTemplate($vs_template)) {
-		        $vs_v = $pt_instance->get(str_replace("^", "", $vs_template), $pa_options);
-			} else {
-			    $vs_v = $pt_instance->getWithTemplate($vs_template, array_merge($pa_options, ['includeBlankValuesInArray' => true]));
-			}
-			$va_v = explode($vs_delimiter, $vs_v);
-			
-			$va_key = null;
-			if ($vs_key_template = caGetOption('keyTemplate', $pm_template, null)) {
-				// Get keys and break on delimiter
-				$va_keys = explode($vs_delimiter, $vs_keys = $pt_instance->getWithTemplate($vs_key_template, $pa_options));
-			}
-		
-			$va_v_decode = [];
-			foreach($va_v as $vn_i => $vs_part) {
-				switch($vs_return_as) {
-					case 'json':
-						if ($va_json = json_decode($vs_part)) { 
-							if ($va_keys) {
-								$va_v_decode[$va_keys[$vn_i]] = $va_json; 
-							} else {
-								$va_v_decode[] = $va_json; 
-							}
-						}
-						break;
-					default:
-						$va_v_decode[] = $vs_part;
-						break;
-				}
-			}
-			return $va_v_decode;
-		} else {
-		    if (SimpleService::isSimpleTemplate($pm_template)) {
-		        return $pt_instance->get(str_replace("^", "", $pm_template), $pa_options);
-		    } 
-			return $pt_instance->getWithTemplate($pm_template, $pa_options);
-		}
-	}
-	# -------------------------------------------------------
+    /**
+     * @param array $pa_config
+     * @param RequestHTTP $po_request
+     * @return array
+     * @throws Exception
+     */
+    private static function runRefineableSearchEndpoint($pa_config, $po_request)
+    {
+        $vb_return_data_as_list = caGetOption('returnDataAsList', $pa_config, false, ['castTo' => 'bool']);
+
+        // load blank instance
+        $t_instance = Datamodel::getInstance($pa_config['table']);
+        if (!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+            throw new Exception('Invalid table');
+        }
+
+        if (!($ps_q = $po_request->getParameter('q', pString))) {
+            throw new Exception('No query specified');
+        }
+
+        $o_browse = caGetBrowseInstance($pa_config['table']);
+        if (!$o_browse instanceof BrowseEngine) {
+            throw new Exception('Invalid table in config');
+        }
+
+        if (isset($pa_config['facet_group']) && $pa_config['facet_group']) {
+            $o_browse->setFacetGroup($pa_config['facet_group']);
+        }
+
+        // restrictToTypes
+        if ($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof(
+                    $pa_config['restrictToTypes']
+                ) > 0)) {
+            $o_browse->setTypeRestrictions($pa_config['restrictToTypes']);
+        }
+        $o_browse->addCriteria("_search", $ps_q);
+
+        if (is_array($pa_criteria_to_add = $po_request->getParameter('criteria', pArray))) {
+            foreach ($pa_criteria_to_add as $vs_facet_value) {
+                list($vs_facet, $vs_value) = explode(":", $vs_facet_value);
+                $o_browse->addCriteria($vs_facet, $vs_value);
+            }
+        }
+
+
+        $va_search_opts = array(
+            'sort' => ($po_request->getParameter('sort', pString)) ? $po_request->getParameter(
+                'sort',
+                pString
+            ) : $pa_config['sort'],
+            'sort_direction' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter(
+                'sortDirection',
+                pString
+            ) : $pa_config['sortDirection'],
+            'appendToSearch' => $vs_append_to_search,
+            'checkAccess' => $pa_config['checkAccess'],
+            'no_cache' => true,
+            'dontCheckFacetAvailability' => true,
+            'filterNonPrimaryRepresentations' => true
+        );
+        $o_browse->execute();
+
+        /** @var SearchResult $o_res */
+        $o_res = $o_browse->getResults();
+
+        if ($vn_start = $po_request->getParameter('start', pInteger)) {
+            if (!$o_res->seek($vn_start)) {
+                return [];
+            }
+        }
+
+        $vn_limit = $po_request->getParameter('limit', pInteger);
+        if (!$vn_limit) {
+            $vn_limit = 0;
+        }
+
+        $va_return = ['resultCount' => $o_res->numHits()];
+        $va_get_options = [];
+        if (isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+            $va_get_options['checkAccess'] = $pa_config['checkAccess'];
+        }
+
+        if (!is_array($va_include_facets = $pa_config['facets'])) {
+            $va_include_facets = [];
+        }
+
+        if (is_array($va_facets = $o_browse->getInfoForAvailableFacets())) {
+            foreach ($va_facets as $vs_facet => $va_facet_info) {
+                if (sizeof($va_include_facets) && !in_array($vs_facet, $va_include_facets)) {
+                    continue;
+                }
+
+                if (!is_array($va_content = $o_browse->getFacetContent($vs_facet))) {
+                    continue;
+                }
+
+                $va_ret_content = [];
+                foreach ($va_content as $vn_id => $va_content_item) {
+                    $va_ret_content[] = [
+                        'id' => $va_content_item['id'],
+                        'label' => $va_content_item['label']
+                    ];
+                }
+                $va_return['facets'][$vs_facet] = [
+                    'type' => $va_facet_info['type'],
+                    'table' => isset($va_facet_info['table']) ? $va_facet_info['table'] : null,
+                    'label_singular' => $va_facet_info['label_singular'],
+                    'label_plural' => $va_facet_info['label_plural'],
+                    'content' => $va_ret_content
+                ];
+            }
+        }
+
+        while ($o_res->nextHit()) {
+            $va_hit = [];
+
+            foreach ($pa_config['content'] as $vs_key => $vm_template) {
+                $va_hit[self::sanitizeKey($vs_key)] = SimpleService::processContentKey(
+                    $o_res,
+                    $vs_key,
+                    $vm_template,
+                    $va_get_options
+                );
+            }
+
+            if ($vb_return_data_as_list) {
+                $va_return['results']['data'][] = $va_hit;
+                if ($vn_limit && (sizeof($va_return['results']['data']) >= $vn_limit)) {
+                    break;
+                }
+            } else {
+                $va_return['results'][$o_res->get($t_instance->primaryKey(true))] = $va_hit;
+                if ($vn_limit && (sizeof($va_return['results']) >= $vn_limit)) {
+                    break;
+                }
+            }
+        }
+
+        $va_return['criteria'] = $o_browse->getCriteriaWithLabels();
+
+        $va_return['criteria_facet_names'] = [];
+        foreach ($va_return['criteria'] as $vs_facet => $va_facet_values) {
+            if ($vs_facet == '_search') {
+                continue;
+            }
+            $va_facet_info = $o_browse->getInfoForFacet($vs_facet);
+            $va_return['criteria_facet_names'][$vs_facet] = $va_facet_info['label_plural'];
+        }
+
+        return $va_return;
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Get configuration for endpoint. Also does config validation.
+     * @param string $ps_endpoint
+     * @return array
+     * @throws Exception
+     */
+    private static function getEndpointConfig($ps_endpoint)
+    {
+        $o_app_conf = Configuration::load();
+        $o_service_conf = Configuration::load($o_app_conf->get('services_config'));
+
+        $va_endpoints = $o_service_conf->get('simple_api_endpoints');
+
+        if (!is_array($va_endpoints) || !isset($va_endpoints[$ps_endpoint]) || !is_array($va_endpoints[$ps_endpoint])) {
+            throw new Exception('Invalid service endpoint');
+        }
+
+        if (!isset($va_endpoints[$ps_endpoint]['type']) || !in_array(
+                $va_endpoints[$ps_endpoint]['type'],
+                array(
+                    'search',
+                    'detail',
+                    'refineablesearch',
+                    'stats',
+                    'site_page'
+                )
+            )) {
+            throw new Exception('Service endpoint config is invalid: type must be search or detail');
+        }
+
+        if (!isset($va_endpoints[$ps_endpoint]['content']) || !is_array($va_endpoints[$ps_endpoint]['content'])) {
+            throw new Exception('Service endpoint config is invalid: No display content defined');
+        }
+
+        return $va_endpoints[$ps_endpoint];
+    }
+
+    # -------------------------------------------------------
+    private static function sanitizeKey($ps_key)
+    {
+        if (isset(SimpleService::$s_key_cache[$ps_key])) {
+            return SimpleService::$s_key_cache[$ps_key];
+        }
+        return SimpleService::$s_key_cache[$ps_key] = preg_replace('[^A-Za-z0-9\-\_\.\:]', '', $ps_key);
+    }
+
+    # -------------------------------------------------------
+    private static function isSimpleTemplate($ps_template)
+    {
+        if (isset(SimpleService::$s_simple_template_cache[$ps_template])) {
+            return SimpleService::$s_simple_template_cache[$ps_template];
+        }
+
+        return SimpleService::$s_simple_template_cache[$ps_template] = preg_match(
+            "!^\^ca_[A-Za-z0-9_\-\.]+$!",
+            $ps_template
+        );
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     */
+    private static function processContentKey($pt_instance, $ps_key, $pm_template, $pa_options = null)
+    {
+        if (is_array($pm_template)) {
+            $vs_return_as = caGetOption('returnAs', $pm_template, 'text', ['forceLowercase' => true]);
+            $vs_delimiter = caGetOption('delimiter', $pm_template, ";");
+            $vs_template = caGetOption('valueTemplate', $pm_template, 'No template');
+
+            // Get values and break on delimiter
+            if (SimpleService::isSimpleTemplate($vs_template)) {
+                $vs_v = $pt_instance->get(str_replace("^", "", $vs_template), $pa_options);
+            } else {
+                $vs_v = $pt_instance->getWithTemplate(
+                    $vs_template,
+                    array_merge($pa_options, ['includeBlankValuesInArray' => true])
+                );
+            }
+            $va_v = explode($vs_delimiter, $vs_v);
+
+            $va_key = null;
+            if ($vs_key_template = caGetOption('keyTemplate', $pm_template, null)) {
+                // Get keys and break on delimiter
+                $va_keys = explode(
+                    $vs_delimiter,
+                    $vs_keys = $pt_instance->getWithTemplate($vs_key_template, $pa_options)
+                );
+            }
+
+            $va_v_decode = [];
+            foreach ($va_v as $vn_i => $vs_part) {
+                switch ($vs_return_as) {
+                    case 'json':
+                        if ($va_json = json_decode($vs_part)) {
+                            if ($va_keys) {
+                                $va_v_decode[$va_keys[$vn_i]] = $va_json;
+                            } else {
+                                $va_v_decode[] = $va_json;
+                            }
+                        }
+                        break;
+                    default:
+                        $va_v_decode[] = $vs_part;
+                        break;
+                }
+            }
+            return $va_v_decode;
+        } else {
+            if (SimpleService::isSimpleTemplate($pm_template)) {
+                return $pt_instance->get(str_replace("^", "", $pm_template), $pa_options);
+            }
+            return $pt_instance->getWithTemplate($pm_template, $pa_options);
+        }
+    }
+    # -------------------------------------------------------
 }

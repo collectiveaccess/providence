@@ -26,27 +26,37 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
+require_once(__CA_MODELS_DIR__ . "/ca_search_indexing_queue.php");
 
-class ClearSearchIndexingLockFileController extends ActionController {
+class ClearSearchIndexingLockFileController extends ActionController
+{
 
-	# ------------------------------------------------	
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
-		
-		if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_search_reindex')) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 			return;
-		}	
-	}
-	# ------------------------------------------------
-	public function Index(){
-		$this->render('clear_search_indexing_lock_file_landing_html.php');
-	}
-	# ------------------------------------------------
-	public function RemoveLock(){
-	    ca_search_indexing_queue::lockRelease();
-		$this->render('clear_search_indexing_lock_file_result_html.php');
-	}
-	# ------------------------------------------------
+    # ------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+
+        if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_search_reindex')) {
+            $this->response->setRedirect(
+                $this->request->config->get('error_display_url') . '/n/2320?r=' . urlencode(
+                    $this->request->getFullUrlPath()
+                )
+            );
+            return;
+        }
+    }
+
+    # ------------------------------------------------
+    public function Index()
+    {
+        $this->render('clear_search_indexing_lock_file_landing_html.php');
+    }
+
+    # ------------------------------------------------
+    public function RemoveLock()
+    {
+        ca_search_indexing_queue::lockRelease();
+        $this->render('clear_search_indexing_lock_file_result_html.php');
+    }
+    # ------------------------------------------------
 }

@@ -32,79 +32,89 @@
 
 namespace CA\Sync\LogEntry;
 
-require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+use ca_guids;
+use ca_metadata_elements;
 
-class Attribute extends Base {
+require_once(__CA_LIB_DIR__ . '/Sync/LogEntry/Base.php');
+require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 
-	public function isRelevant() {
-		if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-			return false;
-		}
+class Attribute extends Base
+{
 
-		return parent::isRelevant();
-	}
+    public function isRelevant()
+    {
+        if ((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
+            return false;
+        }
 
-	public function sanityCheck() {
-		parent::sanityCheck();
-		$va_snapshot = $this->getSnapshot();
+        return parent::isRelevant();
+    }
 
-		if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
-			if (!($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code))) {
-				throw new InvalidLogEntryException(_t("Could not find element with code '%1' on target system.", $vs_element_code));
-			}
-		} else {
-			throw new InvalidLogEntryException(_t("We have an attribute log entry without element code."));
-		}
+    public function sanityCheck()
+    {
+        parent::sanityCheck();
+        $va_snapshot = $this->getSnapshot();
 
-		if($this->isInsert()) {
-			if (!isset($va_snapshot['row_guid']) || !($va_snapshot['row_guid'])) {
-				throw new InvalidLogEntryException(_t("Couldn't find row_guid for insert attribute log entry."));
-			}
-		}
+        if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
+            if (!($vn_element_id = ca_metadata_elements::getElementID($vs_element_code))) {
+                throw new InvalidLogEntryException(
+                    _t("Could not find element with code '%1' on target system.", $vs_element_code)
+                );
+            }
+        } else {
+            throw new InvalidLogEntryException(_t("We have an attribute log entry without element code."));
+        }
 
-		if($this->isUpdate() || $this->isDelete()) {
-			if (!isset($va_snapshot['attribute_guid']) || !($va_snapshot['attribute_guid'])) {
-				throw new InvalidLogEntryException(_t("Couldn't find attribute_guid for update attribute log entry."));
-			}
+        if ($this->isInsert()) {
+            if (!isset($va_snapshot['row_guid']) || !($va_snapshot['row_guid'])) {
+                throw new InvalidLogEntryException(_t("Couldn't find row_guid for insert attribute log entry."));
+            }
+        }
 
-			$vs_attribute_guid = $va_snapshot['attribute_guid'];
-			if(!($va_guid_info = \ca_guids::getInfoForGUID($vs_attribute_guid))) {
-				throw new InvalidLogEntryException(_t("Couldnt find ca_attributes record for guid %1.", $vs_row_guid));
-			}
-		}
-	}
+        if ($this->isUpdate() || $this->isDelete()) {
+            if (!isset($va_snapshot['attribute_guid']) || !($va_snapshot['attribute_guid'])) {
+                throw new InvalidLogEntryException(_t("Couldn't find attribute_guid for update attribute log entry."));
+            }
 
-	public function apply(array $pa_options = array()) {
-		$this->setIntrinsicsFromSnapshotInModelInstance();
+            $vs_attribute_guid = $va_snapshot['attribute_guid'];
+            if (!($va_guid_info = ca_guids::getInfoForGUID($vs_attribute_guid))) {
+                throw new InvalidLogEntryException(_t("Couldnt find ca_attributes record for guid %1.", $vs_row_guid));
+            }
+        }
+    }
 
-		if($this->isInsert()) {
-			$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
-		} elseif($this->isUpdate()) {
-			$this->getModelInstance()->update();
-		} elseif($this->isDelete()) {
-			$this->getModelInstance()->delete(false);
-		}
+    public function apply(array $pa_options = array())
+    {
+        $this->setIntrinsicsFromSnapshotInModelInstance();
 
-		$this->checkModelInstanceForErrors();
-	}
+        if ($this->isInsert()) {
+            $this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+        } elseif ($this->isUpdate()) {
+            $this->getModelInstance()->update();
+        } elseif ($this->isDelete()) {
+            $this->getModelInstance()->delete(false);
+        }
 
-	public function setIntrinsicsFromSnapshotInModelInstance() {
-		parent::setIntrinsicsFromSnapshotInModelInstance();
-		$va_snapshot = $this->getSnapshot();
+        $this->checkModelInstanceForErrors();
+    }
 
-		if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
-			if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
-				$this->getModelInstance()->set('element_id', $vn_element_id);
-			}
-		}
+    public function setIntrinsicsFromSnapshotInModelInstance()
+    {
+        parent::setIntrinsicsFromSnapshotInModelInstance();
+        $va_snapshot = $this->getSnapshot();
 
-		if (isset($va_snapshot['row_guid']) && ($vs_row_guid = $va_snapshot['row_guid'])) {
-			if ($va_guid_info = \ca_guids::getInfoForGUID($vs_row_guid)) {
-				$this->getModelInstance()->set('row_id', $va_guid_info['row_id']);
-				$this->getModelInstance()->set('table_num', $va_guid_info['table_num']);
-			}
-		}
-	}
+        if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
+            if ($vn_element_id = ca_metadata_elements::getElementID($vs_element_code)) {
+                $this->getModelInstance()->set('element_id', $vn_element_id);
+            }
+        }
+
+        if (isset($va_snapshot['row_guid']) && ($vs_row_guid = $va_snapshot['row_guid'])) {
+            if ($va_guid_info = ca_guids::getInfoForGUID($vs_row_guid)) {
+                $this->getModelInstance()->set('row_id', $va_guid_info['row_id']);
+                $this->getModelInstance()->set('table_num', $va_guid_info['table_num']);
+            }
+        }
+    }
 
 }

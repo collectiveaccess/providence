@@ -25,73 +25,87 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
- 	require_once(__CA_LIB_DIR__."/BaseQuickAddController.php");
- 
- 	class RepresentationAnnotationQuickAddController extends BaseQuickAddController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_representation_annotations';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		public function Form($pa_values=null, $pa_options=null) {
- 			$vn_representation_id = $this->request->getParameter('representation_id', pInteger);
- 			
- 			$t_annotation = new ca_representation_annotations();
- 			$vs_type = $t_annotation->getAnnotationType($vn_representation_id);
- 			
- 			parent::Form(null, array(
-				'loadSubject' => true,
-				'dontCheckQuickAddAction' => true,
-				'forceSubjectValues' => array('representation_id' => $vn_representation_id, 'type_code' => $vs_type)
-			));
- 		}
- 		# -------------------------------------------------------
- 		public function Save($pa_options=null) {
- 			if (!($vn_rc = parent::Save(array('loadSubject' => true, 'dontCheckQuickAddAction' => true)))) {
- 				$this->notification->addNotification(_t('Saved annotation.'), __NOTIFICATION_TYPE_INFO__);
- 			}
- 			return $vn_rc;
- 		}
- 		# -------------------------------------------------------
- 		protected function _initView($pa_options=null) {
- 			list($t_subject, $t_ui) = parent::_initView($pa_options);
-			$t_subject->loadProperties($pa_options['forceSubjectValues']['type_code']);
-			
-			return array($t_subject, $t_ui);
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * 
- 		 */
- 		public function deleteAnnotation() {
- 			$vn_annotation_id = $this->request->getParameter('annotation_id', pInteger);
- 			
- 			$va_response = array('code' => 0, 'id' => $vn_annotation_id, errors => array());
- 			$t_annotation = new ca_representation_annotations();
- 			if ($t_annotation->load($vn_annotation_id)) {
- 				$t_annotation->setMode(ACCESS_WRITE);
- 				$t_annotation->delete(true);
- 				if ($t_annotation->numErrors()) {
- 					$va_response = array(
-						'code' => 10,
-						'id' => $vn_annotation_id, 
-						'errors' => $t_annotation->getErrors()
-					);
- 				}
- 			} else {
- 				$va_response = array(
- 					'code' => 10,
- 					'errors' => array(_t('Invalid annotation_id'))
- 				);
- 			}
- 			
- 			$this->view->setVar('response', $va_response);
- 			
- 			return $this->render('ajax_representation_annotation_delete_json.php');
- 		}
- 		# -------------------------------------------------------
- 	}
+
+require_once(__CA_MODELS_DIR__ . "/ca_representation_annotations.php");
+require_once(__CA_LIB_DIR__ . "/BaseQuickAddController.php");
+
+class RepresentationAnnotationQuickAddController extends BaseQuickAddController
+{
+    # -------------------------------------------------------
+    protected $ops_table_name = 'ca_representation_annotations';        // name of "subject" table (what we're editing)
+
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+
+    # -------------------------------------------------------
+    public function Form($pa_values = null, $pa_options = null)
+    {
+        $vn_representation_id = $this->request->getParameter('representation_id', pInteger);
+
+        $t_annotation = new ca_representation_annotations();
+        $vs_type = $t_annotation->getAnnotationType($vn_representation_id);
+
+        parent::Form(
+            null,
+            array(
+                'loadSubject' => true,
+                'dontCheckQuickAddAction' => true,
+                'forceSubjectValues' => array('representation_id' => $vn_representation_id, 'type_code' => $vs_type)
+            )
+        );
+    }
+
+    # -------------------------------------------------------
+    public function Save($pa_options = null)
+    {
+        if (!($vn_rc = parent::Save(array('loadSubject' => true, 'dontCheckQuickAddAction' => true)))) {
+            $this->notification->addNotification(_t('Saved annotation.'), __NOTIFICATION_TYPE_INFO__);
+        }
+        return $vn_rc;
+    }
+
+    # -------------------------------------------------------
+    protected function _initView($pa_options = null)
+    {
+        list($t_subject, $t_ui) = parent::_initView($pa_options);
+        $t_subject->loadProperties($pa_options['forceSubjectValues']['type_code']);
+
+        return array($t_subject, $t_ui);
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     */
+    public function deleteAnnotation()
+    {
+        $vn_annotation_id = $this->request->getParameter('annotation_id', pInteger);
+
+        $va_response = array('code' => 0, 'id' => $vn_annotation_id, errors => array());
+        $t_annotation = new ca_representation_annotations();
+        if ($t_annotation->load($vn_annotation_id)) {
+            $t_annotation->setMode(ACCESS_WRITE);
+            $t_annotation->delete(true);
+            if ($t_annotation->numErrors()) {
+                $va_response = array(
+                    'code' => 10,
+                    'id' => $vn_annotation_id,
+                    'errors' => $t_annotation->getErrors()
+                );
+            }
+        } else {
+            $va_response = array(
+                'code' => 10,
+                'errors' => array(_t('Invalid annotation_id'))
+            );
+        }
+
+        $this->view->setVar('response', $va_response);
+
+        return $this->render('ajax_representation_annotation_delete_json.php');
+    }
+    # -------------------------------------------------------
+}

@@ -26,29 +26,32 @@
  * ----------------------------------------------------------------------
  */
 
-	require_once(__CA_LIB_DIR__."/ApplicationError.php");
- 
- 	class ErrorController extends ActionController {
- 		# -------------------------------------------------------
-		
- 		# -------------------------------------------------------
- 		function Show() {
- 			$o_purify = new HTMLPurifier();
- 			
- 			$va_nums = explode(';', $this->request->getParameter('n', pString));
- 			
- 			$va_error_messages = array();
- 			if (is_array($va_nums)) {
- 				$o_err = new ApplicationError(0, '', '', '', false, false);
- 				foreach($va_nums as $vn_error_number) {
- 					$o_err->setError($vn_error_number, '', '', false, false);
- 					$va_error_messages[] = $o_err->getErrorMessage();
- 				}
- 			}
- 			$this->view->setVar('error_messages', $va_error_messages);
- 			$this->view->setVar('referrer', $o_purify->purify($this->request->getParameter('r', pString)));
- 			$this->render('error_html.php');
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once(__CA_LIB_DIR__ . "/ApplicationError.php");
+
+class ErrorController extends ActionController
+{
+    # -------------------------------------------------------
+
+    # -------------------------------------------------------
+    public function Show()
+    {
+        $o_purify = new HTMLPurifier();
+
+        $va_nums = explode(';', $this->request->getParameter('n', pString));
+
+        $va_error_messages = array();
+        if (is_array($va_nums)) {
+            $o_err = new ApplicationError(0, '', '', '', false, false);
+            foreach ($va_nums as $vn_error_number) {
+                $o_err->setError($vn_error_number, '', '', false, false);
+                $va_error_messages[] = $o_err->getErrorMessage();
+            }
+        }
+        $this->view->setVar('error_messages', $va_error_messages);
+        $this->view->setVar('referrer', $o_purify->purify($this->request->getParameter('r', pString)));
+        $this->render('error_html.php');
+    }
+    # -------------------------------------------------------
+}
+
+?>

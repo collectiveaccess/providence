@@ -32,470 +32,522 @@
 
 namespace ElasticSearch;
 
-class Mapping {
-	/**
-	 * @var \Configuration
-	 */
-	protected $opo_search_conf;
-	/**
-	 * @var \Configuration
-	 */
-	protected $opo_indexing_conf;
-	/**
-	 * @var \SearchBase
-	 */
-	protected $opo_search_base;
+use ApplicationVars;
+use Configuration;
+use Datamodel;
+use Db;
+use SearchBase;
 
-	/**
-	 * @var \Db
-	 */
-	protected $opo_db;
+class Mapping
+{
+    /**
+     * @var Configuration
+     */
+    protected $opo_search_conf;
+    /**
+     * @var Configuration
+     */
+    protected $opo_indexing_conf;
+    /**
+     * @var SearchBase
+     */
+    protected $opo_search_base;
 
-	/**
-	 * Element info array
-	 * @var array
-	 */
-	protected $opa_element_info;
+    /**
+     * @var Db
+     */
+    protected $opo_db;
 
-	/**
-	 * @var \ApplicationVars
-	 */
-	protected $opo_app_vars;
-	
-	/**
-	 * Elastic major version number in use
-	 * @var int
-	 */
+    /**
+     * Element info array
+     * @var array
+     */
+    protected $opa_element_info;
+
+    /**
+     * @var ApplicationVars
+     */
+    protected $opo_app_vars;
+
+    /**
+     * Elastic major version number in use
+     * @var int
+     */
     protected $version;
-    
-	/**
-	 * Mapping constructor.
-	 */
-	public function __construct() {
-		// set up basic properties
-		$this->opo_search_conf = \Configuration::load(\Configuration::load()->get('search_config'));
-		$this->opo_indexing_conf = \Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
-		$this->version = (int)$this->opo_search_conf->get('elasticsearch_version');
-		if (!in_array($this->version, [2, 5, 6, 7], true)) { $this->version = 5; }
-		
-		$this->opo_db = new \Db();
-		$this->opo_search_base = new \SearchBase($this->opo_db, null, false);
 
-		$this->opa_element_info = array();
+    /**
+     * Mapping constructor.
+     */
+    public function __construct()
+    {
+        // set up basic properties
+        $this->opo_search_conf = Configuration::load(Configuration::load()->get('search_config'));
+        $this->opo_indexing_conf = Configuration::load(__CA_CONF_DIR__ . '/search_indexing.conf');
+        $this->version = (int)$this->opo_search_conf->get('elasticsearch_version');
+        if (!in_array($this->version, [2, 5, 6, 7], true)) {
+            $this->version = 5;
+        }
 
-		$this->opo_app_vars = new \ApplicationVars($this->opo_db);
+        $this->opo_db = new Db();
+        $this->opo_search_base = new SearchBase($this->opo_db, null, false);
 
-		$this->prefetchElementInfo();
-	}
+        $this->opa_element_info = array();
 
-	/**
-	 * Check if the ElasticSearch mapping needs refreshing
-	 * @return bool
-	 */
-	public function needsRefresh() {
-		return (time() > $this->opo_app_vars->getVar('ElasticSearchMappingRefresh'));
-	}
+        $this->opo_app_vars = new ApplicationVars($this->opo_db);
 
-	/**
-	 * Ping the ElasticSearch mapping, effectively resetting the refresh time
-	 */
-	public function ping() {
-		$this->opo_app_vars->setVar('ElasticSearchMappingRefresh', time() + 24 * 60 * 60);
-		$this->opo_app_vars->save();
-	}
+        $this->prefetchElementInfo();
+    }
 
-	/**
-	 * @return \Configuration
-	 */
-	protected function getIndexingConf() {
-		return $this->opo_indexing_conf;
-	}
+    /**
+     * Check if the ElasticSearch mapping needs refreshing
+     * @return bool
+     */
+    public function needsRefresh()
+    {
+        return (time() > $this->opo_app_vars->getVar('ElasticSearchMappingRefresh'));
+    }
 
-	/**
-	 * @return \SearchBase
-	 */
-	protected function getSearchBase() {
-		return $this->opo_search_base;
-	}
+    /**
+     * Ping the ElasticSearch mapping, effectively resetting the refresh time
+     */
+    public function ping()
+    {
+        $this->opo_app_vars->setVar('ElasticSearchMappingRefresh', time() + 24 * 60 * 60);
+        $this->opo_app_vars->save();
+    }
 
-	/**
-	 * @return \Db
-	 */
-	public function getDb() {
-		return $this->opo_db;
-	}
+    /**
+     * @return Configuration
+     */
+    protected function getIndexingConf()
+    {
+        return $this->opo_indexing_conf;
+    }
 
-	/**
-	 * Returns all tables that are supposed to be indexed
-	 * @return array
-	 */
-	public function getTables() {
-		return $this->getIndexingConf()->getAssocKeys();
-	}
+    /**
+     * @return SearchBase
+     */
+    protected function getSearchBase()
+    {
+        return $this->opo_search_base;
+    }
 
-	/**
-	 * Get indexing fields and options for a given table (and its related tables)
-	 * @param $ps_table
-	 * @return array
-	 */
-	public function getFieldsToIndex($ps_table) {
-		if(!\Datamodel::tableExists($ps_table)) { return array(); }
-		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true, 'includeNonRootElements' => true));
-		if(!is_array($va_table_fields)) { return array(); }
+    /**
+     * @return Db
+     */
+    public function getDb()
+    {
+        return $this->opo_db;
+    }
 
-		$va_rewritten_fields = array();
-		foreach($va_table_fields as $vs_field_name => $va_field_options){
-			if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_field_name, $va_matches)) {
-				$va_rewritten_fields[$ps_table.'.A'.$va_matches[1]] = $va_field_options;
-			} else {
-				$vn_i = \Datamodel::getFieldNum($ps_table, $vs_field_name);
-				if (!$vn_i) { continue; }
+    /**
+     * Returns all tables that are supposed to be indexed
+     * @return array
+     */
+    public function getTables()
+    {
+        return $this->getIndexingConf()->getAssocKeys();
+    }
 
-				$va_rewritten_fields[$ps_table.'.I' . $vn_i] = $va_field_options;
-			}
-		}
+    /**
+     * Get indexing fields and options for a given table (and its related tables)
+     * @param $ps_table
+     * @return array
+     */
+    public function getFieldsToIndex($ps_table)
+    {
+        if (!Datamodel::tableExists($ps_table)) {
+            return array();
+        }
+        $va_table_fields = $this->getSearchBase()->getFieldsToIndex(
+            $ps_table,
+            null,
+            array(
+                'clearCache' => true,
+                'includeNonRootElements' => true
+            )
+        );
+        if (!is_array($va_table_fields)) {
+            return array();
+        }
 
-		$va_related_tables = $this->getSearchBase()->getRelatedIndexingTables($ps_table);
-		foreach($va_related_tables as $vs_related_table) {
-			$va_related_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, $vs_related_table, array('clearCache' => true, 'includeNonRootElements' => true));
-			foreach($va_related_table_fields as $vs_related_table_field => $va_related_table_field_options){
-				if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_related_table_field, $va_matches)) {
-					$va_rewritten_fields[$vs_related_table.'.A'.$va_matches[1]] = $va_related_table_field_options;
-				} else {
-					$vn_i = \Datamodel::getFieldNum($vs_related_table, $vs_related_table_field);
-					if (!$vn_i) { continue; }
+        $va_rewritten_fields = array();
+        foreach ($va_table_fields as $vs_field_name => $va_field_options) {
+            if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_field_name, $va_matches)) {
+                $va_rewritten_fields[$ps_table . '.A' . $va_matches[1]] = $va_field_options;
+            } else {
+                $vn_i = Datamodel::getFieldNum($ps_table, $vs_field_name);
+                if (!$vn_i) {
+                    continue;
+                }
 
-					$va_rewritten_fields[$vs_related_table.'.I' . $vn_i] = $va_related_table_field_options;
-				}
-			}
-		}
+                $va_rewritten_fields[$ps_table . '.I' . $vn_i] = $va_field_options;
+            }
+        }
 
-		return $va_rewritten_fields;
-	}
+        $va_related_tables = $this->getSearchBase()->getRelatedIndexingTables($ps_table);
+        foreach ($va_related_tables as $vs_related_table) {
+            $va_related_table_fields = $this->getSearchBase()->getFieldsToIndex(
+                $ps_table,
+                $vs_related_table,
+                array(
+                    'clearCache' => true,
+                    'includeNonRootElements' => true
+                )
+            );
+            foreach ($va_related_table_fields as $vs_related_table_field => $va_related_table_field_options) {
+                if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_related_table_field, $va_matches)) {
+                    $va_rewritten_fields[$vs_related_table . '.A' . $va_matches[1]] = $va_related_table_field_options;
+                } else {
+                    $vn_i = Datamodel::getFieldNum($vs_related_table, $vs_related_table_field);
+                    if (!$vn_i) {
+                        continue;
+                    }
 
-	/**
-	 * Prefetch all element info. This is more efficient than running a db query every
-	 * time @see Mapping::getElementInfo() is called. Also @see $opa_element_info.
-	 */
-	protected function prefetchElementInfo() {
-		if(is_array($this->opa_element_info) && (sizeof($this->opa_element_info) > 0)) { return; }
+                    $va_rewritten_fields[$vs_related_table . '.I' . $vn_i] = $va_related_table_field_options;
+                }
+            }
+        }
 
-		$qr_elements = $this->getDb()->query('SELECT * FROM ca_metadata_elements');
+        return $va_rewritten_fields;
+    }
 
-		$this->opa_element_info = array();
-		while($qr_elements->nextRow()) {
-			$vn_element_id = $qr_elements->get('element_id');
+    /**
+     * Prefetch all element info. This is more efficient than running a db query every
+     * time @see Mapping::getElementInfo() is called. Also @see $opa_element_info.
+     */
+    protected function prefetchElementInfo()
+    {
+        if (is_array($this->opa_element_info) && (sizeof($this->opa_element_info) > 0)) {
+            return;
+        }
 
-			$this->opa_element_info[$vn_element_id] = array(
-				'element_id' => $vn_element_id,
-				'element_code' => $qr_elements->get('element_code'),
-				'datatype' => $qr_elements->get('datatype')
-			);
-		}
-	}
+        $qr_elements = $this->getDb()->query('SELECT * FROM ca_metadata_elements');
 
-	/**
-	 * Get info for given element id. Keys in the result array are:
-	 * 		element_id
-	 * 		element_code
-	 * 		datatype
-	 * @param int $pn_element_id
-	 * @return array|bool
-	 */
-	public function getElementInfo($pn_element_id) {
-		if(isset($this->opa_element_info[$pn_element_id])) {
-			return $this->opa_element_info[$pn_element_id];
-		}
+        $this->opa_element_info = array();
+        while ($qr_elements->nextRow()) {
+            $vn_element_id = $qr_elements->get('element_id');
 
-		return false;
-	}
+            $this->opa_element_info[$vn_element_id] = array(
+                'element_id' => $vn_element_id,
+                'element_code' => $qr_elements->get('element_code'),
+                'datatype' => $qr_elements->get('datatype')
+            );
+        }
+    }
 
-	/**
-	 * Get ElasticSearch property config fragment for a given element_id
-	 *
-	 * @todo: We should respect settings in the indexing config here. Right now they're ignored.
-	 * @todo: The default cfg doesn't have any element-level indexing settings but sometimes they can come in handy
-	 *
-	 * @param string $ps_table
-	 * @param int $pn_element_id
-	 * @param array $pa_element_info @see Mapping::getElementInfo()
-	 * @param array $pa_indexing_config
-	 * @return array
-	 */
-	public function getConfigForElement($ps_table, $pn_element_id, $pa_element_info, $pa_indexing_config) {
-		if(!is_numeric($pn_element_id) && (intval($pn_element_id) > 0)) { return array(); }
-		$va_element_info = $this->getElementInfo($pn_element_id);
-		$vs_element_code = $va_element_info['element_code'];
-		if(!$vs_element_code) { return array(); }
+    /**
+     * Get info for given element id. Keys in the result array are:
+     *        element_id
+     *        element_code
+     *        datatype
+     * @param int $pn_element_id
+     * @return array|bool
+     */
+    public function getElementInfo($pn_element_id)
+    {
+        if (isset($this->opa_element_info[$pn_element_id])) {
+            return $this->opa_element_info[$pn_element_id];
+        }
 
-		// init: we never store -- all SearchResult::get() operations are now done on our database tables
-		$va_element_config = array(
-			$ps_table.'/'.$vs_element_code => array(
-			)
-		);
+        return false;
+    }
 
-		if(in_array('INDEX_AS_IDNO', $pa_indexing_config)) {
-			$va_element_config[$ps_table.'/'.$vs_element_code]['analyzer'] = 'keyword_lowercase';
-		}
+    /**
+     * Get ElasticSearch property config fragment for a given element_id
+     *
+     * @todo: We should respect settings in the indexing config here. Right now they're ignored.
+     * @todo: The default cfg doesn't have any element-level indexing settings but sometimes they can come in handy
+     *
+     * @param string $ps_table
+     * @param int $pn_element_id
+     * @param array $pa_element_info @see Mapping::getElementInfo()
+     * @param array $pa_indexing_config
+     * @return array
+     */
+    public function getConfigForElement($ps_table, $pn_element_id, $pa_element_info, $pa_indexing_config)
+    {
+        if (!is_numeric($pn_element_id) && (intval($pn_element_id) > 0)) {
+            return array();
+        }
+        $va_element_info = $this->getElementInfo($pn_element_id);
+        $vs_element_code = $va_element_info['element_code'];
+        if (!$vs_element_code) {
+            return array();
+        }
 
-		if(in_array('TOKENIZE_WS', $pa_indexing_config)) {
-			$va_element_config[$ps_table.'/'.$vs_element_code]['analyzer'] = 'whitespace';
-		}
+        // init: we never store -- all SearchResult::get() operations are now done on our database tables
+        $va_element_config = array(
+            $ps_table . '/' . $vs_element_code => array()
+        );
 
-		// @todo break this out into separate classes in the ElasticSearch\FieldTypes namespace!?
-		switch($pa_element_info['datatype']) {
-			case 2:	// daterange
-				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'date';
-				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'date_time_no_millis';
-				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = true;
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_text']['type'] = ($this->version == 2) ? 'string' : 'text';
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_start']['type'] = 'date';
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_start']['ignore_malformed'] = true;
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_end']['type'] = 'date';
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_end']['ignore_malformed'] = true;
-				break;
-			case 4:	// geocode
-				//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
-				$va_element_config[$ps_table.'/'.$vs_element_code] = array(
-					'type' => 'geo_shape',
-					'precision' => '3m'
-				);
-				// index text content as is -- sometimes useful for full text place search
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => ($this->version == 2) ? 'string' : 'text');
-				break;
-			case 6: // currency
-				// we want to do range searches on currency too, so we gotta store the currency identified (USD) separately
-				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'double';
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_currency'] = array('type' => ($this->version == 2) ? 'string' : 'text');
-				break;
-			case 8: // length
-			case 9: // weight
-				// we don't index units here -- we always index in meters / kg, so it's just a float
-				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'double';
-				break;
-			case 10:	// timecode
-			case 12:	// numeric/float
-				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'double';
-				break;
-			case 11:	// integer
-				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'long';
-				break;
-			case 1: // text
-			case 3:	// list
-			case 5:	// url
-			case 13: // LCSH
-			case 14: // geonames
-			case 15: // file
-			case 16: // media
-			case 19: // taxonomy
-			case 20: // information service
-			case 21: // object representations
-			case 22: // entities
-			case 23: // places
-			case 24: // occurrences
-			case 25: // collections
-			case 26: // storage locations
-			case 27: // loans
-			case 28: // movements
-			case 29: // objects
-			case 30: // object lots
-			default:
-				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = ($this->version == 2) ? 'string' : 'text';
-				break;
-		}
-		return $va_element_config;
-	}
+        if (in_array('INDEX_AS_IDNO', $pa_indexing_config)) {
+            $va_element_config[$ps_table . '/' . $vs_element_code]['analyzer'] = 'keyword_lowercase';
+        }
 
-	/**
-	 * Get ElasticSearch property config fragment for a given intrinsic field
-	 * @param string $ps_table
-	 * @param int $pn_field_num
-	 * @param array $pa_indexing_config
-	 * @return array
-	 */
-	public function getConfigForIntrinsic($ps_table, $pn_field_num, $pa_indexing_config) {
-		if(!in_array((int)$this->version, [2,5,6,7])) { throw new ApplicationException(_t('Unsupported ElasticSearch version %1', $this->version)); }
-	
-		$vs_field_name = \Datamodel::getFieldName($ps_table, $pn_field_num);
-		if(!$vs_field_name) { return array(); }
-		$t_instance = \Datamodel::getInstance($ps_table);
+        if (in_array('TOKENIZE_WS', $pa_indexing_config)) {
+            $va_element_config[$ps_table . '/' . $vs_element_code]['analyzer'] = 'whitespace';
+        }
 
-		$va_field_options = array(
-			$ps_table.'/'.$vs_field_name => array(
-			)
-		);
+        // @todo break this out into separate classes in the ElasticSearch\FieldTypes namespace!?
+        switch ($pa_element_info['datatype']) {
+            case 2:    // daterange
+                $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'date';
+                $va_element_config[$ps_table . '/' . $vs_element_code]['format'] = 'date_time_no_millis';
+                $va_element_config[$ps_table . '/' . $vs_element_code]['ignore_malformed'] = true;
+                $va_element_config[$ps_table . '/' . $vs_element_code . '_text']['type'] = ($this->version == 2) ? 'string' : 'text';
+                $va_element_config[$ps_table . '/' . $vs_element_code . '_start']['type'] = 'date';
+                $va_element_config[$ps_table . '/' . $vs_element_code . '_start']['ignore_malformed'] = true;
+                $va_element_config[$ps_table . '/' . $vs_element_code . '_end']['type'] = 'date';
+                $va_element_config[$ps_table . '/' . $vs_element_code . '_end']['ignore_malformed'] = true;
+                break;
+            case 4:    // geocode
+                //@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
+                $va_element_config[$ps_table . '/' . $vs_element_code] = array(
+                    'type' => 'geo_shape',
+                    'precision' => '3m'
+                );
+                // index text content as is -- sometimes useful for full text place search
+                $va_element_config[$ps_table . '/' . $vs_element_code . '_text'] = array('type' => ($this->version == 2) ? 'string' : 'text');
+                break;
+            case 6: // currency
+                // we want to do range searches on currency too, so we gotta store the currency identified (USD) separately
+                $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'double';
+                $va_element_config[$ps_table . '/' . $vs_element_code . '_currency'] = array('type' => ($this->version == 2) ? 'string' : 'text');
+                break;
+            case 8: // length
+            case 9: // weight
+                // we don't index units here -- we always index in meters / kg, so it's just a float
+                $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'double';
+                break;
+            case 10:    // timecode
+            case 12:    // numeric/float
+                $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'double';
+                break;
+            case 11:    // integer
+                $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'long';
+                break;
+            case 1: // text
+            case 3:    // list
+            case 5:    // url
+            case 13: // LCSH
+            case 14: // geonames
+            case 15: // file
+            case 16: // media
+            case 19: // taxonomy
+            case 20: // information service
+            case 21: // object representations
+            case 22: // entities
+            case 23: // places
+            case 24: // occurrences
+            case 25: // collections
+            case 26: // storage locations
+            case 27: // loans
+            case 28: // movements
+            case 29: // objects
+            case 30: // object lots
+            default:
+                $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = ($this->version == 2) ? 'string' : 'text';
+                break;
+        }
+        return $va_element_config;
+    }
 
-		 if(($this->version == 2) && $pa_indexing_config['BOOST']){
- 			$va_field_options[$ps_table.'/'.$vs_field_name]['boost'] = floatval($pa_indexing_config['BOOST']);
- 		}
+    /**
+     * Get ElasticSearch property config fragment for a given intrinsic field
+     * @param string $ps_table
+     * @param int $pn_field_num
+     * @param array $pa_indexing_config
+     * @return array
+     */
+    public function getConfigForIntrinsic($ps_table, $pn_field_num, $pa_indexing_config)
+    {
+        if (!in_array((int)$this->version, [2, 5, 6, 7])) {
+            throw new ApplicationException(_t('Unsupported ElasticSearch version %1', $this->version));
+        }
 
-		if(in_array('DONT_TOKENIZE',$pa_indexing_config)){
-			$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'not_analyzed';
-		}
+        $vs_field_name = Datamodel::getFieldName($ps_table, $pn_field_num);
+        if (!$vs_field_name) {
+            return array();
+        }
+        $t_instance = Datamodel::getInstance($ps_table);
 
-		if(in_array('INDEX_AS_IDNO', $pa_indexing_config)) {
-			unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
-			$va_field_options[$ps_table.'/'.$vs_field_name]['analyzer'] = 'keyword_lowercase';
-		}
-		
-		switch($t_instance->getFieldInfo($vs_field_name, 'FIELD_TYPE')){
-			case (FT_TEXT):
-			case (FT_MEDIA):
-			case (FT_FILE):
-			case (FT_PASSWORD):
-			case (FT_VARS):
-				switch($this->version) {
-					case 2:
-						$v = 'string';
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
-						break;
-					case 5:
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
-						break;
-					case 6:
-					case 7:
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
-						unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
-						break;
-				}
-				break;
-			case (FT_NUMBER):
-			case (FT_TIME):
-			case (FT_TIMERANGE):
-			case (FT_TIMECODE):
-				// list-based intrinsics get indexed with both item_id and label text, like so:
-				// image Image 24 -- for a ca_objects type_id image
-				if ($t_instance->getFieldInfo($vs_field_name, 'LIST_CODE')) {
-					switch($this->version) {
-						case 2:
-							$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
-							$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
-							break;
-						case 5:
-							$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
-							$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
-							break;
-						case 6:
-						case 7:
-							$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
-							unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
-							break;
-					}
-				} else {
-					switch($this->version) {
-						case 2:
-						case 5:
-						case 6:
-						case 7:
-							$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'double';
-							unset($va_field_options[$ps_table.'/'.$vs_field_name]['analyzer']);
-							unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
-							break;
-					}
-				}
-				break;
-			case (FT_TIMESTAMP):
-			case (FT_DATETIME):
-			case (FT_HISTORIC_DATETIME):
-			case (FT_DATE):
-			case (FT_HISTORIC_DATE):
-			case (FT_DATERANGE):
-			case (FT_HISTORIC_DATERANGE):
-				switch($this->version) {
-					case 2:
-					case 5:
-					case 6:
-					case 7:
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'date';
-						$va_field_options[$ps_table.'/'.$vs_field_name]['format'] = 'date_time_no_millis';
-						$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = true;
-						unset($va_field_options[$ps_table.'/'.$vs_field_name]['analyzer']);
-						unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
-						break;
-				}
-				break;
-			case (FT_BIT):
-				switch($this->version) {
-					case 2:
-					case 5:
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'boolean';
-						break;
-					case 6:
-					case 7:
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'integer';
-						unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
-						break;
-				}
-				break;
-			default:
-				switch($this->version) {
-					case 2:
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
-						break;
-					case 5:
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
-						break;
-					case 6:
-					case 7:
-						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
-						unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
-						break;
-				}
-				break;
-		}
+        $va_field_options = array(
+            $ps_table . '/' . $vs_field_name => array()
+        );
 
-		return $va_field_options;
-	}
+        if (($this->version == 2) && $pa_indexing_config['BOOST']) {
+            $va_field_options[$ps_table . '/' . $vs_field_name]['boost'] = floatval($pa_indexing_config['BOOST']);
+        }
 
-	/**
-	 * Get the mapping in the array format the Elasticsearch PHP API expects
-	 * @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_index_management_operations.html#_put_mappings_api
-	 * @return array
-	 */
-	public function get() {
-		$va_mapping_config = array();
+        if (in_array('DONT_TOKENIZE', $pa_indexing_config)) {
+            $va_field_options[$ps_table . '/' . $vs_field_name]['index'] = 'not_analyzed';
+        }
 
-		foreach($this->getTables() as $vs_table) {
-			$va_mapping_config[$vs_table]['_source']['enabled'] = true;
-			$va_mapping_config[$vs_table]['properties'] = array();
+        if (in_array('INDEX_AS_IDNO', $pa_indexing_config)) {
+            unset($va_field_options[$ps_table . '/' . $vs_field_name]['index']);
+            $va_field_options[$ps_table . '/' . $vs_field_name]['analyzer'] = 'keyword_lowercase';
+        }
 
-			foreach($this->getFieldsToIndex($vs_table) as $vs_field => $va_indexing_info) {
-				if(preg_match("/^(ca[\_a-z]+)\.A([0-9]+)$/", $vs_field, $va_matches)) { // attribute
-					$va_mapping_config[$vs_table]['properties'] =
-						array_merge(
-							$va_mapping_config[$vs_table]['properties'],
-							$this->getConfigForElement(
-								$va_matches[1],
-								(int)$va_matches[2],
-								$this->getElementInfo((int)$va_matches[2]),
-								$va_indexing_info
-							)
-						);
-				} elseif(preg_match("/^(ca[\_a-z]+)\.I([0-9]+)$/", $vs_field, $va_matches)) { // intrinsic
-					$va_mapping_config[$vs_table]['properties'] =
-						array_merge(
-							$va_mapping_config[$vs_table]['properties'],
-							$this->getConfigForIntrinsic(
-								$va_matches[1],
-								(int) $va_matches[2],
-								$va_indexing_info
-							)
-						);
-				}
-			}
+        switch ($t_instance->getFieldInfo($vs_field_name, 'FIELD_TYPE')) {
+            case (FT_TEXT):
+            case (FT_MEDIA):
+            case (FT_FILE):
+            case (FT_PASSWORD):
+            case (FT_VARS):
+                switch ($this->version) {
+                    case 2:
+                        $v = 'string';
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'string';
+                        break;
+                    case 5:
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'text';
+                        break;
+                    case 6:
+                    case 7:
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'text';
+                        unset($va_field_options[$ps_table . '/' . $vs_field_name]['index']);
+                        break;
+                }
+                break;
+            case (FT_NUMBER):
+            case (FT_TIME):
+            case (FT_TIMERANGE):
+            case (FT_TIMECODE):
+                // list-based intrinsics get indexed with both item_id and label text, like so:
+                // image Image 24 -- for a ca_objects type_id image
+                if ($t_instance->getFieldInfo($vs_field_name, 'LIST_CODE')) {
+                    switch ($this->version) {
+                        case 2:
+                            $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'string';
+                            $va_field_options[$ps_table . '/' . $vs_field_name]['index'] = 'analyzed';
+                            break;
+                        case 5:
+                            $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'text';
+                            $va_field_options[$ps_table . '/' . $vs_field_name]['index'] = 'analyzed';
+                            break;
+                        case 6:
+                        case 7:
+                            $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'text';
+                            unset($va_field_options[$ps_table . '/' . $vs_field_name]['index']);
+                            break;
+                    }
+                } else {
+                    switch ($this->version) {
+                        case 2:
+                        case 5:
+                        case 6:
+                        case 7:
+                            $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'double';
+                            unset($va_field_options[$ps_table . '/' . $vs_field_name]['analyzer']);
+                            unset($va_field_options[$ps_table . '/' . $vs_field_name]['index']);
+                            break;
+                    }
+                }
+                break;
+            case (FT_TIMESTAMP):
+            case (FT_DATETIME):
+            case (FT_HISTORIC_DATETIME):
+            case (FT_DATE):
+            case (FT_HISTORIC_DATE):
+            case (FT_DATERANGE):
+            case (FT_HISTORIC_DATERANGE):
+                switch ($this->version) {
+                    case 2:
+                    case 5:
+                    case 6:
+                    case 7:
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'date';
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['format'] = 'date_time_no_millis';
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['ignore_malformed'] = true;
+                        unset($va_field_options[$ps_table . '/' . $vs_field_name]['analyzer']);
+                        unset($va_field_options[$ps_table . '/' . $vs_field_name]['index']);
+                        break;
+                }
+                break;
+            case (FT_BIT):
+                switch ($this->version) {
+                    case 2:
+                    case 5:
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'boolean';
+                        break;
+                    case 6:
+                    case 7:
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'integer';
+                        unset($va_field_options[$ps_table . '/' . $vs_field_name]['index']);
+                        break;
+                }
+                break;
+            default:
+                switch ($this->version) {
+                    case 2:
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'string';
+                        break;
+                    case 5:
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'text';
+                        break;
+                    case 6:
+                    case 7:
+                        $va_field_options[$ps_table . '/' . $vs_field_name]['type'] = 'text';
+                        unset($va_field_options[$ps_table . '/' . $vs_field_name]['index']);
+                        break;
+                }
+                break;
+        }
 
-			// add config for modified and created, which are always indexed
-			$va_mapping_config[$vs_table]['properties']["modified"] = array(
-				'type' => 'date',
-				'format' => 'date_optional_time',
-				'ignore_malformed' => true
-			);
-			$va_mapping_config[$vs_table]['properties']["created"] = array(
-				'type' => 'date',
-				'format' => 'date_optional_time',
-				'ignore_malformed' => true
-			);
-		}
-		return $va_mapping_config;
-	}
+        return $va_field_options;
+    }
+
+    /**
+     * Get the mapping in the array format the Elasticsearch PHP API expects
+     * @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_index_management_operations.html#_put_mappings_api
+     * @return array
+     */
+    public function get()
+    {
+        $va_mapping_config = array();
+
+        foreach ($this->getTables() as $vs_table) {
+            $va_mapping_config[$vs_table]['_source']['enabled'] = true;
+            $va_mapping_config[$vs_table]['properties'] = array();
+
+            foreach ($this->getFieldsToIndex($vs_table) as $vs_field => $va_indexing_info) {
+                if (preg_match("/^(ca[\_a-z]+)\.A([0-9]+)$/", $vs_field, $va_matches)) { // attribute
+                    $va_mapping_config[$vs_table]['properties'] =
+                        array_merge(
+                            $va_mapping_config[$vs_table]['properties'],
+                            $this->getConfigForElement(
+                                $va_matches[1],
+                                (int)$va_matches[2],
+                                $this->getElementInfo((int)$va_matches[2]),
+                                $va_indexing_info
+                            )
+                        );
+                } elseif (preg_match("/^(ca[\_a-z]+)\.I([0-9]+)$/", $vs_field, $va_matches)) { // intrinsic
+                    $va_mapping_config[$vs_table]['properties'] =
+                        array_merge(
+                            $va_mapping_config[$vs_table]['properties'],
+                            $this->getConfigForIntrinsic(
+                                $va_matches[1],
+                                (int)$va_matches[2],
+                                $va_indexing_info
+                            )
+                        );
+                }
+            }
+
+            // add config for modified and created, which are always indexed
+            $va_mapping_config[$vs_table]['properties']["modified"] = array(
+                'type' => 'date',
+                'format' => 'date_optional_time',
+                'ignore_malformed' => true
+            );
+            $va_mapping_config[$vs_table]['properties']["created"] = array(
+                'type' => 'date',
+                'format' => 'date_optional_time',
+                'ignore_malformed' => true
+            );
+        }
+        return $va_mapping_config;
+    }
 }

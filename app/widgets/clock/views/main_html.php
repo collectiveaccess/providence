@@ -25,27 +25,37 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request 			= $this->getVar('request');
-	$va_instances			= $this->getVar('instances');
-	$va_settings				= $this->getVar('settings');
-	$vs_widget_id 			= $this->getVar('widget_id');
-	
-?>
-<link media="screen" rel="stylesheet" type="text/css" href="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/stylesheet/jquery.epiclock.css"/>
-<link media="screen" rel="stylesheet" type="text/css" href="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/renderers/retro/epiclock.retro.css"/>
-<link media="screen" rel="stylesheet" type="text/css" href="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/renderers/retro-countdown/epiclock.retro-countdown.css"/>
 
-<script type="text/javascript" src="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/javascript/jquery.dateformat.js"></script>
-<script type="text/javascript" src="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/javascript/jquery.epiclock.js"></script>
-<script type="text/javascript" src="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/renderers/retro/epiclock.retro.js"></script>
-<script type="text/javascript" src="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/renderers/retro-countdown/epiclock.retro-countdown.js"></script>
+$po_request = $this->getVar('request');
+$va_instances = $this->getVar('instances');
+$va_settings = $this->getVar('settings');
+$vs_widget_id = $this->getVar('widget_id');
+
+?>
+<link media="screen" rel="stylesheet" type="text/css"
+      href="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/stylesheet/jquery.epiclock.css"/>
+<link media="screen" rel="stylesheet" type="text/css"
+      href="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/renderers/retro/epiclock.retro.css"/>
+<link media="screen" rel="stylesheet" type="text/css"
+      href="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/renderers/retro-countdown/epiclock.retro-countdown.css"/>
+
+<script type="text/javascript"
+        src="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/javascript/jquery.dateformat.js"></script>
+<script type="text/javascript"
+        src="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/javascript/jquery.epiclock.js"></script>
+<script type="text/javascript"
+        src="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/renderers/retro/epiclock.retro.js"></script>
+<script type="text/javascript"
+        src="<?php print __CA_URL_ROOT__; ?>/app/widgets/clock/epiclock/renderers/retro-countdown/epiclock.retro-countdown.js"></script>
 
 <div class="dashboardWidgetContentContainer">
-	<div id="caClock<?php print $vs_widget_id; ?>" class="dashboardWidgetClock">
-	
-	</div>
+    <div id="caClock<?php print $vs_widget_id; ?>" class="dashboardWidgetClock">
+
+    </div>
 </div>
 <script type="text/javascript">
-	 jQuery('#caClock<?php print $vs_widget_id; ?>').epiclock({format: '<?php print $va_settings['display_format']; ?>', renderer: '<?php print $va_settings['display_mode']; ?>'});
+    jQuery('#caClock<?php print $vs_widget_id; ?>').epiclock({
+        format: '<?php print $va_settings['display_format']; ?>',
+        renderer: '<?php print $va_settings['display_mode']; ?>'
+    });
 </script>

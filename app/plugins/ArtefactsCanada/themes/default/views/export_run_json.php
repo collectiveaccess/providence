@@ -25,5 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print json_encode($this->getVar('info'));
+
+print json_encode($this->getVar('info'));

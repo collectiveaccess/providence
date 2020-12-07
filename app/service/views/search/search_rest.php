@@ -27,11 +27,11 @@
  */
 
 
-	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__ . "/helpers/utilityHelpers.php");
 
-	$vo_rest_server = $this->getVar("rest_server");
-	$vs_return = $vo_rest_server->handle();
-	header('Content-Type: text/xml; charset=UTF-8');
-	
-	print caMakeProperUTF8ForXML($vs_return);
+$vo_rest_server = $this->getVar("rest_server");
+$vs_return = $vo_rest_server->handle();
+header('Content-Type: text/xml; charset=UTF-8');
+
+print caMakeProperUTF8ForXML($vs_return);
 ?>

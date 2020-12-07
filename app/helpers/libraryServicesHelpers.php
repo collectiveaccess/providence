@@ -22,22 +22,23 @@
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
+ *
  * @package CollectiveAccess
  * @subpackage utils
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
 
 
-	# ---------------------------------------
-	/**
-	 * Returns library services configuration
-	 *
-	 * @return Configuration Returns reference to library services configuration
-	 */
-	function caGetLibraryServicesConfiguration() {
- 		return Configuration::load(__CA_CONF_DIR__."/library_services.conf");
-	}
-	# ---------------------------------------
+# ---------------------------------------
+/**
+ * Returns library services configuration
+ *
+ * @return Configuration Returns reference to library services configuration
+ */
+function caGetLibraryServicesConfiguration()
+{
+    return Configuration::load(__CA_CONF_DIR__ . "/library_services.conf");
+}
+# ---------------------------------------

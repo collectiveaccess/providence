@@ -25,17 +25,21 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_MODELS_DIR__."/ca_collections.php");
- 	require_once(__CA_LIB_DIR__."/BaseQuickAddController.php");
- 
- 	class CollectionQuickAddController extends BaseQuickAddController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_collections';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+
+require_once(__CA_MODELS_DIR__ . "/ca_collections.php");
+require_once(__CA_LIB_DIR__ . "/BaseQuickAddController.php");
+
+class CollectionQuickAddController extends BaseQuickAddController
+{
+    # -------------------------------------------------------
+    protected $ops_table_name = 'ca_collections';        // name of "subject" table (what we're editing)
+
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+    # -------------------------------------------------------
+}
+
+?>

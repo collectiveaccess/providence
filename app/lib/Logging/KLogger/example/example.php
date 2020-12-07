@@ -3,9 +3,9 @@
 # Should log to the same directory as this file
 require dirname(__FILE__) . '/../src/KLogger.php';
 
-$log   = KLogger::instance(dirname(__FILE__), KLogger::DEBUG);
+$log = KLogger::instance(dirname(__FILE__), KLogger::DEBUG);
 $args1 = array('a' => array('b' => 'c'), 'd');
-$args2 = NULL;
+$args2 = null;
 
 $log->logInfo('Info Test');
 $log->logNotice('Notice Test');

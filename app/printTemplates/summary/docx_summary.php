@@ -40,153 +40,178 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 
-	$t_item = $this->getVar('t_subject');
-	
-	$va_bundle_displays = $this->getVar('bundle_displays');
-	$t_display = $this->getVar('t_display');
-	$va_display_list = $this->getVar("placements");
-
-	// For easier calculation
-	// 1 cm = 1440/2.54 = 566.93 twips
-	$cmToTwips = 567;
 
 
-	$phpWord = new \PhpOffice\PhpWord\PhpWord();
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\PhpWord;
 
-	// Every element you want to append to the word document is placed in a section.
+$t_item = $this->getVar('t_subject');
 
-    // New portrait section
-	$sectionStyle = array(
-	    'orientation' => 'portrait',
-	    'marginTop' => 2 * $cmToTwips,
-	    'marginBottom' => 2 * $cmToTwips,
-	    'marginLeft' => 2 * $cmToTwips,
-	    'marginRight' => 2 * $cmToTwips,
-	    'headerHeight' => 1 * $cmToTwips,
-	    'footerHeight' => 1 * $cmToTwips,
-	    'colsNum' => 1,
-	);
-	$section = $phpWord->addSection($sectionStyle);
+$va_bundle_displays = $this->getVar('bundle_displays');
+$t_display = $this->getVar('t_display');
+$va_display_list = $this->getVar("placements");
+
+// For easier calculation
+// 1 cm = 1440/2.54 = 566.93 twips
+$cmToTwips = 567;
 
 
-    // Add header for all pages
-    $header = $section->addHeader();
-    
-    $headerimage = $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img');
-	if(file_exists($headerimage)){
-		$header->addImage($headerimage,array('height' => 30,'wrappingStyle' => 'inline'));
-	}
+$phpWord = new PhpWord();
 
-    // Add footer
-    $footer = $section->addFooter();
-    $footer->addPreserveText('{PAGE}/{NUMPAGES}', null, array('align' => 'right'));
+// Every element you want to append to the word document is placed in a section.
 
-	// Defining font style for headers
-	$phpWord->addFontStyle('headerStyle',array(
-		'name'=>'Verdana', 
-		'size'=>12, 
-		'color'=>'444477'
-	));
+// New portrait section
+$sectionStyle = array(
+    'orientation' => 'portrait',
+    'marginTop' => 2 * $cmToTwips,
+    'marginBottom' => 2 * $cmToTwips,
+    'marginLeft' => 2 * $cmToTwips,
+    'marginRight' => 2 * $cmToTwips,
+    'headerHeight' => 1 * $cmToTwips,
+    'footerHeight' => 1 * $cmToTwips,
+    'colsNum' => 1,
+);
+$section = $phpWord->addSection($sectionStyle);
 
 
-	// Defining font style for display values
-	$phpWord->addFontStyle('displayValueStyle',array(
-		'name'=>'Verdana', 
-		'size'=>14, 
-		'color'=>'000000'
-	));
-    $styleHeaderFont = array('bold'=>true, 'size'=>13, 'name'=>'Calibri');
-    $styleBundleNameFont = array('bold'=>false, 'underline'=>'single', 'color'=>'666666', 'size'=>11, 'name'=>'Calibri');
-	$styleContentFont = array('bold'=>false, 'size'=>11, 'name'=>'Calibri');
-	
-    // Define table style arrays
-    $styleTable = array('borderSize'=>0, 'borderColor'=>'ffffff', 'cellMargin'=>80);
-    
-    // Define cell style arrays
-    $styleCell = array('valign'=>'center');
-    $styleCellBTLR = array('valign'=>'center');
+// Add header for all pages
+$header = $section->addHeader();
 
-    // Define font style for first row
-    $fontStyle = array('bold'=>true, 'align'=>'center');
+$headerimage = $this->request->getThemeDirectoryPath() . "/graphics/logos/" . $this->request->config->get('report_img');
+if (file_exists($headerimage)) {
+    $header->addImage($headerimage, array('height' => 30, 'wrappingStyle' => 'inline'));
+}
 
-    // Add table style
-    $phpWord->addTableStyle('myOwnTableStyle', $styleTable);
+// Add footer
+$footer = $section->addFooter();
+$footer->addPreserveText('{PAGE}/{NUMPAGES}', null, array('align' => 'right'));
+
+// Defining font style for headers
+$phpWord->addFontStyle(
+    'headerStyle',
+    array(
+        'name' => 'Verdana',
+        'size' => 12,
+        'color' => '444477'
+    )
+);
 
 
-    $table = $section->addTable('myOwnTableStyle');
-    $table->addRow();
-    $list = $va_display_list;
+// Defining font style for display values
+$phpWord->addFontStyle(
+    'displayValueStyle',
+    array(
+        'name' => 'Verdana',
+        'size' => 14,
+        'color' => '000000'
+    )
+);
+$styleHeaderFont = array('bold' => true, 'size' => 13, 'name' => 'Calibri');
+$styleBundleNameFont = array(
+    'bold' => false,
+    'underline' => 'single',
+    'color' => '666666',
+    'size' => 11,
+    'name' => 'Calibri'
+);
+$styleContentFont = array('bold' => false, 'size' => 11, 'name' => 'Calibri');
 
-    // First column : media
-    $mediaCell = $table->addCell( 5 * $cmToTwips);
+// Define table style arrays
+$styleTable = array('borderSize' => 0, 'borderColor' => 'ffffff', 'cellMargin' => 80);
 
-    $va_info = $t_item->getPrimaryRepresentation(["medium"]);
+// Define cell style arrays
+$styleCell = array('valign' => 'center');
+$styleCellBTLR = array('valign' => 'center');
 
-    if($va_info['info']['medium']['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-        $vs_path = $va_info['paths']['medium']; 
-        if (is_file($vs_path)) {
-            $mediaCell->addImage(
-                $vs_path,
-                array(
-                    'width' => 195,
-                    'wrappingStyle' => 'inline'
-                )
-            );
-        }
+// Define font style for first row
+$fontStyle = array('bold' => true, 'align' => 'center');
+
+// Add table style
+$phpWord->addTableStyle('myOwnTableStyle', $styleTable);
+
+
+$table = $section->addTable('myOwnTableStyle');
+$table->addRow();
+$list = $va_display_list;
+
+// First column : media
+$mediaCell = $table->addCell(5 * $cmToTwips);
+
+$va_info = $t_item->getPrimaryRepresentation(["medium"]);
+
+if ($va_info['info']['medium']['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+    $vs_path = $va_info['paths']['medium'];
+    if (is_file($vs_path)) {
+        $mediaCell->addImage(
+            $vs_path,
+            array(
+                'width' => 195,
+                'wrappingStyle' => 'inline'
+            )
+        );
     }
+}
 
 
-    // Second column : bundles
-    $contentCell = $table->addCell(12 * $cmToTwips);
+// Second column : bundles
+$contentCell = $table->addCell(12 * $cmToTwips);
 
-    $contentCell->addText(
-        caEscapeForXML(html_entity_decode(strip_tags(br2nl($t_item->get('preferred_labels'))), ENT_QUOTES | ENT_HTML5)),
-        $styleHeaderFont
-    );
+$contentCell->addText(
+    caEscapeForXML(html_entity_decode(strip_tags(br2nl($t_item->get('preferred_labels'))), ENT_QUOTES | ENT_HTML5)),
+    $styleHeaderFont
+);
 
-    foreach($list as $vn_placement_id => $va_info) {
+foreach ($list as $vn_placement_id => $va_info) {
+    if (
+        (strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
+        &&
+        ($va_info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
+    ) {
+        // Inserting bundle name on one line
+        $contentCell->addText(caEscapeForXML($va_info['display']) . ': ', $styleBundleNameFont);
 
-        if (
-            (strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
-            &&
-            ($va_info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
-        ) {
-            // Inserting bundle name on one line
-            $contentCell->addText(caEscapeForXML($va_info['display']).': ', $styleBundleNameFont);
+        // Fetching version asked & corresponding file
+        $vs_version = str_replace("ca_object_representations.media.", "", $va_info['bundle_name']);
+        $va_info = $t_item->getMediaInfo('ca_object_representations.media', $vs_version);
 
-            // Fetching version asked & corresponding file
-            $vs_version = str_replace("ca_object_representations.media.", "", $va_info['bundle_name']);
-            $va_info = $t_item->getMediaInfo('ca_object_representations.media',$vs_version);
-        
-            // If it's a JPEG, print it (basic filter to avoid non handled media version)
-            if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-                $vs_path = $t_item->getMediaPath('ca_object_representations.media',$vs_version);
-                if (is_file($vs_path)) {
-                    $contentCell->addImage(
-                        $vs_path
-                    );
-                }
+        // If it's a JPEG, print it (basic filter to avoid non handled media version)
+        if ($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+            $vs_path = $t_item->getMediaPath('ca_object_representations.media', $vs_version);
+            if (is_file($vs_path)) {
+                $contentCell->addImage(
+                    $vs_path
+                );
             }
+        }
+    } elseif ($vs_display_text = $t_display->getDisplayValue(
+        $t_item,
+        $vn_placement_id,
+        array_merge(
+            array('request' => $this->request, 'purify' => true),
+            is_array(
+                $va_info['settings']
+            ) ? $va_info['settings'] : array()
+        )
+    )) {
+        $textrun = $contentCell->createTextRun();
+        $textrun->addText(
+            preg_replace(
+                "![\n\r]!",
+                "<w:br/>",
+                caEscapeForXML(html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5))
+            ),
+            $styleContentFont
+        );
+    }
+}
+$vn_line++;
+// Two text break
+$section->addTextBreak(2);
 
-        } elseif ($vs_display_text = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
 
-            $textrun = $contentCell->createTextRun();
-            $textrun->addText(
-                preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5))),
-                $styleContentFont
-            );
+// Finally, write the document:
+$objWriter = IOFactory::createWriter($phpWord, 'Word2007');
+header("Content-Type:application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+header('Content-Disposition:inline;filename=Export.docx ');
 
-        }}
-    $vn_line++;
-    // Two text break
-    $section->addTextBreak(2);
-
-
-    // Finally, write the document:
-    $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-    header("Content-Type:application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-    header('Content-Disposition:inline;filename=Export.docx ');
-
-    $objWriter->save('php://output');
+$objWriter->save('php://output');

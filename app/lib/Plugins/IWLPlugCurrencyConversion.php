@@ -25,24 +25,32 @@
  *
  * ----------------------------------------------------------------------
  */
-	
-	interface IWLPlugCurrencyConversion {
-		# -------------------------------------------------------
-		# Initialization and state
-		# -------------------------------------------------------
-		public function __construct();
-		public function register();
-		public function init();
-		public function cleanup();
-		
-		public function getDescription();
-		public function checkStatus();
-		
-		# -------------------------------------------------------
-		# Properties
-		# -------------------------------------------------------
-		static public function convert($ps_value, $ps_to, $pa_options=null);
-		static public function getCurrencyList();
-		static public function canConvert($ps_from, $ps_to);
-	}
+
+interface IWLPlugCurrencyConversion
+{
+    # -------------------------------------------------------
+    # Initialization and state
+    # -------------------------------------------------------
+    public function __construct();
+
+    public function register();
+
+    public function init();
+
+    public function cleanup();
+
+    public function getDescription();
+
+    public function checkStatus();
+
+    # -------------------------------------------------------
+    # Properties
+    # -------------------------------------------------------
+    public static function convert($ps_value, $ps_to, $pa_options = null);
+
+    public static function getCurrencyList();
+
+    public static function canConvert($ps_from, $ps_to);
+}
+
 ?>

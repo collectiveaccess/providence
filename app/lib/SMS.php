@@ -29,52 +29,65 @@
  *
  * ----------------------------------------------------------------------
  */
-  
- /**
-  *
-  */
- 	require_once(__CA_LIB_DIR__.'/Configuration.php');
- 
- class SMS {
- 	# -------------------------------------------------------------------
- 	static $plugin;
- 	# -------------------------------------------------------------------
- 	public function __construct() {
- 		
- 	}
- 	# -------------------------------------------------------------------
- 	/**
- 	 * 
- 	 */
- 	static public function send($pn_user_id, $ps_message) {
- 		$ps_message = preg_replace('![^A-Za-z0-9\!@#\$\%\^\&\*\(\)\<\>\?/:;,\.]+!', ' ', $ps_message);
- 		if (!$ps_message) { return null; }
- 		
- 		$o_config = Configuration::load();
- 		if (!(bool)$o_config->get('enable_sms_notifications')) { return null; }
- 		
- 		if (!SMS::$plugin) {
- 			SMS::loadPlugin();
- 		}
- 		
- 		return call_user_func(array(SMS::$plugin, "send"), $pn_user_id, $ps_message);
- 	}
- 	# -------------------------------------------------------------------
- 	/**
- 	 * 
- 	 */
- 	static public function loadPlugin() {
- 		// Get name of plugin to use
- 		$o_config = Configuration::load();
- 		$vs_plugin_name = $o_config->get('sms_plugin');
- 		
- 		if (!file_exists(__CA_LIB_DIR__.'/Plugins/SMS/'.$vs_plugin_name.'.php')) { die("SMS plugin {$vs_plugin_name} does not exist"); }
- 		
- 		require_once(__CA_LIB_DIR__.'/Plugins/SMS/'.$vs_plugin_name.'.php');
- 		
- 		$vs_plugin_classname = 'WLPlugSMS'.$vs_plugin_name;
- 		SMS::$plugin = new $vs_plugin_classname;
- 	}
- 	# -------------------------------------------------------------------
- }
- ?>
+
+/**
+ *
+ */
+require_once(__CA_LIB_DIR__ . '/Configuration.php');
+
+class SMS
+{
+    # -------------------------------------------------------------------
+    static public $plugin;
+
+    # -------------------------------------------------------------------
+    public function __construct()
+    {
+    }
+    # -------------------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function send($pn_user_id, $ps_message)
+    {
+        $ps_message = preg_replace('![^A-Za-z0-9\!@#\$\%\^\&\*\(\)\<\>\?/:;,\.]+!', ' ', $ps_message);
+        if (!$ps_message) {
+            return null;
+        }
+
+        $o_config = Configuration::load();
+        if (!(bool)$o_config->get('enable_sms_notifications')) {
+            return null;
+        }
+
+        if (!SMS::$plugin) {
+            SMS::loadPlugin();
+        }
+
+        return call_user_func(array(SMS::$plugin, "send"), $pn_user_id, $ps_message);
+    }
+    # -------------------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function loadPlugin()
+    {
+        // Get name of plugin to use
+        $o_config = Configuration::load();
+        $vs_plugin_name = $o_config->get('sms_plugin');
+
+        if (!file_exists(__CA_LIB_DIR__ . '/Plugins/SMS/' . $vs_plugin_name . '.php')) {
+            die("SMS plugin {$vs_plugin_name} does not exist");
+        }
+
+        require_once(__CA_LIB_DIR__ . '/Plugins/SMS/' . $vs_plugin_name . '.php');
+
+        $vs_plugin_classname = 'WLPlugSMS' . $vs_plugin_name;
+        SMS::$plugin = new $vs_plugin_classname();
+    }
+    # -------------------------------------------------------------------
+}
+
+?>

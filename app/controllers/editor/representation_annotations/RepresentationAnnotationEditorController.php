@@ -25,42 +25,50 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	require_once(__CA_LIB_DIR__."/Media.php");
- 	require_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
- 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
- 	
- 	require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
- 	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
- 
- 	class RepresentationAnnotationEditorController extends BaseEditorController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_representation_annotations';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		public function info($pa_parameters) {
- 			AssetLoadManager::register('panel');
- 			parent::info($pa_parameters);
- 			
- 			$vn_annotation_id = (isset($pa_parameters['annotation_id'])) ? $pa_parameters['annotation_id'] : null;
- 			$t_annotation = new ca_representation_annotations($vn_annotation_id);
- 			$t_rep = new ca_object_representations($t_annotation->get('representation_id'));
- 			
- 			if ($vn_annotation_id) {
-				$this->view->setVar('screen', $this->request->getActionExtra());	// name of screen
- 				
-				// find object editor screen with media bundle
-				$t_ui = ca_editor_uis::loadDefaultUI('ca_object_representations', $this->request, $t_rep->getTypeID());
-				$this->view->setVar('representation_editor_screen', $t_ui->getScreenWithBundle('ca_representation_annotations', $this->request));
- 			}
- 			
- 			return $this->render('widget_representation_annotation_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+
+require_once(__CA_LIB_DIR__ . "/Media.php");
+require_once(__CA_LIB_DIR__ . "/Media/MediaProcessingSettings.php");
+require_once(__CA_LIB_DIR__ . "/BaseEditorController.php");
+
+require_once(__CA_MODELS_DIR__ . "/ca_representation_annotations.php");
+require_once(__CA_MODELS_DIR__ . "/ca_editor_uis.php");
+
+class RepresentationAnnotationEditorController extends BaseEditorController
+{
+    # -------------------------------------------------------
+    protected $ops_table_name = 'ca_representation_annotations';        // name of "subject" table (what we're editing)
+
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+    # -------------------------------------------------------
+    # Sidebar info handler
+    # -------------------------------------------------------
+    public function info($pa_parameters)
+    {
+        AssetLoadManager::register('panel');
+        parent::info($pa_parameters);
+
+        $vn_annotation_id = (isset($pa_parameters['annotation_id'])) ? $pa_parameters['annotation_id'] : null;
+        $t_annotation = new ca_representation_annotations($vn_annotation_id);
+        $t_rep = new ca_object_representations($t_annotation->get('representation_id'));
+
+        if ($vn_annotation_id) {
+            $this->view->setVar('screen', $this->request->getActionExtra());    // name of screen
+
+            // find object editor screen with media bundle
+            $t_ui = ca_editor_uis::loadDefaultUI('ca_object_representations', $this->request, $t_rep->getTypeID());
+            $this->view->setVar(
+                'representation_editor_screen',
+                $t_ui->getScreenWithBundle('ca_representation_annotations', $this->request)
+            );
+        }
+
+        return $this->render('widget_representation_annotation_info_html.php', true);
+    }
+    # -------------------------------------------------------
+}
+
+?>

@@ -30,50 +30,62 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
+require_once(__CA_LIB_DIR__ . '/Export/BaseExportFormat.php');
 
-class ExportJSON extends BaseExportFormat {
-	# ------------------------------------------------------
+class ExportJSON extends BaseExportFormat
+{
+    # ------------------------------------------------------
 
-	# ------------------------------------------------------
-	public function __construct(){
-		$this->ops_name = 'JSON';
-		$this->ops_element_description = _t('Values are field names.');
-		parent::__construct();
-	}
-	# ------------------------------------------------------
-	public function getFileExtension($pa_settings) {
-		return 'json';
-	}
-	# ------------------------------------------------------
-	public function getContentType($pa_settings) {
-		return 'application/json';
-	}
-	# ------------------------------------------------------
-	public function processExport($pa_data,$pa_options=array()){
-		$va_json = array();
+    # ------------------------------------------------------
+    public function __construct()
+    {
+        $this->ops_name = 'JSON';
+        $this->ops_element_description = _t('Values are field names.');
+        parent::__construct();
+    }
+
+    # ------------------------------------------------------
+    public function getFileExtension($pa_settings)
+    {
+        return 'json';
+    }
+
+    # ------------------------------------------------------
+    public function getContentType($pa_settings)
+    {
+        return 'application/json';
+    }
+
+    # ------------------------------------------------------
+    public function processExport($pa_data, $pa_options = array())
+    {
+        $va_json = array();
 
         //TODO
         // Add ability for nested arrays?
-		foreach($pa_data as $pa_item){
-			$vs_column = $pa_item['element'];
-			$va_json[$vs_column] = $pa_item['text'];
-		}
+        foreach ($pa_data as $pa_item) {
+            $vs_column = $pa_item['element'];
+            $va_json[$vs_column] = $pa_item['text'];
+        }
 
-		if(!sizeof($va_json)) { return ''; }
+        if (!sizeof($va_json)) {
+            return '';
+        }
         # print json_encode($va_json)."\n";
-		return json_encode($va_json);
-	}
-	# ------------------------------------------------------
-	public function getMappingErrors($t_mapping){
-		$va_errors = array();
-		$va_top = $t_mapping->getTopLevelItems();
+        return json_encode($va_json);
+    }
 
-		foreach($va_top as $va_item){
+    # ------------------------------------------------------
+    public function getMappingErrors($t_mapping)
+    {
+        $va_errors = array();
+        $va_top = $t_mapping->getTopLevelItems();
+
+        foreach ($va_top as $va_item) {
             // No errors at this time
-		}
+        }
 
-		return $va_errors;
-	}
-	# ------------------------------------------------------
+        return $va_errors;
+    }
+    # ------------------------------------------------------
 }

@@ -33,8 +33,7 @@
 /**
  *
  */
-
-
-class ApplicationException extends Exception {
+class ApplicationException extends Exception
+{
 
 }

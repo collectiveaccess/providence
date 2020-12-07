@@ -32,18 +32,25 @@
 
 namespace ElasticSearch\FieldTypes;
 
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
 
-class Numeric extends GenericElement {
+class Numeric extends GenericElement
+{
 
-	public function __construct($ps_table_name, $ps_element_code) {
-		parent::__construct($ps_table_name, $ps_element_code);
-	}
+    public function __construct($ps_table_name, $ps_element_code)
+    {
+        parent::__construct($ps_table_name, $ps_element_code);
+    }
 
-	public function getIndexingFragment($pm_content, $pa_options) {
-		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
-		if ($pm_content == '') { return parent::getIndexingFragment($pm_content, $pa_options); }
+    public function getIndexingFragment($pm_content, $pa_options)
+    {
+        if (is_array($pm_content)) {
+            $pm_content = serialize($pm_content);
+        }
+        if ($pm_content == '') {
+            return parent::getIndexingFragment($pm_content, $pa_options);
+        }
 
-		return parent::getIndexingFragment((float) $pm_content, $pa_options);
-	}
+        return parent::getIndexingFragment((float)$pm_content, $pa_options);
+    }
 }

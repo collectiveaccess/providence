@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/GeoNamesController.php :
  * ----------------------------------------------------------------------
@@ -25,101 +26,110 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
+require_once(__CA_APP_DIR__ . "/helpers/displayHelpers.php");
+require_once(__CA_MODELS_DIR__ . "/ca_locales.php");
 
 
-class GeoNamesController extends ActionController {
- 	# -------------------------------------------------------
- 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 		parent::__construct($po_request, $po_response, $pa_view_paths);
- 	}
- 	# -------------------------------------------------------
- 	# AJAX handlers
- 	# -------------------------------------------------------
-	public function Get($pa_additional_query_params=null, $pa_options=null) {
-		global $g_ui_locale_id;
+class GeoNamesController extends ActionController
+{
+    # -------------------------------------------------------
+    public function __construct(&$po_request, &$po_response, $pa_view_paths = null)
+    {
+        parent::__construct($po_request, $po_response, $pa_view_paths);
+    }
+    # -------------------------------------------------------
+    # AJAX handlers
+    # -------------------------------------------------------
+    public function Get($pa_additional_query_params = null, $pa_options = null)
+    {
+        global $g_ui_locale_id;
 
-		$vn_max = ($this->request->getParameter('maxRows', pInteger) ? $this->request->getParameter('maxRows', pInteger) : 20);
-		$ps_query = $this->request->getParameter('term', pString);
+        $vn_max = ($this->request->getParameter('maxRows', pInteger) ? $this->request->getParameter(
+            'maxRows',
+            pInteger
+        ) : 20);
+        $ps_query = $this->request->getParameter('term', pString);
 
-		$ps_gn_elements = urldecode($this->request->getParameter('gnElements', pString));
-		$ps_gn_delimiter = urldecode($this->request->getParameter('gnDelimiter', pString));
+        $ps_gn_elements = urldecode($this->request->getParameter('gnElements', pString));
+        $ps_gn_delimiter = urldecode($this->request->getParameter('gnDelimiter', pString));
 
-		$pa_elements = explode(',',$ps_gn_elements);
+        $pa_elements = explode(',', $ps_gn_elements);
 
-		$vo_conf = Configuration::load();
-		$vs_user = trim($vo_conf->get("geonames_user"));
+        $vo_conf = Configuration::load();
+        $vs_user = trim($vo_conf->get("geonames_user"));
 
-		
-		$va_items = array();
-		if (mb_strlen($ps_query) >= 3) {
-			$vs_base = $vo_conf->get('geonames_api_base_url') . '/search';
-			$t_locale = new ca_locales($g_ui_locale_id);
-			$vs_lang = $t_locale->get("language");
-			$va_params = array(
-				"q" => $ps_query,
-				"lang" => $vs_lang,
-				'style' => 'full',
-				'username' => $vs_user,
-				'maxRows' => $vn_max,
-			);
 
-			$vs_query_string = '';
-			foreach ($va_params as $vs_key => $vs_value) {
-				$vs_query_string .= "$vs_key=" . urlencode($vs_value) . "&";
-			}
+        $va_items = array();
+        if (mb_strlen($ps_query) >= 3) {
+            $vs_base = $vo_conf->get('geonames_api_base_url') . '/search';
+            $t_locale = new ca_locales($g_ui_locale_id);
+            $vs_lang = $t_locale->get("language");
+            $va_params = array(
+                "q" => $ps_query,
+                "lang" => $vs_lang,
+                'style' => 'full',
+                'username' => $vs_user,
+                'maxRows' => $vn_max,
+            );
 
-			try {
+            $vs_query_string = '';
+            foreach ($va_params as $vs_key => $vs_value) {
+                $vs_query_string .= "$vs_key=" . urlencode($vs_value) . "&";
+            }
 
-				$vs_xml = caQueryExternalWebservice("{$vs_base}?$vs_query_string");
-				$vo_xml = new SimpleXMLElement($vs_xml);
-				
-				$va_attr = $vo_xml->status ? $vo_xml->status->attributes() : null;
-				if ($va_attr && isset($va_attr['value']) && ((int)$va_attr['value'] > 0)) { 
-					$va_items[0] = array(
-						'displayname' => _t('Connection to GeoNames with username "%1" was rejected with the message "%2". Check your configuration and make sure your GeoNames.org account is enabled for web services.', $vs_user, $va_attr['message']),
-						'lat' => '',
-						'lng' => '',
-					);
-					$va_items[0]['label'] = $va_items[0]['displayname'];
-				} else {
-					foreach($vo_xml->children() as $vo_child){
-						if($vo_child->getName()=="geoname"){
-							$va_elements = array();
+            try {
+                $vs_xml = caQueryExternalWebservice("{$vs_base}?$vs_query_string");
+                $vo_xml = new SimpleXMLElement($vs_xml);
 
-							foreach($pa_elements as $ps_element){
-								$vs_val = $vo_child->{trim($ps_element)};
-								if(strlen(trim($vs_val))>0){
-									$va_elements[] = trim($vs_val);
-								}
-							}
+                $va_attr = $vo_xml->status ? $vo_xml->status->attributes() : null;
+                if ($va_attr && isset($va_attr['value']) && ((int)$va_attr['value'] > 0)) {
+                    $va_items[0] = array(
+                        'displayname' => _t(
+                            'Connection to GeoNames with username "%1" was rejected with the message "%2". Check your configuration and make sure your GeoNames.org account is enabled for web services.',
+                            $vs_user,
+                            $va_attr['message']
+                        ),
+                        'lat' => '',
+                        'lng' => '',
+                    );
+                    $va_items[0]['label'] = $va_items[0]['displayname'];
+                } else {
+                    foreach ($vo_xml->children() as $vo_child) {
+                        if ($vo_child->getName() == "geoname") {
+                            $va_elements = array();
 
-							$va_items[(string)$vo_child->geonameId] = array(
-								'displayname' => $vo_child->name,
-								'label' => join($ps_gn_delimiter,$va_elements).
-											($vo_child->lat ? " [".$vo_child->lat."," : '').
-											($vo_child->lng ? $vo_child->lng."]" : ''),
-								'lat' => $vo_child->lat ? $vo_child->lat : null,
-								'lng' => $vo_child->lng ? $vo_child->lng : null,
-								'id' => (string)$vo_child->geonameId
-							);
-						}
-					}
-				}
-			} catch (Exception $e) {
-				$va_items[0] = array(
-					'displayname' => _t('Could not connect to GeoNames'),
-					'lat' => '',
-					'lng' => '',
-					'id' => 0
-				);
-				$va_items[0]['label'] = $va_items[0]['displayname'];
-			}
-		}
+                            foreach ($pa_elements as $ps_element) {
+                                $vs_val = $vo_child->{trim($ps_element)};
+                                if (strlen(trim($vs_val)) > 0) {
+                                    $va_elements[] = trim($vs_val);
+                                }
+                            }
 
-		$this->view->setVar('geonames_list', $va_items);
-		return $this->render('ajax_geonames_list_html.php');
-	}
-	# -------------------------------------------------------
+                            $va_items[(string)$vo_child->geonameId] = array(
+                                'displayname' => $vo_child->name,
+                                'label' => join($ps_gn_delimiter, $va_elements) .
+                                    ($vo_child->lat ? " [" . $vo_child->lat . "," : '') .
+                                    ($vo_child->lng ? $vo_child->lng . "]" : ''),
+                                'lat' => $vo_child->lat ? $vo_child->lat : null,
+                                'lng' => $vo_child->lng ? $vo_child->lng : null,
+                                'id' => (string)$vo_child->geonameId
+                            );
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                $va_items[0] = array(
+                    'displayname' => _t('Could not connect to GeoNames'),
+                    'lat' => '',
+                    'lng' => '',
+                    'id' => 0
+                );
+                $va_items[0]['label'] = $va_items[0]['displayname'];
+            }
+        }
+
+        $this->view->setVar('geonames_list', $va_items);
+        return $this->render('ajax_geonames_list_html.php');
+    }
+    # -------------------------------------------------------
 }

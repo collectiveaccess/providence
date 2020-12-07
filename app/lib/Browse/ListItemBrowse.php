@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,29 +29,35 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
- 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/Browse/ListItemBrowseResult.php');
- 
-	class ListItemBrowse extends BaseBrowse {
-		# ------------------------------------------------------
-		/**
-		 * Which table does this class represent?
-		 */
-		protected $ops_tablename = "ca_list_items";
-		protected $ops_primary_key = "item_id";
-		# ----------------------------------------------------------------------
-		public function __construct($pn_browse_id=null, $ps_context='') {
-			parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
-		}
-		# ------------------------------------------------------
-		public function getResults($pa_options=null) {
-			return parent::doGetResults(new ListItemBrowseResult(), $pa_options);
-		}
-		# ----------------------------------------------------------------------
-	}
+
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__ . '/Browse/BaseBrowse.php');
+require_once(__CA_LIB_DIR__ . '/Browse/ListItemBrowseResult.php');
+
+class ListItemBrowse extends BaseBrowse
+{
+    # ------------------------------------------------------
+    /**
+     * Which table does this class represent?
+     */
+    protected $ops_tablename = "ca_list_items";
+    protected $ops_primary_key = "item_id";
+
+    # ----------------------------------------------------------------------
+    public function __construct($pn_browse_id = null, $ps_context = '')
+    {
+        parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
+    }
+
+    # ------------------------------------------------------
+    public function getResults($pa_options = null)
+    {
+        return parent::doGetResults(new ListItemBrowseResult(), $pa_options);
+    }
+    # ----------------------------------------------------------------------
+}
+
 ?>

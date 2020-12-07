@@ -25,23 +25,32 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request			= $this->getVar('request');
-	$va_item_list			= $this->getVar('item_list');
-	$vs_table_num			= $this->getVar('table_num');
-	$vs_table_display		= $this->getVar('table_display');
-	$vs_status_display		= $this->getVar('status_display');
-	$vs_widget_id			= $this->getVar('widget_id');
-	$vn_height_px			= $this->getVar('height_px')
+
+$po_request = $this->getVar('request');
+$va_item_list = $this->getVar('item_list');
+$vs_table_num = $this->getVar('table_num');
+$vs_table_display = $this->getVar('table_display');
+$vs_status_display = $this->getVar('status_display');
+$vs_widget_id = $this->getVar('widget_id');
+$vn_height_px = $this->getVar('height_px')
 ?>
 
 <div class="dashboardWidgetContentContainer">
-	<div class="dashboardWidgetHeading"><?php print _t("Showing %1 <span style='font-weight:bold; text-transform:lowercase;'>%2</span> with status <span style='font-weight:bold; text-transform:lowercase;'>\"%3\"</span>",sizeof($va_item_list),$vs_table_display,$vs_status_display); ?></div>
-	<div class="dashboardWidgetScrollMedium"><ul>
-<?php
-	foreach($va_item_list as $vn_id => $va_record) {
-		print "<li><a href=\"".caEditorUrl($po_request, $vs_table_num, $vn_id)."\">".(strlen($va_record["display"])>0 ? $va_record["display"] : '['._t("BLANK").']')."</a></li>\n";
-	}
-?>
-	</ul></div>
+    <div class="dashboardWidgetHeading"><?php print _t(
+            "Showing %1 <span style='font-weight:bold; text-transform:lowercase;'>%2</span> with status <span style='font-weight:bold; text-transform:lowercase;'>\"%3\"</span>",
+            sizeof($va_item_list),
+            $vs_table_display,
+            $vs_status_display
+        ); ?></div>
+    <div class="dashboardWidgetScrollMedium">
+        <ul>
+            <?php
+            foreach ($va_item_list as $vn_id => $va_record) {
+                print "<li><a href=\"" . caEditorUrl($po_request, $vs_table_num, $vn_id) . "\">" . (strlen(
+                        $va_record["display"]
+                    ) > 0 ? $va_record["display"] : '[' . _t("BLANK") . ']') . "</a></li>\n";
+            }
+            ?>
+        </ul>
+    </div>
 </div>

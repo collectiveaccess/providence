@@ -26,47 +26,54 @@
  * ----------------------------------------------------------------------
  */
 
-	require_once(__CA_LIB_DIR__."/Plugins/BanHammer/BaseBanHammerPlugin.php");
+require_once(__CA_LIB_DIR__ . "/Plugins/BanHammer/BaseBanHammerPlugin.php");
 
-	class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugIn  {
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static $priority = 100;
-		
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function evaluate($request, $options=null) {
-			self::init($request, $options);
-			$config = self::$config->get('plugins.UserAgent');
-			$banned_useragents = caGetOption('banned_useragents', $config, []);
-			
-			$request_useragent = $_SERVER["HTTP_USER_AGENT"];
-			foreach($banned_useragents as $u) {
-				if (preg_match("!".preg_quote($u, "!")."!", $request_useragent)) {
-					return 1.0;
-				}
-			}
-			
-			
-			return 0;
-		}
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function shouldBanIP() {
-			return true;
-		}
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function banTTL() {
-			return 60 * 60 * 24;	// ban for 1 day
-		}
-		# ------------------------------------------------------
-	}
+class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugIn
+{
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    static public $priority = 100;
+
+    # ------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function evaluate($request, $options = null)
+    {
+        self::init($request, $options);
+        $config = self::$config->get('plugins.UserAgent');
+        $banned_useragents = caGetOption('banned_useragents', $config, []);
+
+        $request_useragent = $_SERVER["HTTP_USER_AGENT"];
+        foreach ($banned_useragents as $u) {
+            if (preg_match("!" . preg_quote($u, "!") . "!", $request_useragent)) {
+                return 1.0;
+            }
+        }
+
+
+        return 0;
+    }
+    # ------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function shouldBanIP()
+    {
+        return true;
+    }
+    # ------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function banTTL()
+    {
+        return 60 * 60 * 24;    // ban for 1 day
+    }
+    # ------------------------------------------------------
+}

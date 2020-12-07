@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,52 +29,63 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-include_once(__CA_LIB_DIR__."/ApplicationError.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
-include_once(__CA_LIB_DIR__."/Datamodel.php");
-include_once(__CA_LIB_DIR__."/Db.php");
-include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
+
+/**
+ *
+ */
+
+include_once(__CA_LIB_DIR__ . "/ApplicationError.php");
+include_once(__CA_LIB_DIR__ . "/Configuration.php");
+include_once(__CA_LIB_DIR__ . "/Datamodel.php");
+include_once(__CA_LIB_DIR__ . "/Db.php");
+include_once(__CA_LIB_DIR__ . "/Parsers/TimeExpressionParser.php");
 
 
-class BaseLogger {
-	# ----------------------------------------
-  	protected $o_db;
-	# ----------------------------------------
-	public function __construct($pa_entry=null) {
-		$this->clearTransaction();
-		
-		if (is_array($pa_entry)) {
-			$this->log($pa_entry);
-		}
-	}
-	# ----------------------------------------
-	public function log($pa_entry) {
-		die("Method must be implemented!");
-	}
-	# ----------------------------------------
-	public function search($ps_datetime_expression, $ps_code=null) {
-		die("Method must be implemented!");
-	}
-	# ----------------------------------------
-	# --- Transactions
-	# ----------------------------------------
-	public function setTransaction($po_transaction) {
-		if (is_object($po_transaction)) {
-			$this->o_db = $po_transaction->getDb();
-			return true;
-		} else {
-			return false;
-		}
-	}
-	# ----------------------------------------
-	public function clearTransaction() {
-		$this->o_db = new Db();
-	}
-	# ----------------------------------------
+class BaseLogger
+{
+    # ----------------------------------------
+    protected $o_db;
+
+    # ----------------------------------------
+    public function __construct($pa_entry = null)
+    {
+        $this->clearTransaction();
+
+        if (is_array($pa_entry)) {
+            $this->log($pa_entry);
+        }
+    }
+
+    # ----------------------------------------
+    public function log($pa_entry)
+    {
+        die("Method must be implemented!");
+    }
+
+    # ----------------------------------------
+    public function search($ps_datetime_expression, $ps_code = null)
+    {
+        die("Method must be implemented!");
+    }
+    # ----------------------------------------
+    # --- Transactions
+    # ----------------------------------------
+    public function setTransaction($po_transaction)
+    {
+        if (is_object($po_transaction)) {
+            $this->o_db = $po_transaction->getDb();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    # ----------------------------------------
+    public function clearTransaction()
+    {
+        $this->o_db = new Db();
+    }
+    # ----------------------------------------
 }
+
 ?>

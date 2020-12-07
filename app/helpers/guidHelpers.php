@@ -30,19 +30,20 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ApplicationVars.php');
+require_once(__CA_LIB_DIR__ . '/ApplicationVars.php');
 
 /**
  * Ensure system GUID is set and set system-wide GUID constant
  */
-function caGetSystemGuid() {
-	$av = new ApplicationVars();
-	if(!($system_guid = $av->getVar('system_guid'))) {
-		$system_guid = caGenerateGUID();
-		$av->setVar('system_guid', $system_guid);
-		$av->save();
-	}
-	define('__CA_SYSTEM_GUID__', $system_guid);
-	
-	return $system_guid;
+function caGetSystemGuid()
+{
+    $av = new ApplicationVars();
+    if (!($system_guid = $av->getVar('system_guid'))) {
+        $system_guid = caGenerateGUID();
+        $av->setVar('system_guid', $system_guid);
+        $av->save();
+    }
+    define('__CA_SYSTEM_GUID__', $system_guid);
+
+    return $system_guid;
 }

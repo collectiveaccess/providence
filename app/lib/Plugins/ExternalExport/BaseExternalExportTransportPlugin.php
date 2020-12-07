@@ -29,86 +29,98 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
-include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
-include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 
-abstract class BaseExternalExportTransportPlugin Extends WLPlug {
-	# ------------------------------------------------
-	// properties for this plugin instance
-	protected $properties = [
-		
-	];
+/**
+ *
+ */
+include_once(__CA_LIB_DIR__ . "/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugExternalExportTransport.php");
 
-	// plugin info
-	protected $info =[
-		"NAME" => "?",
-		"PROPERTIES" => [
-			'id' => 'W'
-		]
-	];
-	
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct() {
-	
-	}
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function register() {
-		$this->opo_config = Configuration::load();
-		
-		$this->info["INSTANCE"] = $this;
-		return $this->info;
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns status of plugin. Normally this is overriden by the plugin subclass
-	 *
-	 * @return array - status info array; 'available' key determines if the plugin should be loaded or not
-	 */
-	public function checkStatus() {
-		$va_status = parent::checkStatus();
-		
-		if ($this->register()) {
-			$va_status['available'] = true;
-		}
-		
-		return $va_status;
-	}
-	# ------------------------------------------------
-	/**
-	 * Process export. This *must* be overriden 
-	 */
-	abstract public function process($t_instance, $target_info, $options=null);
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function init() {
-	
-		return;
-	}
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function cleanup() {
-		return;
-	}
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function getAvailableSettings() {
-		return [];
-	}
-	# ------------------------------------------------
+abstract class BaseExternalExportTransportPlugin Extends WLPlug
+{
+    # ------------------------------------------------
+    // properties for this plugin instance
+    protected $properties = [
+
+    ];
+
+    // plugin info
+    protected $info = [
+        "NAME" => "?",
+        "PROPERTIES" => [
+            'id' => 'W'
+        ]
+    ];
+
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function __construct()
+    {
+    }
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function register()
+    {
+        $this->opo_config = Configuration::load();
+
+        $this->info["INSTANCE"] = $this;
+        return $this->info;
+    }
+    # ------------------------------------------------
+
+    /**
+     * Returns status of plugin. Normally this is overriden by the plugin subclass
+     *
+     * @return array - status info array; 'available' key determines if the plugin should be loaded or not
+     */
+    public function checkStatus()
+    {
+        $va_status = parent::checkStatus();
+
+        if ($this->register()) {
+            $va_status['available'] = true;
+        }
+
+        return $va_status;
+    }
+    # ------------------------------------------------
+
+    /**
+     * Process export. This *must* be overriden
+     */
+    abstract public function process($t_instance, $target_info, $options = null);
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function init()
+    {
+        return;
+    }
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function cleanup()
+    {
+        return;
+    }
+    # ------------------------------------------------
+
+    /**
+     *
+     */
+    public function getAvailableSettings()
+    {
+        return [];
+    }
+    # ------------------------------------------------
 }

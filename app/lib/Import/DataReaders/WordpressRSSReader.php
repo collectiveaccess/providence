@@ -34,68 +34,71 @@
  *
  */
 
-require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
-require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+require_once(__CA_LIB_DIR__ . '/Import/DataReaders/BaseXMLDataReader.php');
+require_once(__CA_APP_DIR__ . '/helpers/displayHelpers.php');
 
-class WordpressRSSReader extends BaseXMLDataReader {
-	# -------------------------------------------------------
-	/**
-	 * Skip root tag when evaluating XPath?
-	 *
-	 * If set then the XPath used to select data to read can omit the root XML tag
-	 */
-	protected $opb_register_root_tag = false;
+class WordpressRSSReader extends BaseXMLDataReader
+{
+    # -------------------------------------------------------
+    /**
+     * Skip root tag when evaluating XPath?
+     *
+     * If set then the XPath used to select data to read can omit the root XML tag
+     */
+    protected $opb_register_root_tag = false;
 
-	/**
-	 * XML namespace URL used by data
-	 */
-	protected $ops_xml_namespace = 'http://wordpress.org/export/1.2/';
+    /**
+     * XML namespace URL used by data
+     */
+    protected $ops_xml_namespace = 'http://wordpress.org/export/1.2/';
 
-	/**
-	 * XML namespace prefix to pair with namespace URL
-	 * For files that use a namespace this should match that actually used in the file;
-	 * For files that don't use a namespace this should be set to *something* – doesn't really matter what
-	 */
-	protected $ops_xml_namespace_prefix = '';
+    /**
+     * XML namespace prefix to pair with namespace URL
+     * For files that use a namespace this should match that actually used in the file;
+     * For files that don't use a namespace this should be set to *something* – doesn't really matter what
+     */
+    protected $ops_xml_namespace_prefix = '';
 
-	/**
-	 * XPath to select data for reading
-	 */
-	protected $ops_xpath = '//item';
+    /**
+     * XPath to select data for reading
+     */
+    protected $ops_xpath = '//item';
 
-	/**
-	 *
-	 */
-	protected $ops_root_tag = 'rss';
+    /**
+     *
+     */
+    protected $ops_root_tag = 'rss';
 
-	/**
-	 * Merge attributes of row-level tag into record as regular values?
-	 *
-	 * This is useful for formats that encode row_ids as attributes that are more easily
-	 * referred to in import mappings as plain old record values
-	 */
-	protected $opb_use_row_tag_attributes_as_row_level_values = false;
+    /**
+     * Merge attributes of row-level tag into record as regular values?
+     *
+     * This is useful for formats that encode row_ids as attributes that are more easily
+     * referred to in import mappings as plain old record values
+     */
+    protected $opb_use_row_tag_attributes_as_row_level_values = false;
 
-	/**
-	 * Treat tag names as case insensitive?
-	 *
-	 * It's often easier in an import mapping to not worry about case in source specifications
-	 * Setting this to true will cause all tag names to be matched without regard to case for the format
-	 */
-	protected $opb_tag_names_as_case_insensitive = true;
+    /**
+     * Treat tag names as case insensitive?
+     *
+     * It's often easier in an import mapping to not worry about case in source specifications
+     * Setting this to true will cause all tag names to be matched without regard to case for the format
+     */
+    protected $opb_tag_names_as_case_insensitive = true;
 
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct($ps_source=null, $pa_options=null){
-		parent::__construct($ps_source, $pa_options);
+    # -------------------------------------------------------
 
-		$this->ops_title = _t('Wordpress RSS Reader');
-		$this->ops_display_name = _t('Wordpress RSS');
-		$this->ops_description = _t('Reads Wordpress RSS (XML) files');
+    /**
+     *
+     */
+    public function __construct($ps_source = null, $pa_options = null)
+    {
+        parent::__construct($ps_source, $pa_options);
 
-		$this->opa_formats = array('wordpressrss');	// must be all lowercase to allow for case-insensitive matching
-	}
-	# -------------------------------------------------------
+        $this->ops_title = _t('Wordpress RSS Reader');
+        $this->ops_display_name = _t('Wordpress RSS');
+        $this->ops_description = _t('Reads Wordpress RSS (XML) files');
+
+        $this->opa_formats = array('wordpressrss');    // must be all lowercase to allow for case-insensitive matching
+    }
+    # -------------------------------------------------------
 }

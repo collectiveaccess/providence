@@ -25,40 +25,44 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request 			= $this->getVar('request');
-	$va_instances 			= $this->getVar('instances');
-	$va_settings 			= $this->getVar('settings');
-	$vs_widget_id 			= $this->getVar('widget_id');
+
+$po_request = $this->getVar('request');
+$va_instances = $this->getVar('instances');
+$va_settings = $this->getVar('settings');
+$vs_widget_id = $this->getVar('widget_id');
 ?>
 
 <div class="dashboardWidgetContentContainer" style="font-size:13px; padding-right:10px;">
-<?php
-	print _t("There are ");
-	$va_counts = array();
-	$i = 1;
-	foreach($this->getVar('counts') as $vs_table => $vn_count) {
-		if((sizeof($this->getVar('counts')) > 1) && ($i == sizeof($this->getVar('counts')))){
-			 $vs_and = ' '._t("and").' ';
-		}else{
-			$vs_and = "";
-		}
-		
-		$link = caSearchLink($po_request, $vn_count, '', $vs_table, '*');
-		if ($vn_count == 1) {
-			$va_counts[] = $vs_and."<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
-		} else {
-			$va_counts[] = $vs_and."<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_PLURAL'));
-		}
-		$i++;
-	}
-	# --- only use a comma to join if there are more than 2 things
-	if((sizeof($va_counts) > 2)){
-		$vs_join = ", ";
-	}else{
-		$vs_join = " ";
-	}
-	print implode($va_counts, $vs_join).".";
-?>
-	
+    <?php
+    print _t("There are ");
+    $va_counts = array();
+    $i = 1;
+    foreach ($this->getVar('counts') as $vs_table => $vn_count) {
+        if ((sizeof($this->getVar('counts')) > 1) && ($i == sizeof($this->getVar('counts')))) {
+            $vs_and = ' ' . _t("and") . ' ';
+        } else {
+            $vs_and = "";
+        }
+
+        $link = caSearchLink($po_request, $vn_count, '', $vs_table, '*');
+        if ($vn_count == 1) {
+            $va_counts[] = $vs_and . "<b>" . $link . '</b>&nbsp;' . _t(
+                    $va_instances[$vs_table]->getProperty('NAME_SINGULAR')
+                );
+        } else {
+            $va_counts[] = $vs_and . "<b>" . $link . '</b>&nbsp;' . _t(
+                    $va_instances[$vs_table]->getProperty('NAME_PLURAL')
+                );
+        }
+        $i++;
+    }
+    # --- only use a comma to join if there are more than 2 things
+    if ((sizeof($va_counts) > 2)) {
+        $vs_join = ", ";
+    } else {
+        $vs_join = " ";
+    }
+    print implode($va_counts, $vs_join) . ".";
+    ?>
+
 </div>

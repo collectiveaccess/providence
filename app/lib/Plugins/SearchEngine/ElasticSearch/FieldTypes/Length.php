@@ -32,58 +32,69 @@
 
 namespace ElasticSearch\FieldTypes;
 
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
+use Exception;
+use Zend_Search_Lucene_Index_Term;
 
-class Length extends GenericElement {
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
 
-	public function __construct($ps_table_name, $ps_element_code) {
-		parent::__construct($ps_table_name, $ps_element_code);
-	}
+class Length extends GenericElement
+{
 
-	public function getIndexingFragment($pm_content, $pa_options) {
-		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
-		if ($pm_content == '') { return parent::getIndexingFragment($pm_content, $pa_options); }
+    public function __construct($ps_table_name, $ps_element_code)
+    {
+        parent::__construct($ps_table_name, $ps_element_code);
+    }
 
-		// we index lengths as float in meters --that way we can do range searches etc.
-		try {
-			$o_parsed_length = caParseLengthDimension($pm_content);
-			return parent::getIndexingFragment((float) $o_parsed_length->convertTo('METER',6, 'en_US'), $pa_options);
-		} catch (\Exception $e) {
-			return array();
-		}
-	}
+    public function getIndexingFragment($pm_content, $pa_options)
+    {
+        if (is_array($pm_content)) {
+            $pm_content = serialize($pm_content);
+        }
+        if ($pm_content == '') {
+            return parent::getIndexingFragment($pm_content, $pa_options);
+        }
 
-	/**
-	 * @param \Zend_Search_Lucene_Index_Term $po_term
-	 * @return \Zend_Search_Lucene_Index_Term
-	 */
-	public function getRewrittenTerm($po_term) {
-		$va_tmp = explode('\\/', $po_term->field);
-		if(sizeof($va_tmp) == 3) {
-			unset($va_tmp[1]);
-			$po_term = new \Zend_Search_Lucene_Index_Term(
-				$po_term->text, join('\\/', $va_tmp)
-			);
-		}
+        // we index lengths as float in meters --that way we can do range searches etc.
+        try {
+            $o_parsed_length = caParseLengthDimension($pm_content);
+            return parent::getIndexingFragment((float)$o_parsed_length->convertTo('METER', 6, 'en_US'), $pa_options);
+        } catch (Exception $e) {
+            return array();
+        }
+    }
 
-		if(strtolower($po_term->text) === '[blank]') {
-			return new \Zend_Search_Lucene_Index_Term(
-				$po_term->field, '_missing_'
-			);
-		} elseif(strtolower($po_term->text) === '[set]') {
-			return new \Zend_Search_Lucene_Index_Term(
-				$po_term->field, '_exists_'
-			);
-		}
+    /**
+     * @param Zend_Search_Lucene_Index_Term $po_term
+     * @return Zend_Search_Lucene_Index_Term
+     */
+    public function getRewrittenTerm($po_term)
+    {
+        $va_tmp = explode('\\/', $po_term->field);
+        if (sizeof($va_tmp) == 3) {
+            unset($va_tmp[1]);
+            $po_term = new Zend_Search_Lucene_Index_Term(
+                $po_term->text, join('\\/', $va_tmp)
+            );
+        }
 
-		// convert incoming text to meters so that we can query our standardized indexing (see above)
-		try {
-			return new \Zend_Search_Lucene_Index_Term(
-				(float) caParseLengthDimension($po_term->text)->convertTo('METER',6, 'en_US'),
-				$po_term->field
-			);
-		} catch (\Exception $e) {
-			return $po_term;
-		}
-	}
+        if (strtolower($po_term->text) === '[blank]') {
+            return new Zend_Search_Lucene_Index_Term(
+                $po_term->field, '_missing_'
+            );
+        } elseif (strtolower($po_term->text) === '[set]') {
+            return new Zend_Search_Lucene_Index_Term(
+                $po_term->field, '_exists_'
+            );
+        }
+
+        // convert incoming text to meters so that we can query our standardized indexing (see above)
+        try {
+            return new Zend_Search_Lucene_Index_Term(
+                (float)caParseLengthDimension($po_term->text)->convertTo('METER', 6, 'en_US'),
+                $po_term->field
+            );
+        } catch (Exception $e) {
+            return $po_term;
+        }
+    }
 }

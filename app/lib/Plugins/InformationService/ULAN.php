@@ -30,108 +30,134 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
-require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseGettyLODServicePlugin.php");
+require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseGettyLODServicePlugin.php");
 
 global $g_information_service_settings_ULAN;
 $g_information_service_settings_ULAN = array();
 
-class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements IWLPlugInformationService {
-	# ------------------------------------------------
-	static $s_settings;
-	# ------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct() {
-		global $g_information_service_settings_ULAN;
+class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements IWLPlugInformationService
+{
+    # ------------------------------------------------
+    static public $s_settings;
+    # ------------------------------------------------
 
-		WLPlugInformationServiceULAN::$s_settings = $g_information_service_settings_ULAN;
-		parent::__construct();
-		$this->info['NAME'] = 'ULAN';
-		
-		$this->description = _t('Provides access to Getty Linked Open Data ULAN service');
-	}
-	# ------------------------------------------------
-	protected function getConfigName() {
-		return 'ulan';
-	}
-	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceULAN::$s_settings;
-	}
-	# ------------------------------------------------
-	# Data
-	# ------------------------------------------------
+    /**
+     *
+     */
+    public function __construct()
+    {
+        global $g_information_service_settings_ULAN;
 
-	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
-		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?Bio {
-    ?ID a skos:Concept; '.$pa_params['search_field'].' "'.$ps_search.'"; skos:inScheme ulan: ;
+        WLPlugInformationServiceULAN::$s_settings = $g_information_service_settings_ULAN;
+        parent::__construct();
+        $this->info['NAME'] = 'ULAN';
+
+        $this->description = _t('Provides access to Getty Linked Open Data ULAN service');
+    }
+
+    # ------------------------------------------------
+    protected function getConfigName()
+    {
+        return 'ulan';
+    }
+    # ------------------------------------------------
+
+    /**
+     * Get all settings settings defined by this plugin as an array
+     *
+     * @return array
+     */
+    public function getAvailableSettings()
+    {
+        return WLPlugInformationServiceULAN::$s_settings;
+    }
+    # ------------------------------------------------
+    # Data
+    # ------------------------------------------------
+
+    public function _buildQuery($ps_search, $pa_options, $pa_params)
+    {
+        $vs_query = urlencode(
+            'SELECT ?ID ?TermPrefLabel ?Parents ?Bio {
+    ?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme ulan: ;
     gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
     {?ID foaf:focus/gvp:biographyPreferred/schema:description ?Bio}
     {?ID gvp:parentStringAbbrev ?Parents}
-} OFFSET '.$pa_params['start'].' LIMIT '.$pa_params['limit']);
-		return $vs_query;
+} OFFSET ' . $pa_params['start'] . ' LIMIT ' . $pa_params['limit']
+        );
+        return $vs_query;
+    }
 
-	}
+    public function _cleanResults($pa_results, $pa_options, $pa_params)
+    {
+        if (!is_array($pa_results)) {
+            return false;
+        }
 
-	public function _cleanResults( $pa_results, $pa_options, $pa_params ) {
-		if(!is_array($pa_results)) { return false; }
+        if ($pa_params['isRaw']) {
+            return $pa_results;
+        }
 
-		if($pa_params['isRaw']) { return $pa_results; }
+        $va_return = array();
+        foreach ($pa_results as $va_values) {
+            $vs_id = '';
+            if (preg_match("/\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
+                $vs_id = str_replace('/', '', $va_matches[0]);
+            }
 
-		$va_return = array();
-		foreach($pa_results as $va_values) {
-			$vs_id = '';
-			if(preg_match("/\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
-				$vs_id = str_replace('/', '', $va_matches[0]);
-			}
+            $vs_label = (caGetOption(
+                    'format',
+                    $pa_options,
+                    null,
+                    ['forceToLowercase' => true]
+                ) !== 'short') ? '[' . str_replace(
+                    'ulan:',
+                    '',
+                    $vs_id
+                ) . '] ' . $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ") - " . $va_values['Bio']['value'] : $va_values['TermPrefLabel']['value'];
 
-			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) !== 'short') ? '['. str_replace('ulan:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].") - " . $va_values['Bio']['value'] : $va_values['TermPrefLabel']['value'];
+            $va_return['results'][] = array(
+                'label' => htmlentities($vs_label),
+                'url' => $va_values['ID']['value'],
+                'idno' => $vs_id,
+            );
+        }
 
-			$va_return['results'][] = array(
-				'label' => htmlentities($vs_label),
-				'url' => $va_values['ID']['value'],
-				'idno' => $vs_id,
-			);
-		}
+        $va_return['count'] = is_array($va_return['results']) ? sizeof($va_return['results']) : 0;
 
-		$va_return['count'] = is_array($va_return['results']) ? sizeof($va_return['results']) : 0;
+        return $va_return;
+    }
+    /**
+     * Perform lookup on ULAN-based data service
+     *
+     * @param array $pa_settings Plugin settings values
+     * @param string $ps_search The expression with which to query the remote data service
+     * @param array $pa_options Lookup options
+     *            phrase => send a lucene phrase search instead of keywords
+     *            raw => return raw, unprocessed results from getty service
+     *            start =>
+     *            limit =>
+     *            short = return short label (term only) [Default is false]
+     * @return array
+     */
+    # ------------------------------------------------
+    /**
+     * Get display value
+     * @param string $ps_text
+     * @return string
+     */
+    public function getDisplayValueFromLookupText($ps_text)
+    {
+        if (!$ps_text) {
+            return '';
+        }
+        $va_matches = array();
 
-		return $va_return;
-	}
-	/**
-	 * Perform lookup on ULAN-based data service
-	 *
-	 * @param array $pa_settings Plugin settings values
-	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options
-	 * 			phrase => send a lucene phrase search instead of keywords
-	 * 			raw => return raw, unprocessed results from getty service
-	 * 			start =>
-	 * 			limit =>
-	 *			short = return short label (term only) [Default is false]
-	 * @return array
-	 */
-	# ------------------------------------------------
-	/**
-	 * Get display value
-	 * @param string $ps_text
-	 * @return string
-	 */
-	public function getDisplayValueFromLookupText($ps_text) {
-		if(!$ps_text) { return ''; }
-		$va_matches = array();
-
-		if(preg_match("/^\[[0-9]+\]\s+([A-Za-z\s]+)\;.+\(.+\)$/", $ps_text, $va_matches)) {
-			return $va_matches[1];
-		}
-		return $ps_text;
-	}
-	# ------------------------------------------------
+        if (preg_match("/^\[[0-9]+\]\s+([A-Za-z\s]+)\;.+\(.+\)$/", $ps_text, $va_matches)) {
+            return $va_matches[1];
+        }
+        return $ps_text;
+    }
+    # ------------------------------------------------
 }

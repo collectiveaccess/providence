@@ -27,46 +27,57 @@
  */
 
 
-	class BaseBanHammerPlugin {
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static $priority = 10;
-		
-		/**
-		 *
-		 */
-		static $config;
-		
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function init($request, $options=null) {
-			if(!self::$config) { self::$config = Configuration::load(__CA_CONF_DIR__.'/ban_hammer.conf'); }
-			return true;
-		}
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function evaluate($request, $options=null) {
-			return 0;	// default is pass everything (zero probability of attack)
-		}
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function shouldBanIP() {
-			return true;	// default is to ban IP on failure
-		}
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function banTTL() {
-			return null;	// default is to ban ip forever
-		}
-		# ------------------------------------------------------
-	}
+class BaseBanHammerPlugin
+{
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    static public $priority = 10;
+
+    /**
+     *
+     */
+    static public $config;
+
+    # ------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function init($request, $options = null)
+    {
+        if (!self::$config) {
+            self::$config = Configuration::load(__CA_CONF_DIR__ . '/ban_hammer.conf');
+        }
+        return true;
+    }
+    # ------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function evaluate($request, $options = null)
+    {
+        return 0;    // default is pass everything (zero probability of attack)
+    }
+    # ------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function shouldBanIP()
+    {
+        return true;    // default is to ban IP on failure
+    }
+    # ------------------------------------------------------
+
+    /**
+     *
+     */
+    public static function banTTL()
+    {
+        return null;    // default is to ban ip forever
+    }
+    # ------------------------------------------------------
+}

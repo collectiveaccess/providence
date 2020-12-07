@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -33,19 +33,22 @@
 /**
  *
  */
+class CSVDataImporter extends BaseDataImporter
+{
+    # -------------------------------------------------------
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
-class CSVDataImporter extends BaseDataImporter {
-	# -------------------------------------------------------
-	public function __construct(){
-		parent::__construct();
-	}
-	# -------------------------------------------------------
-	public function dryRun() {
-		
-	}
-	# -------------------------------------------------------
-	public function import() {
-		
-	}
-	# -------------------------------------------------------
+    # -------------------------------------------------------
+    public function dryRun()
+    {
+    }
+
+    # -------------------------------------------------------
+    public function import()
+    {
+    }
+    # -------------------------------------------------------
 }

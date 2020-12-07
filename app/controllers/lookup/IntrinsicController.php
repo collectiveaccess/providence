@@ -1,4 +1,5 @@
 <?php
+
 /* ----------------------------------------------------------------------
  * app/controllers/lookup/IntrinsicController.php : 
  * ----------------------------------------------------------------------
@@ -25,88 +26,106 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
+require_once(__CA_LIB_DIR__ . "/Controller/ActionController.php");
 
 //
 // This lookup controller doesn't extend BaseLookupController
 // since direct lookups on attributes are handled specially – not via the search engine
-class IntrinsicController extends ActionController {
-	# -------------------------------------------------------
-	# AJAX handlers
-	# -------------------------------------------------------
-	public function Get($pa_additional_query_params=null, $pa_options=null) {
-		$ps_query = $this->request->getParameter(['q', 'term'], pString);
-		$ps_bundle = $this->request->getParameter('bundle', pString);
-		
-		$va_tmp = explode('.', $ps_bundle);
-		$vs_table = $va_tmp[0];
-		$vs_field = $va_tmp[1];
-		$pn_max_returned_values = $this->request->getParameter('max', pInteger);
-		if (($pn_max_returned_values < 1) || ($pn_max_returned_values > 500)) { $pn_max_returned_values = 50; }
-		
-		if (!($t_table = Datamodel::getInstanceByTableName($vs_table, true))) {
-			// bad table name
-			throw new ApplicationException(_t('Invalid table'));
-		}
-		
-		if (!($t_table->hasField($vs_field)) || (!in_array($t_table->getFieldInfo($vs_field, 'FIELD_TYPE'), array(FT_TEXT, FT_NUMBER)))) {
-			// bad field name
-			throw new ApplicationException(_t('Invalid bundle name'));
-		}
-		
-		if ($this->request->user->getBundleAccessLevel($vs_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) {
-			throw new ApplicationException(_t('Access denied'));
-		}
-		
-		$o_db = new Db();
-		
-		$qr_res = $o_db->query("
+class IntrinsicController extends ActionController
+{
+    # -------------------------------------------------------
+    # AJAX handlers
+    # -------------------------------------------------------
+    public function Get($pa_additional_query_params = null, $pa_options = null)
+    {
+        $ps_query = $this->request->getParameter(['q', 'term'], pString);
+        $ps_bundle = $this->request->getParameter('bundle', pString);
+
+        $va_tmp = explode('.', $ps_bundle);
+        $vs_table = $va_tmp[0];
+        $vs_field = $va_tmp[1];
+        $pn_max_returned_values = $this->request->getParameter('max', pInteger);
+        if (($pn_max_returned_values < 1) || ($pn_max_returned_values > 500)) {
+            $pn_max_returned_values = 50;
+        }
+
+        if (!($t_table = Datamodel::getInstanceByTableName($vs_table, true))) {
+            // bad table name
+            throw new ApplicationException(_t('Invalid table'));
+        }
+
+        if (!($t_table->hasField($vs_field)) || (!in_array(
+                $t_table->getFieldInfo($vs_field, 'FIELD_TYPE'),
+                array(FT_TEXT, FT_NUMBER)
+            ))) {
+            // bad field name
+            throw new ApplicationException(_t('Invalid bundle name'));
+        }
+
+        if ($this->request->user->getBundleAccessLevel($vs_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) {
+            throw new ApplicationException(_t('Access denied'));
+        }
+
+        $o_db = new Db();
+
+        $qr_res = $o_db->query(
+            "
 			SELECT DISTINCT {$vs_field}
 			FROM {$vs_table}
 			WHERE
-				({$vs_field} LIKE ?) ".($t_table->hasField('deleted') ? ' AND deleted = 0' : '')."
+				({$vs_field} LIKE ?) " . ($t_table->hasField('deleted') ? ' AND deleted = 0' : '') . "
 			ORDER BY
 				{$vs_field}
 			LIMIT {$pn_max_returned_values}
-		", (string)$ps_query.'%');
-	
-		$this->view->setVar('intrinsic_value_list', $qr_res->getAllFieldValues($vs_field));
-		return $this->render('ajax_intrinsic_value_list_html.php');
-	}
-	# -------------------------------------------------------
-	/**
-	 * Given a item_id (request parameter 'id') returns a list of direct children for use in the hierarchy browser
-	 * Returned data is JSON format
-	 */
-	public function GetHierarchyLevel() {
-		// Not implemented
-		return null;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Given a item_id (request parameter 'id') returns a list of ancestors for use in the hierarchy browser
-	 * Returned data is JSON format
-	 */
-	public function GetHierarchyAncestorList() {
-		// Not implemented
-		return null;
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function IDNo() {
-		// Not implemented
-		return null;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Checks value of instrinsic field and return list of primary keys that use the specified value
-	 * Can be used to determine if a value that needs to be unique is actually unique.
-	 */
-	public function Intrinsic() {
-		// Not implemented
-		return null;
-	}
-	# -------------------------------------------------------
+		",
+            (string)$ps_query . '%'
+        );
+
+        $this->view->setVar('intrinsic_value_list', $qr_res->getAllFieldValues($vs_field));
+        return $this->render('ajax_intrinsic_value_list_html.php');
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Given a item_id (request parameter 'id') returns a list of direct children for use in the hierarchy browser
+     * Returned data is JSON format
+     */
+    public function GetHierarchyLevel()
+    {
+        // Not implemented
+        return null;
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Given a item_id (request parameter 'id') returns a list of ancestors for use in the hierarchy browser
+     * Returned data is JSON format
+     */
+    public function GetHierarchyAncestorList()
+    {
+        // Not implemented
+        return null;
+    }
+    # -------------------------------------------------------
+
+    /**
+     *
+     */
+    public function IDNo()
+    {
+        // Not implemented
+        return null;
+    }
+    # -------------------------------------------------------
+
+    /**
+     * Checks value of instrinsic field and return list of primary keys that use the specified value
+     * Can be used to determine if a value that needs to be unique is actually unique.
+     */
+    public function Intrinsic()
+    {
+        // Not implemented
+        return null;
+    }
+    # -------------------------------------------------------
 }

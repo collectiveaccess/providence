@@ -31,59 +31,65 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-   *
-   */
+/**
+ *
+ */
 
-	require_once(__CA_APP_DIR__.'/helpers/logHelpers.php');
+require_once(__CA_APP_DIR__ . '/helpers/logHelpers.php');
 
-	$system_helpers_debug_logger = null;
+$system_helpers_debug_logger = null;
 
-	function getLogger(){
-		global $system_helpers_debug_logger;
+function getLogger()
+{
+    global $system_helpers_debug_logger;
 
-		if (!isset($system_helpers_debug_logger) || $system_helpers_debug_logger === null){
-			$system_helpers_debug_logger = caGetLogger( array( 'logDirectory' => __CA_APP_DIR__ . "/log", 'logLevel' => 'DEBUG' ) );
-		}
-		return $system_helpers_debug_logger;
-	}
-	# ---------------------------------------
-	/**
-	 * A wrapper on top of @exec to take care of output validation.
-	 * It validates the command result status towards an expected value.
-	 *
-	 * @param      $command
-	 * @param      $output
-	 * @param int  $expectedStatus
-	 *
-	 * @return bool true if the command return the same status code as the one on the params. false otherwise.
-	 */
-	function caExecExpected( $command, &$output = null, $expectedStatus = 0 ) {
-		$logger = getLogger();
+    if (!isset($system_helpers_debug_logger) || $system_helpers_debug_logger === null) {
+        $system_helpers_debug_logger = caGetLogger(
+            array('logDirectory' => __CA_APP_DIR__ . "/log", 'logLevel' => 'DEBUG')
+        );
+    }
+    return $system_helpers_debug_logger;
+}
 
-		caExec( $command, $output, $return_status );
-		$vb_result = $return_status === $expectedStatus;
-		if (!$vb_result){
-			$logger->log( "Status: $return_status (expected " . $expectedStatus . ')', LOG_ERR);
-		}
+# ---------------------------------------
+/**
+ * A wrapper on top of @exec to take care of output validation.
+ * It validates the command result status towards an expected value.
+ *
+ * @param      $command
+ * @param      $output
+ * @param int $expectedStatus
+ *
+ * @return bool true if the command return the same status code as the one on the params. false otherwise.
+ */
+function caExecExpected($command, &$output = null, $expectedStatus = 0)
+{
+    $logger = getLogger();
 
-		return $vb_result;
-	}
+    caExec($command, $output, $return_status);
+    $vb_result = $return_status === $expectedStatus;
+    if (!$vb_result) {
+        $logger->log("Status: $return_status (expected " . $expectedStatus . ')', LOG_ERR);
+    }
 
-	# ---------------------------------------
-	/**
-	 * A wrapper on top of @exec.
-	 *
-	 * @param      $command
-	 * @param      $output
-	 *
-	 * @param null $return_status
-	 *
-	 * @return mixed Status and command output
-	 */
-	function caExec( $command, &$output = null, &$return_status = null ) {
-		$logger = getLogger();
+    return $vb_result;
+}
 
-		$logger->logDebug( "Executing command: '$command'" );
-		return exec( $command, $output, $return_status );
-	}
+# ---------------------------------------
+/**
+ * A wrapper on top of @exec.
+ *
+ * @param      $command
+ * @param      $output
+ *
+ * @param null $return_status
+ *
+ * @return mixed Status and command output
+ */
+function caExec($command, &$output = null, &$return_status = null)
+{
+    $logger = getLogger();
+
+    $logger->logDebug("Executing command: '$command'");
+    return exec($command, $output, $return_status);
+}

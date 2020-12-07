@@ -23,18 +23,18 @@
  * @link       http://pear.php.net/package/Barcode
  */
 
- /*
-  * Note:
-  *
-  * The generated barcode must fit the following criteria to be useable
-  * by the USPS scanners:
-  *
-  * When printed, the dimensions should be:
-  *
-  *     tall bar:       1/10 inches     = 2.54 mm
-  *  short bar:      1/20 inches     = 1.27 mm
-  *  density:        22 bars/inch    = 8.66 bars/cm
-  */
+/*
+ * Note:
+ *
+ * The generated barcode must fit the following criteria to be useable
+ * by the USPS scanners:
+ *
+ * When printed, the dimensions should be:
+ *
+ *     tall bar:       1/10 inches     = 2.54 mm
+ *  short bar:      1/20 inches     = 1.27 mm
+ *  density:        22 bars/inch    = 8.66 bars/cm
+ */
 
 //require_once 'Image/Barcode.php';
 
@@ -58,51 +58,51 @@ class Barcode_postnet extends Barcode
      * Barcode type
      * @var string
      */
-    var $_type = 'postnet';
+    public $_type = 'postnet';
 
     /**
      * Bar short height
      *
-     * @var integer
+     * @var int
      */
-    var $_barshortheight = 7;
+    public $_barshortheight = 7;
 
     /**
      * Bar tall height
      *
-     * @var integer
+     * @var int
      */
-    var $_bartallheight = 15;
+    public $_bartallheight = 15;
 
     /**
      * Bar width / scaling factor
      *
-     * @var integer
+     * @var int
      */
-    var $_barwidth = 2;
+    public $_barwidth = 2;
 
     /**
      * Coding map
      * @var array
      */
-    var $_coding_map = array(
-           '0' => '11000',
-           '1' => '00011',
-           '2' => '00101',
-           '3' => '00110',
-           '4' => '01001',
-           '5' => '01010',
-           '6' => '01100',
-           '7' => '10001',
-           '8' => '10010',
-           '9' => '10100'
-        );
+    public $_coding_map = array(
+        '0' => '11000',
+        '1' => '00011',
+        '2' => '00101',
+        '3' => '00110',
+        '4' => '01001',
+        '5' => '01010',
+        '6' => '01100',
+        '7' => '10001',
+        '8' => '10010',
+        '9' => '10100'
+    );
 
     /**
      * Draws a PostNet image barcode
      *
-     * @param  string $text     A text that should be in the image barcode
-     * @param  string $imgtype  The image type that will be generated
+     * @param string $text A text that should be in the image barcode
+     * @param string $imgtype The image type that will be generated
      *
      * @return image            The corresponding Interleaved 2 of 5 image barcode
      *
@@ -112,7 +112,7 @@ class Barcode_postnet extends Barcode
      * @since  Barcode 0.3
      */
 
-    function draw($text, $imgtype = 'png')
+    public function draw($text, $imgtype = 'png')
     {
         $text = trim($text);
 
@@ -121,7 +121,7 @@ class Barcode_postnet extends Barcode
         }
 
         // Calculate the barcode width
-        $barcodewidth = (strlen($text)) * 2 * 5 * $this->_barwidth + $this->_barwidth*3;
+        $barcodewidth = (strlen($text)) * 2 * 5 * $this->_barwidth + $this->_barwidth * 3;
 
         // Create the image
         $img = ImageCreate($barcodewidth, $this->_bartallheight);
@@ -138,22 +138,29 @@ class Barcode_postnet extends Barcode
 
         // Draws the leader
         imagefilledrectangle($img, $xpos, 0, $xpos + $this->_barwidth - 1, $this->_bartallheight, $black);
-        $xpos += 2*$this->_barwidth;
+        $xpos += 2 * $this->_barwidth;
 
         // Draw $text contents
         for ($idx = 0; $idx < strlen($text); $idx++) {
-            $char  = substr($text, $idx, 1);
+            $char = substr($text, $idx, 1);
 
             for ($baridx = 0; $baridx < 5; $baridx++) {
-                $elementheight = (substr($this->_coding_map[$char], $baridx, 1)) ?  0 : $this->_barshortheight;
-                imagefilledrectangle($img, $xpos, $elementheight, $xpos + $this->_barwidth - 1, $this->_bartallheight, $black);
-                $xpos += 2*$this->_barwidth;
+                $elementheight = (substr($this->_coding_map[$char], $baridx, 1)) ? 0 : $this->_barshortheight;
+                imagefilledrectangle(
+                    $img,
+                    $xpos,
+                    $elementheight,
+                    $xpos + $this->_barwidth - 1,
+                    $this->_bartallheight,
+                    $black
+                );
+                $xpos += 2 * $this->_barwidth;
             }
         }
 
         // Draws the trailer
         imagefilledrectangle($img, $xpos, 0, $xpos + $this->_barwidth - 1, $this->_bartallheight, $black);
-        $xpos += 2*$this->_barwidth;
+        $xpos += 2 * $this->_barwidth;
 
         return $img;
     } // function create
