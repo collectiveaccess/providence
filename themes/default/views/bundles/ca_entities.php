@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,7 +75,7 @@
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'));
 	}
 	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), $va_settings);
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 
