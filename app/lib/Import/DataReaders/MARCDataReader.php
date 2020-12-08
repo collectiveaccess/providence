@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -140,11 +140,11 @@ class MARCDataReader extends BaseDataReader {
 			foreach($o_fields as $o_field) {
 				switch($vs_class = get_class($o_field)) {
 					case 'File_MARC_Control_Field':
-						continue;
+						continue(2);
 						break;
 					default:
-						if (strlen($vs_ind1) && ($vs_ind1 != $o_field->getIndicator(1))) { continue; }
-						if (strlen($vs_ind2) && ($vs_ind2 != $o_field->getIndicator(2))) { continue; }
+						if (strlen($vs_ind1) && ($vs_ind1 != $o_field->getIndicator(1))) { continue(2); }
+						if (strlen($vs_ind2) && ($vs_ind2 != $o_field->getIndicator(2))) { continue(2); }
 			
 						$o_subfield = $o_field->getSubfield($ps_subcode);
 						$va_content[] = is_object($o_subfield) ? $o_subfield->getData() : '';
@@ -171,7 +171,7 @@ class MARCDataReader extends BaseDataReader {
 			foreach($o_fields as $o_field) {
 				switch(get_class($o_field)) {
 					case 'File_MARC_Control_Field':
-						continue;
+						continue(2);
 						break;
 					default:
 						 $o_subfields = $o_field->getSubfields();
