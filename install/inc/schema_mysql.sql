@@ -472,6 +472,17 @@ create table ca_object_lots
    extent_units                   varchar(255)                   not null,
    access                         tinyint                        not null default 0,
    status                         tinyint unsigned               not null default 0,
+   home_location_id               int unsigned null,
+   accession_sdatetime            decimal(30,20),
+   accession_edatetime            decimal(30,20),
+   deaccession_sdatetime          decimal(30,20),
+   deaccession_edatetime          decimal(30,20),
+   deaccession_disposal_sdatetime decimal(30,20),
+   deaccession_disposal_edatetime decimal(30,20),
+   is_deaccessioned               tinyint                        not null default 0,
+   deaccession_notes              text                           not null,
+   deaccession_authorized_by      varchar(255)                   not null default '',
+   deaccession_type_id            int unsigned                   null,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    deleted                        tinyint unsigned               not null default 0,
@@ -490,6 +501,12 @@ create table ca_object_lots
       
    constraint fk_ca_object_lots_lot_status_id foreign key (lot_status_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
+   
+   constraint fk_ca_object_lots_deaccession_type_id foreign key (deaccession_type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_lots_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_lots_submission_user_id foreign key (submission_user_id)
       references ca_users (user_id) on delete restrict on update restrict,
@@ -508,6 +525,16 @@ create index i_admin_idno_stub_sort on ca_object_lots(idno_stub_sort);
 create index i_lot_status_id on ca_object_lots(lot_status_id);
 create index i_view_count on ca_object_lots(view_count);
 create index i_lot_filter on ca_object_lots(lot_id, deleted, access); 
+create index i_home_location_id on ca_object_lots(home_location_id);
+create index i_accession_sdatetime on ca_object_lots(accession_sdatetime);
+create index i_accession_edatetime on ca_object_lots(accession_edatetime);
+create index i_deaccession_sdatetime on ca_object_lots(deaccession_sdatetime);
+create index i_deaccession_edatetime on ca_object_lots(deaccession_edatetime);
+create index i_deaccession_disposal_sdatetime on ca_object_lots(deaccession_disposal_sdatetime);
+create index i_deaccession_disposal_edatetime on ca_object_lots(deaccession_disposal_edatetime);
+create index i_deaccession_auth_by on ca_object_lots(deaccession_authorized_by);
+create index i_deaccession_type_id on ca_object_lots(deaccession_type_id);
+create index i_is_deaccessioned on ca_object_lots(is_deaccessioned);
 create index i_submission_user_id on ca_object_lots(submission_user_id);
 create index i_submission_group_id on ca_object_lots(submission_group_id);
 create index i_submission_status_id on ca_object_lots(submission_status_id);
@@ -534,6 +561,7 @@ create table ca_object_representations
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
+   home_location_id               int unsigned null,
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
@@ -551,6 +579,9 @@ create table ca_object_representations
    
    constraint fk_ca_object_representations_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_representations_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_representations_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict,
@@ -582,6 +613,7 @@ create index i_submission_group_id on ca_object_representations(submission_group
 create index i_submission_status_id on ca_object_representations(submission_status_id);
 create index i_submission_via_form on ca_object_representations(submission_via_form);
 create index i_is_transcribable on ca_object_representations(is_transcribable);
+create index i_home_location_id on ca_object_representations(home_location_id);
 
 
 /*==========================================================================*/
@@ -767,6 +799,17 @@ create table ca_collections
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
+   home_location_id               int unsigned null,
+   accession_sdatetime            decimal(30,20),
+   accession_edatetime            decimal(30,20),
+   deaccession_sdatetime          decimal(30,20),
+   deaccession_edatetime          decimal(30,20),
+   deaccession_disposal_sdatetime decimal(30,20),
+   deaccession_disposal_edatetime decimal(30,20),
+   is_deaccessioned               tinyint                        not null default 0,
+   deaccession_notes              text                           not null,
+   deaccession_authorized_by      varchar(255)                   not null default '',
+   deaccession_type_id            int unsigned                   null,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    hier_collection_id             int unsigned                   not null,
@@ -794,7 +837,13 @@ create table ca_collections
       
    constraint fk_ca_collections_parent_id foreign key (parent_id)
       references ca_collections (collection_id) on delete restrict on update restrict,
+
+   constraint fk_ca_collections_deaccession_type_id foreign key (deaccession_type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
       
+   constraint fk_ca_collections_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
+
    constraint fk_ca_collections_submission_user_id foreign key (submission_user_id)
       references ca_users (user_id) on delete restrict on update restrict,
 
@@ -816,6 +865,16 @@ create index i_hier_left on ca_collections(hier_left);
 create index i_hier_right on ca_collections(hier_right);
 create index i_acl_inherit_from_parent on ca_collections(acl_inherit_from_parent);
 create index i_view_count on ca_collections(view_count);
+create index i_home_location_id on ca_collections(home_location_id);
+create index i_accession_sdatetime on ca_collections(accession_sdatetime);
+create index i_accession_edatetime on ca_collections(accession_edatetime);
+create index i_deaccession_sdatetime on ca_collections(deaccession_sdatetime);
+create index i_deaccession_edatetime on ca_collections(deaccession_edatetime);
+create index i_deaccession_disposal_sdatetime on ca_collections(deaccession_disposal_sdatetime);
+create index i_deaccession_disposal_edatetime on ca_collections(deaccession_disposal_edatetime);
+create index i_deaccession_auth_by on ca_collections(deaccession_authorized_by);
+create index i_deaccession_type_id on ca_collections(deaccession_type_id);
+create index i_is_deaccessioned on ca_collections(is_deaccessioned);
 create index i_collection_filter on ca_collections(collection_id, deleted, access); 
 create index i_submission_user_id on ca_collections(submission_user_id);
 create index i_submission_group_id on ca_collections(submission_group_id);
@@ -7298,4 +7357,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (165, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (166, unix_timestamp());
