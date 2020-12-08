@@ -296,11 +296,11 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 			foreach ($va_ppt_types as $vs_type => $vs_mimetype) {
 				try {
-					$o_reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($vs_type);
+					$o_reader = \PhpOffice\PhpPresentation\IOFactory::createReader($vs_type);
 					if ($o_reader->canRead($ps_filepath)) {
 						return $vs_mimetype;
 					}
-				} catch(\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
+				} catch(\PhpOffice\PhpPresentation\Reader\Exception $e) {
 					// noop
 				}
 			}
