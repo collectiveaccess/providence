@@ -153,7 +153,7 @@
  			$vb_no_cache = (bool)$this->request->getParameter('no_cache', pInteger);
  			if (!$this->request->user->canDoAction('can_search_'.(($ps_target == 'ca_tour_stops') ? 'ca_tours' : $ps_target))) { return ''; }
  			
- 			$search_opts = ;
+ 			$search_opts = [
  				'rootRecordsOnly' => $this->view->getVar('hide_children'),
 				'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession'),
 				'sort' => $ps_sort, 'search_source' =>'Quick', 
