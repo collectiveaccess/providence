@@ -34,7 +34,6 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/Parsers/getid3/getid3.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMediaReplication.php");
 include_once(__CA_LIB_DIR__."/Plugins/MediaReplication/BaseMediaReplicationPlugin.php");
