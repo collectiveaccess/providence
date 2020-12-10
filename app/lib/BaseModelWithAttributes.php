@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,6 +104,7 @@
 		 */
 		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
 			require_once(__CA_APP_DIR__.'/models/ca_metadata_elements.php');
+			if(!is_array($pa_options)) { $pa_options = []; }
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) { return false; }
 			if ($t_element->get('parent_id') > 0) { return false; }
 			$vn_element_id = $t_element->getPrimaryKey();
@@ -271,14 +272,14 @@
 		public function replaceAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null) {
 			$va_attrs = $this->getAttributesByElement($pm_element_code_or_id);
 			
-			if (sizeof($va_attrs)) {
+			if (is_array($va_attrs) && sizeof($va_attrs)) {
 				return $this->editAttribute(
 					$va_attrs[0]->getAttributeID(),
-					$pm_element_code_or_id, $pa_values, $ps_error_source
+					$pm_element_code_or_id, $pa_values, $ps_error_source, $pa_options
 				);
 			} else {
 				return $this->addAttribute(
-					$pa_values, $pm_element_code_or_id, $ps_error_source
+					$pa_values, $pm_element_code_or_id, $ps_error_source, $pa_options
 				);
 			}
 		}
@@ -307,7 +308,7 @@
 			}
 			if (!($t_element = ca_metadata_elements::getInstance($t_attr->get('element_id')))) { return false; }
 			
-			if ($vb_require_value = (bool)$t_element->getSetting('requireValue')) {
+			if (($vb_require_value = (bool)$t_element->getSetting('requireValue')) && (!isset($pa_options['dontCheckMinMax']))) {
 				$pa_options['dontCheckMinMax'] = false;
 			}
 			
@@ -341,6 +342,7 @@
 				'error_source' => $ps_error_source,
 				'element_id' => $t_attr->get('element_id')
 			);
+			
 			
 			$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$t_attr->get('element_id')] = true;
 			
@@ -1129,6 +1131,28 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Return the type_id for the row with a given id.
+		 *
+		 * @param $pn_id Row_id
+		 * @return int 
+		 */
+		public static function typeIDForRowID($pn_id) {
+			$t = Datamodel::getInstance(get_called_class(), true);
+			return $t->getTypeID($pn_id);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Return the type_code for the row with a given id.
+		 *
+		 * @param $pn_id Row_id
+		 * @return string 
+		 */
+		public static function typeCodeForRowID($pn_id) {
+			$t = Datamodel::getInstance(get_called_class(), true);
+			return $t->getTypeCode($t->getTypeID($pn_id));
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Field in this table that defines the type of the row; the type determines which attributes are applicable to the row
 		 */
 		public function getTypeFieldName() {
@@ -1202,6 +1226,29 @@
 		public function getTypeCodeForID($pn_type_id) {
 			$va_types = $this->getTypeList();
 			return isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns ca_list_items.idno (aka "type code") for $pn_type_id. Static version of getTypeCodeForID()
+		 *
+		 * @param int $pn_type_id Number id for the type
+		 * @return string idno (aka "type code") for specified list item id (aka "type id")
+		 *
+		 * @see BaseModelWithAttributes::getTypeCodeForID()
+		 */
+		public static function typeCodeForID($pn_type_id) {
+			$key = get_called_class()."_{$pn_type_id}";
+			if(CompositeCache::contains($key, 'BaseModelWithAttributesTypeIDs')) { 
+				return CompositeCache::fetch($key, 'BaseModelWithAttributesTypeIDs');
+			}
+			
+			$t = Datamodel::getInstance(get_called_class(), true);
+			$va_types = $t->getTypeList();
+			
+			$v = isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
+			
+			CompositeCache::save($key, $v, 'BaseModelWithAttributesTypeIDs');
+			return $v;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1297,13 +1344,13 @@
 			if (isset($va_restrict_to_types) && is_array($va_restrict_to_types)) {
 				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $va_restrict_to_types, $pa_options);
 				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
-					$pa_options['limitToItemsWithID'] = $va_restrict_to_types;
+					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
 				} else {
-					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $va_restrict_to_types);
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToTypes']);
 				}
 			}
 			
-			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, $pa_options);
+			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options, ['value' => caGetOption('value', $pa_options, $this->get($this->getTypeFieldName()))]));
 		}
 		# ------------------------------------------------------------------
 		// --- Forms
@@ -1418,7 +1465,7 @@
 		  * 
 		  */
 		public function htmlFormElementForSimpleForm($po_request, $ps_field, $pa_options=null) {
-			if(!$pa_options) { $pa_options = array(); }
+			if(!$pa_options) { $pa_options = []; }
 			$va_tmp = explode('.', $ps_field);
 			
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
@@ -1708,8 +1755,7 @@
 			$t_attr = new ca_attributes();
 			$t_attr->purify($this->purify());
 			
-			$va_element_codes = array();
-			$va_elements_by_container = array();
+			$va_element_codes = $va_elements_by_container = [];
 			
 			if (sizeof($va_element_set) > 1) {
 				$vs_format = isset($pa_options['multivalueFormat']) ? $pa_options['multivalueFormat'] : null;
@@ -1723,6 +1769,7 @@
 			foreach($va_element_set as $va_element) {
 				$va_override_options = array();
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
+					unset($pa_options['name']);
 					continue;
 				}
 				
@@ -2174,7 +2221,7 @@
 		 * Returns associative array, keyed by primary key value with values being
 		 * the preferred label of the row from a suitable locale, ready for display 
 		 * 
-		 * @param $pa_ids indexed array of primary key values to fetch attribute for
+		 * @param $pa_ids array indexed array of primary key values to fetch attribute for
 		 */
 		public function getAttributeForIDs($pm_element_code_or_id, $pa_ids, $pa_options=null) {
 			if (!($vn_element_id = ca_metadata_elements::getElementID($pm_element_code_or_id))) { return null; }
@@ -2973,7 +3020,7 @@
  					if (is_array($va_ancestors)) { array_pop($va_ancestors); } // remove hierarchy root
  				}
  				
- 				if (sizeof($va_ancestors) > 1) {
+ 				if (is_array($va_ancestors) && (sizeof($va_ancestors) > 1)) {
  					$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL) OR ((camtr.include_subtypes = 1) AND camtr.type_id IN ('.join(',', $va_ancestors).'))) AND ';
  				} else {
  					$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND ';
@@ -3114,7 +3161,7 @@
 		 * @param $pm_element_code_or_id
 		 * @return bool
 		 */
-		public function elementHasChanged($pm_element_code_or_id) {
+		public function attributeHasChanged($pm_element_code_or_id) {
 			$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
 			$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 
@@ -3122,6 +3169,22 @@
 			if(!$vs_code || (!$this->hasElement($vs_code))) { return false; }
 
 			return isset($this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_id] : false;
+		}
+		# ------------------------------------------------------------------
+		public function elementHasChanged($pm_element_code_or_id) {
+			return $this->attributeHasChanged($pm_element_code_or_id);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Have any attributes changed on this row?
+		 *
+		 * @return bool
+		 */
+		public function attributesChanged() {
+            if(!is_array($cf = $this->_FIELD_VALUE_CHANGED)) { return false; }
+            if(sizeof($cf) === 0) { return false; }
+            if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+            return false;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -3140,6 +3203,19 @@
 			if(!$vs_code || (!$this->hasElement($vs_code))) { return false; }
 
 			return isset($this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id] : false;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Did any attributes changed on this row, even if already saved?
+		 *
+		 * @param $pm_element_code_or_id
+		 * @return bool
+		 */
+		public function attributesDidChange() {
+            if(!is_array($cf = $this->_FIELD_VALUE_DID_CHANGE)) { return false; }
+            if(sizeof($cf) === 0) { return false; }
+            if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+            return false;
 		}
 		# ------------------------------------------------------------------
 	}
