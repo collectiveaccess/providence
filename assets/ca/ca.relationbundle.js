@@ -254,7 +254,7 @@ var caUI = caUI || {};
 		options.sort = function(key, label) {
 			var indexedValues = {};
 
-			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .roundedRel'), function(k, v) {
+			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .roundedRel, ' + that.container + ' .bundleContainer .' + that.itemListClassName + ' .listRel'), function(k, v) {
 				var id_string = jQuery(v).attr('id');
 				if (id_string) {
 					var matches = /_([\d]+)$/.exec(id_string);

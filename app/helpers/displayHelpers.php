@@ -2853,7 +2853,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						$va_item['type_id'] = $qr_rel_items->get("{$vs_rel_table}.{$vs_type_id_fld}");
 					}
 					
-					$va_item['_display'] = caProcessTemplateForIDs("<span>{$vs_template}</span>", $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
+					$va_item['_display'] = caProcessTemplateForIDs("{$vs_template}", $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
 					$va_item['label'] = mb_strtolower($qr_rel_items->get("{$vs_table}.preferred_labels"));
 					if ($vs_idno_fld) { $va_item['idno'] = mb_strtolower($qr_rel_items->get("{$vs_table}.{$vs_idno_fld}")); }
 					

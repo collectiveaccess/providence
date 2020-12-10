@@ -69,7 +69,7 @@
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";
-	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
+	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
 		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_subject->tableName(), $va_settings);
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";

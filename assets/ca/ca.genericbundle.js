@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,6 +42,7 @@ var caUI = caUI || {};
 			templateClassName: 'caItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			newItemListClassName: '',
 			listItemClassName: 'caRelatedItem',
 			itemClassName: 'labelInfo',
 			localeClassName: 'labelLocale',
@@ -90,6 +91,8 @@ var caUI = caUI || {};
 			listSortOrderID: null,
 			listSortItems: null // if set, limits sorting to items specified by selector
 		}, options);
+		
+		if (!that.newItemListClassName) { that.newItemListClassName = that.itemListClassName; }
 
 		if (that.maxRepeats == 0) { that.maxRepeats = 65535; }
 
@@ -237,21 +240,21 @@ var caUI = caUI || {};
 			if(options.useAnimation) {
 				jQuery(jElement).hide();
 				if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
-					jQuery(this.container + " ." + this.itemListClassName).prepend(jElement);
+					jQuery(this.container + " ." + this.newItemListClassName).prepend(jElement);
 				} else {
-					jQuery(this.container + " ." + this.itemListClassName).append(jElement);
+					jQuery(this.container + " ." + (isNew ? this.newItemListClassName : this.itemListClassName)).append(jElement);
 				}
 				jQuery(jElement).slideDown(this.animationDuration);
 			} else {
 				if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
-					jQuery(this.container + " ." + this.itemListClassName).prepend(jElement);
+					jQuery(this.container + " ." + this.newItemListClassName).prepend(jElement);
 				} else {
-					jQuery(this.container + " ." + this.itemListClassName).append(jElement);
+					jQuery(this.container + " ." + (isNew ? this.newItemListClassName : this.itemListClassName)).append(jElement);
 				}
 			}
 
 			if (!dontUpdateBundleFormState && $.fn['scrollTo']) {	// scroll to newly added bundle
-				jQuery(this.container + " ." + this.itemListClassName).scrollTo("999999px", 250);
+				jQuery(this.container + " ." + this.newItemListClassName).scrollTo("999999px", 250);
 			}
 
 			if (this.onInitializeItem && (initialValues && !initialValues['_handleAsNew'])) {
@@ -272,9 +275,6 @@ var caUI = caUI || {};
 
 				var info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
-					if (!this.initialValues[id]) {
-						console.log("err", this.initialValues, this.initialValues[id], id, info, info[1]);
-					}
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
