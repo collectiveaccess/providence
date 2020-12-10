@@ -48,7 +48,7 @@ create table ca_object_lots_x_vocabulary_terms (
    source_info                    longtext                       not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_reference_2044d foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -77,7 +77,7 @@ create table ca_representations_x_vocabulary_terms (
    source_info                    longtext                       not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_reference_204e foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -106,7 +106,7 @@ create table ca_object_events_x_vocabulary_terms (
    source_info                    longtext                       not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_reference_204f foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -135,7 +135,7 @@ create table ca_object_lot_events_x_vocabulary_terms (
    source_info                    longtext                       not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_reference_204g foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
