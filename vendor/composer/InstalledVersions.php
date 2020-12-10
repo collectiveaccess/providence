@@ -19,7 +19,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'b7750782a0dbde508e118d1a03a7abc6d1f62f15',
+    'reference' => '4d8a58f51429e97860c61553fc72f7ddece6b905',
     'name' => '__root__',
   ),
   'versions' => 
@@ -31,16 +31,16 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'b7750782a0dbde508e118d1a03a7abc6d1f62f15',
+      'reference' => '4d8a58f51429e97860c61553fc72f7ddece6b905',
     ),
     'aws/aws-sdk-php' => 
     array (
-      'pretty_version' => '3.166.0',
-      'version' => '3.166.0.0',
+      'pretty_version' => '3.168.2',
+      'version' => '3.168.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'b0002f081b8819f16429b2351db84c18d0c3e57b',
+      'reference' => '1d6a976da857d13b156bd63613ee086c13f6dc29',
     ),
     'clue/stream-filter' => 
     array (
@@ -267,6 +267,15 @@ private static $installed = array (
       ),
       'reference' => '522c381a2a075d4b9dbb42eb4592dd09520e4ac2',
     ),
+    'james-heinrich/getid3' => 
+    array (
+      'pretty_version' => 'v1.9.20',
+      'version' => '1.9.20.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '3c15e353b9bb1252201c73394bb8390b573a751d',
+    ),
     'joshralph/password-policy' => 
     array (
       'pretty_version' => '0.3.0',
@@ -341,12 +350,12 @@ private static $installed = array (
     ),
     'maximebf/debugbar' => 
     array (
-      'pretty_version' => 'v1.16.3',
-      'version' => '1.16.3.0',
+      'pretty_version' => 'v1.16.4',
+      'version' => '1.16.4.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1a1605b8e9bacb34cc0c6278206d699772e1d372',
+      'reference' => 'c86c717e4bf3c6d98422da5c38bfa7b0f494b04c',
     ),
     'monolog/monolog' => 
     array (
