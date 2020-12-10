@@ -95,12 +95,12 @@ CREATE TABLE ca_search_form_bundles (
 	form_id			int unsigned not null references ca_search_forms(form_id),
 	
 	bundle_name 	varchar(255) not null,
-	rank			int unsigned not null,
+	`rank`			int unsigned not null,
 	settings		longtext not null,
 	
 	UNIQUE KEY u_placement (form_id, bundle_name),
 	KEY i_bundle_name (bundle_name),
-	KEY i_rank (rank),
+	KEY i_rank (`rank`),
 	KEY i_form_id (form_id)
 ) type=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -158,12 +158,12 @@ CREATE TABLE ca_bundle_display_placements (
 	display_id		int unsigned not null references ca_bundle_displays(display_id),
 	
 	bundle_name 	varchar(255) not null,
-	rank			int unsigned not null,
+	`rank`			int unsigned not null,
 	settings		longtext not null,
 	
 	UNIQUE KEY u_placement (display_id, bundle_name),
 	KEY i_bundle_name (bundle_name),
-	KEY i_rank (rank),
+	KEY i_rank (`rank`),
 	KEY i_display_id (display_id)
 ) type=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -239,7 +239,7 @@ CREATE TABLE ca_object_representation_multifiles (
 	media				longtext not null,
 	media_metadata		longtext not null,
 	media_content		longtext not null,
-	rank				int unsigned not null,	
+	`rank`				int unsigned not null,	
 	
 	KEY i_resource_path (resource_path(255)),
 	KEY i_representation_id (representation_id)

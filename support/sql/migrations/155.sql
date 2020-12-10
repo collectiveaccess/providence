@@ -6,9 +6,9 @@
 
 
 
-ALTER TABLE ca_items_x_tags ADD COLUMN rank int unsigned not null default 0;
-CREATE INDEX i_rank ON ca_items_x_tags(rank);
-UPDATE ca_items_x_tags SET rank = relation_id;
+ALTER TABLE ca_items_x_tags ADD COLUMN `rank` int unsigned not null default 0;
+CREATE INDEX i_rank ON ca_items_x_tags(`rank`);
+UPDATE ca_items_x_tags SET `rank` = relation_id;
 
 /*==========================================================================*/
 

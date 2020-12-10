@@ -13,7 +13,7 @@ create table ca_attribute_value_multifiles (
 	media				longblob not null,
 	media_metadata		longblob not null,
 	media_content		longtext not null,
-	rank				int unsigned not null default 0,	
+	`rank`				int unsigned not null default 0,	
 	primary key (multifile_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 

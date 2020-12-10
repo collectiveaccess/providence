@@ -75,7 +75,7 @@ create table ca_metadata_alert_rule_type_restrictions (
    rule_id                        int unsigned                   not null,
    include_subtypes               tinyint unsigned               not null default 0,
    settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
+   `rank`                           smallint unsigned              not null default 0,
    primary key (restriction_id),
 
    index i_rule_id			(rule_id),
