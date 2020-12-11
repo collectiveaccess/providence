@@ -19,7 +19,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '4d8a58f51429e97860c61553fc72f7ddece6b905',
+    'reference' => '09625e842477d529f339778b834d2942a7aa8076',
     'name' => '__root__',
   ),
   'versions' => 
@@ -31,16 +31,16 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '4d8a58f51429e97860c61553fc72f7ddece6b905',
+      'reference' => '09625e842477d529f339778b834d2942a7aa8076',
     ),
     'aws/aws-sdk-php' => 
     array (
-      'pretty_version' => '3.168.2',
-      'version' => '3.168.2.0',
+      'pretty_version' => '3.168.3',
+      'version' => '3.168.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1d6a976da857d13b156bd63613ee086c13f6dc29',
+      'reference' => '49ef1f905388c8185012c9651b80941b8f2a218d',
     ),
     'clue/stream-filter' => 
     array (
@@ -287,12 +287,12 @@ private static $installed = array (
     ),
     'knplabs/github-api' => 
     array (
-      'pretty_version' => 'v2.17.0',
-      'version' => '2.17.0.0',
+      'pretty_version' => 'v2.18.0',
+      'version' => '2.18.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '26dafcddb9739c0afc16dc74ae6e0ca2f4d0fe38',
+      'reference' => '60d0d5fd450aae8fa147eea53f1fee4b0f59a57f',
     ),
     'league/climate' => 
     array (

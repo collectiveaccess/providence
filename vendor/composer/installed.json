@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.168.2",
-            "version_normalized": "3.168.2.0",
+            "version": "3.168.3",
+            "version_normalized": "3.168.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "1d6a976da857d13b156bd63613ee086c13f6dc29"
+                "reference": "49ef1f905388c8185012c9651b80941b8f2a218d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1d6a976da857d13b156bd63613ee086c13f6dc29",
-                "reference": "1d6a976da857d13b156bd63613ee086c13f6dc29",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/49ef1f905388c8185012c9651b80941b8f2a218d",
+                "reference": "49ef1f905388c8185012c9651b80941b8f2a218d",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 "ext-openssl": "Allows working with CloudFront private distributions and verifying received SNS messages",
                 "ext-sockets": "To use client-side monitoring"
             },
-            "time": "2020-12-10T19:35:18+00:00",
+            "time": "2020-12-11T19:12:18+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -89,7 +89,7 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.168.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.168.3"
             },
             "install-path": "../aws/aws-sdk-php"
         },
@@ -1905,17 +1905,17 @@
         },
         {
             "name": "knplabs/github-api",
-            "version": "v2.17.0",
-            "version_normalized": "2.17.0.0",
+            "version": "v2.18.0",
+            "version_normalized": "2.18.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/KnpLabs/php-github-api.git",
-                "reference": "26dafcddb9739c0afc16dc74ae6e0ca2f4d0fe38"
+                "reference": "60d0d5fd450aae8fa147eea53f1fee4b0f59a57f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KnpLabs/php-github-api/zipball/26dafcddb9739c0afc16dc74ae6e0ca2f4d0fe38",
-                "reference": "26dafcddb9739c0afc16dc74ae6e0ca2f4d0fe38",
+                "url": "https://api.github.com/repos/KnpLabs/php-github-api/zipball/60d0d5fd450aae8fa147eea53f1fee4b0f59a57f",
+                "reference": "60d0d5fd450aae8fa147eea53f1fee4b0f59a57f",
                 "shasum": ""
             },
             "require": {
@@ -1936,11 +1936,11 @@
                 "phpstan/phpstan": "^0.12.23",
                 "phpunit/phpunit": "^7.0 || ^8.0"
             },
-            "time": "2020-11-14T17:07:32+00:00",
+            "time": "2020-12-11T19:39:25+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-2.x": "2.16.x-dev",
+                    "dev-2.x": "2.18.x-dev",
                     "dev-master": "3.0.x-dev"
                 }
             },
@@ -1975,7 +1975,7 @@
             ],
             "support": {
                 "issues": "https://github.com/KnpLabs/php-github-api/issues",
-                "source": "https://github.com/KnpLabs/php-github-api/tree/v2.17.0"
+                "source": "https://github.com/KnpLabs/php-github-api/tree/v2.18.0"
             },
             "funding": [
                 {
