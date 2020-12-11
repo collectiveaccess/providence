@@ -456,6 +456,67 @@ create table ca_multipart_idno_sequences
 
 
 /*==========================================================================*/
+create table ca_storage_locations
+(
+   location_id                    int unsigned                   not null AUTO_INCREMENT,
+   parent_id                      int unsigned,
+   type_id                        int unsigned,
+   idno                           varchar(255)                   not null,
+   idno_sort                      varchar(255)                   not null,
+   is_template                    tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
+   source_id                      int unsigned,
+   source_info                    longtext                       not null,
+   color                          char(6)                        null,
+   icon                           longblob                       not null,
+   hier_left                      decimal(30,20)                 not null,
+   hier_right                     decimal(30,20)                 not null,
+   access                         tinyint unsigned               not null default 0,
+   status                         tinyint unsigned               not null default 0,
+   deleted                        tinyint unsigned               not null default 0,
+   `rank`                           int unsigned                   not null default 0,
+   is_enabled                     tinyint unsigned               not null default 1,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
+   
+   primary key (location_id),
+   constraint fk_ca_storage_locations_type_id foreign key (type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_parent_id foreign key (parent_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_parent_id on ca_storage_locations(parent_id);
+create index i_source_id on ca_storage_locations(source_id);
+create index idno on ca_storage_locations(idno);
+create index idno_sort on ca_storage_locations(idno_sort);
+create index i_type_id on ca_storage_locations(type_id);
+create index i_hier_left on ca_storage_locations(hier_left);
+create index i_hier_right on ca_storage_locations(hier_right);
+create index i_view_count on ca_storage_locations(view_count);
+create index i_loc_filter on ca_storage_locations(location_id, deleted, access); 
+create index i_submission_user_id on ca_storage_locations(submission_user_id);
+create index i_submission_group_id on ca_storage_locations(submission_group_id);
+create index i_submission_status_id on ca_storage_locations(submission_status_id);
+create index i_submission_via_form on ca_storage_locations(submission_via_form);
+
+
+/*==========================================================================*/
 create table ca_object_lots
 (
    lot_id                         int unsigned                   not null AUTO_INCREMENT,
@@ -1024,67 +1085,6 @@ create unique index u_all on ca_place_labels
 );
 create index i_locale_id on ca_place_labels(locale_id);
 create index i_type_id on ca_place_labels(type_id);
-
-
-/*==========================================================================*/
-create table ca_storage_locations
-(
-   location_id                    int unsigned                   not null AUTO_INCREMENT,
-   parent_id                      int unsigned,
-   type_id                        int unsigned,
-   idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
-   is_template                    tinyint unsigned               not null default 0,
-   view_count                     int unsigned                   not null default 0,
-   source_id                      int unsigned,
-   source_info                    longtext                       not null,
-   color                          char(6)                        null,
-   icon                           longblob                       not null,
-   hier_left                      decimal(30,20)                 not null,
-   hier_right                     decimal(30,20)                 not null,
-   access                         tinyint unsigned               not null default 0,
-   status                         tinyint unsigned               not null default 0,
-   deleted                        tinyint unsigned               not null default 0,
-   `rank`                           int unsigned                   not null default 0,
-   is_enabled                     tinyint unsigned               not null default 1,
-   submission_user_id               int unsigned                   null,
-   submission_group_id            int unsigned                   null,
-   submission_status_id              int unsigned                   null,
-   submission_via_form            varchar(100)                   null,
-   
-   primary key (location_id),
-   constraint fk_ca_storage_locations_type_id foreign key (type_id)
-      references ca_list_items (item_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_storage_locations_source_id foreign key (source_id)
-      references ca_list_items (item_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_storage_locations_parent_id foreign key (parent_id)
-      references ca_storage_locations (location_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_storage_locations_submission_user_id foreign key (submission_user_id)
-      references ca_users (user_id) on delete restrict on update restrict,
-
-   constraint fk_ca_storage_locations_submission_group_id foreign key (submission_group_id)
-      references ca_user_groups (group_id) on delete restrict on update restrict,
-
-   constraint fk_ca_storage_locations_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_parent_id on ca_storage_locations(parent_id);
-create index i_source_id on ca_storage_locations(source_id);
-create index idno on ca_storage_locations(idno);
-create index idno_sort on ca_storage_locations(idno_sort);
-create index i_type_id on ca_storage_locations(type_id);
-create index i_hier_left on ca_storage_locations(hier_left);
-create index i_hier_right on ca_storage_locations(hier_right);
-create index i_view_count on ca_storage_locations(view_count);
-create index i_loc_filter on ca_storage_locations(location_id, deleted, access); 
-create index i_submission_user_id on ca_storage_locations(submission_user_id);
-create index i_submission_group_id on ca_storage_locations(submission_group_id);
-create index i_submission_status_id on ca_storage_locations(submission_status_id);
-create index i_submission_via_form on ca_storage_locations(submission_via_form);
 
 
 /*==========================================================================*/
