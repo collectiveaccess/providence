@@ -3274,6 +3274,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if(!$ps_table) { return '???'; }
 		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], array_merge(['includeInterstitialSortsFor' => $ps_related_table], $pa_options)))) || !sizeof($va_sort_fields)) { return ''; }
 		
+		unset($va_sort_fields['_natural']);
+		
+		$va_sort_fields = array_merge(['' => _t('User defined sort order')], $va_sort_fields);
+		
 		return _t('Sort by %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", array_flip($va_sort_fields), ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 'id' => "{$ps_id_prefix}_RelationBundleSortControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning']), caHTMLSelect("{$ps_id_prefix}_RelationBundleSortDirectionControl", [_t('↑') => 'ASC', _t('↓') => 'DESC'], ['onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val())", 'id' => "{$ps_id_prefix}_RelationBundleSortDirectionControl", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning']));
 	}
 	# ---------------------------------------

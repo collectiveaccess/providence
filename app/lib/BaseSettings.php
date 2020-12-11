@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,6 @@
  
 	class BaseSettings {
 		# ------------------------------------------------------
-		
 		/**
 		 *
 		 */
@@ -531,81 +530,18 @@
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_rel_opts, $va_attr, $va_opts);
 						}
 					} else {
-						if (strlen($va_properties['showSortableBundlesFor']) > 0) {
- 							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
- 							
- 							if (!($t_rel = Datamodel::getInstanceByTableName($va_properties['showSortableBundlesFor'], true))) {
- 								break;
- 							}
-							$va_elements = ca_metadata_elements::getSortableElements($va_properties['showSortableBundlesFor']);
-							
-							$va_select_opts = array(
+						if (is_array($va_properties['showSortableBundlesFor']) && (strlen($va_properties['showSortableBundlesFor']['table']) > 0)) {
+							$va_select_opts = array_merge([
 								_t('User defined sort order') => '',
-								_t('Order created') => 'relation_id',		// forces sorting by relationship primary key  - aka order relationships were created
-								_t('Preferred label') => $va_properties['showSortableBundlesFor'].".preferred_labels.".$t_rel->getLabelDisplayField()
-							);
-							if($t_rel->tableName() == 'ca_sets') {
+								_t('Order created') => 'relation_id',
+							], array_flip(caGetAvailableSortFields($va_properties['showSortableBundlesFor']['table'], null, ['includeInterstitialSortsFor' => $va_properties['showSortableBundlesFor']['relationship'], 'distinguishInterstitials' => true])));
+							
+							$va_select_opts = array_filter($va_select_opts, function($v) { return ($v !== '_natural'); });
+							if($va_properties['showSortableBundlesFor']['table'] == 'ca_sets') {
 								unset($va_select_opts[_t('User defined sort order')]);
-							}
-							if (($vs_idno_fld = $t_rel->getProperty('ID_NUMBERING_SORT_FIELD')) || ($vs_idno_fld = $t_rel->getProperty('ID_NUMBERING_ID_FIELD'))) {
-								$va_select_opts[$t_rel->getFieldInfo($vs_idno_fld, 'LABEL')] = $vs_idno_fld;
-							}
-							
-							foreach($va_elements as $vn_element_id => $va_element) {
-								if(!$va_element['display_label']) { continue; }
-								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_properties['showSortableBundlesFor'].".".$va_element['element_code'];
-							}
-							
-							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
-							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
-						} elseif((int)$va_properties['showSortableElementsFor'] > 0) {
-							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-							
- 							$t_element = new ca_metadata_elements($va_properties['showSortableElementsFor']);
- 							if (!$t_element->getPrimaryKey()) { return ''; }
- 							$va_elements = $t_element->getElementsInSet();
-							
-							$va_select_opts = array(
-								_t('Order created') => '',
-							);
-							foreach($va_elements as $vn_i => $va_element) {
-								if ((int)$va_element['element_id'] == (int)$va_properties['showSortableElementsFor']) { continue; }
-								if(!$va_element['display_label']) { continue; }
-								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_element['element_code'];
-							}
-							
-							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
-							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
-						} elseif ($va_properties['showMetadataElementsWithDataType']) {
-							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-							
-							if (!is_array($va_properties['table'])) { $va_properties['table'] = [$va_properties['table']]; }
-							
-							$va_select_opts = [];
-							foreach($va_properties['table'] as $vs_table) {
-								$va_rep_elements = ca_metadata_elements::getElementsAsList(true, $vs_table, null, true, false, true, is_numeric($va_properties['showMetadataElementsWithDataType']) ? array($va_properties['showMetadataElementsWithDataType']) : null);
-							
-								if (is_array($va_rep_elements)) {
-									foreach($va_rep_elements as $vs_element_code => $va_element_info) {
-										$va_select_opts[$va_element_info['display_label']] = "{$vs_table}.{$vs_element_code}";
-									}
-								}
-							
-								if($va_properties['includeIntrinsics']) {
-									if (!($t_rep = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
-							
-									foreach($t_rep->getFormFields() as $vs_f => $va_field_info) {
-										if (is_array($va_properties['includeIntrinsics']) && !in_array($vs_f, $va_properties['includeIntrinsics'])) { continue; }
-										if(in_array($va_field_info['DT_DISPLAY'], array('DT_OMIT', 'DT_HIDDEN'))) { continue; }
-										if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
-									
-										$va_select_opts[$va_field_info['LABEL']] = $vs_f;
-									}	
-								}
 							}
 							
 							if (sizeof($va_select_opts)) {	
-								
 								$va_select_attr = [];
 								if($vn_height > 1) {
 									$vs_input_name .= '[]'; 
