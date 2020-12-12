@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,248 +34,254 @@
  *
  */
 
-require_once(__CA_LIB_DIR__ . "/IBundleProvider.php");
-require_once(__CA_LIB_DIR__ . "/RepresentableBaseModel.php");
-require_once(__CA_LIB_DIR__ . "/HistoryTrackingCurrentValueTrait.php");
-require_once(__CA_MODELS_DIR__ . "/ca_objects.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
+require_once(__CA_LIB_DIR__."/DeaccessionTrait.php");
+require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
-    'NAME_SINGULAR' => _t('object lot'),
-    'NAME_PLURAL' => _t('object lots'),
-    'FIELDS' => array(
-        'lot_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_HIDDEN,
-            'IDENTITY' => true,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('CollectiveAccess id'),
-            'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this lot')
-        ),
-        'type_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LIST_CODE' => 'object_lot_types',
-            'LABEL' => _t('Type'),
-            'DESCRIPTION' => _t(
-                'The type of the object lot. In CollectiveAccess every lot has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.'
-            )
-        ),
-        'lot_status_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LIST_CODE' => 'object_lot_statuses',
-            'LABEL' => _t('Accession status'),
-            'DESCRIPTION' => _t(
-                'Indicates accession/collection status of lot. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)'
-            )
-        ),
-        'idno_stub' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 50,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('Lot identifier'),
-            'DESCRIPTION' => _t('Unique alphanumeric code identifying the lot.'),
-            'BOUNDS_LENGTH' => array(0, 255)
-        ),
-        'idno_stub_sort' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 255,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => 'Idno stub sort',
-            'DESCRIPTION' => 'Sortable version of idno_stub',
-            'BOUNDS_LENGTH' => array(0, 255)
-        ),
-        'extent' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 20,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('Extent'),
-            'DESCRIPTION' => _t(
-                'The extent of the object lot. This is typically the number of discrete items that compose the lot by this record. It is stored as a whole number (eg. 1, 2, 3...).'
-            )
-        ),
-        'extent_units' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 20,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('Extent units'),
-            'DESCRIPTION' => _t('Units of extent value. (eg. pieces, items, components, reels, etc.)'),
-            'BOUNDS_LENGTH' => array(0, 255)
-        ),
-        'access' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => 0,
-            'BOUNDS_CHOICE_LIST' => array(
-                _t('Not accessible to public') => 0,
-                _t('Accessible to public') => 1
-            ),
-            'LIST' => 'access_statuses',
-            'LABEL' => _t('Access'),
-            'DESCRIPTION' => _t('Indicates if object lot is accessible to the public or not. ')
-        ),
-        'status' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => 0,
-            'BOUNDS_CHOICE_LIST' => array(
-                _t('Newly created') => 0,
-                _t('Editing in progress') => 1,
-                _t('Editing complete - pending review') => 2,
-                _t('Review in progress') => 3,
-                _t('Completed') => 4
-            ),
-            'LIST' => 'workflow_statuses',
-            'LABEL' => _t('Status'),
-            'DESCRIPTION' => _t('Indicates the current state of the object lot record.')
-        ),
-        'source_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => '',
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-            'LIST_CODE' => 'object_lot_sources',
-            'LABEL' => _t('Source'),
-            'DESCRIPTION' => _t(
-                'Administrative source of lot. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.'
-            )
-        ),
-        'source_info' => array(
-            'FIELD_TYPE' => FT_VARS,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 88,
-            'DISPLAY_HEIGHT' => 15,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => 'Source information',
-            'DESCRIPTION' => 'Serialized array used to store source information for object lot information retrieved via web services [NOT IMPLEMENTED YET].'
-        ),
-        'deleted' => array(
-            'FIELD_TYPE' => FT_BIT,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => 0,
-            'LABEL' => _t('Is deleted?'),
-            'DESCRIPTION' => _t('Indicates if the object lot is deleted or not.'),
-            'BOUNDS_VALUE' => array(0, 1)
-        ),
-        'rank' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('Sort order'),
-            'DESCRIPTION' => _t('Sort order'),
-        ),
-        'view_count' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => 'View count',
-            'DESCRIPTION' => 'Number of views for this record.'
-        ),
-        'submission_user_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => null,
-            'DONT_ALLOW_IN_UI' => true,
-            'LABEL' => _t('Submitted by user'),
-            'DESCRIPTION' => _t('User submitting this object')
-        ),
-        'submission_group_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => null,
-            'DONT_ALLOW_IN_UI' => true,
-            'LABEL' => _t('Submitted for group'),
-            'DESCRIPTION' => _t('Group this object was submitted under')
-        ),
-        'submission_status_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => null,
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-            'LIST_CODE' => 'submission_statuses',
-            'LABEL' => _t('Submission status'),
-            'DESCRIPTION' => _t('Indicates submission status of the object.')
-        ),
-        'submission_via_form' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => null,
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-            'LABEL' => _t('Submission via form'),
-            'DESCRIPTION' => _t('Indicates what contribute form was used to create the submission.')
-        )
-    )
+ 	'NAME_SINGULAR' 	=> _t('object lot'),
+ 	'NAME_PLURAL' 		=> _t('object lots'),
+ 	'FIELDS' 			=> array(
+ 		'lot_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this lot')
+		),
+		'type_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LIST_CODE' => 'object_lot_types',
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object lot. In CollectiveAccess every lot has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+		),
+		'lot_status_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LIST_CODE' => 'object_lot_statuses',
+			'LABEL' => _t('Accession status'), 'DESCRIPTION' => _t('Indicates accession/collection status of lot. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)')
+		),
+		'idno_stub' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Lot identifier'), 'DESCRIPTION' => _t('Unique alphanumeric code identifying the lot.'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'idno_stub_sort' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 255, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Idno stub sort', 'DESCRIPTION' => 'Sortable version of idno_stub',
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'extent' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Extent'), 'DESCRIPTION' => _t('The extent of the object lot. This is typically the number of discrete items that compose the lot by this record. It is stored as a whole number (eg. 1, 2, 3...).')
+		),
+		'extent_units' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Extent units'), 'DESCRIPTION' => _t('Units of extent value. (eg. pieces, items, components, reels, etc.)'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'home_location_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this lot.')
+		),
+		'is_deaccessioned' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'OPTIONS' => array(
+				_t('Yes') => 1,
+				_t('No') => 0
+			),
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'RESULTS_EDITOR_BUNDLE' => 'ca_objects_deaccession',	// bundle to use when editing this in the search/browse "results" editing interface
+			'LABEL' => _t('Is deaccessioned?'), 'DESCRIPTION' => _t('Check if lot is deaccessioned')
+		),
+		'deaccession_date' => array(
+			'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'START' => 'deaccession_sdatetime', 'END' => 'deaccession_edatetime',
+			'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the lot was deaccessioned.')
+		),
+		'deaccession_disposal_date' => array(
+			'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'START' => 'deaccession_disposal_sdatetime', 'END' => 'deaccession_disposal_edatetime',
+			'LABEL' => _t('Date of disposal'), 'DESCRIPTION' => _t('Enter the date the deaccessioned lot was disposed of.')
+		),
+		'deaccession_authorized_by' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Authorized by'), 'DESCRIPTION' => _t('Deaccession authorized by'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'deaccession_notes' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 6,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Deaccession notes'), 'DESCRIPTION' => _t('Justification for deaccession.'),
+			'BOUNDS_LENGTH' => array(0,65535)
+		),
+		'deaccession_type_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LIST_CODE' => 'object_deaccession_types',
+			'LABEL' => _t('Deaccession type'), 'DESCRIPTION' => _t('Indicates type of deaccession.')
+		),
+		'access' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Not accessible to public') => 0,
+				_t('Accessible to public') => 1
+			),
+			'LIST' => 'access_statuses',
+			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if lot is accessible to the public or not. ')
+		),
+		'status' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Newly created') => 0,
+				_t('Editing in progress') => 1,
+				_t('Editing complete - pending review') => 2,
+				_t('Review in progress') => 3,
+				_t('Completed') => 4
+			),
+			'LIST' => 'workflow_statuses',
+			'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the object lot record.')
+		),
+		'source_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'object_lot_sources',
+			'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of lot. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
+		'source_info' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object lot information retrieved via web services [NOT IMPLEMENTED YET].'
+		),
+		'deleted' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object lot is deleted or not.'),
+			'BOUNDS_VALUE' => array(0,1)
+		),
+		'rank' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
+		'view_count' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+		),
+		'submission_user_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this object')
+		),
+		'submission_group_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted for group'), 'DESCRIPTION' => _t('Group this object was submitted under')
+		),
+		'submission_status_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'submission_statuses',
+			'LABEL' => _t('Submission status'), 'DESCRIPTION' => _t('Indicates submission status of the object.')
+		),
+		'submission_via_form' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Submission via form'), 'DESCRIPTION' => _t('Indicates what contribute form was used to create the submission.')
+		)
+ 	)
 );
 
-class ca_object_lots extends RepresentableBaseModel
-{
-
-    /**
-     * Update location of dependent objects when changing values
-     */
-    use HistoryTrackingCurrentValueTrait;
-
-    # ---------------------------------
-    # --- Object attribute properties
-    # ---------------------------------
-    # Describe structure of content object's properties - eg. database fields and their
-    # associated types, what modes are supported, et al.
-    #
+class ca_object_lots extends RepresentableBaseModel {
+	use HistoryTrackingCurrentValueTrait;
+	use DeaccessionTrait;
+	
+	# ---------------------------------
+	# --- Object attribute properties
+	# ---------------------------------
+	# Describe structure of content object's properties - eg. database fields and their
+	# associated types, what modes are supported, et al.
+	#
 
     # ------------------------------------------------------
     # --- Basic object parameters
@@ -389,211 +395,89 @@ class ca_object_lots extends RepresentableBaseModel
     # $FIELDS contains information about each field in the table. The order in which the fields
     # are listed here is the order in which they will be returned using getFields()
 
-    protected $FIELDS;
+	protected $FIELDS;
+	
+	/**
+	 * Cache for object counts used by ca_object_lots::numObjects()
+	 *
+	 * @see ca_object_lots::numObjects()
+	 */
+	static $s_object_count_cache = array();
+	
+	# ------------------------------------------------------
+	# --- Constructor
+	#
+	# This is a function called when a new instance of this object is created. This
+	# standard constructor supports three calling modes:
+	#
+	# 1. If called without parameters, simply creates a new, empty objects object
+	# 2. If called with a single, valid primary key value, creates a new objects object and loads
+	#    the record identified by the primary key value
+	#
+	# ------------------------------------------------------
+	public function __construct($pn_id=null) {
+		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
+		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
+		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
+		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
+		$this->BUNDLES['ca_collections'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related collections'));
+		$this->BUNDLES['ca_storage_locations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations'));
+		
+		$this->BUNDLES['ca_loans'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans'));
+		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
+		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
+		
+		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
+		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
+		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
+		
+		$this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
+		$this->BUNDLES['ca_item_comments'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Comments'));
+		
+		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
+		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
+		$this->BUNDLES['ca_objects_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
+		$this->BUNDLES['ca_object_representations_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related object representations list'));
+		$this->BUNDLES['ca_entities_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities list'));
+		$this->BUNDLES['ca_places_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places list'));
+		$this->BUNDLES['ca_occurrences_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences list'));
+		$this->BUNDLES['ca_collections_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related collections list'));
+		$this->BUNDLES['ca_list_items_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related list items list'));
+		$this->BUNDLES['ca_storage_locations_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations list'));
+		$this->BUNDLES['ca_loans_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans list'));
+		$this->BUNDLES['ca_movements_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements list'));
+		$this->BUNDLES['ca_object_lots_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related object lots list'));
+		
+		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 
-    /**
-     * Cache for object counts used by ca_object_lots::numObjects()
-     *
-     * @see ca_object_lots::numObjects()
-     */
-    static public $s_object_count_cache = array();
-
-    # ------------------------------------------------------
-    # --- Constructor
-    #
-    # This is a function called when a new instance of this object is created. This
-    # standard constructor supports three calling modes:
-    #
-    # 1. If called without parameters, simply creates a new, empty objects object
-    # 2. If called with a single, valid primary key value, creates a new objects object and loads
-    #    the record identified by the primary key value
-    #
-    # ------------------------------------------------------
-    public function __construct($pn_id = null)
-    {
-        parent::__construct($pn_id);    # call superclass constructor
-    }
-
-    # ------------------------------------------------------
-    protected function initLabelDefinitions($pa_options = null)
-    {
-        parent::initLabelDefinitions($pa_options);
-        $this->BUNDLES['ca_object_representations'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Media representations')
-        );
-        $this->BUNDLES['ca_entities'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related entities')
-        );
-        $this->BUNDLES['ca_places'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related places')
-        );
-        $this->BUNDLES['ca_occurrences'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related occurrences')
-        );
-        $this->BUNDLES['ca_collections'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related collections')
-        );
-        $this->BUNDLES['ca_storage_locations'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related storage locations')
-        );
-
-        $this->BUNDLES['ca_loans'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related loans')
-        );
-        $this->BUNDLES['ca_movements'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related movements')
-        );
-        $this->BUNDLES['ca_object_lots'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related lots')
-        );
-
-        $this->BUNDLES['ca_list_items'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related vocabulary terms')
-        );
-        $this->BUNDLES['ca_sets'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related sets')
-        );
-        $this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
-
-        $this->BUNDLES['ca_item_tags'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Tags'));
-        $this->BUNDLES['ca_item_comments'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Comments'));
-
-        $this->BUNDLES['ca_objects'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related objects')
-        );
-        $this->BUNDLES['ca_objects_table'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related objects list')
-        );
-        $this->BUNDLES['ca_objects_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related objects list')
-        );
-        $this->BUNDLES['ca_object_representations_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related object representations list')
-        );
-        $this->BUNDLES['ca_entities_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related entities list')
-        );
-        $this->BUNDLES['ca_places_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related places list')
-        );
-        $this->BUNDLES['ca_occurrences_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related occurrences list')
-        );
-        $this->BUNDLES['ca_collections_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related collections list')
-        );
-        $this->BUNDLES['ca_list_items_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related list items list')
-        );
-        $this->BUNDLES['ca_storage_locations_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related storage locations list')
-        );
-        $this->BUNDLES['ca_loans_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related loans list')
-        );
-        $this->BUNDLES['ca_movements_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related movements list')
-        );
-        $this->BUNDLES['ca_object_lots_related_list'] = array(
-            'type' => 'related_table',
-            'repeating' => true,
-            'label' => _t('Related object lots list')
-        );
-
-        $this->BUNDLES['authority_references_list'] = array(
-            'type' => 'special',
-            'repeating' => false,
-            'label' => _t('References')
-        );
-
-        $this->BUNDLES['history_tracking_current_value'] = array(
-            'type' => 'special',
-            'repeating' => false,
-            'label' => _t('History tracking – current value'),
-            'displayOnly' => true
-        );
-        $this->BUNDLES['history_tracking_current_date'] = array(
-            'type' => 'special',
-            'repeating' => false,
-            'label' => _t('Current history tracking date'),
-            'displayOnly' => true
-        );
-        $this->BUNDLES['history_tracking_chronology'] = array(
-            'type' => 'special',
-            'repeating' => false,
-            'label' => _t('History')
-        );
-        $this->BUNDLES['history_tracking_current_contents'] = array(
-            'type' => 'special',
-            'repeating' => false,
-            'label' => _t('Current contents')
-        );
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Unlinks any ca_objects rows related to the currently loaded ca_object_lots record. Note that this does *not*
-     * delete the related objects. It only removes their link to this lot.  Note that on error, the database maybe left in
-     * an inconsistent state where some objects are still linked to the lot. If you want to prevent this then wrap your
-     * call to removeAllObjects in a transaction and rollback the transaction on error.
-     *
-     * @return bool Returns true on success, false if there were errors.
-     */
-    public function removeAllObjects()
-    {
-        if (!($vn_lot_id = $this->getPrimaryKey())) {
-            return null;
-        }
-
-        $o_db = $this->getDb();
-        $qr_res = $o_db->query(
-            "
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+		
+		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History tracking – current value'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
+		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
+		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+	}
+	# ------------------------------------------------------
+ 	/**
+ 	 * Unlinks any ca_objects rows related to the currently loaded ca_object_lots record. Note that this does *not*
+ 	 * delete the related objects. It only removes their link to this lot.  Note that on error, the database maybe left in 
+ 	 * an inconsistent state where some objects are still linked to the lot. If you want to prevent this then wrap your
+ 	 * call to removeAllObjects in a transaction and rollback the transaction on error.
+ 	 *
+ 	 * @return boolean Returns true on success, false if there were errors.
+ 	 */
+ 	 public function removeAllObjects() {
+ 	 	if (!($vn_lot_id = $this->getPrimaryKey())) {
+			return null;
+ 	 	}
+ 	
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
 				SELECT object_id
 				FROM ca_objects
 				WHERE

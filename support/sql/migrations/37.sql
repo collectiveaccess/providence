@@ -22,7 +22,7 @@ create table ca_tour_stops_x_tour_stops
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_tour_stops_stop_left_id foreign key (stop_left_id)
       references ca_tour_stops (stop_id) on delete restrict on update restrict,

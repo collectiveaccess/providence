@@ -48,301 +48,233 @@ require_once(__CA_LIB_DIR__ . "/HistoryTrackingCurrentValueTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
-    'NAME_SINGULAR' => _t('object representation'),
-    'NAME_PLURAL' => _t('object representations'),
-    'FIELDS' => array(
-        'representation_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_HIDDEN,
-            'IDENTITY' => true,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('CollectiveAccess id'),
-            'DESCRIPTION' => _t(
-                'Unique numeric identifier used by CollectiveAccess internally to identify this representation'
-            )
-        ),
-        'locale_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => '',
-            'DISPLAY_FIELD' => array('ca_locales.name'),
-            'LABEL' => _t('Locale'),
-            'DESCRIPTION' => _t('The locale from which the representation originates.')
-        ),
-        'type_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'DISPLAY_FIELD' => array('ca_list_items.item_value'),
-            'DISPLAY_ORDERBY' => array('ca_list_items.item_value'),
-            'IS_NULL' => false,
-            'LIST_CODE' => 'object_representation_types',
-            'DEFAULT' => '',
-            'LABEL' => _t('Type'),
-            'DESCRIPTION' => _t(
-                'Indicates the type of the representation. The type can only be set when creating a new representation and cannot be changed once the representation is saved.'
-            )
-        ),
-        'idno' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('Representation identifier'),
-            'DESCRIPTION' => _t('A unique alphanumeric identifier for this representation.'),
-            'BOUNDS_LENGTH' => array(0, 255)
-        ),
-        'idno_sort' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => 'Sortable representation identifier',
-            'DESCRIPTION' => 'Value used for sorting representations on identifier value.',
-            'BOUNDS_LENGTH' => array(0, 255)
-        ),
-        'media' => array(
-            'FIELD_TYPE' => FT_MEDIA,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 88,
-            'DISPLAY_HEIGHT' => 15,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
+ 	'NAME_SINGULAR' 	=> _t('object representation'),
+ 	'NAME_PLURAL' 		=> _t('object representations'),
+ 	'FIELDS' 			=> array(
+ 		'representation_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this representation')
+		),
+		'locale_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'DISPLAY_FIELD' => array('ca_locales.name'),
+			'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('The locale from which the representation originates.')
+		),
+		'type_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'DISPLAY_FIELD' => array('ca_list_items.item_value'),
+			'DISPLAY_ORDERBY' => array('ca_list_items.item_value'),
+			'IS_NULL' => false,
+			'LIST_CODE' => 'object_representation_types',
+			'DEFAULT' => '',
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('Indicates the type of the representation. The type can only be set when creating a new representation and cannot be changed once the representation is saved.')
+		),
+		'idno' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Representation identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this representation.'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'idno_sort' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Sortable representation identifier', 'DESCRIPTION' => 'Value used for sorting representations on identifier value.',
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'media' => array(
+			'FIELD_TYPE' => FT_MEDIA, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
 
-            "MEDIA_PROCESSING_SETTING" => 'ca_object_representations',
+			"MEDIA_PROCESSING_SETTING" => 'ca_object_representations',
 
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 
-            'LABEL' => _t('Media'),
-            'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
-        ),
-        'media_metadata' => array(
-            'FIELD_TYPE' => FT_VARS,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 88,
-            'DISPLAY_HEIGHT' => 15,
-            'IS_NULL' => true,
-            'DEFAULT' => '',
-            'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
+			'LABEL' => _t('Media'), 'DESCRIPTION' => _t('Use this control to select media from your computer to upload.')
+		),
+		'media_metadata' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 
-            'LABEL' => _t('Media metadata'),
-            'DESCRIPTION' => _t('Media metadata')
-        ),
-        'media_content' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 88,
-            'DISPLAY_HEIGHT' => 15,
-            'IS_NULL' => true,
-            'DEFAULT' => '',
-            'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
+			'LABEL' => _t('Media metadata'), 'DESCRIPTION' => _t('Media metadata')
+		),
+		'media_content' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 
-            'LABEL' => _t('Media content'),
-            'DESCRIPTION' => _t('Media content')
-        ),
-        'md5' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
+			'LABEL' => _t('Media content'), 'DESCRIPTION' => _t('Media content')
+		),
+		'md5' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
 
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 
-            'LABEL' => _t('MD5 hash'),
-            'DESCRIPTION' => _t('MD5-generated "fingerprint" for this media.'),
-            'BOUNDS_LENGTH' => array(0, 32)
-        ),
-        'original_filename' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 90,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
+			'LABEL' => _t('MD5 hash'), 'DESCRIPTION' => _t('MD5-generated "fingerprint" for this media.'),
+			'BOUNDS_LENGTH' => array(0,32)
+		),
+		'original_filename' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
 
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 
-            'LABEL' => _t('Original filename'),
-            'DESCRIPTION' => _t('The filename of the media at the time of upload.'),
-            'BOUNDS_LENGTH' => array(0, 1024)
-        ),
-        'mimetype' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 90,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => '',
+			'LABEL' => _t('Original filename'), 'DESCRIPTION' => _t('The filename of the media at the time of upload.'),
+			'BOUNDS_LENGTH' => array(0,1024)
+		),
+		'mimetype' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
 
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 
-            'LABEL' => _t('Original MIME type'),
-            'DESCRIPTION' => _t('The MIME type of the media at the time of upload.'),
-            'BOUNDS_LENGTH' => array(0, 255)
-        ),
-        'is_transcribable' => array(
-            'FIELD_TYPE' => FT_BIT,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('Transcribe?'),
-            'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
-        ),
-        'access' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => 0,
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-            'BOUNDS_CHOICE_LIST' => array(
-                _t('Not accessible to public') => 0,
-                _t('Accessible to public') => 1
-            ),
-            'LIST' => 'access_statuses',
-            'LABEL' => _t('Access'),
-            'DESCRIPTION' => _t('Indicates if representation is accessible to the public or not. ')
-        ),
-        'status' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => 0,
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-            'BOUNDS_CHOICE_LIST' => array(
-                _t('Newly created') => 0,
-                _t('Editing in progress') => 1,
-                _t('Editing complete - pending review') => 2,
-                _t('Review in progress') => 3,
-                _t('Completed') => 4
-            ),
-            'LIST' => 'workflow_statuses',
-            'LABEL' => _t('Status'),
-            'DESCRIPTION' => _t('Indicates the current state of the representation.')
-        ),
-        'deleted' => array(
-            'FIELD_TYPE' => FT_BIT,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => 0,
-            'LABEL' => _t('Is deleted?'),
-            'DESCRIPTION' => _t('Indicates if the object is deleted or not.'),
-            'BOUNDS_VALUE' => array(0, 1)
-        ),
-        'rank' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_FIELD,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => _t('Sort order'),
-            'DESCRIPTION' => _t('Sort order'),
-        ),
-        'source_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => '',
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-            'LIST_CODE' => 'object_representation_sources',
-            'LABEL' => _t('Source'),
-            'DESCRIPTION' => _t(
-                'Administrative source of object representation. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.'
-            )
-        ),
-        'source_info' => array(
-            'FIELD_TYPE' => FT_VARS,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 88,
-            'DISPLAY_HEIGHT' => 15,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => 'Source information',
-            'DESCRIPTION' => 'Serialized array used to store source information for object representation information retrieved via web services [NOT IMPLEMENTED YET].'
-        ),
-        'view_count' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => false,
-            'DEFAULT' => '',
-            'LABEL' => 'View count',
-            'DESCRIPTION' => 'Number of views for this record.'
-        ),
-        'submission_user_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => null,
-            'DONT_ALLOW_IN_UI' => true,
-            'LABEL' => _t('Submitted by user'),
-            'DESCRIPTION' => _t('User submitting this object')
-        ),
-        'submission_group_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => null,
-            'DONT_ALLOW_IN_UI' => true,
-            'LABEL' => _t('Submitted for group'),
-            'DESCRIPTION' => _t('Group this object was submitted under')
-        ),
-        'submission_status_id' => array(
-            'FIELD_TYPE' => FT_NUMBER,
-            'DISPLAY_TYPE' => DT_SELECT,
-            'DISPLAY_WIDTH' => 10,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => null,
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-            'LIST_CODE' => 'submission_statuses',
-            'LABEL' => _t('Submission status'),
-            'DESCRIPTION' => _t('Indicates submission status of the object.')
-        ),
-        'submission_via_form' => array(
-            'FIELD_TYPE' => FT_TEXT,
-            'DISPLAY_TYPE' => DT_OMIT,
-            'DISPLAY_WIDTH' => 40,
-            'DISPLAY_HEIGHT' => 1,
-            'IS_NULL' => true,
-            'DEFAULT' => null,
-            'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-            'LABEL' => _t('Submission via form'),
-            'DESCRIPTION' => _t('Indicates what contribute form was used to create the submission.')
-        )
-    )
+			'LABEL' => _t('Original MIME type'), 'DESCRIPTION' => _t('The MIME type of the media at the time of upload.'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'is_transcribable' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Transcribe?'), 'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
+		),
+		'home_location_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object reprsentation.')
+		),
+		'access' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Not accessible to public') => 0,
+				_t('Accessible to public') => 1
+			),
+			'LIST' => 'access_statuses',
+			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if representation is accessible to the public or not. ')
+		),
+		'status' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Newly created') => 0,
+				_t('Editing in progress') => 1,
+				_t('Editing complete - pending review') => 2,
+				_t('Review in progress') => 3,
+				_t('Completed') => 4
+			),
+			'LIST' => 'workflow_statuses',
+			'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the representation.')
+		),
+		'deleted' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object is deleted or not.'),
+			'BOUNDS_VALUE' => array(0,1)
+		),
+		'rank' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
+		'source_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'object_representation_sources',
+			'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of object representation. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
+		'source_info' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object representation information retrieved via web services [NOT IMPLEMENTED YET].'
+		),
+		'view_count' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+		),
+		'submission_user_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this object')
+		),
+		'submission_group_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted for group'), 'DESCRIPTION' => _t('Group this object was submitted under')
+		),
+		'submission_status_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'submission_statuses',
+			'LABEL' => _t('Submission status'), 'DESCRIPTION' => _t('Indicates submission status of the object.')
+		),
+		'submission_via_form' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Submission via form'), 'DESCRIPTION' => _t('Indicates what contribute form was used to create the submission.')
+		)
+ 	)
 );
 
 class ca_object_representations extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider

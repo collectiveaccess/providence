@@ -70,7 +70,7 @@ create table ca_collections_x_storage_locations (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    
    constraint fk_ca_collections_x_storage_locations_location_id foreign key (location_id)
@@ -405,7 +405,7 @@ create table ca_loans_x_objects (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    
    constraint fk_ca_loans_x_objects_loan_id foreign key (loan_id)
@@ -448,7 +448,7 @@ create table ca_loans_x_entities (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    
    constraint fk_ca_loans_x_entities_loan_id foreign key (loan_id)
@@ -550,7 +550,7 @@ create table ca_movements_x_objects (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    
    constraint fk_ca_movements_x_objects_movement_id foreign key (movement_id)
@@ -593,7 +593,7 @@ create table ca_movements_x_object_lots (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    
    constraint fk_ca_movements_x_object_lots_movement_id foreign key (movement_id)
@@ -636,7 +636,7 @@ create table ca_movements_x_entities (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    
    constraint fk_ca_movements_x_entities_movement_id foreign key (movement_id)

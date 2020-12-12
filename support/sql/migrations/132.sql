@@ -14,7 +14,7 @@ create table ca_user_sorts
   name            varchar(255)      not null,
   settings        longtext          not null,
   sort_type       char(1)           null,
-  `rank`            smallint unsigned not null default 0,
+  rank           smallint unsigned not null default 0,
   deleted         tinyint unsigned  not null default 0,
 
   primary key (sort_id),
@@ -31,7 +31,7 @@ create table ca_user_sort_items
   item_id         int unsigned      not null AUTO_INCREMENT,
   sort_id         int unsigned      not null,
   bundle_name     varchar(255)      not null,
-  `rank`            smallint unsigned not null default 0,
+  rank           smallint unsigned not null default 0,
 
   primary key (item_id),
 

@@ -34,17 +34,18 @@
  *
  */
 
-require_once(__CA_LIB_DIR__ . "/IBundleProvider.php");
-require_once(__CA_LIB_DIR__ . "/RepresentableBaseModel.php");
-require_once(__CA_MODELS_DIR__ . "/ca_object_representations.php");
-require_once(__CA_MODELS_DIR__ . "/ca_objects_x_object_representations.php");
-require_once(__CA_MODELS_DIR__ . "/ca_loans_x_objects.php");
-require_once(__CA_MODELS_DIR__ . "/ca_movements_x_objects.php");
-require_once(__CA_MODELS_DIR__ . "/ca_objects_x_storage_locations.php");
-require_once(__CA_MODELS_DIR__ . "/ca_object_checkouts.php");
-require_once(__CA_MODELS_DIR__ . "/ca_object_lots.php");
-require_once(__CA_APP_DIR__ . "/helpers/mediaPluginHelpers.php");
-require_once(__CA_LIB_DIR__ . "/HistoryTrackingCurrentValueTrait.php");
+require_once(__CA_LIB_DIR__."/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
+require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+require_once(__CA_MODELS_DIR__."/ca_objects_x_object_representations.php");
+require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
+require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
+require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
+require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
+require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
+require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
+require_once(__CA_LIB_DIR__."/DeaccessionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects'] = array(
@@ -511,9 +512,9 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
     )
 );
 
-class ca_objects extends RepresentableBaseModel implements IBundleProvider
-{
-    use HistoryTrackingCurrentValueTrait;
+class ca_objects extends RepresentableBaseModel implements IBundleProvider {
+	use HistoryTrackingCurrentValueTrait;
+	use DeaccessionTrait;
 
     # ------------------------------------------------------
     # --- Object attribute properties
@@ -1056,503 +1057,327 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider
 					SELECT *
 					FROM ca_objects_x_object_representations
 					WHERE object_id = ?
-				",
-                    (int)$this->getPrimaryKey()
-                );
-
-                $va_reps = array();
-                while ($qr_res->nextRow()) {
-                    $va_reps[$qr_res->get('representation_id')] = $qr_res->getRow();
-                }
-
-                $t_object_x_rep = new ca_objects_x_object_representations();
-                $t_object_x_rep->setTransaction($o_t);
-                foreach ($va_reps as $vn_representation_id => $va_rep) {
-                    $t_object_x_rep->setMode(ACCESS_WRITE);
-                    $va_rep['object_id'] = $t_dupe->getPrimaryKey();
-                    $t_object_x_rep->set($va_rep);
-                    $t_object_x_rep->insert();
-
-                    if ($t_object_x_rep->numErrors()) {
-                        $this->errors = $t_object_x_rep->errors;
-                        if ($vb_we_set_transaction) {
-                            $o_t->rollback();
-                        }
-                        return false;
-                    }
-                }
-            }
-        } else {
-            if ($vb_we_set_transaction) {
-                $o_t->rollback();
-            }
-            return false;
-        }
-
-
-        if ($vb_we_set_transaction) {
-            $o_t->commit();
-        }
-        return $t_dupe;
-    }
-    # ------------------------------------------------------
-    # HTML form bundles
-    # ------------------------------------------------------
-    /**
-     * Returns HTML form bundle for object deaccession information
-     *
-     * @param HTTPRequest $po_request The current request
-     * @param string $ps_form_name
-     * @param string $ps_placement_code
-     * @param array $pa_bundle_settings
-     * @param array $pa_options Array of options. Supported options are
-     *            noCache = If set to true then label cache is bypassed; default is true
-     *
-     * @return string Rendered HTML bundle
-     */
-    public function getObjectDeaccessionHTMLFormBundle(
-        $po_request,
-        $ps_form_name,
-        $ps_placement_code,
-        $pa_bundle_settings = null,
-        $pa_options = null
-    ) {
-        global $g_ui_locale;
-
-        $o_view = new View($po_request, $po_request->getViewsDirectoryPath() . '/bundles/');
-
-        if (!is_array($pa_options)) {
-            $pa_options = array();
-        }
-
-        $o_view->setVar('id_prefix', $ps_form_name);
-        $o_view->setVar('placement_code', $ps_placement_code);        // pass placement code
-
-        $o_view->setVar('settings', $pa_bundle_settings);
-
-        $o_view->setVar('t_subject', $this);
-
-
-        return $o_view->render('ca_objects_deaccession.php');
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Returns HTML form bundle for object checkout information
-     *
-     * @param HTTPRequest $po_request The current request
-     * @param string $ps_form_name
-     * @param string $ps_placement_code
-     * @param array $pa_bundle_settings
-     * @param array $pa_options Array of options. Supported options are
-     *            noCache = If set to true then label cache is bypassed; default is true
-     *
-     * @return string Rendered HTML bundle
-     */
-    public function getObjectCheckoutsHTMLFormBundle(
-        $po_request,
-        $ps_form_name,
-        $ps_placement_code,
-        $pa_bundle_settings = null,
-        $pa_options = null
-    ) {
-        global $g_ui_locale;
-
-        $o_view = new View($po_request, $po_request->getViewsDirectoryPath() . '/bundles/');
-
-        if (!is_array($pa_options)) {
-            $pa_options = array();
-        }
-
-        $o_view->setVar('id_prefix', $ps_form_name);
-        $o_view->setVar('placement_code', $ps_placement_code);        // pass placement code
-
-        $o_view->setVar('settings', $pa_bundle_settings);
-
-        $o_view->setVar('t_subject', $this);
-
-        $o_view->setVar('checkout_history', $va_history = $this->getCheckoutHistory());
-        $o_view->setVar('checkout_count', sizeof($va_history));
-        $o_view->setVar(
-            'client_list',
-            $va_client_list = array_unique(caExtractValuesFromArrayList($va_history, 'user_name'))
-        );
-        $o_view->setVar('client_count', sizeof($va_client_list));
-
-
-        return $o_view->render('ca_object_checkouts.php');
-    }
-    # ------------------------------------------------------
-    # Components
-    # ------------------------------------------------------
-    /**
-     * Returns HTML form bundle for component listing
-     *
-     * @param HTTPRequest $po_request The current request
-     * @param string $ps_form_name
-     * @param string $ps_placement_code
-     * @param array $pa_bundle_settings
-     * @param array $pa_options Array of options. Options include:
-     *            noCache = If set to true then label cache is bypassed. [Default = true]
-     *
-     * @return string Rendered HTML bundle
-     */
-    public function getComponentListHTMLFormBundle(
-        $po_request,
-        $ps_form_name,
-        $ps_placement_code,
-        $pa_bundle_settings = null,
-        $pa_options = null
-    ) {
-        global $g_ui_locale;
-
-        $o_view = new View($po_request, $po_request->getViewsDirectoryPath() . '/bundles/');
-
-        if (!is_array($pa_options)) {
-            $pa_options = array();
-        }
-
-        $o_view->setVar('id_prefix', $ps_form_name);
-        $o_view->setVar('placement_code', $ps_placement_code);        // pass placement code
-
-        $o_view->setVar('settings', $pa_bundle_settings);
-
-        $o_view->setVar(
-            'add_label',
-            isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null
-        );
-        $o_view->setVar('t_subject', $this);
-
-
-        return $o_view->render('ca_objects_components_list.php');
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Return number of components directly linked to this container
-     *
-     * @param array $pa_options Array of options:
-     *            object_id = object to return components for, rather than currently loaded object. [Default = null; use loaded object]
-     *
-     * @return int
-     */
-    public function getComponentCount($pa_options = null)
-    {
-        $pn_object_id = caGetOption('object_id', $pa_options, null);
-        if (!(int)$pn_object_id) {
-            $pn_object_id = (int)$this->getPrimaryKey();
-        }
-        if (!$pn_object_id) {
-            return null;
-        }
-
-        $va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
-
-        if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
-            $va_ids = ca_objects::find(
-                array('parent_id' => $pn_object_id, 'type_id' => $va_component_types, array('returnAs' => 'ids'))
-            );
-        } else {
-            $va_ids = ca_objects::find(array('parent_id' => $pn_object_id, array('returnAs' => 'ids')));
-        }
-
-        if (!is_array($va_ids)) {
-            return 0;
-        }
-        return sizeof($va_ids);
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Return number of components directly linked to this container
-     *
-     * @param array $pa_options Array of options:
-     *        object_id = object to return components for, rather than currently loaded object. [Default = null; use loaded object]
-     *        returnAs = what to return; possible values are:
-     *            searchResult            = a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined)
-     *            ids                        = an array of ids (aka. primary keys)
-     *            modelInstances            = an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel
-     *            firstId                    = the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
-     *            firstModelInstance        = the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
-     *            info                    = an array, keyed on object_id with label, type and idno of each component
-     *
-     * @return int
-     */
-    public function getComponents($pa_options = null)
-    {
-        $pn_object_id = caGetOption('object_id', $pa_options, null);
-        if (!(int)$pn_object_id) {
-            $pn_object_id = (int)$this->getPrimaryKey();
-        }
-        if (!$pn_object_id) {
-            return null;
-        }
-
-        if (caGetOption('idsOnly', $pa_options, false)) {
-            $pa_options['returnAs'] = 'ids';
-        }
-        $vs_return_as = caGetOption('returnAs', $pa_options, 'info');
-
-        $va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
-
-        if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
-            $vm_res = ca_objects::find(
-                array('parent_id' => $pn_object_id, 'type_id' => $va_component_types),
-                array(
-                    'sort' => 'ca_objects.idno',
-                    'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as
-                )
-            );
-        } else {
-            $vm_res = ca_objects::find(
-                array('parent_id' => $pn_object_id),
-                array(
-                    'sort' => 'ca_objects.idno',
-                    'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as
-                )
-            );
-        }
-
-        if ($vs_return_as == 'info') {
-            $va_data = array();
-            while ($vm_res->nextHit()) {
-                $vn_object_id = $vm_res->get('ca_objects.object_id');
-                $va_data[$vn_object_id] = array(
-                    'object_id' => $vn_object_id,
-                    'id' => $vn_object_id,
-                    'label' => $vm_res->get('ca_objects.preferred_labels.name'),
-                    'idno' => $vm_res->get('ca_objects.idno'),
-                    'type_id' => $vm_res->get('ca_objects.type_id'),
-                    'source_id' => $vm_res->get('ca_objects.source_id')
-                );
-            }
-
-            return caSortArrayByKeyInValue($va_data, array('idno'));
-        }
-        return $vm_res;
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Check if currently loaded object is a component container
-     *
-     * @return bool
-     */
-    public function canTakeComponents()
-    {
-        $va_container_types = $this->getAppConfig()->getList('ca_objects_container_types');
-        if (!is_array($va_container_types) || !sizeof($va_container_types)) {
-            return false;
-        }
-        if (in_array('*', $va_container_types)) {
-            return true;
-        }
-        return in_array($this->getTypeCode(), $va_container_types);
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Check if currently loaded object is a component
-     *
-     * @return bool
-     */
-    public function isComponent()
-    {
-        $va_container_types = $this->getAppConfig()->getList('ca_objects_container_types');
-        $va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
-        if (!is_array($va_container_types) || !sizeof($va_container_types)) {
-            return false;
-        }
-        if (!is_array($va_component_types) || !sizeof($va_component_types)) {
-            return false;
-        }
-        if (!($vn_parent_id = $this->get('parent_id'))) {
-            return false;
-        }        // component must be in a container
-
-        if (!in_array($this->getTypeCode(), $va_component_types) && !in_array('*', $va_component_types)) {
-            return false;
-        }    // check component type
-        $t_parent = new ca_objects($vn_parent_id);
-        if (!$t_parent->getPrimaryKey()) {
-            return false;
-        }
-        if (!in_array($t_parent->getTypeCode(), $va_container_types) && !in_array('*', $va_container_types)) {
-            return false;
-        }    // check container type
-
-        return true;
-    }
-    # ------------------------------------------------------
-    # Current location browse support
-    # ------------------------------------------------------
-    /**
-     * Override BaseModel::addRelationship() to update current location fields in ca_objects
-     *
-     * @param mixed $pm_rel_table_name_or_num
-     * @param int $pn_rel_id
-     * @param mixed $pm_type_id
-     * @param string $ps_effective_date
-     * @param string $ps_source_info
-     * @param string $ps_direction
-     * @param int $pn_rank
-     * @param array $pa_options
-     *
-     * @return BaseRelationshipModel
-     */
-    public function addRelationship(
-        $pm_rel_table_name_or_num,
-        $pn_rel_id,
-        $pm_type_id = null,
-        $ps_effective_date = null,
-        $ps_source_info = null,
-        $ps_direction = null,
-        $pn_rank = null,
-        $pa_options = null
-    ) {
-        return parent::addRelationship(
-            $pm_rel_table_name_or_num,
-            $pn_rel_id,
-            $pm_type_id,
-            $ps_effective_date,
-            $ps_source_info,
-            $ps_direction,
-            $pn_rank,
-            $pa_options
-        );
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Override BaseModel::editRelationship() to update current location fields in ca_objects
-     *
-     * @param mixed $pm_rel_table_name_or_num
-     * @param int $pn_relation_id
-     * @param mixed $pm_type_id
-     * @param string $ps_effective_date
-     * @param string $ps_source_info
-     * @param string $ps_direction
-     * @param int $pn_rank
-     * @param array $pa_array
-     *
-     * @return int
-     */
-    public function editRelationship(
-        $pm_rel_table_name_or_num,
-        $pn_relation_id,
-        $pn_rel_id,
-        $pm_type_id = null,
-        $ps_effective_date = null,
-        $ps_source_info = null,
-        $ps_direction = null,
-        $pn_rank = null,
-        $pa_options = null
-    ) {
-        return parent::editRelationship(
-            $pm_rel_table_name_or_num,
-            $pn_relation_id,
-            $pn_rel_id,
-            $pm_type_id,
-            $ps_effective_date,
-            $ps_source_info,
-            $ps_direction,
-            $pn_rank,
-            $pa_options
-        );
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Override BaseModel::removeRelationship() to update current location fields in ca_objects
-     *
-     * @param mixed $pm_rel_table_name_or_num
-     * @param int $pn_relation_id
-     *
-     * @return int
-     */
-    public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id)
-    {
-        return parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id);
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Override BaseModel::removeRelationships() to update current location fields in ca_objects
-     *
-     * @param mixed $pm_rel_table_name_or_num
-     * @param mixed $pm_type_id
-     *
-     * @return int
-     */
-    public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id = null, $pa_options = null)
-    {
-        return parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options);
-    }
-    # ------------------------------------------------------
-    # Object checkout
-    # ------------------------------------------------------
-    /**
-     * Determine if the currently loaded object may be marked as loaned out using the library checkout system.
-     * Only object types configured for checkout in the object_checkout.conf configuration file may be used with the checkout system
-     *
-     * @return bool
-     */
-    public function canBeCheckedOut()
-    {
-        if (!$this->getPrimaryKey()) {
-            return false;
-        }
-        return ca_object_checkouts::getObjectCheckoutConfigForType($this->getTypeCode()) ? true : false;
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Return checkout status for currently loaded object. By default a numeric constant is returned. Possible values are:
-     *        __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__ (0)
-     *        __CA_OBJECTS_CHECKOUT_STATUS_OUT__ (1)
-     *        __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ (2)
-     *        __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__ (3)
-     *
-     * If the returnAsText option is set then a text status value suitable for display is returned. For detailed information
-     * about the current status use the returnAsArray option, which returns an array with the following elements:
-     *
-     *        status = numeric status code
-     *        status_display = status display text
-     *        user_id = The user_id of the user who checked out the object (if status is __CA_OBJECTS_CHECKOUT_STATUS_OUT__ or __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__)
-     *        user_name = Displayable user name and email
-     *        checkout_date = Date of checkout (if status is __CA_OBJECTS_CHECKOUT_STATUS_OUT__ or __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__) as printable text
-     *
-     * @param array $pa_options Options include:
-     *        returnAsText = return status as displayable text [Default=false]
-     *        returnAsText = return detailed status information in an array [Default=false]
-     * @return mixed Will return a numeric status code by default; status text for display if returnAsText option is set; or an array with details on the checkout if the returnAsArray option is set. Will return null if not object is loaded or if the object may not be checked out.
-     */
-    public function getCheckoutStatus($pa_options = null)
-    {
-        if (!($vn_object_id = $this->getPrimaryKey())) {
-            return null;
-        }
-
-        if (!$this->canBeCheckedOut()) {
-            return null;
-        }
-
-        $vb_return_as_text = caGetOption('returnAsText', $pa_options, false);
-        $vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
-
-        $t_checkout = new ca_object_checkouts();
-        $va_is_out = $t_checkout->objectIsOut($vn_object_id);
-        $va_reservations = $t_checkout->objectHasReservations($vn_object_id);
-        $vn_num_reservations = sizeof($va_reservations);
-        $vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
-
-        $va_info = array(
-            'user_name' => null,
-            'checkout_date' => null,
-            'user_id' => null,
-            'due_date' => null,
-            'checkout_notes' => null
-        );
+				", (int)$this->getPrimaryKey());
+				
+				$va_reps = array();
+				while($qr_res->nextRow()) {
+					$va_reps[$qr_res->get('representation_id')] = $qr_res->getRow();
+				}
+				
+				$t_object_x_rep = new ca_objects_x_object_representations();
+				$t_object_x_rep->setTransaction($o_t);
+				foreach($va_reps as $vn_representation_id => $va_rep) {
+					$t_object_x_rep->setMode(ACCESS_WRITE);
+					$va_rep['object_id'] = $t_dupe->getPrimaryKey();
+					$t_object_x_rep->set($va_rep);
+					$t_object_x_rep->insert();
+					
+					if ($t_object_x_rep->numErrors()) {
+						$this->errors = $t_object_x_rep->errors;
+						if ($vb_we_set_transaction) { $o_t->rollback();}
+						return false;
+					}
+				}
+			}
+		} else {
+			if ($vb_we_set_transaction) { $o_t->rollback(); }
+			return false;
+		}
+		
+		
+		if ($vb_we_set_transaction) { $o_t->commit();}
+		return $t_dupe;
+	}
+ 	# ------------------------------------------------------
+ 	# HTML form bundles
+	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle for object checkout information
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Supported options are 
+	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getObjectCheckoutsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('t_subject', $this);
+		
+		$o_view->setVar('checkout_history', $va_history = $this->getCheckoutHistory());
+		$o_view->setVar('checkout_count', sizeof($va_history));
+		$o_view->setVar('client_list', $va_client_list = array_unique(caExtractValuesFromArrayList($va_history, 'user_name')));
+		$o_view->setVar('client_count', sizeof($va_client_list));
+		
+		
+		return $o_view->render('ca_object_checkouts.php');
+	}
+ 	# ------------------------------------------------------
+ 	# Components
+ 	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle for component listing
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Options include:
+	 *			noCache = If set to true then label cache is bypassed. [Default = true]
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getComponentListHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
+		$o_view->setVar('t_subject', $this);
+		
+		
+		
+		return $o_view->render('ca_objects_components_list.php');
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Return number of components directly linked to this container
+	 *
+	 * @param array $pa_options Array of options:
+	 *			object_id = object to return components for, rather than currently loaded object. [Default = null; use loaded object]
+	 *	
+	 * @return int 
+	 */
+	public function getComponentCount($pa_options=null) {
+		$pn_object_id = caGetOption('object_id', $pa_options, null);
+		if (!(int)$pn_object_id) { $pn_object_id = (int)$this->getPrimaryKey(); }
+		if (!$pn_object_id) { return null; }
+		
+		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
+		
+		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
+			$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types, array('returnAs' => 'ids')));
+		} else {
+			$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, array('returnAs' => 'ids')));
+		}
+	
+		if (!is_array($va_ids)) { return 0; }
+		return sizeof($va_ids);	
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Return number of components directly linked to this container
+	 *
+	 * @param array $pa_options Array of options:
+	 *		object_id = object to return components for, rather than currently loaded object. [Default = null; use loaded object]
+	 *		returnAs = what to return; possible values are:
+	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+	 *			ids						= an array of ids (aka. primary keys)
+	 *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel 
+	 *			firstId					= the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
+	 *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
+	 *			info					= an array, keyed on object_id with label, type and idno of each component
+	 *			
+	 * @return int 
+	 */
+	public function getComponents($pa_options=null) {
+		$pn_object_id = caGetOption('object_id', $pa_options, null);
+		if (!(int)$pn_object_id) { $pn_object_id = (int)$this->getPrimaryKey(); }
+		if (!$pn_object_id) { return null; }
+		
+		if (caGetOption('idsOnly', $pa_options, false)) { $pa_options['returnAs'] = 'ids'; }
+		$vs_return_as = caGetOption('returnAs', $pa_options, 'info');
+	
+		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
+		
+		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
+			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+		} else {
+			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+		}
+	
+		if ($vs_return_as == 'info') {
+			$va_data = array();
+			while($vm_res->nextHit()) {
+				$vn_object_id = $vm_res->get('ca_objects.object_id');
+				$va_data[$vn_object_id] = array(
+					'object_id' => $vn_object_id,
+					'id' => $vn_object_id,
+					'label' => $vm_res->get('ca_objects.preferred_labels.name'),
+					'idno' => $vm_res->get('ca_objects.idno'),
+					'type_id' => $vm_res->get('ca_objects.type_id'),
+					'source_id' => $vm_res->get('ca_objects.source_id')
+				);
+			}
+			
+			return caSortArrayByKeyInValue($va_data, array('idno'));
+		}
+		return $vm_res;	
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Check if currently loaded object is a component container
+	 *	
+	 * @return bool 
+	 */
+	public function canTakeComponents() {
+		$va_container_types = $this->getAppConfig()->getList('ca_objects_container_types');
+		if (!is_array($va_container_types) || !sizeof($va_container_types)) { return false; }
+		if (in_array('*', $va_container_types)) { return true; }
+		return in_array($this->getTypeCode(), $va_container_types);
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Check if currently loaded object is a component 
+	 *	
+	 * @return bool 
+	 */
+	public function isComponent() {
+		$va_container_types = $this->getAppConfig()->getList('ca_objects_container_types');
+		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
+		if (!is_array($va_container_types) || !sizeof($va_container_types)) { return false; }
+		if (!is_array($va_component_types) || !sizeof($va_component_types)) { return false; }
+		if (!($vn_parent_id = $this->get('parent_id'))) { return false; }		// component must be in a container
+		
+		if (!in_array($this->getTypeCode(), $va_component_types) && !in_array('*', $va_component_types)) { return false; }	// check component type
+		$t_parent = new ca_objects($vn_parent_id);
+		if (!$t_parent->getPrimaryKey()) { return false; }
+		if (!in_array($t_parent->getTypeCode(), $va_container_types) && !in_array('*', $va_container_types)) { return false; }	// check container type
+		
+		return true;
+	}
+ 	# ------------------------------------------------------
+ 	# Current location browse support
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Override BaseModel::addRelationship() to update current location fields in ca_objects
+ 	 *
+ 	 * @param mixed $pm_rel_table_name_or_num
+ 	 * @param int $pn_rel_id
+ 	 * @param mixed $pm_type_id
+ 	 * @param string $ps_effective_date
+ 	 * @param string $ps_source_info
+ 	 * @param string $ps_direction
+ 	 * @param int $pn_rank
+ 	 * @param array $pa_options
+ 	 *
+ 	 * @return BaseRelationshipModel
+ 	 */
+ 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+ 		return parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options);
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Override BaseModel::editRelationship() to update current location fields in ca_objects
+ 	 *
+ 	 * @param mixed $pm_rel_table_name_or_num
+ 	 * @param int $pn_relation_id
+ 	 * @param mixed $pm_type_id
+ 	 * @param string $ps_effective_date
+ 	 * @param string $ps_source_info
+ 	 * @param string $ps_direction
+ 	 * @param int $pn_rank
+ 	 * @param array $pa_array
+ 	 *
+ 	 * @return int
+ 	 */
+ 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+ 	    return parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options);
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Override BaseModel::removeRelationship() to update current location fields in ca_objects
+ 	 *
+ 	 * @param mixed $pm_rel_table_name_or_num
+ 	 * @param int $pn_relation_id
+ 	 *
+ 	 * @return int
+ 	 */
+ 	public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id) {
+ 		return parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id);
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Override BaseModel::removeRelationships() to update current location fields in ca_objects
+ 	 *
+ 	 * @param mixed $pm_rel_table_name_or_num
+ 	 * @param mixed $pm_type_id
+ 	 *
+ 	 * @return int
+ 	 */
+ 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
+ 		return parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options);
+ 	}
+ 	# ------------------------------------------------------
+ 	# Object checkout 
+ 	# ------------------------------------------------------
+ 	/**
+	 * Determine if the currently loaded object may be marked as loaned out using the library checkout system.
+	 * Only object types configured for checkout in the object_checkout.conf configuration file may be used with the checkout system
+	 *
+	 * @return bool 
+	 */
+ 	public function canBeCheckedOut() {
+ 		if (!$this->getPrimaryKey()) { return false; }
+ 		return ca_object_checkouts::getObjectCheckoutConfigForType($this->getTypeCode()) ? true : false;
+ 	}
+	# ------------------------------------------------------
+	/**
+	 * Return checkout status for currently loaded object. By default a numeric constant is returned. Possible values are:
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__ (0)
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_OUT__ (1)
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ (2)	
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__ (3)	
+	 * 
+	 * If the returnAsText option is set then a text status value suitable for display is returned. For detailed information
+	 * about the current status use the returnAsArray option, which returns an array with the following elements:
+	 *
+	 *		status = numeric status code
+	 *		status_display = status display text
+	 *		user_id = The user_id of the user who checked out the object (if status is __CA_OBJECTS_CHECKOUT_STATUS_OUT__ or __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__)
+	 *		user_name = Displayable user name and email 
+	 *		checkout_date = Date of checkout (if status is __CA_OBJECTS_CHECKOUT_STATUS_OUT__ or __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__) as printable text
+	 *
+	 * @param array $pa_options Options include:
+	 *		returnAsText = return status as displayable text [Default=false]
+	 *		returnAsText = return detailed status information in an array [Default=false]
+	 * @return mixed Will return a numeric status code by default; status text for display if returnAsText option is set; or an array with details on the checkout if the returnAsArray option is set. Will return null if not object is loaded or if the object may not be checked out.
+	 */
+	public function getCheckoutStatus($pa_options=null) {
+		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
+		
+		if (!$this->canBeCheckedOut()) { return null; }
+		
+		$vb_return_as_text = caGetOption('returnAsText', $pa_options, false);
+		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		
+		$t_checkout = new ca_object_checkouts();
+		$va_is_out = $t_checkout->objectIsOut($vn_object_id);
+		$va_reservations = $t_checkout->objectHasReservations($vn_object_id);
+		$vn_num_reservations = sizeof($va_reservations);
+		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
+		
+		$va_info = array('user_name' => null, 'checkout_date' => null, 'user_id' => null, 'due_date' => null, 'checkout_notes' => null);
 
         $vb_is_unavailable = false;
         $o_lib_conf = caGetLibraryServicesConfiguration();

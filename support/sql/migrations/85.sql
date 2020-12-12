@@ -15,7 +15,7 @@ create table ca_object_lots_x_object_lots
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   `rank`                           int unsigned                   not null default 0,
+   rank                          int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_object_lots_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,

@@ -1272,64 +1272,50 @@ class BrowseEngine extends BaseFindEngine
             return $va_tmp;
         }
 
-        return array();
-    }
-    # ------------------------------------------------------
-    # Generation of browse results
-    # ------------------------------------------------------
-    /**
-     * Perform the browse using currently applied criteria, calculating the result set and browse facets
-     * required for subsequent browse refinement. You need to call execute() after setting up your browse
-     * criteria and options to:
-     *        • Get the result set reflecting the current browse state
-     *        • Fetch browse facets that reflect the current browse state
-     *
-     * @param array $pa_options Options include:
-     *        checkAccess = array of access values to filter facets that have an 'access' field by
-     *        noCache = don't use cached browse results
-     *        showDeleted = if set to true, related items that have been deleted are returned. Default is false.
-     *        limitToModifiedOn = if set returned results will be limited to rows modified within the specified date range. The value should be a date/time expression parse-able by TimeExpressionParser
-     *        user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
-     *        expandResultsHierarchically = expand result set items that are hierarchy roots to include their entire hierarchy. [Default is false]
-     *        omitChildRecords = only return records that are the root of whatever hierarchy they are in. [Default is false]
-     *        rootRecordsOnly = Synonym for omitChildRecords.
-     *        omitChildRecordsForTypes = List of types for which to return only records that are not children [Default is null]
-     *
-     * @return bool True on success, null if the browse could not be executed (Eg. no settings), false no error
-     */
-    public function execute($pa_options = null)
-    {
-        global $AUTH_CURRENT_USER_ID;
-        if (!is_array($this->opa_browse_settings)) {
-            return null;
-        }
-        if (!is_array($pa_options)) {
-            $pa_options = array();
-        }
-
-        if ((!isset($pa_options['omitChildRecords'])) && isset($pa_options['rootRecordsOnly'])) {
-            $pa_options['omitChildRecords'] = $pa_options['rootRecordsOnly'];
-        }
-
-        if (is_array(
-                $omit_child_records_for_types = caGetOption('omitChildRecordsForTypes', $pa_options, null)
-            ) && sizeof($omit_child_records_for_types)) {
-            $omit_child_records_for_types = caMakeTypeIDList(
-                $this->opn_browse_table_num,
-                $omit_child_records_for_types
-            );
-            $pa_options['omitChildRecords'] = false;        // omitChildRecordsForTypes supercedes omitChildRecords
-        }
-
-        $vn_user_id = caGetOption('user_id', $pa_options, $AUTH_CURRENT_USER_ID, array('castTo' => 'int'));
-        $t_user = new ca_users($vn_user_id);
-
-        $vb_no_cache = caGetOption(
-            'noCache',
-            $pa_options,
-            caGetOption('no_cache', $pa_options, false, array('castTo' => 'bool')),
-            array('castTo' => 'bool')
-        );
+			return array();
+		}
+		# ------------------------------------------------------
+		# Generation of browse results
+		# ------------------------------------------------------
+		/**
+		 * Perform the browse using currently applied criteria, calculating the result set and browse facets
+		 * required for subsequent browse refinement. You need to call execute() after setting up your browse
+		 * criteria and options to:
+		 *		• Get the result set reflecting the current browse state
+		 *		• Fetch browse facets that reflect the current browse state
+		 *
+		 * @param array $pa_options Options include:
+		 *		checkAccess = array of access values to filter facets that have an 'access' field by
+		 *		noCache = don't use cached browse results
+		 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
+		 *		limitToModifiedOn = if set returned results will be limited to rows modified within the specified date range. The value should be a date/time expression parse-able by TimeExpressionParser
+		 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
+		 *		expandResultsHierarchically = expand result set items that are hierarchy roots to include their entire hierarchy. [Default is false]
+		 *		omitChildRecords = only return records that are the root of whatever hierarchy they are in. [Default is false]
+		 *		rootRecordsOnly = Synonym for omitChildRecords.
+		 *		omitChildRecordsForTypes = List of types for which to return only records that are not children [Default is null]
+		 *		filterDeaccessionedRecords = Omit deaccessioned records from the result set. [Default is false]
+		 *
+		 * @return bool True on success, null if the browse could not be executed (Eg. no settings), false no error
+		 */
+		public function execute($pa_options=null) {
+			global $AUTH_CURRENT_USER_ID;
+			if (!is_array($this->opa_browse_settings)) { return null; }
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			
+			if ((!isset($pa_options['omitChildRecords'])) && isset($pa_options['rootRecordsOnly'])) { 
+			    $pa_options['omitChildRecords'] = $pa_options['rootRecordsOnly'];
+			}
+			
+			if (is_array($omit_child_records_for_types = caGetOption('omitChildRecordsForTypes', $pa_options, null)) && sizeof($omit_child_records_for_types)) {
+			    $omit_child_records_for_types = caMakeTypeIDList($this->opn_browse_table_num, $omit_child_records_for_types);
+			    $pa_options['omitChildRecords'] = false;        // omitChildRecordsForTypes supercedes omitChildRecords
+			}
+			
+			$vn_user_id = caGetOption('user_id', $pa_options, $AUTH_CURRENT_USER_ID, array('castTo' => 'int'));
+			$t_user = new ca_users($vn_user_id);
+			
+			$vb_no_cache = caGetOption('noCache', $pa_options, caGetOption('no_cache', $pa_options, false, array('castTo' => 'bool')), array('castTo' => 'bool'));
 
         $va_params = $this->opo_ca_browse_cache->getParameters();
 
@@ -3670,26 +3656,21 @@ class BrowseEngine extends BaseFindEngine
                             ) . "))";
                     }
 
-                    if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_item->hasField(
-                            'deleted'
-                        )) {
-                        $va_wheres[] = "(" . $this->ops_browse_table_name . ".deleted = 0)";
-                    }
+						if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_item->hasField('deleted')) {
+							$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+						}
+						
+						if ((isset($pa_options['omitChildRecords']) && $pa_options['omitChildRecords']) && $t_item->hasField('parent_id')) {
+							$va_wheres[] = "(".$this->ops_browse_table_name.".parent_id IS NULL)";
+						}
+						
+						if ((isset($pa_options['filterDeaccessionedRecords']) && $pa_options['filterDeaccessionedRecords']) && $t_item->hasField('is_deaccessioned')) {
+							$va_wheres[] = "(".$this->ops_browse_table_name.".is_deaccessioned = 0)";
+						}
 
-                    if ((isset($pa_options['omitChildRecords']) && $pa_options['omitChildRecords']) && $t_item->hasField(
-                            'parent_id'
-                        )) {
-                        $va_wheres[] = "(" . $this->ops_browse_table_name . ".parent_id IS NULL)";
-                    }
-
-                    if (is_array($omit_child_records_for_types) && sizeof(
-                            $omit_child_records_for_types
-                        ) && $t_item->hasField('parent_id')) {
-                        $va_wheres[] = "(({$this->ops_browse_table_name}.parent_id IS NULL) OR ({$this->ops_browse_table_name}.parent_id IS NOT NULL AND {$this->ops_browse_table_name}.type_id NOT IN (" . join(
-                                ",",
-                                $omit_child_records_for_types
-                            ) . ")))";
-                    }
+						if (is_array($omit_child_records_for_types) && sizeof($omit_child_records_for_types) && $t_item->hasField('parent_id')) {
+							$va_wheres[] = "(({$this->ops_browse_table_name}.parent_id IS NULL) OR ({$this->ops_browse_table_name}.parent_id IS NOT NULL AND {$this->ops_browse_table_name}.type_id NOT IN (".join(",", $omit_child_records_for_types).")))";
+						}
 
 
                     if ((isset($pa_options['limitToModifiedOn']) && $pa_options['limitToModifiedOn'])) {
@@ -3794,25 +3775,20 @@ class BrowseEngine extends BaseFindEngine
                         ) . "))";
                 }
 
-                if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_item->hasField(
-                        'deleted'
-                    )) {
-                    $va_wheres[] = "(" . $this->ops_browse_table_name . ".deleted = 0)";
-                }
-                if ((isset($pa_options['omitChildRecords']) && $pa_options['omitChildRecords']) && $t_item->hasField(
-                        'parent_id'
-                    )) {
-                    $va_wheres[] = "(" . $this->ops_browse_table_name . ".parent_id IS NULL)";
-                }
+					if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_item->hasField('deleted')) {
+						$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+					}
+					if ((isset($pa_options['omitChildRecords']) && $pa_options['omitChildRecords']) && $t_item->hasField('parent_id')) {
+						$va_wheres[] = "(".$this->ops_browse_table_name.".parent_id IS NULL)";
+					}
 
-                if (is_array($omit_child_records_for_types) && sizeof(
-                        $omit_child_records_for_types
-                    ) && $t_item->hasField('parent_id')) {
-                    $va_wheres[] = "(({$this->ops_browse_table_name}.parent_id IS NULL) OR ({$this->ops_browse_table_name}.parent_id IS NOT NULL AND {$this->ops_browse_table_name}.type_id NOT IN (" . join(
-                            ",",
-                            $omit_child_records_for_types
-                        ) . ")))";
-                }
+					if ((isset($pa_options['filterDeaccessionedRecords']) && $pa_options['filterDeaccessionedRecords']) && $t_item->hasField('is_deaccessioned')) {
+						$va_wheres[] = "(".$this->ops_browse_table_name.".is_deaccessioned = 0)";
+					}
+        
+                    if (is_array($omit_child_records_for_types) && sizeof($omit_child_records_for_types) && $t_item->hasField('parent_id')) {
+                        $va_wheres[] = "(({$this->ops_browse_table_name}.parent_id IS NULL) OR ({$this->ops_browse_table_name}.parent_id IS NOT NULL AND {$this->ops_browse_table_name}.type_id NOT IN (".join(",", $omit_child_records_for_types).")))";
+                    }
 
                 if ((isset($pa_options['limitToModifiedOn']) && $pa_options['limitToModifiedOn'])) {
                     $o_tep = new TimeExpressionParser();
@@ -3896,33 +3872,28 @@ class BrowseEngine extends BaseFindEngine
             $vb_need_to_save_in_cache = true;
         }
 
-        if ($vb_need_to_cache_facets && !$pa_options['dontCheckFacetAvailability']) {
-            $this->loadFacetContent($pa_options);
-        }
-        if ($vb_need_to_save_in_cache) {
-            $this->opo_ca_browse_cache->save();
-        }
-        return true;
-    }
-    # ------------------------------------------------------
-
-    /**
-     * Generates content for all browse facets for the current browse. Typically called by
-     * BrowseEngine::execute() after the browse results are calculated to update the facets.
-     *
-     * @param array $pa_options Options are the same as for BrowseEngine::getFacetContent()
-     * @return bool Always returns true
-     */
-    public function loadFacetContent($pa_options = null)
-    {
-        if (!is_array($pa_options)) {
-            $pa_options = array();
-        }
-        $va_facets_with_content = array();
-        $o_results = $this->getResults();
-        if (!is_array($va_criteria = $this->getCriteria())) {
-            $va_criteria = [];
-        }
+			if ($vb_need_to_cache_facets && !$pa_options['dontCheckFacetAvailability']) {
+				$this->loadFacetContent($pa_options);
+			}
+			if ($vb_need_to_save_in_cache) {
+				$this->opo_ca_browse_cache->setParameter('filterDeaccessionedRecords', (bool)$pa_options['filterDeaccessionedRecords'] ? 1 : 0);
+				$this->opo_ca_browse_cache->save();
+			}
+			return true;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Generates content for all browse facets for the current browse. Typically called by
+		 * BrowseEngine::execute() after the browse results are calculated to update the facets.
+		 *
+		 * @param array $pa_options Options are the same as for BrowseEngine::getFacetContent()
+		 * @return bool Always returns true
+		 */
+		public function loadFacetContent($pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			$va_facets_with_content = array();
+			$o_results = $this->getResults();
+			if (!is_array($va_criteria = $this->getCriteria())) { $va_criteria = []; }
 
         if (($o_results->numHits() > 1) || !sizeof($va_criteria)) {
             $va_facets = $this->getFacetList();
@@ -3939,15 +3910,16 @@ class BrowseEngine extends BaseFindEngine
             // Loop through facets to see if they are available
             //
 
-            foreach ($va_facets as $vs_facet_name) {
-                $va_facet_info = $this->getInfoForFacet($vs_facet_name);
-                if (
-                $this->getFacet($vs_facet_name, array_merge($pa_options, array('checkAvailabilityOnly' => true)))
-                ) {
-                    $va_facets_with_content[$vs_facet_name] = true;
-                }
-            }
-        }
+				foreach($va_facets as $vs_facet_name) {
+					$va_facet_info = $this->getInfoForFacet($vs_facet_name);
+					if (($va_facet_info['type'] === 'field') && ($va_facet_info['field'] === 'is_deaccessioned') && $pa_options['filterDeaccessionedRecords']) { continue; }
+					if (
+						$this->getFacet($vs_facet_name, array_merge($pa_options, array('checkAvailabilityOnly' => true)))
+					) {
+						$va_facets_with_content[$vs_facet_name] = true;
+					}
+				}
+			}
 
         if ((!$va_criteria) || (is_array($va_criteria) && (sizeof($va_criteria) == 0))) {
             // for the "starting" facets (no criteria) we need to stash some statistics

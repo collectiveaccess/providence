@@ -1363,8 +1363,9 @@ function caEditorInspector($po_view, $pa_options = null)
                         }
                     }
 
-                    if ((!$is_home || !$inspector_current_value) && $t_item->hasField(
-                            'home_location_id'
+                    if ((!$is_home || !$inspector_current_value) && caHomeLocationsEnabled(
+                            $t_item->tableName(),
+                            $t_item->getTypeCode()
                         ) && ($home_location_id = $t_item->get(
                             'home_location_id'
                         )) && ($t_home_loc = ca_storage_locations::find(
@@ -1829,8 +1830,10 @@ function caEditorInspector($po_view, $pa_options = null)
                 );
             }
 
-
-            if (($vs_table_name == 'ca_objects') && $po_view->request->user->canDoAction("can_set_home_location")) {
+            if (caHomeLocationsEnabled(
+                    $t_item->tableName(),
+                    $t_item->getTypeCode()
+                ) && $po_view->request->user->canDoAction("can_set_home_location_" . $vs_table_name)) {
                 $vs_buf .= "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>" . caNavIcon(
                         __CA_NAV_ICON_HOME__,
                         '20px',
@@ -5025,9 +5028,58 @@ function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $pa_o
 
 # ---------------------------------------
 /**
- * Used by ca_objects bundle
+ * Check if home location functionality is enabled for a given table and, optionally, type
+ *
+ * @param string $table
+ * @param mixed $type Type code or type_id
+ *
+ * @return bool
  */
-function caReturnToHomeLocationControlForRelatedObjectBundle(
+function caHomeLocationsEnabled(string $table, $type = null, array $options = null)
+{
+    if (!in_array($table, ['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_collections'], true)) {
+        return false;
+    }
+    $o_config = Configuration::load();
+    if ($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) {
+        return true;
+    }
+    if ($type && is_numeric($type) && ($t_instance = Datamodel::getInstance($table, true))) {
+        // Try converting numeric type to type code
+        $type = $t_instance->getTypeCodeForID((int)$type);
+        if ($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) {
+            return true;
+        }
+    }
+    if (caGetOption('enableIfAnyTypeSet', $options, false) && ($t_instance = Datamodel::getInstance($table, true))) {
+        if (is_array(
+            $types = array_map(
+                function ($v) {
+                    return $v['idno'];
+                },
+                $t_instance->getTypeList()
+            )
+        )) {
+            foreach ($types as $type) {
+                if ((bool)$o_config->get("{$table}_{$type}_enable_home_location")) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    if ((bool)$o_config->get("{$table}_enable_home_location")) {
+        return true;
+    }
+
+    return false;
+}
+
+# ---------------------------------------
+/**
+ * Used by ca_objects, ca_collections and ca_object_lots bundles
+ */
+function caReturnToHomeLocationControlForRelatedBundle(
     $ps_id_prefix,
     $po_request,
     $pt_primary,
@@ -5036,8 +5088,9 @@ function caReturnToHomeLocationControlForRelatedObjectBundle(
     $pa_initial_values,
     $ps_policy = null
 ) {
+    $target = $pt_related->tableName();
     $policies = array_filter(
-        ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'),
+        ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target),
         function ($v) {
             return array_key_exists('ca_storage_locations', $v['elements']);
         }
@@ -5046,10 +5099,10 @@ function caReturnToHomeLocationControlForRelatedObjectBundle(
         return '';
     }
     if (!$ps_policy) {
-        $ps_policy = ca_objects::getDefaultHistoryTrackingCurrentValuePolicy();
+        $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy();
     }
 
-    $settings = ca_objects::policy2bundleconfig(['policy' => $ps_policy]);
+    $settings = $target::policy2bundleconfig(['policy' => $ps_policy]);
     $interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
 
     $vs_buf = "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_button' class='editorBundleReturnToHomeControl'>" .
@@ -5093,9 +5146,9 @@ function caReturnToHomeLocationControlForRelatedObjectBundle(
 				function caReturnToHomeLocationToggleForm{$ps_id_prefix}(); {
 					jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_controls').slideToggle(250);
 				}
-				function caReturnToHomeLocation{$ps_id_prefix}(); {
-					var interstitials =; " . json_encode($interstitials) . ";
-					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy';: '{$ps_policy}'}
+				function caReturnToHomeLocation{$ps_id_prefix}() {
+					var interstitials = " . json_encode($interstitials) . ";
+					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy': '{$ps_policy}', 'target': '{$target}'};
 					for(var i in interstitials) {
 						data[interstitials[i]] = jQuery('#{$ps_id_prefix}_ca_storage_locations__' + interstitials[i]).val();
 					}
@@ -5118,7 +5171,7 @@ function caReturnToHomeLocationControlForRelatedObjectBundle(
 								setTimeout(function() { 
 									caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
 									caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
-									caBundleUpdateManager.reloadBundle('ca_objects'); 
+									caBundleUpdateManager.reloadBundle('{$target}'); 
 								}, 3000);
 							}
 					}, 'json');

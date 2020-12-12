@@ -19,7 +19,7 @@ create table ca_editor_ui_type_restrictions (
    ui_id                          int unsigned                   not null,
    include_subtypes               tinyint unsigned               not null default 0,
    settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
+   rank                          smallint unsigned              not null default 0,
    primary key (restriction_id),
    
    index i_ui_id				(ui_id),
@@ -36,7 +36,7 @@ create table ca_editor_ui_bundle_placement_type_restrictions (
    placement_id                   int unsigned                   not null,
    include_subtypes               tinyint unsigned               not null default 0,
    settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
+   rank                          smallint unsigned              not null default 0,
    primary key (restriction_id),
    
    index i_placement_id			(placement_id),

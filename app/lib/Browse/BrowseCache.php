@@ -321,48 +321,40 @@ class BrowseCache
             $pa_params['criteria'] = array();
         }
 
-        return md5(
-            $pa_params['context'] . '/' . $pa_params['table_num'] . '/' . print_r(
-                $pa_params['criteria'],
-                true
-            ) . '/' . print_r($pa_type_restrictions, true) . '/' . print_r($pa_source_restrictions, true)
-        );
-    }
-    # ------------------------------------------------------
-    # Global parameters - available to all browses
-    # ------------------------------------------------------
-    /**
-     *
-     */
-    public function getGlobalParameter($ps_param)
-    {
-        if (ExternalCache::contains("browse_global_{$ps_param}", 'Browse')) {
-            return ExternalCache::fetch("browse_global_{$ps_param}", 'Browse');
-        }
-        return false;
-    }
-    # ------------------------------------------------------
-
-    /**
-     *
-     */
-    public function setGlobalParameter($ps_param, $pm_value)
-    {
-        ExternalCache::save("browse_global_{$ps_param}", $pm_value, 'Browse');
-    }
-    # ------------------------------------------------------
-    /**
-     *
-     */
-    /*static public function _writeBrowseCacheToDisk() {
-        if (is_array(BrowseCache::$s_data )) {
-            $o_cache =  BrowseCache::_getCacheObject();
-            foreach(BrowseCache::$s_data as $vs_cache_key => $va_cached_data) {
-                $o_cache->save($va_cached_data, $vs_cache_key, array('ca_browse_cache'));
-            }
-        }
-    }*/
-    # ------------------------------------------------------
+		return md5($pa_params['context'].'/'.$pa_params['table_num'].'/'.print_r($pa_params['criteria'], true).'/'.$pa_params['filterDeaccessionedRecords'].'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
+	}
+	# ------------------------------------------------------
+	# Global parameters - available to all browses
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getGlobalParameter($ps_param) {
+		if(ExternalCache::contains("browse_global_{$ps_param}", 'Browse')) {
+			return ExternalCache::fetch("browse_global_{$ps_param}", 'Browse');
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function setGlobalParameter($ps_param, $pm_value) {
+		ExternalCache::save("browse_global_{$ps_param}", $pm_value, 'Browse');
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	/*static public function _writeBrowseCacheToDisk() {
+		if (is_array(BrowseCache::$s_data )) {
+			$o_cache =  BrowseCache::_getCacheObject();
+			foreach(BrowseCache::$s_data as $vs_cache_key => $va_cached_data) {
+				$o_cache->save($va_cached_data, $vs_cache_key, array('ca_browse_cache'));
+			}
+		}
+	}*/
+	# ------------------------------------------------------
 }
 
 //register_shutdown_function("BrowseCache::_writeBrowseCacheToDisk");

@@ -2249,531 +2249,262 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
                             $pa_options
                         );
 
-                        break;
-                    # -------------------------------
-                    case 'ca_objects_table': // for compatibility with first version
-                    case 'ca_objects_related_list':
-                    case 'ca_object_representations_related_list':
-                    case 'ca_entities_related_list':
-                    case 'ca_places_related_list':
-                    case 'ca_occurrences_related_list':
-                    case 'ca_collections_related_list':
-                    case 'ca_list_items_related_list':
-                    case 'ca_storage_locations_related_list':
-                    case 'ca_loans_related_list':
-                    case 'ca_movements_related_list':
-                    case 'ca_tour_stops_related_list':
-                    case 'ca_object_lots_related_list':
-                        $vs_table_name = preg_replace("/_related_list|_table$/", '', $ps_bundle_name);
-                        if (($this->_CONFIG->get($vs_table_name . '_disable'))) {
-                            return '';
-                        }        // don't display if master "disable" switch is set
-                        $pa_options['start'] = 0;
-                        $vs_element = $this->getRelatedListHTMLFormBundle(
-                            $pa_options['request'],
-                            $ps_bundle_name,
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    default:
-                        $vs_element = "'{$ps_bundle_name}' is not a valid related-table bundle name";
-                        break;
-                    # -------------------------------
-                }
+						break;
+					# -------------------------------
+					case 'ca_objects_table': // for compatibility with first version
+					case 'ca_objects_related_list':
+					case 'ca_object_representations_related_list':
+					case 'ca_entities_related_list':
+					case 'ca_places_related_list':
+					case 'ca_occurrences_related_list':
+					case 'ca_collections_related_list':
+					case 'ca_list_items_related_list':
+					case 'ca_storage_locations_related_list':
+					case 'ca_loans_related_list':
+					case 'ca_movements_related_list':
+					case 'ca_tour_stops_related_list':
+					case 'ca_object_lots_related_list':
+						$vs_table_name = preg_replace("/_related_list|_table$/", '', $ps_bundle_name);
+						if (($this->_CONFIG->get($vs_table_name. '_disable'))) { return ''; }		// don't display if master "disable" switch is set
+						$pa_options['start'] = 0;
+						$vs_element = $this->getRelatedListHTMLFormBundle($pa_options['request'], $ps_bundle_name, $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					default:
+						$vs_element = "'{$ps_bundle_name}' is not a valid related-table bundle name";
+						break;
+					# -------------------------------
+				}
+				
+				if (!$vs_label_text) { $vs_label_text = $va_info['label']; }				
+				$vs_label = '<span class="formLabelText" id="'.$pa_options['formName'].'_'.$ps_placement_code.'">'.$vs_label_text.'</span>'; 
+				
+				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
+				
+				if (($vs_label_text) && ($vs_description)) {
+					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
+				}
+				break;
+			# -------------------------------------------------
+			case 'special':
+				if (is_array($va_error_objects = $pa_options['request']->getActionErrors($ps_bundle_name, 'general')) && sizeof($va_error_objects)) {
+					$vs_display_format = $o_config->get('bundle_element_error_display_format');
+					foreach($va_error_objects as $o_e) {
+						$va_errors[] = $o_e->getErrorDescription();
+					}
+				} else {
+					$vs_display_format = $o_config->get('bundle_element_display_format');
+				}
+				
+				$vb_read_only = ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__) ? true : false;
+				if (!$pa_bundle_settings['readonly']) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
+		
+				
+				switch($ps_bundle_name) {
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_representation_annotations
+					case 'ca_representation_annotation_properties':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->useInEditor()) { return null; }
+						foreach($this->getPropertyList() as $vs_property) {
+							$vs_element .= $this->getPropertyHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $vs_property, $pa_options);
+						}
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_sets
+					case 'ca_set_items':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getSetItemHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						break;
+					# -------------------------------
+					// This bundle is only available for types which support set membership
+					case 'ca_sets_checklist':
+						require_once(__CA_MODELS_DIR__."/ca_sets.php");	// need to include here to avoid dependency errors on parse/compile
+						$t_set = new ca_sets();
+						$vs_element .= $t_set->getItemSetMembershipHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_editor_uis
+					case 'ca_editor_ui_screens':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getScreenHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_editor_ui_screens
+					case 'ca_editor_ui_bundle_placements':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getPlacementsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_tours
+					case 'ca_tour_stops_list':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getTourStopHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
+					// Hierarchy navigation bar for hierarchical tables
+					case 'hierarchy_navigation':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($this->isHierarchical()) {
+							$vs_element .= $this->getHierarchyNavigationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						}
+						break;
+					# -------------------------------
+					// Hierarchical item location control
+					case 'hierarchy_location':
+						if ($this->isHierarchical()) {
+							$vs_element .= $this->getHierarchyLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						}
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_search_forms
+					case 'ca_search_form_placements':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						//if (!$this->getPrimaryKey()) { return ''; }
+						$vs_element .= $this->getSearchFormHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_bundle_displays
+					case 'ca_bundle_display_placements':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						//if (!$this->getPrimaryKey()) { return ''; }
+						$vs_element .= $this->getBundleDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_bundle_displays
+					case 'ca_bundle_display_type_restrictions':
+					case 'ca_search_form_type_restrictions':
+					case 'ca_editor_ui_screen_type_restrictions':
+					case 'ca_editor_ui_type_restrictions':
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_bundle_displays
+					case 'ca_metadata_alert_rule_type_restrictions':
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
+					// 
+					case 'ca_users':
+						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of per-user access if user is not owner
+						$vs_element .= $this->getUserHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
+						break;
+					# -------------------------------
+					// 
+					case 'ca_user_groups':
+						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of group access if user is not owner
+						$vs_element .= $this->getUserGroupHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
+						break;
+					# -------------------------------
+					// 
+					case 'ca_user_roles':
+						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of group access if user is not owner
+						$vs_element .= $this->getUserRoleHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
+						break;
+					# -------------------------------
+					case 'settings':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getHTMLSettingFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_object_representations
+					case 'ca_object_representations_media_display':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getMediaDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_object_representations
+					case 'ca_object_representation_captions':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->representationIsOfClass("video")) { return ''; }
+						$vs_element .= $this->getCaptionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_components_list':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+						if (!$this->canTakeComponents()) { return null; }
+						$vs_element .= $this->getComponentListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------s
+					case 'ca_objects_history':		// summary of object accession, movement, exhibition and deaccession
+					case 'ca_objects_location':		// storage location via ca_objects_x_storage_locations or ca_movements_x_objects
+					case 'history_tracking_chronology':
+						if (!$this->getPrimaryKey() && !$vb_batch) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+					    if (strlen($pb_show_child_history = $pa_options['request']->getParameter("showChildHistory", pInteger))) {
+					        Session::setVar("{$ps_bundle_name}_showChildHistory", (bool)$pb_show_child_history);
+					    }
+						$vs_element .= $this->getHistoryTrackingChronologyHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, array_merge($pa_options, ['bundleName' => $ps_bundle_name, 'showChildHistory' => Session::getVar("{$ps_bundle_name}_showChildHistory")]));
+						
+						break;
+					# -------------------------------
+					// This bundle is available for objects, object lots and collections
+					case 'ca_objects_deaccession':		// deaccession information
+						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 
-                if (!$vs_label_text) {
-                    $vs_label_text = $va_info['label'];
-                }
-                $vs_label = '<span class="formLabelText" id="' . $pa_options['formName'] . '_' . $ps_placement_code . '">' . $vs_label_text . '</span>';
+						$vs_element .= $this->getDeaccessionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_object_checkouts':		// object checkout information
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$vs_element .= $this->getObjectCheckoutsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
+					// This bundle is only available for relationships that include an object on one end
+					case 'ca_object_representation_chooser':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getRepresentationChooserHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available for storage locations
+					case 'ca_storage_locations_current_contents':		// objects in storage location via ca_objects_x_storage_locations or ca_movements_x_objects
+					case 'history_tracking_current_contents':
+						if ($vb_batch) { return null; } 				// not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_storage_locations')) { break; }
+					
+						$vs_element .= $this->getHistoryTrackingCurrentContentsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_object_circulation_status':		// circulation status for objects (part of the library module)
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 
-                $vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
+						$vs_element .= $this->getObjectCirculationStatusHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 
-                if (($vs_label_text) && ($vs_description)) {
-                    TooltipManager::add(
-                        '#' . $pa_options['formName'] . '_' . $ps_placement_code,
-                        "<h3>{$vs_label}</h3>{$vs_description}"
-                    );
-                }
-                break;
-            # -------------------------------------------------
-            case 'special':
-                if (is_array(
-                        $va_error_objects = $pa_options['request']->getActionErrors($ps_bundle_name, 'general')
-                    ) && sizeof($va_error_objects)) {
-                    $vs_display_format = $o_config->get('bundle_element_error_display_format');
-                    foreach ($va_error_objects as $o_e) {
-                        $va_errors[] = $o_e->getErrorDescription();
-                    }
-                } else {
-                    $vs_display_format = $o_config->get('bundle_element_display_format');
-                }
-
-                $vb_read_only = ($pa_options['request']->user->getBundleAccessLevel(
-                        $this->tableName(),
-                        $ps_bundle_name
-                    ) == __CA_BUNDLE_ACCESS_READONLY__) ? true : false;
-                if (!$pa_bundle_settings['readonly']) {
-                    $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;
-                }
-
-
-                switch ($ps_bundle_name) {
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_representation_annotations
-                    case 'ca_representation_annotation_properties':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        if (!$this->useInEditor()) {
-                            return null;
-                        }
-                        foreach ($this->getPropertyList() as $vs_property) {
-                            $vs_element .= $this->getPropertyHTMLFormBundle(
-                                $pa_options['request'],
-                                $pa_options['formName'],
-                                $ps_placement_code,
-                                $vs_property,
-                                $pa_options
-                            );
-                        }
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_sets
-                    case 'ca_set_items':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        $vs_element .= $this->getSetItemHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_options,
-                            $pa_bundle_settings
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for types which support set membership
-                    case 'ca_sets_checklist':
-                        require_once(__CA_MODELS_DIR__ . "/ca_sets.php");    // need to include here to avoid dependency errors on parse/compile
-                        $t_set = new ca_sets();
-                        $vs_element .= $t_set->getItemSetMembershipHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $this->tableNum(),
-                            $this->getPrimaryKey(),
-                            $pa_options['request']->getUserID(),
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_editor_uis
-                    case 'ca_editor_ui_screens':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        $vs_element .= $this->getScreenHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_editor_ui_screens
-                    case 'ca_editor_ui_bundle_placements':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        $vs_element .= $this->getPlacementsHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_tours
-                    case 'ca_tour_stops_list':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        $vs_element .= $this->getTourStopHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // Hierarchy navigation bar for hierarchical tables
-                    case 'hierarchy_navigation':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        if ($this->isHierarchical()) {
-                            $vs_element .= $this->getHierarchyNavigationHTMLFormBundle(
-                                $pa_options['request'],
-                                $pa_options['formName'],
-                                $ps_placement_code,
-                                $pa_options,
-                                $pa_bundle_settings
-                            );
-                        }
-                        break;
-                    # -------------------------------
-                    // Hierarchical item location control
-                    case 'hierarchy_location':
-                        if ($this->isHierarchical()) {
-                            $vs_element .= $this->getHierarchyLocationHTMLFormBundle(
-                                $pa_options['request'],
-                                $pa_options['formName'],
-                                $ps_placement_code,
-                                $pa_options,
-                                $pa_bundle_settings
-                            );
-                        }
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_search_forms
-                    case 'ca_search_form_placements':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        //if (!$this->getPrimaryKey()) { return ''; }
-                        $vs_element .= $this->getSearchFormHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_bundle_displays
-                    case 'ca_bundle_display_placements':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        //if (!$this->getPrimaryKey()) { return ''; }
-                        $vs_element .= $this->getBundleDisplayHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_bundle_displays
-                    case 'ca_bundle_display_type_restrictions':
-                    case 'ca_search_form_type_restrictions':
-                    case 'ca_editor_ui_screen_type_restrictions':
-                    case 'ca_editor_ui_type_restrictions':
-                        $vs_element .= $this->getTypeRestrictionsHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_bundle_displays
-                    case 'ca_metadata_alert_rule_type_restrictions':
-                        $vs_element .= $this->getTypeRestrictionsHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    //
-                    case 'ca_users':
-                        if (!$pa_options['request']->user->canDoAction(
-                                'is_administrator'
-                            ) && ($pa_options['request']->getUserID() != $this->get('user_id'))) {
-                            return '';
-                        }    // don't allow setting of per-user access if user is not owner
-                        $vs_element .= $this->getUserHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $this->tableNum(),
-                            $this->getPrimaryKey(),
-                            $pa_options['request']->getUserID(),
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    //
-                    case 'ca_user_groups':
-                        if (!$pa_options['request']->user->canDoAction(
-                                'is_administrator'
-                            ) && ($pa_options['request']->getUserID() != $this->get('user_id'))) {
-                            return '';
-                        }    // don't allow setting of group access if user is not owner
-                        $vs_element .= $this->getUserGroupHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $this->tableNum(),
-                            $this->getPrimaryKey(),
-                            $pa_options['request']->getUserID(),
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    //
-                    case 'ca_user_roles':
-                        if (!$pa_options['request']->user->canDoAction(
-                                'is_administrator'
-                            ) && ($pa_options['request']->getUserID() != $this->get('user_id'))) {
-                            return '';
-                        }    // don't allow setting of group access if user is not owner
-                        $vs_element .= $this->getUserRoleHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $this->tableNum(),
-                            $this->getPrimaryKey(),
-                            $pa_options['request']->getUserID(),
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    case 'settings':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        $vs_element .= $this->getHTMLSettingFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $this->tableNum(),
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_object_representations
-                    case 'ca_object_representations_media_display':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        $vs_element .= $this->getMediaDisplayHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available when editing objects of type ca_object_representations
-                    case 'ca_object_representation_captions':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        if (!$this->representationIsOfClass("video")) {
-                            return '';
-                        }
-                        $vs_element .= $this->getCaptionHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for objects
-                    case 'ca_objects_components_list':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) {
-                            break;
-                        }
-                        if (!$this->canTakeComponents()) {
-                            return null;
-                        }
-                        $vs_element .= $this->getComponentListHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-
-                        break;
-                    # -------------------------------s
-                    case 'ca_objects_history':        // summary of object accession, movement, exhibition and deaccession
-                    case 'ca_objects_location':        // storage location via ca_objects_x_storage_locations or ca_movements_x_objects
-                    case 'history_tracking_chronology':
-                        if (!$this->getPrimaryKey() && !$vb_batch) {
-                            return null;
-                        }    // not supported for new records
-                        if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) {
-                            break;
-                        }
-
-                        if (strlen(
-                            $pb_show_child_history = $pa_options['request']->getParameter("showChildHistory", pInteger)
-                        )) {
-                            Session::setVar("{$ps_bundle_name}_showChildHistory", (bool)$pb_show_child_history);
-                        }
-                        $vs_element .= $this->getHistoryTrackingChronologyHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            array_merge(
-                                $pa_options,
-                                [
-                                    'bundleName' => $ps_bundle_name,
-                                    'showChildHistory' => Session::getVar(
-                                        "{$ps_bundle_name}_showChildHistory"
-                                    )
-                                ]
-                            )
-                        );
-
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for objects
-                    case 'ca_objects_deaccession':        // object deaccession information
-                        if (!$vb_batch && !$this->getPrimaryKey()) {
-                            return null;
-                        }    // not supported for new records
-                        if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) {
-                            break;
-                        }
-
-                        $vs_element .= $this->getObjectDeaccessionHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for objects
-                    case 'ca_object_checkouts':        // object checkout information
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        if (!$vb_batch && !$this->getPrimaryKey()) {
-                            return null;
-                        }    // not supported for new records
-                        if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) {
-                            break;
-                        }
-
-                        $vs_element .= $this->getObjectCheckoutsHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for relationships that include an object on one end
-                    case 'ca_object_representation_chooser':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        $vs_element .= $this->getRepresentationChooserHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for storage locations
-                    case 'ca_storage_locations_current_contents':        // objects in storage location via ca_objects_x_storage_locations or ca_movements_x_objects
-                    case 'history_tracking_current_contents':
-                        if ($vb_batch) {
-                            return null;
-                        }                // not supported in batch mode
-                        if (!$this->getPrimaryKey()) {
-                            return null;
-                        }    // not supported for new records
-                        if (!$pa_options['request']->user->canDoAction('can_edit_ca_storage_locations')) {
-                            break;
-                        }
-
-                        $vs_element .= $this->getHistoryTrackingCurrentContentsHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for objects
-                    case 'ca_object_circulation_status':        // circulation status for objects (part of the library module)
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) {
-                            break;
-                        }
-
-                        $vs_element .= $this->getObjectCirculationStatusHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for items that can be used as authority references (object, entities, occurrences, list items, etc.)
-                    case 'authority_references_list':
-                        $vs_element .= $this->getAuthorityReferenceListHTMLFormBundle(
-                            $pa_options['request'],
-                            $pa_options['formName'],
-                            $ps_placement_code,
-                            $pa_bundle_settings,
-                            $pa_options
-                        );
-                        break;
-                    # -------------------------------
-                    // This bundle is only available items for batch editing on representable models
-                    case 'ca_object_representations_access_status':
-                        if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
-                            $vs_element .= $this->getObjectRepresentationAccessStatusHTMLFormBundle(
-                                $pa_options['request'],
-                                $pa_options['formName'],
-                                $ps_placement_code,
-                                $pa_bundle_settings,
-                                $pa_options
-                            );
-                        } else {
-                            return null;
-                        }
-                        break;
-                    # -------------------------------
-                    // This bundle is only available for md alert rules
-                    case 'ca_metadata_alert_triggers':
-                        if ($vb_batch) {
-                            return null;
-                        } // not supported in batch mode
-                        if (!($this instanceof ca_metadata_alert_rules)) {
-                            return null;
-                        }
+						break;
+					# -------------------------------
+					// This bundle is only available for items that can be used as authority references (object, entities, occurrences, list items, etc.)
+					case 'authority_references_list':
+						$vs_element .= $this->getAuthorityReferenceListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available items for batch editing on representable models
+					case 'ca_object_representations_access_status':
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+							$vs_element .= $this->getObjectRepresentationAccessStatusHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						} else {
+							return null;
+						}
+						break;
+					# -------------------------------
+					// This bundle is only available for md alert rules
+					case 'ca_metadata_alert_triggers':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_alert_rules)) { return null; }
 
                         $vs_element .= $this->getTriggerHTMLFormBundle(
                             $pa_options['request'],

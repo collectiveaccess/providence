@@ -110,7 +110,7 @@ class ResultContext
      * Returns the current search expression for the context, assuming the context is a search
      * If the context is for an "expression-less" find op such as a pure browse then this will be blank
      *
-     * @param $pb_from_context_only bool Optional; if true then search expression is returned from context only and any search expression request parameter is ignored. Default is false.
+     * @param $pb_from_context_only boolean Optional; if true then search expression is returned from context only and any search expression request parameter is ignored. Default is false.
      * @return string - expression or null if no expression is defined
      */
     public function getSearchExpression($pb_from_context_only = false)
@@ -145,7 +145,7 @@ class ResultContext
     /**
      * Determines if the search expression is changing during this request
      *
-     * @param $pb_from_context_only bool Optional; if true then search expression is returned from context only and any search expression request parameter is ignored. Default is false.
+     * @param $pb_from_context_only boolean Optional; if true then search expression is returned from context only and any search expression request parameter is ignored. Default is false.
      * @return bool True if expression is changing
      */
     public function searchExpressionHasChanged($pb_from_context_only = false)
@@ -264,7 +264,7 @@ class ResultContext
     /**
      * Returns the number of the currently selected results page for display. Pages are numbered starting with 1.
      *
-     * @return int - number of page; the first page is 1 (*not* zero). Returns 1 as default if no page has been set for the current context.
+     * @return integer - number of page; the first page is 1 (*not* zero). Returns 1 as default if no page has been set for the current context.
      */
     public function getCurrentResultsPageNumber()
     {
@@ -291,7 +291,7 @@ class ResultContext
      * Sets the currently selected results page for display.
      *
      * @param $pn_page - number of page being displayed currently (pages start with 1)
-     * @return int - page number as set
+     * @return integer - page number as set
      */
     public function setCurrentResultsPageNumber($pn_page)
     {
@@ -584,7 +584,7 @@ class ResultContext
      * request parameter 'type_id' takes precedence over any existing context value and will be set
      * as the current context value when present.
      *
-     * @param bool $pb_type_restriction_has_changed Optional variable that will be set to true if the type restriction has changed due to a new value being present as a request parameter. This allows your code to detect changes in type restriction.
+     * @param boolean $pb_type_restriction_has_changed Optional variable that will be set to true if the type restriction has changed due to a new value being present as a request parameter. This allows your code to detect changes in type restriction.
      * @return string - the view to use
      */
     public function getTypeRestriction(&$pb_type_restriction_has_changed)
@@ -766,6 +766,56 @@ class ResultContext
     # ------------------------------------------------------------------
 
     /**
+     * Sets the currently selected deaccession display mode. The value can be one of the following:
+     *        "show", "hide", "alwaysShow", "alwaysHide"
+     *
+     * The deaccesion display mode determines whether all records in a result set are displayed
+     * or just non-deaccessioned records.
+     *
+     * @param string $deaccession_display_mode
+     *
+     * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+     */
+    public function setCurrentDeaccessionDisplayMode($deaccession_display_mode)
+    {
+        if (!in_array($deaccession_display_mode, ['show', 'hide', 'alwaysShow', 'alwaysHide'])) {
+            $o_config = Configuration::load();
+            $deaccession_display_mode = $o_config->get($this->ops_table_name . "_deaccession_display_mode_in_results");
+        }
+        return $this->setContextValue('deaccession_display_mode', $deaccession_display_mode);
+    }
+    # ------------------------------------------------------------------
+
+    /**
+     * Gets the currently selected deaccession display mode.
+     *
+     * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+     */
+    public function getCurrentDeaccessionDisplayMode()
+    {
+        if (!($deaccession_display_mode = $this->opo_request->getParameter(
+            'deaccession',
+            pString,
+            ['forcePurify' => true]
+        ))) {
+            if ($context = $this->getContext()) {
+                $o_config = Configuration::load();
+                return (in_array(
+                    strtolower($context['deaccession_display_mode']),
+                    ['show', 'hide', 'alwaysshow', 'alwayshide']
+                ) ? $context['deaccession_display_mode'] : (($vs_deaccession_display_mode_default = $o_config->get(
+                    $this->ops_table_name . "_deaccession_display_mode_in_results"
+                )) ? $vs_deaccession_display_mode_default : "alwaysShow"));
+            }
+        } else {
+            $this->setContextValue('deaccesion_display_mode', $deaccession_display_mode);
+            return $deaccession_display_mode;
+        }
+        return null;
+    }
+    # ------------------------------------------------------------------
+
+    /**
      * Returns the named parameter, either from the current request, or if it is not present in the
      * request, then from the current context. Returns null if the parameter is not set in either.
      * The value passed in the request will be used in preference to the context value, and if the
@@ -826,7 +876,7 @@ class ResultContext
      * for result contexts for the current table, the current find type will be used
      * when generated "go back to last find" URLs.
      *
-     * @return bool - always return true
+     * @return boolean - always return true
      */
     public function setAsLastFind($pb_set_action = true)
     {
@@ -864,7 +914,7 @@ class ResultContext
      *
      * @return string - the find type of the last find operation for this table
      */
-    public static function getLastFind($po_request, $pm_table_name_or_num, $pa_options = null)
+    static public function getLastFind($po_request, $pm_table_name_or_num, $pa_options = null)
     {
         if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) {
             return null;
@@ -890,7 +940,7 @@ class ResultContext
      * @param $pm_table_name_or_num - the name or number of the table to get the last find operation for
      * @return ResultContext - result context from the last find operation for this table
      */
-    public static function getResultContextForLastFind($po_request, $pm_table_name_or_num)
+    static public function getResultContextForLastFind($po_request, $pm_table_name_or_num)
     {
         if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) {
             return null;
@@ -915,7 +965,7 @@ class ResultContext
      *
      * @return string - a URL that will link back to results for the specified find type
      */
-    public static function getResultsUrl($request, $table_name_or_num, $find_type, $options = null)
+    static public function getResultsUrl($request, $table_name_or_num, $find_type, $options = null)
     {
         if (!($table_name = Datamodel::getTableName($table_name_or_num))) {
             return null;
@@ -943,7 +993,7 @@ class ResultContext
      * @param $pa_params - (optional) associative array of parameters to append onto the URL
      * @return string - a URL that will link back to the results for the last find operation
      */
-    public static function getResultsUrlForLastFind($po_request, $pm_table_name_or_num, $pa_params = null)
+    static public function getResultsUrlForLastFind($po_request, $pm_table_name_or_num, $pa_params = null)
     {
         if (!($vs_table_name = Datamodel::getTableName($pm_table_name_or_num))) {
             return null;

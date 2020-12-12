@@ -16,7 +16,7 @@ create table ca_storage_locations_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_storage_locations_x_storage_locations_location_left_id foreign key (location_left_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -61,7 +61,7 @@ create table ca_occurrences_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_occurrences_x_storage_locations_occurrence_id foreign key (occurrence_id)
       references ca_occurrences (occurrence_id) on delete restrict on update restrict,
@@ -106,7 +106,7 @@ create table ca_places_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_places_x_storage_locations_place_id foreign key (place_id)
       references ca_places (place_id) on delete restrict on update restrict,
@@ -151,7 +151,7 @@ create table ca_storage_locations_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_storage_locations_x_vocabulary_terms_location_id foreign key (location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -196,7 +196,7 @@ create table ca_loans_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_places_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -241,7 +241,7 @@ create table ca_loans_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_occurrences_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -286,7 +286,7 @@ create table ca_loans_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_collections_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -331,7 +331,7 @@ create table ca_loans_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_storage_locations_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -376,7 +376,7 @@ create table ca_loans_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_vocabulary_terms_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -421,7 +421,7 @@ create table ca_loans_x_object_lots
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_object_lots_loan_id foreign key (loan_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -466,7 +466,7 @@ create table ca_loans_x_loans
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_loans_loan_left_id foreign key (loan_left_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
@@ -511,7 +511,7 @@ create table ca_movements_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_places_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -556,7 +556,7 @@ create table ca_movements_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_occurrences_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -601,7 +601,7 @@ create table ca_movements_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_collections_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -646,7 +646,7 @@ create table ca_movements_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_storage_locations_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -691,7 +691,7 @@ create table ca_movements_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_vocabulary_terms_movement_id foreign key (movement_id)
       references ca_movements (movement_id) on delete restrict on update restrict,
@@ -736,7 +736,7 @@ create table ca_movements_x_movements
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_movements_movement_left_id foreign key (movement_left_id)
       references ca_movements (movement_id) on delete restrict on update restrict,

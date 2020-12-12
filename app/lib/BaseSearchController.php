@@ -112,113 +112,91 @@ class BaseSearchController extends BaseRefineableSearchController
         }
         $vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 
-        $vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
-
-        if (!$this->opn_type_restriction_id) {
-            $this->opn_type_restriction_id = '';
-        }
-        $this->view->setVar('type_id', $this->opn_type_restriction_id);
-
-        MetaTagManager::setWindowTitle(_t('%1 search', $this->searchName('plural')));
-
-        $vs_append_to_search = '';
-        if ($pa_options['appendToSearch']) {
-            $vs_append_to_search .= " AND (" . $pa_options['appendToSearch'] . ")";
-        }
-        //
-        // Execute the search
-        //
-        if ($vs_search) { /* any request? */
-            if (is_array($va_set_ids = caSearchIsForSets($vs_search))) {
-                // When search includes sets we add sort options for the references sets...
-                foreach ($va_set_ids as $vn_set_id => $vs_set_name) {
-                    $this->opa_sorts["ca_sets.set_id:{$vn_set_id}"] = _t("Set order: %1", $vs_set_name);
-                }
-
-                // ... and default the sort to the set
-                if ($vb_is_new_search) {
-                    $this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
-                }
-            }
-
-            $va_search_opts = array(
-                'sort' => $vs_sort,
-                'sort_direction' => $vs_sort_direction,
-                'appendToSearch' => $vs_append_to_search,
-                'checkAccess' => $va_access_values,
-                'no_cache' => $vb_is_new_search,
-                'dontCheckFacetAvailability' => true,
-                'filterNonPrimaryRepresentations' => true,
-                'rootRecordsOnly' => $this->view->getVar('hide_children')
-            );
-
-
-            if ($vb_is_new_search || isset($pa_options['saved_search']) || (is_subclass_of(
-                        $po_search,
-                        "BrowseEngine"
-                    ) && !$po_search->numCriteria())) {
-                $vs_browse_classname = get_class($po_search);
-                $po_search = new $vs_browse_classname();
-                if (is_subclass_of($po_search, "BrowseEngine")) {
-                    $po_search->addCriteria('_search', $vs_search);
-
-                    if (method_exists($this, "hookBeforeNewSearch")) {
-                        $this->hookBeforeNewSearch($po_search);
-                    }
-                }
-
-                $this->opo_result_context->setParameter('show_type_id', null);
-            }
-            if ($this->opn_type_restriction_id > 0) {
-                $exclude_type_ids = caMakeTypeIDList(
-                    $this->ops_tablename,
-                    $this->request->config->getList(
-                        $this->ops_tablename . '_find_dont_expand_hierarchically'
-                    ),
-                    ['dontIncludeSubtypesInTypeRestriction' => true]
-                );
-                $po_search->setTypeRestrictions(
-                    [$this->opn_type_restriction_id],
-                    [
-                        'dontExpandHierarchically' => in_array(
-                            $this->opn_type_restriction_id,
-                            $exclude_type_ids
-                        )
-                    ]
-                );
-            }
-
-            $vb_criteria_have_changed = false;
-            if (is_subclass_of($po_search, "BrowseEngine")) {
-                //
-                // Restrict facets to specific group for main browse landing page (if set in app.conf config)
-                //
-                if ($vs_facet_group = $this->request->config->get(
-                    $this->ops_tablename . '_search_refine_facet_group'
-                )) {
-                    $po_search->setFacetGroup($vs_facet_group);
-                }
-
-                $vb_criteria_have_changed = $po_search->criteriaHaveChanged();
-                $po_search->execute($va_search_opts);
-
-                $this->opo_result_context->setParameter('browse_id', $po_search->getBrowseID());
-
-                if ($vs_group_name = $this->request->config->get('browse_facet_group_for_' . $this->ops_tablename)) {
-                    $po_search->setFacetGroup($vs_group_name);
-                }
-
-                $vo_result = $po_search->getResults($va_search_opts);
-
-                if (!is_array($va_facets_with_info = $po_search->getInfoForAvailableFacets()) || !sizeof(
-                        $va_facets_with_info
-                    )) {
-                    $this->view->setVar('open_refine_controls', false);
-                    $this->view->setVar('noRefineControls', false);
-                }
-            } elseif ($po_search) {
-                $vo_result = $po_search->search($vs_search, $va_search_opts);
-            }
+			$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
+ 			
+ 			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
+ 			$this->view->setVar('type_id', $this->opn_type_restriction_id);
+ 			
+ 			MetaTagManager::setWindowTitle(_t('%1 search', $this->searchName('plural')));
+ 			
+			$vs_append_to_search = '';
+ 			if ($pa_options['appendToSearch']) {
+ 				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
+ 			}
+			//
+			// Execute the search
+			//
+			if($vs_search){ /* any request? */
+				if(is_array($va_set_ids = caSearchIsForSets($vs_search))) {
+					// When search includes sets we add sort options for the references sets...
+					foreach($va_set_ids as $vn_set_id => $vs_set_name) {
+						$this->opa_sorts["ca_sets.set_id:{$vn_set_id}"] = _t("Set order: %1", $vs_set_name);
+					}
+					
+					// ... and default the sort to the set
+					if ($vb_is_new_search) {
+						$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
+					}
+				}
+				
+				$va_search_opts = array(
+					'sort' => $vs_sort, 
+					'sort_direction' => $vs_sort_direction, 
+					'appendToSearch' => $vs_append_to_search,
+					'checkAccess' => $va_access_values,
+					'no_cache' => $vb_is_new_search,
+					'dontCheckFacetAvailability' => true,
+					'filterNonPrimaryRepresentations' => true,
+					'rootRecordsOnly' => $this->view->getVar('hide_children'),
+					'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')
+				);
+				
+				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
+					$vs_browse_classname = get_class($po_search);
+ 					$po_search = new $vs_browse_classname;
+ 					if (is_subclass_of($po_search, "BrowseEngine")) {
+ 						$po_search->addCriteria('_search', $vs_search);
+ 						
+ 						if (method_exists($this, "hookBeforeNewSearch")) {
+ 							$this->hookBeforeNewSearch($po_search);
+ 						}
+ 					}
+ 					
+ 					$this->opo_result_context->setParameter('show_type_id', null);
+ 				}
+ 				if ($this->opn_type_restriction_id > 0) {
+ 					$exclude_type_ids = caMakeTypeIDList($this->ops_tablename, $this->request->config->getList($this->ops_tablename.'_find_dont_expand_hierarchically'), ['dontIncludeSubtypesInTypeRestriction' => true]);
+ 					$po_search->setTypeRestrictions([$this->opn_type_restriction_id], ['dontExpandHierarchically' => in_array($this->opn_type_restriction_id, $exclude_type_ids)]);
+ 				}
+ 				
+ 				$vb_criteria_have_changed = false;
+ 				if (is_subclass_of($po_search, "BrowseEngine")) { 					
+					//
+					// Restrict facets to specific group for main browse landing page (if set in app.conf config)
+					// 			
+					if ($vs_facet_group = $this->request->config->get($this->ops_tablename.'_search_refine_facet_group')) {
+						$po_search->setFacetGroup($vs_facet_group);
+					}
+					
+ 					$vb_criteria_have_changed = $po_search->criteriaHaveChanged();
+					$po_search->execute($va_search_opts);
+					
+					$this->opo_result_context->setParameter('browse_id', $po_search->getBrowseID());
+					
+					if ($vs_group_name = $this->request->config->get('browse_facet_group_for_'.$this->ops_tablename)) {
+ 						$po_search->setFacetGroup($vs_group_name);
+ 					}
+ 					
+					$vo_result = $po_search->getResults($va_search_opts);
+					
+					if (!is_array($va_facets_with_info = $po_search->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
+						$this->view->setVar('open_refine_controls', false);
+						$this->view->setVar('noRefineControls', false); 
+					}
+					
+				} elseif($po_search) {
+					$vo_result = $po_search->search($vs_search, $va_search_opts);
+				}
 
             $vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
 

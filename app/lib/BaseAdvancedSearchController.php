@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -153,16 +153,17 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController
 
         $va_access_values = caGetUserAccessValues($this->request);
 
-        if ($vs_search && ($vs_search != "")) { /* any request? */
-            $va_search_opts = array(
-                'sort' => $vs_sort,
-                'sort_direction' => $vs_sort_direction,
-                'appendToSearch' => $vs_append_to_search,
-                'getCountsByField' => 'type_id',
-                'checkAccess' => $va_access_values,
-                'no_cache' => $vb_is_new_search,
-                'rootRecordsOnly' => $this->view->getVar('hide_children')
-            );
+		if($vs_search && ($vs_search != "")){ /* any request? */
+			$va_search_opts = array(
+				'sort' => $vs_sort,
+				'sort_direction' => $vs_sort_direction,
+				'appendToSearch' => $vs_append_to_search,
+				'getCountsByField' => 'type_id',
+				'checkAccess' => $va_access_values,
+				'no_cache' => $vb_is_new_search,
+				'rootRecordsOnly' => $this->view->getVar('hide_children'),
+				'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')
+			);
 
             if ($vb_is_new_search || isset($pa_options['saved_search']) || (is_subclass_of(
                         $po_search,

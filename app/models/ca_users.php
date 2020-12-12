@@ -4053,57 +4053,61 @@ class ca_users extends BaseModel
             return ca_users::$s_user_action_access_cache[$vs_cache_key];
         }
 
-        if (!$this->getPrimaryKey()) {
-            return ca_users::$s_user_action_access_cache[$vs_cache_key] = false;
-        }                        // "empty" ca_users object -> no groups or roles associated -> can't do action
-        if (!ca_user_roles::isValidAction($ps_action)) {
-            // check for alternatives...
-            if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $ps_action, $m)) {
-                if (ca_user_roles::isValidAction("can_configure_" . $m[2])) {
-                    return self::canDoAction("can_configure_" . $m[2]);
-                }
-            }
+		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
+		if(!ca_user_roles::isValidAction($ps_action)) { 
+		    // check for alternatives...
+		    if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $ps_action, $m)) {
+		        if (ca_user_roles::isValidAction("can_configure_".$m[2])) {
+		            return self::canDoAction("can_configure_".$m[2]);
+		        }
+		    }
+		    
+			// return false if action is not valid	
+		    return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; 
+		}
+		
+		// is user administrator?
+		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
 
-            // return false if action is not valid
-            return ca_users::$s_user_action_access_cache[$vs_cache_key] = false;
-        }
+		// get user roles
+		$va_roles = $this->getUserRoles();
+		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
+			$va_roles[$vn_role_id] = $va_role_info;
+		}
 
-        // is user administrator?
-        if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) {
-            return ca_users::$s_user_action_access_cache[$vs_cache_key] = true;
-        }    // access restrictions don't apply to user with user_id = admin id
+		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
+		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
 
-        // get user roles
-        $va_roles = $this->getUserRoles();
-        foreach ($this->getGroupRoles() as $vn_role_id => $va_role_info) {
-            $va_roles[$vn_role_id] = $va_role_info;
-        }
+		if(in_array($ps_action, $va_actions)) {
+			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
+		}
+		// is default set in user_action.conf?
+		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
+		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
+			foreach($actions as $categories) {
+				if(isset($categories['actions'][$ps_action]) && isset($categories['actions'][$ps_action]['default'])) {
+					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$ps_action]['default'];
+				}
+			}
+		}
 
-        $va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
-        if (in_array('is_administrator', $va_actions)) {
-            return ca_users::$s_user_action_access_cache[$vs_cache_key] = true;
-        }        // access restrictions don't apply to users with is_administrator role
-        return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
-    }
-    # ----------------------------------------
-
-    /**
-     * Returns the type of access the user has to the specified bundle.
-     * Types of access are:
-     *        __CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
-     *        __CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
-     *        __CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
-     *
-     * @param string $ps_table_name
-     * @param string $ps_bundle_name
-     * @return int
-     */
-    public function getBundleAccessLevel($ps_table_name, $ps_bundle_name)
-    {
-        $vs_cache_key = $ps_table_name . '/' . $ps_bundle_name . "/" . $this->getPrimaryKey();
-        if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) {
-            return ca_users::$s_user_bundle_access_cache[$vs_cache_key];
-        }
+		return ca_users::$s_user_action_access_cache[$vs_cache_key] = false;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns the type of access the user has to the specified bundle.
+	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
+	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
+	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
+	 *
+	 * @param string $ps_table_name
+	 * @param string $ps_bundle_name
+	 * @return int
+	 */
+	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
+		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
+		if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) { return ca_users::$s_user_bundle_access_cache[$vs_cache_key]; }
 
         if (in_array(
             $ps_table_name,

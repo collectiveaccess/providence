@@ -19,7 +19,7 @@ create table ca_loans_x_movements (
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    
    constraint fk_ca_loans_x_movements_loan_id foreign key (loan_id)

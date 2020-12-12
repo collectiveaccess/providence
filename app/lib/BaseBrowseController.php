@@ -146,327 +146,251 @@ class BaseBrowseController extends BaseFindController
         }
         $vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 
-        $vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
+			$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
+			
+ 			if (!$vn_page_num || $vb_criteria_have_changed) { $vn_page_num = 1; }
+ 			
+ 			// Do redirect directly to detail if configured to do so
+ 			if (
+ 				$this->opo_browse->criteriaHaveChanged() 
+ 				&& 
+ 				(is_array($va_criteria = $this->opo_browse->getCriteria()) && (sizeof($va_criteria) == 1))
+ 			) {
+ 				$va_tmp = array_keys($va_criteria);
+  				
+ 				$va_tmp1 = array_keys($va_criteria[$va_tmp[0]]);
+ 				$va_facet_info = $this->opo_browse->getInfoForFacet($va_tmp[0]);
+ 				
+ 				if ($this->request->config->get('redirect_to_'.$va_facet_info['table'].'_detail_if_is_first_facet')) {
+ 					$t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true);
+ 					$this->response->setRedirect(caNavUrl($this->request, 'Detail', ucfirst($t_table->getProperty('NAME_SINGULAR')), 'Show', array($t_table->primaryKey() => $va_tmp1[0])));
+ 					return;
+ 				}
+ 			}
 
-        if (!$vn_page_num || $vb_criteria_have_changed) {
-            $vn_page_num = 1;
-        }
+ 			MetaTagManager::setWindowTitle(_t('%1 browse', $this->browseName('plural')));
 
-        // Do redirect directly to detail if configured to do so
-        if (
-            $this->opo_browse->criteriaHaveChanged()
-            &&
-            (is_array($va_criteria = $this->opo_browse->getCriteria()) && (sizeof($va_criteria) == 1))
-        ) {
-            $va_tmp = array_keys($va_criteria);
+ 			//
+ 			// Actually execute the browse - do the queries
+ 			//
+ 			//if ($vs_group_name = $this->request->config->get('browse_facet_group_for_'.$this->ops_tablename)) {
+			//	$this->opo_browse->setFacetGroup($vs_group_name);
+			//}
+			//
+			// Restrict facets to specific group (if set in app.conf config)
+			//
+			if ($vs_facet_group = $this->request->config->get($this->ops_tablename.(($this->opo_browse->numCriteria() < 1) ? '_browse_facet_group' : '_browse_refine_facet_group'))) {
+				$this->opo_browse->setFacetGroup($vs_facet_group);
+			}
+ 			$this->opo_browse->execute([
+ 				'checkAccess' => $va_access_values,
+ 				'no_cache' => !$this->opo_result_context->cacheIsValid(),
+ 				'rootRecordsOnly' => $this->view->getVar('hide_children'),
+ 				'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')]);
+ 			$this->opo_result_context->validateCache();
 
-            $va_tmp1 = array_keys($va_criteria[$va_tmp[0]]);
-            $va_facet_info = $this->opo_browse->getInfoForFacet($va_tmp[0]);
-
-            if ($this->request->config->get('redirect_to_' . $va_facet_info['table'] . '_detail_if_is_first_facet')) {
-                $t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true);
-
-                $va_newmuseum_hack_occurrence_type_ids = $this->request->config->getList(
-                    'newmuseum_hack_browse_should_redirect_occurrence_types_to_object_details'
-                );
-                if (is_array($va_newmuseum_hack_occurrence_type_ids) && sizeof(
-                        $va_newmuseum_hack_occurrence_type_ids
-                    ) && ($va_facet_info['table'] == 'ca_occurrences')) {
-                    if ($t_table->load($va_tmp1[0])) {
-                        if (in_array($t_table->getTypeID(), $va_newmuseum_hack_occurrence_type_ids)) {
-                            if (sizeof($va_objects = $t_table->getRelatedItems('ca_objects'))) {
-                                $va_object = array_shift($va_objects);
-                                $vn_object_id = $va_object['object_id'];
-                                $this->response->setRedirect(
-                                    caNavUrl(
-                                        $this->request,
-                                        'Detail',
-                                        'Object',
-                                        'Show',
-                                        array('object_id' => $vn_object_id)
-                                    )
-                                );
-                                return;
-                            }
-                        }
-                    }
-                }
-                $this->response->setRedirect(
-                    caNavUrl(
-                        $this->request,
-                        'Detail',
-                        ucfirst($t_table->getProperty('NAME_SINGULAR')),
-                        'Show',
-                        array($t_table->primaryKey() => $va_tmp1[0])
-                    )
-                );
-                return;
-            }
-        }
-
-        MetaTagManager::setWindowTitle(_t('%1 browse', $this->browseName('plural')));
-
-        //
-        // Actually execute the browse - do the queries
-        //
-        //if ($vs_group_name = $this->request->config->get('browse_facet_group_for_'.$this->ops_tablename)) {
-        //	$this->opo_browse->setFacetGroup($vs_group_name);
-        //}
-        //
-        // Restrict facets to specific group (if set in app.conf config)
-        //
-        if ($vs_facet_group = $this->request->config->get(
-            $this->ops_tablename . (($this->opo_browse->numCriteria(
-                ) < 1) ? '_browse_facet_group' : '_browse_refine_facet_group')
-        )) {
-            $this->opo_browse->setFacetGroup($vs_facet_group);
-        }
-        $this->opo_browse->execute(
-            array(
-                'checkAccess' => $va_access_values,
-                'no_cache' => !$this->opo_result_context->cacheIsValid(),
-                'rootRecordsOnly' => $this->view->getVar('hide_children')
-            )
-        );
-        $this->opo_result_context->validateCache();
-
-        $this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
+			$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
 
 
-        if (!is_array($va_facets_with_info = $this->opo_browse->getInfoForAvailableFacets()) || !sizeof(
-                $va_facets_with_info
-            )) {
-            $this->view->setVar('open_refine_controls', false);
-            $this->view->setVar('noRefineControls', true);
-        }
+			if (!is_array($va_facets_with_info = $this->opo_browse->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
+				$this->view->setVar('open_refine_controls', false);
+				$this->view->setVar('noRefineControls', true);
+			}
 
-        //
-        // Pass browse info (context + facets + criteria) to view
-        //
+ 			//
+ 			// Pass browse info (context + facets + criteria) to view
+ 			//
 
 
-        $this->view->setVar('browse', $this->opo_browse);
-        $this->view->setVar('target', $this->ops_tablename);
-        $this->view->setVar('result_context', $this->opo_result_context);
+			$this->view->setVar('browse', $this->opo_browse);
+			$this->view->setVar('target', $this->ops_tablename);
+			$this->view->setVar('result_context', $this->opo_result_context);
 
-        $this->view->setVar('criteria', $va_criteria = $this->opo_browse->getCriteriaWithLabels());
-        $this->view->setVar('available_facets', $this->opo_browse->getInfoForAvailableFacets());
-
-        $this->view->setVar('facets_with_content', $this->opo_browse->getInfoForFacetsWithContent());
-        $this->view->setVar('facet_info', $va_facet_info = $this->opo_browse->getInfoForFacets());
-
-        $va_single_facet_values = array();
-        foreach ($va_facet_info as $vs_facet => $va_facet_settings) {
-            $va_single_facet_values[$vs_facet] = isset($va_facet_settings['single_value']) ? $va_facet_settings['single_value'] : null;
-        }
-        $this->view->setVar('single_facet_values', $va_single_facet_values);
-
-
-        // browse criteria in an easy-to-display format
-        $va_browse_criteria = array();
-        foreach ($this->opo_browse->getCriteriaWithLabels() as $vs_facet_code => $va_criteria) {
-            $va_facet_info = $this->opo_browse->getInfoForFacet($vs_facet_code);
-
-            $va_criteria_list = array();
-            foreach ($va_criteria as $vn_criteria_id => $vs_criteria_label) {
-                $va_criteria_list[] = $vs_criteria_label;
-            }
-
-            $va_browse_criteria[$va_facet_info['label_singular']] = join('; ', $va_criteria_list);
-        }
-        $this->view->setVar('browse_criteria', $va_browse_criteria);
-
-        //
-        // Get the browse results
-        //
-
-        $this->view->setVar('num_hits', $vn_num_hits = $this->opo_browse->numResults());
-        $this->view->setVar('num_pages', $vn_num_pages = ceil($vn_num_hits / $vn_items_per_page));
-        if ($vn_page_num > $vn_num_pages) {
-            $vn_page_num = 1;
-        }
-
-        if ($pa_options['output_format']) {
-            $vo_result = $this->opo_browse->getResults(
-                array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction)
-            );
-        } else {
-            $vo_result = $this->opo_browse->getResults(
-                array(
-                    'sort' => $vs_sort,
-                    'sort_direction' => $vs_sort_direction,
-                    'start' => ($vn_page_num - 1) * $vn_items_per_page,
-                    'limit' => $vn_items_per_page
-                )
-            );
-        }
-
-        // Only prefetch what we need
-        $vo_result->setOption('prefetch', $vn_items_per_page);
-
-        if ($vo_result) {
-            if ($vb_criteria_have_changed || $vb_sort_has_changed) {
-                // Put the results id list into the results context - we used this for previous/next navigation
-                $vo_full_result = $this->opo_browse->getResults(
-                    array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction)
-                );
-                $this->opo_result_context->setResultList($vo_full_result->getPrimaryKeyValues());
-                unset($vo_full_result);
-                $this->opo_result_context->setParameter('availableVisualizationChecked', 0);
-            }
-
-            $vo_result->seek(0);
-        }
-
-        //
-        // Set up view for display of results
-        //
-
-        $this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
-        $this->view->setVar('page', $vn_page_num);
-        $this->view->setVar('result', $vo_result);
-
-        $this->view->setVar('views', $this->opa_views);    // pass view list to view for rendering
-        $this->view->setVar('current_view', $vs_view);
-
-        $this->view->setVar('sorts', $this->opa_sorts);    // pass sort list to view for rendering
-        $this->view->setVar('current_sort', $vs_sort);
-        $this->view->setVar('current_sort_direction', $vs_sort_direction);
-
-        $this->view->setVar('items_per_page', $this->opa_items_per_page);
-        $this->view->setVar('current_items_per_page', $vn_items_per_page);
-
-        $this->view->setVar('t_subject', $t_model);
-
-        $this->view->setVar('mode_name', _t('browse'));
-        $this->view->setVar('mode', 'browse');
-        $this->view->setVar('mode_type_singular', $this->browseName('singular'));
-        $this->view->setVar('mode_type_plural', $this->browseName('plural'));
-
-        $this->view->setVar('access_values', $va_access_values);
-
-        $t_display = $this->view->getVar('t_display');
-        $va_display_list = $this->view->getVar('display_list');
-        if ($vs_view == 'editable') {
-            $va_initial_data = array();
-            $va_row_headers = array();
-
-            $vn_item_count = 0;
-
-            if ($vo_result) {
-                $vs_pk = $vo_result->primaryKey();
-
-                while (($vn_item_count < 100) && $vo_result->nextHit()) {
-                    $va_result = array('item_id' => $vn_id = $vo_result->get($vs_pk));
-
-                    foreach ($va_display_list as $vn_placement_id => $va_bundle_info) {
-                        $va_result[str_replace(".", "-", $va_bundle_info['bundle_name'])] = $t_display->getDisplayValue(
-                            $vo_result,
-                            $vn_placement_id,
-                            array('request' => $this->request)
-                        );
-                    }
-
-                    $va_initial_data[] = $va_result;
-
-                    $vn_item_count++;
-
-                    $va_row_headers[] = ($vn_item_count) . " " . caEditorLink(
-                            $this->request,
-                            caNavIcon(__CA_NAV_ICON_EDIT__, 2),
-                            'caResultsEditorEditLink',
-                            $this->ops_tablename,
-                            $vn_id
-                        );
-                }
-            }
-
-            $this->view->setVar('initialData', $va_initial_data);
-            $this->view->setVar('rowHeaders', $va_row_headers);
-        }
-
-        $this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
-
-        switch ($pa_options['output_format']) {
-            # ------------------------------------
-            case 'LABELS':
-                $this->_genLabels(
-                    $vo_result,
-                    $this->request->getParameter("label_form", pString),
-                    _t('Browse'),
-                    _t('Browse')
-                );
-                break;
-            # ------------------------------------
-            case 'EXPORT':
-                $this->_genExport(
-                    $vo_result,
-                    $this->request->getParameter("export_format", pString),
-                    _t('Browse'),
-                    _t('Browse')
-                );
-                break;
-            # ------------------------------------
-            case 'EXPORTWITHMAPPING':
-                $this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
-                break;
-            # ------------------------------------
-            case 'HTML':
-            default:
-                // generate type menu and type value list
-                if (method_exists($t_model, "getTypeList")) {
-                    $this->view->setVar('type_list', $t_model->getTypeList());
-                }
-
-                $this->opo_result_context->setAsLastFind();
-                $this->opo_result_context->saveContext();
-
-                if (!$pb_dont_render_view) {
-                    $this->render('Browse/browse_controls_html.php');
-                }
-                break;
-        }
-    }
-
-    # -------------------------------------------------------
-    public function getFacet($pa_options = null)
-    {
-        $va_access_values = caGetUserAccessValues($this->request);
-        $ps_facet_name = $this->request->getParameter('facet', pString);
-
-        $this->view->setVar('only_show_group', $vs_show_group = $this->request->getParameter('show_group', pString));
-        $this->view->setVar('grouping', $vs_grouping = $this->request->getParameter('grouping', pString));
-        $this->view->setVar('id', $vm_id = $this->request->getParameter('id', pString));
-
-        $vs_cache_key = md5(join("/", array($ps_facet_name, $vs_show_group, $vs_grouping, $vm_id)));
-        $va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
-
-        //if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) {
-        //	$this->response->addContent($vs_content);
-        //	return;
-        //}
-
-        // Enforce type restriction
-        $this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
-
-        if ($this->request->getParameter('clear', pInteger)) {
-            $this->opo_browse->removeAllCriteria();
-            $this->opo_browse->execute(array('checkAccess' => $va_access_values));
-
-            $this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
-            $this->opo_result_context->saveContext();
-        } else {
-            if ($this->request->getParameter('modify', pString)) {
-                $this->opo_browse->removeCriteria($ps_facet_name, array($vm_id));
-                $this->opo_browse->execute(array('checkAccess' => $va_access_values));
-
-                $this->view->setVar('modify', $vm_id);
-            }
-        }
-
-        // Using the back-button can cause requests for facets that are no longer available
-        // In these cases we reset the browse.
-        // if (!($va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)))) {
+ 			$this->view->setVar('criteria', $va_criteria = $this->opo_browse->getCriteriaWithLabels());
+ 			$this->view->setVar('available_facets', $va_facets_with_info);
+ 			
+ 			$this->view->setVar('facets_with_content', $this->opo_browse->getInfoForFacetsWithContent());
+ 			$this->view->setVar('facet_info', $va_facet_info = $this->opo_browse->getInfoForFacets());
+ 			
+ 			$va_single_facet_values = array();
+			foreach($va_facet_info as $vs_facet => $va_facet_settings) {
+				$va_single_facet_values[$vs_facet] = isset($va_facet_settings['single_value']) ? $va_facet_settings['single_value'] : null;
+			}
+ 			$this->view->setVar('single_facet_values', $va_single_facet_values);
+		
+		
+			// browse criteria in an easy-to-display format
+			$va_browse_criteria = array();
+			foreach($this->opo_browse->getCriteriaWithLabels() as $vs_facet_code => $va_criteria) {
+				$va_facet_info = $this->opo_browse->getInfoForFacet($vs_facet_code);
+				
+				$va_criteria_list = array();
+				foreach($va_criteria as $vn_criteria_id => $vs_criteria_label) {
+					$va_criteria_list[] = $vs_criteria_label;
+				}
+				
+				$va_browse_criteria[$va_facet_info['label_singular']] = join('; ', $va_criteria_list);
+			}
+			$this->view->setVar('browse_criteria', $va_browse_criteria);
+			
+			//
+			// Get the browse results
+			//
+			
+			$this->view->setVar('num_hits', $vn_num_hits = $this->opo_browse->numResults());
+			$this->view->setVar('num_pages', $vn_num_pages = ceil($vn_num_hits/$vn_items_per_page));
+			if ($vn_page_num > $vn_num_pages) { $vn_page_num = 1; }
+			
+			if ($pa_options['output_format']) {
+				$vo_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction));
+			} else {
+				$vo_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction, 'start' => ($vn_page_num - 1) * $vn_items_per_page, 'limit' => $vn_items_per_page));
+			}
+			
+			// Only prefetch what we need
+			$vo_result->setOption('prefetch', $vn_items_per_page);
+			
+			if ($vo_result) {
+				if ($vb_criteria_have_changed || $vb_sort_has_changed) {
+					// Put the results id list into the results context - we used this for previous/next navigation
+					$vo_full_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction));
+					$this->opo_result_context->setResultList($vo_full_result->getPrimaryKeyValues());
+					unset($vo_full_result);
+					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
+				}
+				
+				$vo_result->seek(0);	
+			}
+			
+			//
+ 			// Set up view for display of results
+ 			// 			
+ 			
+ 			$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
+			$this->view->setVar('page', $vn_page_num);
+			$this->view->setVar('result', $vo_result);	
+			
+			$this->view->setVar('views', $this->opa_views);	// pass view list to view for rendering
+			$this->view->setVar('current_view', $vs_view);
+			
+			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
+			$this->view->setVar('current_sort', $vs_sort);
+			$this->view->setVar('current_sort_direction', $vs_sort_direction);
+			
+			$this->view->setVar('items_per_page', $this->opa_items_per_page);
+			$this->view->setVar('current_items_per_page', $vn_items_per_page);
+			
+			$this->view->setVar('t_subject', $t_model);
+					
+			$this->view->setVar('mode_name', _t('browse'));
+			$this->view->setVar('mode', 'browse');
+			$this->view->setVar('mode_type_singular', $this->browseName('singular'));
+			$this->view->setVar('mode_type_plural', $this->browseName('plural'));
+			
+			$this->view->setVar('access_values', $va_access_values);
+			
+			$t_display = $this->view->getVar('t_display');
+			$va_display_list = $this->view->getVar('display_list');
+			if ($vs_view == 'editable') {
+				
+				$va_initial_data = array();
+				$va_row_headers = array();
+				
+ 				$vn_item_count = 0;
+ 				
+ 				if ($vo_result) {
+					$vs_pk = $vo_result->primaryKey();
+				
+					while(($vn_item_count < 100) && $vo_result->nextHit()) {
+						$va_result = array('item_id' => $vn_id = $vo_result->get($vs_pk));
+	
+						foreach($va_display_list as $vn_placement_id => $va_bundle_info) {
+							$va_result[str_replace(".", "-", $va_bundle_info['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));
+						}
+	
+						$va_initial_data[] = $va_result;
+	
+						$vn_item_count++;
+	
+						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
+	
+					}
+				}
+				
+				$this->view->setVar('initialData', $va_initial_data);
+				$this->view->setVar('rowHeaders', $va_row_headers);
+			}
+			
+			$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
+			
+ 			switch($pa_options['output_format']) {
+ 				# ------------------------------------
+ 				case 'LABELS':
+ 					$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), _t('Browse'), _t('Browse'));
+ 					break;
+ 				# ------------------------------------
+ 				case 'EXPORT':
+ 					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), _t('Browse'));
+ 					break;
+				# ------------------------------------
+				case 'EXPORTWITHMAPPING':
+					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
+					break;
+				# ------------------------------------
+ 				case 'HTML': 
+				default:
+					// generate type menu and type value list
+					if (method_exists($t_model, "getTypeList")) {
+						$this->view->setVar('type_list', $t_model->getTypeList());
+					}
+					
+					$this->opo_result_context->setAsLastFind();
+					$this->opo_result_context->saveContext();
+					
+					if (!$pb_dont_render_view) {
+						$this->render('Browse/browse_controls_html.php');
+					}
+					break;
+			}
+ 		}
+ 		# -------------------------------------------------------
+ 		public function getFacet($pa_options=null) {
+ 			$va_access_values = caGetUserAccessValues($this->request);
+ 			$ps_facet_name = $this->request->getParameter('facet', pString);
+ 			
+ 			$this->view->setVar('only_show_group', $vs_show_group = $this->request->getParameter('show_group', pString));
+ 			$this->view->setVar('grouping', $vs_grouping = $this->request->getParameter('grouping', pString));
+ 			$this->view->setVar('id', $vm_id = $this->request->getParameter('id', pString));
+ 				
+ 			$vs_cache_key = md5(join("/", array($ps_facet_name,$vs_show_group,$vs_grouping,$vm_id)));
+ 			$va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
+ 			
+ 			//if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) { 
+ 			//	$this->response->addContent($vs_content);
+ 			//	return;
+ 			//}
+ 			
+ 			// Enforce type restriction
+ 			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
+ 			
+ 			if ($this->request->getParameter('clear', pInteger)) {
+ 				$this->opo_browse->removeAllCriteria();
+ 				$this->opo_browse->execute(array('checkAccess' => $va_access_values));
+ 				
+ 				$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
+ 				$this->opo_result_context->saveContext();
+ 			} else {
+ 				if ($this->request->getParameter('modify', pString)) {
+ 					$this->opo_browse->removeCriteria($ps_facet_name, array($vm_id));
+ 					$this->opo_browse->execute(array('checkAccess' => $va_access_values));
+ 					
+ 					$this->view->setVar('modify', $vm_id);
+ 				}
+ 			}
+ 			
+ 			// Using the back-button can cause requests for facets that are no longer available
+ 			// In these cases we reset the browse.
+ 			// if (!($va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)))) {
 //  				 $this->opo_browse->removeAllCriteria();
 //  				 $this->opo_browse->execute();
 //  				 $va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));

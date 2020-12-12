@@ -427,268 +427,207 @@ class BaseFindController extends ActionController
             )
         );
 
-        if (strlen($this->ops_tablename) > 0) {
-            if (!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")) {
-                $this->view->setVar("default_action", "Summary");
-            } else {
-                $this->view->setVar("default_action", "Edit");
-            }
-        }
+			if(strlen($this->ops_tablename)>0){
+				if(!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")){
+					$this->view->setVar("default_action", "Summary");
+				} else {
+					$this->view->setVar("default_action", "Edit");
+				}
+			}
+			
+			$this->view->setVar('result_context', $this->opo_result_context);
+			$this->view->setVar('access_restrictions',AccessRestrictions::load());
+			
+			//
+			// Handle children display mode
+			//
+			$this->view->setVar('children_display_mode_default', ($vs_children_display_mode_default = $this->request->config->get($this->ops_tablename."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow");
 
-        $this->view->setVar('result_context', $this->opo_result_context);
-        $this->view->setVar('access_restrictions', AccessRestrictions::load());
+			// force mode when "always" is set
+			if (strtolower($vs_children_display_mode_default) == 'alwaysshow') {
+				$ps_children_display_mode = 'show';
+			} elseif(strtolower($vs_children_display_mode_default) == 'alwayshide') {
+				$ps_children_display_mode = 'hide';
+			}
+			$this->view->setVar('children_display_mode', $ps_children_display_mode);
+			$this->view->setVar('hide_children', $pb_hide_children = in_array(strtolower($ps_children_display_mode), ['hide', 'alwayshide']));
+			$this->view->setVar('show_children_display_mode_control', !in_array(strtolower($vs_children_display_mode_default), ['alwaysshow', 'alwayshide']));
 
-        #
-        #
-        #
-        $this->view->setVar(
-            'children_display_mode_default',
-            ($vs_children_display_mode_default = $this->request->config->get(
-                $this->ops_tablename . "_children_display_mode_in_results"
-            )) ? $vs_children_display_mode_default : "alwaysShow"
-        );
+			$this->opo_result_context->setCurrentChildrenDisplayMode($ps_children_display_mode);
 
-        $ps_children_display_mode = $this->opo_result_context->getCurrentChildrenDisplayMode();
+			//
+			// Handle deaccession display mode
+			//
+			$this->view->setVar('deaccession_display_mode_default', ($vs_deaccession_display_mode_default = $this->request->config->get($this->ops_tablename."_deaccession_display_mode_in_results")) ? $vs_deaccession_display_mode_default : "alwaysShow");
 
-        // force mode when "always" is set
-        if (strtolower($vs_children_display_mode_default) == 'alwaysshow') {
-            $ps_children_display_mode = 'show';
-        } elseif (strtolower($vs_children_display_mode_default) == 'alwayshide') {
-            $ps_children_display_mode = 'hide';
-        }
-        $this->view->setVar('children_display_mode', $ps_children_display_mode);
-        $this->view->setVar(
-            'hide_children',
-            $pb_hide_children = in_array(strtolower($ps_children_display_mode), ['hide', 'alwayshide'])
-        );
-        $this->view->setVar(
-            'show_children_display_mode_control',
-            !in_array(strtolower($vs_children_display_mode_default), ['alwaysshow', 'alwayshide'])
-        );
+			$ps_deaccession_display_mode = $this->opo_result_context->getCurrentDeaccessionDisplayMode();
 
+			// force mode when "always" is set
+			if (strtolower($vs_deaccession_display_mode_default) == 'alwaysshow') {
+				$ps_deaccession_display_mode = 'show';
+			} elseif(strtolower($vs_deaccession_display_mode_default) == 'alwayshide') {
+				$ps_deaccession_display_mode = 'hide';
+			}
 
-        $this->view->setVar(
-            'ca_object_representation_download_versions',
-            $this->request->config->getList('ca_object_representation_download_versions')
-        );
+			if (!$this->request->user->canDoAction('can_access_deaccessioned_'.$this->ops_tablename)) {
+				$this->view->setVar('deaccession_display_mode', 'alwayshide');
+				$this->view->setVar('hide_deaccession', true);
+				$this->view->setVar('show_deaccession_display_mode_control', false);
+			} else {
+				$this->view->setVar('deaccession_display_mode', $ps_deaccession_display_mode);
+				$this->view->setVar('hide_deaccession', $pb_hide_deaccessioned = in_array(strtolower($ps_deaccession_display_mode), ['hide', 'alwayshide']));
+				$this->view->setVar('show_deaccession_display_mode_control', !in_array(strtolower($vs_deaccession_display_mode_default), ['alwaysshow', 'alwayshide']));
+			}
+ 			$this->opo_result_context->setCurrentDeaccessionDisplayMode($ps_deaccession_display_mode);
 
-        $media_elements = ca_metadata_elements::getElementsAsList(
-            false,
-            $this->ops_tablename,
-            $this->opn_type_restriction_id,
-            false,
-            false,
-            true,
-            [__CA_ATTRIBUTE_VALUE_MEDIA__]
-        );
-        $this->view->setVar(
-            'media_metadata_elements',
-            (is_array($media_elements) && sizeof($media_elements)) ? $media_elements : []
-        );
-    }
-    # -------------------------------------------------------
-
-    /**
-     *
-     */
-    protected function _setBottomLineValues($po_result, $pa_display_list, $pt_display)
-    {
-        $vn_page_num = $this->opo_result_context->getCurrentResultsPageNumber();
-        if (!($items_per_page = $this->opo_result_context->getItemsPerPage())) {
-            $items_per_page = $this->opn_items_per_page_default;
-        }
-
-        $va_bottom_line = array();
-        $vb_bottom_line_is_set = false;
-        foreach ($pa_display_list as $placement_id => $va_placement) {
-            if (isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
-                $va_bottom_line[$placement_id] = caProcessBottomLineTemplateForPlacement(
-                    $this->request,
-                    $va_placement,
-                    $po_result,
-                    array(
-                        'pageStart' => ($vn_page_num - 1) * $items_per_page,
-                        'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page
-                    )
-                );
-                $vb_bottom_line_is_set = true;
-            } else {
-                $va_bottom_line[$placement_id] = '';
-            }
-        }
-
-        $this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
-
-        //
-        // Bottom line for display
-        //
-        $this->view->setVar(
-            'bottom_line_totals',
-            caProcessBottomLineTemplateForDisplay(
-                $this->request,
-                $pt_display,
-                $po_result,
-                array(
-                    'pageStart' => ($vn_page_num - 1) * $items_per_page,
-                    'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page
-                )
-            )
-        );
-    }
-    # -------------------------------------------------------
-    # Printing
-    # -------------------------------------------------------
-    /**
-     * Action to trigger generation of label-formatted PDF of current find result set
-     */
-    public function printLabels()
-    {
-        return $this->Index(array('output_format' => 'LABELS'));
-    }
-    # -------------------------------------------------------
-
-    /**
-     * Generates and outputs label-formatted PDF version of search results
-     */
-    protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title = null)
-    {
-        $vs_border = ((bool)$this->request->config->get(
-            'add_print_label_borders'
-        )) ? "border: 1px dotted #000000; " : "";
-
-        //
-        // PDF output
-        //
-        $va_template_info = caGetPrintTemplateDetails('labels', substr($ps_label_code, 5));
-        if (!is_array($va_template_info)) {
-            $this->postError(3110, _t("Could not find view for PDF"), "BaseFindController->_genPDF()");
-            return;
-        }
-
-        try {
-            $this->view->setVar('title', $ps_title);
-
-            $this->view->setVar(
-                'base_path',
-                $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME) . '/'
-            );
-            $this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
-
-            $o_pdf = new PDFRenderer();
-            $this->view->setVar('PDFRenderer', $vs_renderer = $o_pdf->getCurrentRendererCode());
-
-
-            // render labels
-            $vn_width = caConvertMeasurement(caGetOption('labelWidth', $va_template_info, null), 'mm');
-            $vn_height = caConvertMeasurement(caGetOption('labelHeight', $va_template_info, null), 'mm');
-
-            $vn_top_margin = caConvertMeasurement(caGetOption('marginTop', $va_template_info, null), 'mm');
-            $vn_bottom_margin = caConvertMeasurement(caGetOption('marginBottom', $va_template_info, null), 'mm');
-            $vn_left_margin = caConvertMeasurement(caGetOption('marginLeft', $va_template_info, null), 'mm');
-            $vn_right_margin = caConvertMeasurement(caGetOption('marginRight', $va_template_info, null), 'mm');
-
-            $vn_horizontal_gutter = caConvertMeasurement(
-                caGetOption('horizontalGutter', $va_template_info, null),
-                'mm'
-            );
-            $vn_vertical_gutter = caConvertMeasurement(caGetOption('verticalGutter', $va_template_info, null), 'mm');
-
-            $va_page_size = PDFRenderer::getPageSize(
-                caGetOption('pageSize', $va_template_info, 'letter'),
-                'mm',
-                caGetOption('pageOrientation', $va_template_info, 'portrait')
-            );
-            $vn_page_width = $va_page_size['width'];
-            $vn_page_height = $va_page_size['height'];
-
-            $vn_label_count = 0;
-            $vn_left = $vn_left_margin;
-
-            $vn_top = $vn_top_margin;
-
-            $this->view->setVar('pageWidth', "{$vn_page_width}mm");
-            $this->view->setVar('pageHeight', "{$vn_page_height}mm");
-            $this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
-            $this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
-            $this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
-            $this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
-
-
-            $vs_content = $this->render("pdfStart.php");
-
-
-            $va_defined_vars = array_keys(
-                $this->view->getAllVars()
-            );        // get list defined vars (we don't want to copy over them)
-            $va_tag_list = $this->getTagListForView(
-                $va_template_info['path']
-            );                // get list of tags in view
-
-            $va_barcode_files_to_delete = array();
-
-            $vn_page_count = 0;
-            while ($po_result->nextHit()) {
-                $va_barcode_files_to_delete = array_merge(
-                    $va_barcode_files_to_delete,
-                    caDoPrintViewTagSubstitution(
-                        $this->view,
-                        $po_result,
-                        $va_template_info['path'],
-                        array('checkAccess' => $this->opa_access_values)
-                    )
-                );
-
-                $vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
-                $vs_content .= $this->render($va_template_info['path']);
-                $vs_content .= "</div>\n";
-
-                $vn_label_count++;
-
-                $vn_left += $vn_vertical_gutter + $vn_width;
-
-                if (($vn_left + $vn_width) > $vn_page_width) {
-                    $vn_left = $vn_left_margin;
-                    $vn_top += $vn_horizontal_gutter + $vn_height;
-                }
-                if (($vn_top + $vn_height) > (($vn_page_count + 1) * $vn_page_height)) {
-                    // next page
-                    if ($vn_label_count < $po_result->numHits()) {
-                        $vs_content .= "<div class=\"pageBreak\">&nbsp;</div>\n";
-                    }
-                    $vn_left = $vn_left_margin;
-
-                    switch ($vs_renderer) {
-                        case 'wkhtmltopdf':
-                            // WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
-                            $vn_page_count++;
-                            $vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
-                            break;
-                        case 'domPDF':
-                        default:
-                            // domPDF wants things positioned in a per-page coordinate space (Eg. the upper left hand corner of each page is 0,0)
-                            $vn_top = $vn_top_margin;
-                            break;
-                    }
-                }
-            }
-
-            $vs_content .= $this->render("pdfEnd.php");
-
-            $o_pdf->setPage(
-                caGetOption('pageSize', $va_template_info, 'letter'),
-                caGetOption('pageOrientation', $va_template_info, 'portrait')
-            );
-            $o_pdf->render(
-                $vs_content,
-                array(
-                    'stream' => true,
-                    'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption(
-                        'filename',
-                        $va_template_info,
-                        'labels.pdf'
-                    )
-                )
-            );
+ 			$this->opo_result_context->saveContext();
+ 			// -----
+ 			
+ 			$this->view->setVar('ca_object_representation_download_versions', $this->request->config->getList('ca_object_representation_download_versions'));
+ 		
+ 			$media_elements = ca_metadata_elements::getElementsAsList(false, $this->ops_tablename, $this->opn_type_restriction_id, false, false, true, [__CA_ATTRIBUTE_VALUE_MEDIA__]);
+ 			$this->view->setVar('media_metadata_elements', (is_array($media_elements) && sizeof($media_elements)) ? $media_elements : []); 
+ 		}
+ 		# -------------------------------------------------------
+		/**
+		  * 
+		  */
+ 		protected function _setBottomLineValues($po_result, $pa_display_list, $pt_display) {
+ 			$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
+			if (!($items_per_page = $this->opo_result_context->getItemsPerPage())) { 
+ 				$items_per_page = $this->opn_items_per_page_default; 
+ 			}
+ 			
+			$va_bottom_line = array();
+			$vb_bottom_line_is_set = false;
+			foreach($pa_display_list as $placement_id => $va_placement) {
+				if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
+					$va_bottom_line[$placement_id] = caProcessBottomLineTemplateForPlacement($this->request, $va_placement, $po_result, array('pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page));
+					$vb_bottom_line_is_set = true;
+				} else {
+					$va_bottom_line[$placement_id] = '';
+				}
+			}
+			
+			$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
+			
+			//
+			// Bottom line for display
+			//
+			$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay($this->request, $pt_display, $po_result, array('pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page)));
+ 		}
+		# -------------------------------------------------------
+		# Printing
+		# -------------------------------------------------------
+		/**
+		  * Action to trigger generation of label-formatted PDF of current find result set
+		  */
+ 		public function printLabels() {
+ 			return $this->Index(array('output_format' => 'LABELS'));
+		}
+		# -------------------------------------------------------
+		/**
+		 * Generates and outputs label-formatted PDF version of search results 
+		 */
+		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
+			$vs_border = ((bool)$this->request->config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
+			
+			//
+			// PDF output
+			//
+			$va_template_info = caGetPrintTemplateDetails('labels', substr($ps_label_code, 5));
+			if (!is_array($va_template_info)) {
+				$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->_genPDF()");
+				return;
+			}
+			
+			try {
+				$this->view->setVar('title', $ps_title);
+				
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
+				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+			
+				$o_pdf = new PDFRenderer();
+				$this->view->setVar('PDFRenderer', $vs_renderer = $o_pdf->getCurrentRendererCode());
+			
+				
+				// render labels
+				$vn_width = 				caConvertMeasurement(caGetOption('labelWidth', $va_template_info, null), 'mm');
+				$vn_height = 				caConvertMeasurement(caGetOption('labelHeight', $va_template_info, null), 'mm');
+				
+				$vn_top_margin = 			caConvertMeasurement(caGetOption('marginTop', $va_template_info, null), 'mm');
+				$vn_bottom_margin = 		caConvertMeasurement(caGetOption('marginBottom', $va_template_info, null), 'mm');
+				$vn_left_margin = 			caConvertMeasurement(caGetOption('marginLeft', $va_template_info, null), 'mm');
+				$vn_right_margin = 			caConvertMeasurement(caGetOption('marginRight', $va_template_info, null), 'mm');
+				
+				$vn_horizontal_gutter = 	caConvertMeasurement(caGetOption('horizontalGutter', $va_template_info, null), 'mm');
+				$vn_vertical_gutter = 		caConvertMeasurement(caGetOption('verticalGutter', $va_template_info, null), 'mm');
+				
+				$va_page_size =				PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+				
+				$vn_label_count = 0;
+				$vn_left = $vn_left_margin;
+				
+				$vn_top = $vn_top_margin;
+				
+				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
+				$this->view->setVar('pageHeight', "{$vn_page_height}mm");				
+				$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+				
+				
+				$vs_content = $this->render("pdfStart.php");
+				
+				
+				$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
+				$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
+				
+				$va_barcode_files_to_delete = array();
+				
+				$vn_page_count = 0;
+				while($po_result->nextHit()) {
+					$va_barcode_files_to_delete = array_merge($va_barcode_files_to_delete, caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values)));
+					
+					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
+					$vs_content .= $this->render($va_template_info['path']);
+					$vs_content .= "</div>\n";
+					
+					$vn_label_count++;
+					
+					$vn_left += $vn_vertical_gutter + $vn_width;
+					
+					if (($vn_left + $vn_width) > $vn_page_width) {
+						$vn_left = $vn_left_margin;
+						$vn_top += $vn_horizontal_gutter + $vn_height;
+					}
+					if (($vn_top + $vn_height) > (($vn_page_count + 1) * $vn_page_height)) {
+						
+						// next page
+						if ($vn_label_count < $po_result->numHits()) { $vs_content .= "<div class=\"pageBreak\">&nbsp;</div>\n"; }
+						$vn_left = $vn_left_margin;
+							
+						switch($vs_renderer) {
+							case 'wkhtmltopdf':
+								// WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
+								$vn_page_count++;
+								$vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
+								break;
+							case 'domPDF':
+							default:
+								// domPDF wants things positioned in a per-page coordinate space (Eg. the upper left hand corner of each page is 0,0)
+								$vn_top = $vn_top_margin;								
+								break;
+						}
+					}
+				}
+				
+				$vs_content .= $this->render("pdfEnd.php");
+				
+				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $va_template_info, 'labels.pdf')));
 
             $vb_printed_properly = true;
 

@@ -17,7 +17,7 @@ create table ca_objects_x_storage_locations (
    source_info                    longtext                       not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_reference_2044f foreign key (location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -47,7 +47,7 @@ create table ca_object_lots_x_storage_locations (
    source_info                    longtext                       not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
-   rank                           int unsigned                   not null,
+   rank                          int unsigned                   not null,
    primary key (relation_id),
    constraint fk_reference_2044e foreign key (location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -73,8 +73,8 @@ create unique index u_all on ca_object_lots_x_storage_locations (
 	BrowseEngine support table fixes
 */
 ALTER TABLE ca_browses  MODIFY params longtext not null;
-ALTER TABLE ca_browse_results ADD COLUMN rank int unsigned not null;
-CREATE INDEX i_rank on ca_browse_results(rank);
+ALTER TABLE ca_browse_results ADD COLUMN `rank` int unsigned not null;
+CREATE INDEX i_rank on ca_browse_results(`rank`);
 
 /* -------------------------------------------------------------------------------- */
 /* Always add the update to ca_schema_updates at the end of the file */

@@ -77,7 +77,7 @@ create table ca_user_representation_annotations_x_entities
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   `rank`                           int unsigned                   not null default 0,
+   rank                          int unsigned                   not null default 0,
    primary key (relation_id),
 
    constraint fk_ca_urep_annot_x_entities_annotation_id foreign key (annotation_id)
@@ -123,7 +123,7 @@ create table ca_user_representation_annotations_x_objects
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   `rank`                           int unsigned                   not null default 0,
+   rank                          int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_urep_annot_x_objects_annotation_id foreign key (annotation_id)
@@ -169,7 +169,7 @@ create table ca_user_representation_annotations_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   `rank`                           int unsigned                   not null default 0,
+   rank                          int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_urep_annot_x_occurrences_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
@@ -214,7 +214,7 @@ create table ca_user_representation_annotations_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   `rank`                           int unsigned                   not null default 0,
+   rank                          int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_urep_annot_x_places_annotation_id foreign key (annotation_id)
@@ -260,7 +260,7 @@ create table ca_user_representation_annotations_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   `rank`                           int unsigned                   not null default 0,
+   rank                          int unsigned                   not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_urep_annot_x_vocabulary_terms_annotation_id foreign key (annotation_id)

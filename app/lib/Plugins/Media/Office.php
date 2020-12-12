@@ -52,19 +52,19 @@ require_once(__CA_LIB_DIR__ . "/Parsers/UnZipFile.php");
 
 class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia
 {
-    public $errors = array();
+    var $errors = array();
 
-    public $filepath;
-    public $handle;
-    public $ohandle;
-    public $properties;
+    var $filepath;
+    var $handle;
+    var $ohandle;
+    var $properties;
 
-    public $opo_config;
-    public $ops_libreoffice_path;
+    var $opo_config;
+    var $ops_libreoffice_path;
 
-    public $opa_metadata;
+    var $opa_metadata;
 
-    public $info = array(
+    var $info = array(
         "IMPORT" => array(
             "text/rtf" => "rtf",
             "application/msword" => "doc",
@@ -136,7 +136,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia
         "NO_CONVERSION" => false
     );
 
-    public $typenames = array(
+    var $typenames = array(
         "application/pdf" => "PDF",
         "application/msword" => "Microsoft Word",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document" => "Microsoft Word/OpenOffice",
@@ -151,7 +151,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia
         "text/rtf" => "RTF"
     );
 
-    public $magick_names = array(
+    var $magick_names = array(
         "application/pdf" => "PDF",
         "application/msword" => "DOC",
         "text/html" => "HTML",
@@ -161,14 +161,14 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia
     #
     # Alternative extensions for supported types
     #
-    public $alternative_extensions = [];
+    var $alternative_extensions = [];
 
     /**
      * Cache Office -> PDF file conversions across invocations in current request
      */
-    static public $s_pdf_conv_cache = array();
+    static $s_pdf_conv_cache = array();
 
-    public $opa_transformations = array();
+    var $opa_transformations = array();
 
     # ------------------------------------------------
     public function __construct()
@@ -330,9 +330,13 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia
             ];
 
             foreach ($va_ppt_types as $vs_type => $vs_mimetype) {
-                $o_reader = \PhpOffice\PhpPresentation\IOFactory::createReader($vs_type);
-                if ($o_reader->canRead($ps_filepath)) {
-                    return $vs_mimetype;
+                try {
+                    $o_reader = \PhpOffice\PhpPresentation\IOFactory::createReader($vs_type);
+                    if ($o_reader->canRead($ps_filepath)) {
+                        return $vs_mimetype;
+                    }
+                } catch (\PhpOffice\PhpPresentation\Reader\Exception $e) {
+                    // noop
                 }
             }
         }
@@ -350,9 +354,13 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia
             $va_word_types = ['Word2007' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
             foreach ($va_word_types as $vs_type => $vs_mimetype) {
-                $o_reader = IOFactory::createReader($vs_type);
-                if ($o_reader->canRead($ps_filepath)) {
-                    return $vs_mimetype;
+                try {
+                    $o_reader = \PhpOffice\PhpWord\IOFactory::createReader($vs_type);
+                    if ($o_reader->canRead($ps_filepath)) {
+                        return $vs_mimetype;
+                    }
+                } catch (\PhpOffice\PhpWord\Reader\Exception $e) {
+                    // noop
                 }
             }
         }
@@ -366,19 +374,23 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia
                 'Excel2003XML' => 'application/vnd.ms-excel'
             ];
             foreach ($va_excel_types as $vs_type => $vs_mimetype) {
-                switch ($vs_type) {
-                    case 'Excel2007':
-                        $o_reader = new Xlsx();
-                        break;
-                    case 'Excel5':
-                        $o_reader = new Xls();
-                        break;
-                    case 'Excel2003XML':
-                        $o_reader = new Xml();
-                        break;
-                }
-                if ($o_reader->canRead($ps_filepath)) {
-                    return $vs_mimetype;
+                try {
+                    switch ($vs_type) {
+                        case 'Excel2007':
+                            $o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                            break;
+                        case 'Excel5':
+                            $o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                            break;
+                        case 'Excel2003XML':
+                            $o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xml();
+                            break;
+                    }
+                    if ($o_reader->canRead($ps_filepath)) {
+                        return $vs_mimetype;
+                    }
+                } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
+                    // noop
                 }
             }
         }

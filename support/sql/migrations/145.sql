@@ -11,7 +11,7 @@ create table ca_search_form_type_restrictions (
    form_id                        int unsigned                   not null,
    include_subtypes               tinyint unsigned               not null default 0,
    settings                       longtext                       not null,
-   `rank`                           smallint unsigned              not null default 0,
+   rank                          smallint unsigned              not null default 0,
    primary key (restriction_id),
    
    index i_form_id				(form_id),
