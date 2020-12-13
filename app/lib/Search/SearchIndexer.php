@@ -734,33 +734,33 @@ class SearchIndexer extends SearchBase {
                             }
                         }
 
-					// specialized identifier (idno) processing; uses IDNumbering plugin to generate searchable permutations of identifier
-					if (((isset($va_data['INDEX_AS_IDNO']) && $va_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_data, true)) && method_exists($t_subject, "getIDNoPlugInInstance") && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
-						if (strlen($va_data['IDNO_DELIMITERS']) || (is_array($va_data['IDNO_DELIMITERS']) && count($va_data['IDNO_DELIMITERS']))) {
-							if (!is_array($va_data['IDNO_DELIMITERS'])) { $va_data['IDNO_DELIMITERS'] = [$va_data['IDNO_DELIMITERS']]; }
-							$va_values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $va_data['IDNO_DELIMITERS']).')!', $pa_field_data[$vs_field]));
-						} else {
-							$va_values = $o_idno->getIndexValues($pa_field_data[$vs_field], $va_data);
-						}
-						$vn_fld_num = $t_subject->fieldNum($vs_field);
-						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $va_values, $va_data);
-						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $va_values, $va_data);
-					}
-					// specialized mimetype processing
-					if (((isset($va_data['INDEX_AS_MIMETYPE']) && $va_data['INDEX_AS_MIMETYPE']) || in_array('INDEX_AS_MIMETYPE', $va_data, true))) {
-						$va_values = [];
-						if ($vs_typename = Media::getTypenameForMimetype($pa_field_data[$vs_field])) {
-							$va_values[] = $vs_typename;
-						}
-						$vn_fld_num = $t_subject->fieldNum($vs_field);
-						
-						// Index mimetype as-is
-						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$pa_field_data[$vs_field]], array_merge($va_data, array('DONT_TOKENIZE' => true)));
-												
-						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $va_values, $va_data);
-						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $va_values, $va_data);
-						continue;
-					}
+                        // specialized identifier (idno) processing; uses IDNumbering plugin to generate searchable permutations of identifier
+                        if (((isset($va_data['INDEX_AS_IDNO']) && $va_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_data, true)) && method_exists($t_subject, "getIDNoPlugInInstance") && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
+                            if (strlen($va_data['IDNO_DELIMITERS']) || (is_array($va_data['IDNO_DELIMITERS']) && count($va_data['IDNO_DELIMITERS']))) {
+                                if (!is_array($va_data['IDNO_DELIMITERS'])) { $va_data['IDNO_DELIMITERS'] = [$va_data['IDNO_DELIMITERS']]; }
+                                $va_values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $va_data['IDNO_DELIMITERS']).')!', $pa_field_data[$vs_field]));
+                            } else {
+                                $va_values = $o_idno->getIndexValues($pa_field_data[$vs_field], $va_data);
+                            }
+                            $vn_fld_num = $t_subject->fieldNum($vs_field);
+                            $this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $va_values, $va_data);
+                            $this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $va_values, $va_data);
+                        }
+                        // specialized mimetype processing
+                        if (((isset($va_data['INDEX_AS_MIMETYPE']) && $va_data['INDEX_AS_MIMETYPE']) || in_array('INDEX_AS_MIMETYPE', $va_data, true))) {
+                            $va_values = [];
+                            if ($vs_typename = Media::getTypenameForMimetype($pa_field_data[$vs_field])) {
+                                $va_values[] = $vs_typename;
+                            }
+                            $vn_fld_num = $t_subject->fieldNum($vs_field);
+
+                            // Index mimetype as-is
+                            $this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$pa_field_data[$vs_field]], array_merge($va_data, array('DONT_TOKENIZE' => true)));
+
+                            $this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $va_values, $va_data);
+                            $this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $va_values, $va_data);
+                            continue;
+                        }
 
 
                         $va_field_list = $t_subject->getFieldsArray();
