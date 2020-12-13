@@ -93,7 +93,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$this->opo_tep = new TimeExpressionParser();
 		$this->opo_tep->setLanguage($g_ui_locale);
 
-		// TODO: Update to use an non-English stemmer
+		// Use an stemmer from configuration.
         $vs_stemmer = $this->opo_search_config->get('search_sql_search_stemmer');
         if (!$vs_stemmer){
             $vs_stemmer = self::SNOBALL_STEMMER;
@@ -1019,15 +1019,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
                                             // don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
 											if (!preg_match('!y$!u', $vs_to_stem) && (preg_match('!^[\d]+$!', $vs_to_stem) || preg_match('!^[\w\-]+$!', $vs_to_stem))) {
-                                                // TODO: Allow locale on stemming
 
-                                                // TODO: Stem for every language allowed for cataloging:
+                                                // Stem for every language allowed for cataloging:
                                                 //  in the selected field or globally.
                                                 //  In case the selected field allows different locales, use those as
                                                 //  locales for stemming.
                                                 //  If there is no selected field use all cataloging locales.
                                                 if( !$va_cataloguing_locales = ca_locales::getCataloguingLocaleList() ){
-                                                    // TODO: use default CATALOGUING locale
+                                                    // Use default CATALOGUING locale
                                                     global $g_ui_locale_id;
                                                     $va_cataloguing_locales = array(ca_locales::getCataloguingLocaleList()[$g_ui_locale_id]);
                                                 }
@@ -2049,7 +2048,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		} else {
 			foreach($va_words as $vs_word) {
 				if(!strlen($vs_word)) { continue; }
-				// TODO: Get locale and use it to get the word id
+				// Get locale and use it to get the word id
 				if (!($vn_word_id = (int)$this->getWordID($vs_word, $vn_locale_id))) { continue; }
 			
 				self::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$vn_container_id.','.$pn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_private.','.$vn_rel_type_id.')';
