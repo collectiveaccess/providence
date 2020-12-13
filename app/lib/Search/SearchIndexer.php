@@ -938,7 +938,10 @@ class SearchIndexer extends SearchBase {
 							
 							$vn_rel_type_id = (int)$qr_res->get('rel_type_id');
 							$vn_row_type_id = (int)$qr_res->get('type_id');
-							
+
+							// Get locale if it is in query result.
+                            $vn_locale_id = caGetOption('locale_id', $va_field_data,null);
+
                             if(!$vb_force_related && ($vs_related_table == $vs_subject_tablename) && is_array($va_restrict_self_indexing_to_types) && !in_array($vn_row_type_id, $va_restrict_self_indexing_to_types)) {
                                 continue;
                             }
@@ -1079,13 +1082,13 @@ class SearchIndexer extends SearchBase {
                                                             $this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_id, $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
                                                         } else {
                                                             // regular intrinsic
-                                                            // TODO: Get locale from qr_res
+                                                            // Get locale from qr_res->getRow
                                                             $vn_table_num = ($is_generic ? $pn_subject_table_num:$vn_related_table_num);
                                                             $vn_rid = $is_generic ? $pn_subject_row_id:$qr_res->get($vs_related_pk);
                                                             $va_options_for_indexing = array_merge($va_rel_field_info,
                                                                     array('relationship_type_id' => $vn_rel_type_id,
                                                                             'PRIVATE' => $vn_private,
-                                                                            'locale_id' => caGetOption('locale_id', $va_field_data, null))
+                                                                            'locale_id' => $vn_locale_id)
                                                             );
                                                             $this->opo_engine->indexField($vn_table_num, $field_num, $vn_rid, [$vs_fld_data], $va_options_for_indexing);
                                                             $this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_rid, [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
