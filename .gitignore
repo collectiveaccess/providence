@@ -2,7 +2,7 @@
 /app/tmp/*
 app/conf/local/*
 setup.php
-/media/*
+/media*
 !/media/.htaccess
 !/media/README.md
 .DS_Store
@@ -14,7 +14,7 @@ build
 *.sublime-*
 *.swp
 *.po~
-.vagrant/
+.vagrant*
 /import/*
 /vendor/*
 /app/lib/core/Parsers/dompdf/lib/fonts/*fm.php
