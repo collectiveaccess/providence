@@ -122,7 +122,7 @@
 		var new_home_location_id = jQuery("#new_home_location_id").val();
 		jQuery.post(
 			'<?php print caNavUrl($this->request, '*', '*', 'SetHomeLocation'); ?>',
-			{ 'location_id': new_home_location_id, 'object_id': <?php print $t_item->getPrimaryKey(); ?> },
+			{ 'location_id': new_home_location_id, '<?= $t_item->primaryKey(); ?>': <?php print $t_item->getPrimaryKey(); ?> },
 			function(data, textStatus, jqXHR) {
 				if(data && data['ok'] && (parseInt(data['ok']) == 1)) {
 					var home_location_message = '<?php print addslashes($home_location_message); ?>';

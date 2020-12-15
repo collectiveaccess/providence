@@ -137,9 +137,9 @@
 					'no_cache' => $vb_is_new_search,
 					'dontCheckFacetAvailability' => true,
 					'filterNonPrimaryRepresentations' => true,
-					'rootRecordsOnly' => $this->view->getVar('hide_children')
+					'rootRecordsOnly' => $this->view->getVar('hide_children'),
+					'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')
 				);
-				
 				
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);

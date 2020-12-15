@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -126,6 +126,12 @@ if($vo_result->numHits() > 0) {
 		if($this->getVar('show_children_display_mode_control')) {
 			print "<div class='col'>";
 			print _t('Child records').': '.caHTMLSelect('children', [_t('show') => 'show', _t('hide') => 'hide'], [], ['value' => $this->getVar('children_display_mode')]);
+			print "</div>";	
+		}
+		
+		if($this->getVar('show_deaccession_display_mode_control')) {
+			print "<div class='col'>";
+			print _t('Deaccessioned').': '.caHTMLSelect('deaccession', [_t('show') => 'show', _t('hide') => 'hide'], [], ['value' => $this->getVar('deaccession_display_mode')]);
 			print "</div>";	
 		}
 ?>		
