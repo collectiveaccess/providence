@@ -12,7 +12,7 @@ create table ca_bookmark_folders
   folder_id int(10) unsigned not null auto_increment,
   name varchar(255) not null,
   user_id int unsigned not null references ca_users(user_id),
-  rank smallint unsigned not null,
+  `rank` smallint unsigned not null,
   
   primary key (folder_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -26,7 +26,7 @@ create table ca_bookmarks
   table_num tinyint unsigned not null,
   row_id int unsigned not null,
   notes text not null,
-  rank smallint unsigned not null,
+  `rank` smallint unsigned not null,
   created_on int unsigned not null,
   
   primary key (bookmark_id)
@@ -143,7 +143,7 @@ create table ca_commerce_order_items
    tax                               decimal(8,2) null,
    notes                            text                                 not null,
    restrictions                   text                                 not null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (item_id),
    constraint fk_ca_commerce_order_items_object_id foreign key (object_id)
       references ca_objects (object_id) on delete restrict on update restrict,
@@ -202,7 +202,7 @@ create table ca_object_representations_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_collections_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -247,7 +247,7 @@ create table ca_object_representations_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_storage_loc_rep_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -292,7 +292,7 @@ create table ca_object_representations_x_object_representations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_object_reps_rep_left_id foreign key (representation_left_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,

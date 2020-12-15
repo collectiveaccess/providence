@@ -105,8 +105,8 @@
 					$vs_controls .= "</div>";	
 					
 					$o_view->setVar('page', $vn_rep_index);		
-					$o_view->setVar('original_media_url', $t_instance->getMediaUrl('media', 'original', []));
 				}
+				$o_view->setVar('original_media_url', $t_instance->getMediaUrl('media', 'original', []));
 			} elseif(is_a($t_instance, 'ca_attribute_values')) {
 				$o_view->setVar('original_media_url', $t_instance->getMediaUrl('value_blob', 'original', []));
 			} elseif(is_a($t_instance, 'ca_site_page_media')) {

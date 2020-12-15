@@ -1744,7 +1744,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				break;
 			case 'checklist':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
-				$vs_buf = ($max_columns > 1) ? "<div style=\"column-count: {$max_columns};\">\n" : "<div>\n";
+				
+				$p = floor(100/$max_columns);
+				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
+			
 				foreach($va_options as $vm_value => $vs_label) {
 					$va_attributes = array('value' => $vm_value);
 					if (isset($va_disabled_options[$vm_value]) && $va_disabled_options[$vm_value]) {
@@ -1757,8 +1760,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						$va_attributes['checked'] = '1';
 					}
 					
-					$vs_buf .= caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." {$vs_label}<br/>\n";
-					
+					$vs_buf .= "<div class='checklistItem'>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." ".str_replace('&nbsp;', '', $vs_label)."</div>\n";				
 				}
 				$vs_buf .= "</div>";
 				return $vs_buf;

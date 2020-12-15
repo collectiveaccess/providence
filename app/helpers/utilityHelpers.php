@@ -2693,15 +2693,22 @@ function caFileIsIncludable($ps_file) {
 	 * Get symbol for currency if available. "USD" will return "$", for example, while
 	 * "CAD" will return "CAD"
 	 *
-	 * @param $ps_value string Currency specifier (Ex. USD, EUR, CAD)
+	 * @param $value string Currency specifier (Ex. USD, EUR, CAD)
+	 * @param $element_code_or_id Metadata element code or element_id. If provided currency symbol settings from the element will be used. If omitted only global (app.conf) settingd will be used. [Default is null]
 	 *
 	 * @return string Symbol (Ex. $, £, ¥) or currency specifier if no symbol is available
 	 */
-	function caGetCurrencySymbol($ps_value) {
+	function caGetCurrencySymbol($value, $element_code_or_id=null) {
 		$o_config = Configuration::load();
-		$vs_dollars_are_this = strtolower($o_config->get('default_dollar_currency'));
-		switch(strtolower($ps_value)) {
-			case $vs_dollars_are_this:
+		
+		$dollars_are_this = null;
+		if($element_code_or_id && ($t_element = ca_metadata_elements::getInstance($element_code_or_id))) {
+			$dollars_are_this = strtolower($t_element->getSetting('dollarCurrency'));
+		}
+		if (!$dollars_are_this) { $dollars_are_this = strtolower($o_config->get('default_dollar_currency')); }
+		
+		switch(strtolower($value)) {
+			case $dollars_are_this:
 				return '$';
 			case 'eur':
 				return '€';
@@ -2710,7 +2717,7 @@ function caFileIsIncludable($ps_file) {
 			case 'jpy':
 				return '¥';
 		}
-		return $ps_value;
+		return $value;
 	}
 	# ----------------------------------------
 	/**
