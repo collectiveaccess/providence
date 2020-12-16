@@ -7632,6 +7632,7 @@ a.currentSet {
 /* "New" ca_object_representations_bundle */
 .mediaUploadContainer {
 	width:700px;
+	margin-top: 14px;
 }
 
 .mediaUploadInfoArea {
@@ -7661,7 +7662,6 @@ a.currentSet {
 	display: block;
 	width: 120px;
 	height: 120px;
-	margin-top: 14px;
 }
 
 .mediaUploadAreaMessage {

@@ -479,7 +479,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
 		// reject if media is empty
-		if ($this->mediaIsEmpty()) {
+		if ($this->mediaIsEmpty() && !(bool)$this->getAppConfig()->get('allow_representations_without_media')) {
 			$this->postError(2710, _t('No media was specified'), 'ca_object_representations->insert()');
 			return false;
 		}
