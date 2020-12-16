@@ -1686,7 +1686,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			case 'radio_buttons':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				$vn_i = 0;
-				$vs_buf = ($max_columns > 1) ? "<div style=\"column-count: {$max_columns};\">\n" : "<div>\n";
+				
+				$p = floor(100/$max_columns);
+				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
+	
 				foreach($va_options as $vm_value => $vs_label) {
 					
 					$va_attributes = array('value' => $vm_value);
@@ -1702,7 +1705,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($pa_options['readonly']) && ($pa_options['readonly'])) {
 						$va_attributes['disabled'] = 1;
 					}
-					$vs_buf .= caHTMLRadioButtonInput($ps_name, $va_attributes, $pa_options)." {$vs_label}<br/>\n";
+					$vs_buf .=  "<div class='checklistItem'>".caHTMLRadioButtonInput($ps_name, $va_attributes, $pa_options)." {$vs_label}</div>\n";
 					
 					$vn_i++;
 				}
