@@ -3405,18 +3405,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
 	 * @param string $ps_table
+	 * @param string $ps_related_table
 	 * @param array $pa_options
 	 *		sort = 
 	 *		sortDirection = 
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $pa_options=null) {
+	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $ps_related_table, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = []; }
 		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		if(!$ps_table) { return '???'; }
-		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default')]))) || !sizeof($va_sort_fields)) { return ''; }
+		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default'), 'includeInterstitialSortsFor' => $ps_related_table]))) || !sizeof($va_sort_fields)) { return ''; }
 		
 		$sort = caGetOption('sort', $pa_options, null);
 		$sort_direction = caGetOption('sortDirection', $pa_options, null);

@@ -3084,8 +3084,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('bundle_name', $ps_related_table);
 		
 		
-		$o_view->setVar('sort', caGetOption('sort', $pa_options, null));
-		$o_view->setVar('sortDirection', caGetOption('sortDirection', $pa_options, null));
+		$o_view->setVar('sort', caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null)));
+		$o_view->setVar('sortDirection', caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null)));
 		
 		$o_view->setVar('ui', caGetOption('ui', $pa_options, null));
 		$o_view->setVar('screen', caGetOption('screen', $pa_options, null));
