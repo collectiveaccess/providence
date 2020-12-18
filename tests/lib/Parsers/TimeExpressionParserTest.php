@@ -1686,4 +1686,15 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_historic['start'], '2001.032300000000');
 		$this->assertEquals($va_historic['end'], '2001.032723595900');
 	}
+	
+	// https://collectiveaccess.org/support/index.php?p=/discussion/300669/date-format-1947-06-1947-june-31st#latest
+	function testMonthToYearRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("1947-06 - 1947"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1947.060100000000');
+		$this->assertEquals($va_historic['end'], '1947.123123595900');
+	}
 }
