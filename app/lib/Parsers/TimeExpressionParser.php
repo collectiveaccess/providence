@@ -2237,6 +2237,8 @@ class TimeExpressionParser {
 			
 			if (($pa_dates['start']['day'] === null) && ($pa_dates['end']['day'] === null) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE) && $pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) { 
 				$pa_dates['start']['day'] = 1; 
+				if(!$pa_dates['start']['month']) { $pa_dates['start']['month'] = 1; }
+				if(!$pa_dates['end']['month']) { $pa_dates['end']['month'] = 12; }
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year'] ? $pa_dates['end']['year'] : 2004); // use leap year if no year is defined
 			} elseif (($pa_dates['end']['day'] === null) && ($pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE)) { 
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year']);
