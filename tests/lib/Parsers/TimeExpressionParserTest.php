@@ -1687,7 +1687,7 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_historic['end'], '2001.032723595900');
 	}
 	
-	// https://collectiveaccess.org/support/index.php?p=/discussion/300669/date-format-1947-06-1947-june-31st#latest
+	// https://collectiveaccess.org/support/index.php?p=/discussion/300669/date-format-1947-06-1947-june-31st
 	function testMonthToYearRange() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage("en_US");
@@ -1696,5 +1696,78 @@ class TimeExpressionParserTest extends TestCase {
 		
 		$this->assertEquals($va_historic['start'], '1947.060100000000');
 		$this->assertEquals($va_historic['end'], '1947.123123595900');
+	}
+	
+	// https://collectiveaccess.org/support/index.php?p=/discussion/300668/date-format-after-xxxx-mm-with-unknown-day-is-replaced-by-mm-1st
+	function testAfterDatesToMonth() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970-03"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.030100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after March 1970');
+	}
+	
+	function testAfterDatesToYear() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.010100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after 1970');
+	}
+	
+	function testAfterDatesToDay() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970-03-10"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.031000000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after March 10 1970');
+	}
+	
+	function testBeforeDatesToMonth() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970-03"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.033123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before March 1970');
+	}
+	
+	function testBeforeDatesToYear() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before 1970');
+	}
+	
+	function testBeforeDatesToDay() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970-03-10"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.031023595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before March 10 1970');
 	}
 }
