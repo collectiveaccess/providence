@@ -788,7 +788,7 @@
 				$vs_fa_class = 'fas fa-download';
 				break;
 			case __CA_NAV_ICON_EXPORT_SMALL__:
-				$vs_fa_class = 'fas fa-external-link-square';
+				$vs_fa_class = 'fas fa-external-link-square-alt';
 				break;	
 			case __CA_NAV_ICON_SETS__:
 				$vs_fa_class = 'far fa-clone';
