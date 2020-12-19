@@ -634,6 +634,12 @@ class TimeExpressionParser {
 			# -------------------------------------------------------
 			case TEP_STATE_AFTER_GET_DATE:
 				if ($va_date = $this->_parseDateExpression()) {
+					if(!$va_date['month']) { $va_date['month'] = 1; }
+					if (!$va_date['day']) { $va_date['day'] = 1; }
+					$va_date['hours'] = 0;
+					$va_date['minutes'] = 0;
+					$va_date['seconds'] = 0;
+					
 					$va_dates['start'] = $va_date;
 					$va_dates['end'] = array(
 						'month' => null, 'day' => null, 
@@ -2838,6 +2844,7 @@ class TimeExpressionParser {
 							'uncertainty_units' => $va_end_pieces['uncertainty_units']
 						), $pa_options);
 					} else {
+						if ($va_end_pieces['day'] == $this->daysInMonth($va_end_pieces['month'], $va_end_pieces['year'])) { unset($va_end_pieces['day']); }
 						return $vs_before_qualifier.' '. $this->_dateToText($va_end_pieces, $pa_options);
 					}
 				} else {
@@ -2856,6 +2863,7 @@ class TimeExpressionParser {
 							'uncertainty_units' => $va_start_pieces['uncertainty_units']
 						), $pa_options);
 					} else {
+						if ($va_start_pieces['day'] == 1) { unset($va_start_pieces['day']); }
 						$vs_date = $this->_dateToText($va_start_pieces, $pa_options);
 					}
 				} else {
