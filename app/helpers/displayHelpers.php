@@ -3263,6 +3263,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
 	 * @param string $ps_table
+	 * @param string $ps_related_table
 	 * @param array $pa_options Options include:
 	 *		sort =
 	 *		sortDirection = 
@@ -3274,7 +3275,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		if(!$ps_table) { return '???'; }
-		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], array_merge(['includeInterstitialSortsFor' => $ps_related_table], $pa_options)))) || !sizeof($va_sort_fields)) { return ''; }
+		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request, 'includeInterstitialSortsFor' => $ps_related_table], $pa_options))) || !sizeof($va_sort_fields)) { return ''; }
 		
 		unset($va_sort_fields['_natural']);
 		
