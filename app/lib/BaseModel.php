@@ -4578,7 +4578,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$rules = $o_media_proc_settings->getMediaTransformationRule($rule);
 
 
-						if (sizeof($rules) == 0) {
+						if (!is_array($rules) || (sizeof($rules) == 0)) {
 							$output_mimetype = $input_mimetype;
 							$m->set("version", $v);
 
