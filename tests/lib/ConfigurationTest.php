@@ -137,11 +137,22 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(sizeof($va_keys), 14);		// 12 in config file + 1 "LOCALE" value that's automatically inserted
 		$va_keys = $o_config->getListKeys();
 		$this->assertTrue(is_array($va_keys));
-		$this->assertEquals(sizeof($va_keys), 6);
+		$this->assertEquals(sizeof($va_keys), 7);
 		$va_keys = $o_config->getAssocKeys();
 		$this->assertTrue(is_array($va_keys));
 		$this->assertEquals(sizeof($va_keys), 3);
 
 	}
+
+
+	public function testGreps(){
+			$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/data/test.conf');
+			$va_regexes = $o_config->get("idno_regexes");
+			$this->assertTrue(is_array($va_regexes));
+			$this->assertArrayHasKey("ca_objects",$va_regexes);
+			$this->assertEquals($va_regexes["ca_objects"][0], "[\d]{4}\.[\d]{1,5}\.[\d]{0,5}");
+	}
+
+
 }
 ?>
