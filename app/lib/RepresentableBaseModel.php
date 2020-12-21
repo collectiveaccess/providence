@@ -1283,7 +1283,7 @@
 							'is_primary' => (int)$va_rep['is_primary'],
 							'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
 							'locale_id' => $va_rep['locale_id'], 
-							'icon' => $va_rep['tags']['thumbnail'], 
+							'icon' => isset($va_rep['tags']['thumbnail']) ? $va_rep['tags']['thumbnail'] : null, 
 							'mimetype' => $va_rep['info']['original']['PROPERTIES']['mimetype'], 
 							'annotation_type' => isset($va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']]) ? $va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']] : null,
 							'type' => $va_rep['info']['original']['PROPERTIES']['typename'], 

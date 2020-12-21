@@ -314,12 +314,15 @@
 			//			
 			$this->view->setVar('children_display_mode_default', ($vs_children_display_mode_default = $this->request->config->get($this->ops_tablename."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow");
 			
+			$ps_children_display_mode = $this->opo_result_context->getCurrentChildrenDisplayMode();
+			
 			// force mode when "always" is set
 			if (strtolower($vs_children_display_mode_default) == 'alwaysshow') {
 				$ps_children_display_mode = 'show';
 			} elseif(strtolower($vs_children_display_mode_default) == 'alwayshide') {
 				$ps_children_display_mode = 'hide';
 			}
+			
 			$this->view->setVar('children_display_mode', $ps_children_display_mode);				
 			$this->view->setVar('hide_children', $pb_hide_children = in_array(strtolower($ps_children_display_mode), ['hide', 'alwayshide']));			
 			$this->view->setVar('show_children_display_mode_control', !in_array(strtolower($vs_children_display_mode_default), ['alwaysshow', 'alwayshide']));
