@@ -150,7 +150,7 @@ class ConfigurationTest extends PHPUnit_Framework_TestCase {
 			$va_regexes = $o_config->get("idno_regexes");
 			$this->assertTrue(is_array($va_regexes));
 			$this->assertArrayHasKey("ca_objects",$va_regexes);
-			$this->assertEquals($va_regexes["ca_objects"][0], "[\d]{4}\.[\d]{1,5}\.[\d]{0,5}");
+			$this->assertEquals('[\d]{4}\.[\d]{1,5}\.[\d]{0,5}',$va_regexes["ca_objects"][0]);
 	}
 
 
