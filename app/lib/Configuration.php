@@ -180,20 +180,25 @@ class Configuration {
 		array_unshift($va_config_file_list, $this->ops_config_file_path);
 
 		// try to figure out if we can get it from cache
+		$mtime_keys = [];
 		if((!defined('__CA_DISABLE_CONFIG_CACHING__') || !__CA_DISABLE_CONFIG_CACHING__) && !$pb_dont_cache) {
-			self::loadConfigCacheInMemory();
-
 			if($vb_setup_has_changed = caSetupPhpHasChanged()) {
 				self::clearCache();
+			} elseif(ExternalCache::contains($vs_path_as_md5, 'ConfigurationCache')) {	// try to load current file from cache
+				self::$s_config_cache[$vs_path_as_md5] = ExternalCache::fetch($vs_path_as_md5, 'ConfigurationCache');
 			}
 
-			if(!$vb_setup_has_changed && isset(self::$s_config_cache[$vs_path_as_md5])) {
+			if(!$vb_setup_has_changed && isset(self::$s_config_cache[$vs_path_as_md5])) {	// file has been loaded from cache
 				$vb_cache_is_invalid = false;
 				
+				// Check file times to make sure cache is not stale
 				foreach($va_config_file_list as $vs_config_file_path) {
+					$mtime_keys[] = $mtime_key = 'mtime_'.$vs_path_as_md5.md5($vs_config_file_path);
+					$mtime = ExternalCache::fetch($mtime_key, 'ConfigurationCache');
+					
 				    $vs_config_mtime = caGetFileMTime($vs_config_file_path);
-                    if($vs_config_mtime != self::$s_config_cache[$k='mtime_'.$vs_path_as_md5.md5($vs_config_file_path)]) { // config file has changed
-                        self::$s_config_cache[$k] = $vs_config_mtime;
+                    if($vs_config_mtime != $mtime) { // config file has changed
+                        self::$s_config_cache[$mtime_key] = $vs_config_mtime;
                         $vb_cache_is_invalid = true;
                         break;
                     }
@@ -208,7 +213,7 @@ class Configuration {
 
 		}
 
-		# load hash
+		# File contents 
 		$this->ops_config_settings = [];
 
 		# try loading global.conf file
@@ -220,9 +225,9 @@ class Configuration {
 		//
 		$this->ops_config_settings['scalars']['LOCALE'] = $g_ui_locale;
 
-		#
-		# load specified config file
-		#
+		//
+		// Load specified config file(s), overlaying each 
+		//
 		$vs_config_file_path = array_shift($va_config_file_list);
 		if (file_exists($vs_config_file_path) && $this->loadFile($vs_config_file_path, false, false)) {
 			$this->ops_config_settings["ops_config_file_path"] = $vs_config_file_path;
@@ -243,7 +248,15 @@ class Configuration {
 			// config cache to disk at least once on this request
 			self::$s_have_to_write_config_cache = true;
 			
-			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 3600 * 3600 * 30);
+			// Write file to cache
+			ExternalCache::save($vs_path_as_md5, self::$s_config_cache[$vs_path_as_md5], 'ConfigurationCache', 3600 * 3600 * 30);
+			
+			// Write mtimes to cache for each component file (local, theme, stock)
+			if (is_array($mtime_keys) && sizeof($mtime_keys)) {
+				foreach($mtime_keys as $k) {
+					ExternalCache::save($k, self::$s_config_cache[$k], 'ConfigurationCache', 3600 * 3600 * 30);
+				}
+			}
 		}
 	}
 	/* ---------------------------------------- */
@@ -728,7 +741,11 @@ class Configuration {
 								break;
 							# -------------------
 							case '\\':
-								$vb_escape_set = true;
+								if ($vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
 								break;
 							# -------------------
 							default:
@@ -1072,22 +1089,11 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	/**
-	 * Remove all cached configuration
+	 * Removes all cached configuration
 	 */
 	public static function clearCache() {
-		ExternalCache::delete('ConfigurationCache');
+		ExternalCache::flush('ConfigurationCache');
 		self::$s_config_cache = null;
-	}
-	/* ---------------------------------------- */
-	/**
-	 * Load configuration from external cache into memory
-	 */
-	public static function loadConfigCacheInMemory() {
-		if(!is_null(self::$s_config_cache)) { return; }
-
-		if(ExternalCache::contains('ConfigurationCache')) {
-			self::$s_config_cache = ExternalCache::fetch('ConfigurationCache');
-		}
 	}
 	/* ---------------------------------------- */
 	/**
@@ -1095,7 +1101,9 @@ class Configuration {
 	 */
 	public function __destruct() {
 		if(isset(Configuration::$s_have_to_write_config_cache) && Configuration::$s_have_to_write_config_cache) {
-			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 3600 * 3600 * 30);
+			foreach(self::$s_config_cache as $k => $v) {
+				ExternalCache::save($k, $v, 'ConfigurationCache', 3600 * 3600 * 30);
+			}
 			self::$s_have_to_write_config_cache = false;
 		}
 	}
