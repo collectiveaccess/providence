@@ -186,7 +186,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function divineFileFormat($filepath) {
-		$ID3 = new getid3();
+		$ID3 = new getID3();
 		$info = $ID3->analyze($filepath);
 		if (($info['fileformat'] == 'riff') && (!isset($info['video']))) {
 			if (isset($info['audio']['dataformat']) && ($info['audio']['dataformat'] == 'wav')) {
