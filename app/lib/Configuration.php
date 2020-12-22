@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2018 Whirl-i-Gig
+ * Copyright 2000-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -694,7 +694,11 @@ class Configuration {
 								break;
 							# -------------------
 							case '\\':
-								$vb_escape_set = true;
+								if ($vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
 								break;
 							# -------------------
 							default:
