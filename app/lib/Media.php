@@ -714,8 +714,8 @@ class Media extends BaseObject {
 	 */
 	public function __destruct() {
 		// Clean up tmp files
-		if(is_array($tmp_files)) {
-			foreach($tmp_files as $f) {
+		if(is_array($this->tmp_files)) {
+			foreach($this->tmp_files as $f) {
 				@unlink($f);
 			}
 		}

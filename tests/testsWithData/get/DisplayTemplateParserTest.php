@@ -924,10 +924,11 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testStartLength() {
-		$this->assertEquals('5 in x 3 lb', trim(DisplayTemplateParser::evaluate("
+        $display_dimension = trim(DisplayTemplateParser::evaluate("
 		<unit relativeTo='ca_objects.dimensions' start='1' length='1'>
 			^ca_objects.dimensions.dimensions_length x ^ca_objects.dimensions.dimensions_weight
-		</unit>", 'ca_objects', array($this->opn_object_id))));
+		</unit>", 'ca_objects', array($this->opn_object_id)));
+        $this->assertEquals('5 in x 3 lb', $display_dimension);
 	}
 	# -------------------------------------------------------
 	public function testNonpreferredLabelsRestrictToTypes() {

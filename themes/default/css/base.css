@@ -7576,8 +7576,19 @@ div.changeLogSearchResultsPagination {
 }
 
 div.checklist {
+    display: grid;
+}
+
+div.checklistItem {
     font-weight: normal;
-    line-height: 2em;
+    margin: 2px 2px 2px 5px;
+    min-width: 100px;
+    max-width: 160px;
+    white-space: nowrap
+    
+}
+div.checklistItem input {
+	margin-right: 4px;
 }
 
 /* Statistics dashboard */
@@ -7621,6 +7632,7 @@ a.currentSet {
 /* "New" ca_object_representations_bundle */
 .mediaUploadContainer {
 	width:700px;
+	margin-top: 14px;
 }
 
 .mediaUploadInfoArea {
@@ -7650,7 +7662,6 @@ a.currentSet {
 	display: block;
 	width: 120px;
 	height: 120px;
-	margin-top: 14px;
 }
 
 .mediaUploadAreaMessage {
@@ -7729,4 +7740,15 @@ div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
 
 p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 	cursor: help;
+}
+
+.bundleLabelError code, .notification-error-box code {
+    font-family: monospace, serif;
+    font-size: 1em;
+    padding: 2px;
+    margin: 1px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
 }
