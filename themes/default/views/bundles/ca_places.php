@@ -60,19 +60,23 @@
 	$va_lookup_params = array(
 		'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0
+		'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
+		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 	);
 
 	$count = $this->getVar('relationship_count');
-	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
 	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
 	
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+	if (!RequestHTTP::isAjax()) {
+		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	
+		if ($vb_batch) {
+			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+		} else {
+			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+		}
+		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	
 	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
@@ -82,11 +86,12 @@
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";	
-	if(sizeof($this->getVar('initialValues'))) {
+	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
-	}
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
+	
+		if(!$vb_read_only) {
+			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 

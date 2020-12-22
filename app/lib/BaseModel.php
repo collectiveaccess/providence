@@ -119,7 +119,6 @@ require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/MediaContentLocationIndexer.php");
-require_once(__CA_LIB_DIR__.'/Media/Remote/Base.php');
 
 /**
  * Base class for all database table classes. Implements database insert/update/delete
@@ -1240,7 +1239,7 @@ class BaseModel extends BaseObject {
 		", array($va_ids));
 		
 		$va_vals = array();
-		$vs_single_fld = (sizeof($va_fld_list) == 1) ? $va_fld_list[0] : null;
+		$vs_single_fld = (sizeof($va_fld_list) == 1) ? str_replace('`', '', $va_fld_list[0]) : null;
 		while($qr_res->nextRow()) {
 			if ($vs_single_fld) {
 				$va_vals[(int)$qr_res->get($vs_pk)] = $qr_res->get($vs_single_fld);
@@ -3561,6 +3560,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$va_media_info = $this->get($ps_field, array('returnWithStructure' => true));
 		if (!is_array($va_media_info) || !is_array($va_media_info = array_shift($va_media_info))) { return null; }
 		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
+		
 		$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($vi)) { return null; }
 		if (is_array($vi["mirrors"])) {
@@ -3580,6 +3587,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function getMediaMirrorStatus($ps_field, $ps_version, $mirror="") {
 		$va_media_info = $this->get($ps_field, array('returnWithStructure' => true));
 		if (!is_array($va_media_info) || !is_array($va_media_info = array_shift($va_media_info))) { return null; }
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
 		
 		$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($vi)) {
@@ -3604,6 +3619,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		
 		$va_media_info = $this->get($ps_field, array('returnWithStructure' => true));
 		if (!is_array($va_media_info) || !is_array($va_media_info = array_shift($va_media_info))) { return null; }
+
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
 		
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) { return null; }
@@ -3677,6 +3699,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function getMediaUrl($ps_field, $ps_version, $pn_page=1, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
 		if (!is_array($va_media_info)) { return null; }
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
 
 		#
 		# Use icon
@@ -3748,6 +3777,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function getMediaPath($ps_field, $ps_version, $pn_page=1) {
 		$va_media_info = $this->getMediaInfo($ps_field);
 		if (!is_array($va_media_info)) { return null; }
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
 
 		#
 		# Use icon
@@ -3800,6 +3836,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function getMediaTag($ps_field, $ps_version, $pa_options=null) {
         if(!$pa_options) { $pa_options = []; }
 		if (!is_array($va_media_info = $this->getMediaInfo($ps_field))) { return null; }
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
 		if (!is_array($va_media_info[$ps_version])) { return null; }
 
         if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
@@ -3854,6 +3898,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function &getMediaInfo($ps_field, $ps_version=null, $ps_property=null) {
 		$va_media_info = self::get($ps_field, array('returnWithStructure' => true, 'USE_MEDIA_FIELD_VALUES' => true));
 		if (!is_array($va_media_info) || !is_array($va_media_info = array_shift($va_media_info))) { return null; }
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
 		
 		#
 		# Use icon
@@ -3917,6 +3968,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 */
 	public function getMediaInputTypeForVersion($ps_field, $ps_version) {
 		if ($va_media_info = $this->getMediaInfo($ps_field)) {
+			#
+			# Was this version skipped?
+			#
+			if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+				$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+			}
+		
 			$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 			if($vs_media_type = $o_media_proc_settings->canAccept($va_media_info["INPUT"]["MIMETYPE"])) {
 				$va_media_type_info = $o_media_proc_settings->getMediaTypeInfo($vs_media_type);
@@ -4237,22 +4295,38 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
 				$vb_is_fetched_file = false;
 
-				if($vb_allow_fetching_of_urls && ($o_remote = CA\Media\Remote\Base::getPluginInstance($this->_SET_FILES[$ps_field]['tmp_name']))) {
-					$vs_url = $this->_SET_FILES[$ps_field]['tmp_name'];
-					$vs_tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
+				$vs_url = $this->_SET_FILES[$ps_field]['tmp_name'];
+				$vs_url_fetched_original_url = $vs_url_fetched_from = $vn_url_fetched_on = $vs_url_fetched_by = null;
+				
+				if(
+					$vb_allow_fetching_of_urls && 
+					isUrl($vs_url) &&
+					($media_url = new CA\MediaUrl())
+				) {
+					$vs_tmp_file = null;
 					try {
-						$o_remote->downloadMediaForProcessing($vs_url, $vs_tmp_file);
-						$this->_SET_FILES[$ps_field]['original_filename'] = $o_remote->getOriginalFilename($vs_url);
+						$r = $media_url->fetch($vs_url);
+						if (is_array($r)) {
+							$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							$vs_tmp_file = $r['file'];
+						} else {
+							$this->postError(1600, _t('Could not download media'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);	
+							return false;
+						}
+						
+						$vs_url_fetched_original_url = $r['originalUrl'];
+						$vs_url_fetched_from = $r['url'];
+						$vs_url_fetched_by = $r['plugin'];
+						
+						$vn_url_fetched_on = time();
+						
+						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
+						$vb_is_fetched_file = true;
 					} catch(Exception $e) {
 						$this->postError(1600, $e->getMessage(), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 						set_time_limit($vn_max_execution_time);
 						return false;
 					}
-
-					$vs_url_fetched_from = $vs_url;
-					$vn_url_fetched_on = time();
-					$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
-					$vb_is_fetched_file = true;
 				}
 			
 				// is it server-side stored user media?
@@ -4341,25 +4415,27 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				
 					// preserve center setting from any existing media
 					$va_center = null;
-					if (is_array($va_tmp = $this->getMediaInfo($ps_field))) { $va_center = caGetOption('_CENTER', $va_tmp, array()); }
-					$media_desc = array(
+					if (is_array($va_tmp = $this->getMediaInfo($ps_field))) { $va_center = caGetOption('_CENTER', $va_tmp, []); }
+					$media_desc = [
 						"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
 						"_CENTER" => $va_center,
-						"_SCALE" => caGetOption('_SCALE', $va_tmp, array()),
-						"_SCALE_UNITS" => caGetOption('_SCALE_UNITS', $va_tmp, array()),
+						"_SCALE" => caGetOption('_SCALE', $va_tmp, []),
+						"_SCALE_UNITS" => caGetOption('_SCALE_UNITS', $va_tmp, []),
 						"_START_AT_TIME" => caGetOption('startAtTime', $pa_options, null),
 						"_START_AT_PAGE" => caGetOption('startAtPage', $pa_options, null),
-						"INPUT" => array(
+						"INPUT" => [
 							"MIMETYPE" => $m->get("mimetype"),
 							"WIDTH" => $m->get("width"),
 							"HEIGHT" => $m->get("height"),
 							"MD5" => md5_file($this->_SET_FILES[$ps_field]['tmp_name']),
 							"FILESIZE" => filesize($this->_SET_FILES[$ps_field]['tmp_name']),
+							"FETCHED_BY" => $vs_url_fetched_by,
+							"FETCHED_ORIGINAL_URL" => $vs_url_fetched_original_url,
 							"FETCHED_FROM" => $vs_url_fetched_from,
 							"FETCHED_ON" => $vn_url_fetched_on,
 							"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$ps_field]['tmp_name'])
-						 )
-					);
+						 ]
+					];
 				
 					if (isset($this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY']) && is_array($this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY'])) {
 						$media_desc['TRANSFORMATION_HISTORY'] = $this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY'];
@@ -4441,11 +4517,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						}
 					
 						$queue 				= $va_default_queue_settings['QUEUE'];
-						$queue_threshold 	= isset($version_info[$v]['QUEUE_WHEN_FILE_LARGER_THAN']) ? intval($version_info[$v]['QUEUE_WHEN_FILE_LARGER_THAN']) : (int)$va_default_queue_settings['QUEUE_WHEN_FILE_LARGER_THAN'];
+						$queue_threshold 	= caGetOption('QUEUE_WHEN_FILE_LARGER_THAN', $version_info[$v], (int)$va_default_queue_settings['QUEUE_WHEN_FILE_LARGER_THAN']);
 						$rule 				= isset($version_info[$v]['RULE']) ? $version_info[$v]['RULE'] : '';
 						$volume 			= isset($version_info[$v]['VOLUME']) ? $version_info[$v]['VOLUME'] : '';
 
 						$basis				= isset($version_info[$v]['BASIS']) ? $version_info[$v]['BASIS'] : '';
+						
+						$skip_threshold 	= caGetOption('SKIP_WHEN_FILE_LARGER_THAN', $version_info[$v], null);
 
 						if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
 							if (!isset($va_media_objects[$basis])) {
@@ -4523,7 +4601,26 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								return false;
 							}
 
-							if ((bool)$version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"]) { 
+							$media_desc[$v] = array(
+								"VOLUME" => $volume,
+								"MIMETYPE" => $output_mimetype,
+								"WIDTH" => $m->get("width"),
+								"HEIGHT" => $m->get("height"),
+								"PROPERTIES" => $m->getProperties(),
+								"EXTENSION" => $ext,
+							);
+						
+							if (
+								(!is_null($skip_threshold) && ((int)$skip_threshold < (int)$media_desc["INPUT"]["FILESIZE"]))
+								||
+								(is_null($skip_threshold) && isset($version_info[$v]['REPLACE_WITH_VERSION']) && in_array($version_info[$v]['REPLACE_WITH_VERSION'], $va_versions, true))
+							) {
+								$media_desc[$v]['SKIP'] = 1;
+								
+								$alt_version_list = array_filter(array_keys($media_desc), function($x) use ($v) { return ($x !== $v); });
+								$replace_with_version = caGetOption('REPLACE_WITH_VERSION', $version_info[$v], array_pop($alt_version_list), ['validValues' => $va_versions]);
+								$media_desc[$v]['REPLACE_WITH_VERSION'] = $replace_with_version ? $replace_with_version : $va_versions[0];
+							} else if ((bool)$version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"]) { 
 								$filepath = $this->_SET_FILES[$ps_field]['tmp_name'];
 							
 								if ($pa_options['delete_old_media']) {
@@ -4533,20 +4630,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									);
 								}
 														
-								$media_desc[$v] = array(
-									"VOLUME" => $volume,
-									"MIMETYPE" => $output_mimetype,
-									"WIDTH" => $m->get("width"),
-									"HEIGHT" => $m->get("height"),
-									"PROPERTIES" => $m->getProperties(),
+								$media_desc[$v] = array_merge($media_desc[$v], [
 									"EXTERNAL_URL" => $media_desc['INPUT']['FETCHED_FROM'],
 									"FILENAME" => null,
 									"HASH" => null,
 									"MAGIC" => null,
-									"EXTENSION" => $ext,
 									"MD5" => md5_file($filepath),
 									"FILE_LAST_MODIFIED" => filemtime($filepath)
-								);
+								]);
 							} else {
 								$magic = rand(0,99999);
 								$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext;
@@ -4620,19 +4711,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									}
 								}
 							
-								$media_desc[$v] = array(
-									"VOLUME" => $volume,
-									"MIMETYPE" => $output_mimetype,
-									"WIDTH" => $m->get("width"),
-									"HEIGHT" => $m->get("height"),
-									"PROPERTIES" => $m->getProperties(),
+								$media_desc[$v] = array_merge($media_desc[$v], [
 									"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
 									"HASH" => $dirhash,
 									"MAGIC" => $magic,
-									"EXTENSION" => $ext,
 									"MD5" => md5_file($filepath),
 									"FILE_LAST_MODIFIED" => filemtime($filepath)
-								);
+								]);
 							}
 						} else {
 							$m->set("version", $v);
@@ -6264,7 +6349,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			}
 			
 			if ($t = Datamodel::getInstance($t_attr->get('table_num'), true)) {
-				$va_subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
+				$va_subject_config = null;
 				$vs_subject_tablename = $t->tableName();
 			}
 		} else {
@@ -6296,7 +6381,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					}
 				}
 				
-				if(is_array($va_subject_config['RELATED_TABLES'])) {
+				if(is_array($va_subject_config['RELATED_TABLES']) && !$vb_is_metadata && !$vb_is_metadata_value) {
 					$o_db = $this->getDb();
 					if (!isset($o_db) || !$o_db) {
 						$o_db = new Db();
@@ -7842,11 +7927,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		
 		$va_child_row_ids = array();
 		$va_level_row_ids = $pa_row_ids;
+		
+		$delete_sql = ($t_instance->hasField('deleted')) ? 'deleted = 0 AND ' : '';	// filter deleted
 		do {
 			$qr_level = $o_db->query("
 				SELECT {$vs_table_pk}
 				FROM {$vs_table_name}
 				WHERE
+					{$delete_sql}
 					{$vs_parent_id_fld} IN (?)
 			", array($va_level_row_ids));
 			$va_level_row_ids = $qr_level->getAllFieldValues($vs_table_pk);
@@ -8284,7 +8372,8 @@ $pa_options["display_form_field_tips"] = true;
 									'readonly' => $pa_options['readonly'],
 									'restrictTypeListForTable' => $this->tableName(),
 									'limitToItemsWithID' => $va_limit_list ? $va_limit_list : null,
-									'checkAccess' => $pa_options['checkAccess']
+									'checkAccess' => $pa_options['checkAccess'],
+									'width' => $pa_options['width']
 								)
 							);
 							
@@ -8529,7 +8618,7 @@ $pa_options["display_form_field_tips"] = true;
 								// if 'LIST' is set try to stock over choice list with the contents of the list
 								if (isset($va_attr['LIST']) && $va_attr['LIST']) {
 									// NOTE: "raw" field value (value passed into method, before the model default value is applied) is used so as to allow the list default to be used if needed
-									$vs_element = ca_lists::getListAsHTMLFormElement($va_attr['LIST'], $pa_options["name"].$vs_multiple_name_extension, array('class' => $pa_options['classname'], 'id' => $pa_options['id']), array('key' => 'item_value', 'value' => $vm_raw_field_value, 'nullOption' => $pa_options['nullOption'], 'readonly' => $pa_options['readonly'], 'checkAccess' => $pa_options['checkAccess']));
+									$vs_element = ca_lists::getListAsHTMLFormElement($va_attr['LIST'], $pa_options["name"].$vs_multiple_name_extension, array('class' => $pa_options['classname'], 'id' => $pa_options['id']), array('key' => 'item_value', 'value' => $vm_raw_field_value, 'nullOption' => $pa_options['nullOption'], 'readonly' => $pa_options['readonly'], 'checkAccess' => $pa_options['checkAccess'], 'table' => $this->tableName(), 'type' => method_exists($this, 'getTypeCode') ? $this->getTypeCode() : null));
 								}
 								if (!$vs_element && (isset($va_attr["BOUNDS_CHOICE_LIST"]) && is_array($va_attr["BOUNDS_CHOICE_LIST"]))) {
 	
@@ -9045,6 +9134,10 @@ $pa_options["display_form_field_tips"] = true;
 
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
 			// is self relation
+			if ($pn_rel_id === $this->getPrimaryKey()) {
+				$this->postError(1100, _t('Cannot relate a record to itself'), 'BaseModel->addRelationship', $va_rel_info['related_table_name']);
+				return false;
+			}	
 			
 			// is self relationship
 			if ($ps_direction == 'rtol') {
@@ -9184,6 +9277,10 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
 			// is self relation
+			if ($pn_rel_id === $this->getPrimaryKey()) {
+				$this->postError(1100, _t('Cannot relate a record to itself'), 'BaseModel->editRelationship', $va_rel_info['related_table_name']);
+				return false;
+			}
 			if ($t_item_rel->load($pn_relation_id)) {
 				
 				if ($ps_direction == 'rtol') {

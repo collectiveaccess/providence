@@ -148,6 +148,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'reference-black'	=> 'W',
 			'reference-white'	=> 'W',
 			'no_upsampling'		=> 'W',
+			'exif_orientation' 	=> 'R',
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
@@ -474,6 +475,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->properties["bitdepth"] = $this->handle->getimagedepth();
 				$this->properties["resolution"] = $this->handle->getimageresolution();
 				$this->properties["colorspace"] = $this->_getColorspaceAsString($this->handle->getimagecolorspace());
+				
+				$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [6, 8], true)) ? $orientation : null;
 
 				// force all images to true color (takes care of GIF transparency for one thing...)
 				$this->handle->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
@@ -850,6 +853,29 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				return false;
 			} 
 			
+			// If the EXIF Orientation tag is set we must remove it from derivatives, as 
+			// they're written out rotated into the correct orientation. The continued presence of
+			// the tag will result in consumers of the image rotating it again into an 
+			// incorrect orientation (very confusing...). Gmagick provides for either passing
+			// through all metadata or stripping all metadata, including color profiles. There's
+			// no way to selectively remove data, or even just preserve color profiles. Thus,
+			// we are left with two options:
+			//
+			// 1. Kill all metadata using Gmagick::stripImage(). This will address orientation issues
+			//    but also remove color profiles. Many users won't notice the difference. Those who do
+			//    will be very unhappy.
+			//
+			// 2. Use Exiftool to rewrite the image without the EXIF Orientation tag. This works 
+			//    well, but is relatively slow and requires ExifTool to be installed, which is often 
+			//    not the case.
+			//
+			// So... what we do is use stripImage() when EXIF orientation is set and ExifTool is not
+			// installed. stripImage() must be called before the image is written. If ExifTool is 
+			// present and orientation is set then we call it later, after the image is written.
+			$use_exif_tool_to_strip = (bool)$this->opo_config->get('dont_use_exiftool_to_strip_exif_orientation_tags');
+			if (($this->properties['exif_orientation'] > 0) && (!caExifToolInstalled() || $use_exif_tool_to_strip)) {
+				$this->handle->stripImage();
+			}
 			$this->handle->setimageformat($this->magick_names[$mimetype]);
 			# set quality
 			if (($this->properties["quality"]) && ($this->properties["mimetype"] != "image/tiff")){ 
@@ -916,6 +942,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 					$this->postError(1610, _t("Error writing file"), "WLPlugGmagick->write()");
 					return false;
+				} 
+				
+				// Call ExifTool to strip EXIF orientation tag from written file (see above for 
+				// a discussion of the problem). caExtractRemoveOrientationTagWithExifTool() tests
+				// for presence of ExifTool so we don't bother here. We don't care if it succeeds of
+				// not in any event as there's nothing else we can do.
+				if (($this->properties['exif_orientation'] > 0) && !$use_exif_tool_to_strip) {
+					caExtractRemoveOrientationTagWithExifTool($ps_filepath.".".$ext);
 				}
 			} catch (Exception $e) {
 				$this->postError(1610, _t("Error writing file: %1", $e->getMessage()), "WLPlugGmagick->write()");
@@ -944,27 +978,34 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 
 		$output_file_prefix = tempnam($tmp_dir, 'caMultipagePreview');
-
+		@unlink($output_file_prefix);
+		
 		$files = [];
 		$i = 1;
 		
 		$this->handle->setimageindex(0);
+		$num_previews = 0;
 		do {
 			if ($i > 1) { $this->handle->nextImage(); }
-			
-			$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
-			$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
-			
-			$i++;
+			$num_previews++;
 		} while($this->handle->hasnextimage());
 		
 		$this->handle->setimageindex(0);
 		
-		@unlink($output_file_prefix);
-		
-		if(sizeof($files) === 1) { return false; }
-		return $files;
-
+		if ($num_previews > 1) {
+			$i = 0;
+			do {
+				if ($i > 1) { $this->handle->nextImage(); }
+			
+				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
+				$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+			
+				$i++;
+			} while($this->handle->hasnextimage());
+			$this->handle->setimageindex(0);
+			return $files;
+		}
+		return false;
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
@@ -1140,15 +1181,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function cleanup() {
-		$this->destruct();
+		$this->__destruct();
 	}
 	# ------------------------------------------------
-	public function destruct() {
+	public function __destruct() {
 		if(is_object($this->handle)) { $this->handle->destroy(); }
 		if(is_object($this->ohandle)) { $this->ohandle->destroy(); }
-		
 		if(is_array($this->tmpfiles_to_delete)) {
-		    foreach($this->tmpfiles_to_delete as $f) {
+		    foreach(array_keys($this->tmpfiles_to_delete) as $f) {
 		        @unlink($f);
 		    }
 		}
@@ -1171,6 +1211,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugGmagick->read()");
 			return false;
 		}
+        $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
+        $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
 		caExec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugGmagick->read()");
@@ -1181,8 +1223,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return false;
 		}
 
-        $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
-        $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
 		return $vs_tmp_name.'.tiff';
 	}
 	# ----------------------------------------------------------------------
@@ -1320,6 +1360,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$rotation = -90;
 					break;
 			}
+			
+			$this->handle->rotateImage('#FFFFFF', $rotation);
 						
 			if (($rotation) && (abs($rotation) === 90)) {
 				$w = $this->properties["width"]; $h = $this->properties["height"];
@@ -1327,7 +1369,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->properties["width"] = $h;
 				$this->properties["height"] = $w;
 					
-				//unset($this->metadata['EXIF']['IFD0']['Orientation']);
+				unset($this->metadata['EXIF']['IFD0']['Orientation']);
 			}
 			return true;
 		}

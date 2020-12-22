@@ -116,7 +116,9 @@ abstract class Base {
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-				throw new IrrelevantLogEntry('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+				if ($this->getModelInstance()->tableName() !== 'ca_users') {
+					throw new IrrelevantLogEntry('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+				}
 			}
 
 			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing
@@ -482,7 +484,9 @@ abstract class Base {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
 					} else {
-						if (!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id', 'home_location_id'])) {	// let auto-resolved fields fall through
+						if (($vs_field === 'user_id') && ($AUTH_CURRENT_USER_ID > 0)) {
+							$vm_val = $AUTH_CURRENT_USER_ID;
+						} elseif (!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id', 'home_location_id'])) {	// let auto-resolved fields fall through
 							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system for %3: %4", $vs_field, $va_snapshot[$vs_field.'_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
 						}
 					}

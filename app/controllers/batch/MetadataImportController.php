@@ -247,15 +247,23 @@
  		 * 
  		 */
  		public function Load() {
- 			$google_url = caValidateGoogleSheetsUrl($this->request->getParameter('google_drive_url', pString));
- 			if (!$google_url) {
+ 			if(!($google_url = trim($this->request->getParameter('google_drive_url', pString)))) {
+ 				$this->notification->addNotification(_t('No url specified'), __NOTIFICATION_TYPE_ERROR__);
+				return $this->Index();
+ 			}
+ 			$google_file = new \CA\MediaUrl();
+ 			if (!$google_file->validate($google_url, ['format' => 'xlsx', 'limit' => ['GoogleDrive']])) {
  				$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
  				return $this->Index();
  			}
  			
  			try {
- 				$tmp_file = caFetchFileFromUrl($google_url);
- 			} catch (ApplicationException $e) {
+ 				$parsed_data = $google_file->fetch($google_url, ['format' => 'xlsx', 'limit' => ['GoogleDrive']]);
+ 				if (!is_array($parsed_data) || !isset($parsed_data['file']) || !($tmp_file = $parsed_data['file'])) {
+ 					$this->notification->addNotification(_t('Could not download data'), __NOTIFICATION_TYPE_ERROR__);
+					return $this->Index();
+ 				}
+ 			} catch (UrlFetchException $e) {
  				$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
 				return $this->Index();
  			}

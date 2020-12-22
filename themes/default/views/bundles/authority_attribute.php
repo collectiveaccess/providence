@@ -34,10 +34,13 @@ $pa_options 				= $this->getVar('options');
 $va_settings 				= $this->getVar('settings');
 $pa_element_info 			= $this->getVar('element_info');
 $vs_class					= $this->getVar('class');
+$for_search					= $this->getVar('forSearch');
 
+if (!$for_search) {
 ?>
 <div id='<?php print $vs_field_name_prefix; ?>_display{n}' style='float: right;'> </div>
 <?php
+}
 print caHTMLTextInput(
 	"{$vs_field_name_prefix}_autocomplete{n}",
 	array(
@@ -58,13 +61,16 @@ print caHTMLHiddenInput(
 );
 ?>
 
+<?php if(!$for_search) { ?>
 <div id='caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n}' class='caRelationQuickAddPanel'>
 	<div id='caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>ContentArea_{n}'>
 		<div class='dialogHeader'><?php print _t('Quick Add'); ?></div>
 	</div>
 </div>
+<?php } ?>
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
+<?php if(!$for_search) { ?>
 		if (caUI.initPanel) {
 			var caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n};
 			caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n} = caUI.initPanel({
@@ -83,7 +89,7 @@ print caHTMLHiddenInput(
 				}
 			});
 		}
-
+<?php } ?>
 		var v = jQuery('#<?php print $vs_field_name_prefix; ?>_autocomplete{n}').val();
 		v=v.replace(/(<\/?[^>]+>)/gi, function(m, p1, offset, val) {
 			jQuery('#<?php print $vs_field_name_prefix; ?>_display{n}').html(p1);
@@ -108,9 +114,10 @@ print caHTMLHiddenInput(
 				});
 			},
 			select: function( event, ui ) {
+<?php if(!$for_search) { ?>
 				var quickaddPanel = caRelationQuickAddPanel<?php print $vs_field_name_prefix; ?>_{n};
 				var quickaddUrl = '<?php print $vs_quickadd_url; ?>';
-
+				
 				if(!parseInt(ui.item.id) || (ui.item.id == 0)) {
 					var panelUrl = quickaddUrl;
 					//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
@@ -129,13 +136,18 @@ print caHTMLHiddenInput(
 						return;
 					}
 				}
-
+				
 				jQuery('#<?php print $vs_field_name_prefix; ?>_{n}').val(ui.item.id);
 				jQuery('#<?php print $vs_field_name_prefix; ?>_autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+<?php } else { ?>		
+				var label = jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, ''));
+				jQuery('#<?php print $vs_field_name_prefix; ?>_{n}').val(label);
+				jQuery('#<?php print $vs_field_name_prefix; ?>_autocomplete{n}').val(label);
+<?php } ?>				
 				event.preventDefault();
 			},
 			change: function( event, ui ) {
-				//If nothing has been selected remove all content from  text input
+				// If nothing has been selected remove all content from  text input
 				if(!jQuery('#<?php print $vs_field_name_prefix; ?>_{n}').val()) {
 					jQuery('#<?php print $vs_field_name_prefix; ?>_autocomplete{n}').val('');
 				}

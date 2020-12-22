@@ -783,14 +783,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
                     $va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
                     array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
 
-					if ($vs_mode == 'Constant') {
+					if ($vs_mode === 'constant') {
 						if(strlen($vs_source)<1) { // ignore constant rows without value
 							continue(2);
 						}
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
 
-					if ($vs_mode == 'Variable') {
+					if ($vs_mode === 'variable') {
 						if(preg_match("/^[A-Za-z0-9\_\-]+$/",$vs_element)) {
 							$vs_element = "_VARIABLE_:{$vs_element}";
 						} else {
@@ -1666,6 +1666,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			throw new ApplicationException(_t("Record with ID %1 does not exist in table %2", $pn_record_id, $pn_table_num));
 		}
 
+		$vb_strip_newlines = caGetOption('stripNewlines',$pa_options, $t_exporter_item->getSetting('stripNewlines'));
+
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
 		if(!$vb_ignore_context && ($vs_context = $t_exporter_item->getSetting('context'))) {
@@ -2214,6 +2216,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			// if returned value is null then we skip the item
 			$this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => &$va_item));
+	
+			if($vb_strip_newlines) { $va_item['text'] = preg_replace("![\n\r]+!", '', $va_item['text']); }
 		}
 
 		$o_log->logInfo(_t("Extracted data for this mapping is as follows:"));

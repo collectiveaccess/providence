@@ -958,11 +958,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
 								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
 	
-								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['.caGetBlankLabelText().']')) {
+								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['.caGetBlankLabelText($pn_subject_tablenum).']')) {
 									$t_ap = Datamodel::getInstanceByTableNum($va_access_point_info['table_num'], true);
 									if (is_a($t_ap, 'BaseLabel')) {	// labels have the literal text "[blank]" indexed to "blank" to indicate blank-ness 
 										$vb_is_blank_search = false;
-										$vs_term = caGetBlankLabelText();
+										$vs_term = caGetBlankLabelText($pn_subject_tablenum);
 									} else {
 										$vb_is_blank_search = true;
 										$vs_table_num = $va_access_point_info['table_num'];
@@ -1418,8 +1418,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									}
 								}
 								
+								$vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num);
 								$vn_intrinsic_type = $t_table->getFieldInfo($vs_intrinsic_field_name, 'FIELD_TYPE');
-								if (($vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num)) && ($vn_intrinsic_type == FT_BIT)) {
+								
+								if ($vs_intrinsic_field_name && ($vn_intrinsic_type == FT_BIT)) {
 									$vb_ft_bit_optimization = true;
 								} elseif($vn_intrinsic_type == FT_HISTORIC_DATERANGE) {
 									$vb_all_numbers = true;
@@ -1620,7 +1622,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											break;
 									}
 
-									$pa_direct_sql_query_params = null;
+									$pa_direct_sql_query_params = array();
 								}
 							}
 						}
@@ -2187,10 +2189,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options, true)) {
 			$t_content = Datamodel::getInstanceByTableNum($pn_content_tablenum, true);
-			if (method_exists($t_content, "getIDNoPlugInInstance") && ($o_idno = $t_content->getIDNoPlugInInstance())) {
-				$va_values = $o_idno->getIndexValues($ps_content);
-				$va_words += $va_values;
+			
+			$va_values = [];
+			if ($delimiters = caGetOption("IDNO_DELIMITERS", $pa_options, false)) {
+				if ($delimiters && !is_array($delimiters)) { $delimiters = [$delimiters]; }
+				if ($delimiters) {
+					$va_values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $delimiters).')!', $ps_content));
+				} 
 			}
+			if (!sizeof($va_values) && method_exists($t_content, "getIDNoPlugInInstance") && ($o_idno = $t_content->getIDNoPlugInInstance())) {
+				$va_values = $o_idno->getIndexValues($ps_content);
+			}
+			$va_words += $va_values;
 		}
 		
 		$va_literal_content = caGetOption("literalContent", $pa_options, null);

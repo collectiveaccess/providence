@@ -315,7 +315,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 * Returns base path to ImageMagick installation
 	 */
 	public function getBasePath() {
-		return caMediaPluginImageMagickInstalled();
+		return pathInfo(caMediaPluginImageMagickInstalled(), PATHINFO_DIRNAME);
 	}
 	# ------------------------------------------------
 	# Tell WebLib what kinds of media this plug-in supports

@@ -496,6 +496,7 @@ class Installer {
 		foreach($va_locales as $vs_code => $va_locale) {
 			$this->opa_locales[$vs_code] = $va_locale['locale_id'];
 		}
+		global $g_ui_locale, $g_ui_locale_id;
 		if($this->ops_base_name) {
 			$va_locales = [];
 			foreach($this->opo_profile->locales->children() as $vo_locale) {				
@@ -512,18 +513,17 @@ class Installer {
 		} else {
 			$va_locales = $this->opo_profile->locales->children();
 		}
-
 		foreach($va_locales as $vo_locale) {
 			$t_locale->clear();
 			$vs_language = self::getAttribute($vo_locale, "lang");
 			$vs_dialect = self::getAttribute($vo_locale, "dialect");
 			$vs_country = self::getAttribute($vo_locale, "country");
 			$vb_dont_use_for_cataloguing = self::getAttribute($vo_locale, "dontUseForCataloguing");
+			$vs_locale_code = $vs_dialect ? $vs_language."_".$vs_country.'_'.$vs_dialect : $vs_language."_".$vs_country;
 
-			if(isset($this->opa_locales[$vs_language."_".$vs_country]) && ($vn_locale_id = $this->opa_locales[$vs_language."_".$vs_country])) { // don't insert duplicate locales
+			if(isset($this->opa_locales[$vs_locale_code]) && ($vn_locale_id = $this->opa_locales[$vs_locale_code])) { // don't insert duplicate locales
 				$t_locale->load($vn_locale_id); // load locale so that we can 'overwrite' any existing attributes/fields
 			}
-
 			$t_locale->set('name', (string)$vo_locale);
 			$t_locale->set('country', $vs_country);
 			$t_locale->set('language', $vs_language);
@@ -535,10 +535,12 @@ class Installer {
 			($t_locale->getPrimaryKey() > 0) ? $t_locale->update() : $t_locale->insert();
 
 			if ($t_locale->numErrors()) {
-				$this->addError("There was an error while inserting locale {$vs_language}_{$vs_country}: ".join(" ",$t_locale->getErrors()));
+				$this->addError("There was an error while inserting locale {$vs_locale_code}: ".join(" ",$t_locale->getErrors()));
 			}
-
-			$this->opa_locales[$vs_language."_".$vs_country] = $t_locale->getPrimaryKey();
+			if ($vs_locale_code === $g_ui_locale && $t_locale->getPrimaryKey()){
+				$g_ui_locale_id = $t_locale->getPrimaryKey();
+			}
+			$this->opa_locales[$vs_locale_code] = $t_locale->getPrimaryKey();
 		}
 
 		$va_locales = $t_locale->getAppConfig()->getList('locale_defaults');
@@ -547,6 +549,10 @@ class Installer {
 		if(!$vn_locale_id) {
 			throw new Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
 		}
+		// Ensure the default locale comes first.
+		uksort($this->opa_locales, function($a) use ( $vn_locale_id ) {
+			return $a === $vn_locale_id;
+		});
 
 		return true;
 	}
@@ -2590,6 +2596,22 @@ class Installer {
                 }
 
 				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)) { // settings need at least name and value
+					$vs_datatype = (int)$pt_instance ?$pt_instance->get('datatype') : null;
+					if ($vs_setting_name === 'restrictToTypes' && $t_authority_instance = AuthorityAttributeValue::elementTypeToInstance($vs_datatype)){
+						if ($t_authority_instance instanceof BaseModelWithAttributes && is_string($vs_value)){
+							$vn_type_id = $t_authority_instance->getTypeIDForCode($vs_value);
+							if ($vn_type_id){
+								$vs_value = $vn_type_id;
+							} else {
+								$this->addError(
+									_t('Failed to lookup type id for type restriction %1 in element %2 as could not retrieve type record. ',
+										$vs_value,
+										$pt_instance->get('element_code')
+									)
+								);
+							}
+						}
+					}
 					if ($vs_locale) { // settings with locale (those can't repeat)
 						$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
 					} else {

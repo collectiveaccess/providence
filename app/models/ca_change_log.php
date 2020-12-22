@@ -345,10 +345,28 @@ class ca_change_log extends BaseModel {
 				ORDER BY cl.log_id
 				{$vs_limit_sql}
 			", [$pn_from_datetime]);
+		}  elseif (caGetOption('includeSubjectEntries', $pa_options, false)) {		// pull based upon log_id with subject log entries included
+			if(sizeof($va_only_tables)) {
+				$vs_table_filter_sql = 'AND (cl.logged_table_num IN (' . join(',', $va_only_tables) . ') OR clsub.subject_table_num IN (' . join(',', $va_only_tables) . '))';
+			} elseif(sizeof($va_ignore_tables)) {
+				$vs_table_filter_sql = 'AND (cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ') OR clsub.subject_table_num NOT IN (' . join(',', $va_ignore_tables) . '))';
+			}
+			$qr_results = $o_db->query("
+				SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls, ca_change_log_subjects clsub
+				WHERE cl.log_id = cls.log_id AND cl.log_id>=? AND cl.log_id = clsub.log_id
+				{$vs_table_filter_sql}
+				ORDER BY cl.log_id
+				{$vs_limit_sql}
+			", [$pn_from]);
 		} else {							// pull based upon log_id
+			if(sizeof($va_only_tables)) {
+				$vs_table_filter_sql = 'AND cl.logged_table_num IN (' . join(',', $va_only_tables) . ')';
+			} elseif(sizeof($va_ignore_tables)) {
+				$vs_table_filter_sql = 'AND cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
+			}
 			$qr_results = $o_db->query("
 				SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
-				WHERE cl.log_id = cls.log_id AND cl.log_id >= ?
+				WHERE cl.log_id = cls.log_id AND cl.log_id>=?
 				{$vs_table_filter_sql}
 				ORDER BY cl.log_id
 				{$vs_limit_sql}

@@ -13,7 +13,7 @@ create table ca_commerce_order_items_x_object_representations
    relation_id                    int unsigned                   not null AUTO_INCREMENT,
    item_id                        int unsigned                   not null,
    representation_id              int unsigned                   not null,
-   rank                           int unsigned                   not null default 0,
+   `rank`                           int unsigned                   not null default 0,
    primary key (relation_id),
    constraint fk_ca_commerce_order_items_x_object_reps_item_id foreign key (item_id)
       references ca_commerce_order_items (item_id) on delete restrict on update restrict,

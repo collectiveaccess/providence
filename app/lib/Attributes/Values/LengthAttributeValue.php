@@ -38,7 +38,6 @@ define("__CA_ATTRIBUTE_VALUE_LENGTH__", 8);
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
-require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');	
 
 global $_ca_attribute_settings;
 
@@ -166,8 +165,8 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
         $this->ops_text_value = $this->_getValueAsText($pa_value_array, ['precision' => 4]);			
 
         // Trim off trailing zeros in quantity
-        $this->ops_text_value = preg_replace("!\.([1-9]*)[0]+([A-Za-z ]+)$!", ".$1$2", $this->ops_text_value);
-        $this->ops_text_value = preg_replace("!\.([A-Za-z ]+)$!", "$1", $this->ops_text_value);
+        $this->ops_text_value = preg_replace("!\\.([1-9]*)[0]+([A-Za-z\\.\"' ]+)$!", ".$1$2", $this->ops_text_value);
+        $this->ops_text_value = preg_replace("!\\.([A-Za-z\\.\"' ]+)$!", "$1", $this->ops_text_value);
         
         $this->opn_decimal_value = $pa_value_array['value_decimal1'];
     }

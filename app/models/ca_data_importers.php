@@ -345,6 +345,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				_t('none') => 'none',
 				_t('skip_on_idno') => 'skip_on_idno',
 				_t('merge_on_idno') => 'merge_on_idno',
+				_t('merge_on_idno_with_skip') => 'merge_on_idno_with_skip',
 				_t('merge_on_idno_with_replace') => 'merge_on_idno_with_replace',
 				_t('overwrite_on_idno') => 'overwrite_on_idno',
 				_t('skip_on_preferred_labels') => 'skip_on_preferred_labels',
@@ -353,7 +354,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				_t('overwrite_on_preferred_labels') => 'overwrite_on_preferred_labels',
 				_t('merge_on_idno_and_preferred_labels') => 'merge_on_idno_and_preferred_labels',
 				_t('merge_on_idno_and_preferred_labels_with_replace') => 'merge_on_idno_and_preferred_labels_with_replace',
-				_t('overwrite_on_idno_and_preferred_labels') => 'overwrite_on_idno_and_preferred_labels'
+				_t('overwrite_on_idno_and_preferred_labels') => 'overwrite_on_idno_and_preferred_labels',
+				_t('skip_on_id') => 'skip_on_id',
+				_t('merge_on_id') => 'merge_on_id',
+				_t('merge_on_id_with_skip') => 'merge_on_id_with_skip',
+				_t('merge_on_id_with_replace') => 'merge_on_id_with_replace',
+				_t('overwrite_on_id') => 'overwrite_on_id'
 			),
 			'label' => _t('Existing record policy'),
 			'description' => _t('Determines how existing records are checked for and handled by the import mapping.  Pending implementation.')
@@ -1517,25 +1523,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$vs_import_error_policy = 'ignore';
 		}
 		
+		
+		$existing_record_policy_setting_info = $t_mapping->getSettingInfo('existingRecordPolicy');
+		
 		if (!in_array(	
 			$vs_existing_record_policy = $t_mapping->getSetting('existingRecordPolicy'),
-			array(
-				'none', 'skip_on_idno', 'skip_on_preferred_labels',
-				'merge_on_idno', 'merge_on_preferred_labels', 'merge_on_idno_and_preferred_labels',
-				'merge_on_idno_with_replace', 'merge_on_preferred_labels_with_replace', 'merge_on_idno_and_preferred_labels_with_replace',
-			 	'overwrite_on_idno', 'overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels'
-			)
+			array_keys($existing_record_policy_setting_info['options'])
 		)) {
 			$vs_existing_record_policy = 'none';
 		}		
 		
 		
 		// Analyze mapping for figure out where type, idno, preferred label and other mandatory fields are coming from
-		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = $vn_list_mapping_list_id = null;
+		$vn_primary_key_mapping_item_id = $vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = $vn_list_mapping_list_id = null;
 		$va_preferred_label_mapping_ids = $va_nonpreferred_label_mapping_ids = array();
 		$va_mandatory_field_mapping_ids = array();
 		
 		$va_mandatory_fields = $t_subject->getMandatoryFields();
+		$vs_subject_primary_key = $t_subject->primaryKey();
 		
 		foreach($va_mapping_items as $vn_item_id => $va_item) {
 			$vs_destination = $va_item['destination'];
@@ -1570,6 +1575,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case "{$vs_subject_table}.{$vs_idno_fld}":
 					$vn_idno_mapping_item_id = $vn_item_id;
+					break;
+				case "{$vs_subject_table}.{$vs_subject_primary_key}":
+					$vn_primary_key_mapping_item_id = $vn_item_id;
 					break;
 				case 'ca_list_items.list_id':
 				    $vn_list_mapping_list_id = $vn_item_id;
@@ -1781,6 +1789,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vs_idno = "%";
 			}
 			
+			// Primary key mapping
+			$vn_mapped_primary_key_value = null;
+			if ($vn_primary_key_mapping_item_id) {
+				$vn_mapped_primary_key_value = ca_data_importers::getValueFromSource($va_mapping_items[$vn_primary_key_mapping_item_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment));
+			}
+			
 			$vb_idno_is_template = (bool)preg_match('![%]+!', $vs_idno);
 			
 			if (!$vb_idno_is_template) {
@@ -1833,10 +1847,63 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				} elseif ($vs_existing_record_policy != 'none') {
 					switch($vs_existing_record_policy) {
+						case 'merge_on_id':
+						case 'merge_on_id_with_replace':
+						case 'merge_on_id_with_skip':
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", 
+								[[$t_subject->primaryKey() => $vn_mapped_primary_key_value],
+								['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
+							);
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								$t_subject->load($va_ids[0]);
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+								break;
+							} else {
+								if($vs_existing_record_policy === 'merge_on_id_with_skip') {
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because existing record could not be matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+									$this->num_records_skipped++;
+									continue(2);	// skip 
+								} else {
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+								}
+							}
+							break;
+						case 'skip_on_id':
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", 
+								[[$t_subject->primaryKey() => $vn_mapped_primary_key_value],
+								['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
+							);
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+								$this->num_records_skipped++;
+								continue(2);	// skip because idno matched
+							}
+							break;
+						case 'overwrite_on_id':
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", 
+								[[$t_subject->primaryKey() => $vn_mapped_primary_key_value],
+								['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
+							);
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								$t_subject->load($va_ids[0]);
+								$t_subject->setMode(ACCESS_WRITE);
+								$t_subject->delete(true, array('hard' => true));
+								if ($t_subject->numErrors()) {
+									$this->logImportError(_t('[%1] Could not delete existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy), $va_log_import_error_opts);
+									// Don't stop?
+								} else {
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+									$t_subject->clear();
+									break;
+								}
+							} else {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+							}
+							break;
 						case 'skip_on_idno':
 							if (!$vb_idno_is_template) {
 								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0)),
+									array_merge($va_base_criteria, array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno)),
 									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -1848,7 +1915,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							break;
 						case 'skip_on_preferred_labels':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values, 'deleted' => 0)),
+								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values)),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -1861,9 +1928,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						case 'merge_on_idno':
 						case 'merge_on_idno_and_preferred_labels_with_replace':
 						case 'merge_on_idno_with_replace':
+						case 'merge_on_idno_with_skip':
 							if (!$vb_idno_is_template) {
 								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0)),
+									array_merge($va_base_criteria, array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno)),
 									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -1871,14 +1939,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy)); }
 									break;
 								} else {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+									if($vs_existing_record_policy === 'merge_on_idno_with_skip') {
+										if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because existing record could not be matched on identifier by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+										$this->num_records_skipped++;
+										continue(2);	// skip 
+									} else {
+										if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer by policy %2 using base criteria %3', $vs_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+									}
 								}
 							}
 							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
 						case 'merge_on_preferred_labels':
 						case 'merge_on_preferred_labels_with_replace':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values, 'deleted' => 0)),
+								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values)),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -1893,7 +1967,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						case 'overwrite_on_idno':
 							if (!$vb_idno_is_template && $vs_idno) {
 								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0)),
+									array_merge($va_base_criteria, array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno)),
 									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -1915,7 +1989,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
 						case 'overwrite_on_preferred_labels':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values, 'deleted' => 0)),
+								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values)),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -2619,6 +2693,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if ( isset( $va_item['settings']['matchOn'] ) ) {
 								$va_group_buf[ $vn_c ]['_matchOn'] = $va_item['settings']['matchOn'];
 							}
+							
+							if (isset($va_item['settings']['add'])) {
+								$va_group_buf[$vn_c]['_add'] = $va_item['settings']['add'];
+							}
+							if (isset($va_item['settings']['replace'])) {
+								$va_group_buf[$vn_c]['_replace'] = $va_item['settings']['_replace'];
+							}
 
 							if ( $va_item['settings']['skipIfDataPresent'] ) {
 								$va_group_buf[ $vn_c ]['_skipIfDataPresent'] = true;
@@ -3079,8 +3160,25 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->clearErrors();
 					if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0) && (!$vb_was_preferred_label_match)) {
 						$vb_remove_labels = true;
-						foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_fld) {
-							if ($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
+						
+						$pref_label_data = array_filter($va_content_tree[$vs_subject_table], function($v) {
+							if (isset($v['preferred_labels'])) {
+								$pref_label_is_set = false;
+								foreach($v['preferred_labels'] as $k => $kv) {
+									if (preg_match("!^[a-z_]+$!", $k) && strlen($kv)) {
+										return true;
+									}
+								}
+							}
+							return false;
+						});
+						
+						if (!sizeof($pref_label_data)) { 
+							$vb_remove_labels = false;
+						} else {
+							foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_fld) {
+								if ($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfDataPresent']) { $vb_remove_labels = false; break; }
+							}
 						}
 						
 						if ($vb_remove_labels) {
@@ -3161,6 +3259,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$vs_item_error_policy = $va_element_content['_errorPolicy'];
 										unset($va_element_content['_errorPolicy']); 
 										
+										$vb_force_add = $va_element_content['_add'];
+										unset($va_element_content['_add']); 
+										
+										$vb_force_replace = $va_element_content['_replace'];
+										unset($va_element_content['_replace']); 
+										
 										$vb_skip_if_data_present = $va_element_content['_skipIfDataPresent'];
 										unset($va_element_content['_skipIfDataPresent']);
 																					
@@ -3183,7 +3287,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													&&
 													(sizeof(array_filter($t_subject->getSecondaryLabelDisplayFields(), function($v) use ($va_element_content) { return isset($va_element_content[$v]) && strlen($va_element_content[$v]); })) == 0)
 												) { 
-													$va_element_content[$vs_disp_field] = '['.caGetBlankLabelText().']'; 
+													$va_element_content[$vs_disp_field] = '['.caGetBlankLabelText($vn_table_num).']'; 
 												}
 												
 												if ($vb_skip_if_data_present && ($t_subject->getLabelCount(true, $vn_locale_id) > 0)) { continue(2); }
@@ -3309,7 +3413,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											if (is_array($va_element_content)) { $va_element_content['locale_id'] = $vn_locale_id; }
 										
 											if ($vb_skip_if_data_present && ($t_subject->getAttributeCountByElement($vs_element) > 0)) { continue(2); } 
-											if (!isset($va_elements_set_for_this_record[$vs_element]) && !$va_elements_set_for_this_record[$vs_element] && in_array($vs_existing_record_policy, array('merge_on_idno_with_replace', 'merge_on_preferred_labels_with_replace', 'merge_on_idno_and_preferred_labels_with_replace'))) {
+											if (
+												(
+													!isset($va_elements_set_for_this_record[$vs_element]) && 
+													!$va_elements_set_for_this_record[$vs_element] && 
+													in_array($vs_existing_record_policy, 
+														['merge_on_idno_with_replace', 'merge_on_preferred_labels_with_replace', 
+														 'merge_on_idno_and_preferred_labels_with_replace', 'merge_on_id_with_replace'
+														]
+													) && !$vb_force_add
+												)
+												||
+												$vb_force_replace
+											) {
 												$t_subject->removeAttributes($vs_element, array('force' => true));
 											} 
 											$va_elements_set_for_this_record[$vs_element] = true;
@@ -3414,7 +3530,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						            $vs_rel_label_display_fld = $t_rel->getLabelDisplayField();
 						        }
 						
-						        $vs_name = '['.caGetBlankLabelText().']';
+						        $vs_name = '['.caGetBlankLabelText($vs_table_name).']';
 						        if(isset($va_element_data['preferred_labels'][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data['preferred_labels'][$vs_rel_label_display_fld]; }
 						        elseif(isset($va_element_data['preferred_labels']) ) { $vs_name = $va_element_data['preferred_labels']; }
 						        elseif(isset($va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]) ) { $vs_name = $va_element_data[$vs_rel_label_display_fld][$vs_rel_label_display_fld]; }

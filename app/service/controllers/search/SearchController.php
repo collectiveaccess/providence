@@ -27,9 +27,6 @@
  */
  	require_once(__CA_LIB_DIR__.'/Service/deprecated/SearchService.php');
 	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/Zend/Soap/Server.php');
-	require_once(__CA_LIB_DIR__.'/Zend/Soap/AutoDiscover.php');
-	require_once(__CA_LIB_DIR__.'/Zend/Rest/Server.php');
 
 	class SearchController extends BaseServiceController {
 		# -------------------------------------------------------

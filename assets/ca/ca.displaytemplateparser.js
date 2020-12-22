@@ -188,6 +188,8 @@ var caUI = caUI || {};
                         if (d) { 
                         	t=t.replace(tag, d.replace('&nbsp;', ' ').trim());
                         	bAtLeastOneValueIsSet = true; 
+                        } else {
+                        	t=t.replace(tag, '');
                         }
                         cmds.push(null);
                         qtys.push(null);

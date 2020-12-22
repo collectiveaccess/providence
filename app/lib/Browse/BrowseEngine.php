@@ -648,6 +648,13 @@
 					return urldecode($pn_row_id);
 					break;
 				# -----------------------------------------------------
+				case 'tags':
+					if ($tag = ca_item_tags::find(['tag_id' => $pn_row_id], ['returnAs' => 'firstModelInstance'])) {
+					    return $tag->get('ca_item_tags.tag');
+					}
+					return urldecode($pn_row_id);
+					break;
+				# -----------------------------------------------------
 				case 'checkouts':
 					$vs_status_text = null;
 					$vs_status_code = (isset($va_facet_info['status']) && $va_facet_info['status']) ? $va_facet_info['status'] : $pn_row_id;
@@ -1066,6 +1073,7 @@
 		 *		omitChildRecords = only return records that are the root of whatever hierarchy they are in. [Default is false]
 		 *		rootRecordsOnly = Synonym for omitChildRecords.
 		 *		omitChildRecordsForTypes = List of types for which to return only records that are not children [Default is null]
+		 *		filterDeaccessionedRecords = Omit deaccessioned records from the result set. [Default is false]
 		 *
 		 * @return bool True on success, null if the browse could not be executed (Eg. no settings), false no error
 		 */
@@ -2672,6 +2680,10 @@
 							$va_wheres[] = "(".$this->ops_browse_table_name.".parent_id IS NULL)";
 						}
 						
+						if ((isset($pa_options['filterDeaccessionedRecords']) && $pa_options['filterDeaccessionedRecords']) && $t_item->hasField('is_deaccessioned')) {
+							$va_wheres[] = "(".$this->ops_browse_table_name.".is_deaccessioned = 0)";
+						}
+								
 						if (is_array($omit_child_records_for_types) && sizeof($omit_child_records_for_types) && $t_item->hasField('parent_id')) {
 							$va_wheres[] = "(({$this->ops_browse_table_name}.parent_id IS NULL) OR ({$this->ops_browse_table_name}.parent_id IS NOT NULL AND {$this->ops_browse_table_name}.type_id NOT IN (".join(",", $omit_child_records_for_types).")))";
 						}
@@ -2750,7 +2762,11 @@
 					}
 					if ((isset($pa_options['omitChildRecords']) && $pa_options['omitChildRecords']) && $t_item->hasField('parent_id')) {
 						$va_wheres[] = "(".$this->ops_browse_table_name.".parent_id IS NULL)";
-					}					
+					}		
+										
+					if ((isset($pa_options['filterDeaccessionedRecords']) && $pa_options['filterDeaccessionedRecords']) && $t_item->hasField('is_deaccessioned')) {
+						$va_wheres[] = "(".$this->ops_browse_table_name.".is_deaccessioned = 0)";
+					}			
         
                     if (is_array($omit_child_records_for_types) && sizeof($omit_child_records_for_types) && $t_item->hasField('parent_id')) {
                         $va_wheres[] = "(({$this->ops_browse_table_name}.parent_id IS NULL) OR ({$this->ops_browse_table_name}.parent_id IS NOT NULL AND {$this->ops_browse_table_name}.type_id NOT IN (".join(",", $omit_child_records_for_types).")))";
@@ -2820,6 +2836,7 @@
 				$this->loadFacetContent($pa_options);
 			}
 			if ($vb_need_to_save_in_cache) {
+				$this->opo_ca_browse_cache->setParameter('filterDeaccessionedRecords', (bool)$pa_options['filterDeaccessionedRecords'] ? 1 : 0);
 				$this->opo_ca_browse_cache->save();
 			}
 			return true;
@@ -2855,6 +2872,7 @@
 
 				foreach($va_facets as $vs_facet_name) {
 					$va_facet_info = $this->getInfoForFacet($vs_facet_name);
+					if (($va_facet_info['type'] === 'field') && ($va_facet_info['field'] === 'is_deaccessioned') && $pa_options['filterDeaccessionedRecords']) { continue; }
 					if (
 						$this->getFacet($vs_facet_name, array_merge($pa_options, array('checkAvailabilityOnly' => true)))
 					) {
@@ -2893,7 +2911,7 @@
 
 			// is facet cached?
 			$va_facet_content = null;
-			if (!isset($va_facet_cache) || !is_array($va_facet_cache)) {
+			if (!isset($va_facet_cache) || !is_array($va_facet_cache) || !sizeof($va_facet_cache)) {
 				$va_facet_content = $va_facet_cache = $this->getFacetContent($ps_facet_name, $pa_options);
 				$vb_needs_caching = true;
 			}
@@ -3784,7 +3802,6 @@
 						'INNER JOIN '.(!$vb_is_relative_to_parent ? "{$vs_browse_table_name} ON {$vs_browse_table_name}." : "{$vs_browse_table_name} AS parent ON parent.").$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($vs_browse_table_num)
 					);
 
-					$class = get_class($this);
 
 					$va_wheres = array();
 					if (is_array($va_results) && sizeof($va_results) && ($this->numCriteria() > 0)) {
@@ -3794,12 +3811,15 @@
 							// For facets with the "multiple" option set, we must generate the facet based upon the browse _without_ any options selected
 							// (since they're all potentially valid)
 							array_pop($c);
+							
+							$class = get_class($this);
 							$b = new $class();
 							foreach($c as $f => $x) {
 								$b->addCriteria($f, array_keys($x));
 							}
-							$b->execute();
-							$adj_results = $b->getResults()->getAllFieldValues($t_subject->primaryKey(true));
+							$bc = new BrowseCache();
+							$bc->load($b->getBrowseID());
+							$adj_results = $bc->getResults();
 							if(is_array($adj_results) && (sizeof($adj_results) > 0)) { 
 								$va_results = $adj_results; 
 							}
@@ -3971,7 +3991,7 @@
 									if ($va_criteria[$vn_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 									$vn_child_count = isset($va_list_child_count_cache[$vn_val]) ? $va_list_child_count_cache[$vn_val] : 0;
 									
-									if (!($vs_label = html_entity_decode($va_list_label_cache[$vn_val]))) { $vs_label = '['.caGetBlankLabelText().']'; }
+									if (!($vs_label = html_entity_decode($va_list_label_cache[$vn_val]))) { $vs_label = '['.caGetBlankLabelText('ca_list_items').']'; }
 									if (is_array($va_facet_info['relabel']) && isset($va_facet_info['relabel'][$vs_label])) {
 									    $vs_label = $va_facet_info['relabel'][$vs_label];
 									}
@@ -4040,7 +4060,7 @@
 										
 											$va_facet_list[$vn_ancestor_id] = array(
 												'id' => $vn_ancestor_id,
-												'label' => ($vs_label = $qr_ancestors->get('ca_list_items.preferred_labels.name_plural')) ? $vs_label : '['.caGetBlankLabelText().']',
+												'label' => ($vs_label = $qr_ancestors->get('ca_list_items.preferred_labels.name_plural')) ? $vs_label : '['.caGetBlankLabelText('ca_list_items').']',
 												'parent_id' => $vn_parent_id,
 												'hierarchy_id' => $qr_ancestors->get('list_id'),
 												'child_count' => 1,
@@ -4628,7 +4648,7 @@
                                         if ($vb_check_ancestor_access && !in_array($qr_ancestors->get('access'), $pa_options['checkAccess'])) { continue; }
                                         $va_values[$vn_ancestor_id] = array(
                                             'id' => $vn_ancestor_id,
-                                            'label' => ($vs_label = $qr_ancestors->get('ca_list_items.preferred_labels.name_plural')) ? $vs_label : '['.caGetBlankLabelText().']',
+                                            'label' => ($vs_label = $qr_ancestors->get('ca_list_items.preferred_labels.name_plural')) ? $vs_label : '['.caGetBlankLabelText('ca_list_items').']',
                                             'parent_id' => $qr_ancestors->get('ca_list_items.parent_id'),
                                             'child_count' => 1
                                         );

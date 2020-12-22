@@ -42,9 +42,7 @@ install:
   # Create setup.php
   - export PROFILE=${PROFILE:-testing}
   - ln -s .travis.setup.php setup.php
-  - if test -e vendor/composer.lock ; then echo "Restoring previous composer lock file"; cp vendor/composer.lock composer.lock; fi
-  - composer install --prefer-dist
-  - cp composer.lock vendor
+  - tests/update_dependencies.sh
   # Install the testing profile
   - tests/profile_setup.sh "$PROFILE"
 
