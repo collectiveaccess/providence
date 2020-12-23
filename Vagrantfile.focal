@@ -1,7 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+#
+# Usage:
+# 
+#   VAGRANT_VAGRANTFILE=Vagrantfile.focal VAGRANT_DOTFILE_PATH=.vagrant_focal vagrant halt
+#
+
 Vagrant.configure(2) do |config|
+
 
   config.vm.box = "ubuntu/focal64"
 
