@@ -1025,10 +1025,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
                                                 //  In case the selected field allows different locales, use those as
                                                 //  locales for stemming.
                                                 //  If there is no selected field use all cataloging locales.
-                                                if( !$va_cataloguing_locales = ca_locales::getCataloguingLocaleList() ){
+                                                if( ! ($va_cataloguing_locales = ca_locales::getCataloguingLocaleList()) ){
                                                     // Use default CATALOGUING locale
                                                     global $g_ui_locale_id;
-                                                    $va_cataloguing_locales = array(ca_locales::getCataloguingLocaleList()[$g_ui_locale_id]);
+                                                    global $g_ui_locale;
+                                                    $va_cataloguing_locales = array($g_ui_locale_id => array('language'=> caGetLanguageFromLocale($g_ui_locale)) );
                                                 }
 
                                                 foreach ($va_cataloguing_locales as $vs_locale_id => $vs_locale_info){
