@@ -950,7 +950,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 
                                 break;
                             }
-                            // TODO: Missing break statement
 						default:
 							switch($vs_class) {
 								case 'Zend_Search_Lucene_Search_Query_Phrase':
