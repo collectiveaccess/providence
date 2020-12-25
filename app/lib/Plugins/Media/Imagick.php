@@ -131,6 +131,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'layers'			=> 'W',
 			"quality" 			=> 'W',
 			'colorspace'		=> 'W',
+			'background'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -511,17 +512,17 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 								$vb_is_rotated = false;
 								switch($vn_orientation) {
 									case 3:
-										$this->handle->rotateImage("#FFFFFF", 180);
+										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), 180);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
 									case 6:
-										$this->handle->rotateImage("#FFFFFF", 90);
+										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), 90);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
 									case 8:
-										$this->handle->rotateImage("#FFFFFF", -90);
+										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), -90);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
@@ -821,7 +822,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case "ROTATE":
 				$angle = $parameters["angle"];
 				if (($angle > -360) && ($angle < 360)) {
-					if ( !$this->handle->rotateImage("#FFFFFF", $angle ) ) {
+					if ( !$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), $angle ) ) {
 						$this->postError(1610, _t("Error during image rotate"), "WLPlugImagick->transform()");
 						return false;
 					}
@@ -960,8 +961,9 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->handle->setCompressionQuality($this->properties["quality"]);
 			}
 			
-			$this->handle->setImageBackgroundColor(new ImagickPixel("#CC0000"));
-			$this->handle->setImageMatteColor(new ImagickPixel("#CC0000"));
+			$background = caGetOption('background', $this->properties, "#FFFFFF");
+			$this->handle->setImageBackgroundColor(new ImagickPixel($background));
+			$this->handle->setImageMatteColor(new ImagickPixel($background));
 		
 			if ($this->properties['gamma']) {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
