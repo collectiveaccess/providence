@@ -51,26 +51,25 @@
 		'table_num' => $t_subject->tableNum()
 	);
 
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-	
-	//print "<div class='bundleSubLabel'>";	
-	//print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
-	
-	$va_errors = array();
+	$va_errors = [];
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
 		$va_errors[] = $o_error->getErrorDescription();
+	}
+	
+	if (!RequestHTTP::isAjax()) {
+		if ($vb_batch) {
+			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+		} else {
+			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
+		}
+		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";
-	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
+	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only) {
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_subject->tableName(), $va_settings);
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	

@@ -1462,7 +1462,7 @@ class SearchResult extends BaseObject {
 						$vs_pk = $t_instance->primaryKey();
 						while($qr_hier->nextHit()) {
 							$vm_val = $qr_hier->get($vs_hier_fld_name, $pa_options);
-							$va_hier_list[$qr_hier->get($va_path_components['table_name'].'.'.$vs_pk)] = $vb_return_as_array ? array_shift($vm_val) : $vm_val;;
+							$va_hier_list[$qr_hier->get($va_path_components['table_name'].'.'.$vs_pk)] = ($vb_return_as_array && is_array($vm_val)) ? array_shift($vm_val) : $vm_val;
 						}
 					}
 					

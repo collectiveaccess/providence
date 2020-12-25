@@ -584,6 +584,10 @@ final class ConfigurationExporter {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
 					foreach($va_values as $vs_value) {
+						if ($vs_setting === 'restrictToTypes'){
+							$t_item = new ca_list_items($vs_value);
+							$vs_value = $t_item->get('idno');
+						}
 						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);

@@ -67,8 +67,8 @@
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 
-	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
 	$count = $this->getVar('relationship_count');
+	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
 	
 	if (!RequestHTTP::isAjax()) {
 		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
@@ -79,8 +79,7 @@
 			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
 		}
 		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-	}
-	
+	}	
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -88,12 +87,13 @@
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 		
-		if(caGetOption('showReturnToHomeLocations', $va_settings, false)) {
-			print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'), $this->getVar('history_tracking_policy'));
+		if(caGetOption('showReturnToHomeLocations', $va_settings, false) && caHomeLocationsEnabled('ca_objects', null, ['enableIfAnyTypeSet' => true])) {
+			print caReturnToHomeLocationControlForRelatedBundle($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'), $this->getVar('history_tracking_policy'));
 		}
-	}
-	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+	
+		if(!$vb_read_only) {
+			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	

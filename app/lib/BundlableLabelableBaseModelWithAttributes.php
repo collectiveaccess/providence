@@ -1798,12 +1798,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						break;
 					# -------------------------------
-					// This bundle is only available for objects
-					case 'ca_objects_deaccession':		// object deaccession information
+					// This bundle is available for objects, object lots and collections
+					case 'ca_objects_deaccession':		// deaccession information
 						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
-						$vs_element .= $this->getObjectDeaccessionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						$vs_element .= $this->getDeaccessionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
 					# -------------------------------
@@ -3053,8 +3053,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('bundle_name', $ps_related_table);
 		
 		
-		$o_view->setVar('sort', caGetOption('sort', $pa_options, null));
-		$o_view->setVar('sortDirection', caGetOption('sortDirection', $pa_options, null));
+		$o_view->setVar('sort', caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null)));
+		$o_view->setVar('sortDirection', caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null)));
 		
 		$o_view->setVar('ui', caGetOption('ui', $pa_options, null));
 		$o_view->setVar('screen', caGetOption('screen', $pa_options, null));
@@ -3672,7 +3672,7 @@ if (!$vb_batch) {
 							$vn_element_id = $va_element_info['element_id'];
 							
 							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
-							if(is_null($po_request->parameterExists($vs_k))) { continue; }
+							if(is_null($po_request->parameterExists($vs_k)) && !isset($_FILES[$vs_k])) { continue; }
 							$vs_attr_val = $po_request->getParameter($vs_k, pString);
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
@@ -4230,40 +4230,57 @@ if (!$vb_batch) {
                             foreach($_REQUEST as $vs_key => $vs_value) {
                                 if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
                                     $va_file_list[$vs_key] = array(
-                                        'url' => $vs_value
+                                        'url' => $vs_value,
+                                        'index' => (int)$va_matches[1]
+                                        
                                     );
                                 } elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
                                     $va_file_list[$vs_key] = array(
                                         'tmp_name' => $vs_value,
-                                        'name' => $vs_value
+                                        'name' => $vs_value,
+                                        'index' => (int)$va_matches[1]
                                     );
                                 } elseif(preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches)){
 									$va_file_list[$vs_key] = array(
 										'tmp_name' => $vs_value,
-										'name' => $vs_value
+										'name' => $vs_value,
+                                        'index' => (int)$va_matches[1]
 									);
 								} elseif(preg_match('/^'.$vs_prefix_stub.'mediarefsnew_([\d]+)$/', $vs_key, $va_matches)) {
 									$files = explode(";", $vs_value);
 									foreach($files as $f) {
 										$va_file_list["{$vs_key}_{$file_index}"] = [		// Add numeric suffix to allow for multiple uploads in a single request
 											'tmp_name' => $f,
-											'name' => $f
+											'name' => $f,
+                                        	'index' => (int)$va_matches[1]
 										];
 										$file_index++;
 									}
+								} elseif($po_request->getAppConfig()->get('allow_representations_without_media') && preg_match('/^'.$vs_prefix_stub.'no_media_new_([\d]+)$/', $vs_key, $va_matches)) {
+									$index = (int)$va_matches[1];
+									$va_file_list['empty'] = ['index' => $index];
 								}
+                            }
+                            
+                            if(isset($va_file_list['empty'])) {
+                            	$index = $va_file_list['empty']['index'];
+								$va_file_list = array_filter($va_file_list, function($v) use ($index) { return (($v['index'] !== $index) || (sizeof($v) === 1)); });
                             }
                             
                             foreach($va_file_list as $vs_key => $va_values) {
                                 $this->clearErrors();
                             
 								if (
+									($vs_key !== 'empty') &&
 									!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && 
 									!preg_match('/^'.$vs_prefix_stub.'mediarefsnew_([\d]+)_([\d]+)$/', $vs_key, $va_matches) && 
 									(($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls) && 
 									(($vb_allow_existing_rep && !preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches))||!$vb_allow_existing_rep) ) {  
 										continue; 
+								} elseif($vs_key === 'empty') {
+									$va_matches = [null, $va_values['index']];
 								}
+								
                                 if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
                                     $po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
                                 }
@@ -4287,12 +4304,14 @@ if (!$vb_batch) {
                                     	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
                                     	$md = json_decode(@file_get_contents("{$vs_path}_metadata"), true);
                                         $vs_original_name = $md['original_filename'];
-                                    } else {
+                                    } elseif($vs_key !== 'empty') {
                                         $vs_path = $va_values['tmp_name'];
                                         $vs_original_name = $va_values['name'];
+                                    } else {
+                                    	$vs_path = $vs_original_name = null;
                                     }
                                     
-                                    if (!$vs_path) { continue; }
+                                    if (($vs_key !== 'empty') && !$vs_path) { continue; }
                             
                                     $vn_rep_type_id = $po_request->getParameter([$vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], $vs_prefix_stub.'type_id_new_'.$va_matches[1]], pInteger);
                                     if(!$vn_rep_type_id && !($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {

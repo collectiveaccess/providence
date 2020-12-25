@@ -783,14 +783,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
                     $va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
                     array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
 
-					if ($vs_mode == 'Constant') {
+					if ($vs_mode === 'constant') {
 						if(strlen($vs_source)<1) { // ignore constant rows without value
 							continue(2);
 						}
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
 
-					if ($vs_mode == 'Variable') {
+					if ($vs_mode === 'variable') {
 						if(preg_match("/^[A-Za-z0-9\_\-]+$/",$vs_element)) {
 							$vs_element = "_VARIABLE_:{$vs_element}";
 						} else {
