@@ -100,7 +100,7 @@ abstract class BaseExternalExportTransportPlugin Extends WLPlug {
 	/**
 	 *
 	 */
-	public function cleanup() {
+	public function cleanup(array $files=null) {
 		return;
 	}
 	# ------------------------------------------------
