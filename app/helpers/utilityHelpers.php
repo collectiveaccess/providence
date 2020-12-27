@@ -1458,20 +1458,21 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Remove all HTML tags and their contents
 	 *
-	 * @param string $ps_string The string to process
-	 * @return string $ps_string with HTML tags and associated content removed
+	 * @param string $string The string to process
+	 * @return string $string with HTML tags and associated content removed
 	 */
-	function caStripTagsAndContent($ps_string) {
-		$o_doc = str_get_dom($ps_string);
-		foreach($o_doc("*") as $o_node) {
-			if ($o_node->tag != '~text~') {
-				$o_node->delete();
-			}
+	function caStripTagsAndContent($string) {
+		$o_doc = new DOMDocument();
+		libxml_use_internal_errors(true);
+		$o_doc->loadHTML($string, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOWARNING);
+		libxml_clear_errors();
+		
+		$content = '';
+		foreach($o_doc->childNodes as $node) {
+			$content .= $node->nodeValue;
 		}
-		$vs_proc_string = $o_doc->html();
-		$vs_proc_string = str_replace("<~root~>", "", $vs_proc_string);
-		$vs_proc_string = str_replace("</~root~>", "", $vs_proc_string);
-		return trim($vs_proc_string);
+		
+		return trim($content);
 	}
 	# ---------------------------------------
 	/**
