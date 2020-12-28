@@ -104,7 +104,6 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 				//print "PROCESSING ROW $file_number/$rows_complete/$message/$num_processed/$total_rows/$num_error\n";
 			}])
 		);
-		print_R($report);
 		// Clean up data file
 		if(file_exists($options['sourceFile'])) { @unlink($options['sourceFile']); }
 		
