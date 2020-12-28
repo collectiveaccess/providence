@@ -56,10 +56,8 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 		return _t("Metadata import background processor");
 	}
 	# --------------------------------------------------------------------------------
-	public function getParametersForDisplay($pa_rec) {
-		$parameters = caUnserializeForDatabase($pa_rec["parameters"]);
-		
-		$va_params = array();
+	public function getParametersForDisplay($rec) {
+		$parameters = caUnserializeForDatabase($rec["parameters"]);
 		
 		$o_config = Configuration::load();
 		$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
@@ -100,9 +98,13 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 			$parameters['sourceFile'],
 			$parameters['importer_id'],
 			$parameters['inputFormat'],
-			array_merge($parameters, ['originalFilename' => $parameters['sourceFileName']])
+			array_merge($parameters, ['originalFilename' => $parameters['sourceFileName'], 'progressCallback' => 
+				function($request, $file_number, $number_of_files, $file_path, $rows_complete, $total_rows, $message, $elapsed_time, $memory_used, $num_processed, $num_error) {
+				// TODO: call back to update stats
+				//print "PROCESSING ROW $file_number/$rows_complete/$message/$num_processed/$total_rows/$num_error\n";
+			}])
 		);
-		
+		print_R($report);
 		// Clean up data file
 		if(file_exists($options['sourceFile'])) { @unlink($options['sourceFile']); }
 		
