@@ -2430,8 +2430,8 @@ var methods = {
 							// Zooming
 							//	
 							if (options.sliderZooming) {	
-								jQuery(view.controls).append("<div class='tileviewerToolbarZoom'> </div>");
-								var z = $(view.controls).find(".tileviewerToolbarZoom");
+								jQuery($this).append("<div class='tileviewerToolbarZoom'> </div>");
+								var z = $($this).find(".tileviewerToolbarZoom");
 					
 								// center it
 								jQuery(z).css("left", ((jQuery($this).width() - 500)/2) + "px");

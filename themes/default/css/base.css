@@ -7581,9 +7581,14 @@ div.checklist {
 
 div.checklistItem {
     font-weight: normal;
-    margin-right: 10px;
-    width: 100px;
+    margin: 2px 2px 2px 5px;
+    min-width: 100px;
+    max-width: 160px;
+    white-space: nowrap
     
+}
+div.checklistItem input {
+	margin-right: 4px;
 }
 
 /* Statistics dashboard */
@@ -7627,6 +7632,7 @@ a.currentSet {
 /* "New" ca_object_representations_bundle */
 .mediaUploadContainer {
 	width:700px;
+	margin-top: 14px;
 }
 
 .mediaUploadInfoArea {
@@ -7656,7 +7662,6 @@ a.currentSet {
 	display: block;
 	width: 120px;
 	height: 120px;
-	margin-top: 14px;
 }
 
 .mediaUploadAreaMessage {

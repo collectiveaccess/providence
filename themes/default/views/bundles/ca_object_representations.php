@@ -28,6 +28,8 @@
 	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
 	
+	$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
+	
 	$settings 			= $this->getVar('settings');
 	
 	$is_batch			= $this->getVar('batch');
@@ -256,6 +258,13 @@
 <?php } ?>	
 			<div class="mediaUploadContainer">
 				<div style="float: left;">
+<?php					
+			if($this->request->getAppConfig()->get('allow_representations_without_media')) {
+?>
+				<div class="formLabelPlain"><?= caHTMLCheckBoxInput("{$id_prefix}_no_media_{n}", ['value' => 1, 'id' => $id_prefix.'NoMedia{n}'])._t('No media'); ?></div>
+<?php
+			}
+?>
 					<div id="<?= $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
 						<input type="file" style="display: none;" id="<?= $id_prefix; ?>UploadFileControl{n}" multiple/>
 						<div id="<?= $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
@@ -306,13 +315,6 @@
 			</div>
 			<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
 			<br class="clear"/>
-			<?php
-			$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
-			$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
-
-			$vs_element = _t("Maximum upload size is ${upload_max_filesize}");
-			print $vs_element;
-			?>
 		</div>
 		
 		<script type="text/javascript">
@@ -328,6 +330,14 @@
 					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
 				});	
+				
+				jQuery('#<?= $id_prefix; ?>NoMedia{n}').on('click', function(e) {
+					if(jQuery(this).attr('checked')) {
+						jQuery('#<?= $id_prefix; ?>UploadArea{n}').slideUp(250);
+					} else {
+						jQuery('#<?= $id_prefix; ?>UploadArea{n}').slideDown(250);
+					}
+				});
 			});
 		</script>
 	</textarea>
@@ -335,7 +345,7 @@
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName(), 'sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div class='mediaMetadataActionButton' style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";

@@ -634,6 +634,12 @@ class TimeExpressionParser {
 			# -------------------------------------------------------
 			case TEP_STATE_AFTER_GET_DATE:
 				if ($va_date = $this->_parseDateExpression()) {
+					if(!$va_date['month']) { $va_date['month'] = 1; }
+					if (!$va_date['day']) { $va_date['day'] = 1; }
+					$va_date['hours'] = 0;
+					$va_date['minutes'] = 0;
+					$va_date['seconds'] = 0;
+					
 					$va_dates['start'] = $va_date;
 					$va_dates['end'] = array(
 						'month' => null, 'day' => null, 
@@ -2237,6 +2243,8 @@ class TimeExpressionParser {
 			
 			if (($pa_dates['start']['day'] === null) && ($pa_dates['end']['day'] === null) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE) && $pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) { 
 				$pa_dates['start']['day'] = 1; 
+				if(!$pa_dates['start']['month']) { $pa_dates['start']['month'] = 1; }
+				if(!$pa_dates['end']['month']) { $pa_dates['end']['month'] = 12; }
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year'] ? $pa_dates['end']['year'] : 2004); // use leap year if no year is defined
 			} elseif (($pa_dates['end']['day'] === null) && ($pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE)) { 
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year']);
@@ -2836,6 +2844,7 @@ class TimeExpressionParser {
 							'uncertainty_units' => $va_end_pieces['uncertainty_units']
 						), $pa_options);
 					} else {
+						if ($va_end_pieces['day'] == $this->daysInMonth($va_end_pieces['month'], $va_end_pieces['year'])) { unset($va_end_pieces['day']); }
 						return $vs_before_qualifier.' '. $this->_dateToText($va_end_pieces, $pa_options);
 					}
 				} else {
@@ -2854,6 +2863,7 @@ class TimeExpressionParser {
 							'uncertainty_units' => $va_start_pieces['uncertainty_units']
 						), $pa_options);
 					} else {
+						if ($va_start_pieces['day'] == 1) { unset($va_start_pieces['day']); }
 						$vs_date = $this->_dateToText($va_start_pieces, $pa_options);
 					}
 				} else {
