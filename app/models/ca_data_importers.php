@@ -1260,6 +1260,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 				$this->detlog[$sheet_name] = $r = fopen($f, 'a');
 			}
+			if(!is_resource($r)) { return; }
 			$line = [
 				 date('c'), caGetOption('idno', $pa_options, null), caGetOption('row', $pa_options, null),
 				 $ps_message, caGetOption('values', $pa_options, null), caGetOption('notes', $pa_options, null), caGetOption('dataset', $pa_options, null)
