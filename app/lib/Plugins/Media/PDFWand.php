@@ -589,7 +589,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if($this->ops_ghostscript_path && ($compress = strtolower($this->get("compress")))) {
 				if (!in_array($compress, ['screen', 'ebook', 'printer', 'prepress', 'default'], true)) { $compress = 'default'; }
 				
-				caExec($z=$this->ops_ghostscript_path." -dPDFSETTINGS=/{$compress} -dNumRenderingThreads=6 -dNOPAUSE -dBATCH -sDEVICE=pdfwrite {$vs_antialiasing} -dMaxPatternBitmap=1000000 -dBandBufferSpace=500000000 -sBandListStorage=memory -dBufferSpace=1000000000 -dBandHeight=100 -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -c \"30000000 setvmthreshold\" -f ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+				caExec($this->ops_ghostscript_path." -dPDFSETTINGS=/{$compress} -dNumRenderingThreads=6 -dNOPAUSE -dBATCH -sDEVICE=pdfwrite {$vs_antialiasing} -dMaxPatternBitmap=1000000 -dBandBufferSpace=500000000 -sBandListStorage=memory -dBufferSpace=1000000000 -dBandHeight=100 -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -c \"30000000 setvmthreshold\" -f ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 				if($vn_return == 0) {
 					$va_files[] = "{$ps_filepath}.{$vs_ext}";
 				} else {
