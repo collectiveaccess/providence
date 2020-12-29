@@ -69,6 +69,8 @@
 			$t_media = isset($pa_data['t_media']) ? $pa_data['t_media'] : $t_subject;
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			
+			$display_version = caGetOption('display_version', $pa_data['display'], null);
+			
 			// Controls
 			$vs_controls = '';
 			if ($t_subject) {
@@ -106,11 +108,14 @@
 					
 					$o_view->setVar('page', $vn_rep_index);		
 				}
-				$o_view->setVar('original_media_url', $t_instance->getMediaUrl('media', 'original', []));
+				$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('media', 'original', []));
+				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
 			} elseif(is_a($t_instance, 'ca_attribute_values')) {
-				$o_view->setVar('original_media_url', $t_instance->getMediaUrl('value_blob', 'original', []));
+				$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('value_blob', 'original', []));
+				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
 			} elseif(is_a($t_instance, 'ca_site_page_media')) {
-				$o_view->setVar('original_media_url', $t_instance->getMediaUrl('media', 'original', []));
+				$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('media', 'original', []));
+				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
 			}
 			if ($t_subject && $t_instance && ($po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations'))) {
 					if (is_array($va_versions = $po_request->config->getList('ca_object_representation_download_versions'))) {

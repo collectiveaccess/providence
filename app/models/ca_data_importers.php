@@ -1260,6 +1260,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 				$this->detlog[$sheet_name] = $r = fopen($f, 'a');
 			}
+			if(!is_resource($r)) { return; }
 			$line = [
 				 date('c'), caGetOption('idno', $pa_options, null), caGetOption('row', $pa_options, null),
 				 $ps_message, caGetOption('values', $pa_options, null), caGetOption('notes', $pa_options, null), caGetOption('dataset', $pa_options, null)
@@ -3847,6 +3848,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$this->_closeLogs();
 			return true;
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getInfoForLastImport(array $options=null) {
+		return [
+			'numErrors' => $this->num_import_errors,
+			'numProcessed' => $this->num_records_processed,
+			'numSkipped' => $this->num_records_skipped,
+			'total' => $this->num_import_errors + $this->num_records_processed + $this->num_records_skipped,
+			'errors' => $this->import_error_list
+		];
 	}
 	# ------------------------------------------------------
 	/**
