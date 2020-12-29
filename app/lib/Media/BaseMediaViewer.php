@@ -112,7 +112,7 @@
 				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
 			} elseif(is_a($t_instance, 'ca_attribute_values')) {
 				$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('value_blob', 'original', []));
-				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
+				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('value_blob', $display_version, []) : $original_media_url);
 			} elseif(is_a($t_instance, 'ca_site_page_media')) {
 				$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('media', 'original', []));
 				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
