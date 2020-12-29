@@ -109,7 +109,6 @@
 							jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
 							var displayContent = jQuery('#caRelationEditorPanel<?php print substr($vs_field_name_prefix, 0, strlen($vs_field_name_prefix)-1); ?> .caBundleDisplayTemplate').template(resp.bundleDisplay);
 							jQuery("#<?php print $vs_field_name_prefix; ?>BundleTemplateDisplay<?php print $this->getVar('n'); ?>").empty().append(displayContent);
-							alert(displayContent);
 							jQuery("input[name='form_timestamp']").val(resp['time']);
 						} else {
 							// error
