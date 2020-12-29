@@ -3853,6 +3853,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * 
 	 */
+	public function getInfoForLastImport(array $options=null) {
+		return [
+			'numErrors' => $this->num_import_errors,
+			'numProcessed' => $this->num_records_processed,
+			'numSkipped' => $this->num_records_skipped,
+			'total' => $this->num_import_errors + $this->num_records_processed + $this->num_records_skipped,
+			'errors' => $this->import_error_list
+		];
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
 	private function _processChildren($parent_table, $parent_id, $children, $options=null) {
 		$log = caGetOption('log', $options, null);
 		$trans = caGetOption('transaction', $options, null);

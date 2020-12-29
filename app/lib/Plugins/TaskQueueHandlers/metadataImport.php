@@ -93,6 +93,7 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 		
 		set_time_limit(3600*72); // if it takes more than 72 hours we're in trouble
 	
+		define('__CA_DONT_QUEUE_SEARCH_INDEXING__', true);
 		$report = BatchProcessor::importMetadata(
 			$req, 
 			$parameters['sourceFile'],
