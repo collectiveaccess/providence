@@ -220,6 +220,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionGlueDataBrew(array $args = [])
  * @method \Aws\Greengrass\GreengrassClient createGreengrass(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionGreengrass(array $args = [])
+ * @method \Aws\GreengrassV2\GreengrassV2Client createGreengrassV2(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionGreengrassV2(array $args = [])
  * @method \Aws\GroundStation\GroundStationClient createGroundStation(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionGroundStation(array $args = [])
  * @method \Aws\GuardDuty\GuardDutyClient createGuardDuty(array $args = [])
@@ -246,10 +248,14 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionIoT1ClickProjects(array $args = [])
  * @method \Aws\IoTAnalytics\IoTAnalyticsClient createIoTAnalytics(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionIoTAnalytics(array $args = [])
+ * @method \Aws\IoTDeviceAdvisor\IoTDeviceAdvisorClient createIoTDeviceAdvisor(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionIoTDeviceAdvisor(array $args = [])
  * @method \Aws\IoTEvents\IoTEventsClient createIoTEvents(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionIoTEvents(array $args = [])
  * @method \Aws\IoTEventsData\IoTEventsDataClient createIoTEventsData(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionIoTEventsData(array $args = [])
+ * @method \Aws\IoTFleetHub\IoTFleetHubClient createIoTFleetHub(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionIoTFleetHub(array $args = [])
  * @method \Aws\IoTJobsDataPlane\IoTJobsDataPlaneClient createIoTJobsDataPlane(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionIoTJobsDataPlane(array $args = [])
  * @method \Aws\IoTSecureTunneling\IoTSecureTunnelingClient createIoTSecureTunneling(array $args = [])
@@ -258,6 +264,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionIoTSiteWise(array $args = [])
  * @method \Aws\IoTThingsGraph\IoTThingsGraphClient createIoTThingsGraph(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionIoTThingsGraph(array $args = [])
+ * @method \Aws\IoTWireless\IoTWirelessClient createIoTWireless(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionIoTWireless(array $args = [])
  * @method \Aws\Iot\IotClient createIot(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionIot(array $args = [])
  * @method \Aws\IotDataPlane\IotDataPlaneClient createIotDataPlane(array $args = [])
@@ -292,6 +300,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionLicenseManager(array $args = [])
  * @method \Aws\Lightsail\LightsailClient createLightsail(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionLightsail(array $args = [])
+ * @method \Aws\LocationService\LocationServiceClient createLocationService(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionLocationService(array $args = [])
  * @method \Aws\LookoutforVision\LookoutforVisionClient createLookoutforVision(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionLookoutforVision(array $args = [])
  * @method \Aws\MQ\MQClient createMQ(array $args = [])
@@ -370,6 +380,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionPolly(array $args = [])
  * @method \Aws\Pricing\PricingClient createPricing(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionPricing(array $args = [])
+ * @method \Aws\PrometheusService\PrometheusServiceClient createPrometheusService(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionPrometheusService(array $args = [])
  * @method \Aws\QLDB\QLDBClient createQLDB(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionQLDB(array $args = [])
  * @method \Aws\QLDBSession\QLDBSessionClient createQLDBSession(array $args = [])
@@ -482,6 +494,8 @@ namespace Aws;
  * @method \Aws\MultiRegionClient createMultiRegionWaf(array $args = [])
  * @method \Aws\WafRegional\WafRegionalClient createWafRegional(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionWafRegional(array $args = [])
+ * @method \Aws\WellArchitected\WellArchitectedClient createWellArchitected(array $args = [])
+ * @method \Aws\MultiRegionClient createMultiRegionWellArchitected(array $args = [])
  * @method \Aws\WorkDocs\WorkDocsClient createWorkDocs(array $args = [])
  * @method \Aws\MultiRegionClient createMultiRegionWorkDocs(array $args = [])
  * @method \Aws\WorkLink\WorkLinkClient createWorkLink(array $args = [])
@@ -503,7 +517,7 @@ namespace Aws;
  */
 class Sdk
 {
-    const VERSION = '3.168.3';
+    const VERSION = '3.171.8';
 
     /** @var array Arguments for creating clients */
     private $args;

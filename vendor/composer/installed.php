@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '09625e842477d529f339778b834d2942a7aa8076',
+    'reference' => '6176d86c658485bee1d87f85e3b80a5e29edab31',
     'name' => '__root__',
   ),
   'versions' => 
@@ -18,16 +18,16 @@
       'aliases' => 
       array (
       ),
-      'reference' => '09625e842477d529f339778b834d2942a7aa8076',
+      'reference' => '6176d86c658485bee1d87f85e3b80a5e29edab31',
     ),
     'aws/aws-sdk-php' => 
     array (
-      'pretty_version' => '3.168.3',
-      'version' => '3.168.3.0',
+      'pretty_version' => '3.171.8',
+      'version' => '3.171.8.0',
       'aliases' => 
       array (
       ),
-      'reference' => '49ef1f905388c8185012c9651b80941b8f2a218d',
+      'reference' => '1f7f7c1db844f6c988c93008f902b352c7616da8',
     ),
     'clue/stream-filter' => 
     array (
@@ -58,12 +58,12 @@
     ),
     'dompdf/dompdf' => 
     array (
-      'pretty_version' => 'v0.8.6',
-      'version' => '0.8.6.0',
+      'pretty_version' => 'v0.8.5',
+      'version' => '0.8.5.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'db91d81866c69a42dad1d2926f61515a1e3f42c5',
+      'reference' => '6782abfc090b132134cd6cea0ec6d76f0fce2c56',
     ),
     'easyrdf/easyrdf' => 
     array (
@@ -274,12 +274,12 @@
     ),
     'knplabs/github-api' => 
     array (
-      'pretty_version' => 'v2.18.0',
-      'version' => '2.18.0.0',
+      'pretty_version' => 'v2.19.0',
+      'version' => '2.19.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '60d0d5fd450aae8fa147eea53f1fee4b0f59a57f',
+      'reference' => '271b3ca6f7b315c3dae1fcf2be8bb2912a93587d',
     ),
     'league/climate' => 
     array (
@@ -346,12 +346,12 @@
     ),
     'monolog/monolog' => 
     array (
-      'pretty_version' => '1.25.5',
-      'version' => '1.25.5.0',
+      'pretty_version' => '1.26.0',
+      'version' => '1.26.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1817faadd1846cd08be9a49e905dc68823bc38c0',
+      'reference' => '2209ddd84e7ef1256b7af205d0717fb62cfc9c33',
     ),
     'mtdowling/jmespath.php' => 
     array (
@@ -912,12 +912,12 @@
     ),
     'seld/cli-prompt' => 
     array (
-      'pretty_version' => '1.0.3',
-      'version' => '1.0.3.0',
+      'pretty_version' => '1.0.4',
+      'version' => '1.0.4.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'a19a7376a4689d4d94cab66ab4f3c816019ba8dd',
+      'reference' => 'b8dfcf02094b8c03b40322c229493bb2884423c5',
     ),
     'srmklive/flysystem-dropbox-v2' => 
     array (
@@ -939,8 +939,8 @@
     ),
     'symfony/options-resolver' => 
     array (
-      'pretty_version' => 'v5.2.0',
-      'version' => '5.2.0.0',
+      'pretty_version' => 'v5.2.1',
+      'version' => '5.2.1.0',
       'aliases' => 
       array (
       ),
@@ -1011,12 +1011,12 @@
     ),
     'symfony/var-dumper' => 
     array (
-      'pretty_version' => 'v5.2.0',
-      'version' => '5.2.0.0',
+      'pretty_version' => 'v5.2.1',
+      'version' => '5.2.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '173a79c462b1c81e1fa26129f71e41333d846b26',
+      'reference' => '13e7e882eaa55863faa7c4ad7c60f12f1a8b5089',
     ),
     'symfony/yaml' => 
     array (

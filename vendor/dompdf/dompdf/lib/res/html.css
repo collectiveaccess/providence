@@ -166,7 +166,6 @@ td, th, tr {
   background-image-resolution: inherit;
   background-position: inherit;
   background-repeat: inherit;
-  background-size: inherit;
 }
 
 /* caption inherits from table not table-outer */

@@ -26,8 +26,6 @@ class Block extends AbstractRenderer
     {
         $style = $frame->get_style();
         $node = $frame->get_node();
-        $dompdf = $this->_dompdf;
-        $options = $dompdf->getOptions();
 
         list($x, $y, $w, $h) = $frame->get_border_box();
 
@@ -44,7 +42,7 @@ class Block extends AbstractRenderer
 
         // Handle anchors & links
         if ($node->nodeName === "a" && $href = $node->getAttribute("href")) {
-            $href = Helpers::build_url($dompdf->getProtocol(), $dompdf->getBaseHost(), $dompdf->getBasePath(), $href);
+            $href = Helpers::build_url($this->_dompdf->getProtocol(), $this->_dompdf->getBaseHost(), $this->_dompdf->getBasePath(), $href);
             $this->_canvas->add_link($href, $x, $y, (float)$w, (float)$h);
         }
 
@@ -71,18 +69,16 @@ class Block extends AbstractRenderer
         $this->_render_border($frame, $border_box);
         $this->_render_outline($frame, $border_box);
 
-        if ($options->getDebugLayout()) {
-            if ($options->getDebugLayoutBlocks()) {
-                $this->_debug_layout($frame->get_border_box(), "red");
-                if ($options->getDebugLayoutPaddingBox()) {
-                    $this->_debug_layout($frame->get_padding_box(), "red", [0.5, 0.5]);
-                }
+        if ($this->_dompdf->getOptions()->getDebugLayout() && $this->_dompdf->getOptions()->getDebugLayoutBlocks()) {
+            $this->_debug_layout($frame->get_border_box(), "red");
+            if ($this->_dompdf->getOptions()->getDebugLayoutPaddingBox()) {
+                $this->_debug_layout($frame->get_padding_box(), "red", [0.5, 0.5]);
             }
+        }
 
-            if ($options->getDebugLayoutLines() && $frame->get_decorator()) {
-                foreach ($frame->get_decorator()->get_line_boxes() as $line) {
-                    $frame->_debug_layout([$line->x, $line->y, $line->w, $line->h], "orange");
-                }
+        if ($this->_dompdf->getOptions()->getDebugLayout() && $this->_dompdf->getOptions()->getDebugLayoutLines() && $frame->get_decorator()) {
+            foreach ($frame->get_decorator()->get_line_boxes() as $line) {
+                $frame->_debug_layout([$line->x, $line->y, $line->w, $line->h], "orange");
             }
         }
 

@@ -203,7 +203,7 @@ class Options
      *
      * @var bool
      */
-    private $isFontSubsettingEnabled = true;
+    private $isFontSubsettingEnabled = false;
 
     /**
      * @var bool

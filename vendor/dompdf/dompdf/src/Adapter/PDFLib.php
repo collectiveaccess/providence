@@ -779,8 +779,6 @@ class PDFLib implements Canvas
             $options .= " embedding=true";
         }
 
-        $options .= " autosubsetting=" . ($this->_dompdf->getOptions()->getIsFontSubsettingEnabled() === false ? "false" : "true");
-
         if (is_null($encoding)) {
             // Unicode encoding is only available for the commerical
             // version of PDFlib and not PDFlib-Lite
