@@ -254,6 +254,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 						'value_blob' => caSerializeForDatabase($va_info),
 						'value_sortable' => $this->sortableValue($vs_display_text)
 					);
+				}
 			} elseif((sizeof($va_tmp)==1) && (isURL($va_tmp[0], array('strict' => true)) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
 				// try lookup cache
 				if(CompositeCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
