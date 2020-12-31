@@ -31,7 +31,7 @@
  	print $this->render('Search/search_controls_html.php');
  ?>
 <div id="searchBuilder">
-
+	Form goes here
 </div>
  	<div id="resultBox">
 <?php
@@ -94,6 +94,8 @@
 		].join(' ');
 	}
 	
-  jQuery('#searchBuilder').queryBuilder(<?= json_encode($this->getVar('options')); ?>)
+	var opts = <?= json_encode($this->getVar('options')); ?>;
+	opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val());
+  jQuery('#searchBuilder').queryBuilder(opts)
   	.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
 </script>
