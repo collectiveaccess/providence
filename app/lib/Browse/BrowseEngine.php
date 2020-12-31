@@ -2857,7 +2857,7 @@
 			$o_results = $this->getResults();
 			if (!is_array($va_criteria = $this->getCriteria())) { $va_criteria = []; }
 
-			if (($o_results['result']->numHits() > 1) || !sizeof($va_criteria)) {
+			if (($o_results->numHits() > 1) || !sizeof($va_criteria)) {
 				$va_facets = $this->getFacetList();
 				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();
 
@@ -6963,6 +6963,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 * Fetch the subject rows found by an execute()'d browse
 		 */
 		public function getResults($options=null) {
+			if(!is_array($options)) { $options = []; }
 			$start = (int) caGetOption('start', $options, 0);
 			$limit = (int) caGetOption('limit', $options, 0);
 			
@@ -6970,7 +6971,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			
 			if (($start > 0) || ($limit > 0)) {
  				$result = array_slice($ret['result'], $start, $limit);
- 				$ret['result'] = new WLPlugSearchEngineBrowseEngine($result, $this->opn_browse_table_num);
+ 				
+ 				$ret['result'] = caMakeSearchResult($this->ops_browse_table_name, $result, $options); 
  			}
 			return $ret['result'];
 		}
