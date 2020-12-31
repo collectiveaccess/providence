@@ -253,7 +253,8 @@
 					LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 						'value_longtext1' => trim($va_tmp[0]),						// text
 						'value_longtext2' => trim($vs_url),							// uri
-						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null,	// id
+						'value_sortable' => $this->sortableValue($va_tmp[0])
 					);
 				} elseif (preg_match('!\[(http://[^\]]+)\]!', $ps_value, $va_matches)) {
 					// parse <text> [<url>] format
@@ -266,7 +267,8 @@
 					LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 						'value_longtext1' => trim($vs_text),						// text
 						'value_longtext2' => trim($vs_uri),							// uri
-						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null		// id
+						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null,		// id
+						'value_sortable' => $this->sortableValue($vs_text)
 					);
 				} else {
 					// try to match on text using id.loc.gov service
@@ -306,7 +308,8 @@
 								LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 									'value_longtext1' => trim($vs_label)." [{$vs_url}]",						// text
 									'value_longtext2' => trim($vs_url),							// uri
-									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null,	// id
+									'value_sortable' => $this->sortableValue($vs_label)
 								);
 							} else {
 								$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]', $ps_value, $vs_service_url), 'LCSHAttributeValue->parseValue()');
@@ -345,7 +348,8 @@
 								LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 									'value_longtext1' => "{$vs_title} [{$vs_url}]",						// text
 									'value_longtext2' => $vs_url,							// uri
-									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null,	// id
+									'value_sortable' => $this->sortableValue($vs_title)
 								);
 								break;
 							}
@@ -461,7 +465,18 @@
 		 * @return string Name of sort field
 		 */
 		public function sortField() {
-			return 'value_longtext1';
+			return 'value_sortable';
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns sortable value for metadata value
+		 *
+		 * @param string $value
+		 * 
+		 * @return string
+		 */
+		public function sortableValue(string $value) {
+			return mb_strtolower(substr(trim($value), 0, 100));
 		}
  		# ------------------------------------------------------------------
 		/**

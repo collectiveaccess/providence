@@ -136,7 +136,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
-				'BOUNDS_LENGTH' => array(0,512)
+				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 

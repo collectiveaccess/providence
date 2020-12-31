@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -114,6 +114,13 @@ BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LABEL' => 'Integer value container', 'DESCRIPTION' => 'Integer attribute value container'
+		),
+		'value_sortable' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => 'Sortable text value', 'DESCRIPTION' => 'Sortable text value'
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -293,6 +300,7 @@ class ca_attribute_values extends BaseModel {
 		
 			$this->useBlobAsFileField(false);
 			if (!$o_attr_value->numErrors()) {
+				print_R($va_values);
 				foreach($va_values as $vs_key => $vs_val) {
 					if (substr($vs_key, 0, 1) === '_') { continue; }
 					if (($vs_key === 'value_blob') && (isset($va_values['_file']) && $va_values['_file'])) {

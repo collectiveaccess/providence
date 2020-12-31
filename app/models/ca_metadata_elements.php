@@ -1143,6 +1143,54 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get ca_attribute_values table field to use for sorting specified element. Sortable 
+	 * field is determined by the data type of the element.
+	 *
+	 * @param string|int $pm_element_code_or_id
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getElementSortField($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		if(CompositeCache::contains($pm_element_code_or_id, 'ElementSortFields')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'ElementSortFields');
+		}
+		$datatype = self::getElementDatatype($pm_element_code_or_id);
+		
+		
+		$o_attribute_types = Configuration::load(__CA_CONF_DIR__.'/attribute_types.conf');
+		$types = $o_attribute_types->getList('types');
+	
+		if (isset($types[$datatype]) && ($value = Attribute::getValueInstance($datatype, [], true))) {
+			$s = $value->sortField();
+			CompositeCache::save($pm_element_code_or_id, $s, 'ElementSortFields');
+			return $s;
+		}
+		CompositeCache::save($pm_element_code_or_id, null, 'ElementSortFields');
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get ca_attribute_values sortable vlaue
+	 *
+	 * @param string|int $pm_element_code_or_id
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getSortableValueForElement($pm_element_code_or_id, $value) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		$datatype = self::getElementDatatype($pm_element_code_or_id);
+		if ($attr_value = Attribute::getValueInstance($datatype, [], true)) {
+			return $attr_value->sortableValue($value);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get element code for given element_id (or code)
 	 * @param mixed $pm_element_id
 	 * @return string

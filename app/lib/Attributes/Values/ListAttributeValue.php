@@ -452,7 +452,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		return array(
 			'value_longtext1' => (int)$vn_id,
-			'item_id' => (int)$vn_id
+			'item_id' => (int)$vn_id,
+			'value_sortable' => $this->sortableValue((int)$vn_id)
 		);
 	}
 	# ------------------------------------------------------------------
@@ -730,7 +731,18 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(string $value) {
+		return mb_strtolower(substr(trim(preg_replace('![^A-Za-z0-9 ]+!', '', caGetListItemIdno((int)$value))), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

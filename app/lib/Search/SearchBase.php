@@ -41,8 +41,6 @@ require_once(__CA_LIB_DIR__."/Db.php");
 	
 	class SearchBase extends BaseFindEngine {
 		# ------------------------------------------------
-		protected $opo_datamodel;
-		protected $opo_db;
 		protected $opo_app_config;
 		protected $opo_search_config;
 		protected $opo_search_indexing_config;
@@ -56,6 +54,8 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 * @param bool $pb_load_engine if set to true (default is false) we don't attempt to load an engine instance. this is useful if you just want to use SearchBase for the utility methods
 		 */
 		public function __construct($po_db=null, $ps_engine=null, $pb_load_engine=true) {
+			parent::__construct($po_db);
+			
 			$this->opo_app_config = Configuration::load();
 			$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
 			$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');			
@@ -66,8 +66,6 @@ require_once(__CA_LIB_DIR__."/Db.php");
 					die("Couldn't load configured search engine plugin. Check your application configuration and make sure 'search_engine_plugin' directive is set properly.");
 				}
 			}
-	
-			$this->opo_db = $po_db ? $po_db : new Db();
 		}
 		# ------------------------------------------------
 		/** 
@@ -96,7 +94,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 * @return void
 		 */
 		public function setDb($po_db) {
-			$this->opo_db = $po_db;
+			$this->db = $po_db;
 		}
 		# ------------------------------------------------
 		/**
@@ -105,7 +103,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		 * @return Db
 		 */
 		public function getDb() {
-			return $this->opo_db;
+			return $this->db;
 		}
 		# ------------------------------------------------
 		# Utilities

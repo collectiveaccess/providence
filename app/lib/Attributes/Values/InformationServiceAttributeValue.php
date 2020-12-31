@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2019 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -251,7 +251,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_tmp[2],		// uri
 						'value_decimal1' => is_numeric($va_tmp[1]) ? $va_tmp[1] : null, 		// id
-						'value_blob' => caSerializeForDatabase($va_info)
+						'value_blob' => caSerializeForDatabase($va_info),
+						'value_sortable' => $this->sortableValue($vs_display_text)
 					);
 				}
 			} elseif((sizeof($va_tmp)==1) && (isURL($va_tmp[0], array('strict' => true)) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
@@ -276,7 +277,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_hit['url'],	// url
 						'value_decimal1' => $va_hit['id'], 	// id
-						'value_blob' => caSerializeForDatabase($va_info)
+						'value_blob' => caSerializeForDatabase($va_info),
+						'value_sortable' => $this->sortableValue($vs_display_text)
 					);
 				} else {
 					$this->postError(1970, _t('Value for InformationService lookup has to be an ID or URL that returns exactly 1 hit. We got more or no hits. Value was %1', $ps_value), 'ListAttributeValue->parseValue()');
@@ -290,7 +292,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			        'value_longtext1' => $m[2],
 			        'value_longtext2' => '',
 			        'value_decimal1' => is_numeric($m[1]) ? $m[1] : null,
-			        'value_blob' => null
+			        'value_blob' => null,
+			        'value_sortable' => $this->sortableValue($m[2])
 			    ];
 			} else { // don't save if value hasn't changed
 				return array('_dont_save' => true);
@@ -457,7 +460,18 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(string $value) {
+		return mb_strtolower(substr(trim($value), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

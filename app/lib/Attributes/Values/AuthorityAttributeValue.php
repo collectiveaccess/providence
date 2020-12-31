@@ -198,7 +198,8 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 
 		return array(
 			'value_longtext1' => (int)$vn_id,
-			'value_integer1' => (int)$vn_id
+			'value_integer1' => (int)$vn_id,
+			'value_sortable' => $this->sortableValue($name)
 		);
 	}
 	# ------------------------------------------------------------------
@@ -272,7 +273,20 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(string $value) {
+		$name = caProcessTemplateForIDs(join(Configuration::load()->getList($this->ops_table_name.'_lookup_delimiter'), Configuration::load()->getList($this->ops_table_name.'_lookup_settings')), $this->ops_table_name, [(int)$value], []);
+		
+		return mb_strtolower(substr(trim($name), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

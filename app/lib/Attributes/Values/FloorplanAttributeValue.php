@@ -246,22 +246,22 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
  		return $_ca_attribute_settings['FloorPlanAttributeValue'];
  	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns name of field in ca_attribute_values to use for sort operations
-		 * 
-		 * @return string Name of sort field
-		 */
-		public function sortField() {
-			return 'value_blob';
-		}
+	/**
+	 * Returns name of field in ca_attribute_values to use for sort operations
+	 * 
+	 * @return string Name of sort field
+	 */
+	public function sortField() {
+		return 'value_blob';
+	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns constant for FloorPlan attribute value
-		 * 
-		 * @return int Attribute value type code
-		 */
-		public function getType() {
-			return __CA_ATTRIBUTE_VALUE_FLOORPLAN__;
-		}
- 		# ------------------------------------------------------------------
+	/**
+	 * Returns constant for FloorPlan attribute value
+	 * 
+	 * @return int Attribute value type code
+	 */
+	public function getType() {
+		return __CA_ATTRIBUTE_VALUE_FLOORPLAN__;
+	}
+	# ------------------------------------------------------------------
 }
