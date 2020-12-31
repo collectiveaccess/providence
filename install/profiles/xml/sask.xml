@@ -17222,7 +17222,7 @@
     </searchForm>
   </searchForms>
   <logins>
-    <login user_name="administrator" password="sask" fname="CollectiveAccess" lname="Administrator"
+    <login user_name="administrator" password="sask2020" fname="CollectiveAccess" lname="Administrator"
       email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>

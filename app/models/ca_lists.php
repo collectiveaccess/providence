@@ -1643,12 +1643,53 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['disabledOptions'] = $va_disabled_options;
 		
+		// For "access_statuses" list we enforce per-table/type option visibility restrictions
+		// here using specification in app.conf "omit_access_statuses" setting
+		//
+		if (
+			($t_list->get('ca_lists.list_code') === 'access_statuses') && 
+			($omit_table = caGetOption('table', $pa_options, null))			// table to omit values for
+		) {
+			$omit_type = caGetOption('type', $pa_options, null);			// optional type to omit values for
+			$config = Configuration::load();
+			$omit_map = $config->getAssoc('omit_access_statuses');
+			
+			if (isset($omit_map[$omit_table]) && ($omit_map = $omit_map[$omit_table])) {
+				if ($omit_type && is_array($omit_map[$omit_type])) { 
+					$omit_map = $omit_map[$omit_type];						// type specific policy
+				} else {
+					$omit_map = $omit_map['__default__'];					// default (all type) policy
+				}
+				
+				if (is_array($omit_map)) {
+					$v = array_shift(caExtractValuesByUserLocale(caGetListItemForValue('access_statuses', $pa_options['value'])));
+					$value_idno = $v['idno'];
+					$default_value = caGetOption('default', $omit_map, null);
+					if(is_array($omit_map['omit'])) { $omit_map = $omit_map['omit']; }
+					if (in_array($value_idno, $omit_map, true)) {
+						$pa_options['value']= caGetListItemValueForIdno('access_statuses', $default_value);
+					}
+					foreach($omit_map as $i => $value) {
+						if(!strlen(trim($value))) { continue; }
+						if (!is_numeric($value)) { 
+							$value = caGetListItemValueForIdno('access_statuses', $value); 	// convert status identifiers to integer code values
+							if(!strlen(trim($value))) { continue; }
+						}
+						unset($va_options[(int)$value]);
+					}
+				}
+			}
+		}
+		
 		if (($max_columns = caGetOption('maxColumns', $pa_options, 1, ['castTo' => 'integer'])) < 1) { $max_columns = 1; }
 		switch($vs_render_as) {
 			case 'radio_buttons':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				$vn_i = 0;
-				$vs_buf = ($max_columns > 1) ? "<div style=\"column-count: {$max_columns};\">\n" : "<div>\n";
+				
+				$p = floor(100/$max_columns);
+				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
+	
 				foreach($va_options as $vm_value => $vs_label) {
 					
 					$va_attributes = array('value' => $vm_value);
@@ -1664,7 +1705,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($pa_options['readonly']) && ($pa_options['readonly'])) {
 						$va_attributes['disabled'] = 1;
 					}
-					$vs_buf .= caHTMLRadioButtonInput($ps_name, $va_attributes, $pa_options)." {$vs_label}<br/>\n";
+					$vs_buf .=  "<div class='checklistItem'>".caHTMLRadioButtonInput($ps_name, $va_attributes, $pa_options)." {$vs_label}</div>\n";
 					
 					$vn_i++;
 				}
@@ -1706,7 +1747,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				break;
 			case 'checklist':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
-				$vs_buf = ($max_columns > 1) ? "<div style=\"column-count: {$max_columns};\">\n" : "<div>\n";
+				
+				$p = floor(100/$max_columns);
+				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
+			
 				foreach($va_options as $vm_value => $vs_label) {
 					$va_attributes = array('value' => $vm_value);
 					if (isset($va_disabled_options[$vm_value]) && $va_disabled_options[$vm_value]) {
@@ -1719,8 +1763,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						$va_attributes['checked'] = '1';
 					}
 					
-					$vs_buf .= caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." {$vs_label}<br/>\n";
-					
+					$vs_buf .= "<div class='checklistItem'>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." ".str_replace('&nbsp;', '', $vs_label)."</div>\n";				
 				}
 				$vs_buf .= "</div>";
 				return $vs_buf;
@@ -1979,7 +2022,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getListCodes($pa_options=null) {		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
-		if (ExternalCache::contains($vs_cache_key, 'listCodes')) { return ExternalCache::fetch($vs_cache_key, 'listCodes'); }
+		if (ExternalCache::contains($vs_cache_key, 'listCodes') && is_array($v = ExternalCache::fetch($vs_cache_key, 'listCodes'))) { 
+			return $v; 
+		}
 		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }

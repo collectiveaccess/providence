@@ -1759,17 +1759,23 @@
 				if(!is_array($va_label)) { 
 					$va_label = array('name' => '???', 'description' => '');
 				}
-				$va_elements_by_container[$va_element['parent_id']][] = ($va_element['datatype'] == 0) ? '' : $vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, array(
-					'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
-					'description' => $va_label['description'],
-					't_subject' => $this,
-					'request' => $po_request,
-					'form_name' => $ps_form_name,
-					'format' => '',
-					'dontDoRefSubstitution' => true
-				))));
+				$va_elements_by_container[$va_element['parent_id']][] = ($va_element['datatype'] == 0) ? '' : 
+					$vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, [
+						'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
+						'description' => $va_label['description'],
+						't_subject' => $this,
+						'request' => $po_request,
+						'form_name' => $ps_form_name,
+						'format' => '',
+						'dontDoRefSubstitution' => true,
+						'format' => 
+							// Set format to single line when displaying yes_no checkboxes
+							(($va_element['datatype'] == 3) && ($va_element['settings']['render'] === 'yes_no_checkboxes')) ? $this->getAppConfig()->get('form_element_display_format_single_line') 
+							: null
+						
+				])));
 				
-				//if the elements datatype returns true from renderDataType, then force render the element
+				// If the elements datatype returns true from renderDataType, then force render the element
 				if(Attribute::renderDataType($va_element)) {
 					return array_pop($va_elements_by_container[$va_element['element_id']]);
 				}
@@ -1783,7 +1789,16 @@
 			}
 			
 			if ($vb_should_output_locale_id) {	// output locale_id, if necessary, in its' own special '_locale_id' container
-				$va_elements_by_container['_locale_id'] = array('hidden' => false, 'element' => $t_attr->htmlFormElement('locale_id', '^ELEMENT', array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))));
+				$va_elements_by_container['_locale_id'] = [
+					'hidden' => false, 
+					'element' => $t_attr->htmlFormElement('locale_id', '^ELEMENT', [
+						'classname' => 'labelLocale', 'id' => '{fieldNamePrefix}locale_id_{n}', 
+						'name' => '{fieldNamePrefix}locale_id_{n}', 
+						"value" => '{locale_id}', 'no_tooltips' => true, 
+						'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 
+						'WHERE' => ['(dont_use_for_cataloguing = 0)']
+					])
+				];
 				if (stripos($va_elements_by_container['_locale_id']['element'], "'hidden'")) {
 					$va_elements_by_container['_locale_id']['hidden'] = true;
 				}
@@ -1813,24 +1828,23 @@
 				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
-			// these are lists of associative arrays representing attributes that were rejected in a save() action
+			// These are lists of associative arrays representing attributes that were rejected in a save() action
 			// during the current request. They are used to maintain the state of the form so the user can modify the
 			// input that caused the error
 			$o_view->setVar('failed_insert_attribute_list', $this->getFailedAttributeInserts($pm_element_code_or_id));
 			$o_view->setVar('failed_update_attribute_list', $this->getFailedAttributeUpdates($pm_element_code_or_id));
 		
-			// set the list of existing attributes for the current row
-			
+			// Set the list of existing attributes for the current row
 			$vs_sort = $pa_bundle_settings['sort'];
 			$vs_sort_dir = $pa_bundle_settings['sortDirection'];
 			$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
 			
 			$o_view->setVar('attribute_list', $va_attribute_list);
 			
-			// pass list of element default values
+			// Pass list of element default values
 			$o_view->setVar('element_value_defaults', $va_element_value_defaults);
 			
-			// pass bundle settings to view
+			// Pass bundle settings to view
 			$o_view->setVar('settings', $pa_bundle_settings);
 			
 			// Is this being used in the batch editor?

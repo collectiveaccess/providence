@@ -897,7 +897,13 @@ class BaseEditorController extends ActionController {
 
                     $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
             
-                    $o_pdf->render($vs_content, array('stream'=> true, 'append' => $media_to_append, 'filename' => ($vs_filename = $this->view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+            		if (!$filename_template = $this->request->config->get($t_subject->tableName().'_summary_file_naming')) {
+            			$filename_template = $this->view->getVar('filename') ? $filename_template : caGetOption('filename', $va_template_info, 'print_summary');
+            		}
+            		if (!($filename = caProcessTemplateForIDs($filename_template, $t_subject->tableName(), [$vn_subject_id]))) {
+            			$filename = 'print_summary';
+            		}
+                    $o_pdf->render($vs_content, ['stream'=> true, 'append' => $media_to_append, 'filename' => "{$filename}.pdf"]);
 
                     $vb_printed_properly = true;
                     break;
@@ -1967,12 +1973,12 @@ class BaseEditorController extends ActionController {
 				throw new ApplicationException(_t('Cannot view media'));
 			}
 
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
 			}
 
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
-			if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+			if(($t_instance->numFiles() > 1) && (caGetMediaClass($vs_mimetype) === 'image') && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
 				$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
 				unset($va_display_info['use_mirador_for_image_list_length_at_least']);
 				unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
@@ -1996,7 +2002,7 @@ class BaseEditorController extends ActionController {
 			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
 			}
 			
@@ -2019,7 +2025,7 @@ class BaseEditorController extends ActionController {
 				}
 			}
 			
-			if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+			if(($t_instance->numFiles() > 1) && (caGetMediaClass($vs_mimetype) === 'image') && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
 				$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
 				unset($va_display_info['use_mirador_for_image_list_length_at_least']);
 				unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
@@ -2046,7 +2052,7 @@ class BaseEditorController extends ActionController {
 			require_once(__CA_MODELS_DIR__."/ca_site_page_media.php");
 			$t_instance = new ca_site_page_media($pn_media_id);
 			
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
 				throw new ApplicationException(_t('Invalid viewer'));
 			}
 			
@@ -2093,7 +2099,7 @@ class BaseEditorController extends ActionController {
 			case 'representation':
 				$t_instance = new ca_object_representations($va_identifier['id']);
 				
-				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
 				
@@ -2116,7 +2122,7 @@ class BaseEditorController extends ActionController {
 					}
 				}
 				
-				if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+				if(($t_instance->numFiles() > 1) && (caGetMediaClass($vs_mimetype) === 'image') && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
 					$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
 					unset($va_display_info['use_mirador_for_image_list_length_at_least']);
 					unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
@@ -2132,12 +2138,12 @@ class BaseEditorController extends ActionController {
 				$t_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$t_subject->load($t_attr->get('row_id'));
 				
-				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
 				
 				$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
-				if(($t_instance->numFiles() > 1) && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
+				if(($t_instance->numFiles() > 1) && (caGetMediaClass($vs_mimetype) === 'image') && ($multipage_viewer = caGetOption('viewer_for_multipage_images', $va_display_info, null))) {
 					$va_display_info['viewer'] = $vs_viewer_name = $multipage_viewer;
 					unset($va_display_info['use_mirador_for_image_list_length_at_least']);
 					unset($va_display_info['use_universal_viewer_for_image_list_length_at_least']);
@@ -2178,7 +2184,7 @@ class BaseEditorController extends ActionController {
 		switch($va_identifier['type']) {
 			case 'representation':
                 $t_instance = new ca_object_representations($va_identifier['id']);
-                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
                 $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2186,7 +2192,7 @@ class BaseEditorController extends ActionController {
                 break;
 			case 'attribute':
                 $t_instance = new ca_object_representations($va_identifier['id']);
-                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
                 $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2216,7 +2222,7 @@ class BaseEditorController extends ActionController {
 		switch($va_identifier['type']) {
 			case 'representation':
                 $t_instance = new ca_object_representations($va_identifier['id']);
-                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
                 $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2224,7 +2230,7 @@ class BaseEditorController extends ActionController {
                 break;
 			case 'attribute':
                 $t_instance = new ca_object_representations($va_identifier['id']);
-                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+                if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
                 $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
@@ -2462,7 +2468,7 @@ class BaseEditorController extends ActionController {
 				    $va_reps = $t_subject->getRepresentations([$ps_version]);
 				    break;
 			}
-			$vs_idno = $t_subject->get('idno');
+			$vs_idno = $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'));
 	
 			$vb_download_for_record = false;
 			foreach($va_reps as $vn_representation_id => $va_rep) {
@@ -2664,123 +2670,147 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function SetHomeLocation($options=null) {
-		$object_id = $this->request->getParameter('object_id', pInteger);
-		if (!($t_subject = ca_objects::find($object_id, ['returnAs' => 'firstModelInstance']))) { 
-			throw new ApplicationException(_t('Invalid id'));
+		list($vn_subject_id, $t_subject) = $this->_initView();
+		if (!$t_subject->isLoaded()) { 
+			throw new ApplicationException(_t('Invalid id '.$vn_su));
 		}
 		if (!$this->_checkAccess($t_subject)) { 
-			throw new ApplicationException(_t('Access denied to object'));
+			throw new ApplicationException(_t('Access denied'));
 		}
+		$table = $t_subject->tableName();
 		$location_id = $this->request->getParameter('location_id', pInteger);
 		if (!($t_location = ca_storage_locations::find($location_id, ['returnAs' => 'firstModelInstance']))) { 
-			throw new ApplicationException(_t('Invalid id'));
-		}
-		$t_subject->set('home_location_id', $location_id);
-		$t_subject->update();
-		
-		if ($t_subject->numErrors() > 0) {
-			$resp = ['ok' => 0, 'errors' => $t_subject->getErrors()];
+			$resp = ['ok' => 0, 'errors' => _t('No location set')];
 		} else {
-			$resp = ['ok' => 1, 'label' => $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')), 'timestamp' => time()];
+			if (!caHomeLocationsEnabled($table, $t_subject->getTypeCode())) { 
+				throw new ApplicationException(_t('Home locations are not enabled'));
+			}
+			if (!$this->request->user->canDoAction("can_set_home_location_{$table}")) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			$t_subject->set('home_location_id', $location_id);
+			$t_subject->update();
+		
+			if ($t_subject->numErrors() > 0) {
+				$resp = ['ok' => 0, 'errors' => $t_subject->getErrors()];
+			} else {
+				$resp = ['ok' => 1, 'label' => $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')), 'timestamp' => time()];
+			}
 		}
 		
 		$this->view->setVar('response', $resp);
-		$this->render('set_home_location_json.php');
+		$this->render('../generic/set_home_location_json.php');
 	}
 	# -------------------------------------------------------
 	/**
 	 * 
 	 */
 	public function ReturnToHomeLocations($options=null) {
-		if(!$this->request->user->canDoAction("can_edit_ca_objects")) {
-			$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
-		} elseif(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
-			$resp = ['ok' => 0, 'message' => _t('No policies configured'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
-		} else {
-			$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
+		$target = $this->request->getParameter('target', pString);
+		if(in_array($target, ['ca_objects', 'ca_collections', 'ca_object_lots', 'ca_object_representations'], true)) {
+			if(!$this->request->user->canDoAction("can_edit_{$target}")) {
+				$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
+			} elseif(!is_array($policies = $target::getHistoryTrackingCurrentValuePoliciesForTable($target))) {
+				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
+			} else {
+				$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		
-			$updated = $already_home = $errors = [];
-			$msg = '';
-			if(is_array($policies) && sizeof($policies)) {
-				$primary_table = $this->request->getParameter('table', pString);
-				$primary_id = $this->request->getParameter('id', pString);
+				$updated = $already_home = $errors = [];
+				$msg = '';
+				if(is_array($policies) && sizeof($policies)) {
+					$primary_table = $this->request->getParameter('table', pString);
+					$primary_id = $this->request->getParameter('id', pString);
 		
-				if (!($primary = Datamodel::getInstance($primary_table))) {
-					throw new ApplicationException(_t('Invalid table'));
-				}
-				if (!$primary->load($primary_id)) {
-					throw new ApplicationException(_t('Invalid id'));
-				}
-				if (!$primary->isReadable($this->request)) {
-					throw new ApplicationException(_t('Access denied'));
-				}
-				$object_ids = $primary->get('ca_objects.related.object_id', ['returnAsArray' => true]);
+					if (!($primary = Datamodel::getInstance($primary_table))) {
+						throw new ApplicationException(_t('Invalid table'));
+					}
+					if (!$primary->load($primary_id)) {
+						throw new ApplicationException(_t('Invalid id'));
+					}
+					if (!$primary->isReadable($this->request)) {
+						throw new ApplicationException(_t('Access denied'));
+					}
+					$t_pk = Datamodel::primaryKey($target);
+					
+					$is_fk = false;
+					if ($primary->hasField($t_pk)) {
+						if ($id = $primary->get($t_pk)) {
+							$is_fk = true;
+							$t_ids = [$id];
+						} else {
+							$t_ids = [];
+						}
+					} else {
+						$t_ids = $primary->get("{$target}.related.{$t_pk}", ['returnAsArray' => true]);
+					}
 		
-				if(is_array($object_ids) && sizeof($object_ids)) {
-					$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
+					if(is_array($t_ids) && sizeof($t_ids)) {
+						$qr_t = caMakeSearchResult($target, $t_ids);
 				
-					while($qr_objects->nextHit()) {
-						$object_id = $qr_objects->getPrimaryKey();
-						$t_object = $qr_objects->getInstance();
+						while($qr_t->nextHit()) {
+							$t_id = $qr_t->getPrimaryKey();
+							$t_instance = $qr_t->getInstance();
 		
-						if (!($location_id = $t_object->get('home_location_id'))) { continue; }
-						if (!$t_object->isSaveable($this->request)) { continue; }
+							if (!($location_id = $t_instance->get('home_location_id'))) { continue; }
+							if (!$t_instance->isSaveable($this->request)) { continue; }
 	
-						foreach($policies as $n => $p) {
-							if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
+							foreach($policies as $n => $p) {
+								if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
 						
-							$pe = $p['elements']['ca_storage_locations'];
-							$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
-							if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
+								$pe = $p['elements']['ca_storage_locations'];
+								$d = isset($pe[$t_instance->getTypeCode()]) ? $pe[$t_instance->getTypeCode()] : $pe['__default__'];
+								if (!$is_fk && (!is_array($d) || !isset($d['trackingRelationshipType']))) { $errors[] = $t_id; continue; }
 						
-							// Interstitials?
-							$effective_date = null;
-							$interstitial_values = [];
-							if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
-								foreach($interstitial_elements as $e) {
-									switch($e) {
-										case 'effective_date':
-											$effective_date = _t('today');
-											break;
+								// Interstitials?
+								$effective_date = null;
+								$interstitial_values = [];
+								if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
+									foreach($interstitial_elements as $e) {
+										switch($e) {
+											case 'effective_date':
+												$effective_date = _t('today');
+												break;
+										}
 									}
 								}
-							}
 						
-							if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
-								$already_home[] = $object_id;
-								continue;
-							}
+								if (is_array($cv = $t_instance->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
+									$already_home[] = $t_id;
+									continue;
+								}
 						
-							$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
-							ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
+								$t_item_rel = $t_instance->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
+								$target::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
 		
-							if($t_object->numErrors() > 0) {
-								$errors[] = $object_id;
-							} else {
-								$updated[] = $object_id;
+								if($t_instance->numErrors() > 0) {
+									$errors[] = $t_id;
+								} else {
+									$updated[] = $t_id;
+								}
 							}
-						}
-					}	
-					$n = sizeof($updated);
-					$h = sizeof($already_home);
+						}	
+						$n = sizeof($updated);
+						$h = sizeof($already_home);
 				
-					if($h > 0) {
-						$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $h);
-					} else {
-						$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'));
+						if($h > 0) {
+							$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty($target, 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty($target, 'NAME_PLURAL'), $h);
+						} else {
+							$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty($target, 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty($target, 'NAME_PLURAL'));
+						}
+						if (sizeof($errors)) {
+							$msg .= '; '._t('%1 errors', sizeof($errors));
+						}
 					}
-					if (sizeof($errors)) {
-						$msg .= '; '._t('%1 errors', sizeof($errors));
-					}
+					$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
+				} else {
+					$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 				}
-				$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
-			} else {
-				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 			}
-			
+		} else {
+			$resp = ['ok' => 0, 'message' => _t('Invalid target'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 		}
 		$this->view->setVar('response', $resp);
-		$this->render('../objects/return_to_home_locations.php');
+		$this->render('../generic/return_to_home_locations.php');
 	}
 	# -------------------------------------------------------
 	/**

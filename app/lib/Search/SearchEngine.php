@@ -127,6 +127,7 @@ class SearchEngine extends SearchBase {
 	 *		appendToSearch = 
 	 *		restrictSearchToFields = 
 	 *      rootRecordsOnly = Only return records that are the root of whatever hierarchy they are in. [Default is false]
+	 *		filterDeaccessionedRecords = Omit deaccessioned records from the result set. [Default is false]
 	 *
 	 * @return SearchResult Results packages in a SearchResult object, or sub-class of SearchResult if an instance was passed in $po_result
 	 * @uses TimeExpressionParser::parse
@@ -140,7 +141,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		$ps_search = preg_replace('![\|]([A-Za-z0-9_,;]+[:]{1})!', "/$1", $ps_search);	// allow | to be used in lieu of / as the relationship type separator, as "/" is problematic to encode in GET requests
-		$ps_search = preg_replace('/(?!")\['.caGetBlankLabelText().'\](?!")/i', '"['.caGetBlankLabelText().']"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		$ps_search = preg_replace('/(?!")\['.caGetBlankLabelText($this->ops_tablename).'\](?!")/i', '"['.caGetBlankLabelText($this->ops_tablename).']"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		$ps_search = preg_replace('/(?!")\['._t('SET').'\](?!")/i', '"['._t('SET').']"', $ps_search); // the special [SET] search term, which returns records that have *any* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
@@ -287,6 +288,9 @@ class SearchEngine extends SearchBase {
 				
 				if (caGetOption('rootRecordsOnly', $pa_options, false)) {
 					$this->addResultFilter($this->ops_tablename.'.parent_id', 'IS', NULL);
+				}
+				if (caGetOption('filterDeaccessionedRecords', $pa_options, false) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($t_instance->hasField('is_deaccessioned'))) {
+					$this->addResultFilter($this->ops_tablename.'.is_deaccessioned', '=', 0);
 				}
 			
 				if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {

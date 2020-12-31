@@ -71,16 +71,16 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null) {
-		//if (CompositeCache::contains("mediahelper_imagemagick_installed")) { return CompositeCache::fetch("mediahelper_imagemagick_installed"); }
+		if (CompositeCache::contains("mediahelper_imagemagick_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_imagemagick_installed", "mediaPluginInfo"); }
 		if(!$ps_imagemagick_path) { $ps_imagemagick_path = caGetExternalApplicationPath('imagemagick', ['executableName' => 'identify']); }
 
 		if (!caIsValidFilePath($ps_imagemagick_path)) { 
-			CompositeCache::save("mediahelper_imagemagick_installed", false);
+			CompositeCache::save("mediahelper_imagemagick_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
 		if ((caGetOSFamily() == OS_WIN32) && $ps_imagemagick_path) { 
-			CompositeCache::save("mediahelper_imagemagick_installed", true);
+			CompositeCache::save("mediahelper_imagemagick_installed", $ps_imagemagick_path, "mediaPluginInfo");
 			return $ps_imagemagick_path; 
 		}	// don't try exec test on Windows
 		
@@ -88,7 +88,7 @@
 		
 		$vb_ret =  (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_imagemagick_installed", $vb_ret);
+		CompositeCache::save("mediahelper_imagemagick_installed", $ps_imagemagick_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_imagemagick_path : false;
 	}
@@ -100,16 +100,16 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path=null) {
-		//if (CompositeCache::contains("mediahelper_graphicsmagick_installed")) { return CompositeCache::fetch("mediahelper_graphicsmagick_installed"); }
+		if (CompositeCache::contains("mediahelper_graphicsmagick_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_graphicsmagick_installed", "mediaPluginInfo"); }
 		if(!$ps_graphicsmagick_path) { $ps_graphicsmagick_path = caGetExternalApplicationPath('graphicsmagick'); }
 
 		if (!caIsValidFilePath($ps_graphicsmagick_path)) { 
-			CompositeCache::save("mediahelper_graphicsmagick_installed", false);
+			CompositeCache::save("mediahelper_graphicsmagick_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
 		if ((caGetOSFamily() == OS_WIN32) && $ps_graphicsmagick_path) { 
-			CompositeCache::save("mediahelper_graphicsmagick_installed", true);
+			CompositeCache::save("mediahelper_graphicsmagick_installed", $ps_graphicsmagick_path, "mediaPluginInfo");
 			return $ps_graphicsmagick_path; 
 		} // don't try exec test on Windows
 		
@@ -117,7 +117,7 @@
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_graphicsmagick_installed", $vb_ret);
+		CompositeCache::save("mediahelper_graphicsmagick_installed", $ps_graphicsmagick_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_graphicsmagick_path : false;
 	}
@@ -129,11 +129,11 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginDcrawInstalled($ps_path_to_dcraw=null) {
-		//if (CompositeCache::contains("mediahelper_dcraw_installed")) { return CompositeCache::fetch("mediahelper_dcraw_installed"); }
+		if (CompositeCache::contains("mediahelper_dcraw_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_dcraw_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_dcraw) { $ps_path_to_dcraw = caGetExternalApplicationPath('dcraw'); }
 
 		if (!caIsValidFilePath($ps_path_to_dcraw)) { 
-			CompositeCache::save("mediahelper_dcraw_installed", false);
+			CompositeCache::save("mediahelper_dcraw_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
@@ -141,7 +141,7 @@
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_dcraw_installed", $vb_ret);
+		CompositeCache::save("mediahelper_dcraw_installed", $vb_ret, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_path_to_dcraw : false;
 	}
@@ -153,16 +153,16 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null) {
-		//if (CompositeCache::contains("mediahelper_ffmpeg_installed")) { return CompositeCache::fetch("mediahelper_ffmpeg_installed"); }
+		if (CompositeCache::contains("mediahelper_ffmpeg_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_ffmpeg_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_ffmpeg) { $ps_path_to_ffmpeg = caGetExternalApplicationPath('ffmpeg'); }
 
 		if (!caIsValidFilePath($ps_path_to_ffmpeg)) { 
-			CompositeCache::save("mediahelper_ffmpeg_installed", false);
+			CompositeCache::save("mediahelper_ffmpeg_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
 		if ((caGetOSFamily() == OS_WIN32) && $ps_path_to_ffmpeg) { 
-			CompositeCache::save("mediahelper_ffmpeg_installed", true);
+			CompositeCache::save("mediahelper_ffmpeg_installed", $ps_path_to_ffmpeg, "mediaPluginInfo");
 			return $ps_path_to_ffmpeg; 
 		}	// don't try exec test on Windows
 		
@@ -170,7 +170,7 @@
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_ffmpeg_installed", $vb_ret);
+		CompositeCache::save("mediahelper_ffmpeg_installed", $ps_path_to_ffmpeg, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_path_to_ffmpeg : false;
 	}
@@ -182,16 +182,16 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript=null) {
-		//if (CompositeCache::contains("mediahelper_ghostscript_installed")) { return CompositeCache::fetch("mediahelper_ghostscript_installed"); }
+		if (CompositeCache::contains("mediahelper_ghostscript_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_ghostscript_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_ghostscript) { $ps_path_to_ghostscript = caGetExternalApplicationPath('ghostscript'); }
 
 		if (!caIsValidFilePath($ps_path_to_ghostscript)) { 
-			CompositeCache::save("mediahelper_ghostscript_installed", false);
+			CompositeCache::save("mediahelper_ghostscript_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		
 		if ((caGetOSFamily() == OS_WIN32) && $ps_path_to_ghostscript) { 
-			CompositeCache::save("mediahelper_ghostscript_installed", true);
+			CompositeCache::save("mediahelper_ghostscript_installed", $ps_path_to_ghostscript, "mediaPluginInfo");
 			return $ps_path_to_ghostscript; 
 		} // don't try exec test on Windows
 		
@@ -199,7 +199,7 @@
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_ghostscript_installed", $vb_ret);
+		CompositeCache::save("mediahelper_ghostscript_installed", $ps_path_to_ghostscript, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_path_to_ghostscript : false;
 	}
@@ -211,11 +211,11 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null) {
-		//if (CompositeCache::contains("mediahelper_pdftotext_installed")) { return CompositeCache::fetch("mediahelper_pdftotext_installed"); }
+		if (CompositeCache::contains("mediahelper_pdftotext_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdftotext_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_pdf_to_text) { $ps_path_to_pdf_to_text = caGetExternalApplicationPath('pdftotext'); }
 		
 		if (!caIsValidFilePath($ps_path_to_pdf_to_text)) { 
-			CompositeCache::save("mediahelper_pdftotext_installed", false);
+			CompositeCache::save("mediahelper_pdftotext_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		
@@ -223,7 +223,7 @@
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_pdftotext_installed", $vb_ret);
+		CompositeCache::save("mediahelper_pdftotext_installed", $ps_path_to_pdf_to_text, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_path_to_pdf_to_text : false;
 	}
@@ -235,15 +235,15 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null) {
-		//if (CompositeCache::contains("mediahelper_libreoffice_installed")) { return CompositeCache::fetch("mediahelper_libreoffice_installed"); }
+		if (CompositeCache::contains("mediahelper_libreoffice_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_libreoffice_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_libreoffice) { $ps_path_to_libreoffice = caGetExternalApplicationPath('libreoffice'); }
 		if (!caIsValidFilePath($ps_path_to_libreoffice)) { 
-			CompositeCache::save("mediahelper_libreoffice_installed", false);
+			CompositeCache::save("mediahelper_libreoffice_installed", false, "mediaPluginInfo");
 			return false;
 		}
 		
 		if ((caGetOSFamily() == OS_WIN32) && $ps_path_to_libreoffice) { 
-			CompositeCache::save("mediahelper_libreoffice_installed", true);
+			CompositeCache::save("mediahelper_libreoffice_installed", $ps_path_to_libreoffice, "mediaPluginInfo");
 			return $ps_path_to_libreoffice; 
 		} // don't try exec test on Windows
 		
@@ -251,7 +251,7 @@
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_libreoffice_installed", $vb_ret);
+		CompositeCache::save("mediahelper_libreoffice_installed", $ps_path_to_libreoffice, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_path_to_libreoffice : false;
 	}
@@ -297,20 +297,20 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaInfoInstalled($ps_mediainfo_path=null) {
-		//if (CompositeCache::contains("mediahelper_mediainfo_installed")) { return CompositeCache::fetch("mediahelper_mediainfo_installed"); }
+		if (CompositeCache::contains("mediahelper_mediainfo_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_mediainfo_installed", "mediaPluginInfo"); }
 		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
 		if (!caIsValidFilePath($ps_mediainfo_path)) { 
-			CompositeCache::save("mediahelper_mediainfo_installed", false);
+			CompositeCache::save("mediahelper_mediainfo_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		if ((caGetOSFamily() == OS_WIN32) && $ps_mediainfo_path) { 
-			CompositeCache::save("mediahelper_mediainfo_installed", true);
+			CompositeCache::save("mediahelper_mediainfo_installed", $ps_mediainfo_path, "mediaPluginInfo");
 			return $ps_mediainfo_path; 
 		} // don't try exec test on Windows
 		caExec($ps_mediainfo_path." --Help > /dev/null",$va_output,$vn_return);
 		$vb_ret = ($vn_return == 255) || ($vn_return == 0);
 		
-		CompositeCache::save("mediahelper_mediainfo_installed", $vb_ret);
+		CompositeCache::save("mediahelper_mediainfo_installed", $ps_mediainfo_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_mediainfo_path : false;
 	}
@@ -322,21 +322,21 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
-		//if (CompositeCache::contains("mediahelper_openctm_installed")) { return CompositeCache::fetch("mediahelper_openctm_installed"); }
+		if (CompositeCache::contains("mediahelper_openctm_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_openctm_installed", "mediaPluginInfo"); }
 		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
 
 		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { 
-			CompositeCache::save("mediahelper_openctm_installed", false);
+			CompositeCache::save("mediahelper_openctm_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		if ((caGetOSFamily() == OS_WIN32) && $ps_openctm_ctmconv_path) { 
-			CompositeCache::save("mediahelper_openctm_installed", true);
+			CompositeCache::save("mediahelper_openctm_installed", $ps_openctm_ctmconv_path, "mediaPluginInfo");
 			return $ps_openctm_ctmconv_path; 
 		}	// don't try exec test on Windows
 		caExec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
 		$vb_ret = ($vn_return == 0);
 		
-		CompositeCache::save("mediahelper_openctm_installed", $vb_ret);
+		CompositeCache::save("mediahelper_openctm_installed", $ps_openctm_ctmconv_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_openctm_ctmconv_path : false;
 	}
@@ -348,15 +348,15 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMeshlabServerInstalled($ps_meshlabserver_path=null) {
-		//if (CompositeCache::contains("mediahelper_meshlabserver_installed")) { return CompositeCache::fetch("mediahelper_meshlabserver_installed"); }
+		if (CompositeCache::contains("mediahelper_meshlabserver_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_meshlabserver_installed", "mediaPluginInfo"); }
 		if(!$ps_meshlabserver_path) { $ps_meshlabserver_path = caGetExternalApplicationPath('meshlabserver'); }
 
 		if (!caIsValidFilePath($ps_meshlabserver_path)) { 
-			CompositeCache::save("mediahelper_meshlabserver_installed", false);
+			CompositeCache::save("mediahelper_meshlabserver_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		if ((caGetOSFamily() == OS_WIN32) && $ps_meshlabserver_path) { 
-			CompositeCache::save("mediahelper_meshlabserver_installed", true);
+			CompositeCache::save("mediahelper_meshlabserver_installed", $ps_meshlabserver_path, "mediaPluginInfo");
 			return $ps_meshlabserver_path; 
 		}	// don't try exec test on Windows
 		
@@ -366,7 +366,7 @@
 		
 		$vb_ret = ($vn_return == 1);
 		
-		CompositeCache::save("mediahelper_meshlabserver_installed", $vb_ret);
+		CompositeCache::save("mediahelper_meshlabserver_installed", $ps_meshlabserver_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_meshlabserver_path : false;
 	}
@@ -378,20 +378,20 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caPDFMinerInstalled($ps_pdfminer_path=null) {
-		//if (CompositeCache::contains("mediahelper_pdfminer_installed")) { return CompositeCache::fetch("mediahelper_pdfminer_installed"); }
+		if (CompositeCache::contains("mediahelper_pdfminer_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdfminer_installed", "mediaPluginInfo"); }
 		if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
 
 		if (!caIsValidFilePath($ps_pdfminer_path)) { 
-			CompositeCache::save("mediahelper_pdfminer_installed", false);
+			CompositeCache::save("mediahelper_pdfminer_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
 		if (!@is_readable($ps_pdfminer_path)) { 
-			CompositeCache::save("mediahelper_pdfminer_installed", false);
+			CompositeCache::save("mediahelper_pdfminer_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		if ((caGetOSFamily() == OS_WIN32) && $ps_pdfminer_path) { 
-			CompositeCache::save("mediahelper_pdfminer_installed", true);
+			CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 			return $ps_pdfminer_path; 
 		} // don't try exec test on Windows
 		
@@ -399,7 +399,7 @@
 		
 		$vb_ret = ($vn_return == 100);
 		
-		CompositeCache::save("mediahelper_pdfminer_installed", $vb_ret);
+		CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_pdfminer_path : false;
 	}
@@ -411,20 +411,20 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
-		//if (CompositeCache::contains("mediahelper_wkhtmltopdf_installed")) { return CompositeCache::fetch("mediahelper_wkhtmltopdf_installed"); }
+		if (CompositeCache::contains("mediahelper_wkhtmltopdf_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_wkhtmltopdf_installed", "mediaPluginInfo"); }
 		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
 		
 		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !@is_readable($ps_wkhtmltopdf_path)) { 
-			CompositeCache::save("mediahelper_wkhtmltopdf_installed", false);
+			CompositeCache::save("mediahelper_wkhtmltopdf_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		
 		if (!@is_readable($ps_wkhtmltopdf_path)) { 
-			CompositeCache::save("mediahelper_wkhtmltopdf_installed", false);
+			CompositeCache::save("mediahelper_wkhtmltopdf_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		if ((caGetOSFamily() == OS_WIN32) && $ps_wkhtmltopdf_path){ 
-			CompositeCache::save("mediahelper_wkhtmltopdf_installed", true);
+			CompositeCache::save("mediahelper_wkhtmltopdf_installed", $ps_wkhtmltopdf_path, "mediaPluginInfo");
 			return $ps_wkhtmltopdf_path; 
 		} // don't try exec test on Windows
 		
@@ -432,9 +432,41 @@
 		
 		$vb_ret = (($vn_return == 0) || ($vn_return == 1));
 		
-		CompositeCache::save("mediahelper_wkhtmltopdf_installed", $vb_ret);
+		CompositeCache::save("mediahelper_wkhtmltopdf_installed", $ps_wkhtmltopdf_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_wkhtmltopdf_path : false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if youtube-dl (http://www.youtube-dl.org) is installed in the given path.
+	 *
+	 * @param string $youtube_dl_path path to youtube-dl executable
+	 * @return mixed Path to executable if installed, false if not installed
+	 */
+	function caYouTubeDlInstalled($youtube_dl_path=null) {
+		if (CompositeCache::contains("mediahelper_youtube_dl_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_youtube_dl_installed", "mediaPluginInfo"); }
+		if(!$youtube_dl_path) { $youtube_dl_path = caGetExternalApplicationPath('youtube-dl'); }
+		
+		if (!trim($youtube_dl_path) || (preg_match("/[^\/A-Za-z0-9\.:\-]+/", $youtube_dl_path)) || !@is_readable($youtube_dl_path)) { 
+			CompositeCache::save("mediahelper_youtube_dl_installed", false, "mediaPluginInfo");
+			return false; 
+		}
+		if (!@is_readable($youtube_dl_path)) { 
+			CompositeCache::save("mediahelper_youtube_dl_installed", false, "mediaPluginInfo");
+			return false; 
+		}
+		if ((caGetOSFamily() == OS_WIN32) && $youtube_dl_path){ 
+			CompositeCache::save("mediahelper_youtube_dl_installed", $youtube_dl_path, "mediaPluginInfo");
+			return $youtube_dl_path; 
+		} // don't try exec test on Windows
+		
+		caExec($youtube_dl_path." > /dev/null", $output, $return);
+		
+		$ret = (($return == 0) || ($return == 1) || ($return == 2));
+		
+		CompositeCache::save("mediahelper_youtube_dl_installed", $youtube_dl_path, "mediaPluginInfo");
+		
+		return $ret ? $youtube_dl_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -444,20 +476,20 @@
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caExifToolInstalled($ps_exiftool_path=null) {
-		//if (CompositeCache::contains("mediahelper_exiftool_installed")) { return CompositeCache::fetch("mediahelper_exiftool_installed"); }
+		if (CompositeCache::contains("mediahelper_exiftool_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_exiftool_installed", "mediaPluginInfo"); }
 		if(!$ps_exiftool_path) { $ps_exiftool_path = caGetExternalApplicationPath('exiftool'); }
 		
 		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !@is_readable($ps_exiftool_path)) { 
-			CompositeCache::save("mediahelper_exiftool_installed", false);
+			CompositeCache::save("mediahelper_exiftool_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		
 		if (!@is_readable($ps_exiftool_path)) { 
-			CompositeCache::save("mediahelper_exiftool_installed", false);
+			CompositeCache::save("mediahelper_exiftool_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		if ((caGetOSFamily() == OS_WIN32) && $ps_exiftool_path) { 
-			CompositeCache::save("mediahelper_exiftool_installed", true);
+			CompositeCache::save("mediahelper_exiftool_installed", $ps_exiftool_path, "mediaPluginInfo");
 			return $ps_exiftool_path; 
 		} // don't try exec test on Windows
 		
@@ -465,7 +497,7 @@
 	
 		$vb_ret = ($vn_return == 0);
 		
-		CompositeCache::save("mediahelper_exiftool_installed", $vb_ret);
+		CompositeCache::save("mediahelper_exiftool_installed", $ps_exiftool_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_exiftool_path : false;
 	}

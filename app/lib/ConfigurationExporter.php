@@ -455,6 +455,10 @@ final class ConfigurationExporter {
 							// we export all settings (not just non-default) when we're running diff exports ..
 							// otherwise we only care about non default ones
 							if($this->opn_modified_after || ($vs_value != $va_available_settings[$vs_setting]["default"])) {
+								if ($vs_setting === 'restrictToTypes'){
+									$t_item = new ca_list_items($vs_value);
+									$vs_value = $t_item->get('idno');
+								}
 								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								$vo_settings->appendChild($vo_setting);
@@ -580,6 +584,10 @@ final class ConfigurationExporter {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
 					foreach($va_values as $vs_value) {
+						if ($vs_setting === 'restrictToTypes'){
+							$t_item = new ca_list_items($vs_value);
+							$vs_value = $t_item->get('idno');
+						}
 						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
@@ -1015,7 +1023,7 @@ final class ConfigurationExporter {
 					}
 
 					if (is_array($va_types) && (sizeof($va_types) > 0)) {
-						$vo_screen->setAttribute("typeRestrictions", join(",", $va_types));
+						$vo_screen->setAttribute("typeRestrictions", join(",", array_unique($va_types)));
 						$vo_screen->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
 					}
 				}
@@ -1036,7 +1044,7 @@ final class ConfigurationExporter {
 							if($va_type_restrictions && !is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
 							
 							if (is_array($va_type_restrictions) && (sizeof($va_type_restrictions) > 0)) {
-								$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+								$vo_placement->setAttribute("typeRestrictions", join(",", array_unique(caMakeTypeList($vs_type, $va_type_restrictions))));
 							}
 						}
 						if (isset($va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) {

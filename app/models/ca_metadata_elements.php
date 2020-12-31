@@ -770,7 +770,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 							$va_type_ids[$qr_children->get('item_id')] = true;
 						}
 					}
-					$va_wheres[] = '((cmtr.type_id = ?) OR (cmtr.include_subtypes = 1 AND cmtr.type_id IN (?)))';
+					$va_wheres[] = '((cmtr.type_id IS NULL) OR (cmtr.type_id = ?) OR (cmtr.include_subtypes = 1 AND cmtr.type_id IN (?)))';
 					$va_where_params[] = (int)$vn_type_id;
 					$va_where_params[] = $va_type_ids;
 				}
@@ -780,7 +780,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$qr_tmp = $vo_db->query("
 				SELECT cme.*
 				FROM ca_metadata_elements cme
-				INNER JOIN ca_metadata_type_restrictions AS cmtr ON cme.hier_element_id = cmtr.element_id
+				LEFT JOIN ca_metadata_type_restrictions AS cmtr ON cme.hier_element_id = cmtr.element_id
 				{$vs_wheres}
 			", $va_where_params);
 		} else {
@@ -1050,9 +1050,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		$va_counts_by_attribute = array();
 		while($qr_use_counts->nextRow()) {
-			if (preg_match('!^ca_attribute_([A-Za-z0-9_\-]+)$!', $qr_use_counts->get('bundle_name'), $va_matches)) {
-				if (!($t_table = Datamodel::getInstanceByTableNum($qr_use_counts->get('editor_type'), true))) { continue; }
-				$va_counts_by_attribute[$va_matches[1]][$t_table->getProperty('NAME_PLURAL')] = $qr_use_counts->get('c');
+			$vn_table_num = $qr_use_counts->get('editor_type');
+			$vs_table = Datamodel::getTableName($vn_table_num);
+			if (preg_match("!^($vs_table\.|ca_attribute_)([A-Za-z0-9_\\-]+)\$!", $qr_use_counts->get('bundle_name'), $va_matches)) {
+				if (!($t_table = Datamodel::getInstanceByTableNum($vn_table_num, true))) { continue; }
+				$va_counts_by_attribute[$va_matches[2]][$t_table->getProperty('NAME_PLURAL')] = $qr_use_counts->get('c');
 			}
 		}
 

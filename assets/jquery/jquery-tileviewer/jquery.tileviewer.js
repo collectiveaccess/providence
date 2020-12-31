@@ -61,10 +61,10 @@ var methods = {
             
             toolbar: ['zoomIn', 'zoomOut', 'pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'measure', 'lock', 'separator',  'overview', 'rotation', 'expand', 'separator', 'list', 'download', 'help', 'key'],
             toolbarIcons: {
-            	'pan': '<i class="fa fa-arrows">',
-            	'toggleAnnotations': '<i class="fa fa-eye"></i>', 
-            	'rect': '<i class="fa fa-square-o"></i>', 
-            	'point': '<i class="fa fa-circle-thin"></i>', 
+            	'pan': '<i class="fas fa-arrows-alt">',
+            	'toggleAnnotations': '<i class="far fa-eye"></i>', 
+            	'rect': '<i class="far fa-square"></i>', 
+            	'point': '<i class="far fa-circle"></i>', 
             	'polygon': '<i class="fa fa-share-alt"></i>', 
             	'measure': '<i class="fa fa-text-width"></i>', 
             	'lock': '<i class="fa fa-lock"></i>', 
@@ -2430,8 +2430,8 @@ var methods = {
 							// Zooming
 							//	
 							if (options.sliderZooming) {	
-								jQuery(view.controls).append("<div class='tileviewerToolbarZoom'> </div>");
-								var z = $(view.controls).find(".tileviewerToolbarZoom");
+								jQuery($this).append("<div class='tileviewerToolbarZoom'> </div>");
+								var z = $($this).find(".tileviewerToolbarZoom");
 					
 								// center it
 								jQuery(z).css("left", ((jQuery($this).width() - 500)/2) + "px");

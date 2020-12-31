@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
+require_once(__CA_LIB_DIR__."/DeaccessionTrait.php");
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
 
@@ -45,123 +46,195 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
  	'NAME_PLURAL' 		=> _t('object lots'),
  	'FIELDS' 			=> array(
  		'lot_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this lot')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this lot')
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LIST_CODE' => 'object_lot_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object lot. In CollectiveAccess every lot has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LIST_CODE' => 'object_lot_types',
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object lot. In CollectiveAccess every lot has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'lot_status_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LIST_CODE' => 'object_lot_statuses',
-				'LABEL' => _t('Accession status'), 'DESCRIPTION' => _t('Indicates accession/collection status of lot. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LIST_CODE' => 'object_lot_statuses',
+			'LABEL' => _t('Accession status'), 'DESCRIPTION' => _t('Indicates accession/collection status of lot. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)')
 		),
 		'idno_stub' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Lot identifier'), 'DESCRIPTION' => _t('Unique alphanumeric code identifying the lot.'),
-				'BOUNDS_LENGTH' => array(0,255)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Lot identifier'), 'DESCRIPTION' => _t('Unique alphanumeric code identifying the lot.'),
+			'BOUNDS_LENGTH' => array(0,255)
 		),
 		'idno_stub_sort' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 255, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Idno stub sort', 'DESCRIPTION' => 'Sortable version of idno_stub',
-				'BOUNDS_LENGTH' => array(0,255)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 255, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Idno stub sort', 'DESCRIPTION' => 'Sortable version of idno_stub',
+			'BOUNDS_LENGTH' => array(0,255)
 		),
 		'extent' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Extent'), 'DESCRIPTION' => _t('The extent of the object lot. This is typically the number of discrete items that compose the lot by this record. It is stored as a whole number (eg. 1, 2, 3...).')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Extent'), 'DESCRIPTION' => _t('The extent of the object lot. This is typically the number of discrete items that compose the lot by this record. It is stored as a whole number (eg. 1, 2, 3...).')
 		),
 		'extent_units' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Extent units'), 'DESCRIPTION' => _t('Units of extent value. (eg. pieces, items, components, reels, etc.)'),
-				'BOUNDS_LENGTH' => array(0,255)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Extent units'), 'DESCRIPTION' => _t('Units of extent value. (eg. pieces, items, components, reels, etc.)'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'home_location_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this lot.')
+		),
+		'is_deaccessioned' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'OPTIONS' => array(
+				_t('Yes') => 1,
+				_t('No') => 0
+			),
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'RESULTS_EDITOR_BUNDLE' => 'ca_objects_deaccession',	// bundle to use when editing this in the search/browse "results" editing interface
+			'LABEL' => _t('Is deaccessioned?'), 'DESCRIPTION' => _t('Check if lot is deaccessioned')
+		),
+		'deaccession_date' => array(
+			'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'START' => 'deaccession_sdatetime', 'END' => 'deaccession_edatetime',
+			'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the lot was deaccessioned.')
+		),
+		'deaccession_disposal_date' => array(
+			'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'START' => 'deaccession_disposal_sdatetime', 'END' => 'deaccession_disposal_edatetime',
+			'LABEL' => _t('Date of disposal'), 'DESCRIPTION' => _t('Enter the date the deaccessioned lot was disposed of.')
+		),
+		'deaccession_authorized_by' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Authorized by'), 'DESCRIPTION' => _t('Deaccession authorized by'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'deaccession_notes' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 6,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Deaccession notes'), 'DESCRIPTION' => _t('Justification for deaccession.'),
+			'BOUNDS_LENGTH' => array(0,65535)
+		),
+		'deaccession_type_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LIST_CODE' => 'object_deaccession_types',
+			'LABEL' => _t('Deaccession type'), 'DESCRIPTION' => _t('Indicates type of deaccession.')
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Not accessible to public') => 0,
-					_t('Accessible to public') => 1
-				),
-				'LIST' => 'access_statuses',
-				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if object lot is accessible to the public or not. ')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Not accessible to public') => 0,
+				_t('Accessible to public') => 1
+			),
+			'LIST' => 'access_statuses',
+			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if lot is accessible to the public or not. ')
 		),
 		'status' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Newly created') => 0,
-					_t('Editing in progress') => 1,
-					_t('Editing complete - pending review') => 2,
-					_t('Review in progress') => 3,
-					_t('Completed') => 4
-				),
-				'LIST' => 'workflow_statuses',
-				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the object lot record.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Newly created') => 0,
+				_t('Editing in progress') => 1,
+				_t('Editing complete - pending review') => 2,
+				_t('Review in progress') => 3,
+				_t('Completed') => 4
+			),
+			'LIST' => 'workflow_statuses',
+			'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the object lot record.')
 		),
 		'source_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'LIST_CODE' => 'object_lot_sources',
-				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of lot. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'object_lot_sources',
+			'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of lot. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object lot information retrieved via web services [NOT IMPLEMENTED YET].'
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object lot information retrieved via web services [NOT IMPLEMENTED YET].'
 		),
 		'deleted' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object lot is deleted or not.'),
-				'BOUNDS_VALUE' => array(0,1)
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object lot is deleted or not.'),
+			'BOUNDS_VALUE' => array(0,1)
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
 		'view_count' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		),
 		'submission_user_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -200,11 +273,8 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 );
 
 class ca_object_lots extends RepresentableBaseModel {
-
-	/**
-	 * Update location of dependent objects when changing values
-	 */
 	use HistoryTrackingCurrentValueTrait;
+	use DeaccessionTrait;
 	
 	# ---------------------------------
 	# --- Object attribute properties
@@ -386,6 +456,8 @@ class ca_object_lots extends RepresentableBaseModel {
 		$this->BUNDLES['ca_loans_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans list'));
 		$this->BUNDLES['ca_movements_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements list'));
 		$this->BUNDLES['ca_object_lots_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related object lots list'));
+		
+		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 		

@@ -968,7 +968,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 							if ($inspector_current_value = $t_item->getCurrentValueForDisplay()) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$inspector_current_value}".(($is_home) ? ' '._t('[HOME]') : '')."</div>"; }
 						}
 																	
-						if ((!$is_home || !$inspector_current_value) && $t_item->hasField('home_location_id') && ($home_location_id = $t_item->get('home_location_id')) && ($t_home_loc = ca_storage_locations::find($home_location_id, ['returnAs' => 'firstModelInstance']))) {
+						if ((!$is_home || !$inspector_current_value) && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && ($home_location_id = $t_item->get('home_location_id')) && ($t_home_loc = ca_storage_locations::find($home_location_id, ['returnAs' => 'firstModelInstance']))) {
 							if (!($template = $po_view->request->config->get('inspector_home_location_display_template'))) { $template = '^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_'; }
 							$vs_buf .= "<div class='inspectorCurrentLocation'><strong>"._t('Home location').":</strong><br/>".$t_home_loc->getWithTemplate($template)."</div>"; 
 						}
@@ -1053,7 +1053,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								$vs_label = $vs_idno;
 								$vb_show_idno = false;
 							} else {
-								$vs_label =  '['.caGetBlankLabelText().']';
+								$vs_label =  '['.caGetBlankLabelText($vs_table_name).']';
 							}
 							break;
 					}
@@ -1194,7 +1194,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "{$vs_watch}\n";
 				TooltipManager::add("#caWatchItemButton", _t('Watch/Unwatch this record'));
 
-				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) > 1)) {
 
 					$vs_buf .= "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 
@@ -1251,9 +1251,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
 			
-			
-					
-			if (($vs_table_name == 'ca_objects') && $po_view->request->user->canDoAction("can_set_home_location")) {	
+			if (caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
 				$vs_buf .= "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 				
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
@@ -2069,7 +2067,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		if (!($vs_label = $t_set->getLabelForDisplay())) {
 			if (!($vs_label = $t_set->get('set_code'))) {
-				$vs_label = '['.caGetBlankLabelText().']';
+				$vs_label = '['.caGetBlankLabelText('ca_sets').']';
 			}
 		}
 
@@ -2881,6 +2879,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		template =
 	 *		relatedItems = 
 	 *		sortOrder = 
+	 *		self_id = ID of record being related to when relationship is to self (Eg. object-object). This id will be omitted from returned items.
 	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
 	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
 	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
@@ -2895,6 +2894,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_rel_pk            			= caGetOption('primaryKey', $pa_options, $pt_rel->primaryKey());
  		$vs_rel_table         			= caGetOption('table', $pa_options, $pt_rel->tableName());
+ 		$self_id         				= caGetOption('self_id', $pa_options, null, ['castTo' => 'int']);
 
 		$o_config = (!isset($pa_options['config']) || !is_object($pa_options['config'])) ? Configuration::load() : $pa_options['config'];
 
@@ -2913,6 +2913,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$po_request = 								caGetOption('request', $pa_options, null);
 		if(!$po_request) { global $g_request; $po_request = $g_request; }
 
+		if($self_id) { $va_exclude[] = $self_id; }
 
 		if (!is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) { $va_display_format = ['^label']; }
 		if (!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) { $vs_display_delimiter = ''; }
@@ -3404,18 +3405,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
 	 * @param string $ps_table
+	 * @param string $ps_related_table
 	 * @param array $pa_options
 	 *		sort = 
 	 *		sortDirection = 
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $pa_options=null) {
+	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $ps_related_table, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = []; }
 		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		if(!$ps_table) { return '???'; }
-		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default')]))) || !sizeof($va_sort_fields)) { return ''; }
+		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default'), 'includeInterstitialSortsFor' => $ps_related_table]))) || !sizeof($va_sort_fields)) { return ''; }
 		
 		$sort = caGetOption('sort', $pa_options, null);
 		$sort_direction = caGetOption('sortDirection', $pa_options, null);
@@ -3443,14 +3445,45 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	}
 	# ---------------------------------------
 	/** 
-	 * Used by ca_objects bundle
+	 * Check if home location functionality is enabled for a given table and, optionally, type
+	 *
+	 * @param string $table 
+	 * @param mixed $type Type code or type_id
+	 *
+	 * @return bool
 	 */
-	function caReturnToHomeLocationControlForRelatedObjectBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
-		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
-		if(!is_array($policies) || !sizeof($policies)) { return ''; }
-		if (!$ps_policy) { $ps_policy = ca_objects::getDefaultHistoryTrackingCurrentValuePolicy(); }
+	function caHomeLocationsEnabled(string $table, $type=null, array $options=null) {
+		if(!in_array($table, ['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_collections'], true)) { return false; }
+		$o_config = Configuration::load();
+		if($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+		if($type && is_numeric($type) && ($t_instance = Datamodel::getInstance($table, true))) {	
+			// Try converting numeric type to type code
+			$type = $t_instance->getTypeCodeForID((int)$type);
+			if($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+		}
+		if(caGetOption('enableIfAnyTypeSet', $options, false) && ($t_instance = Datamodel::getInstance($table, true))) {
+			if(is_array($types = array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList()))) {
+				foreach($types as $type) {
+					if((bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+				}
+			}
+		}
 		
-		$settings = ca_objects::policy2bundleconfig(['policy' => $ps_policy]);
+		if((bool)$o_config->get("{$table}_enable_home_location")) { return true; }
+		
+		return false;
+	}
+	# ---------------------------------------
+	/** 
+	 * Used by ca_objects, ca_collections and ca_object_lots bundles
+	 */
+	function caReturnToHomeLocationControlForRelatedBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
+		$target = $pt_related->tableName();
+		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
+		if(!is_array($policies) || !sizeof($policies)) { return ''; }
+		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }
+		
+		$settings = $target::policy2bundleconfig(['policy' => $ps_policy]);
 		$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
 		
 		$vs_buf = "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_button' class='editorBundleReturnToHomeControl'>".
@@ -3473,7 +3506,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				}
 				function caReturnToHomeLocation{$ps_id_prefix}() {
 					var interstitials = ".json_encode($interstitials).";
-					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy': '{$ps_policy}'};
+					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy': '{$ps_policy}', 'target': '{$target}'};
 					for(var i in interstitials) {
 						data[interstitials[i]] = jQuery('#{$ps_id_prefix}_ca_storage_locations__' + interstitials[i]).val();
 					}
@@ -3496,7 +3529,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								setTimeout(function() { 
 									caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
 									caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
-									caBundleUpdateManager.reloadBundle('ca_objects'); 
+									caBundleUpdateManager.reloadBundle('{$target}'); 
 								}, 3000);
 							}
 					}, 'json');
@@ -3590,7 +3623,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
 				$vs_user_currency = 'USD';
 			}
-			$vs_user_currency = caGetCurrencySymbol($vs_user_currency);
+			$vs_user_currency = caGetCurrencySymbol($vs_user_currency, $va_tmp[1]);
 
 			// Parse out tags and optional sub-elements from template
 			//		we have to pull each sub-element separately
@@ -4844,16 +4877,26 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * "blank_label_text" option. If the option is not set the default value of
 	 * "[BLANK]" will be returned.
 	 *
+	 * @param mixed $table Table name of number blank label is to be applied to. If set 
+	 *						table-specific text is set with fallback to general "blank_label_text"
+	 *
 	 * @return string
 	 */
-	$g_blank_label_text = null;
-	function caGetBlankLabelText() {
-		global $g_blank_label_text;
-		if ($g_blank_label_text) { return $g_blank_label_text; }
+	function caGetBlankLabelText($table=null) {
+		if (MemoryCache::contains('blank_label_text_'.$table)) { return MemoryCache::fetch('blank_label_text_'.$table); }
 		$config = Configuration::load();
-		if ($label_text = $config->get('blank_label_text')) {
+		
+		$d = [];
+		if (($table) && ($t = Datamodel::getInstance($table, true))) {
+			$d[] = $t->tableName().'_blank_label_text';
+		}
+
+		$d[] = 'blank_label_text';
+		
+		if ($label_text = $config->get($d)) {
 		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
-			return $g_blank_label_text = _t($label_text);
+		    MemoryCache::save('blank_label_text_'.$table, $l = _t($label_text));
+			return $l;
 		}
 		return $g_blank_label_text = _t('BLANK');
 	}
@@ -4904,12 +4947,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		extension = file extension of media being downloaded.
 	 *		original_filename = original filename of media being downloaded.
 	 *		representation_id = Representation_id of media being downloaded.
+	 * @param array $options Options include:
+	 *		mode = Naming mode. Can be idno, idno_and_version, idno_and_rep_id_and_version, original_name. If not set defaults to value in <table>_downloaded_file_naming or _downloaded_file_naming app.conf directive.
 	 *
 	 * @return string File name
 	 */
-	function caGetRepresentationDownloadFileName($table, $data, $options=null) {
+	function caGetRepresentationDownloadFileName(string $table, array $data, ?array $options=null) : string {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = caGetOption('mode', $options, $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming']))) {
 			case 'idno':
 				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
 				break;
@@ -4962,15 +5007,16 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caGetMediaDownloadArchiveName($table, $id, $options=null) {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", "downloaded_media_archive_file_naming","{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", 'downloaded_media_archive_file_naming', "{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
 			case 'idno':
-				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
-				break;
+				// Noop - fall through	
 			default:
-				if (strpos($mode, "^") == false) { // use default templte
+				if (strpos($mode, "^") === false) { // use default template
 					$mode = "^{$table}.idno";
 				}
-				$filename = caProcessTemplateForIDs($mode, $table, [$id]);
+				if (!($filename = caProcessTemplateForIDs($mode, $table, [$id]))) {
+					$filename = 'export';
+				}
 				$ext = caGetOption('extension', $options, 'zip');
 				
 				if(!preg_match("!\.{$ext}$!i", $filename)) {

@@ -470,18 +470,6 @@ class ImportHelpersTest extends TestCase {
         $this->assertSame('7:30', $result);
     }
 
-    public function testCaValidateGoogleSheetsUrlReturnsNullForBadUrl() {
-        $url = "http://collectiveaccess.org";
-        $result = caValidateGoogleSheetsUrl($url);
-        $this->assertNull($result);
-    }
-
-    public function testCaValidateGoogleSheetsUrlReturnsValidatedUrl() {
-        $url = "https://docs.google.com/file/d/";
-        $result = caValidateGoogleSheetsUrl($url);
-        $this->assertSame('https://docs.google.com/file/d/export?format=xlsx', $result);
-    }
-
     public function testCaProcessRefineryAttributesEmptyIsNotNull() {
         $pa_attributes = $this->attributes;
         $pa_source_data = $this->data;

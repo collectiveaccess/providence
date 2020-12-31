@@ -28,6 +28,8 @@
 	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
 	
+	$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
+	
 	$settings 			= $this->getVar('settings');
 	
 	$is_batch			= $this->getVar('batch');
@@ -62,6 +64,7 @@
 	$loaded_sort_direction 	= $this->getVar('sortDirection');
 	
 	$rep_count = $t_subject->getRepresentationCount($settings);
+	$allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 	
 	$errors = $failed_inserts = [];
 	
@@ -176,6 +179,11 @@
 						<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('id' => '{fieldNamePrefix}rel_type_id_{n}', 'name' => '{fieldNamePrefix}rel_type_id_{n}', 'value' => '{rel_type_id}'), $settings)); ?></div>
 <?php
 	} 
+	if ($allow_fetching_from_urls) { 
+?>
+						<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>			
+<?php 
+	} 
 						foreach($bundles_to_edit_proc as $f) {
 							if($f === 'type_id') { // type
 								print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
@@ -250,12 +258,24 @@
 <?php } ?>	
 			<div class="mediaUploadContainer">
 				<div style="float: left;">
+<?php					
+			if($this->request->getAppConfig()->get('allow_representations_without_media')) {
+?>
+				<div class="formLabelPlain"><?= caHTMLCheckBoxInput("{$id_prefix}_no_media_{n}", ['value' => 1, 'id' => $id_prefix.'NoMedia{n}'])._t('No media'); ?></div>
+<?php
+			}
+?>
 					<div id="<?= $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
 						<input type="file" style="display: none;" id="<?= $id_prefix; ?>UploadFileControl{n}" multiple/>
 						<div id="<?= $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
 					</div>
 				</div>
 				<div class="mediaUploadEditArea">
+	
+<?php if ($allow_fetching_from_urls) { ?>
+				<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>
+				
+<?php } ?>				
 <?php
     if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
 ?>
@@ -270,7 +290,7 @@
 					if(in_array($f, ['media'])) { continue; }
 					
 					if($f === 'type_id') { // type
-						print "<div class='formLabel''>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
 					} elseif($t_item->hasField($f)) { // intrinsic
 						print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
 					} elseif($t_item->hasElement($f)) {
@@ -304,10 +324,20 @@
 					fieldNamePrefix: '<?= $id_prefix; ?>',
 					uploadURL:  '<?= caNavUrl($this->request, '*', '*', 'UploadFiles'); ?>',
 					index: '{n}',
+					maxFilesize: <?= caReturnValueInBytes(ini_get('upload_max_filesize')); ?>,
+					maxFilesizeTxt: "<?= $upload_max_filesize; ?>",
 					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
 					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
 				});	
+				
+				jQuery('#<?= $id_prefix; ?>NoMedia{n}').on('click', function(e) {
+					if(jQuery(this).attr('checked')) {
+						jQuery('#<?= $id_prefix; ?>UploadArea{n}').slideUp(250);
+					} else {
+						jQuery('#<?= $id_prefix; ?>UploadArea{n}').slideDown(250);
+					}
+				});
 			});
 		</script>
 	</textarea>
@@ -315,7 +345,7 @@
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName(), 'sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div class='mediaMetadataActionButton' style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";

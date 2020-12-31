@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2019 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -240,19 +240,20 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			$va_tmp = explode('|', $ps_value);
 			$va_info = array();
 			if(sizeof($va_tmp) == 3) { /// value is already in desired format (from autocomplete lookup)
-				// get extra indexing info for this uri from plugin implementation
-				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
-				$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_tmp[0]);
-				$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_tmp[2]);
-				$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_tmp[2]);
+				if ($va_tmp[2]) {	// Skip if no url set (is "no match" message)
+					// get extra indexing info for this uri from plugin implementation
+					$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
+					$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_tmp[0]);
+					$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_tmp[2]);
+					$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_tmp[2]);
 
-				return array(
-					'value_longtext1' => $vs_display_text,	// text
-					'value_longtext2' => $va_tmp[2],		// uri
-					'value_decimal1' => is_numeric($va_tmp[1]) ? $va_tmp[1] : null, 		// id
-					'value_blob' => caSerializeForDatabase($va_info),
-					'value_sortable' => $this->sortableValue($vs_display_text)
-				);
+					return array(
+						'value_longtext1' => $vs_display_text,	// text
+						'value_longtext2' => $va_tmp[2],		// uri
+						'value_decimal1' => is_numeric($va_tmp[1]) ? $va_tmp[1] : null, 		// id
+						'value_blob' => caSerializeForDatabase($va_info),
+						'value_sortable' => $this->sortableValue($vs_display_text)
+					);
 			} elseif((sizeof($va_tmp)==1) && (isURL($va_tmp[0], array('strict' => true)) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
 				// try lookup cache
 				if(CompositeCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {

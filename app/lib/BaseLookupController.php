@@ -82,6 +82,7 @@
 				$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
 				$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
 				$pb_quiet = (bool)$this->request->getParameter('quiet', pInteger);
+				$self = explode(':', $this->request->getParameter('self', pString));		// table:id of calling record
 				
 				if((!(bool)$o_config->get('allow_duplicate_items_in_sets')) && ($set_id = $this->request->getParameter('set_id', pInteger))) {
 					$t_set = new ca_sets($set_id);
@@ -212,6 +213,9 @@
 						$va_opts['emptyResultMessage'] = _t('No matches found for "%1"', $ps_query);
 					}
 				
+					if(isset($self[0]) && ($self[0] === $this->ops_table_name) && isset($self[1]) && ($self[1] > 0)) {
+					    $va_opts['self_id'] = $self[1];
+					}
 					$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);
 				}
 				if (!is_array($va_items)) { $va_items = []; }

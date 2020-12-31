@@ -21,18 +21,18 @@ ALTER TABLE ca_data_import_items ADD COLUMN message text not null;
 /* -------------------------------------------------------------------------------- */
 /* Rank fields for objects and authorities */
 /* -------------------------------------------------------------------------------- */
-ALTER TABLE ca_objects ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_object_lots ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_entities ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_places ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_occurrences ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_collections ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_storage_locations ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_loans ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_movements ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_object_representations ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_sets ADD COLUMN rank int unsigned not null;
-ALTER TABLE ca_list_items MODIFY COLUMN rank int unsigned not null;
+ALTER TABLE ca_objects ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_object_lots ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_entities ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_places ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_occurrences ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_collections ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_storage_locations ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_loans ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_movements ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_object_representations ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_sets ADD COLUMN `rank` int unsigned not null;
+ALTER TABLE ca_list_items MODIFY COLUMN `rank` int unsigned not null;
 
 /* -------------------------------------------------------------------------------- */
 /* "Advanced" search form configuration */
@@ -42,11 +42,11 @@ create table ca_search_form_placements (
 	form_id		int unsigned not null references ca_search_forms(form_id),
 	
 	bundle_name 	varchar(255) not null,
-	rank			int unsigned not null,
+	`rank`			int unsigned not null,
 	settings		longtext not null,
 	
 	KEY i_bundle_name (bundle_name),
-	KEY i_rank (rank),
+	KEY i_rank (`rank`),
 	KEY i_form_id (form_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 

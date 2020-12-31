@@ -309,7 +309,6 @@ class BaseFindEngine extends BaseObject {
 		if ($primary_sort_field === '_natural') { return $hits; }
 		$primary_sort_direction = self::sortDirection(array_shift($sort_directions));
 		
-			
 		$sorted_hits = $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, $options);
 		
 		// secondary sorts?

@@ -1255,7 +1255,7 @@ class SearchResult extends BaseObject {
 					if (!sizeof($va_ids)) { return $pa_options['returnAsArray'] ? array() : null; }
 					
 					$vs_hier_pk_fld = $t_instance->primaryKey();
-					$va_hiers = $va_hier_ids = array();
+					$va_hiers = $va_hier_ids = $va_hier_list = array();
 					
 					$vs_hierarchy_direction = isset($pa_options['hierarchyDirection']) ? strtolower($pa_options['hierarchyDirection']) : 'asc';
 
@@ -1443,7 +1443,7 @@ class SearchResult extends BaseObject {
 						$vs_pk = $t_instance->primaryKey();
 						while($qr_hier->nextHit()) {
 							$vm_val = $qr_hier->get($vs_hier_fld_name, $pa_options);
-							$va_hier_list[$qr_hier->get($va_path_components['table_name'].'.'.$vs_pk)] = $vb_return_as_array ? array_shift($vm_val) : $vm_val;;
+							$va_hier_list[$qr_hier->get($va_path_components['table_name'].'.'.$vs_pk)] = ($vb_return_as_array && is_array($vm_val)) ? array_shift($vm_val) : $vm_val;
 						}
 					}
 					
@@ -2446,7 +2446,7 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
-		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
+		if (!$pa_options['returnAllLocales'] && !$vb_return_value_id) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
 		if ($pa_options['returnWithStructure']) { 
 			return is_array($va_return_values) ? $va_return_values : []; 
 		}
@@ -3650,6 +3650,28 @@ class SearchResult extends BaseObject {
 			}
 		}
 		return $this->opa_cached_result_counts[$vs_key] = $va_result;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function hasValueForBundle(string $bundle, ?array $options=null){
+		if (($vn_cur_row_index = $this->opo_engine_result->currentRow()) < 0) {
+			$vn_cur_row_index = 0;
+		}
+		self::seek(0);
+		
+		while(self::nextHit()) {
+			if($this->get($bundle) !== null) { 
+				self::seek($vn_cur_row_index);	// restore current position
+				return true; 
+			}
+		}
+		
+		// restore current position
+		self::seek($vn_cur_row_index);
+		
+		return false;
 	}
 	# ------------------------------------------------------------------
 	/**

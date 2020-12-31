@@ -130,6 +130,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			'layers'			=> 'W',
 			"quality" 			=> 'W',
 			'colorspace'		=> 'W',
+			'background'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -1184,6 +1185,9 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 						break;
 				}
 			}
+			if($background = caGetOption('background', $this->properties, null)) {
+				$pa_handle['ops'][] = ['op' => 'background', 'color' => $background];
+			}
 			
 			$va_ops = array();	
 			foreach($pa_handle['ops'] as $va_op) {
@@ -1247,6 +1251,9 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 						if (isset($va_op['amount'])) { $vs_tmp .= '+'.$va_op['amount'];}
 						if (isset($va_op['threshold'])) { $vs_tmp .= '+'.$va_op['threshold'];}
 						$va_ops['convert'][] = $vs_tmp;
+						break;
+					case 'background':
+						$va_ops['convert'][] = '-background "'.$va_op['color'].'"  -extent 0x0';
 						break;
 				}
 			}

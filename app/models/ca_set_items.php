@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -397,6 +397,8 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 			if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 				$va_tmp['fetched_from'] = $vs_fetched_from_url;
 				$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
+				$va_tmp['fetched_by'] = caGetOption('FETCHED_BY', $va_info['INPUT'], null);
+				$va_tmp['fetched_original_url'] = caGetOption('FETCHED_ORIGINAL_URL', $va_info['INPUT'], null);
 			}
  			
  			$va_reps[] = $va_tmp;

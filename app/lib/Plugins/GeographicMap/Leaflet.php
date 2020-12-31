@@ -318,8 +318,8 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight']);
 		$vn_element_height = $va_element_height['dimension'];
 		
-		
 		$points_are_directional = (bool)$pa_element_info['settings']['pointsAreDirectional'] ? 1 : 0;
+		$autoDropPin = (bool)$pa_element_info['settings']['autoDropPin'] ? 1 : 0;
  		
  		$element_id = (int)$pa_element_info['element_id'];
  		$vs_id = $pa_element_info['element_id']."_{n}";
@@ -342,6 +342,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		var map_{$vs_id}_points_are_directional = {$points_are_directional};
 		var map_{$vs_id}_rotation_in_progress = null;
 		var map_{$vs_id}_loc_str = '{{{$element_id}}}';
+		var g = new L.featureGroup();
 		
 		var arrowIcon = L.icon({
 			iconUrl: '{$base_path}/assets/leaflet/images/arrow-icon.png',
@@ -358,10 +359,18 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		var map = L.map('mapholder_{$element_id}_{n}', { attributionControl: false, maxZoom: 18 }).setView([0, 0], 8);
 		jQuery('#mapholder_{$element_id}_{n}').data('map', map); // stash map reference in <div> to allow redraw by bundle visibility manager
 		var b = L.tileLayer('{$base_map_url}').addTo(map);	
-		map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false }));
-		
-		var g = new L.featureGroup();
-		
+		map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false, callback: function(results) {
+			var bbox = results[0].boundingbox,
+				mid = new L.LatLng((parseFloat(bbox[0]) + parseFloat(bbox[1]))/2, (parseFloat(bbox[2]) + parseFloat(bbox[3]))/2),
+				bounds = new L.LatLngBounds([new L.LatLng(bbox[0], bbox[2]), new L.LatLng(bbox[1], bbox[3])]);
+			if({$autoDropPin}) {	// drop pin at center of search location if option is set
+				var marker = L.marker(mid);
+				g.addLayer(marker);
+				map_{$vs_id}_update_coord_list();
+			}
+			this._map.fitBounds(bounds);
+		}}));
+			
 		var map_{$vs_id}_update_coord_list = function (e) {
 			var label = jQuery.trim(map_{$vs_id}_loc_str.match(/^[^\[]+/));
 			var objs = [];

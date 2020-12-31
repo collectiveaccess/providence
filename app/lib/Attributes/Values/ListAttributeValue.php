@@ -491,7 +491,6 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
 
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
-		if (!$vb_require_value) { $vn_max_columns++; }
 
 		if(!isset($pa_options['useDefaultWhenNull'])) {
 			$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;

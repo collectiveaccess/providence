@@ -45,6 +45,7 @@ require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
+require_once(__CA_LIB_DIR__."/DeaccessionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects'] = array(
@@ -52,280 +53,290 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
  	'NAME_PLURAL' 		=> _t('objects'),
  	'FIELDS' 			=> array(
 		'object_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this object')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this object')
 		),
 		'parent_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => 'Parent id', 'DESCRIPTION' => 'Identifier of parent object; is null if object is root of hierarchy.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'LABEL' => 'Parent id', 'DESCRIPTION' => 'Identifier of parent object; is null if object is root of hierarchy.'
 		),
 		'hier_object_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Object hierarchy', 'DESCRIPTION' => 'Identifier of object that is root of the object hierarchy.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Object hierarchy', 'DESCRIPTION' => 'Identifier of object that is root of the object hierarchy.'
 		),
 		'lot_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true, 'DONT_ALLOW_IN_UI' => true,
-				'DEFAULT' => '',
-				'LABEL' => _t('Lot'), 'DESCRIPTION' => _t('Lot this object belongs to; is null if object is not part of a lot.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true, 'DONT_ALLOW_IN_UI' => true,
+			'DEFAULT' => '',
+			'LABEL' => _t('Lot'), 'DESCRIPTION' => _t('Lot this object belongs to; is null if object is not part of a lot.')
 		),
 		'locale_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DISPLAY_FIELD' => array('ca_locales.name'),
-				'DEFAULT' => '',
-				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('The locale from which the object originates.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DISPLAY_FIELD' => array('ca_locales.name'),
+			'DEFAULT' => '',
+			'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('The locale from which the object originates.')
 		),
 		'source_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'LIST_CODE' => 'object_sources',
-				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of object. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'object_sources',
+			'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of object. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LIST_CODE' => 'object_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object. In CollectiveAccess every object has a single "instrinsic" type that determines the set of descriptive, technical and administrative metadata that can be applied to it. As such this type is "low-level" and directly tied to the form of the object - eg. photograph, book, analog video recording, etc.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LIST_CODE' => 'object_types',
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object. In CollectiveAccess every object has a single "instrinsic" type that determines the set of descriptive, technical and administrative metadata that can be applied to it. As such this type is "low-level" and directly tied to the form of the object - eg. photograph, book, analog video recording, etc.')
 		),
 		'idno' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'LABEL' => _t('Object identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this object. This is usually equivalent to the "accession number" in museum settings.'),
-				'BOUNDS_LENGTH' => array(0,255)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Object identifier'), 'DESCRIPTION' => _t('A unique alphanumeric identifier for this object. This is usually equivalent to the "accession number" in museum settings.'),
+			'BOUNDS_LENGTH' => array(0,255)
 		),
 		'idno_sort' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
-				'BOUNDS_LENGTH' => array(0,255)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
+			'BOUNDS_LENGTH' => array(0,255)
 		),
 		'home_location_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => null,
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object.')
 		),
 		'is_deaccessioned' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'OPTIONS' => array(
-					_t('Yes') => 1,
-					_t('No') => 0
-				),
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'DONT_ALLOW_IN_UI' => true,
-				'RESULTS_EDITOR_BUNDLE' => 'ca_objects_deaccession',	// bundle to use when editing this in the search/browse "results" editing interface
-				'LABEL' => _t('Is deaccessioned'), 'DESCRIPTION' => _t('Check if object is deaccessioned')
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'OPTIONS' => array(
+				_t('Yes') => 1,
+				_t('No') => 0
+			),
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'RESULTS_EDITOR_BUNDLE' => 'ca_objects_deaccession',	// bundle to use when editing this in the search/browse "results" editing interface
+			'LABEL' => _t('Is deaccessioned?'), 'DESCRIPTION' => _t('Check if object is deaccessioned')
 		),
 		'deaccession_date' => array(
-				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'DONT_ALLOW_IN_UI' => true,
-				'START' => 'deaccession_sdatetime', 'END' => 'deaccession_edatetime',
-				'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the object was deaccessioned.')
+			'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'START' => 'deaccession_sdatetime', 'END' => 'deaccession_edatetime',
+			'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the object was deaccessioned.')
 		),
 		'deaccession_disposal_date' => array(
-				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'DONT_ALLOW_IN_UI' => true,
-				'START' => 'deaccession_disposal_sdatetime', 'END' => 'deaccession_disposal_edatetime',
-				'LABEL' => _t('Date of disposal'), 'DESCRIPTION' => _t('Enter the date the deaccessioned object was disposed of.')
+			'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'START' => 'deaccession_disposal_sdatetime', 'END' => 'deaccession_disposal_edatetime',
+			'LABEL' => _t('Date of disposal'), 'DESCRIPTION' => _t('Enter the date the deaccessioned object was disposed of.')
+		),
+		'deaccession_authorized_by' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Authorized by'), 'DESCRIPTION' => _t('Deaccession authorized by'),
+			'BOUNDS_LENGTH' => array(0,255)
 		),
 		'deaccession_notes' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 6,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'DONT_ALLOW_IN_UI' => true,
-				'LABEL' => _t('Deaccession notes'), 'DESCRIPTION' => _t('Justification for deaccession.'),
-				'BOUNDS_LENGTH' => array(0,65535)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 6,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Deaccession notes'), 'DESCRIPTION' => _t('Justification for deaccession.'),
+			'BOUNDS_LENGTH' => array(0,65535)
 		),
 		'deaccession_type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'DONT_ALLOW_IN_UI' => true,
-				'LIST_CODE' => 'object_deaccession_types',
-				'LABEL' => _t('Deaccession type'), 'DESCRIPTION' => _t('Indicates type of deaccession.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LIST_CODE' => 'object_deaccession_types',
+			'LABEL' => _t('Deaccession type'), 'DESCRIPTION' => _t('Indicates type of deaccession.')
 		),
 		'item_status_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LIST_CODE' => 'object_statuses',
-				'LABEL' => _t('Accession status'), 'DESCRIPTION' => _t('Indicates accession/collection status of object. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'LIST_CODE' => 'object_statuses',
+			'LABEL' => _t('Accession status'), 'DESCRIPTION' => _t('Indicates accession/collection status of object. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)')
 		),
 		'acquisition_type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'LIST_CODE' => 'object_acq_types',
-				'LABEL' => _t('Acquisition method'), 'DESCRIPTION' => _t('Indicates method employed to acquire the object.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'object_acq_types',
+			'LABEL' => _t('Acquisition method'), 'DESCRIPTION' => _t('Indicates method employed to acquire the object.')
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object information retrieved via web services [NOT IMPLEMENTED YET].'
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object information retrieved via web services [NOT IMPLEMENTED YET].'
 		),
 		'hier_left' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Hierarchical index - left bound', 'DESCRIPTION' => 'Left-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Hierarchical index - left bound', 'DESCRIPTION' => 'Left-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		),
 		'hier_right' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
 		),
 		'extent' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'LABEL' => _t('Extent'), 'DESCRIPTION' => _t('The extent of the object. This is typically the number of discrete items that compose the object represented by this record. It is stored as a whole number (eg. 1, 2, 3...).')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Extent'), 'DESCRIPTION' => _t('The extent of the object. This is typically the number of discrete items that compose the object represented by this record. It is stored as a whole number (eg. 1, 2, 3...).')
 		),
 		'extent_units' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'LABEL' => _t('Extent units'), 'DESCRIPTION' => _t('Units of extent value. (eg. pieces, items, components, reels, etc.)'),
-				'BOUNDS_LENGTH' => array(0,255)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Extent units'), 'DESCRIPTION' => _t('Units of extent value. (eg. pieces, items, components, reels, etc.)'),
+			'BOUNDS_LENGTH' => array(0,255)
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Not accessible to public') => 0,
-					_t('Accessible to public') => 1
-				),
-				'LIST' => 'access_statuses',
-				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if object is accessible to the public or not.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Not accessible to public') => 0,
+				_t('Accessible to public') => 1
+			),
+			'LIST' => 'access_statuses',
+			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if object is accessible to the public or not.')
 		),
 		'status' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Newly created') => 0,
-					_t('Editing in progress') => 1,
-					_t('Editing complete - pending review') => 2,
-					_t('Review in progress') => 3,
-					_t('Completed') => 4
-				),
-				'LIST' => 'workflow_statuses',
-				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the object record.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Newly created') => 0,
+				_t('Editing in progress') => 1,
+				_t('Editing complete - pending review') => 2,
+				_t('Review in progress') => 3,
+				_t('Completed') => 4
+			),
+			'LIST' => 'workflow_statuses',
+			'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the object record.')
 		),
 		'deleted' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object is deleted or not.'),
-				'BOUNDS_VALUE' => array(0,1)
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object is deleted or not.'),
+			'BOUNDS_VALUE' => array(0,1)
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
 		'acl_inherit_from_ca_collections' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Do not inherit access settings from related collections') => 0,
-					_t('Inherit access settings from related collections') => 1
-				),
-				'LABEL' => _t('Inherit access settings from collections?'), 'DESCRIPTION' => _t('Determines whether access settings set for related collections are applied to this object.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit access settings from related collections') => 0,
+				_t('Inherit access settings from related collections') => 1
+			),
+			'LABEL' => _t('Inherit access settings from collections?'), 'DESCRIPTION' => _t('Determines whether access settings set for related collections are applied to this object.')
 		),
 		'acl_inherit_from_parent' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'ALLOW_BUNDLE_ACCESS_CHECK' => false,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Do not inherit item-level access control settings from parent') => 0,
-					_t('Inherit item-level access control settings from parent') => 1
-				),
-				'LABEL' => _t('Inherit item-level access control settings from parent?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for parent object is applied to this object.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit item-level access control settings from parent') => 0,
+				_t('Inherit item-level access control settings from parent') => 1
+			),
+			'LABEL' => _t('Inherit item-level access control settings from parent?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for parent object is applied to this object.')
 		),
 		'access_inherit_from_parent' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'ALLOW_BUNDLE_ACCESS_CHECK' => false,
-				'DONT_ALLOW_IN_UI' => true,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Do not inherit access settings from parent') => 0,
-					_t('Inherit access settings from parent') => 1
-				),
-				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether front-end access settings set for parent object is applied to this object.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+			'DONT_ALLOW_IN_UI' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit access settings from parent') => 0,
+				_t('Inherit access settings from parent') => 1
+			),
+			'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether front-end access settings set for parent object is applied to this object.')
 		),
 		'view_count' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		),
 		'circulation_status_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
@@ -374,6 +385,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 
 class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	use HistoryTrackingCurrentValueTrait;
+	use DeaccessionTrait;
 
 	# ------------------------------------------------------
 	# --- Object attribute properties
@@ -737,36 +749,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	}
  	# ------------------------------------------------------
  	# HTML form bundles
-	# ------------------------------------------------------
-	/** 
-	 * Returns HTML form bundle for object deaccession information
-	 *
-	 * @param HTTPRequest $po_request The current request
-	 * @param string $ps_form_name
-	 * @param string $ps_placement_code
-	 * @param array $pa_bundle_settings
-	 * @param array $pa_options Array of options. Supported options are 
-	 *			noCache = If set to true then label cache is bypassed; default is true
-	 *
-	 * @return string Rendered HTML bundle
-	 */
-	public function getObjectDeaccessionHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
-		global $g_ui_locale;
-		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
-		if(!is_array($pa_options)) { $pa_options = array(); }
-		
-		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
-		
-		$o_view->setVar('settings', $pa_bundle_settings);
-		
-		$o_view->setVar('t_subject', $this);
-		
-		
-		return $o_view->render('ca_objects_deaccession.php');
-	}
 	# ------------------------------------------------------
 	/** 
 	 * Returns HTML form bundle for object checkout information
