@@ -86,7 +86,7 @@ BaseModel::$s_ca_models_definitions['ca_representation_annotation_labels'] = arr
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sortable version of name value'),
-				'BOUNDS_LENGTH' => array(0,65535)
+				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 

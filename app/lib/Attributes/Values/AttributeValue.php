@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -125,6 +125,17 @@ abstract class AttributeValue extends BaseObject {
 	 * Return value of null indicates that there's no default value to be used
 	 */
 	public function getDefaultValueSetting() {
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(string $value) {
 		return null;
 	}
 	# ------------------------------------------------------------------

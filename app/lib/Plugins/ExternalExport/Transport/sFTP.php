@@ -71,13 +71,6 @@ class WLPlugsFTP Extends BaseExternalExportTransportPlugin Implements IWLPlugExt
     /**
      *
      */
-	public function cleanup() {
-	    return true;
-	}
-    # ------------------------------------------------------
-    /**
-     *
-     */
 	public function getDescription() {
 	    return _t('sFTP transport');
 	}
@@ -103,6 +96,7 @@ class WLPlugsFTP Extends BaseExternalExportTransportPlugin Implements IWLPlugExt
 	 *			NOTICE = Notices (normal but significant conditions)
 	 *			INFO = Informational messages
 	 *			DEBUG = Debugging messages
+	 *		deleteAfterTransfer = Delete files after upload. [Default is true]
 	 *
 	 * @return int Number of files uploaded
 	 * @throws WLPlugsFTPException
@@ -133,11 +127,23 @@ class WLPlugsFTP Extends BaseExternalExportTransportPlugin Implements IWLPlugExt
 			} else {
 				$err = error_get_last();
 				$log->logError(_t('[ExternalExport::Transport::sFTP] Could not upload file %1 to %2: %3', $f, $destination_info['hostname'], $err['message']));
+				$this->cleanupFiles($files);
 				throw new WLPlugsFTPException(_t('Could not upload file %1 to %2: %3', $f, $destination_info['hostname'], $err['message']));
 			}
 		}
 		
+		$this->cleanupFiles($files);
+		
 		return $count;
+    }
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    public function cleanupFiles(array $files) {
+    	foreach($files as $f) {
+    		@unlink($f);
+    	}
     }
     # ------------------------------------------------------
 }

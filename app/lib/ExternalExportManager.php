@@ -264,6 +264,8 @@ class ExternalExportManager {
 						}
 					}
 					
+					if(sizeof($ids) === 0) { continue; }
+					
 					$ids = $target_table::find([Datamodel::primaryKey($target_table) => ['IN', $ids]], ['returnAs' => 'ids']);	// Filter out deleted records
 					$this->log->logInfo(_t('[ExternalExportManager] Processing %1 unique ids for target %2', sizeof($ids), $target));
 					
@@ -322,6 +324,10 @@ class ExternalExportManager {
 			$o_app_vars->save();
 			
 			$this->log->logDebug(_t('[ExternalExportManager] Set last_log_id to %1', $latest_log_id_seen));
+		}
+		
+		foreach($file_list as $f) {
+			unlink($f);
 		}
     }
     # ------------------------------------------------------

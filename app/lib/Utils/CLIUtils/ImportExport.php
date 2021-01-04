@@ -453,6 +453,7 @@
 
 			$vb_direct = (bool)$po_opts->getOption('direct');
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
+			$vb_import_all_datasets = (bool)$po_opts->getOption('import-all-datasets');
 			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback');
 			
 			$vs_detailed_log_name = $po_opts->getOption('detailed-log-name');
@@ -475,7 +476,8 @@
 					'limitLogTo' => $po_opts->getOption('limit-log-to'), 
 					'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 
 					'addToSet' => $vs_add_to_set, 'environment' => $env,
-					'detailedLogName' => $vs_detailed_log_name
+					'detailedLogName' => $vs_detailed_log_name,
+					'importAllDatasets' => $vb_import_all_datasets
 				]
 			)) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", $t_importer->getErrorList())));
@@ -497,6 +499,7 @@
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of importance: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"limit-log-to|g-s" => _t('Limit logging to specific event types when log level is set to INFO. Limit logging to specific event types for log level INFO. Valid values are: GENERAL (general status messages), EXISTING_RECORD_POLICY (messages relating to merging of existing records, SKIP (messages relating to conditional skipping of mappings, groups or records), RELATIONSHIPS (messages relating to creating of relationships. Seprate multiple types with commas or semicolors.'),
+				"import-all-datasets" => _t('When importing an Excel .xslx file, if set import will be performed on all worksheets in the file. By default, only the first worksheet is imported.'),
 				"add-to-set|t-s" => _t('Optional identifier of set to add all imported items to.'),
 				"environment|e-s" => _t('JSON-encoded key value pairs to add to import environment values.'),
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),

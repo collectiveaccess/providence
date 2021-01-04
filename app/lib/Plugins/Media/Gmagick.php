@@ -138,6 +138,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'layers'			=> 'W',
 			'quality' 			=> 'W',
 			'colorspace'		=> 'W',
+			'background'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -478,14 +479,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				
 				$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [6, 8], true)) ? $orientation : null;
 
-				// force all images to true color (takes care of GIF transparency for one thing...)
-				$this->handle->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
-
-				if (!$this->handle->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
-					$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugGmagick->read()");
-					return false;
-				}
-
 				$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 				$this->properties["typename"] = $this->handle->getimageformat();
 
@@ -732,7 +725,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case "ROTATE":
 				$angle = $parameters["angle"];
 				if (($angle > -360) && ($angle < 360)) {
-					if ( !$this->handle->rotateimage("#FFFFFF", $angle) ) {
+					if ( !$this->handle->rotateimage(caGetOption('background', $this->properties, "#FFFFFF"), $angle) ) {
 						$this->postError(1610, _t("Error during image rotate"), "WLPlugGmagick->transform():ROTATE");
 						return false;
 					}
@@ -882,7 +875,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->handle->setcompressionquality($this->properties["quality"]);
 			}
 			
-			$this->handle->setimagebackgroundcolor(new GmagickPixel("#CC0000"));
+			$this->handle->setimagebackgroundcolor(new GmagickPixel(caGetOption('background', $this->properties, "#FFFFFF")));
 		
 			if ($this->properties['gamma']) {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
@@ -1233,8 +1226,32 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$handle->setimageindex(0);        // force use of first image in multi-page TIFF
 			$this->handle = $handle;
 			$this->filepath = $ps_filepath;
-
-			$this->metadata = array();
+			
+			$background = caGetOption('background', $this->properties, "#FFFFFF");
+			if (!$this->handle->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
+				$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugGmagick->read()");
+				return false;
+			}
+		
+			// force all images to true color (takes care of GIF transparency for one thing...)
+			$this->handle->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
+			
+			$format = $this->handle->getimageformat();
+			
+			// Set background color for transparent PNG or GIF
+			if ($background && in_array($format, ['PNG', 'GIF'])) {
+				$geometry = $this->handle->getimagegeometry();
+				$r = new Gmagick();
+				$r_new_image = $r->newimage($geometry['width'], $geometry['height'], $background, $format);
+				$r_new_image->setimagebackgroundcolor(new GmagickPixel($background));
+				$r_new_image->setimagecompose(Gmagick::COMPOSITE_DEFAULT);
+			
+				$r_new_image->compositeimage($this->handle, Gmagick::COMPOSITE_DEFAULT, 0, 0 );
+				$this->handle->destroy();
+				$this->handle = $r_new_image;
+			}
+			
+			$this->metadata = [];
 
 			if (WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath]) {
 				$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath];
@@ -1361,7 +1378,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 			}
 			
-			$this->handle->rotateImage('#FFFFFF', $rotation);
+			$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), $rotation);
 						
 			if (($rotation) && (abs($rotation) === 90)) {
 				$w = $this->properties["width"]; $h = $this->properties["height"];

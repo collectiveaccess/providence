@@ -1376,16 +1376,16 @@
 					$va_errors['general'][] = array(
 						'idno' => "*",
 						'label' => "*",
-						'errors' => array(_t("Could not import source %1", $ps_source)),
+						'errors' => array(_t("Could not import source %1", $vs_source)),
 						'status' => 'ERROR'
 					);
-					BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $ps_source);
+					BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $vs_source);
 					return false;
 				} else {
 					$va_notices['general'][] = array(
 						'idno' => "*",
 						'label' => "*",
-						'errors' => array(_t("Imported data from source %1", $ps_source)),
+						'errors' => array(_t("Imported data from source %1", $vs_source)),
 						'status' => 'SUCCESS'
 					);
 					//return true;
@@ -1397,16 +1397,21 @@
 			
 			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
 				if ($vs_email = trim($po_request->user->get('email'))) {
+					$info = $t_importer->getInfoForLastImport();
 					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl', 
-						array(
-							'notices' => $va_notices, 'errors' => $va_errors,
-							'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
+						[
+							'sourceFile' => $pa_options['sourceFile'],
+							'sourceFileName' => $pa_options['sourceFileName'],
+							'notices' => $va_notices['general'], 'errors' => $va_errors['general'],
+							'total' => $info['total'],
+							'numErrors' => $info['numErrors'], 'numProcessed' => $info['numProcessed'],
+							'numSkipped' => $info['numSkipped'],
 							'subjectNameSingular' => _t('row'),
 							'subjectNamePlural' => _t('rows'),
 							'startedOn' => caGetLocalizedDate($vn_start_time),
 							'completedOn' => caGetLocalizedDate(time()),
 							'elapsedTime' => caFormatInterval($vn_elapsed_time)
-						), null, null, ['source' => 'Metadata import complete']
+						], null, null, ['source' => 'Metadata import complete']
 					);
 				}
 			}

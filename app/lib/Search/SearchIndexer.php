@@ -580,7 +580,7 @@ class SearchIndexer extends SearchBase {
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_table_num]) && (isset($pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id]))) { return; }
 
-		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_table_num,
 				'row_id' => $pn_subject_row_id,
@@ -1812,7 +1812,7 @@ if (!$for_current_value_reindex) {
 	public function commitRowUnIndexing($pn_subject_table_num, $pn_subject_row_id, $pa_options = null) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 
-		if(caGetOption('queueIndexing', $pa_options, false) && !$this->opo_app_config->get('disable_out_of_process_search_indexing')) {
+		if(caGetOption('queueIndexing', $pa_options, false) && !$this->opo_app_config->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
 			$this->queueUnIndexRow(array(
 				'table_num' => $pn_subject_table_num,
 				'row_id' => $pn_subject_row_id,

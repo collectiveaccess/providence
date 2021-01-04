@@ -886,7 +886,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function checkForDupeLabel($pn_locale_id, $pa_label_values, $pb_preferred_only=true) {
 		$o_db = $this->getDb();
 		$t_label = $this->getLabelTableInstance();
-		unset($pa_label_values['displayname']);	// Don't include display name in label check as it's derived from other fields
+		if(!empty($pa_label_values['surname']) || !empty($pa_label_values['forename'])) { unset($pa_label_values['displayname']); }
 		
 		$va_wheres = [];
 		foreach($pa_label_values as $vs_field => $vs_value) {
