@@ -991,6 +991,24 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * 
+	 */
+	function caGetOpCacheStats(array $options=null) {
+		$stats = opcache_get_status(false);
+		
+		return [
+			'enabled' => $stats['opcache_enabled'],
+			'full' => $stats['cache_full'],
+			'restart_pending' => $stats['restart_pending'],
+			'restart_in_progress' => $stats['restart_in_progress'],
+			'memory_used' => $stats['memory_usage']['used_memory'],
+			'memory_free' => $stats['memory_usage']['free_memory'],
+			'memory_wasted' => $stats['memory_usage']['wasted_memory'],
+			'num_scripts' => $stats['opcache_statistics']['num_cached_scripts']
+		];
+	}
+	# ---------------------------------------
+	/**
 	 * Checks URL for apparent well-formedness. Return true if it looks like a valid URL, false if not. This function does
 	 * not actually connect to the URL to confirm its validity. It only validates text content for well-formedness.
 	 * By default will return true if a url is anywhere in the $ps_url parameter. Set the 'strict' option if you want to

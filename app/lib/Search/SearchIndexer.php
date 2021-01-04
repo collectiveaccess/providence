@@ -117,7 +117,7 @@ class SearchIndexer extends SearchBase {
 	public function getIndexedTables() {
 		$va_table_names = Datamodel::getTableNames();
 
-		$o_db = $this->opo_db;
+		$o_db = $this->db;
 		$va_tables_to_index = $va_tables_by_size = array();
 		foreach($va_table_names as $vs_table) {
 			$vn_table_num = Datamodel::getTableNum($vs_table);
@@ -195,7 +195,7 @@ class SearchIndexer extends SearchBase {
 			$va_table_names = $this->getIndexedTables();
 		}
 
-		$o_db = $this->opo_db;
+		$o_db = $this->db;
 
 		if ($pb_display_progress || $ps_callback) {
 			$va_names = array();
@@ -457,7 +457,7 @@ class SearchIndexer extends SearchBase {
 		$subject_table_num = $pt_subject->tableNum();
 		
 		if (caGetOption('CHILDREN_INHERIT', $pa_data, false) || (array_search('CHILDREN_INHERIT', $pa_data, true) !== false)) {
-			$o_indexer = new SearchIndexer($this->opo_db);
+			$o_indexer = new SearchIndexer($this->db);
 		
 			$vn_rel_table_num = $pt_rel ? $pt_rel->tableNum() : $subject_table_num;
 			if (is_array($va_ids = $pt_subject->getHierarchy($pn_subject_row_id, ['idsOnly' => true]))) {
@@ -471,7 +471,7 @@ class SearchIndexer extends SearchBase {
 			}
 		}
 		if (caGetOption('ANCESTORS_INHERIT', $pa_data, false) || (array_search('ANCESTORS_INHERIT', $pa_data, true) !== false)) {
-			if (!$o_indexer) { $o_indexer = new SearchIndexer($this->opo_db); }
+			if (!$o_indexer) { $o_indexer = new SearchIndexer($this->db); }
 			if(!$vn_rel_table_num) { $vn_rel_table_num = $pt_rel ? $pt_rel->tableNum() : $subject_table_num; }
 			
 			if (is_array($va_ids = $pt_subject->getHierarchyAncestors($pn_subject_row_id, ['idsOnly' => true]))) {
@@ -710,7 +710,7 @@ if (!$for_current_value_reindex) {
 
 							if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 								// trigger reindexing of children
-								$o_indexer = new SearchIndexer($this->opo_db);
+								$o_indexer = new SearchIndexer($this->db);
 								$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 								while($qr_children_res->nextHit()) {
 									$o_indexer->indexRow($pn_subject_table_num, $qr_children_res->get($vs_subject_pk), array('parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true));
@@ -888,11 +888,11 @@ if (!$for_current_value_reindex) {
 						$vs_sql = $va_query['sql'];
 						$va_params = $va_query['params'];
 						
-						$qr_res = $this->opo_db->query($vs_sql, $va_params);
+						$qr_res = $this->db->query($vs_sql, $va_params);
 
-						if ($this->opo_db->numErrors()) {
+						if ($this->db->numErrors()) {
 							// Shouldn't ever happen
-							throw new Exception(_t("SQL error while getting content for index of related fields: %1; SQL was %2", $this->opo_db->getErrors(), $vs_sql));
+							throw new Exception(_t("SQL error while getting content for index of related fields: %1; SQL was %2", $this->db->getErrors(), $vs_sql));
 						}
 
 						if (method_exists($t_rel, "getApplicableElementCodes")) {
@@ -900,13 +900,13 @@ if (!$for_current_value_reindex) {
 								$va_rel_row_ids = $qr_res->getAllFieldValues($vs_related_pk, ['limit' => ca_attributes::attributeCacheSize()]); // only pull as many rows as the cache can hold, anything more than that you're just wasting time
 								
 								if(sizeof($va_rel_row_ids) > 0) {
-									ca_attributes::prefetchAttributes($this->opo_db, $vn_related_table_num, $va_rel_row_ids , $va_element_ids);
+									ca_attributes::prefetchAttributes($this->db, $vn_related_table_num, $va_rel_row_ids , $va_element_ids);
 								}
 							}
 						}
 
 						if(!$qr_res->seek(0)) {
-							$qr_res = $this->opo_db->query($vs_sql, $va_params);
+							$qr_res = $this->db->query($vs_sql, $va_params);
 						}
 						
 						while($qr_res->nextRow()) {
@@ -1205,13 +1205,13 @@ if (!$for_current_value_reindex) {
 						$t_rel->setDb($this->getDb());
 						if (method_exists($t_rel, "getApplicableElementCodes")) {
 							if (is_array($va_element_ids = array_keys($t_rel->getApplicableElementCodes(null, false, false))) && sizeof($va_element_ids)) {
-								ca_attributes::prefetchAttributes($this->opo_db, $vn_rel_table_num, $va_rel_row_ids, $va_element_ids);
+								ca_attributes::prefetchAttributes($this->db, $vn_rel_table_num, $va_rel_row_ids, $va_element_ids);
 							}
 						}
 					}
 				}
 				
-				$o_indexer = new SearchIndexer($this->opo_db);
+				$o_indexer = new SearchIndexer($this->db);
 				foreach($va_rows_to_reindex_by_row_id as $va_row_to_reindex) {
 					$vn_rel_type_id = $va_row_to_reindex['relationship_type_id'];
 					$vn_private = $va_row_to_reindex['private'];
@@ -1433,7 +1433,7 @@ if (!$for_current_value_reindex) {
 				// engines you're going to have a lot of reindexing going on, we may just have to construct a facility to handle large
 				// indexing tasks in a separate process when the number of dependent rows exceeds a certain threshold
 				//
-				$o_indexer = new SearchIndexer($this->opo_db);
+				$o_indexer = new SearchIndexer($this->db);
 				$t_dep = null;
 				$va_rows_seen = array();
 				foreach($va_rows_to_reindex as $va_row_to_reindex) {
@@ -1468,7 +1468,7 @@ if (!$for_current_value_reindex) {
 			$va_children_ids = $t_subject->getHierarchyAsList($pn_subject_row_id, array('idsOnly' => true));
 			if (is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 				// trigger reindexing of children
-				$o_indexer = new SearchIndexer($this->opo_db);
+				$o_indexer = new SearchIndexer($this->db);
 				$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 				while($qr_children_res->nextHit()) {
 					$o_indexer->indexRow($pn_subject_table_num, $vn_id=$qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id')), true, $pa_exclusion_list, array());
@@ -1755,7 +1755,7 @@ if (!$for_current_value_reindex) {
 
 						if (!caGetOption('reindex', $pa_options, false) && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 							// trigger reindexing of children
-							$o_indexer = new SearchIndexer($this->opo_db);
+							$o_indexer = new SearchIndexer($this->db);
 							$pt_subject->load($pn_row_id);
 							$va_content = $pt_subject->get($pt_subject->tableName().".".$vs_element_code, array('returnWithStructure' => true,'returnAsArray' => true, 'returnAllLocales' => true));
 
@@ -2006,7 +2006,7 @@ if (!$for_current_value_reindex) {
 					";
 				}
 
-				$qr_res = $this->opo_db->query($vs_sql, $va_params);
+				$qr_res = $this->db->query($vs_sql, $va_params);
 
 				while($qr_res->nextRow()) {
 					$vn_left_id = $qr_res->get($t_self_rel->getLeftTableFieldName());
@@ -2239,7 +2239,7 @@ if (!$for_current_value_reindex) {
 											$vs_element_table_name = Datamodel::getTableName($vn_element_table_num);
 											$vs_element_table_pk = Datamodel::primaryKey($vn_element_table_num);
 
-											$qr_field_data = $this->opo_db->query("
+											$qr_field_data = $this->db->query("
 												SELECT *
 												FROM {$vs_element_table_name}
 												WHERE {$vs_element_table_pk} IN (?)	
@@ -2508,9 +2508,9 @@ if (!$for_current_value_reindex) {
 				{$vs_deleted_sql}
 				".join(" AND ", $va_wheres);
 				
-			$qr_res = $this->opo_db->query($vs_sql, [$pn_row_id]);
+			$qr_res = $this->db->query($vs_sql, [$pn_row_id]);
 			if (!$qr_res) {
-				throw new Exception(_t("Invalid _getRelatedRows query: %1", join("; ", $this->opo_db->getErrors())));
+				throw new Exception(_t("Invalid _getRelatedRows query: %1", join("; ", $this->db->getErrors())));
 			}
 			
 			while($qr_res->nextRow()) {
@@ -2977,11 +2977,11 @@ if (!$for_current_value_reindex) {
 				$vs_sql = $va_query['sql'];
 				$va_params = $va_query['params'];
 
-				$qr_res = $this->opo_db->query($vs_sql, $va_params);
+				$qr_res = $this->db->query($vs_sql, $va_params);
 
-				if ($this->opo_db->numErrors()) {
+				if ($this->db->numErrors()) {
 					// Shouldn't ever happen
-					throw new ApplicationException(_t("SQL error while getting content for index of related fields: %1; SQL was %2", $this->opo_db->getErrors(), $vs_sql));
+					throw new ApplicationException(_t("SQL error while getting content for index of related fields: %1; SQL was %2", $this->db->getErrors(), $vs_sql));
 				}
 
 				$va_counts = $this->_getInitedCountList($pt_rel); 

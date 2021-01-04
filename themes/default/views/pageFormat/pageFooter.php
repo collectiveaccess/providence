@@ -32,6 +32,7 @@
 	if(Debug::isEnabled()) {
 		print Debug::$bar->getJavascriptRenderer()->render();
 	}
+	if(defined('__CA_SHOW_PERFORMANCE_STATS__')) { $cache_stats = caGetOpCacheStats(); } 
 
 	$vs_footer_color = $this->request->config->get('footer_color');
 ?>
@@ -49,7 +50,11 @@
 				}
 ?>
 				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2020 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
-				[<?php print Session::elapsedTime(4).'s'; ?>/<?php print caGetMemoryUsage(); ?>]
+				[<?php print Session::elapsedTime(4).'s'; ?>/<?= caGetMemoryUsage(); ?>]
+<?php if(defined('__CA_SHOW_PERFORMANCE_STATS__')) { ?>
+				<?= $cache_stats['full'] ? '[CACHE FULL]' : ''; ?>
+				<?= '[OpCache: '.caHumanFilesize($cache_stats['memory_used']).' ('.sprintf("%3.2f", ($cache_stats['memory_used']/($cache_stats['memory_used'] + $cache_stats['memory_free'])) * 100).'%) used; '.caHumanFilesize($cache_stats['memory_free']).' ('.sprintf("%3.2f", ($cache_stats['memory_free']/($cache_stats['memory_used'] + $cache_stats['memory_free'])) * 100).'%) free; '.$cache_stats['num_scripts'].' files]'; ?>
+<?php } ?>
 				<?php if (Db::$monitor) { print " [<a href='#' onclick='jQuery(\"#caApplicationMonitor\").slideToggle(100); return false;'>$</a>]"; } ?>
 			</div></div><!-- end footer -->
 		</div><!-- end footerContainer -->
