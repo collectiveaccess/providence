@@ -886,7 +886,7 @@
 						while($qr_res->nextHit()) {
 							if(!$element_code) {
 								// representation
-								$version = (is_array($version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($preferred_version, $version_list)) ? $preferred_version : 'original';
+								$version = (!is_array($version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($preferred_version, $version_list)) ? $preferred_version : 'original';
 							
 								$paths = $qr_res->getMediaPaths('ca_object_representations.media', $version);
 								$infos = $qr_res->getMediaInfos('ca_object_representations.media');
