@@ -787,6 +787,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getSortValuesForLabel(array $hits, $t_table, string $label_field, string $direction) {
+		if (!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -815,6 +816,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRelatedSortValuesForLabel(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+		if (!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -850,6 +852,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getSortValuesForAttribute(array $hits, $t_table, string $element_code, string $direction) {
+		if (!sizeof($hits)) { return []; }
 		$table_num = $t_table->tableNum();
 		
 		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
@@ -877,6 +880,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+		if (!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -1014,6 +1018,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field) {
+		if (!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -1176,8 +1181,12 @@ class BaseFindEngine extends BaseObject {
 		switch(sizeof($path)) {
 			case 3:
 				$linking_table = $path[1];
-				
-				if ($is_attribute) {
+				if ($table === $rel_table) {
+					$t_relation = Datamodel::getInstance($linking_table, true);
+					// self relation
+					$joins[] = "INNER JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}";
+					$joins[] = "INNER JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = l.".$t_relation->getLeftTableFieldName().") OR (s.{$rel_table_pk} = l.".$t_relation->getRightTableFieldName().")";
+				} elseif ($is_attribute) {
 					$joins[] = "INNER JOIN {$linking_table} AS l ON attr_tmp.row_id = l.{$rel_table_pk}";
 					$joins[] = "INNER JOIN {$table} AS t ON t.{$table_pk} = l.{$table_pk}";
 				} else {							
@@ -1187,11 +1196,13 @@ class BaseFindEngine extends BaseObject {
 				
 				break;
 			case 2:
-				//if ($is_attribute) {
+				$t = Datamodel::getInstance($table, true);
+			
+				if($t->isSelfRelationship()) {
+					$joins[] = "INNER JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = t.".$t->getLeftTableFieldName().") OR (s.{$rel_table_pk} = t.".$t->getRightTableFieldName().")";
+				} else {
 					$joins[] = "INNER JOIN {$rel_table} AS s ON s.{$rel_table_pk} = t.{$rel_table_pk}";
-				//} else {	
-				//	$joins[] = "INNER JOIN {$rel_table} AS s ON s.{$rel_table_pk} = t.{$rel_table_pk}";
-			//	}
+				}
 				//
 				break;
 			default:
