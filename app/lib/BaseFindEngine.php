@@ -740,7 +740,7 @@ class BaseFindEngine extends BaseObject {
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		$sql = "
-			SELECT {$intrinsic} val
+			SELECT `{$intrinsic}` val
 			FROM {$table}
 			WHERE {$table}.{$table_pk} IN (?)
 			ORDER BY val {$direction}
@@ -768,7 +768,7 @@ class BaseFindEngine extends BaseObject {
 		$join_sql = join("\n", $joins);
 		
 		$sql = "
-			SELECT s.{$intrinsic} val
+			SELECT s.`{$intrinsic}` val
 			FROM {$table}
 			{$join_sql}
 			WHERE {$table}.{$table_pk} IN (?)
