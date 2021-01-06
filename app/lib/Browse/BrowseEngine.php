@@ -364,7 +364,7 @@
 			}
 			$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
 			$this->opo_ca_browse_cache->setParameter('criteria_display_strings', $va_criteria_display_strings);
-			$this->opo_ca_browse_cache->setParameter('sort', null);
+			//$this->opo_ca_browse_cache->setParameter('sort', null);
 			$this->opo_ca_browse_cache->setParameter('facet_html', null);
 
 			$this->opb_criteria_have_changed = true;
@@ -2735,12 +2735,23 @@
 						if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
 							$va_results = $this->filterHitsByACL($va_results, $this->opn_browse_table_num, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 						}
+						
+						$va_results = array_values($va_results);
+						if ($sort = caGetOption('sort', $pa_options, null)) {
+							$sort_direction = caGetOption(['sortDirection', 'sort_direction'], $pa_options, null);
+							$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $sort, $sort_direction, []);
+							
+							$this->opo_ca_browse_cache->setParameter('sort', $sort);
+							$this->opo_ca_browse_cache->setParameter('sort_direction', $sort_direction);
+							
+							$vb_need_to_save_in_cache = true;
+						}
 
-						$this->opo_ca_browse_cache->setResults(array_values($va_results));
+						$this->opo_ca_browse_cache->setResults($va_results);
 						$vb_need_to_save_in_cache = true;
 					} else {
 						// No results for some reason - we're here because we don't want to throw a SQL error
-						$this->opo_ca_browse_cache->setResults($va_results = array());
+						$this->opo_ca_browse_cache->setResults($va_results = []);
 						$vb_need_to_save_in_cache = true;
 					}
 				}
@@ -2827,9 +2838,17 @@
 					if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
 						$va_results = array_keys($this->filterHitsByACL($va_results, $this->opn_browse_table_num, $vn_user_id, __CA_ACL_READONLY_ACCESS__));
 					}
+					if ($sort = caGetOption('sort', $pa_options, null)) {
+						$sort_direction = caGetOption(['sortDirection', 'sort_direction'], $pa_options, null);
+						$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $sort, $sort_direction, []);
+						
+						$this->opo_ca_browse_cache->setParameter('sort', $sort);
+						$this->opo_ca_browse_cache->setParameter('sort_direction', $sort_direction);
+						$vb_need_to_save_in_cache = true;
+					}
 					$this->opo_ca_browse_cache->setResults($va_results);
 				} else {
-					$this->opo_ca_browse_cache->setResults(array());
+					$this->opo_ca_browse_cache->setResults([]);
 				}
 				$vb_need_to_save_in_cache = true;
 			}
@@ -6991,30 +7010,30 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			if (!is_array($this->opa_browse_settings)) { return null; }
 
 			$vs_sort = caGetOption('sort', $options, null);
-			$vs_sort_direction = strtolower(caGetOption('sortDirection', $options, caGetOption('sort_direction', $options, null)));
+			$vs_sort_direction = strtolower(caGetOption(['sortDirection', 'sort_direction'], $options, null));
 
 			$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
-			$vb_will_sort = ($vs_sort && (($this->getCachedSortSetting() != $vs_sort) || ($this->getCachedSortDirectionSetting() != $vs_sort_direction)));
-
+			$vb_will_sort =  (($vs_sort &&($this->getCachedSortSetting() !== $vs_sort)) || ($vs_sort_direction && ($this->getCachedSortDirectionSetting() !== $vs_sort_direction)));
+			
 			$vs_pk = $t_item->primaryKey();
 			$vs_label_display_field = null;
 			
 			$start = (int) caGetOption('start', $options, 0);
 			$limit = (int) caGetOption('limit', $options, 0);
-
+print $vb_will_sort ? "Will sort" : "No sort";
 			$total_size = $page_size = 0;
 			if(is_array($results =  $this->opo_ca_browse_cache->getResults()) && ($total_size = sizeof($results))) {
 				if ($vb_will_sort) {
-					$results = $this->sortHits($results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction, $options);
-
-					$page_size = sizeof($results);
+					$results = $this->sortHits($results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction, array_merge($options, ['start' => null, 'limit' => null]));
 					
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
 					$this->opo_ca_browse_cache->setParameter('sort', $vs_sort);
 					$this->opo_ca_browse_cache->setParameter('sort_direction', $vs_sort_direction);
-
 					$this->opo_ca_browse_cache->setResults($results);
 					$this->opo_ca_browse_cache->save();
+					
+					$results = array_slice($results, $start, $limit);
+					$page_size = sizeof($results);
 				} else {
 					$results = array_slice($results, $start, $limit);
 				}

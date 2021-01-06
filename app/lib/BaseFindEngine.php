@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -445,36 +445,34 @@ class BaseFindEngine extends BaseObject {
 		$hit_table = $this->_createTempTableForHits($hits);
 		if ($sort_table === $table) {	// sort in primary table
 			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
-				$sort_key_values[] = $this->_sortByIntrinsic($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
+				$sort_key_values = $this->_sortByIntrinsic($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
 			} elseif($t_table->hasElement($sort_field)) { // is attribute
-				$sort_key_values[] = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
+				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
 			} elseif($sort_field === 'preferred_labels') {
-				$sort_key_values[] = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
+				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
 			} else {
 				throw new ApplicationException(_t('Unhandled sort'));
 			}
 		} elseif($t_table->getLabelTableName() == $sort_table) {
 			// is label?
-			$sort_key_values[] = $this->_sortByLabels($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);	
+			$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);	
 		} else {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
 			$is_attribute = $t_rel_table->hasElement($sort_field);
 			
 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
-				$sort_key_values[] = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
+				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
-				$sort_key_values[] = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
+				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
 			} elseif($is_attribute) {							// sort key is metadata attribute
-				$sort_key_values[] = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction);		
+				$sort_key_values = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction);		
 			} else {
 				throw new ApplicationException(_t('Unhandled sort'));
 			}
 		}
 
-		$hits = array_keys(array_shift($sort_key_values));
-		
-		return $hits;
+		return array_keys($sort_key_values);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -494,6 +492,7 @@ class BaseFindEngine extends BaseObject {
 			ORDER BY {$table}.`{$intrinsic}` {$direction}
 			{$limit_sql}
 		";
+		
 		$qr_sort = $this->db->query($sql);
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
