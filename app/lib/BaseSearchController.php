@@ -174,6 +174,7 @@
 					$po_search->execute($search_opts);
 					if($is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed) {
 						$page_num = 1; 
+						$this->opo_result_context->setCurrentResultsPageNumber($page_num);
 					}
 					
 					$this->opo_result_context->setParameter('browse_id', $po_search->getBrowseID());
@@ -182,7 +183,7 @@
  						$po_search->setFacetGroup($vs_group_name);
  					}
  					
-					$results = $po_search->getResultsForPage(array_merge($om = $search_opts,
+					$results = $po_search->getResultsForPage(array_merge($search_opts,
 						['start' => ($page_num - 1) * $vn_items_per_page, 'limit' => $vn_items_per_page])
 					);
 					$vo_result = $results['result'];

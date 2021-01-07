@@ -7020,7 +7020,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			
 			$start = (int) caGetOption('start', $options, 0);
 			$limit = (int) caGetOption('limit', $options, 0);
-print $vb_will_sort ? "Will sort" : "No sort";
+
 			$total_size = $page_size = 0;
 			if(is_array($results =  $this->opo_ca_browse_cache->getResults()) && ($total_size = sizeof($results))) {
 				if ($vb_will_sort) {
