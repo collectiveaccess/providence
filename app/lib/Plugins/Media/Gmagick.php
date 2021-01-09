@@ -974,13 +974,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		@unlink($output_file_prefix);
 		
 		$files = [];
-		$i = 1;
+		$i = 0;
 		
 		$this->handle->setimageindex(0);
 		$num_previews = 0;
 		do {
 			if ($i > 1) { $this->handle->nextImage(); }
 			$num_previews++;
+			$i++;
 		} while($this->handle->hasnextimage());
 		
 		$this->handle->setimageindex(0);
