@@ -2275,7 +2275,9 @@
 										$vn_row_id = urldecode($vn_row_id);
 										
 										$ids = [];
-										if (!$dont_expand_hierarchically) {
+										if(($vs_field_name === 'access') || ($vs_field_name === 'status')) {
+											$ids[] = $vn_row_id;
+										} elseif (!$dont_expand_hierarchically) {
 											if (!($t_list_item = ca_list_items::find($vn_row_id, ['returnAs' => 'firstModelInstance', 'checkAccess' => $pa_options['checkAccess']]))) { break; }
 											$ids = $t_list_item->get('ca_list_items.children.item_id', ['returnAsArray' => true]);
 										}
