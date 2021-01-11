@@ -2872,8 +2872,9 @@
 		 */
 		public function loadFacetContent($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
-			$va_facets_with_content = array();
-			$o_results = $this->getResults();
+			$va_facets_with_content = [];
+			
+			$o_results = $this->getResults(['start' => 0, 'limit' => 50000]); // TOD: we limit result set size for performance for now; must improve browse to make sure unnecessary
 			if (!is_array($va_criteria = $this->getCriteria())) { $va_criteria = []; }
 
 			if (($o_results->numHits() > 1) || !sizeof($va_criteria)) {
@@ -6984,9 +6985,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		public function getResults($options=null) {
 			if(!is_array($options)) { $options = []; }
 			$start = (int) caGetOption('start', $options, 0);
-			$limit = (int) caGetOption('limit', $options, 0);
+			$limit = caGetOption('limit', $options, null);
 			
-			$ret = $this->doGetResults(get_class($this).'Result', array_merge($options, ['returnIds' => (($start > 0) || ($limit > 0))]));
+			$ret = $this->doGetResults(get_class($this).'Result', array_merge($options, ['start' => $start, 'limit' => $limit, 'returnIds' => (($start > 0) || ($limit > 0))]));
 			
 			if (($start > 0) || ($limit > 0)) {
  				$result = array_slice($ret['result'], $start, $limit);
@@ -7019,7 +7020,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$vs_label_display_field = null;
 			
 			$start = (int) caGetOption('start', $options, 0);
-			$limit = (int) caGetOption('limit', $options, 0);
+			if (($limit = caGetOption('limit', $options, null)) < 1) { $limit = null; }
 
 			$total_size = $page_size = 0;
 			if(is_array($results =  $this->opo_ca_browse_cache->getResults()) && ($total_size = sizeof($results))) {
