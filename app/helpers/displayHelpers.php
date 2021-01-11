@@ -3223,14 +3223,22 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		foreach($pa_text as $vn_i => $vs_text) {
 			$vs_text = preg_replace("!([A-Za-z0-9]+)='([^']*)'!", "$1=\"$2\"", $vs_text);
-			$va_l_tags = array();
+			if(!strlen($vs_text)) { 
+				$va_links[$vn_i] = null;
+				continue; 
+			}
 			
-			$o_doc = str_get_dom($vs_text);
-			$o_links = $o_doc('l');
+			$va_l_tags = [];
+			
+			$o_doc = new DOMDocument();
+			libxml_use_internal_errors(true);
+			$o_doc->loadHTML($vs_text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOWARNING);
+			libxml_clear_errors();
+			$o_links = $o_doc->getElementsByTagName('l');
 
 			foreach($o_links as $o_link) {
 				if (!$o_link) { continue; }
-				$vs_html = $o_link->html();
+				$vs_html = $o_link->ownerDocument->saveHTML($o_link);
 
 				$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 				$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
