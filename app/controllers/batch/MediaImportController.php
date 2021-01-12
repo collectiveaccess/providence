@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -262,6 +262,7 @@
 				'representation_idno' => $this->request->getParameter('idno_representation_number', pString),
  				'logLevel' => $this->request->getParameter('log_level', pString),
  				'allowDuplicateMedia' => $this->request->getParameter('allow_duplicate_media', pInteger),
+ 				'replaceExistingMedia' => $this->request->getParameter('replace_existing_media', pInteger),
  				'locale_id' => $g_ui_locale_id,
  				'user_id' => $this->request->getUserID(),
  				'skipFileList' => $this->request->getParameter('skip_file_list', pString),
