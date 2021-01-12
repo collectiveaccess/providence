@@ -200,6 +200,7 @@
                 'matchMode' => $vs_match_mode,
                 'matchType' => $vs_match_type,
                 'allowDuplicateMedia' => (bool)$po_opts->getOption('allow-duplicate-media'),
+                'replaceExistingMedia' => (bool)$po_opts->getOption('replace-existing-media'),
                 'includeSubDirectories' => (bool)$po_opts->getOption('include-subdirectories'),
                 'deleteMediaOnImport' => (bool)$po_opts->getOption('delete-media-on-import'),
                 
@@ -284,6 +285,7 @@
 				"match-mode-s" => _t('Determines how matches are made between media and records. Valid values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES, FILE_NAME. Set to DIRECTORY_NAME to match media directory names to target record identifiers; to FILE_AND_DIRECTORY_NAMES to match on both file and directory names; to FILE_NAME to match only on file names. Default is FILE_NAME.'),
 				"import-mode-s" => _t('Determines if target records are created for media that do not match existing target records. Set to TRY_TO_MATCH to create new target records when no match is found. Set to ALWAYS_MATCH to only import media for existing records. Default is TRY_TO_MATCH.'),
 				'allow-duplicate-media' => _t('Import media even if it already exists in CollectiveAccess. Default is false – skip import of duplicate media.'),
+				'replace-existing-media' => _t('Delete existing media on match records before importing new media. This option is destructive. Use with caution! Default is false.'),
 				'import-target-s' => _t('Table name of record to import media into. Should be a valid representation-taking table such as ca_objects, ca_entities, ca_occurrences, ca_places, etc. Default is ca_objects.'),
 				'import-target-type|t-s' => _t('Type to use for all newly created target records. Default is the first type in the target\'s type list.'),
 				'import-target-idno|i-s' => _t('Identifier to use for all newly created target records.'),
