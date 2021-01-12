@@ -7752,3 +7752,14 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
     border-radius: 3px;
     white-space: nowrap;
 }
+
+/* Query builder */
+
+.query-builder .rules-group-container {
+    background: #f7f7f7 !important;
+    border: none !important;
+}
+
+.btn btn-xs btn-primary active {
+    font-weight: bold;;
+}

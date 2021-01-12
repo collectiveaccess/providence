@@ -31,7 +31,7 @@
  	print $this->render('Search/search_controls_html.php');
  ?>
 <div id="searchBuilder">
-	Form goes here
+
 </div>
  	<div id="resultBox">
 <?php
