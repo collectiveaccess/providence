@@ -279,6 +279,7 @@ class ca_entity_labels extends BaseLabel {
 	public function insert($pa_options=null) {
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			// auto-split entity name if displayname is set
+			$we_set_displayname = false;
 			if($vs_display_name = trim($this->get('displayname'))) {
 			
 				if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
@@ -288,10 +289,11 @@ class ca_entity_labels extends BaseLabel {
 						'forename' => ''	
 					];
 				} else {
-					$va_label = DataMigrationUtils::splitEntityName($vs_display_name);
+					$va_label = DataMigrationUtils::splitEntityName($vs_display_name, $pa_options);
+					$we_set_displayname = true;
 				}
 				if(is_array($va_label)) {
-					unset($va_label['displayname']); // just make sure we don't mangle the user-entered displayname
+					if (!$we_set_displayname) { unset($va_label['displayname']); } // just make sure we don't mangle the user-entered displayname
 
 					foreach($va_label as $vs_fld => $vs_val) {
 						$this->set($vs_fld, $vs_val);
@@ -305,7 +307,6 @@ class ca_entity_labels extends BaseLabel {
 				return false;
 			}
 		}
-		
 		if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
 			$this->set('displayname', $this->get('surname'));
 		} elseif (!$this->get('displayname')) {
