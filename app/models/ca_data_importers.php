@@ -2239,7 +2239,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 2 );
 							}
-							if ( $va_item['settings']['skipIfValue']
+							if ( isset($va_item['settings']['skipIfValue']) && strlen($va_item['settings']['skipIfValue']) 
 							     && ! is_array( $va_item['settings']['skipIfValue'] )
 							) {
 								$va_item['settings']['skipIfValue'] = array( $va_item['settings']['skipIfValue'] );
@@ -2537,7 +2537,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 
-							if ( $va_item['settings']['skipIfValue']
+							if ( isset($va_item['settings']['skipIfValue']) && strlen($va_item['settings']['skipIfValue'])
 							     && ! is_array( $va_item['settings']['skipIfValue'] )
 							) {
 								$va_item['settings']['skipIfValue'] = array( $va_item['settings']['skipIfValue'] );
@@ -2901,6 +2901,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								) {
 									$va_group_buf[ $vn_c ]['_truncateLongLabels'] = true;
 								}
+								if ( isset( $va_item['settings']['displaynameFormat'] )
+								     && $va_item['settings']['displaynameFormat']
+								) {
+									$va_group_buf[ $vn_c ]['_displaynameFormat'] = $va_item['settings']['displaynameFormat'];
+								}
 							}
 
 							if ( isset( $va_item['settings']['mediaPrefix'] ) && $va_item['settings']['mediaPrefix'] ) {
@@ -3255,7 +3260,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								try {
 									if (is_array($va_element_content)) { 														
 										$vb_truncate_long_labels = caGetOption('_truncateLongLabels', $va_element_content, false);
-										unset($va_element_content['_truncateLongLabels']);
+										unset($va_element_content['_truncateLongLabels']);	
+																		
+										$vs_displayname_format = caGetOption('_displaynameFormat', $va_element_content, false);
+										unset($va_element_content['_displaynameFormat']);
 									
 										$vs_item_error_policy = $va_element_content['_errorPolicy'];
 										unset($va_element_content['_errorPolicy']); 
@@ -3276,6 +3284,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$vb_skip_if_data_present = false;
 										$vb_treat_numeric_value_as_id = false;
 										$vs_item_error_policy = null;
+										$vs_displayname_format = null;
 									}
 								
 									$t_subject->clearErrors();
@@ -3294,7 +3303,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vb_skip_if_data_present && ($t_subject->getLabelCount(true, $vn_locale_id) > 0)) { continue(2); }
 												
 												$t_subject->replaceLabel(
-													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, array('truncateLongLabels' => $vb_truncate_long_labels)
+													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $vs_displayname_format]
 												);
 												if ($t_subject->numErrors() == 0) {
 													$vb_output_subject_preferred_label = true;
@@ -3325,7 +3334,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										case 'nonpreferred_labels':
 											if ($vb_skip_if_data_present && ($t_subject->getLabelCount(false, $vn_locale_id) > 0)) { continue(2); }
 											$t_subject->addLabel(
-												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, array('truncateLongLabels' => $vb_truncate_long_labels)
+												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $vs_displayname_format]
 											);
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label to %2:", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
