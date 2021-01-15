@@ -1,4 +1,4 @@
-# README: Providence version 1.7.9
+# README: Providence version 1.7.10
 
 [![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
 
@@ -8,9 +8,9 @@ CollectiveAccess is a web-based suite of applications providing a framework for 
 
 CollectiveAccess is freely available under the open source GNU Public License version 3.
 
-### About CollectiveAccess 1.7.9
+### About CollectiveAccess 1.7.10
 
-Version 1.7.9 is a maintenance release with bug fixes and support for MySQL 8.0 and PHP 7.3 and 7.4. 
+Version 1.7.10 is a maintenance release with bug fixes. 
 
 
 ### Installation
@@ -22,9 +22,9 @@ First make sure your server meets all of the [requirements](https://manual.colle
 
 NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need the backup, but if you do you'll be glad it's there.
 
-To update, decompress the CollectiveAccess Providence 1.7.9 tar.gz or zip file and replace the files in your existing installation with those in the update. Take care to preserve your media directory (`media/`), local configuration directory (`app/conf/local/`), any local print templates (`app/printTemplates/`) and your setup.php file.
+To update, decompress the CollectiveAccess Providence 1.7.10 tar.gz or zip file and replace the files in your existing installation with those in the update. Take care to preserve your media directory (`media/`), local configuration directory (`app/conf/local/`), any local print templates (`app/printTemplates/`) and your setup.php file.
 
-If you are updating from a version prior to 1.7, you must recreate your existing setup.php as the format has changed. Rename the existing setup.php to `setup.php-old` and copy the version 1.7.9 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your existing setup.php file as-is. Only the format of setup.php has changed. If you are updating from version 1.7.x you do not need to change your setup.php file.
+If you are updating from a version prior to 1.7, you must recreate your existing setup.php as the format has changed. Rename the existing setup.php to `setup.php-old` and copy the version 1.7.10 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your existing setup.php file as-is. Only the format of setup.php has changed. If you are updating from version 1.7.x you do not need to change your setup.php file.
 
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
