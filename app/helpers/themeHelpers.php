@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -426,7 +426,7 @@
 		if(!$pa_options["currentRepClass"]){ $pa_options["currentRepClass"] = "active"; }
 		
 		# --- get reps as thumbnails
-		$va_reps = $pt_object->getRepresentations(array($ps_version), null, array("checkAccess" => caGetUserAccessValues($po_request), 'primaryOnly' => $pb_primary_only));
+		$va_reps = $pt_object->findRepresentations(['version' => $ps_version, "class" => caGetOption('class', $pa_options, null), "checkAccess" => caGetUserAccessValues($po_request), 'primaryOnly' => $pb_primary_only]);
 		if(sizeof($va_reps) < 2){
 			return null;
 		}
