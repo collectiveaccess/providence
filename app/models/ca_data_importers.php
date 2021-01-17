@@ -448,6 +448,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('URL importer worksheet was fetched from. Will be null if importer was directly uploaded.')
 		);
 		
+		$va_settings['skipDuplicateValues'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Skip import of duplicate field values'),
+			'description' => _t('If set duplicate values in fields will be ignored.')
+		);
+		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
@@ -2266,8 +2276,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 2 );
 							}
-							if ( isset($va_item['settings']['skipIfValue']) && strlen($va_item['settings']['skipIfValue']) 
-							     && ! is_array( $va_item['settings']['skipIfValue'] )
+							if ( isset($va_item['settings']['skipIfValue'])
+							     && ! is_array( $va_item['settings']['skipIfValue'] ) && strlen($va_item['settings']['skipIfValue']) 
 							) {
 								$va_item['settings']['skipIfValue'] = array( $va_item['settings']['skipIfValue'] );
 							}
@@ -2564,8 +2574,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 
-							if ( isset($va_item['settings']['skipIfValue']) && strlen($va_item['settings']['skipIfValue'])
-							     && ! is_array( $va_item['settings']['skipIfValue'] )
+							if ( isset($va_item['settings']['skipIfValue'])
+							     && ! is_array( $va_item['settings']['skipIfValue'] )  && strlen($va_item['settings']['skipIfValue'])
 							) {
 								$va_item['settings']['skipIfValue'] = array( $va_item['settings']['skipIfValue'] );
 							}
@@ -3473,7 +3483,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 															'logReference' => $vs_idno, 
 															'idno' => $vs_idno, 
 															'dataset' => $vn_dataset, 
-															'row' => $vn_row
+															'row' => $vn_row,
+															'skipExistingValues' => $t_mapping->getSetting('skipDuplicateValues')
 														];
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
 												$va_opts['matchOn'] = $va_match_on;
