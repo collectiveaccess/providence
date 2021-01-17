@@ -77,13 +77,13 @@ class Eventlog extends BaseLogger {
 			if (!$pa_entry["MESSAGE"]) {
 				return false;
 			}
-			
+			$purifier = new HTMLPurifier();
 			$this->o_db->query("
 				INSERT INTO ca_eventlog 
 				(date_time, code, message, source)
 				VALUES
 				(unix_timestamp(), ?, ?, ?)
-			", $pa_entry["CODE"], $this->purify($pa_entry["MESSAGE"]), $pa_entry["SOURCE"]);
+			", $pa_entry["CODE"], $purifier->purify($pa_entry["MESSAGE"]), $pa_entry["SOURCE"]);
 			
 			return true;
 		}
