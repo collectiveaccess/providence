@@ -448,6 +448,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('URL importer worksheet was fetched from. Will be null if importer was directly uploaded.')
 		);
 		
+		$va_settings['skipDuplicateValues'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Skip import of duplicate field values'),
+			'description' => _t('If set duplicate values in fields will be ignored.')
+		);
+		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
@@ -1437,7 +1447,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		global $g_ui_locale_id;	// constant locale set by index.php for web requests
 		if (!($vn_locale_id = caGetOption('locale_id', $pa_options, null))) {	// set as option?	
 			if (!($vn_locale_id = ca_locales::codeToID($t_mapping->getSetting('locale')))) {	// set in mapping?
-				$vn_locale_id = $g_ui_locale_id;												// use global
+				$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();		// use default
 			}
 		}
 		
@@ -1815,6 +1825,27 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_pref_label_values = array();
 				foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_preferred_label_mapping_fld) {
 					$vs_label_val = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment, 'log' => $o_log, 'logReference' => $vs_idno));
+					
+					
+					// TODO: generalize to support all skipIf* and skipWhen* settings
+					if (isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfEmpty']) && (bool)$va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfEmpty'] && !strlen($vs_label_val)) {
+						continue;
+					}
+					
+					if ( isset( $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfExpression'] )
+						 && strlen( trim( $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfExpression'] ) )
+					) {
+						try {
+							if ($vm_ret = ExpressionParser::evaluate( $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['skipIfExpression'],
+								$use_raw ? $va_raw_row : $va_row_with_replacements )
+							) {
+								continue;
+							}
+						} catch ( Exception $e ) {
+							$o_log->logDebug( _t( "[%1] Could not evaluate expression %2 when getting preferred label values for merge: %3", $vs_idno,
+								$va_mapping_items[$vn_preferred_label_mapping_id]['skipIfExpression'], $e->getMessage() ) );
+						}
+					}
 				
 					// If a template is specified format the label value with it so merge-on-preferred_label doesn't fail
 					if (isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'])) {
@@ -1823,6 +1854,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($vs_opt = $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['displaynameFormat']) {
 						$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, array('displaynameFormat' => $vs_opt, 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']));
 						$vs_label_val = $va_label_val['displayname'];
+					}
+					
+					if($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions']) {
+						$vs_label_val = self::_processAppliedRegexes( $o_reader, $va_mapping_items[$vn_preferred_label_mapping_id], 0,
+										$va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'], $vs_label_val, $va_row,
+										$va_row_with_replacements );
 					}
 					$va_pref_label_values[$vs_preferred_label_mapping_fld] = $vs_label_val;
 				}
@@ -2239,8 +2276,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 2 );
 							}
-							if ( isset($va_item['settings']['skipIfValue']) && strlen($va_item['settings']['skipIfValue']) 
-							     && ! is_array( $va_item['settings']['skipIfValue'] )
+							if ( isset($va_item['settings']['skipIfValue'])
+							     && ! is_array( $va_item['settings']['skipIfValue'] ) && strlen($va_item['settings']['skipIfValue']) 
 							) {
 								$va_item['settings']['skipIfValue'] = array( $va_item['settings']['skipIfValue'] );
 							}
@@ -2537,8 +2574,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 
-							if ( isset($va_item['settings']['skipIfValue']) && strlen($va_item['settings']['skipIfValue'])
-							     && ! is_array( $va_item['settings']['skipIfValue'] )
+							if ( isset($va_item['settings']['skipIfValue'])
+							     && ! is_array( $va_item['settings']['skipIfValue'] )  && strlen($va_item['settings']['skipIfValue'])
 							) {
 								$va_item['settings']['skipIfValue'] = array( $va_item['settings']['skipIfValue'] );
 							}
@@ -3446,7 +3483,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 															'logReference' => $vs_idno, 
 															'idno' => $vs_idno, 
 															'dataset' => $vn_dataset, 
-															'row' => $vn_row
+															'row' => $vn_row,
+															'skipExistingValues' => $t_mapping->getSetting('skipDuplicateValues')
 														];
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
 												$va_opts['matchOn'] = $va_match_on;
