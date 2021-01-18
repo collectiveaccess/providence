@@ -27,12 +27,13 @@
  */ 
 	$vo_result 				= $this->getVar('result');
  	$vo_result_context 		= $this->getVar('result_context');
- 	
- 	print $this->render('Search/search_controls_html.php');
  ?>
-<div id="searchBuilder">
-
-</div>
+	<div id="searchBuilder">
+	<?= $this->render('SearchBuilder/search_controls_html.php'); ?>
+	</div>
+	<?= caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'SearchBuilderForm'); ?>
+	
+	<a href="#" onclick="caSaveSearch('SearchBuilderForm', jQuery('#searchBuilderInput').val(), ['search']); return false;" class="button"><?= _t('Save search'); ?>' &rsaquo;</a>
  	<div id="resultBox">
 <?php
 	if($vo_result) {
@@ -75,7 +76,7 @@
 		if (rules) {
 			query = caUI.convertQueryBuilderRuleSetToSearchQuery(rules);
 			if (query) {
-				jQuery('#BasicSearchInput').val(query);
+				jQuery('#searchBuilderInput').val(query);
 			}
 		}
 	}
@@ -95,7 +96,7 @@
 	}
 	
 	var opts = <?= json_encode($this->getVar('options')); ?>;
-	opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val());
+	opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#searchBuilderInput').val());
   jQuery('#searchBuilder').queryBuilder(opts)
   	.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
 </script>

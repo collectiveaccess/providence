@@ -7814,9 +7814,9 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 }
 
 .query-builder .btn-success {
-  color: #FFF;
-  background-color: #5CB85C;
-  border-color: #4CAE4C;
+  color: #000;
+  background-color: #f7f7f7;
+  border-color: #f7f7f7;
 }
 
 .query-builder .btn-primary {
@@ -7827,16 +7827,16 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 
 .query-builder .btn-danger {
   color: #FFF;
-  background-color: #D9534F;
-  border-color: #D43F3A;
+  background-color: #000;
+  border-color: #000;
 }
 
 .query-builder .btn-success.active, .query-builder .btn-success.focus,
 .query-builder .btn-success:active, .query-builder .btn-success:focus,
 .query-builder .btn-success:hover {
   color: #FFF;
-  background-color: #449D44;
-  border-color: #398439;
+  background-color: #000;
+  border-color: #000;
 }
 
 .query-builder .btn-primary.active, .query-builder .btn-primary.focus,
@@ -7850,9 +7850,9 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 .query-builder .btn-danger.active, .query-builder .btn-danger.focus,
 .query-builder .btn-danger:active, .query-builder .btn-danger:focus,
 .query-builder .btn-danger:hover {
-  color: #FFF;
-  background-color: #C9302C;
-  border-color: #AC2925;
+  color: #000;
+  background-color: #f7f7f7;
+  border-color: #000;
 }
 
 .query-builder .btn-group {
@@ -7890,4 +7890,14 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
+}
+
+.query-builder .rule-filter-container select{
+    max-width: 180px;
+}
+.query-builder .rule-operator-container select {
+    max-width: 100px;
+}
+.query-builder .rule-value-container input {
+    width: 240px;
 }

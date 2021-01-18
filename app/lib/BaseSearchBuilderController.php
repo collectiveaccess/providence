@@ -69,8 +69,10 @@
  			$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			$va_access_values = caGetUserAccessValues($this->request);
  			
+ 			$search_builder_config = Configuration::load(__CA_CONF_DIR__.'/search_query_builder.conf');
  			$builder_options = [
- 				'filters' => caGetQueryBuilderFilters($t_model, Configuration::load(__CA_CONF_DIR__.'/search_query_builder.conf'))
+ 				'filters' => caGetQueryBuilderFilters($t_model, $search_builder_config),
+ 				'icons' => $search_builder_config->getAssoc('query_builder_icons')
  			];
  			$this->view->setVar('options', $builder_options);
  			
