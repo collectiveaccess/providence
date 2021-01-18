@@ -49,7 +49,7 @@
  		 * Name of "find" used to defined result context for ResultContext object
  		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
  		 */
- 		protected $ops_find_type = 'basic_search';
+ 		protected $ops_find_type = 'search_builder';
  		 
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
@@ -74,9 +74,9 @@
  			$pa_options['search'] = $this->opo_browse;
  			
 			AssetLoadManager::register('querybuilder');
- 			// AssetLoadManager::register('imageScroller');
-//  			AssetLoadManager::register('tabUI');
-//  			AssetLoadManager::register('panel');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('tabUI');
+ 			AssetLoadManager::register('panel');
             return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
