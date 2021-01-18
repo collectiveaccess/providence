@@ -83,10 +83,13 @@
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
 
                 if($this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_submenu') || $this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_menu')) {                 
-                    if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
-                    
-                        if ($pb_type_restriction_has_changed) {
-                            Session::setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
+                    if ($res_type_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
+                    	$t_instance = Datamodel::getInstance($this->ops_tablename, true);
+                    	$type_ids = array_map(function($v) { return (int)$v; }, $t_instance->getTypeList(['idsOnly' => true]));
+                  		
+                        if ($pb_type_restriction_has_changed && in_array((int)$res_type_id, $type_ids, true)) {
+                        	$this->opn_type_restriction_id = $res_type_id;
+                            Session::setVar($this->ops_tablename.'_type_id', $res_type_id);
                         } elseif($vn_type_id = Session::getVar($this->ops_tablename.'_type_id')) {
                             $this->opn_type_restriction_id = $vn_type_id;
                         }
