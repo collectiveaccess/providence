@@ -240,8 +240,6 @@
             
          
             $this->view->setVar('set_list', $va_set_list);
-            $this->view->setVar('type_name_singular', _t('user'));
-            $this->view->setVar('type_name_plural', _t('users'));
             
             $o_result_context->setAsLastFind();
             $o_result_context->setResultList($va_set_ids);
