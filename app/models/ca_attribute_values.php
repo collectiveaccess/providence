@@ -300,7 +300,6 @@ class ca_attribute_values extends BaseModel {
 		
 			$this->useBlobAsFileField(false);
 			if (!$o_attr_value->numErrors()) {
-				print_R($va_values);
 				foreach($va_values as $vs_key => $vs_val) {
 					if (substr($vs_key, 0, 1) === '_') { continue; }
 					if (($vs_key === 'value_blob') && (isset($va_values['_file']) && $va_values['_file'])) {
