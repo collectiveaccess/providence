@@ -959,7 +959,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vs_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
 			if (!$vn_type_id) { $vn_type_id = null; }
 			//$va_types = array();
-			$va_types = $vn_type_id ? caMakeTypeIDList($this->tableName(), [$vn_type_id]) : null;
+			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id]) : null;
 			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $o_db);
 		} else {
 			$this->opo_idno_plugin_instance = null;
