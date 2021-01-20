@@ -87,6 +87,8 @@ if (!$this->request->isAjax()) {
 ?>
 	<div id="resultBox">
 <?php
+	$this->setVar('type_name_singular', _t('user')); 
+	$this->setVar('type_name_plural', _t('users'));
 	print $this->render('sets/paging_controls_html.php');
 ?>
 
