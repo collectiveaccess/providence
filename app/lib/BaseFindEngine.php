@@ -447,7 +447,7 @@ class BaseFindEngine extends BaseObject {
 			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByIntrinsic($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
 			} elseif($t_table->hasElement($sort_field)) { // is attribute
-				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
+				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction, $hits);
 			} elseif($sort_field === 'preferred_labels') {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
 			} else {
@@ -466,7 +466,7 @@ class BaseFindEngine extends BaseObject {
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
 				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
 			} elseif($is_attribute) {							// sort key is metadata attribute
-				$sort_key_values = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction);		
+				$sort_key_values = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction, $hits);		
 			} else {
 				throw new ApplicationException(_t('Unhandled sort'));
 			}
@@ -599,7 +599,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByAttribute($t_table, string $hit_table, string $element_code=null, string $limit_sql=null, $direction='asc') {
+	private function _sortByAttribute($t_table, string $hit_table, string $element_code=null, string $limit_sql=null, $direction='asc', array $hits=null) {
 		$table_num = $t_table->tableNum();
 		
 		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
@@ -634,13 +634,18 @@ class BaseFindEngine extends BaseObject {
 			$row = $qr_sort->getRow();
 			$sort_keys[$row['row_id']] = true;
 		}
+		
+		// Add any row without the attribute set to the end of the sort set
+		foreach($hits as $h) {
+			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+		}
 		return $sort_keys;
 	}
 	# ------------------------------------------------------------------
 	/**
 	 *
 	 */
-	private function _sortByRelatedAttribute($t_table, $t_rel_table, string $hit_table, string $element_code=null, string $limit_sql=null, $direction='asc') {
+	private function _sortByRelatedAttribute($t_table, $t_rel_table, string $hit_table, string $element_code=null, string $limit_sql=null, $direction='asc', array $hits=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -682,6 +687,11 @@ class BaseFindEngine extends BaseObject {
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
 			$sort_keys[$row['row_id']] = true;
+		}
+		
+		// Add any row without the attribute set to the end of the sort set
+		foreach($hits as $h) {
+			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
 		}
 		return $sort_keys;
 	}
