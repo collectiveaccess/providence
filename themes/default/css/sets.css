@@ -96,3 +96,9 @@ a.setItemEditButton img{
 	color: #333;
 	font-family:Arial;
 }
+
+tbody#setListBody td.setListByUserUserHeader {
+	background-color: #EEE;
+	padding: 1.3em;
+	border-top: solid 2px #999;
+}
