@@ -1540,6 +1540,16 @@ a.button:hover{
     color: #1ab3c8;
 }
 
+a.inline-button-small {
+    font-size: 10px;
+    text-decoration: none;
+    color: #000;
+}
+a.inline-button-small:hover {
+    text-decoration: none;
+    color: #1ab3c8;
+}
+
 a.form-button, span.form-button, del.form-button{
     display:-moz-inline-box;
     display:inline-block;
@@ -1718,7 +1728,7 @@ a.form-button:focus,
 a.dom-button-focus,
 span.form-button-behavior-hover{
     background-position:0 -60px;
-    color:#222;
+    color: #1ab3c8;
     text-decoration:none;
 }
 
@@ -2013,11 +2023,9 @@ a.deleteButton span{
 	color: red;
 	font-weight:bold;
 }
-a.deleteButton span .caIcon:hover{
-	color:red;
-}
+
 a.deleteButton span.form-button:hover {
-	color:red;
+	color: #1ab3c8;
 }
 div.control-box-right-content select {
     width: 150px;
@@ -7900,4 +7908,12 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 }
 .query-builder .rule-value-container input {
     width: 240px;
+}
+
+.searchBuilderContainer {
+    background-color: #f7f7f7;
+}
+.searchBuilderSubmit {
+    text-align: right;
+    padding: 0 5px 10px 0;
 }

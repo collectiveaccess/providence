@@ -71,6 +71,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true,
 			'LABEL' => 'Object hierarchy', 'DESCRIPTION' => 'Identifier of object that is root of the object hierarchy.'
 		),
 		'lot_id' => array(

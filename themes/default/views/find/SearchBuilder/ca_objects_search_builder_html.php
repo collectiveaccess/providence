@@ -28,12 +28,14 @@
 	$vo_result 				= $this->getVar('result');
  	$vo_result_context 		= $this->getVar('result_context');
  ?>
-	<div id="searchBuilder">
-	<?= $this->render('SearchBuilder/search_controls_html.php'); ?>
+	<div class="searchBuilderContainer">
+		<div id="searchBuilder">
+			<?= $this->render('SearchBuilder/search_controls_html.php'); ?>
+		</div>
+		<div class="searchBuilderSubmit">
+			<?= caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'SearchBuilderForm'); ?>
+		</div>
 	</div>
-	<?= caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'SearchBuilderForm'); ?>
-	
-	<a href="#" onclick="caSaveSearch('SearchBuilderForm', jQuery('#searchBuilderInput').val(), ['search']); return false;" class="button"><?= _t('Save search'); ?>' &rsaquo;</a>
  	<div id="resultBox">
 <?php
 	if($vo_result) {
@@ -94,7 +96,7 @@
 			'afterSetFilters.queryBuilder'
 		].join(' ');
 	}
-	
+	//__CA_NAV_ICON_DELETE__
 	var opts = <?= json_encode($this->getVar('options')); ?>;
 	opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#searchBuilderInput').val());
   jQuery('#searchBuilder').queryBuilder(opts)
