@@ -131,7 +131,7 @@ if (!$this->request->isAjax()) {
 		    $vn_num_sets_for_user = (int)sizeof($va_user['sets']);
 ?>
             <tr>
-                <td colspan="8"><strong><?php print $va_user['user']['fname']." ".$va_user['user']['lname']." (".$va_user['user']['email'].")</strong> [".(($vn_num_sets_for_user == 1) ? _t("%1 set", $vn_num_sets_for_user) : _t("%1 sets", $vn_num_sets_for_user))."]"; ?></td>
+                <td colspan="8" class="setListByUserUserHeader"><strong><?php print $va_user['user']['fname']." ".$va_user['user']['lname']." (".$va_user['user']['email'].")</strong> [".(($vn_num_sets_for_user == 1) ? _t("%1 set", $vn_num_sets_for_user) : _t("%1 sets", $vn_num_sets_for_user))."]"; ?></td>
             </tr>
 <?php
             foreach($va_user['sets'] as $va_set) {
