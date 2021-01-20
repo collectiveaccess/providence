@@ -154,7 +154,7 @@
 			                $vn_element_id = $o_value->getElementID();
 			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
 			                
-			                $pv = $o_value->getDisplayValue();
+			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                if (
 			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
 			            		||

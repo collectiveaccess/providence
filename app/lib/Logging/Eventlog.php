@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2012 Whirl-i-Gig
+ * Copyright 2004-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -77,13 +77,13 @@ class Eventlog extends BaseLogger {
 			if (!$pa_entry["MESSAGE"]) {
 				return false;
 			}
-			
+			$purifier = new HTMLPurifier();
 			$this->o_db->query("
 				INSERT INTO ca_eventlog 
 				(date_time, code, message, source)
 				VALUES
 				(unix_timestamp(), ?, ?, ?)
-			", $pa_entry["CODE"], $pa_entry["MESSAGE"], $pa_entry["SOURCE"]);
+			", $pa_entry["CODE"], $purifier->purify($pa_entry["MESSAGE"]), $pa_entry["SOURCE"]);
 			
 			return true;
 		}
@@ -125,7 +125,12 @@ class Eventlog extends BaseLogger {
 						ORDER BY date_time DESC
 					");
 				}
-				return $qr_log->getAllRows();
+				$entries = $qr_log->getAllRows();
+				$purifier = new HTMLPurifier();
+				return array_map(function($e) use ($purifier) { 
+					$e['message'] = $purifier->purify($e['message']);
+					return $e;
+				}, $entries);
 			}
 		}
 		return null;

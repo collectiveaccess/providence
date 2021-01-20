@@ -2419,7 +2419,11 @@ if (!$pb_omit_editing_info) {
 			}
 			
 		}
-		
+		if(($options['maximumLength'] > 0) && (mb_strlen($vs_val) > $options['maximumLength'])) {
+			$doc = new DOMDocument();
+			@$doc->loadHTML('<?xml encoding="utf-8" ?>'.mb_substr($vs_val, 0, $options['maximumLength']));
+			return $doc->saveHTML();
+		}
 		return $vs_val;
 	}
 	# ----------------------------------------
