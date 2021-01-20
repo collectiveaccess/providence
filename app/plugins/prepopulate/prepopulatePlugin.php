@@ -490,6 +490,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 										}
 
 										if($vb_update) {
+											unset($va_label['source_info']);
 											$t_instance->editLabel(
 												$va_label['label_id'], $va_label, $g_ui_locale_id, null, $vb_preferred
 											);
