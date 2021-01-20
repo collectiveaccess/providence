@@ -3230,7 +3230,9 @@
  			if (sizeof(BaseModelWithAttributes::$s_element_label_cache) > 256) { 
  				array_splice(BaseModelWithAttributes::$s_element_label_cache, 0, 128);
  			}
- 			BaseModelWithAttributes::$s_element_label_cache = array_merge(BaseModelWithAttributes::$s_element_label_cache, caExtractValuesByUserLocale($va_element_labels_by_locale));
+ 			
+ 			// TODO: fix this - currently caching incorrect values
+ 			//BaseModelWithAttributes::$s_element_label_cache = array_merge(BaseModelWithAttributes::$s_element_label_cache, caExtractValuesByUserLocale($va_element_labels_by_locale));
  			
  			if ($pb_include_sub_element_codes && sizeof($va_codes)) {
  				$qr_res = $o_db->query("
