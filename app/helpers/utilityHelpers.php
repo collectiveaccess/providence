@@ -190,7 +190,7 @@ function caMakeProperUTF8ForXML($ps_text){
 
 	$vn_length = strlen($ps_text);
 	for ($i=0; $i < $vn_length; $i++) {
-		$vn_current = ord($ps_text{$i});
+		$vn_current = ord($ps_text[$i]);
 		if (($vn_current == 0x9) ||
 			($vn_current == 0xA) ||
 			($vn_current == 0xD) ||
