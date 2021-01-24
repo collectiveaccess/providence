@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,10 +34,6 @@
   *
   */
   
-  
- require_once(__CA_LIB_DIR__.'/Db.php');
- require_once(__CA_LIB_DIR__.'/Configuration.php');
- require_once(__CA_LIB_DIR__.'/Datamodel.php');
  require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
  require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
 
@@ -49,66 +45,59 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 *
 	 * @var Configuration
 	 */
-	protected $opo_config;
+	protected $config;
 	
 	/**
 	 * Search configuration (search.conf)
 	 *
 	 * @var Configuration
 	 */
-	protected $opo_search_config;
-	
-	/**
-	 * Datamodel (datamodel.conf)
-	 *
-	 * @var Datamodel
-	 */
-	protected $opo_datamodel;
+	protected $search_config;
 	
 	/**
 	 *
 	 */
-	protected $ops_encoding;
+	protected $encoding;
 	
 	/**
 	 * Current character encoding
 	 *
 	 * @var string
 	 */
-	protected $opa_filters;
+	protected $filters;
 	
 	/**
 	 * List of plugin capabilities
 	 *
 	 * @var array
 	 */
-	protected $opa_capabilities;
+	protected $capabilities;
 	
 	/**
 	 * Database connection
 	 *
 	 * @var Db
 	 */
-	protected $opo_db;
+	protected $db;
 	
 	/**
 	 * List of plugin options
 	 *
 	 * @var array
 	 */
-	protected $opa_options;
+	protected $options;
 	
 	# -------------------------------------------------------
 	/**
-	 * @param Db $po_db Database connection to use. If omitted a new connection is created.
+	 * @param Db $db Database connection to use. If omitted a new connection is created.
 	 */
-	public function __construct($po_db=null) {
+	public function __construct($db=null) {
 		
-		$this->opo_config = Configuration::load();
-		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
-		$this->ops_encoding = $this->opo_config->get('character_set');
+		$this->config = Configuration::load();
+		$this->search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
+		$this->encoding = $this->config->get('character_set');
 		
-		$this->opo_db = $po_db ? $po_db : new Db();
+		$this->db = $db ? $db : new Db();
 		
 		$this->init();
 		parent::__construct();
@@ -117,11 +106,11 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	/**
 	 * Returns true/false indication of whether the plug-in has a capability
 	 *
-	 * @param string $ps_capability Name of capability
+	 * @param string $capability Name of capability
 	 * @return bool True if plugin has capability
 	 */
-	public function can($ps_capability) {
-		return $this->opa_capabilities[$ps_capability];
+	public function can($capability) {
+		return $this->capabilities[$capability];
 	}
 	# -------------------------------------------------------
 	# Options
@@ -129,15 +118,15 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	/**
 	 * Set value for option
 	 *
-	 * @param string $ps_option Name of option
-	 * @param mixed $pm_value option setting
+	 * @param string $option Name of option
+	 * @param mixed $value option setting
 	 * @return bool True on succes, false if option in not valid
 	 */
-	public function setOption($ps_option, $pm_value) {
-		if ($this->isValidOption($ps_option)) {
-			$this->opa_options[$ps_option] = $pm_value;
+	public function setOption($option, $value) {
+		if ($this->isValidOption($option)) {
+			$this->options[$option] = $value;
 
-			switch($ps_option) {
+			switch($option) {
 				case 'limit':
 					// noop
 					break;
@@ -150,11 +139,11 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	/**
 	 * Get current setting for option
 	 *
-	 * @param string $ps_option
+	 * @param string $option
 	 * @return mixed Option setting or null if option is not valid
 	 */
-	public function getOption($ps_option) {
-		return $this->opa_options[$ps_option];
+	public function getOption($option) {
+		return $this->options[$option];
 	}
 	# -------------------------------------------------------
 	/**
@@ -163,32 +152,32 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 * @return array 
 	 */
 	public function getAvailableOptions() {
-		return array_keys($this->opa_options);
+		return array_keys($this->options);
 	}
 	# -------------------------------------------------------
 	/**
 	 * Check if option is defined for plugin
 	 * 
-	 * @param string $ps_option Option name
+	 * @param string $option Option name
 	 * @return true if option is valid
 	 */
-	public function isValidOption($ps_option) {
-		return in_array($ps_option, $this->getAvailableOptions());
+	public function isValidOption($option) {
+		return in_array($option, $this->getAvailableOptions());
 	}
 	# -------------------------------------------------
 	/**
 	 * Set filtering of final search result
 	 *
-	 * @param string $ps_access_point
-	 * @param string $ps_operator A valid comparison operator
-	 * @param mixed $pm_value Value to filter on
+	 * @param string $access_point
+	 * @param string $operator A valid comparison operator
+	 * @param mixed $value Value to filter on
 	 */
-	public function addFilter($ps_access_point, $ps_operator, $pm_value) {
-		$this->opa_filters[] = array(
-			'access_point' => $ps_access_point, 
-			'operator' => $ps_operator, 
-			'value ' => $pm_value
-		);
+	public function addFilter($access_point, $operator, $value) {
+		$this->opa_filters[] = [
+			'access_point' => $access_point, 
+			'operator' => $operator, 
+			'value ' => $value
+		];
 	}
 	# -------------------------------------------------
 	/**
@@ -197,23 +186,23 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 * @return array
 	 */
 	public function getFilters() {
-		return $this->opa_filters;
+		return $this->filters;
 	}
 	# --------------------------------------------------
 	/**
 	 * Remove all currently set filters
 	 */
 	public function clearFilters() {
-		$this->opa_filters = array();
+		$this->filters = [];
 	}
 	# --------------------------------------------------
 	/**
 	 * Set database connection
 	 *
-	 * @param DbDriverBase $po_db instance of the db driver you are using
+	 * @param DbDriverBase $db instance of the db driver you are using
 	 */
-	public function setDb($po_db) {
-		$this->opo_db = $po_db;
+	public function setDb($db) {
+		$this->db = $db;
 	}
 	# --------------------------------------------------
 }

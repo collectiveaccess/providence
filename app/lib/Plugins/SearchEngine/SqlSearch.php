@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,18 +93,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$this->opo_tep->setLanguage($g_ui_locale);
 		
 		$this->opo_stemmer = new SnoballStemmer();
-		$this->opb_do_stemming = (int)trim($this->opo_search_config->get('search_sql_search_do_stemming')) ? true : false;
+		$this->opb_do_stemming = (int)trim($this->search_config->get('search_sql_search_do_stemming')) ? true : false;
 		
 		$this->initDbStatements();
 		
-		if (!($this->ops_indexing_tokenizer_regex = trim($this->opo_search_config->get('indexing_tokenizer_regex')))) {
+		if (!($this->ops_indexing_tokenizer_regex = trim($this->search_config->get('indexing_tokenizer_regex')))) {
 			$this-> ops_indexing_tokenizer_regex = "^\pL\pN\pNd/_#\@\&\.";
 		}
-		if (!($this->ops_search_tokenizer_regex = trim($this->opo_search_config->get('search_tokenizer_regex')))) {
+		if (!($this->ops_search_tokenizer_regex = trim($this->search_config->get('search_tokenizer_regex')))) {
 			$this->ops_search_tokenizer_regex = "^\pL\pN\pNd/_#\@\&";
 		}
 		
-		if (!is_array($this->opa_asis_regexes = $this->opo_search_config->getList('asis_regexes'))) {
+		if (!is_array($this->opa_asis_regexes = $this->search_config->getList('asis_regexes'))) {
 			$this->opa_asis_regexes = array();
 		}
 		
@@ -120,11 +120,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# Initialization and capabilities
 	# -------------------------------------------------------
 	public function init() {
-		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
+		if(($vn_max_indexing_buffer_size = (int)$this->search_config->get('max_indexing_buffer_size')) < 1) {
 			$vn_max_indexing_buffer_size = 5000;
 		}
 		
-		$this->opa_options = array(
+		$this->options = array(
 				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
 				'maxIndexingBufferSize' => $vn_max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
 				'maxWordIndexInsertSegmentSize' => ceil($vn_max_indexing_buffer_size / 2), // maximum number of word index rows to put into a single insert
@@ -139,7 +139,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		// Defines specific capabilities of this engine and plug-in
 		// The indexer and engine can use this information to optimize how they call the plug-in
-		$this->opa_capabilities = array(
+		$this->capabilities = array(
 			'incremental_reindexing' => true,		// can update indexing using only changed fields, rather than having to reindex the entire row (and related stuff) every time
 			'restrict_to_fields' => true
 		);
@@ -170,7 +170,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				word = ?
 		";
 		
-		$this->opqr_lookup_word = $this->opo_db->prepare($this->ops_lookup_word_sql);
+		$this->opqr_lookup_word = $this->db->prepare($this->ops_lookup_word_sql);
 		
 		$this->ops_insert_word_index_sql = "
 			INSERT  INTO ca_sql_search_word_index
@@ -191,25 +191,25 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			VALUES
 		";
 		
-		$this->opqr_insert_word = $this->opo_db->prepare($this->ops_insert_word_sql);
+		$this->opqr_insert_word = $this->db->prepare($this->ops_insert_word_sql);
 		
 		$this->ops_delete_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (rel_type_id = ?)";
-		$this->opqr_delete = $this->opo_db->prepare($this->ops_delete_sql);
+		$this->opqr_delete = $this->db->prepare($this->ops_delete_sql);
 		
 		$this->ops_delete_with_field_num_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (rel_type_id = ?)";
-		$this->opqr_delete_with_field_num = $this->opo_db->prepare($this->ops_delete_with_field_num_sql);
+		$this->opqr_delete_with_field_num = $this->db->prepare($this->ops_delete_with_field_num_sql);
 		
 		$this->ops_delete_with_field_num_sql_without_rel_type_id = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?)";
-		$this->opqr_delete_with_field_num_without_rel_type_id = $this->opo_db->prepare($this->ops_delete_with_field_num_sql_without_rel_type_id);
+		$this->opqr_delete_with_field_num_without_rel_type_id = $this->db->prepare($this->ops_delete_with_field_num_sql_without_rel_type_id);
 		
 		$this->ops_delete_with_field_row_id_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
-		$this->opqr_delete_with_field_row_id = $this->opo_db->prepare($this->ops_delete_with_field_row_id_sql);
+		$this->opqr_delete_with_field_row_id = $this->db->prepare($this->ops_delete_with_field_row_id_sql);
 		
 		$this->ops_delete_with_field_row_id_and_num = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
-		$this->opqr_delete_with_field_row_id_and_num = $this->opo_db->prepare($this->ops_delete_with_field_row_id_and_num);
+		$this->opqr_delete_with_field_row_id_and_num = $this->db->prepare($this->ops_delete_with_field_row_id_and_num);
 		
 		$this->ops_delete_dependent_sql = "DELETE FROM ca_sql_search_word_index WHERE (field_table_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
-		$this->opqr_delete_dependent_sql = $this->opo_db->prepare($this->ops_delete_dependent_sql);
+		$this->opqr_delete_dependent_sql = $this->db->prepare($this->ops_delete_dependent_sql);
 		
 	}
 	# -------------------------------------------------------
@@ -221,11 +221,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	 */
 	public function truncateIndex($pn_table_num=null) {
 		if ($pn_table_num > 0) {
-			$this->opo_db->query("DELETE FROM ca_sql_search_word_index WHERE table_num = ?", array((int)$pn_table_num));
+			$this->db->query("DELETE FROM ca_sql_search_word_index WHERE table_num = ?", array((int)$pn_table_num));
 		} else {
-			$this->opo_db->query("TRUNCATE TABLE ca_sql_search_word_index");
-			$this->opo_db->query("TRUNCATE TABLE ca_sql_search_words");
-			$this->opo_db->query("TRUNCATE TABLE ca_sql_search_ngrams");
+			$this->db->query("TRUNCATE TABLE ca_sql_search_word_index");
+			$this->db->query("TRUNCATE TABLE ca_sql_search_words");
+			$this->db->query("TRUNCATE TABLE ca_sql_search_ngrams");
 		}
 		return true;
 	}
@@ -252,15 +252,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	 */
 	public function __destruct() {	
 		if (is_array(self::$s_doc_content_buffer) && sizeof(self::$s_doc_content_buffer)) {
-			if($this->opo_db && !$this->opo_db->connected()) {
-				$this->opo_db->connect();
+			if($this->db && !$this->db->connected()) {
+				$this->db->connect();
 			}
 			$this->flushContentBuffer();
 		}
 		unset($this->opo_config);
-		unset($this->opo_search_config);
+		unset($this->search_config);
 		unset($this->opo_datamodel);
-		unset($this->opo_db);
+		unset($this->db);
 		unset($this->opo_tep);
 	}
 	# -------------------------------------------------------
@@ -272,7 +272,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
 		$t = new Timer();
 		$this->_setMode('search');
-		$this->opa_filters = $pa_filters;
+		$this->filters = $pa_filters;
 		if (!($t_instance = Datamodel::getInstanceByTableNum($pn_subject_tablenum, true))) {
 			// TODO: Better error message
 			die("Invalid subject table");
@@ -293,7 +293,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		}
 		
-		$this->opo_db->query('SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED');
+		$this->db->query('SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED');
 		if (trim($ps_search_expression) === '((*))') {	
 			// do we need to filter?
 			$va_filters = $this->getFilters();
@@ -364,7 +364,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				ORDER BY
 					row_id
 			";
-			$qr_res = $this->opo_db->query($vs_sql);
+			$qr_res = $this->db->query($vs_sql);
 		} else {
 			$this->_createTempTable('ca_sql_search_search_final');
 			$this->_doQueriesForSqlSearch($po_rewritten_query, $pn_subject_tablenum, 'ca_sql_search_search_final', 0, array('restrictSearchToFields' => $va_restrict_to_fields, 'excludeFieldsFromSearch' => $va_exclude_fields_from_search));
@@ -444,38 +444,38 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				ORDER BY
 					boost DESC, row_id
 			";
-			$qr_res = $this->opo_db->query($vs_sql);
+			$qr_res = $this->db->query($vs_sql);
 			
 			Debug::msg("search for {$ps_search_expression} took ".$t->getTime(4));
 		
 			$this->_dropTempTable('ca_sql_search_search_final');
 		}
-		$this->opo_db->query('SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+		$this->db->query('SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ');
 		$va_hits = $qr_res->getAllFieldValues('row_id');
 		
 		return new WLPlugSearchEngineSqlSearchResult($va_hits, $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	private function _createTempTable($ps_name) {
-		$this->opo_db->query("DROP TABLE IF EXISTS {$ps_name}");
-		$this->opo_db->query("
+		$this->db->query("DROP TABLE IF EXISTS {$ps_name}");
+		$this->db->query("
 			CREATE TEMPORARY TABLE {$ps_name} (
 				row_id int unsigned not null primary key,
 				boost int not null default 1,
 				field_container_id int unsigned null
 			) engine=memory;
 		");
-		if ($this->opo_db->numErrors()) {
+		if ($this->db->numErrors()) {
 			return false;
 		}
 		return true;
 	}
 	# -------------------------------------------------------
 	private function _dropTempTable($ps_name) {
-		$this->opo_db->query("
+		$this->db->query("
 			DROP TABLE IF EXISTS {$ps_name};
 		");
-		if ($this->opo_db->numErrors()) {
+		if ($this->db->numErrors()) {
 			return false;
 		}
 		return true;
@@ -644,22 +644,22 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									INNER JOIN ca_sql_search_temp_{$pn_level} AS ftmp1 ON ftmp1.row_id = mfs.row_id
 									GROUP BY mfs.row_id, mfs.field_container_id
 								";
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = $this->db->query($vs_sql);
 								
-								$qr_res = $this->opo_db->query("TRUNCATE TABLE {$ps_dest_table}");
+								$qr_res = $this->db->query("TRUNCATE TABLE {$ps_dest_table}");
 								
-								$qr_res = $this->opo_db->query("INSERT INTO {$ps_dest_table} SELECT row_id, boost, field_container_id FROM {$ps_dest_table}_acc");
+								$qr_res = $this->db->query("INSERT INTO {$ps_dest_table} SELECT row_id, boost, field_container_id FROM {$ps_dest_table}_acc");
 								$this->_dropTempTable("{$ps_dest_table}_acc");
 							} 
 							break;
 						case 'NOT':
-							$qr_res = $this->opo_db->query("SELECT row_id FROM ca_sql_search_temp_{$pn_level}");
+							$qr_res = $this->db->query("SELECT row_id FROM ca_sql_search_temp_{$pn_level}");
 							
 							if (is_array($va_ids = $qr_res->getAllFieldValues('row_id')) && sizeof($va_ids)) {
 								$vs_sql = "
 									DELETE FROM {$ps_dest_table} WHERE row_id IN (?)
 								";
-								$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
+								$qr_res = $this->db->query($vs_sql, array($va_ids));
 							}
 							break;
 						default:
@@ -670,7 +670,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								FROM ca_sql_search_temp_{$pn_level}
 								GROUP BY row_id, field_container_id
 							";
-							$qr_res = $this->opo_db->query($vs_sql);
+							$qr_res = $this->db->query($vs_sql);
 							break;
 					}
 					$vn_i++;
@@ -794,7 +794,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											AND
 											(cav.value_decimal1 BETWEEN ".floatval($vn_lower_val)." AND ".floatval($vn_upper_val).")
 											AND
-											(cav.value_longtext1 = '".$this->opo_db->escape($vs_currency)."')
+											(cav.value_longtext1 = '".$this->db->escape($vs_currency)."')
 											
 									";
 									break;
@@ -870,9 +870,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 								$va_terms = $this->_tokenize((string)$o_term->text, true); //preg_split("![".$this->ops_search_tokenizer_regex."]+!u", (string)$o_term->text);
 								$va_raw_terms[] = (string)$o_term->text;
-								$va_raw_terms_escaped[] = '"'.$this->opo_db->escape((string)$o_term->text).'"';
+								$va_raw_terms_escaped[] = '"'.$this->db->escape((string)$o_term->text).'"';
 								foreach($va_terms as $vs_term) {
-									if (strlen($vs_escaped_text = $this->opo_db->escape($vs_term))) {
+									if (strlen($vs_escaped_text = $this->db->escape($vs_term))) {
 										$va_words[] = $vs_escaped_text;
 									}
 								}
@@ -913,16 +913,16 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										sw.word = ? AND swi.table_num = ? {$vs_fld_limit_sql}
  										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
 								";
-								$qr_res = $this->opo_db->query($vs_sql, $vs_word, (int)$pn_subject_tablenum);
+								$qr_res = $this->db->query($vs_sql, $vs_word, (int)$pn_subject_tablenum);
 								
-								$qr_count = $this->opo_db->query("SELECT count(*) c FROM {$vs_temp_table}");
+								$qr_count = $this->db->query("SELECT count(*) c FROM {$vs_temp_table}");
 								
 								$va_temp_tables[] = $vs_temp_table;	
 							}
 							
 							$vs_results_temp_table = array_pop($va_temp_tables);
 							
-							$this->opo_db->query("UPDATE {$vs_results_temp_table} SET row_id = row_id - 1");
+							$this->db->query("UPDATE {$vs_results_temp_table} SET row_id = row_id - 1");
 							$va_direct_query_temp_tables[$vs_results_temp_table] = true;
 							$vs_direct_sql_query = "SELECT swi.row_id, ca.boost, ca.field_container_id
 													FROM {$vs_results_temp_table} ca
@@ -1006,18 +1006,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
 													$vs_stem = (string)$vs_term;
 												}
-												$va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
+												$va_ft_stem_terms[] = "'".$this->db->escape($vs_stem)."'";
 											} else {
-												$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
+												$va_ft_terms[] = '"'.$this->db->escape($vs_term).'"';
 											}
 										} else {
-											$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
+											$va_ft_terms[] = '"'.$this->db->escape($vs_term).'"';
 										}
 									}
 									$vb_output_term = true;	
 								
 								}
-								if ($vb_output_term) { $va_raw_terms[] = $vs_raw_term; $va_raw_terms_escaped[] = '"'.$this->opo_db->escape($vs_raw_term).'"'; }
+								if ($vb_output_term) { $va_raw_terms[] = $vs_raw_term; $va_raw_terms_escaped[] = '"'.$this->db->escape($vs_raw_term).'"'; }
 							}
 							$va_raw_terms = array_unique($va_raw_terms);
 							$va_raw_terms_escaped = array_unique($va_raw_terms_escaped);
@@ -1205,10 +1205,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 															default:
 																if ($this->opo_tep->parse($vs_raw_term)) {
 																	$va_dates = $this->opo_tep->getHistoricTimestamps();
-																	if (((int)$va_dates[0] === -2000000000) && $this->opo_search_config->get('treat_before_dates_as_circa')) {
+																	if (((int)$va_dates[0] === -2000000000) && $this->search_config->get('treat_before_dates_as_circa')) {
                                                                         $va_dates[0] = $va_dates['start'] = (int)$va_dates['end'] + 0.1231235959;
                                                                     }
-                                                                    if (((int)$va_dates[1] === 2000000000) && $this->opo_search_config->get('treat_after_dates_as_circa')) {
+                                                                    if (((int)$va_dates[1] === 2000000000) && $this->search_config->get('treat_after_dates_as_circa')) {
                                                                         $va_dates[1] = $va_dates['end'] = (int)$va_dates['start'];
                                                                     }
                                                                     
@@ -1287,7 +1287,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																AND
 																(cav.value_decimal1 = ".floatval($vn_amount).")
 																AND
-																(cav.value_longtext1 = '".$this->opo_db->escape($vs_currency)."')
+																(cav.value_longtext1 = '".$this->db->escape($vs_currency)."')
 															
 														";
 														$vn_direct_sql_target_table_num = $vs_table_num; 
@@ -1662,9 +1662,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$va_tmp = array();
 							foreach($va_ft_like_terms as $vs_term) {
 								if ($vb_ft_bit_optimization) {
-									$va_tmp[] = '(sw.word = \' '.$this->opo_db->escape(trim($vs_term)).' \')';
+									$va_tmp[] = '(sw.word = \' '.$this->db->escape(trim($vs_term)).' \')';
 								} else {
-									$va_tmp[] = '(sw.word LIKE \''.$this->opo_db->escape(trim($vs_term)).'%\')';
+									$va_tmp[] = '(sw.word LIKE \''.$this->db->escape(trim($vs_term)).'%\')';
 								}
 							}
 							if (($t_table) && (strlen($vs_fld_num) > 1)) {
@@ -1774,7 +1774,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array();
 						if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
 						
-						$this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
+						$this->db->query($vs_sql, $pa_direct_sql_query_params);
 						
 						$vn_i++;
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
@@ -1815,7 +1815,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
 								if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
-								$qr_res = $this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
+								$qr_res = $this->db->query($vs_sql, $pa_direct_sql_query_params);
 								
 								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4). ' '.$qr_res->numRows()); }
 						
@@ -1829,10 +1829,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						      		    $va_params[] = $va_field_container_ids;
 						      		}
 									$vs_sql = "DELETE FROM {$ps_dest_table} WHERE row_id NOT IN (?) {$vs_container_sql}";
-									$qr_res = $this->opo_db->query($vs_sql, $va_params);
+									$qr_res = $this->db->query($vs_sql, $va_params);
 									if ($this->debug) { Debug::msg('AND DELETE: '.$vs_sql. ' '.$t->GetTime(4)); }
 								} else { // we don't have any results left, ie. our AND query should yield an empty result
-									$this->opo_db->query("DELETE FROM {$ps_dest_table}");
+									$this->db->query("DELETE FROM {$ps_dest_table}");
 								}
 								
 								$vn_i++;
@@ -1854,7 +1854,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
 								if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
-								$qr_res = $this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
+								$qr_res = $this->db->query($vs_sql, $pa_direct_sql_query_params);
 								$va_ids = $qr_res->getAllFieldValues(($vs_direct_sql_query && ($vn_direct_sql_target_table_num != $pn_subject_tablenum)) ? Datamodel::primaryKey($pn_subject_tablenum) : 'row_id');
 						
 								if (sizeof($va_ids) > 0) {
@@ -1873,7 +1873,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											row_id IN (?) {$vs_container_sql}
 									";
 									if ($this->debug) { Debug::msg('NOT '.$vs_sql); }
-									$qr_res = $this->opo_db->query($vs_sql, $va_params);
+									$qr_res = $this->db->query($vs_sql, $va_params);
 								}
 								
 								$vn_i++;
@@ -1905,7 +1905,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
 								if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
-								$qr_res = $this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
+								$qr_res = $this->db->query($vs_sql, $pa_direct_sql_query_params);
 								break;
 						}
 					}
@@ -2032,13 +2032,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (is_array(self::$s_doc_content_buffer) && sizeof(self::$s_doc_content_buffer)) {
 			while(sizeof(self::$s_doc_content_buffer) > 0) {
 				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
-					$this->opo_db->query("SET unique_checks=0");
-					$this->opo_db->query("SET foreign_key_checks=0");
+					$this->db->query("SET unique_checks=0");
+					$this->db->query("SET foreign_key_checks=0");
 				}
-				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(self::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
+				$this->db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(self::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
 				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
-					$this->opo_db->query("SET unique_checks=1");
-					$this->opo_db->query("SET foreign_key_checks=1");
+					$this->db->query("SET unique_checks=1");
+					$this->db->query("SET foreign_key_checks=1");
 				}
 			}
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
@@ -2104,7 +2104,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		// 		
 		// 		if (sizeof($va_ngram_buf)) {
 		// 			$vs_sql = $this->ops_insert_ngram_sql."\n".join(",", $va_ngram_buf);
-		// 			$this->opo_db->query($vs_sql);
+		// 			$this->db->query($vs_sql);
 		// 		}
 		
 		return WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word] = $vn_word_id;
@@ -2249,7 +2249,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		// do insert
 		if (sizeof($va_row_insert_sql)) {
 			$vs_sql = $this->ops_insert_word_index_sql."\n".join(",", $va_row_insert_sql);
-			$this->opo_db->query($vs_sql);
+			$this->db->query($vs_sql);
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}				
 	}
@@ -2312,9 +2312,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (sizeof($va_words)) {
 			$va_quoted_words = array();
 			foreach($va_words as $vs_word) {
-				$va_quoted_words[] = $this->opo_db->escape($vs_word);
+				$va_quoted_words[] = $this->db->escape($vs_word);
 			}
-			$qr_res = $this->opo_db->query("
+			$qr_res = $this->db->query("
 				SELECT swi.row_id
 				FROM ca_sql_search_words sw
 				INNER JOIN ca_sql_search_word_index AS swi ON swi.word_id = sw.word_id
@@ -2339,7 +2339,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	public function wordIDsToWords($pa_word_ids) {
 		if(!is_array($pa_word_ids) || !sizeof($pa_word_ids)) { return array(); }
 	
-		$qr_words = $this->opo_db->query("
+		$qr_words = $this->db->query("
 			SELECT word, word_id FROM ca_sql_search_words WHERE word_id IN (?)
 		", array($pa_word_ids));
 		
