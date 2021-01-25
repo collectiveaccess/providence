@@ -456,7 +456,7 @@ class SearchEngine extends SearchBase {
 		if (method_exists($po_query, 'getSigns')) {
 			$va_old_signs = $po_query->getSigns();
 		} else {
-			$va_old_signs = array();
+			$va_old_signs = [];
 		}
 
 		$vn_i = 0;
@@ -512,7 +512,7 @@ class SearchEngine extends SearchBase {
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					$va_tmp = $this->_rewriteQuery($o_term);
-					// don't wrap 1-term query in unnecessary extra boolean subquery. apparently the engines can't handle the extra parentheses
+					// don't wrap 1-term query in unnecessary extra boolean subquery as some engines can't handle the extra parentheses
 					if(sizeof($va_tmp['terms']) == 1) {
 						$va_terms[] = array_shift($va_tmp['terms']);
 					} else {

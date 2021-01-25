@@ -626,102 +626,41 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$ap['element_info']['datatype'] = 2; // TODO: detect type of intrinsic; for now just assume date
 		}
 		
-		$sql = null;
-	 	$params = [$subject_tablenum];
-	 	
+		$qinfo = null;
 		switch($ap['element_info']['datatype']) {
 	 		case __CA_ATTRIBUTE_VALUE_DATERANGE__:
-	 			if ($text_upper) { $text = "{$text} - {$text_upper}"; }
-				if ($this->tep->parse($text)) {
-					$dates = $this->tep->getHistoricTimestamps();
-					if (((int)$dates['start'] === -2000000000) && $this->search_config->get('treat_before_dates_as_circa')) {
-						$dates['start'] = (int)$dates['end'] + 0.1231235959;
-					}
-					if (((int)$dates['end'] === 2000000000) && $this->search_config->get('treat_after_dates_as_circa')) {
-						$dates['end'] = (int)$dates['start'];
-					}
-					
-					$dates['start'] = (float)$dates['start'];
-					$dates['end'] = (float)$dates['end'];
-					
-					if($ap['type'] === 'INTRINSIC') {
-						$tmp = explode('.', $ap['access_point']);
-						if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
-							throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
-						}
-						
-						$pk = $t_table->primaryKey(true);
-						$table = $t_table->tableName();
-						
-						$fi = $t_table->getFieldInfo($tmp[1]);
-						
-						$sql = "
-							SELECT {$pk} row_id, 1 boost
-							FROM {$table}
-							WHERE
-								(
-									({$table}.{$fi['START']} BETWEEN ? AND ?)
-									OR
-									({$table}.{$fi['END']} BETWEEN ? AND ?)
-									OR
-									({$table}.{$fi['START']} <= ? AND {$table}.{$fi['END']} >= ?)	
-								)
-				
-						";
-						$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']];
-					} else {
-						$sql = "
-							SELECT ca.row_id, 1 boost
-							FROM ca_attribute_values cav
-							INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-							WHERE
-								(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
-								AND
-								(
-									(cav.value_decimal1 BETWEEN ? AND ?)
-									OR
-									(cav.value_decimal2 BETWEEN ? AND ?)
-									OR
-									(cav.value_decimal1 <= ? AND cav.value_decimal2 >= ?)	
-								)
-				
-						";
-						$params = array_merge($params, [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']]);
-					}	
-				}
+				$qinfo = $this->_queryForDateRangeAttribute(new DateRangeAttributeValue(), $ap, $text, $text_upper);
 				break;
 			case __CA_ATTRIBUTE_VALUE_TIMECODE__:
-				if(!is_array($qinfo = $this->_queryForDecimalAttribute(new TimecodeAttributeValue(), $ap, $text, $text_upper))) { return []; }
-				$sql = $qinfo['sql']; $params = array_merge($params, $qinfo['params']);
+				$qinfo = $this->_queryForNumericAttribute(new TimecodeAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
 				break;
 			case __CA_ATTRIBUTE_VALUE_LENGTH__:
-				if(!is_array($qinfo = $this->_queryForDecimalAttribute(new LengthAttributeValue(), $ap, $text, $text_upper))) { return []; }
-				$sql = $qinfo['sql']; $params = array_merge($params, $qinfo['params']);
+				$qinfo = $this->_queryForNumericAttribute(new LengthAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
 				break;
 			case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-				if(!is_array($qinfo = $this->_queryForDecimalAttribute(new WeightAttributeValue(), $ap, $text, $text_upper))) { return []; }
-				$sql = $qinfo['sql']; $params = array_merge($params, $qinfo['params']);
+				$qinfo = $this->_queryForNumericAttribute(new WeightAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
 				break;
 			case __CA_ATTRIBUTE_VALUE_INTEGER__:
-			
+				$qinfo = $this->_queryForNumericAttribute(new NumericAttributeValue(), $ap, $text, $text_upper, 'value_integer1');
 				break;
 			case __CA_ATTRIBUTE_VALUE_NUMERIC__:
-				if(!is_array($qinfo = $this->_queryForDecimalAttribute(new NumericAttributeValue(), $ap, $text, $text_upper))) { return []; }
-				$sql = $qinfo['sql']; $params = array_merge($params, $qinfo['params']);
+				$qinfo = $this->_queryForNumericAttribute(new NumericAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
 				break;
 			case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-			
+				$qinfo = $this->_queryForCurrencyAttribute(new CurrencyAttributeValue(), $ap, $text, $text_upper);
 				break;
 			case __CA_ATTRIBUTE_VALUE_GEOCODE__:
-			
+				$qinfo = $this->_queryForGeocodeAttribute(new GeocodeAttributeValue(), $ap, $text, $text_upper);
 				break;
 		}
-		if($sql) {
-			$qr_res = $this->db->query($sql, $params);
+		if(is_array($qinfo)) {
+			$params = $qinfo['params'];
+			array_unshift($params, $subject_tablenum);
+			$qr_res = $this->db->query($qinfo['sql'], $params);
 			
 			return $this->_arrayFromDbResult($qr_res);
 		}
-		return null;
+		return [];
 	}
 	# -------------------------------------------------------
 	/**
@@ -1501,18 +1440,23 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _queryForDecimalAttribute($attrval, $ap, $text, $text_upper) {
+	private function _queryForNumericAttribute($attrval, $ap, $text, $text_upper, $attr_field) {
 		if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info']))) {
 			return null;
 		}
-		$params = [$parsed_value['value_decimal1']];
+		
+		if (!in_array($attr_field, ['value_integer1', 'value_decimal1'])) { 
+			throw new ApplicationException(_t('Invalid attribute field'));
+		}
+		
+		$params = [$parsed_value[$attr_field]];
 		$where_sql = '';
 		
 		if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
-			$where_sql = "(cav.value_decimal1 >= ? AND cav.value_decimal1 <= ?)";
+			$where_sql = "(cav.{$attr_field} >= ? AND cav.{$attr_field} <= ?)";
 			$params[] = $parsed_value_end['value_decimal1'];
 		} else {
-			$where_sql = "(cav.value_decimal1 = ?)";
+			$where_sql = "(cav.{$attr_field} = ?)";
 		}
 
 		$sql = "
@@ -1525,6 +1469,172 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				({$where_sql})
 		";
 		
+		return ['sql' => $sql, 'params' => $params];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _queryForCurrencyAttribute($attrval, $ap, $text, $text_upper) {
+		if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info']))) {
+			return null;
+		}
+		
+		$currency = preg_replace('![^A-Z0-9]+!', '', $parsed_value['value_longtext1']);
+		if (!$currency) { 
+			return null;	// no currency
+		}
+		$params = [$parsed_value['value_decimal1']];
+		$where_sql = '';
+		
+		if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
+			$where_sql = "((cav.value_decimal1 >= ? AND cav.value_decimal1 <= ?) AND (cav.value_longtext1 = ?))";
+			$params[] = $parsed_value_end['value_decimal1'];
+		} else {
+			$where_sql = "((cav.value_decimal1 = ?) AND (cav.value_longtext1 = ?))";
+		}
+		$params[] = $currency;
+
+		$sql = "
+			SELECT ca.row_id, 1 boost
+			FROM ca_attribute_values cav
+			INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+			WHERE
+				(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
+				AND
+				({$where_sql})
+		";
+		
+		return ['sql' => $sql, 'params' => $params];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _queryForGeocodeAttribute($attrval, $ap, $text, $text_upper) {
+		$upper_lat = $upper_long = $lower_lat = $lower_long = null;
+		if ($text_upper) {
+			if (!is_array($parsed_value = $attrval->parseValue("[{$text}]", $ap['element_info']))) {
+				return null;
+			}
+			$lower_lat = (float)$parsed_value['value_decimal1'];
+			$lower_long = (float)$parsed_value['value_decimal2'];
+		
+		
+			$parsed_value = $attrval->parseValue("[{$text_upper}]", $ap['element_info']);
+			$upper_lat = (float)$parsed_value['value_decimal1'];
+			$upper_long = (float)$parsed_value['value_decimal2'];
+		
+			// MySQL BETWEEN always wants the lower value first ... BETWEEN 5 AND 3 wouldn't match 4 ... So we swap the values if necessary
+			if($upper_lat < $lower_lat) {
+				$tmp = $upper_lat;
+				$upper_lat = $lower_lat;
+				$lower_lat = $tmp;
+			}
+			if($upper_long < $lower_long) {
+				$tmp = $upper_long;
+				$upper_long = $lower_long;
+				$lower_long = $tmp;
+			}
+		} elseif(is_array($parsed_values = caParseGISSearch($text))) {
+			$lower_lat = $parsed_values['min_latitude'];
+			$upper_lat = $parsed_values['max_latitude'];
+			$lower_long = $parsed_values['min_longitude'];
+			$upper_long = $parsed_values['max_longitude'];
+		} else {
+			return [];
+		}
+		
+		$params = [];
+		$where_sql = '';
+		
+		if (!is_null($upper_lat) && !is_null($upper_long)) {
+			$where_sql = "((cav.value_decimal1 >= ? AND cav.value_decimal1 <= ?) AND (cav.value_decimal2 >= ? AND cav.value_decimal2 <= ?))";
+			$params = [$lower_lat, $upper_lat, $lower_long, $upper_long];
+		} else {
+			throw new ApplicationException(_t('Upper lat/long coordinates must not be empty'));
+		}
+		
+		$sql = "
+			SELECT ca.row_id, 1 boost
+			FROM ca_attribute_values cav
+			INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+			WHERE
+				(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
+				AND
+				({$where_sql})
+		";
+		
+		return ['sql' => $sql, 'params' => $params];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _queryForDateRangeAttribute($attrval, $ap, $text, $text_upper) {
+		if ($text_upper) { $text = "{$text} - {$text_upper}"; }
+		if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info']))) {
+			return null;
+		}
+		
+		$dates = [
+			'start' => $parsed_value['value_decimal1'],
+			'end' => $parsed_value['value_decimal2']
+		];
+		if (((int)$dates['start'] === -2000000000) && $this->search_config->get('treat_before_dates_as_circa')) {
+			$dates['start'] = (int)$dates['end'] + 0.1231235959;
+		}
+		if (((int)$dates['end'] === 2000000000) && $this->search_config->get('treat_after_dates_as_circa')) {
+			$dates['end'] = (int)$dates['start'];
+		}
+		
+		$dates['start'] = (float)$dates['start'];
+		$dates['end'] = (float)$dates['end'];
+		
+		if($ap['type'] === 'INTRINSIC') {
+			$tmp = explode('.', $ap['access_point']);
+			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
+				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+			}
+			
+			$pk = $t_table->primaryKey(true);
+			$table = $t_table->tableName();
+			
+			$fi = $t_table->getFieldInfo($tmp[1]);
+			
+			$sql = "
+				SELECT {$pk} row_id, 1 boost
+				FROM {$table}
+				WHERE
+					(
+						({$table}.{$fi['START']} BETWEEN ? AND ?)
+						OR
+						({$table}.{$fi['END']} BETWEEN ? AND ?)
+						OR
+						({$table}.{$fi['START']} <= ? AND {$table}.{$fi['END']} >= ?)	
+					)
+	
+			";
+			$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']];
+		} else {
+			$sql = "
+				SELECT ca.row_id, 1 boost
+				FROM ca_attribute_values cav
+				INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+				WHERE
+					(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
+					AND
+					(
+						(cav.value_decimal1 BETWEEN ? AND ?)
+						OR
+						(cav.value_decimal2 BETWEEN ? AND ?)
+						OR
+						(cav.value_decimal1 <= ? AND cav.value_decimal2 >= ?)	
+					)
+	
+			";
+			$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']];
+		}	
 		return ['sql' => $sql, 'params' => $params];
 	}
 	# -------------------------------------------------------
