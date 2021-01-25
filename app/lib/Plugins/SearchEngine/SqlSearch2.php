@@ -623,7 +623,24 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		// is field intrinsic? (dates, integer, numerics can be intrinsic)
 		if($ap['type'] === 'INTRINSIC') {
-			$ap['element_info']['datatype'] = 2; // TODO: detect type of intrinsic; for now just assume date
+			$field = explode('.', $ap['access_point']);
+			$field_name = $field[1];
+			$table = $field[0];
+			
+			if (!($t_instance = Datamodel::getInstance($table, true))) { return []; }
+			if(!$t_instance->hasField($field_name)) { return []; }
+			$fi = $t_instance->getFieldInfo($field_name);
+			
+			switch($fi['FIELD_TYPE']) {
+				case FT_NUMBER:
+					$ap['element_info']['datatype'] = __CA_ATTRIBUTE_VALUE_NUMERIC__;
+					break;
+				case FT_HISTORIC_DATERANGE:
+				case FT_DATERANGE:
+					$ap['element_info']['datatype'] = __CA_ATTRIBUTE_VALUE_DATERANGE__;
+					break;
+					break;
+			}
 		}
 		
 		$qinfo = null;
@@ -655,7 +672,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		}
 		if(is_array($qinfo)) {
 			$params = $qinfo['params'];
-			array_unshift($params, $subject_tablenum);
+			if($ap['type'] !== 'INTRINSIC') { array_unshift($params, $subject_tablenum); }
 			$qr_res = $this->db->query($qinfo['sql'], $params);
 			
 			return $this->_arrayFromDbResult($qr_res);
@@ -1449,25 +1466,55 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			throw new ApplicationException(_t('Invalid attribute field'));
 		}
 		
-		$params = [$parsed_value[$attr_field]];
-		$where_sql = '';
-		
-		if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
-			$where_sql = "(cav.{$attr_field} >= ? AND cav.{$attr_field} <= ?)";
-			$params[] = $parsed_value_end['value_decimal1'];
+		if($ap['type'] === 'INTRINSIC') {
+			$tmp = explode('.', $ap['access_point']);
+			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
+				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+			}
+			
+			$pk = $t_table->primaryKey(true);
+			$table = $t_table->tableName();
+			$field_name = $tmp[1];
+			
+			if(!$t_table->hasField($field_name)) { 
+				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $tmp[1], $access_point));
+			}
+			
+			if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
+				$where_sql = "({$table}.{$field_name} >= ? AND {$table}.{$field_name} <= ?)";
+				$params = [$parsed_value['value_decimal1'], $parsed_value_end['value_decimal1']];
+			} else {
+				$where_sql = "({$table}.{$field_name} = ?)";
+				$params = [$parsed_value['value_decimal1']];
+			}
+			
+			$sql = "
+				SELECT {$pk} row_id, 1 boost
+				FROM {$table}
+				WHERE
+					{$where_sql}
+			";
 		} else {
-			$where_sql = "(cav.{$attr_field} = ?)";
+			$params = [$parsed_value[$attr_field]];
+			$where_sql = '';
+		
+			if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
+				$where_sql = "(cav.{$attr_field} >= ? AND cav.{$attr_field} <= ?)";
+				$params[] = $parsed_value_end['value_decimal1'];
+			} else {
+				$where_sql = "(cav.{$attr_field} = ?)";
+			}
+		
+			$sql = "
+				SELECT ca.row_id, 1 boost
+				FROM ca_attribute_values cav
+				INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+				WHERE
+					(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
+					AND
+					({$where_sql})
+			";
 		}
-
-		$sql = "
-			SELECT ca.row_id, 1 boost
-			FROM ca_attribute_values cav
-			INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-			WHERE
-				(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
-				AND
-				({$where_sql})
-		";
 		
 		return ['sql' => $sql, 'params' => $params];
 	}
