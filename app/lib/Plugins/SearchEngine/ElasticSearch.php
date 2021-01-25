@@ -367,7 +367,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $po_rewritten_query
 	 * @return WLPlugSearchEngineElasticSearchResult
 	 */
-	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=[], $po_rewritten_query=null) {
+	public function search(int $pn_subject_tablenum, string $ps_search_expression, array $pa_filters=[], $po_rewritten_query) {
 		Debug::msg("[ElasticSearch] incoming search query is: {$ps_search_expression}");
 		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($pa_filters, true));
 

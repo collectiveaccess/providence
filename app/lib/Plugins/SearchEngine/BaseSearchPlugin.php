@@ -201,7 +201,7 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 *
 	 * @param DbDriverBase $db instance of the db driver you are using
 	 */
-	public function setDb($db) {
+	public function setDb(Db $db) {
 		$this->db = $db;
 	}
 	# --------------------------------------------------

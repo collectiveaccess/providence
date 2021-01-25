@@ -269,7 +269,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	/**
 	 *
 	 */
-	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
+	public function search(int $pn_subject_tablenum, string $ps_search_expression, array $pa_filters=array(), $po_rewritten_query) {
 		$t = new Timer();
 		$this->_setMode('search');
 		$this->filters = $pa_filters;

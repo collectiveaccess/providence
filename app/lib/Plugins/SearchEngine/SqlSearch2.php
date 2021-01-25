@@ -149,8 +149,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 * @param Db $po_db A database connection to use in place of current one
 	 */
-	public function setDb($po_db) {
-		parent::setDb($po_db);
+	public function setDb($db) {
+		parent::setDb($db);
 		$this->initDbStatements();
 	}
 	# -------------------------------------------------------
@@ -175,10 +175,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	public function search($subject_tablenum, $search_expression, $filters=[], $rewritten_query=null) {
-		//print "Expression: $search_expression<br/>\nRewritten: ".$rewritten_query->__toString()."<br>\n";
-		
-		$hits = $this->_processQuery($subject_tablenum, $rewritten_query);
+	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) {
+		$hits = $this->_filterQueryResult(
+			$subject_tablenum, 
+			$this->_processQuery($subject_tablenum, $rewritten_query), 
+			$filters
+		);
 		
 		arsort($hits, SORT_NUMERIC);	// sort by boost
 
@@ -188,9 +190,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 * Dispatch query for processing
 	 */
-	private function _processQuery($subject_tablenum, $query) {
+	private function _processQuery(int $subject_tablenum, $query) {
 		$qclass = get_class($query);
-		//print "GOT $qclass<br>\n";
 		
 		$row_ids = [];
 		switch($qclass) {
@@ -223,7 +224,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _processQueryBoolean($subject_tablenum, $query) {
+	private function _processQueryBoolean(int $subject_tablenum, $query) {
 		$signs = $query->getSigns();
 	 	$subqueries = $query->getSubqueries();
 	 	
@@ -235,8 +236,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		$hits = $this->_processQuery($subject_tablenum, $query);
 	 		$op = $this->_getBooleanOperator($signs, $i);
 	 		
-	 		//print "OP IS $op [".$query->__toString()."]\n";
-
 	 		switch($op) {
 	 			case 'AND':
 	 				if ($i == 0) { $acc = $hits; break; }
@@ -291,15 +290,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _processQueryMultiterm($subject_tablenum, $query) {
+	private function _processQueryMultiterm(int $subject_tablenum, $query) {
 		$terms = $query->getTerms();
 		
 		$acc = [];
 	 	foreach($terms as $i => $term) {
 	 		$hits = $this->_processQueryTerm($subject_tablenum, $term);
 	 		$op = $this->_getBooleanOperator($signs, $i);
-	 		
-	 		//print "OP IS $op [".$query->__toString()."]\n";
 
 	 		switch($op) {
 	 			case 'AND':
@@ -339,7 +336,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _processQueryTerm($subject_tablenum, $query) {
+	private function _processQueryTerm(int $subject_tablenum, $query) {
 		$qclass = get_class($query);
 		$term = ($qclass === 'Zend_Search_Lucene_Search_Query_Term') ? $query->getTerm() : $query;
 		
@@ -358,6 +355,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	
+	 	if (is_array($ap)) {
+	 		// Handle datatype-specific queries
+	 		$ret = $this->_processMetadataDataType($subject_tablenum, $ap, $query);
+	 		if(is_array($ret)) { return $ret; }
+	 	}
+	 	
+	 
 	 	$params = [$subject_tablenum];
 	 	$word_op = '=';
 	 	$word_field = 'sw.word';
@@ -400,21 +404,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	    	{$field_sql}
 	 	    	{$private_sql}
 	 	", $params);
-	 	//print $s; print_R($params);
 	 	
-	 	$vals = $qr_res->getAllFieldValues(['row_id', 'boost']);
-	 	
-	 	$hits = [];
-	 	foreach($vals['row_id'] as $i => $row_id) {
-	 		$hits[$row_id] = $vals['boost'][$i];
-	 	}
-	 	return $hits;
+	 	return $this->_arrayFromDbResult($qr_res);
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	private function _processQueryPhrase($subject_tablenum, $query) {
+	private function _processQueryPhrase(int $subject_tablenum, $query) {
 	 	$terms = $query->getTerms();
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
 	 	
@@ -438,7 +435,11 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$fld_limit_sql = null;
 			if(is_array($ap_tmp) && (sizeof($ap_tmp) >= 2)) {
 				$ap = $this->_getElementIDForAccessPoint($subject_tablenum, $ap_spec);
-				
+				if (is_array($ap)) {
+					// Handle datatype-specific queries
+					$ret = $this->_processMetadataDataType($subject_tablenum, $ap, $query);
+					if(is_array($ret)) { return $ret; }
+				}
 				if (isset($ap['field_num'], $ap['table_num'])) {
 					$fld_num = $ap['field_num'];
 					$fld_table_num = $ap['table_num'];
@@ -479,16 +480,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				FROM {$results_temp_table} ca
 				INNER JOIN ca_sql_search_word_index AS swi ON swi.index_id = ca.row_id
 			");
-			$vals = $qr_res->getAllFieldValues(['row_id', 'boost']);
 			
+	 		$hits = $this->_arrayFromDbResult($qr_res);
+	 		
 			// Clean up temp tables
 			foreach($temp_tables as $temp_table) {
 				$this->_dropTempTable($temp_table);
-			}
-			
-			$hits = [];
-			foreach($vals['row_id'] as $i => $row_id) {
-				$hits[$row_id] = $vals['boost'][$i];
 			}
 			return $hits;
 	 	} else {
@@ -505,7 +502,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _processQueryChangeLog($subject_tablenum, Zend_Search_Lucene_Index_Term $term) {
+	private function _processQueryChangeLog(int $subject_tablenum, Zend_Search_Lucene_Index_Term $term) {
 		$field = $term->field;
 	 	$text = $term->text;
 	 	
@@ -573,12 +570,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					break;
 			}
 			
-			$vals = $qr_res->getAllFieldValues(['row_id', 'boost']);
-			$hits = [];
-			foreach($vals['row_id'] as $i => $row_id) {
-				$hits[$row_id] = $vals['boost'][$i];
-			}
-			return $hits;
+	 		return $this->_arrayFromDbResult($qr_res);
 	 	}
 	 	return [];
 	}
@@ -586,8 +578,226 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _processQueryRange($subject_tablenum, $query) {
+	private function _processQueryRange(int $subject_tablenum, Zend_Search_Lucene_Search_Query_Range $query) {
+	 	$lower_term = $query->getLowerTerm();
+		$upper_term = $query->getUpperTerm();
+		$lower_text = $lower_term->text;
+		$upper_text = $upper_term->text;
+		
+		
+		$ap = $this->_getElementIDForAccessPoint($subject_tablenum, $lower_term->field);
+		if (!is_array($ap)) { return []; }
+		
+		return $this->_processMetadataDataType($subject_tablenum, $ap, $query);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _processMetadataDataType(int $subject_tablenum, array $ap, $query) { 
+		$qclass = get_class($query);
+		
+		$text = $text_upper = null;
+		switch($qclass) {
+			case 'Zend_Search_Lucene_Search_Query_Term':
+				$term = $query->getTerm();
+				$text = $term->text;
+				break;
+			case 'Zend_Search_Lucene_Index_Term':
+				$text = $query->text;
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Phrase':
+				$terms = $query->getTerms();
+				$text = join(' ', array_map(function($t) { return $t->text;}, $terms));
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Range':
+				$lower_term = $query->getLowerTerm();
+				$upper_term = $query->getUpperTerm();
+				$text = $lower_term->text;
+				$text_upper = $upper_term->text;
+				break;
+			default:
+				throw new ApplicationException(_t('Invalid query passed to _processMetadataDataType: %1', $qclass));
+				break;
+		}
+		
+		// is field intrinsic? (dates, integer, numerics can be intrinsic)
+		if($ap['type'] === 'INTRINSIC') {
+			$ap['element_info']['datatype'] = 2; // TODO: detect type of intrinsic; for now just assume date
+		}
+		
+		$sql = null;
+	 	$params = [$subject_tablenum];
 	 	
+		switch($ap['element_info']['datatype']) {
+	 		case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+	 			if ($text_upper) { $text = "{$text} - {$text_upper}"; }
+				if ($this->tep->parse($text)) {
+					$dates = $this->tep->getHistoricTimestamps();
+					if (((int)$dates['start'] === -2000000000) && $this->search_config->get('treat_before_dates_as_circa')) {
+						$dates['start'] = (int)$dates['end'] + 0.1231235959;
+					}
+					if (((int)$dates['end'] === 2000000000) && $this->search_config->get('treat_after_dates_as_circa')) {
+						$dates['end'] = (int)$dates['start'];
+					}
+					
+					$dates['start'] = (float)$dates['start'];
+					$dates['end'] = (float)$dates['end'];
+					
+					if($ap['type'] === 'INTRINSIC') {
+						$tmp = explode('.', $ap['access_point']);
+						if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
+							throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+						}
+						
+						$pk = $t_table->primaryKey(true);
+						$table = $t_table->tableName();
+						
+						$fi = $t_table->getFieldInfo($tmp[1]);
+						
+						$sql = "
+							SELECT {$pk} row_id, 1 boost
+							FROM {$table}
+							WHERE
+								(
+									({$table}.{$fi['START']} BETWEEN ? AND ?)
+									OR
+									({$table}.{$fi['END']} BETWEEN ? AND ?)
+									OR
+									({$table}.{$fi['START']} <= ? AND {$table}.{$fi['END']} >= ?)	
+								)
+				
+						";
+						$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']];
+					} else {
+						$sql = "
+							SELECT ca.row_id, 1 boost
+							FROM ca_attribute_values cav
+							INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+							WHERE
+								(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
+								AND
+								(
+									(cav.value_decimal1 BETWEEN ? AND ?)
+									OR
+									(cav.value_decimal2 BETWEEN ? AND ?)
+									OR
+									(cav.value_decimal1 <= ? AND cav.value_decimal2 >= ?)	
+								)
+				
+						";
+						$params = array_merge($params, [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']]);
+					}	
+				}
+				break;
+			case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+				if(!is_array($qinfo = $this->_queryForDecimalAttribute(new TimecodeAttributeValue(), $ap, $text, $text_upper))) { return []; }
+				$sql = $qinfo['sql']; $params = array_merge($params, $qinfo['params']);
+				break;
+			case __CA_ATTRIBUTE_VALUE_LENGTH__:
+				if(!is_array($qinfo = $this->_queryForDecimalAttribute(new LengthAttributeValue(), $ap, $text, $text_upper))) { return []; }
+				$sql = $qinfo['sql']; $params = array_merge($params, $qinfo['params']);
+				break;
+			case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+				if(!is_array($qinfo = $this->_queryForDecimalAttribute(new WeightAttributeValue(), $ap, $text, $text_upper))) { return []; }
+				$sql = $qinfo['sql']; $params = array_merge($params, $qinfo['params']);
+				break;
+			case __CA_ATTRIBUTE_VALUE_INTEGER__:
+			
+				break;
+			case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+				if(!is_array($qinfo = $this->_queryForDecimalAttribute(new NumericAttributeValue(), $ap, $text, $text_upper))) { return []; }
+				$sql = $qinfo['sql']; $params = array_merge($params, $qinfo['params']);
+				break;
+			case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+			
+				break;
+			case __CA_ATTRIBUTE_VALUE_GEOCODE__:
+			
+				break;
+		}
+		if($sql) {
+			$qr_res = $this->db->query($sql, $params);
+			
+			return $this->_arrayFromDbResult($qr_res);
+		}
+		return null;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _filterQueryResult(int $subject_tablenum, ?array $hits, array $filters) {
+		if (is_array($filters) && sizeof($filters) && sizeof($hits)) {
+			if (!($t_instance = Datamodel::getInstance($subject_tablenum, true))) {
+				throw new ApplicationException(_t('Invalid subject table: %1', $subject_tablenum));
+			}
+			foreach($filters as $filter) {
+				$tmp = explode('.', $filter['field']);
+				$path = [];
+				$joins = [];
+			
+				if ($tmp[0] !== $table_name) {
+					$path = Datamodel::getPath($table_name, $tmp[0]);
+				} 
+				if (is_array($path) && sizeof($path)) {
+					$last_table = null;
+					// generate related joins
+					foreach($path as $table => $va_info) {
+						if (!($t_table = Datamodel::getInstance($table, true))) {
+							throw new ApplicationException(_t('Invalid path table: %1', $table));
+						}
+						
+						$rels = Datamodel::getOneToManyRelations($last_table, $table);
+						if (!sizeof($rels)) {
+							$rels = Datamodel::getOneToManyRelations($table, $last_table);
+						}
+						if ($table == $rels['one_table']) {
+							$joins[$table] = "INNER JOIN ".$rels['one_table']." ON ".$rels['one_table'].".".$rels['one_table_field']." = ".$rels['many_table'].".".$rels['many_table_field'];
+						} else {
+							$joins[$table] = "INNER JOIN ".$rels['many_table']." ON ".$rels['many_table'].".".$rels['many_table_field']." = ".$rels['one_table'].".".$rels['one_table_field'];
+						}
+						
+						$last_table = $table;
+					}
+					$sql_where = "(".$filter['field']." ".$filter['operator']." ".$this->_filterValueToQueryValue($filter).")";
+				} else {
+					if(!($t_table = Datamodel::getInstanceByTableName($tmp[0], true))) {
+						throw new ApplicationException(_t('Invalid path table: %1', $table));
+					}
+					$sql_where = "(".$filter['field']." ".$filter['operator']." ".$this->_filterValueToQueryValue($filter).")";
+				}
+			
+				switch($filter['operator']) {
+					case 'in':
+						if (strpos(strtolower($filter['value']), 'null') !== false) {
+							$sql_where = "({$sql_where} OR (".$filter['field']." IS NULL))";
+						}
+						break;
+					case 'not in':
+						if (strpos(strtolower($filter['value']), 'null') !== false) {
+							$sql_where = "({$sql_where} OR (".$filter['field']." IS NOT NULL))";
+						}
+						break;
+				}
+				$wheres[] = $sql_where;
+			}
+			
+			$pk = $t_instance->primaryKey(true);
+			$table = $t_instance->tableName();
+			$sql_joins = join("\n", $joins);
+			
+			$qr_res = $this->db->query("
+				SELECT {$pk} 
+				FROM {$table} 
+				{$sql_joins} 
+				WHERE {$pk} IN (?) AND ".join(' AND ', $wheres), [array_keys($hits)]);
+				
+			$filtered_hits = array_flip($qr_res->getAllFieldValues($pk));
+			return array_intersect_key($hits, $filtered_hits);
+		}
+		
+		return $hits;
 	}
 	# -------------------------------------------------------
 	# Indexing
@@ -1154,7 +1364,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'field_num' => 'COUNT',
 				'datatype' => 'COUNT',
 				'element_info' => null,
-				'relationship_type_ids' => $va_rel_type_ids
+				'relationship_type_ids' => $va_rel_type_ids,
+				'type' => 'COUNT'
 			);
 		} elseif (strtolower($vs_field) == 'current_value') {
 		    if(!$vs_subfield) { $vs_subfield = '__default__'; }
@@ -1173,7 +1384,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'field_num' => "CV{$vs_subfield}_{$vs_fld_num}",
 				'datatype' => 'CV',
 				'element_info' => null,
-				'relationship_type_ids' => $va_rel_type_ids
+				'relationship_type_ids' => $va_rel_type_ids,
+				'type' => 'CV'
 			);
 		
 		} elseif (is_numeric($vs_field)) {
@@ -1201,7 +1413,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						'field_num' => 'COUNT'.$t_element->getPrimaryKey(),
 						'datatype' => 'COUNT',
 						'element_info' => $t_element->getFieldValuesArray(),
-						'relationship_type_ids' => $va_rel_type_ids
+						'relationship_type_ids' => $va_rel_type_ids,
+						'type' => 'COUNT'
 					);
 				} else {
 					return array(
@@ -1212,13 +1425,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						'field_num' => 'A'.$t_element->getPrimaryKey(),
 						'datatype' => $t_element->get('datatype'),
 						'element_info' => $t_element->getFieldValuesArray(),
-						'relationship_type_ids' => $va_rel_type_ids
+						'relationship_type_ids' => $va_rel_type_ids,
+						'type' => 'METADATA'
 					);
 				}
 			}
 		} else {
 
-			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids);
+			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids, 'type' => 'INTRINSIC');
 		}
 
 		return null;
@@ -1270,5 +1484,48 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		}
 		return true;
 	}
-	# --------------------------------------------------
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _arrayFromDbResult(DbResult $qr_res) {
+		$vals = $qr_res->getAllFieldValues(['row_id', 'boost']);
+	 	if(!isset($vals['row_id'])) { return []; }
+	 	$hits = [];
+	 	foreach($vals['row_id'] as $i => $row_id) {
+	 		$hits[$row_id] = $vals['boost'][$i];
+	 	}
+	 	return $hits;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _queryForDecimalAttribute($attrval, $ap, $text, $text_upper) {
+		if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info']))) {
+			return null;
+		}
+		$params = [$parsed_value['value_decimal1']];
+		$where_sql = '';
+		
+		if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
+			$where_sql = "(cav.value_decimal1 >= ? AND cav.value_decimal1 <= ?)";
+			$params[] = $parsed_value_end['value_decimal1'];
+		} else {
+			$where_sql = "(cav.value_decimal1 = ?)";
+		}
+
+		$sql = "
+			SELECT ca.row_id, 1 boost
+			FROM ca_attribute_values cav
+			INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+			WHERE
+				(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
+				AND
+				({$where_sql})
+		";
+		
+		return ['sql' => $sql, 'params' => $params];
+	}
+	# -------------------------------------------------------
 }
