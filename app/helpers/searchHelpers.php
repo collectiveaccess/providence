@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -924,8 +924,7 @@
 	function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 		$o_config = Configuration::load();
 		$o_query_parser = new LuceneSyntaxParser();
-		$vs_char_set = $o_config->get('character_set');
-		$o_query_parser->setEncoding($vs_char_set);
+		$o_query_parser->setEncoding('UTF-8');
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 		
 		if ($purifier = RequestHTTP::getPurifier()) { $ps_search = $purifier->purify($ps_search); }
@@ -934,13 +933,13 @@
 		
 		$ps_search = preg_replace('![\']+!', '', $ps_search);
 		try {
-			$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
+			$o_parsed_query = $o_query_parser->parse($ps_search, 'UTF-8');
 		} catch (Exception $e) {
 			// Retry search with all non-alphanumeric characters removed
 			try {
-				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), 'UTF-8');
 			} catch (Exception $e) {
-				$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+				$o_parsed_query = $o_query_parser->parse("", 'UTF-8');
 			}
 		}
 		
@@ -1788,19 +1787,18 @@
 	function caSearchIsForSets($ps_search, $pa_options=null) {
 		$o_config = Configuration::load();
 		$o_query_parser = new LuceneSyntaxParser();
-        $vs_char_set = $o_config->get('character_set');
-        $o_query_parser->setEncoding($vs_char_set);
+        $o_query_parser->setEncoding('UTF-8');
 		$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 		
 		$ps_search = preg_replace('![\']+!', '', $ps_search);
 		try {
-			$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
+			$o_parsed_query = $o_query_parser->parse($ps_search, 'UTF-8');
 		} catch (Exception $e) {
 			// Retry search with all non-alphanumeric characters removed
 			try {
-				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), 'UTF-8');
 			} catch (Exception $e) {
-				$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+				$o_parsed_query = $o_query_parser->parse("", 'UTF-8');
 			}
 		}
 		
@@ -2050,8 +2048,10 @@
 				switch (ca_metadata_elements::getElementDatatype($vs_name_no_table)) { 
 					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 					case __CA_ATTRIBUTE_VALUE_LENGTH__:
-					case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+						$va_result['type'] = 'string';
+						break;
+					case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 						$va_result['type'] = 'double';
 						break;
 					case __CA_ATTRIBUTE_VALUE_INTEGER__:

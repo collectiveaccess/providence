@@ -40,7 +40,7 @@
 ?>
 		<?php print caFormTag($this->request, 'Index', 'SearchBuilderForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 <?php 
-			print '<input type="hidden" id="searchBuilderInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element;
+			print '<input type="text" id="searchBuilderInput" name="search" size="80" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element;
 ?>
 		</form>
 	<?php

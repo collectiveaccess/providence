@@ -78,7 +78,7 @@
  			
  			// Get elements of result context
  			$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
- 			$vs_search 				= html_entity_decode($this->opo_result_context->getSearchExpression());	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
+ 			$vs_search 				= html_entity_decode(stripslashes($this->opo_result_context->getSearchExpression()));	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
  			$vb_is_new_search		= $this->opo_result_context->isNewSearch();
  			
  			if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {
@@ -416,54 +416,6 @@
 			
 			return $va_subtypes;
 		}
-		# -------------------------------------------------------
- 		# "Searchlight" autocompleting search
- 		# -------------------------------------------------------
- 		public function lookup() {
- 			$vs_search = $this->request->getParameter('q', pString);
- 			
- 			$t_list = new ca_lists();
- 			$va_data = array();
- 			
- 			$va_access_values = caGetUserAccessValues($this->request);
- 			
- 			#
- 			# Do "quicksearches" on so-configured tables
- 			#
- 			if ($this->request->config->get('quicksearch_return_ca_objects')) {
-				$va_results = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_objects', 57, array('limit' => 3, 'checkAccess' => $va_access_values)));
-				// break found objects out by type
-				foreach($va_results as $vn_id => $va_match_info) {
-					$vs_type = caUcFirstUTF8Safe($t_list->getItemFromListForDisplayByItemID('object_types', $va_match_info['type_id'], true));
-					$va_data['ca_objects'][$vs_type][$vn_id] = $va_match_info;
-				}
-			}
-			
-			if ($this->request->config->get('quicksearch_return_ca_entities')) {
- 				$va_data['ca_entities'][_t('Entities')] = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_entities', 20, array('limit' => 10, 'checkAccess' => $va_access_values)));
- 			}
- 			
- 			if ($this->request->config->get('quicksearch_return_ca_places')) {
- 				$va_data['ca_places'][_t('Places')] = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_places', 72, array('limit' => 10, 'checkAccess' => $va_access_values)));
- 			}
- 			
- 			if ($this->request->config->get('quicksearch_return_ca_occurrences')) {
-				$va_results = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_occurrences', 67, array('limit' => 10, 'checkAccess' => $va_access_values)));
-				// break found occurrences out by type
-				foreach($va_results as $vn_id => $va_match_info) {
-					$vs_type = caUcFirstUTF8Safe($t_list->getItemFromListForDisplayByItemID('occurrence_types', $va_match_info['type_id'], true));
-					$va_data['ca_occurrences'][$vs_type][$vn_id] = $va_match_info;
-				}
-			}
-			
-			if ($this->request->config->get('quicksearch_return_ca_collections')) {
- 				$va_data['ca_collections'][_t('Collections')] = caExtractValuesByUserLocale(SearchEngine::quickSearch($vs_search, 'ca_collections', 13, array('limit' => 10, 'checkAccess' => $va_access_values)));
- 			}
- 			
- 			
- 			$this->view->setVar('matches', $va_data);
- 			$this->render('Search/ajax_search_lookup_json.php');
- 		}
  		# -------------------------------------------------------
  		/**
  		 *

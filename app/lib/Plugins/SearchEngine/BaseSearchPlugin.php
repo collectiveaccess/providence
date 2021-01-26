@@ -95,7 +95,7 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 		
 		$this->config = Configuration::load();
 		$this->search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
-		$this->encoding = $this->config->get('character_set');
+		$this->encoding = 'UTF-8';
 		
 		$this->db = $db ? $db : new Db();
 		

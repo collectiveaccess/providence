@@ -138,7 +138,8 @@
 					'dontCheckFacetAvailability' => true,
 					'filterNonPrimaryRepresentations' => true,
 					'rootRecordsOnly' => $this->view->getVar('hide_children'),
-					'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')
+					'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession'),
+					'throwExceptions' => !caGetOption('error', $pa_options, false)
 				);
 				
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
@@ -158,7 +159,8 @@
  					$exclude_type_ids = caMakeTypeIDList($this->ops_tablename, $this->request->config->getList($this->ops_tablename.'_find_dont_expand_hierarchically'), ['dontIncludeSubtypesInTypeRestriction' => true]);
  					$po_search->setTypeRestrictions([$this->opn_type_restriction_id], ['dontExpandHierarchically' => in_array($this->opn_type_restriction_id, $exclude_type_ids)]);
  				}
- 				
+ 			
+ 		try {	
  				$vb_criteria_have_changed = false;
  				if (is_subclass_of($po_search, "BrowseEngine")) { 					
 					//
@@ -187,6 +189,10 @@
 				} elseif($po_search) {
 					$vo_result = $po_search->search($vs_search, $va_search_opts);
 				}
+		} catch (SearchException $e) {
+			$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+			return $this->Index(['error' => true]);
+		}
 
 				$vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
 

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,7 +55,7 @@ var caUI = caUI || {};
 	 * @returns {String}
 	 */
 	escapeValue = function (value) {
-		return value.replace(/([\-\+&\|!\(\)\{}\[\]\^"~\*\?:\\])/, '\\$1');
+		return value.replace(/([\-\+&\|!\(\)\{}\[\]\^"'~\*\?:\\])/, '\\$1');
 	};
 
 	/**
@@ -67,12 +67,22 @@ var caUI = caUI || {};
 	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet) {
 		var negation, prefix;
 		if (ruleSet.condition && ruleSet.rules) {
-			return '(' + $.map(ruleSet.rules, caUI.convertQueryBuilderRuleSetToSearchQuery).join(' ' + ruleSet.condition + ' ') + ')';
+		    switch(ruleSet.condition) {
+		        case 'AND':
+		            condition = 'AND';
+		            break;
+		        case 'OR':
+		            condition = 'OR';
+		            break;
+		        default:
+		            condition = '';
+		    }
+			return '(' + $.map(ruleSet.rules, caUI.convertQueryBuilderRuleSetToSearchQuery).join(' ' + condition + ' ') + ')';
 		}
 		if (ruleSet.operator && ruleSet.field) {
 			// Escape value to allow special characters
 			negation = ruleSet.operator.match(/not_/);
-			prefix = ruleSet.field + (negation ? ':-' : ':');
+			prefix = (negation ? 'NOT ' : '') + ruleSet.field + ':';
 			switch (negation ? ruleSet.operator.replace('not_', '') : ruleSet.operator) {
 				case 'equal':
 					return prefix + '"' + escapeValue(ruleSet.value) + '"';
@@ -81,16 +91,17 @@ var caUI = caUI || {};
 				case 'between':
 					return prefix + '[' + escapeValue(ruleSet.value[0]) + ' TO ' + escapeValue(ruleSet.value[1]) + ']';
 				case 'begins_with':
-					return prefix + '"' + escapeValue(ruleSet.value) + '"*';
+					return prefix + '' + escapeValue(ruleSet.value) + '*';
 				case 'contains':
-					return prefix + '*"' + escapeValue(ruleSet.value) + '"*';
+					return prefix + '*' + escapeValue(ruleSet.value) + '*';
 				case 'ends_with':
-					return prefix + '*"' + escapeValue(ruleSet.value) + '"';
+					return prefix + '*' + escapeValue(ruleSet.value) + '';
 				case 'is_empty':
 				case 'is_null':
 					// "is_not_empty" is a double negative, so the negation prefix is applied in reverse.
 					return ruleSet.field + (!negation ? ':-' : ':') + '*';
 			}
+			
 			return ruleSet.field + ':' + ruleSet.value;
 		}
 		return '';
@@ -244,6 +255,16 @@ var caUI = caUI || {};
 		}
 		return tokens.shift();
 	};
+	
+	/**
+	 * 
+	 * @param {Array} tokens
+	 * @param {Integer} index
+	 * @returns {Object}
+	 */
+	peekToken = function (tokens, i=0) {
+		return tokens[i];
+	};
 
 	/**
 	 * Check that the next token is a valid condition, i.e. a word token with value "AND" or "OR".  Throw an error if
@@ -253,11 +274,16 @@ var caUI = caUI || {};
 	 * @throws
 	 */
 	assertCondition = function (tokens) {
-		var token = assertNextToken(tokens, TOKEN_WORD);
-		if (token.value !== 'AND' && token.value !== 'OR') {
-			throw 'Unknown condition "' + token.value + '" expecting "AND" or "OR".';
+		var token = peekToken(tokens, 0);
+		if ((token.type === TOKEN_WORD) && (token.value !== 'AND') && (token.value !== 'OR') && (token.value !== '+') && (token.value !== '-')) {
+			//throw 'Unknown condition "' + token.value + '" expecting "AND" or "OR".';
+			// Implicit AND
+			return {
+			    type: TOKEN_WORD,
+			    value: 'AND'
+			};
 		}
-		return token;
+		return assertNextToken(tokens, TOKEN_WORD);
 	};
 
 	/**
@@ -335,7 +361,7 @@ var caUI = caUI || {};
 		skipWhitespace(tokens);
 		if (isRawSearchText(tokens)) {
 			// Special case: a sequence of only words (and whitespace) should be treated as a single, full text search.
-			ruleSet.condition = 'AND';
+			ruleSet.condition = '+';
 			ruleSet.rules.push({
 				id: FIELD_FULLTEXT,
 				field: FIELD_FULLTEXT,
@@ -354,9 +380,22 @@ var caUI = caUI || {};
 				} else if (tokens[0].type !== TOKEN_RPAREN) {
 					// Standard rule, with a field, operator and value.
 					rule = {};
+					
+					negation = false;
+					
+					// Look for NOT
+					poss_not = peekToken(tokens, 0);
+					if(poss_not.value === 'NOT') {
+					    assertNextToken(tokens, TOKEN_WORD);
+					    assertNextToken(tokens, TOKEN_WHITESPACE);
+					    negation = !negation;
+					}
+					
 					rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
+					
 					assertNextToken(tokens, TOKEN_COLON);
-					negation = isNextToken(tokens, TOKEN_NEGATION);
+					negation = isNextToken(tokens, TOKEN_NEGATION) ? !negation : negation;
+					
 					if (isNextToken(tokens, TOKEN_LBRACKET)) {
 						// Between filter value (of the form `[minValue TO maxValue]`)
 						min = assertNextToken(tokens, TOKEN_WORD);

@@ -176,6 +176,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) {
+		print "QUERY=$search_expression<br>\n";
 		$hits = $this->_filterQueryResult(
 			$subject_tablenum, 
 			$this->_processQuery($subject_tablenum, $rewritten_query), 
@@ -232,8 +233,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$pk = Datamodel::primaryKey($subject_tablenum);
 	 	
 	 	$acc = [];
-	 	foreach($subqueries as $i => $query) {
-	 		$hits = $this->_processQuery($subject_tablenum, $query);
+	 	foreach($subqueries as $i => $subquery) {
+	 		$hits = $this->_processQuery($subject_tablenum, $subquery);
 	 		$op = $this->_getBooleanOperator($signs, $i);
 	 		
 	 		switch($op) {
@@ -258,12 +259,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 					// 		 Without anything to diff this with we have to invert the result set, which can potentially 
 	 					//		 return a very large result set
 	 					$deleted_sql = Datamodel::getFieldNum($subject_tablenum, 'deleted') ? 'deleted = 0 AND ' : '';
-	 					
+	 					if (!sizeof($hits)) { $acc = []; break; }
 	 					$qr_res = $this->db->query("
 	 						SELECT {$pk} 
 	 						FROM {$subject_table} 
 	 						WHERE {$deleted_sql} {$pk} NOT IN (?)
-	 					", [$hits]);
+	 					", [array_keys($hits)]);
 	 					$vals = $qr_res->getAllFieldValues($pk);
 	 					
 	 					$acc = [];
@@ -404,7 +405,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	    	{$field_sql}
 	 	    	{$private_sql}
 	 	", $params);
-	 	
 	 	return $this->_arrayFromDbResult($qr_res);
 	}
 	# -------------------------------------------------------
@@ -639,7 +639,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				case FT_DATERANGE:
 					$ap['element_info']['datatype'] = __CA_ATTRIBUTE_VALUE_DATERANGE__;
 					break;
-					break;
+				default:
+					return null;	// Don't process here - use search index
 			}
 		}
 		
@@ -677,7 +678,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			return $this->_arrayFromDbResult($qr_res);
 		}
-		return [];
+		return null;	// can't process here - try using search index
 	}
 	# -------------------------------------------------------
 	/**

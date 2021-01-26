@@ -98,7 +98,7 @@
 	}
 	//__CA_NAV_ICON_DELETE__
 	var opts = <?= json_encode($this->getVar('options')); ?>;
-	opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#searchBuilderInput').val());
+	opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#searchBuilderInput').val().replace(/\\(.)/mg, "\\$1"));
   jQuery('#searchBuilder').queryBuilder(opts)
   	.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
 </script>
