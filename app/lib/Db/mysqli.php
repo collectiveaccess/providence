@@ -222,7 +222,7 @@ class Db_mysqli extends DbDriverBase {
 						} else {
 							if (!$vb_in_quote) {
 								// handle escaped quote in '' format
-								if ($ps_sql{$vn_i + 1} == "'") {
+								if ($ps_sql[$vn_i + 1] == "'") {
 									$vn_i += 2;
 									continue;
 								} else {
