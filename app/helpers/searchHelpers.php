@@ -1882,7 +1882,7 @@
 	 *
 	 */
 	function caFlattenContainers(ca_search_forms $t_search_form, $ps_table) {
-		$va_bundles = $t_search_form->getAvailableBundles($ps_table);
+		$va_bundles = $t_search_form->getAvailableBundles($ps_table, ['omitGeneric' => true, 'omitBundles' => ['deleted']]);
 		foreach ($va_bundles as $vs_id => $vo_bundle) {
 			$vs_element_code = caGetBundleNameForSearchQueryBuilder($vo_bundle['bundle']);
 			

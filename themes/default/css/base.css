@@ -7917,3 +7917,7 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
     text-align: right;
     padding: 0 5px 10px 0;
 }
+
+#searchBuilderInput {
+    width: 100%;
+}

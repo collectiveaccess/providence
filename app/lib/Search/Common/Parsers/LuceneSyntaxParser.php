@@ -194,7 +194,7 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 		// Reset FSM if previous parse operation didn't return it into a correct state
 		$this->reset();
 
-		$this->ops_encoding = ($ps_encoding !== null) ? $ps_encoding : "utf-8";
+		$this->ops_encoding = ($ps_encoding !== null) ? $ps_encoding : "UTF-8";
 		$this->opo_context  = new LuceneSyntaxParserContext($this->ops_encoding);
 		$this->opo_context->setDefaultOperator($this->getDefaultOperator());
 		$this->opo_last_token = null;

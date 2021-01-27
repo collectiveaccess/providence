@@ -64,7 +64,7 @@ var caUI = caUI || {};
 	 * @param {Object} ruleSet
 	 * @returns {String}
 	 */
-	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet) {
+	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet, useNegationSign=false) {
 		var negation, prefix;
 		if (ruleSet.condition && ruleSet.rules) {
 		    switch(ruleSet.condition) {
@@ -77,12 +77,25 @@ var caUI = caUI || {};
 		        default:
 		            condition = '';
 		    }
+		    
+		    // The CA Lucene parser does not allow signs (+/-) and booleans (AND/OR/NOT) in the same subquery. We handle this
+		    // by using booleans exclusively. However standalone NOT subqueries (Ex. NOT ca_objects.idno:1975.001) will only
+		    // work with signs, so we test for standalone NOTs here and force use of signs.
+		    if((ruleSet.rules.length === 1) && ruleSet.rules[0].operator.match(/not_/)) {
+		        return '(' + caUI.convertQueryBuilderRuleSetToSearchQuery(ruleSet.rules[0], true) + ')';
+		    }
+		    
 			return '(' + $.map(ruleSet.rules, caUI.convertQueryBuilderRuleSetToSearchQuery).join(' ' + condition + ' ') + ')';
 		}
 		if (ruleSet.operator && ruleSet.field) {
 			// Escape value to allow special characters
 			negation = ruleSet.operator.match(/not_/);
-			prefix = (negation ? 'NOT ' : '') + ruleSet.field + ':';
+			
+			if (useNegationSign) {
+			    prefix = ruleSet.field + (negation ? ':-' : ':');
+			} else {
+			    prefix = (negation ? 'NOT ' : '') + ruleSet.field + ':';
+			}
 			switch (negation ? ruleSet.operator.replace('not_', '') : ruleSet.operator) {
 				case 'equal':
 					return prefix + '"' + escapeValue(ruleSet.value) + '"';
@@ -99,7 +112,7 @@ var caUI = caUI || {};
 				case 'is_empty':
 				case 'is_null':
 					// "is_not_empty" is a double negative, so the negation prefix is applied in reverse.
-					return ruleSet.field + (!negation ? ':-' : ':') + '*';
+					return ruleSet.field + (!negation ? ':"[BLANK]"' : ':"[SET]"');
 			}
 			
 			return ruleSet.field + ':' + ruleSet.value;
@@ -321,6 +334,10 @@ var caUI = caUI || {};
 		// Determine the operator that matches the given query, negation and wildcard positions.
 		if (!queryValue) {
 			rule.operator = negation ? 'is_empty' : 'is_not_empty';
+		} else if(queryValue === '[BLANK]') {
+		     rule.operator = 'is_empty';
+		} else if(queryValue === '[SET]') {
+		    rule.operator = 'is_not_empty';
 		} else {
 			rule.value = queryValue;
 			if (wildcardPrefix && wildcardSuffix) {

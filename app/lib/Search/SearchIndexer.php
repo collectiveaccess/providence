@@ -759,10 +759,22 @@ if (!$for_current_value_reindex) {
 					} else {
 						$va_content = array();
 
-						if (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']) {
-							// Is reference to list item so index preferred label values
-							$t_item = new ca_list_items((int)$pa_field_data[$vs_field]);
-							$va_labels = $t_item->getPreferredDisplayLabelsForIDs(array((int)$pa_field_data[$vs_field]), array('returnAllLocales' => true));
+						if (
+							($is_list_code = (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']))
+							||
+							($is_list = (isset($va_field_list[$vs_field]['LIST']) && $va_field_list[$vs_field]['LIST']))
+						) {
+							if($is_list_code) {
+								// Is reference to list item
+								$t_item = new ca_list_items((int)$pa_field_data[$vs_field]);
+							} else {
+								// Is list item value
+								$t_item = ca_list_items::findAsInstance(['list_id' => caGetListID($va_field_list[$vs_field]['LIST']), 'item_value' => $pa_field_data[$vs_field]]);
+							}
+							if(!$t_item) { die("X");continue; }
+							
+							// Index idnos, values and preferred label values
+							$va_labels = $t_item->getPreferredDisplayLabelsForIDs([(int)$t_item->getPrimaryKey()], ['returnAllLocales' => true]);
 
 							foreach($va_labels as $vn_label_row_id => $va_labels_per_row) {
 								foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
@@ -772,6 +784,7 @@ if (!$for_current_value_reindex) {
 								}
 							}
 							$va_content[$t_item->get('idno')] = true;
+							$va_content[$t_item->get('item_value')] = true;
 						}  else {
 							// is this field related to something?
 							if (is_array($va_rels = Datamodel::getManyToOneRelations($vs_subject_tablename)) && ($va_rels[$vs_field])) {
@@ -1059,7 +1072,7 @@ if (!$for_current_value_reindex) {
                                                         $this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_id, $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
                                                     } else {
                                                         // regular intrinsic
-                                                        $this->opo_engine->indexField($z = ($is_generic ? $pn_subject_table_num : $vn_related_table_num), $field_num, $vn_rid = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+                                                        $this->opo_engine->indexField(($is_generic ? $pn_subject_table_num : $vn_related_table_num), $field_num, $vn_rid = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
                                                         $this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_rid, [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
                                                     }
                                                 }

@@ -785,7 +785,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * The returned value is a list of arrays; each array contains a 'bundle' specifier than can be passed got Model::get() or SearchResult::get() and a display name
 	 *
 	 * @param mixed $pm_table_name_or_num The table name or number specifying the content type to fetch bundles for. If omitted the content table of the currently loaded search form will be used.
-	 * @return array And array of bundles keyed on display label. Each value is an array with these keys:
+	 * @param array $pa_options Options include:
+	 *		omitGeneric = Omit "generic" bundle from returned list. [Default is false]
+	 *
+	 * @return array An array of bundles keyed on display label. Each value is an array with these keys:
 	 *		bundle = The bundle name (eg. ca_objects.idno)
 	 *		display = Display label for each available bundle
 	 *		description = Description of bundle
@@ -837,32 +840,34 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			"<h2>{$vs_label}</h2>{$vs_description}"
 		);
 		
-		// GENERIC 
-		$vs_bundle = "_generic";
-		$vs_display = "<div id='searchFormEditor__fulltext'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t("General").'</span> '.($vs_label = _t('Generic'))."</div>";
-		$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
-			'bundle' => $vs_bundle,
-			'label' => $vs_label,
-			'display' => $vs_display,
-			'description' => $vs_description = _t('Searches on any bundle as specified'),
-			'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
-			'settings' => array_merge($va_additional_settings, [
-				'bundle' => [
-					'formatType' => FT_TEXT,
-					'displayType' => DT_FIELD,
-					'width' => 70, 'height' => 2,
-					'takesLocale' => false,
-					'default' => "",
-					'label' => _t('Bundle'),
-					'description' => _t('Bundle specifier')
-				]
-			])
-		);
+		if(!caGetOption('omitGeneric', $pa_options, false)) {
+			// GENERIC 
+			$vs_bundle = "_generic";
+			$vs_display = "<div id='searchFormEditor__fulltext'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t("General").'</span> '.($vs_label = _t('Generic'))."</div>";
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'label' => $vs_label,
+				'display' => $vs_display,
+				'description' => $vs_description = _t('Searches on any bundle as specified'),
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settings' => array_merge($va_additional_settings, [
+					'bundle' => [
+						'formatType' => FT_TEXT,
+						'displayType' => DT_FIELD,
+						'width' => 70, 'height' => 2,
+						'takesLocale' => false,
+						'default' => "",
+						'label' => _t('Bundle'),
+						'description' => _t('Bundle specifier')
+					]
+				])
+			);
 
-		TooltipManager::add(
-			"#searchFormEditor__generic",
-			"<h2>{$vs_label}</h2>{$vs_description}"
-		);
+			TooltipManager::add(
+				"#searchFormEditor__generic",
+				"<h2>{$vs_label}</h2>{$vs_description}"
+			);
+		}
 
 
 		// get fields 
@@ -903,8 +908,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                     }
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
-						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
-
+						if(in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
+						if(Datamodel::getFieldInfo($vs_table, $vs_field, 'DONT_INCLUDE_IN_SEARCH_FORM')) { continue; }
+						
                         $policy = $policy_label = null;
                         $tmp = explode('|', $vs_field);
                         if ($tmp[0] == 'CV') {
@@ -1002,6 +1008,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
 						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
+						if(Datamodel::getFieldInfo($vs_table, $vs_field, 'DONT_INCLUDE_IN_SEARCH_FORM')) { continue; }
 						
 						$policy = $policy_label = null;
                         $tmp = explode('|', $vs_field);

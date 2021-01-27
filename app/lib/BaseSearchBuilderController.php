@@ -143,9 +143,11 @@
 					'dontCheckFacetAvailability' => true,
 					'filterNonPrimaryRepresentations' => true,
 					'rootRecordsOnly' => $this->view->getVar('hide_children'),
-					'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')
+					'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession'),
+					'throwExceptions' => !caGetOption('error', $pa_options, false)
 				);
-				
+
+ 		try {					
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);
  					$po_search = new $vs_browse_classname;
@@ -187,11 +189,14 @@
 					if (!is_array($va_facets_with_info = $po_search->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
 						$this->view->setVar('open_refine_controls', false);
 						$this->view->setVar('noRefineControls', false); 
-					}
-					
+					}		
 				} elseif($po_search) {
 					$vo_result = $po_search->search($vs_search, $va_search_opts);
 				}
+		} catch (SearchException $e) {
+			$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+			return $this->Index(['error' => true]);
+		}
 
 				$vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
 

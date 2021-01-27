@@ -176,7 +176,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) {
-		print "QUERY=$search_expression<br>\n";
 		$hits = $this->_filterQueryResult(
 			$subject_tablenum, 
 			$this->_processQuery($subject_tablenum, $rewritten_query), 
@@ -349,8 +348,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	}
 	 	$text = $term->text;
 	 	
+	 	if ($this->do_stemming) {
+	 		$text_stem = $this->stemmer->stem($text);
+	 		if (($text !== $text_stem) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
+	 			$text = $text_stem.'*';
+	 		}
+	 	}
+	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
-	 	$is_blank = (mb_strtolower("[{$blank_val}]") === mb_strtolower($text));
+	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($text)) || (mb_strtolower("[BLANK]") === mb_strtolower($text)));
 	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($text));
 	 	
 	 	
@@ -368,7 +374,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$word_field = 'sw.word';
 	 	if (is_array($ap) && $is_blank) {
 	 		$params[] = 0;
-	 		$word_field = 'sw.word_id';
+	 		$word_field = 'swi.word_id';
 	 	} elseif(is_array($ap) && $is_not_blank) {
 	 		$word_op = '>';
 	 		$params[] = 0;
@@ -394,17 +400,17 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		}
 	 	}
 	 	
-	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
+	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
-	 	$qr_res = $this->db->query($s="
-	 	    SELECT swi.row_id, swi.boost
-	 	    FROM ca_sql_search_words sw
-	 	    INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id
-	 	    WHERE
-	 	    	swi.table_num = ? AND {$word_field} {$word_op} ?
-	 	    	{$field_sql}
-	 	    	{$private_sql}
-	 	", $params);
+		$qr_res = $this->db->query("
+			SELECT swi.row_id, swi.boost
+			FROM ca_sql_search_word_index swi
+			".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
+			WHERE
+				swi.table_num = ? AND {$word_field} {$word_op} ?
+				{$field_sql}
+				{$private_sql}
+		", $params);
 	 	return $this->_arrayFromDbResult($qr_res);
 	}
 	# -------------------------------------------------------
@@ -413,7 +419,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	private function _processQueryPhrase(int $subject_tablenum, $query) {
 	 	$terms = $query->getTerms();
-	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
+	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
 	 	if ($this->getOption('strictPhraseSearching')) {
 	 		$words = [];
@@ -1295,6 +1301,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	private function _getElementIDForAccessPoint($subject_tablenum, $ps_access_point) {
 		$va_tmp = preg_split('![/\|]+!', $ps_access_point);
 		list($vs_table, $vs_field, $vs_subfield, $vs_subsubfield, $vs_subsubsubfield) = explode('.', $va_tmp[0]);
+		if ($vs_table === '_fulltext') { return null; }	// ignore "_fulltext" specifier – just treat as text search
 		
 		$vs_rel_table = caGetRelationshipTableName($subject_tablenum, $vs_table);
 		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : [];
