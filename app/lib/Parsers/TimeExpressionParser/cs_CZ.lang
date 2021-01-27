@@ -28,7 +28,7 @@ dayListDisplay = [neděle, pondělí, úterý, středa, čtvrtek, pátek, sobota
 rangePreConjunctions = [od]
 rangeConjunctions = [do, -, a, ..]
 
-dateTimeConjunctions = [přibližně, asi, cca, cirka]
+dateTimeConjunctions = [v]
 
 dateDelimiters = [/,-,.]
 timeDelimiters = [:,.]
@@ -41,7 +41,7 @@ meridianTable = {
 	p.m. = pm
 }
 
-dateCircaIndicator = [cirka, cca, c., ca., asi, přibližně]
+dateCircaIndicator = [cirka, cca, c., ca., asi, přibližně, zhruba]
 dateProbablyIndicator = [přibližně]
 dateUncertaintyIndicator = [~]
 dateUncertaintyYearIndicator = [r]
@@ -64,7 +64,7 @@ nowDate = [nyní,now]
 todayDate = [dnes]
 yesterdayDate = [včera]
 tomorrowDate = [zítra]
-undatedDate = [undated, unknown]
+undatedDate = [neznámý, neznámé]
 
 presentDate = [současnost, ?, ??, ???, ????]
 beforeQualifier = [před, do]
@@ -73,7 +73,7 @@ midQualifier = [mid, middle]
 lateQualifier = [late]
 diedQualifier = [zemřel, zemřela]
 afterQualifier = [po, od]
-bornQualifier = [nar. narozen, narozena]
+bornQualifier = [nar., narozen, narozena]
 
 # Text to indicate century (as in "20th century")
 centuryIndicator = [století]
@@ -102,7 +102,7 @@ definiteArticles = []
 indefiniteArticles = []
 
 # Seasons
-winterSeason = [winter]
-springSeason = [spring]
-summerSeason = [summer]
-autumnSeason = [autumn, fall]
+winterSeason = [zima]
+springSeason = [jaro]
+summerSeason = [léto]
+autumnSeason = [podzim]
