@@ -8,18 +8,18 @@ monthListDisplay = [leden, únor, březen, duben, květen, červen, červenec, s
 
 # Hash table mapping acceptable month names to the display names defined in 'monthList'
 monthTable = {
-	jan = leden, jan. = leden, led = leden, 01 = leden, 1 = leden,
-	feb = únor, feb. = únor, ún. = únor, 02 = únor, 2 = únor,
-	mar = březen, mar. = březen, bře = březen, 03 = březen, 3 = březen,
-	apr = duben, apr. = duben, dub = duben, 04 = duben, 4 = duben,
-	may = květen, kvě = květen, 05 = květen, 5 = květen,
-	jun = červen, jun. = červen, 06 = červen, 6 = červen,
-	jul = červenec, jul. = červenec, 07 = červenec, 7 červenec,
-	aug = srpen, aug. = srpen, srp = srpen, 08 = srpen, 8 = srpen,
-	sep = září, sep. = září, zá = září, 09 = září, 9 = září,
-	oct = říjen, oct. = říjen, říj = říjen, ří = říjen, 10 = říjen,
-	nov = listopadu, nov. = listopad, lis = listopad, list = listopad, 11 = listopad,
-	dec = prosinec, dec. = prosinec, pro = prosinec, 12 = prosinec
+	jan = leden, jan. = leden, led = leden,
+	feb = únor, feb. = únor, ún. = únor,
+	mar = březen, mar. = březen, bře = březen,
+	apr = duben, apr. = duben, dub = duben,
+	may = květen, kvě = květen,
+	jun = červen, jun. = červen,
+	jul = červenec, jul. = červenec,
+	aug = srpen, aug. = srpen, srp = srpen,
+	sep = září, sep. = září, zá = září,
+	oct = říjen, oct. = říjen, říj = říjen, ří = říjen,
+	nov = listopadu, nov. = listopad, lis = listopad, list = listopad,
+	dec = prosinec, dec. = prosinec, pro = prosinec
 }
 
 # List of day names, starting with Sunday
