@@ -101,31 +101,41 @@
  		public function _getSubTypeActionNav($pa_item) {
  			return [
 				[
-					'displayName' => _t('Search'),
+					'displayName' => _t('Basic search'),
 					"default" => ['module' => 'find', 'controller' => 'SearchOccurrences', 'action' => 'Index'],
-					'parameters' => array(
+					'parameters' => [
 						'type_id' => $pa_item['item_id'],
 						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					),
-					'is_enabled' => true,
+					],
+					'is_enabled' => !$this->request->config->get('ca_occurrences_disable_basic_search'),
 				],
 				[
 					'displayName' => _t('Advanced search'),
 					"default" => ['module' => 'find', 'controller' => 'SearchOccurrencesAdvanced', 'action' => 'Index'],
 					'useActionInPath' => 1,
-					'parameters' => array(
+					'parameters' => [
 						'type_id' => $pa_item['item_id'],
 						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					),
-					'is_enabled' => true,
+					],
+					'is_enabled' => !$this->request->config->get('ca_occurrences_disable_advanced_search'),
+				],
+				[
+					'displayName' => _t('Search builder'),
+					"default" => ['module' => 'find', 'controller' => 'SearchOccurrencesBuilder', 'action' => 'Index'],
+					'useActionInPath' => 1,
+					'parameters' => [
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					],
+					'is_enabled' => !$this->request->config->get('ca_occurrences_disable_search_builder'),
 				],
 				[
 					'displayName' => _t('Browse'),
 					"default" => ['module' => 'find', 'controller' => 'BrowseOccurrences', 'action' => 'Index'],
-					'parameters' => array(
+					'parameters' => [
 						'type_id' => $pa_item['item_id']
-					),
-					'is_enabled' => true,
+					],
+					'is_enabled' => !$this->request->config->get('ca_occurrences_disable_browse'),
 				]
 			];
  		}

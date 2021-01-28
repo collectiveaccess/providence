@@ -39,9 +39,16 @@
  	class BaseSearchBuilderController extends BaseRefineableSearchController {
  		# -------------------------------------------------------
  		protected $opb_uses_hierarchy_browser = false;
- 		protected $opo_datamodel;
  		protected $ops_find_type;
  		
+ 		# -------------------------------------------------------
+ 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+		
+			if ($po_request->config->get($this->ops_tablename.'_disable_search_builder')) {
+				throw new ApplicationException(_t('Search builder interface is disabled'));
+			}
+		}
  		# -------------------------------------------------------
  		/**
  		 * Options:

@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/find/SearchObjectsBuilderController.php : 
+ * app/controllers/find/SearchStorageLocationsBuilderController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2021 Whirl-i-Gig
+ * Copyright 2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,19 +25,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseSearchBuilderController.php");
  	
- 	class SearchObjectsBuilderController extends BaseSearchBuilderController {
+ 	class SearchStorageLocationsBuilderController extends BaseSearchBuilderController {
  		# -------------------------------------------------------
  		/**
  		 * Name of subject table (ex. for an object search this is 'ca_objects')
  		 */
- 		protected $ops_tablename = 'ca_objects';
+ 		protected $ops_tablename = 'ca_storage_locations';
  		
  		/** 
  		 * Number of items per search results page
  		 */
- 		protected $opa_items_per_page = array(8, 16, 24, 32);
+ 		protected $opa_items_per_page = [8, 16, 24, 32];
  		 
  		/**
  		 * List of search-result views supported for this find
@@ -55,12 +54,12 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
-				'thumbnail' => _t('thumbnails'),
 				'full' => _t('full'),
 				'list' => _t('list')
 			 );
 
-			 $this->opo_browse = new ObjectBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
+			 $this->opo_browse = new StorageLocationBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
+			 
 		}
  		# -------------------------------------------------------
  		/**
@@ -69,14 +68,14 @@
  		 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
  		 * (eg. ObjectSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Index() 
  		 */ 
- 		public function Index($pa_options=null) {
- 			$pa_options['search'] = $this->opo_browse;
+ 		public function Index($options=null) {
+ 			$options['search'] = $this->opo_browse;
  			
 			AssetLoadManager::register('querybuilder');
  			AssetLoadManager::register('imageScroller');
  			AssetLoadManager::register('tabUI');
  			AssetLoadManager::register('panel');
-            return parent::Index($pa_options);
+            return parent::Index($options);
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler
@@ -84,9 +83,9 @@
  		/**
  		 * Returns "search tools" widget
  		 */ 
- 		public function Tools($pa_parameters) {
+ 		public function Tools($parameters) {
  			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of ObjectSearch()
- 			return parent::Tools($pa_parameters);
+ 			return parent::Tools($parameters);
  		}
  		# -------------------------------------------------------
  	}

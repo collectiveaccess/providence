@@ -40,8 +40,16 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 class BaseAdvancedSearchController extends BaseRefineableSearchController {
 	# -------------------------------------------------------
 	protected $opb_uses_hierarchy_browser = false;
-	protected $opo_datamodel;
 	protected $ops_find_type;
+	
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+	
+		if ($po_request->config->get($this->ops_tablename.'_disable_advanced_search')) {
+			throw new ApplicationException(_t('Advanced search interface is disabled'));
+		}
+	}
 	# -------------------------------------------------------
 	public function Index($pa_options=null) {
 		$po_search = (isset($pa_options['search']) && $pa_options['search']) ? $pa_options['search'] : null;
