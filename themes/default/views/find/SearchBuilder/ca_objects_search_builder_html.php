@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,12 +27,14 @@
  */ 
 	$vo_result 				= $this->getVar('result');
  	$vo_result_context 		= $this->getVar('result_context');
- 	
- 	print $this->render('Search/search_controls_html.php');
  ?>
-<div id="searchBuilder">
-
-</div>
+	<div class="searchBuilderContainer">
+		<?= $this->render('SearchBuilder/search_controls_html.php'); ?>
+		<div id="searchBuilder"></div>
+		<div class="searchBuilderSubmit">
+			<?= caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'SearchBuilderForm'); ?>
+		</div>
+	</div>
  	<div id="resultBox">
 <?php
 	if($vo_result) {
@@ -67,33 +69,3 @@
 </div><!-- end resultbox -->
 	
 <div class="editorBottomPadding"><!-- empty --></div>
-
-<script type="text/javascript">
-	function caSetSearchInputQueryFromQueryBuilder() {
-		var query, rules;
-		rules = jQuery('#searchBuilder').queryBuilder('getRules');
-		if (rules) {
-			query = caUI.convertQueryBuilderRuleSetToSearchQuery(rules);
-			if (query) {
-				jQuery('#BasicSearchInput').val(query);
-			}
-		}
-	}
-
-	function caGetSearchQueryBuilderUpdateEvents() {
-		return [
-			'afterAddGroup.queryBuilder',
-			'afterDeleteGroup.queryBuilder',
-			'afterAddRule.queryBuilder',
-			'afterDeleteRule.queryBuilder',
-			'afterUpdateRuleValue.queryBuilder',
-			'afterUpdateRuleFilter.queryBuilder',
-			'afterUpdateRuleOperator.queryBuilder',
-			'afterUpdateGroupCondition.queryBuilder',
-			'afterSetFilters.queryBuilder'
-		].join(' ');
-	}
-	
-  jQuery('#searchBuilder').queryBuilder(<?= json_encode($this->getVar('options')); ?>)
-  	.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
-</script>

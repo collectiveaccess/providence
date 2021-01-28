@@ -2040,7 +2040,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			case 3:		// table_name.field_name.sub_element	
 				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { break; }
 				$vs_prefix = $vs_suffix = '';
-				$vs_suffix_string = ' ('._t('from related %1', $t_instance->getProperty('NAME_PLURAL')).')';
+				$vs_suffix_string = ' ('._t('from %1', $t_instance->getProperty('NAME_PLURAL')).')';
 				if ($va_tmp[0] !== $this->tableName()) {
 					$vs_suffix = $vs_suffix_string;
 				}
@@ -2072,7 +2072,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'nonpreferred_labels':
 						if (method_exists($t_instance, 'getLabelTableInstance') && ($t_label_instance = $t_instance->getLabelTableInstance())) {
 							if ($va_tmp[0] !== $this->tableName()) {
-								$vs_suffix = ' ('._t('alternates from related %1', $t_instance->getProperty('NAME_PLURAL')).')';
+								$vs_suffix = ' ('._t('alternates from %1', $t_instance->getProperty('NAME_PLURAL')).')';
 							} else {
 								$vs_suffix = ' ('._t('alternates').')';
 							}
@@ -2139,7 +2139,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_suffix = '';
 				if ($va_tmp[0] !== $this->tableName()) {
-					$vs_suffix = ' '._t('from related %1', $t_instance->getProperty('NAME_PLURAL'));
+					$vs_suffix = ' '._t('from %1', $t_instance->getProperty('NAME_PLURAL'));
 				}
 				switch($va_tmp[1]) {
 					# --------------------

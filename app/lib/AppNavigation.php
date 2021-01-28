@@ -429,7 +429,7 @@
 							$vs_buf .= "</ul>\n";
 						}
 					} else {
-						if ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}")) {
+						if ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}", ['hideDisabled' => true])) {
 							$vs_buf .= "<h2>{$vs_menu_item}</h2>\n";
 						}
 					}
@@ -587,18 +587,24 @@
 				//
 				if (isset($pa_navinfo[$vs_nav]['remember_last_used_navigation']) && $pa_navinfo[$vs_nav]['remember_last_used_navigation']) {
 					$va_nav_defaults = Session::getVar('ca_app_nav_defaults');	// get stored defaults - contains the last used navigation items keyed by base path
-					if (isset($va_nav_defaults[$ps_base_path.'/'.$vs_nav])) {
-						$va_tmp = explode('/', $ps_base_path);		// get components of base path
-						array_push($va_tmp, $vs_nav);				// add on current nav location
-						$va_top_level_nav_info = $this->getNavInfo(0);
+					$navs = [];
+					if($pa_navinfo[$vs_nav]['altLabel']) { $navs[] = $pa_navinfo[$vs_nav]['altLabel']; }
+					$navs[] = $vs_nav;
+					foreach($navs as $n) {
+						if (isset($va_nav_defaults[$ps_base_path.'/'.$n])) {
+							$va_tmp = explode('/', $ps_base_path);		// get components of base path
+							array_push($va_tmp, $n);				// add on current nav location
+							$va_top_level_nav_info = $this->getNavInfo(0);
 						
-						foreach($va_tmp as $vs_t) {
-							if (isset($va_top_level_nav_info[$vs_t]['navigation'])) {
-								$va_top_level_nav_info = $va_top_level_nav_info[$vs_t]['navigation'];
+							foreach($va_tmp as $vs_t) {
+								if (isset($va_top_level_nav_info[$vs_t]['navigation'])) {
+									$va_top_level_nav_info = $va_top_level_nav_info[$vs_t]['navigation'];
+								}
+						
 							}
-						
+							$va_defaults = $va_top_level_nav_info[$va_nav_defaults[$ps_base_path.'/'.$n]]['default'];
+							break;
 						}
-						$va_defaults = $va_top_level_nav_info[$va_nav_defaults[$ps_base_path.'/'.$vs_nav]]['default'];
 					}
 				} 
 				
@@ -755,8 +761,10 @@
 			$va_additional_params = $this->_parseAdditionalParameters(isset($pa_iteminfo['parameters']) ? $pa_iteminfo['parameters'] : null);
 			
 			if ($vb_disabled) {
-				if (!($vb_no_access && (isset($pa_iteminfo['hideIfNoAccess']) && $pa_iteminfo['hideIfNoAccess']))) {
-					$vs_buf .= caHTMLLink($vs_display_name, array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-disabled-selected' : 'sf-menu-disabled'), 'title' => _t('Disabled')));
+				if(!caGetOption('hideDisabled', $pa_options, false)) {
+					if (!($vb_no_access && (isset($pa_iteminfo['hideIfNoAccess']) && $pa_iteminfo['hideIfNoAccess']))) {
+						$vs_buf .= caHTMLLink($vs_display_name, array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-disabled-selected' : 'sf-menu-disabled'), 'title' => _t('Disabled')));
+					}
 				}
 			} else {
 				if($this->opo_request->getParameter('rel', pInteger)) { // if rel parameter is set, keep it

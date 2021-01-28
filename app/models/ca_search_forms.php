@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -785,7 +785,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * The returned value is a list of arrays; each array contains a 'bundle' specifier than can be passed got Model::get() or SearchResult::get() and a display name
 	 *
 	 * @param mixed $pm_table_name_or_num The table name or number specifying the content type to fetch bundles for. If omitted the content table of the currently loaded search form will be used.
-	 * @return array And array of bundles keyed on display label. Each value is an array with these keys:
+	 * @param array $pa_options Options include:
+	 *		omitGeneric = Omit "generic" bundle from returned list. [Default is false]
+	 *
+	 * @return array An array of bundles keyed on display label. Each value is an array with these keys:
 	 *		bundle = The bundle name (eg. ca_objects.idno)
 	 *		display = Display label for each available bundle
 	 *		description = Description of bundle
@@ -825,7 +828,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$vs_display = "<div id='searchFormEditor__fulltext'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t("General").'</span> '.($vs_label = _t('Full text'))."</div>";
 		$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 			'bundle' => $vs_bundle,
-			'label' => $vs_label,
+			'label' => caUcFirstUTF8Safe($vs_label),
 			'display' => $vs_display,
 			'description' => $vs_description = _t('Searches on all content that has been indexed'),
 			'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
@@ -837,32 +840,34 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			"<h2>{$vs_label}</h2>{$vs_description}"
 		);
 		
-		// GENERIC 
-		$vs_bundle = "_generic";
-		$vs_display = "<div id='searchFormEditor__fulltext'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t("General").'</span> '.($vs_label = _t('Generic'))."</div>";
-		$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
-			'bundle' => $vs_bundle,
-			'label' => $vs_label,
-			'display' => $vs_display,
-			'description' => $vs_description = _t('Searches on any bundle as specified'),
-			'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
-			'settings' => array_merge($va_additional_settings, [
-				'bundle' => [
-					'formatType' => FT_TEXT,
-					'displayType' => DT_FIELD,
-					'width' => 70, 'height' => 2,
-					'takesLocale' => false,
-					'default' => "",
-					'label' => _t('Bundle'),
-					'description' => _t('Bundle specifier')
-				]
-			])
-		);
+		if(!caGetOption('omitGeneric', $pa_options, false)) {
+			// GENERIC 
+			$vs_bundle = "_generic";
+			$vs_display = "<div id='searchFormEditor__fulltext'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t("General").'</span> '.($vs_label = _t('Generic'))."</div>";
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'label' => $vs_label,
+				'display' => $vs_display,
+				'description' => $vs_description = _t('Searches on any bundle as specified'),
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settings' => array_merge($va_additional_settings, [
+					'bundle' => [
+						'formatType' => FT_TEXT,
+						'displayType' => DT_FIELD,
+						'width' => 70, 'height' => 2,
+						'takesLocale' => false,
+						'default' => "",
+						'label' => _t('Bundle'),
+						'description' => _t('Bundle specifier')
+					]
+				])
+			);
 
-		TooltipManager::add(
-			"#searchFormEditor__generic",
-			"<h2>{$vs_label}</h2>{$vs_description}"
-		);
+			TooltipManager::add(
+				"#searchFormEditor__generic",
+				"<h2>{$vs_label}</h2>{$vs_description}"
+			);
+		}
 
 
 		// get fields 
@@ -903,8 +908,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                     }
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
-						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
-
+						if(in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
+						if(Datamodel::getFieldInfo($vs_table, $vs_field, 'DONT_INCLUDE_IN_SEARCH_FORM')) { continue; }
+						
                         $policy = $policy_label = null;
                         $tmp = explode('|', $vs_field);
                         if ($tmp[0] == 'CV') {
@@ -929,7 +935,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 								$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 									'bundle' => $vs_bundle,
-									'label' => $vs_label,
+									'label' => caUcFirstUTF8Safe($vs_label),
 									'display' => $vs_display,
 									'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
 									'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
@@ -949,7 +955,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 								'bundle' => $vs_bundle,
-								'label' => $vs_label,
+								'label' => caUcFirstUTF8Safe($vs_label),
 								'display' => $vs_display,
 								'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
 								'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
@@ -1002,6 +1008,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
 						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
+						if(Datamodel::getFieldInfo($vs_table, $vs_field, 'DONT_INCLUDE_IN_SEARCH_FORM')) { continue; }
 						
 						$policy = $policy_label = null;
                         $tmp = explode('|', $vs_field);
@@ -1035,7 +1042,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 								'bundle' => $vs_bundle,
-								'label' => $vs_label,
+								'label' => caUcFirstUTF8Safe($vs_label),
 								'display' => $vs_display,
 								'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
 								'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
@@ -1066,7 +1073,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			$vs_display = "<div id='searchFormEditor_{$vs_access_point}'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t('Access point').'</span> '.($vs_label = ((isset($va_access_point_info['name']) && $va_access_point_info['name'])  ? $va_access_point_info['name'] : $vs_access_point))."</div>";
 			$va_available_bundles[strip_tags($vs_display)][$vs_access_point] = array(
 				'bundle' => $vs_access_point,
-				'label' => $vs_label,
+				'label' => caUcFirstUTF8Safe($vs_label),
 				'display' => $vs_display,
 				'description' =>  $vs_description = ((isset($va_access_point_info['description']) && $va_access_point_info['description'])  ? $va_access_point_info['description'] : ''),
 				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_access_point.'_0')),

@@ -177,7 +177,8 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => 0,
-				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if media is deleted or not.')
+				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if media is deleted or not.'),
+				'DONT_INCLUDE_IN_SEARCH_FORM' => true
 		)
  	)
 );

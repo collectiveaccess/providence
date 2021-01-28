@@ -3940,7 +3940,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$o_view->setVar('context', ($vs_context = $po_request->getParameter('context', pString)) ? $vs_context : $vs_context = $po_request->getAction());
  	
 		$va_rep_ids = array();
-		$vo_data->filterNonPrimaryRepresentations(false);
+		if (method_exists($vo_data, 'filterNonPrimaryRepresentations')) { $vo_data->filterNonPrimaryRepresentations(false); }
  		while($vo_data->nextHit()) {
  			if (!($vn_representation_id = $vo_data->get('ca_object_representations.representation_id', ['checkAccess' => $va_access_values, 'limit' => 1]))) { continue; }
  			$t_instance->load($vo_data->getPrimaryKey());
@@ -4162,7 +4162,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *
 	 */
 	function caGetMediaAnnotationList($po_data, $pa_options=null) {
-		$va_detail_config = caGetDetailConfig();
+		$va_detail_config = caGetDetailConfig()->get($po_data->tableName());
 		$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $pa_options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
 
@@ -4209,7 +4209,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
 		}
 
-		$va_detail_config = caGetDetailConfig();
+		$va_detail_config = caGetDetailConfig()->get($pt_subject->tableName());
 
 		$ps_display_type 					= caGetOption('display', $pa_options, 'media_overlay');
 		$pb_inline 							= (bool)caGetOption('inline', $pa_options, false);
