@@ -335,7 +335,7 @@
 						}
 						
 						$vs_sql = "
-							SELECT {$vs_table_pk}, {$vs_field}
+							SELECT {$vs_table_pk}, `{$vs_field}`
 							FROM {$ps_table}
 							WHERE
 								{$vs_table_pk} IN (?)
