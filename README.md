@@ -10,7 +10,7 @@ CollectiveAccess is freely available under the open source GNU Public License ve
 
 ### About CollectiveAccess 1.7.10
 
-Version 1.7.10 is a maintenance release with bug fixes. 
+Version 1.7.10 is a maintenance release with minor bug fixes and improved compatibility with MySQL 8. 
 
 
 ### Installation
