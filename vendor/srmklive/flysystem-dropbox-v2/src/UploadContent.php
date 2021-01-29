@@ -16,15 +16,7 @@ trait UploadContent
     {
         $size = is_string($contents) ? strlen($contents) : fstat($contents)['size'];
 
-        if ($this->isPipe($contents)) {
-            return true;
-        }
-
-        if ($size === null) {
-            return true;
-        }
-
-        return $size > static::MAX_CHUNK_SIZE;
+        return ($this->isPipe($contents) || ($size === null)) ? true : ($size > $this->maxChunkSize);
     }
 
     /**
@@ -50,6 +42,8 @@ trait UploadContent
      * @param string|resource $contents
      * @param string          $mode
      * @param int             $chunkSize
+     *
+     * @throws \Exception
      *
      * @return array
      */

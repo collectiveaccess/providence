@@ -14,12 +14,12 @@
     "authors": [
         {
             "name": "Raza Mehdi",
-            "email": "srmk@outlook.com"            
+            "email": "srmk@outlook.com"
         }
     ],
     "require": {
         "php": ">=5.5.9",
-        "guzzlehttp/guzzle": "^6.2",
+        "guzzlehttp/guzzle": "^6.0|^7.0",
         "league/flysystem": "~1.0"
     },
     "require-dev": {

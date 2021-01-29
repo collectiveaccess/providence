@@ -3,11 +3,14 @@
 namespace Srmklive\Dropbox\Test;
 
 use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Exception\ClientException;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Srmklive\Dropbox\Client\DropboxClient as Client;
 use Srmklive\Dropbox\DropboxUploadCounter as UploadSessionCursor;
+use Srmklive\Dropbox\Exceptions\BadRequest;
 
 class ClientTest extends TestCase
 {
@@ -464,6 +467,87 @@ class ClientTest extends TestCase
         $client = new Client('test_token', $mockGuzzle);
 
         $client->revokeToken();
+    }
+
+    /** @test */
+    public function content_endpoint_request_can_throw_exception()
+    {
+        $mockGuzzle = $this->getMockBuilder(HttpClient::class)
+            ->setMethods(['post'])
+            ->getMock();
+        $mockGuzzle->expects($this->once())
+            ->method('post')
+            ->willThrowException(
+                new ClientException(
+                    'there was an error',
+                    $this->getMockBuilder(RequestInterface::class)->getMock(),
+                    $this->getMockBuilder(ResponseInterface::class)->getMock()
+                )
+            );
+
+        $client = new Client('test_token', $mockGuzzle);
+        $this->expectException(ClientException::class);
+        $client->performContentApiRequest('testing/endpoint', []);
+    }
+
+    /** @test */
+    public function rpc_endpoint_request_can_throw_exception_with_400_status_code()
+    {
+        $mockResponse = $this->getMockBuilder(ResponseInterface::class)
+            ->getMock();
+        $mockResponse->expects($this->any())
+            ->method('getStatusCode')
+            ->willReturn(400);
+        $mockGuzzle = $this->getMockBuilder(HttpClient::class)
+            ->setMethods(['post'])
+            ->getMock();
+        $mockGuzzle->expects($this->once())
+            ->method('post')
+            ->willThrowException(
+                new ClientException(
+                    'there was an error',
+                    $this->getMockBuilder(RequestInterface::class)->getMock(),
+                    $mockResponse
+                )
+            );
+        $client = new Client('test_token', $mockGuzzle);
+        $this->expectException(BadRequest::class);
+        $client->performApiRequest('testing/endpoint', []);
+    }
+
+    /** @test */
+    public function rpc_endpoint_request_can_throw_exception_with_409_status_code()
+    {
+        $body = [
+            'error' => [
+                '.tag' => 'machine_readable_error_code',
+            ],
+            'error_summary' => 'Human readable error code',
+        ];
+        $mockResponse = $this->getMockBuilder(ResponseInterface::class)
+            ->getMock();
+        $mockResponse->expects($this->any())
+            ->method('getStatusCode')
+            ->willReturn(409);
+        $mockResponse->expects($this->any())
+            ->method('getBody')
+            ->willReturn(json_encode($body));
+        $mockGuzzle = $this->getMockBuilder(HttpClient::class)
+            ->setMethods(['post'])
+            ->getMock();
+        $mockGuzzle->expects($this->once())
+            ->method('post')
+            ->willThrowException(
+                new ClientException(
+                    'there was an error',
+                    $this->getMockBuilder(RequestInterface::class)->getMock(),
+                    $mockResponse
+                )
+            );
+
+        $client = new Client('test_token', $mockGuzzle);
+        $this->expectException(BadRequest::class);
+        $client->performApiRequest('testing/endpoint', []);
     }
 
     /** @test */

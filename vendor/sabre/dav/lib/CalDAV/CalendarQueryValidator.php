@@ -67,9 +67,17 @@ class CalendarQueryValidator
                 return false;
             }
 
-            if ($filter['time-range']) {
+            if (array_key_exists('time-range', $filter) && $filter['time-range']) {
                 foreach ($parent->{$filter['name']} as $subComponent) {
-                    if ($this->validateTimeRange($subComponent, $filter['time-range']['start'], $filter['time-range']['end'])) {
+                    $start = null;
+                    $end = null;
+                    if (array_key_exists('start', $filter['time-range'])) {
+                        $start = $filter['time-range']['start'];
+                    }
+                    if (array_key_exists('end', $filter['time-range'])) {
+                        $end = $filter['time-range']['end'];
+                    }
+                    if ($this->validateTimeRange($subComponent, $start, $end)) {
                         continue 2;
                     }
                 }
@@ -128,9 +136,17 @@ class CalendarQueryValidator
                 return false;
             }
 
-            if ($filter['time-range']) {
+            if (array_key_exists('time-range', $filter) && $filter['time-range']) {
                 foreach ($parent->{$filter['name']} as $subComponent) {
-                    if ($this->validateTimeRange($subComponent, $filter['time-range']['start'], $filter['time-range']['end'])) {
+                    $start = null;
+                    $end = null;
+                    if (array_key_exists('start', $filter['time-range'])) {
+                        $start = $filter['time-range']['start'];
+                    }
+                    if (array_key_exists('end', $filter['time-range'])) {
+                        $end = $filter['time-range']['end'];
+                    }
+                    if ($this->validateTimeRange($subComponent, $start, $end)) {
                         continue 2;
                     }
                 }
@@ -258,11 +274,9 @@ class CalendarQueryValidator
             case 'VEVENT':
             case 'VTODO':
             case 'VJOURNAL':
-
                 return $component->isInTimeRange($start, $end);
 
             case 'VALARM':
-
                 // If the valarm is wrapped in a recurring event, we need to
                 // expand the recursions, and validate each.
                 //

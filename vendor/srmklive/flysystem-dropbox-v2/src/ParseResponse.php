@@ -16,19 +16,14 @@ trait ParseResponse
         $normalizedPath = ltrim($this->removePathPrefix($response['path_display']), '/');
 
         $normalizedResponse = ['path' => $normalizedPath];
-
-        if (isset($response['server_modified'])) {
-            $normalizedResponse['timestamp'] = strtotime($response['server_modified']);
-        }
-
-        if (isset($response['size'])) {
-            $normalizedResponse['size'] = $response['size'];
-            $normalizedResponse['bytes'] = $response['size'];
-        }
+        $normalizedResponse['timestamp'] = isset($response['server_modified']) ?
+            strtotime($response['server_modified']) : null;
+        $normalizedResponse['size'] = isset($response['size']) ? $response['size'] : null;
+        $normalizedResponse['bytes'] = isset($response['size']) ? $response['size'] : null;
 
         $type = ($response['.tag'] === 'folder' ? 'dir' : 'file');
         $normalizedResponse['type'] = $type;
 
-        return $normalizedResponse;
+        return array_filter($normalizedResponse);
     }
 }

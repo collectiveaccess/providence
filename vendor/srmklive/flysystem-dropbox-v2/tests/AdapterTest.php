@@ -89,6 +89,16 @@ class AdapterTest extends TestCase
         $this->assertEquals('file', $result['type']);
     }
 
+    /** @test */
+    public function it_return_false_when_it_cant_upload_anything()
+    {
+        $this->client->upload(Argument::any(), Argument::any(), Argument::any())->willThrow(new BadRequest(new Response(409)));
+
+        $result = $this->dropboxAdapter->writeStream('something', tmpfile(), new Config());
+
+        $this->assertFalse($result);
+    }
+
     /**
      * @test
      *
@@ -155,9 +165,31 @@ class AdapterTest extends TestCase
     }
 
     /** @test */
+    public function it_returns_false_when_it_cant_read_stream()
+    {
+        $stream = tmpfile();
+        fwrite($stream, 'something');
+
+        $this->client->download(Argument::any())->willThrow(new BadRequest(new Response(409)));
+
+        $this->assertFalse($this->dropboxAdapter->readStream('something'));
+
+        fclose($stream);
+    }
+
+    /** @test */
     public function it_can_delete_stuff()
     {
         $this->client->delete('/prefix/something')->willReturn(['.tag' => 'file']);
+
+        $this->assertTrue($this->dropboxAdapter->delete('something'));
+        $this->assertTrue($this->dropboxAdapter->deleteDir('something'));
+    }
+
+    /** @test */
+    public function it_returns_true_when_it_cant_delete_stuff()
+    {
+        $this->client->delete('/prefix/something')->willReturn(['.tag' => 'path_lookup']);
 
         $this->assertTrue($this->dropboxAdapter->delete('something'));
         $this->assertTrue($this->dropboxAdapter->deleteDir('something'));
@@ -194,6 +226,16 @@ class AdapterTest extends TestCase
     }
 
     /** @test */
+    public function it_return_false_when_it_cant_list_contents()
+    {
+        $this->client->listFolder(Argument::type('string'), Argument::any())->willThrow(new BadRequest(new Response(409)));
+
+        $result = $this->dropboxAdapter->listContents('', true);
+
+        $this->assertFalse($result);
+    }
+
+    /** @test */
     public function it_can_rename_stuff()
     {
         $this->client->move(Argument::type('string'), Argument::type('string'))->willReturn(['.tag' => 'file', 'path' => 'something']);
@@ -223,6 +265,42 @@ class AdapterTest extends TestCase
         $this->client->copy(Argument::any(), Argument::any())->willThrow(new BadRequest(new Response(409)));
 
         $this->assertFalse($this->dropboxAdapter->copy('something', 'something'));
+    }
+
+    /** @test */
+    public function it_can_get_temporary_link()
+    {
+        $this->client->getTemporaryLink(Argument::type('string'))->willReturn('something');
+
+        $this->assertNotEmpty($this->dropboxAdapter->getTemporaryLink('something'));
+    }
+
+    /** @test */
+    public function it_will_return_false_when_get_temporary_link_process_has_failed()
+    {
+        $this->client->getTemporaryLink(Argument::type('string'))->willThrow(new BadRequest(new Response(409)));
+
+        $this->expectException(\Exception::class);
+
+        $this->assertFalse($this->dropboxAdapter->getTemporaryLink('something'));
+    }
+
+    /** @test */
+    public function it_can_get_thumbail()
+    {
+        $this->client->getThumbnail(Argument::type('string'), Argument::type('string'), Argument::type('string'))->willReturn('something');
+
+        $this->assertNotEmpty($this->dropboxAdapter->getThumbnail('something'));
+    }
+
+    /** @test */
+    public function it_will_return_false_when_get_thumbnail_process_has_failed()
+    {
+        $this->client->getThumbnail(Argument::type('string'), Argument::type('string'), Argument::type('string'))->willThrow(new BadRequest(new Response(409)));
+
+        $this->expectException(\Exception::class);
+
+        $this->assertFalse($this->dropboxAdapter->getThumbnail('something'));
     }
 
     /** @test */
