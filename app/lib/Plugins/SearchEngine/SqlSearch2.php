@@ -348,17 +348,21 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	}
 	 	$text = $term->text;
 	 	
-	 	if ($this->do_stemming) {
+	 	$blank_val = caGetBlankLabelText($subject_tablenum);
+	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($text)) || (mb_strtolower("[BLANK]") === mb_strtolower($text)));
+	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($text));
+	 	
+	 	// Don't stem if:
+	 	//	1. Stemming is disabled
+	 	//	2. Search for is blank values
+	 	//	3. Search is not non-blank values
+	 	//	4. Search includes non-letter characters
+	 	if ($this->do_stemming && !$is_blank && !$is_not_blank && !preg_match("![^\L]+!u", $text)) {
 	 		$text_stem = $this->stemmer->stem($text);
 	 		if (($text !== $text_stem) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
 	 			$text = $text_stem.'*';
 	 		}
 	 	}
-	 	
-	 	$blank_val = caGetBlankLabelText($subject_tablenum);
-	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($text)) || (mb_strtolower("[BLANK]") === mb_strtolower($text)));
-	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($text));
-	 	
 	 	
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	
