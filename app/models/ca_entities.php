@@ -420,5 +420,35 @@ class ca_entities extends RepresentableBaseModel implements IBundleProvider {
 		if(!$this->getPrimaryKey()) { return false; }
 		return array($this->get('lifespan'));
 	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
+		if(!is_array($pa_label_values) || ((sizeof($pa_label_values) === 1) && isset($pa_label_values['displayname']))) {
+			$pa_label_values = DataMigrationUtils::splitEntityName(is_array($pa_label_values) ? $pa_label_values['displayname'] : $pa_label_values, $pa_options);
+		}
+		return parent::addLabel($pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
+		if(!is_array($pa_label_values) || ((sizeof($pa_label_values) === 1) && isset($pa_label_values['displayname']))) {
+			$pa_label_values = DataMigrationUtils::splitEntityName(is_array($pa_label_values) ? $pa_label_values['displayname'] : $pa_label_values, $pa_options);
+		}
+		return parent::editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function replaceLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=true, $pa_options=null) {
+		if(!is_array($pa_label_values) || ((sizeof($pa_label_values) === 1) && isset($pa_label_values['displayname']))) {
+			$pa_label_values = DataMigrationUtils::splitEntityName(is_array($pa_label_values) ? $pa_label_values['displayname'] : $pa_label_values, $pa_options);
+		}
+		return parent::replaceLabel($pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options);
+	}
 	# -------------------------------------------------------
 }
