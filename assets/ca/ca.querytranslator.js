@@ -91,7 +91,7 @@ var caUI = caUI || {};
 			// Escape value to allow special characters
 			negation = ruleSet.operator.match(/not_/);
 			
-			if (useNegationSign) {
+			if (useNegationSign === true) {
 			    prefix = ruleSet.field + (negation ? ':-' : ':');
 			} else {
 			    prefix = (negation ? 'NOT ' : '') + ruleSet.field + ':';
