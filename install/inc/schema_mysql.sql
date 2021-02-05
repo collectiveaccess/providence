@@ -406,6 +406,7 @@ create table ca_metadata_element_labels
    locale_id                      smallint unsigned              not null,
    name                           varchar(255)                   not null,
    description                    text                           not null,
+   is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
    
    constraint fk_ca_metadata_element_labels_element_id foreign key (element_id)
@@ -7357,4 +7358,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (166, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (167, unix_timestamp());

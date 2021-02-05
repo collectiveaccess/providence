@@ -349,48 +349,60 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 * @param null|int $pn_element_id
 	 * @param bool $pb_use_cache
-	 * @param null|array $pa_options
+	 * @param null|array $pa_options Options include:
+	 *		useDisambiguationLabels = Use non-preferred (alternate) metadata element labels if available rather that preferred labels. Non-preferred labels may be added to some elements with additional description in order to disambiguate identically labeled elements when presented together in a list. [Default is false]
+	 *		idsOnly = Return array of element_ids. [Default is false]
 	 * @return array|null
 	 */
-	public function getElementsInSet($pn_element_id=null, $pb_use_cache=true, $pa_options=null) {
-		if (!$pn_element_id) { $pn_element_id = $this->getPrimaryKey(); }
-		if (!$pn_element_id) { return null; }
+	public function getElementsInSet($element_id=null, $use_cache=true, $options=null) {
+		if (!$element_id) { $element_id = $this->getPrimaryKey(); }
+		if (!$element_id) { return null; }
+		$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $options, false);
 
-		if($pb_use_cache && CompositeCache::contains($pn_element_id, 'ElementSets')) {
-			$va_set = CompositeCache::fetch($pn_element_id, 'ElementSets');
-			return (caGetOption('idsOnly', $pa_options, false) ?  caExtractArrayValuesFromArrayOfArrays($va_set, 'element_id') : $va_set);
+		if($use_cache && CompositeCache::contains($cache_key = "{$element_id}/".($use_disambiguation_labels ? "1" : "0"), 'ElementSets')) {
+			$set = CompositeCache::fetch($cache_key, 'ElementSets');
+			return (caGetOption('idsOnly', $options, false) ?  caExtractArrayValuesFromArrayOfArrays($set, 'element_id') : $set);
 		}
 
-		$va_hier = $this->getHierarchyAsList($pn_element_id);
-		if(!is_array($va_hier)) { return null; }
-		$va_element_set = array();
+		$hier = $this->getHierarchyAsList($element_id);
+		if(!is_array($hier)) { return null; }
+		$element_set = array();
 
-		$va_element_ids = array();
-		foreach($va_hier as $va_element) {
-			$va_element_ids[] = $va_element['NODE']['element_id'];
+		$element_ids = array();
+		foreach($hier as $element) {
+			$element_ids[] = $element['NODE']['element_id'];
 		}
 
 		// Get labels
-		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_element_ids);
-
-		$va_root = null;
-		foreach($va_hier as $va_element) {
-			$va_element['NODE']['settings'] = unserialize(base64_decode($va_element['NODE']['settings']));	// decode settings vars into associative array
-			$va_element['NODE']['display_label'] = $va_labels[$va_element['NODE']['element_id']];
-			if (!trim($va_element['NODE']['parent_id'])) {
-				$va_root = $va_element['NODE'];
+		$labels = $this->getPreferredDisplayLabelsForIDs($element_ids);
+		
+		if($use_disambiguation_labels) {
+			$nlabels = $this->getNonPreferredDisplayLabelsForIDs($element_ids);
+		}
+		$root = null;
+		foreach($hier as $element) {
+			$element['NODE']['settings'] = unserialize(base64_decode($element['NODE']['settings']));			// decode settings vars into associative array
+			
+			// try to use non-preferred label (for disambiguration)
+			$element['NODE']['display_label'] = ($use_disambiguation_labels && isset($nlabels[$element['NODE']['element_id']][0])) ? 
+				$nlabels[$element['NODE']['element_id']][0] 
+				:
+				$labels[$element['NODE']['element_id']];
+				
+			if (!trim($element['NODE']['parent_id'])) {
+				$root = $element['NODE'];
 			} else {
-				$va_element_set[$va_element['NODE']['parent_id']][$va_element['NODE']['rank']][$va_element['NODE']['element_id']] = $va_element['NODE'];
+				$element_set[$element['NODE']['parent_id']][$element['NODE']['rank']][$element['NODE']['element_id']] = $element['NODE'];
 			}
 		}
 
-		$va_tmp[$va_root['element_id']] = $va_root;
-		$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($va_element_set, $va_root['element_id']));
+		$tmp[$root['element_id']] = $root;
+		$tmp = array_merge($tmp, $this->_getSortedElementsForParent($element_set, $root['element_id']));
 
-		CompositeCache::save($pn_element_id, $va_tmp, 'ElementSets');
+		CompositeCache::save($element_id, $tmp, 'ElementSets');
 
-		if (caGetOption('idsOnly', $pa_options, false)) { return $va_element_ids; }
-		return $va_tmp;
+		if (caGetOption('idsOnly', $options, false)) { return $element_ids; }
+		return $tmp;
 	}
 	# ------------------------------------------------------
 	private function _getSortedElementsForParent(&$pa_element_set, $pn_parent_id) {
@@ -1696,4 +1708,5 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 	}
+	# ------------------------------------------------------
 }
