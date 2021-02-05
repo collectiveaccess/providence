@@ -1881,37 +1881,40 @@
 	/**
 	 *
 	 */
-	function caFlattenContainers(ca_search_forms $t_search_form, $ps_table) {
-		$va_bundles = $t_search_form->getAvailableBundles($ps_table, ['omitGeneric' => true, 'omitBundles' => ['deleted']]);
-		foreach ($va_bundles as $vs_id => $vo_bundle) {
-			$vs_element_code = caGetBundleNameForSearchQueryBuilder($vo_bundle['bundle']);
+	function caFlattenContainers(ca_search_forms $t_search_form, string $table) {
+		$bundles = $t_search_form->getAvailableBundles($table, ['omitGeneric' => true, 'omitBundles' => ['deleted']]);
+		foreach ($bundles as $id => $bundle_info) {
+			$element_code = caGetBundleNameForSearchQueryBuilder($bundle_info['bundle']);
 			
-			if (ca_metadata_elements::getElementDatatype($vs_element_code) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
-				if(is_array($va_sub_elements = ca_metadata_elements::getElementsForSet($vs_element_code))) {
+			if (ca_metadata_elements::getElementDatatype($element_code) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+				if(is_array($sub_elements = ca_metadata_elements::getElementsForSet($element_code))) {
 			
-					foreach($va_sub_elements as $va_sub_element) {
-						if (((int)$va_sub_element['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) && ($va_sub_element['parent_id'] > 0)) { continue; }	// skip sub-containers
-						$vs_element_code = $va_sub_element['element_code'];
+					foreach($sub_elements as $sub_element) {
+						if (((int)$sub_element['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) && ($sub_element['parent_id'] > 0)) { continue; }	// skip sub-containers
+						$sub_element_code = $sub_element['element_code'];
 						
-						if (($va_sub_element['parent_id'] != $va_sub_element['hier_element_id']) && ($t_element = ca_metadata_elements::getInstance($vs_element_code))) {
-							$vs_element_label = $t_element->get('ca_metadata_elements.hierarchy.preferred_labels.name', ['delimiter' => ' - ']);
+						if ($sub_element['parent_id'] != $sub_element['hier_element_id']) {	// is root
+							if(!is_array($bundles[$element_code])) { $bundles[$element_code] = []; }
+							$bundles[$element_code] = array_merge($bundles[$element_code], [
+								'id' => "{$bundle_info['bundle']}",
+								'bundle' => "{$bundle_info['bundle']}",
+								'label' => $sub_element['display_label']
+							]);
 						} else {
-							$vs_element_label = $vo_bundle['label'] . ' - ' . $va_sub_element['display_label'];
+							$bundles[$element_code]['bundles'][] = [
+								'id' => "{$bundle_info['bundle']}.{$sub_element_code}",
+								'bundle' => "{$bundle_info['bundle']}.{$sub_element_code}",
+								'label' => $sub_element['display_label']
+							];
 						}
-						$va_bundles[$vs_element_code] = array(
-							'id' => $vs_element_code,
-							'bundle' => $vo_bundle['bundle'] . '.' . $vs_element_code,
-							'label' => $vs_element_label
-						);
+						
 					}
-					unset($va_bundles[$vs_id]);
+					unset($bundles[$id]);
 				}
 			}
 		}
-		return $va_bundles;
+		return $bundles;
 	}
-	
-
 	# ---------------------------------------
  	/**
  	 *
@@ -1926,19 +1929,19 @@
 	function caGetQueryBuilderFilters(BaseModel $t_subject, Configuration $po_query_builder_config) {
 		$vs_table = $t_subject->tableName();
 		$t_search_form = new ca_search_forms();
-		$va_filters = array_values(array_map(
+		$filters = array_values(array_map(
 			function ($pa_bundle) use ($t_subject, $po_query_builder_config) {
 				return caMapBundleToQueryBuilderFilterDefinition($t_subject, $pa_bundle, $po_query_builder_config);
 			},
 			caFlattenContainers($t_search_form, $vs_table)
 		));
 		$va_exclude = $po_query_builder_config->get('query_builder_exclude_' . $vs_table);
-		$va_filters = array_filter($va_filters, function ($vo_filter) use ($va_exclude) {
+		$filters = array_filter($filters, function ($vo_filter) use ($va_exclude) {
 			return array_search($vo_filter['id'], $va_exclude) === false;
 		});
 		$va_priority = $po_query_builder_config->get('query_builder_priority_' . $vs_table);
 	
-		usort($va_filters, function ($pa_a, $pa_b) use ($va_priority, $vs_table) {
+		usort($filters, function ($pa_a, $pa_b) use ($va_priority, $vs_table) {
 			$vs_a_id = $pa_a['id'];
 			$vs_b_id = $pa_b['id'];
 			$vn_a_index = array_search($vs_a_id, $va_priority, true);
@@ -1979,19 +1982,24 @@
 		});
 		
 		// rewrite nested containers as indented items
-		$va_seen = [];
-		foreach($va_filters as $vn_i => $va_filter) {
-			if (strpos($va_filter['label'], ' - ')) {
-				$va_tmp = explode(' - ', $va_filter['label']);
-				if (isset($va_seen[$va_tmp[0]])) {
-					$va_filters[$vn_i]['label'] = str_repeat("&nbsp;", sizeof($va_tmp) * 3).array_pop($va_tmp);
+		//$va_seen = [];
+		
+		$filters_proc = [];
+		foreach($filters as $vn_i => $filter) {
+			$bundles = $filter['bundles'];
+			unset($filter['bundles']);
+			$filters_proc[] = $filter;
+			
+			if(is_array($bundles)) { 
+				foreach($bundles as $b) {
+					$b['label'] = str_repeat("&nbsp;", 5).'↳ '.$b['label'];
+					$b['optgroup'] = $filter['optgroup'];
+					$filters_proc[] = $b;
 				}
-			} else {
-				$va_seen[$va_filter['label']] = true;
 			}
 		}
 		
-		return $va_filters;
+		return $filters_proc;
 	}
 	# ---------------------------------------
 	/**
@@ -2011,7 +2019,8 @@
 		$va_result = array(
 			'id' => $vs_name,
 			'label' => $pa_bundle['label'],
-			'type' => 'string'
+			'type' => 'string',
+			'bundles' => isset($pa_bundle['bundles']) ? $pa_bundle['bundles'] : null
 		);
 		if ($va_field_info) {
 			// Get the list code and display type for further processing below.
@@ -2080,7 +2089,7 @@
 				if (is_array($va_items)) {
 					foreach ($va_items as $va_item) {
 						foreach ($va_item as $va_item_details) {
-							$va_select_options[$va_item_details['idno']] = str_repeat("&nbsp;", (int)$va_item_details['LEVEL'] * 3).$va_item_details['name_singular'];
+							$va_select_options[$va_item_details['idno']] = str_repeat("&nbsp;", (int)$va_item_details['LEVEL'] * 5).$va_item_details['name_singular'];
 						}
 					}
 				}
@@ -2091,16 +2100,24 @@
 		} else {
 			$va_result['input'] = 'text';
 		}
-		// Set up option groups.
+		
+		// Set up option groups
 		if (in_array($vs_name, $va_priority)) {
 			// Bundle is given priority
 			$va_result['optgroup'] = _t('Frequently Used');
 		} else {
-			$vn_split = strpos($vs_name, '.');
-			if ($vn_split === false || substr($vs_name, 0, $vn_split) === $vs_table) {
-				$va_result['optgroup'] = ucwords($t_subject->getProperty('NAME_PLURAL'));
+			$tmp = explode('.', $vs_name);
+			if($t = Datamodel::getInstance($tmp[0], true)) {
+				if(is_a($t, "BaseLabel")) {
+					$t = $t->getSubjectTableInstance();
+				}
+				
+				$va_result['optgroup'] = ($t->tableName() !== $vs_table) ? 
+					_t('Related %1', mb_convert_case($t->getProperty('NAME_PLURAL'), MB_CASE_LOWER , "UTF-8"))
+					:
+					caUcFirstUTF8Safe($t->getProperty('NAME_PLURAL'));
 			} else {
-				$va_result['optgroup'] = _t('Related');
+				$va_result['optgroup'] = _t('Miscelleaneous');
 			}
 		}
 		return $va_result;
