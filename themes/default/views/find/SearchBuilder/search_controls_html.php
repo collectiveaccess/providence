@@ -43,13 +43,13 @@
 ?>
 		<?php print caFormTag($this->request, 'Index', 'SearchBuilderForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 <?php 
-			print '<input type="'.($show_query ? 'text' : 'hidden').'" id="searchBuilderInput" name="search" size="80" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" />'.$vs_type_id_form_element;
+			print '<input type="'.($show_query ? 'text' : 'hidden').'" id="SearchBuilderInput" name="search" size="80" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" />'.$vs_type_id_form_element;
 ?>
 		</form>
 	<?php
 		} else {
 			print caFormTag($this->request, 'Index', 'SearchBuilderForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-			print '<input type="'.($show_query ? 'text' : 'hidden').'" id="searchBuilderInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'"/>'.$vs_type_id_form_element;
+			print '<input type="'.($show_query ? 'text' : 'hidden').'" id="SearchBuilderInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'"/>'.$vs_type_id_form_element;
 ?>
 			</form>
 			<div id="browse">
@@ -112,7 +112,7 @@
 						currentSelectionDisplayID: 'browseCurrentSelection'
 					});
 					
-					jQuery('#searchBuilderInput').autocomplete(
+					jQuery('#SearchBuilderInput').autocomplete(
 						{
 							minLength: 3, delay: 800, html: true,
 							source: '<?php print $va_lookup_urls['search']; ?>',
@@ -124,7 +124,7 @@
 									}
 								}
 								event.preventDefault();
-								jQuery('#searchBuilderInput').val('');
+								jQuery('#SearchBuilderInput').val('');
 							}
 						}
 					);
@@ -192,7 +192,7 @@
 		if (rules) {
 			query = caUI.convertQueryBuilderRuleSetToSearchQuery(rules);
 			if (query) {
-				jQuery('#searchBuilderInput').val(query);
+				jQuery('#SearchBuilderInput').val(query);
 			}
 		}
 	}
@@ -217,7 +217,7 @@
 		
 		// Set up query builder UI
 		var opts = <?= json_encode($this->getVar('options')); ?>;
-		opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#searchBuilderInput').val().replace(/\\(.)/mg, "\\$1"));
+		opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#SearchBuilderInput').val().replace(/\\(.)/mg, "\\$1"));
 	  	jQuery('#searchBuilder').queryBuilder(opts)
 			.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
 	});

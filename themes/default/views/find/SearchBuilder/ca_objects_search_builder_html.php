@@ -31,6 +31,12 @@
 	<div class="searchBuilderContainer">
 		<?= $this->render('SearchBuilder/search_controls_html.php'); ?>
 		<div id="searchBuilder"></div>
+		<div class="searchBuilderSave">
+			<a href="#" onclick="caSaveSearch('SearchBuilderForm', jQuery('#SearchBuilderInput').val(), ['search']); return false;" class="inline-button-small"><?= caNavIcon($this->request, __CA_NAV_ICON_SAVE__).' '._t('Save'); ?></a>
+		</div>
+		<div class="searchBuilderSave">
+			<a href="#" onclick="caSaveSearch('SearchBuilderForm', jQuery('#SearchBuilderInput').val(), ['search']); return false;" class="inline-button-small"><?= caNavIcon($this->request, __CA_NAV_ICON_SAVE__).' '._t('Save'); ?></a>
+		</div>
 		<div class="searchBuilderSubmit">
 			<?= caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'SearchBuilderForm'); ?>
 		</div>

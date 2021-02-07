@@ -78,7 +78,7 @@
  			
  			$search_builder_config = Configuration::load(__CA_CONF_DIR__.'/search_query_builder.conf');
  			$builder_options = [
- 				'filters' => caGetQueryBuilderFilters($t_model, $search_builder_config),
+ 				'filters' => caGetSearchBuilderFilters($t_model, $search_builder_config),
  				'icons' => $search_builder_config->getAssoc('query_builder_icons'),
  				'sort_filters' => false
  			];
