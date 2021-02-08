@@ -195,7 +195,14 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_entities':
-					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					// Try to match on display name alone, then parsed name
+					$va_entity_label = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]]));
+					
+					foreach([['displayname' => $vs_name], $va_entity_label] as $e) {
+						if($vn_id = DataMigrationUtils::getEntityID($e, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options)) {
+							break;
+						}
+					}
 					$va_attributes['preferred_labels'] = $va_entity_label;
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;

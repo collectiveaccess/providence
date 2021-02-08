@@ -242,7 +242,6 @@
  			}
 
  			$t_subject->setTransaction($o_tx);
- 			$t_subject->setMode(ACCESS_WRITE);
 
  			$o_log = new Batchlog(array(
  				'user_id' => $po_request->getUserID(),
@@ -367,7 +366,6 @@
  			}
 
  			$t_subject->setTransaction($o_tx);
- 			$t_subject->setMode(ACCESS_WRITE);
 
  			$o_log = new Batchlog(array(
  				'user_id' => $po_request->getUserID(),
@@ -607,6 +605,12 @@
 
  			$vs_skip_file_list					= $pa_options['skipFileList'];
  			$vb_allow_duplicate_media			= $pa_options['allowDuplicateMedia'];
+ 			$replace_existing_media				= $pa_options['replaceExistingMedia'];
+ 			
+ 			/**
+ 			 * Map of ids where we've stripped media; used to prevent stripping media from the same record twice
+ 			 */
+ 			$media_was_replaced = [];
 
  			$va_relationship_type_id_for = array();
  			if (is_array($va_create_relationship_for = $pa_options['create_relationship_for'])) {
@@ -639,7 +643,6 @@
  					}
 
  					if (!$t_set->getPrimaryKey()) {
-						$t_set->setMode(ACCESS_WRITE);
 						$t_set->set('user_id', $vn_user_id);
 						$t_set->set('type_id', $o_config->get('ca_sets_default_type'));
 						$t_set->set('table_num', $t_instance->tableNum());
@@ -943,13 +946,16 @@
 				}
 
 				$t_new_rep = null;
-				if ($t_instance->getPrimaryKey() && ($t_instance instanceof RepresentableBaseModel)) {
+				if (($id = $t_instance->getPrimaryKey()) && ($t_instance instanceof RepresentableBaseModel)) {
 					// found existing object
-					$t_instance->setMode(ACCESS_WRITE);
 
 					if ($use_existing_representation_id) {
 						if (!($t_new_rep = $t_instance->addRelationship('ca_object_representations', $use_existing_representation_id, $vn_rel_type_id))) { continue; }
 					} else {
+						if ($replace_existing_media && !isset($media_was_replaced[$id])) {
+							$t_instance->removeAllRepresentations();
+							$media_was_replaced[$id] = true;
+						}
 						$t_new_rep = $t_instance->addRepresentation(
 							$vs_directory.'/'.$f, $vn_rep_type_id, // path
 							$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, // locale, status, access, primary
@@ -985,7 +991,6 @@
 				} else {
 					// should we create new record?
 					if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'DONT_MATCH'))) {
-						$t_instance->setMode(ACCESS_WRITE);
 						$t_instance->set('type_id', $vn_type_id);
 						$t_instance->set('locale_id', $vn_locale_id);
 						$t_instance->set('status', $vn_status);
@@ -1080,7 +1085,7 @@
 							$vs_directory.'/'.$f, $vn_rep_type_id, // path, type_id
 							$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, // locale, status, access, primary
 							array('idno' => $vs_rep_idno), // values
-							array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
+							array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id, 'mapping_id' => $vn_object_representation_mapping_id) // options
 						);
 
 						if ($t_instance->numErrors()) {
@@ -1133,29 +1138,6 @@
 						$t_importer->importDataFromSource($vs_directory.'/'.$f, $vn_mapping_id, ['logLevel' => $o_config->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_instance->getPrimaryKey()]]); 
 					}
 					
-					
-					if(!$vn_object_representation_mapping_id && is_array($media_metadata_extraction_defaults = $o_config->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
-						$media_mimetype = $t_new_rep->get('mimetype');
-					
-						foreach($media_metadata_extraction_defaults as $m => $importer_code) {
-							if(caCompareMimetypes($media_mimetype, $m)) {
-								if (!($vn_object_representation_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
-									if ($o_log) { $o_log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
-								}
-								break;
-							}
-						}
-					}
-					
-					if ($vn_object_representation_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $vn_object_representation_mapping_id], ['returnAs' => 'firstModelInstance']))) {
-						$format = $t_mapping->getSetting('inputFormats');
-						if(is_array($format)) { $format = array_shift($format); }
-						if ($o_log) { $o_log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
-						
-						$t_importer = new ca_data_importers();
-						$t_importer->importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, ['logLevel' => $o_config->get('embedded_metadata_extraction_mapping_log_level'), 'format' => $format, 'forceImportForPrimaryKeys' => [$t_new_rep->getPrimaryKey()]]); 
-					}
-
 					$va_notices[$t_instance->getPrimaryKey()] = array(
 						'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 						'label' => $t_instance->getLabelForDisplay(),

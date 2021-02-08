@@ -159,12 +159,12 @@ $_ca_bundle_displays_settings = array(		// global
 		'width' => 100, 'height' => 4,
 		'takesLocale' => false,
 		'options' => [
-		    'Search/browse (thumbnail view)' => 'search_browse_thumbnail',
-		    'Search/browse (full view)' => 'search_browse_full',
-		    'Search/browse (list view)' => 'search_browse_list',
-		    'Editor summaries' => 'editor_summary',
-		    'Editor relationship bundles' => 'editor_relationship_bundle',
-		    'Set items bundles' => 'set_item_bundle'
+		    _t('Search/browse (thumbnail view)') => 'search_browse_thumbnail',
+		    _t('Search/browse (full view)') => 'search_browse_full',
+		    _t('Search/browse (list view)') => 'search_browse_list',
+		    _t('Editor summaries') => 'editor_summary',
+		    _t('Editor relationship bundles') => 'editor_relationship_bundle',
+		    _t('Set items bundles') => 'set_item_bundle'
 		],
 		'default' => '',
 		'label' => _t('Show display in'),
@@ -2419,7 +2419,11 @@ if (!$pb_omit_editing_info) {
 			}
 			
 		}
-		
+		if(($options['maximumLength'] > 0) && (mb_strlen($vs_val) > $options['maximumLength'])) {
+			$doc = new DOMDocument();
+			@$doc->loadHTML('<?xml encoding="utf-8" ?>'.mb_substr($vs_val, 0, $options['maximumLength']));
+			return $doc->saveHTML();
+		}
 		return $vs_val;
 	}
 	# ----------------------------------------

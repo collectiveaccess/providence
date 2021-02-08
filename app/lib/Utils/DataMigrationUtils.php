@@ -91,6 +91,8 @@
 		 * @see DataMigrationUtils::_getID()
 		 */
 		static function getEntityID($pa_entity_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+			unset($pa_entity_name['middlename']);
+			unset($pa_entity_name['other_forenames']);
 			return DataMigrationUtils::_getID('ca_entities', $pa_entity_name, null, $pn_type_id, $pn_locale_id, $pa_values, $pa_options);
 		}
 		# -------------------------------------------------------
@@ -995,6 +997,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'idno':
+					case 'idno_stub':
 						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						
 						switch ($vs_table_class) {
