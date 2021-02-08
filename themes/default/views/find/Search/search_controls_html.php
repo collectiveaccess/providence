@@ -189,8 +189,10 @@
 		vals['_field_list'] = field_names					// an array for form fields to expect
 		jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
 			if ((data) && (data.md5)) {
-				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);
-					
+				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);		
+				jQuery.jGrowl("<?= addslashes(_t('Saved search')); ?>" + ' <em>' + data.label + '</em>'); 
+			} else {
+				jQuery.jGrowl("<?= addslashes(_t('Could not save search')); ?>"); 
 			}
 		});
 	}

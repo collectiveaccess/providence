@@ -35,7 +35,7 @@ var caUI = caUI || {};
  * `greater_than` or `less_than`.
  */
 (function () {
-	var escapeValue, getTokenList, shiftToken, tokensToRuleSet,
+	var escapeValue, getTokenList, shiftToken, tokensToRuleSet, fieldToLabel,
 		assertNextToken, isNextToken, assertCondition, skipWhitespace, isRawSearchText,
 		assignOperatorAndValue, assignOperatorAndRange,
 		TOKEN_WORD = 'WORD',
@@ -58,13 +58,29 @@ var caUI = caUI || {};
 		return value.replace(/([\-\+&\|!\(\)\{}\[\]\^"'~\*\?:\\])/, '\\$1');
 	};
 
+
+    /**
+     *
+     */
+    fieldToLabel = function(labels, field) {
+        console.log("labels are", labels);
+        for(var i in labels) {
+            if(field === labels[i].field) {
+                console.log("got", labels[i], i);
+                return labels[i].label;
+            }
+        }
+        return null;
+    };
+    
 	/**
 	 * Convert a set of rules from the jQuery query builder into a CA search query.  Performs the inverse operation to
 	 * `convertSearchQueryToQueryBuilderRules`.
 	 * @param {Object} ruleSet
 	 * @returns {String}
 	 */
-	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet, useNegationSign=false) {
+	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet, useNegationSign=false, useLabels=null) {
+	    console.log("labels", useLabels);
 		var negation, prefix;
 		if (ruleSet.condition && ruleSet.rules) {
 		    switch(ruleSet.condition) {
@@ -82,19 +98,27 @@ var caUI = caUI || {};
 		    // by using booleans exclusively. However standalone NOT subqueries (Ex. NOT ca_objects.idno:1975.001) will only
 		    // work with signs, so we test for standalone NOTs here and force use of signs.
 		    if((ruleSet.rules.length === 1) && ruleSet.rules[0].operator.match(/not_/)) {
-		        return '(' + caUI.convertQueryBuilderRuleSetToSearchQuery(ruleSet.rules[0], true) + ')';
+		        return '(' + caUI.convertQueryBuilderRuleSetToSearchQuery(ruleSet.rules[0], true, useLabels) + ')';
 		    }
 		    
-			return '(' + $.map(ruleSet.rules, caUI.convertQueryBuilderRuleSetToSearchQuery).join(' ' + condition + ' ') + ')';
+		    var acc = []
+		    for(var i in  ruleSet.rules) {
+		        acc.push(caUI.convertQueryBuilderRuleSetToSearchQuery(ruleSet.rules[i], useNegationSign, useLabels));
+		    }
+		    
+			return '(' + acc.join(' ' + condition + ' ') + ')';
 		}
 		if (ruleSet.operator && ruleSet.field) {
+		    var f = useLabels ? fieldToLabel(useLabels, ruleSet.field) : ruleSet.field;
+		    if(!f) { f = ruleSet.field; }
+		    
 			// Escape value to allow special characters
 			negation = ruleSet.operator.match(/not_/);
 			
 			if (useNegationSign === true) {
-			    prefix = ruleSet.field + (negation ? ':-' : ':');
+			    prefix = f + (negation ? ':-' : ':');
 			} else {
-			    prefix = (negation ? 'NOT ' : '') + ruleSet.field + ':';
+			    prefix = (negation ? 'NOT ' : '') + f + ':';
 			}
 			switch (negation ? ruleSet.operator.replace('not_', '') : ruleSet.operator) {
 				case 'equal':
@@ -112,10 +136,10 @@ var caUI = caUI || {};
 				case 'is_empty':
 				case 'is_null':
 					// "is_not_empty" is a double negative, so the negation prefix is applied in reverse.
-					return ruleSet.field + (!negation ? ':"[BLANK]"' : ':"[SET]"');
+					return f + (!negation ? ':"[BLANK]"' : ':"[SET]"');
 			}
 			
-			return ruleSet.field + ':' + ruleSet.value;
+			return f + ':' + ruleSet.value;
 		}
 		return '';
 	};

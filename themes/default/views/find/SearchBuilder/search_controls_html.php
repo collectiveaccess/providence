@@ -171,18 +171,18 @@
 ?>
 
 <script type="text/javascript">
-	function caSaveSearch(form_id, label, field_names) {
-		var vals = {};
-		jQuery(field_names).each(function(i, field_name) { 	// process all fields in form
-			vals[field_name] = jQuery('#' + form_id + ' [name=' + field_name + ']').val();	
-		});
-		vals['_label'] = label;								// special "display" title, used if all else fails
-		vals['_field_list'] = field_names					// an array for form fields to expect
+	function caSaveSearch(form_id, search) {
+		var vals = {
+			search: search, _label: caUI.convertQueryBuilderRuleSetToSearchQuery(jQuery('#searchBuilder').queryBuilder('getRules'), false, jQuery('#searchBuilder')[0].queryBuilder.filters)
+		};
+		
 		jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
 			if ((data) && (data.md5)) {
 				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);
-					
-			}
+				jQuery.jGrowl("<?= addslashes(_t('Saved search')); ?>" + ' <em>' + data.label + '</em>'); 
+			} else {
+				jQuery.jGrowl("<?= addslashes(_t('Could not save search')); ?>"); 
+			}	
 		});
 	}
 	

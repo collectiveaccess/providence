@@ -1940,7 +1940,7 @@
 	 *
 	 */
 	function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $po_query_builder_config) {
-		if (CompositeCache::contains('filters', 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch('filters', 'SearchBuilder'))) { return $cached_data; }
+		if (CompositeCache::contains($key = 'filters_'.$t_subject->tableName(), 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
 		
 		$vs_table = $t_subject->tableName();
 		$t_search_form = new ca_search_forms();
@@ -2013,7 +2013,7 @@
 				}
 			}
 		}
-		CompositeCache::save("filters", $filters_proc, 'SearchBuilder', 3600);
+		CompositeCache::save($key, $filters_proc, 'SearchBuilder', 3600);
 		return $filters_proc;
 	}
 	# ---------------------------------------
