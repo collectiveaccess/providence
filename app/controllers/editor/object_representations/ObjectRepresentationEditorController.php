@@ -146,6 +146,32 @@
  			return $this->render('caption_download_binary.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function DownloadSidecarFile() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
+ 			
+ 			$pn_sidecar_id = $this->request->getParameter('sidecar_id', pString);
+ 			
+ 			$this->view->setVar('representation_id', $pn_representation_id);
+ 			$this->view->setVar('sidecar_id', $pn_sidecar_id);
+ 			$this->view->setVar('t_object_representation', $t_rep);
+ 			
+ 			$t_sidecar = new ca_object_representation_sidecars($pn_sidecar_id);
+ 			if (!$t_sidecar->getPrimaryKey() || ((int)$t_sidecar->get('representation_id') !== (int)$pn_representation_id)) {
+ 				die(_t("Invalid sidecar file"));
+ 			}
+ 			
+ 			$info = $t_sidecar->getFileInfo('sidecar_file');
+ 			$this->view->setVar('file_path', $path = $t_sidecar->getFilePath('sidecar_file'));
+ 			$va_info = $t_sidecar->getFileInfo("sidecar_file");
+ 			
+ 			$this->view->setVar('download_name', caGetRepresentationDownloadFileName('ca_object_representations', ['idno' => $t_rep->get('idno'), 'index' => null, 'version' => 'sidecars', 'extension' => pathinfo($path, PATHINFO_EXTENSION), 'original_filename' => $va_info['ORIGINAL_FILENAME'], 'representation_id' => $pn_representation_id]));				
+			
+ 			return $this->render('sidecar_download_binary.php');
+ 		}
+ 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function info($pa_parameters) {
