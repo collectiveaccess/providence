@@ -6358,6 +6358,7 @@ if (!$vb_batch) {
 			
 			if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 			
+			$total = $qr_res->numRows();
 			if ($vb_uses_relationship_types)  {
 				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
 				if(method_exists($t_tmp, 'getLeftTableName')) {
@@ -6375,7 +6376,7 @@ if (!$vb_batch) {
 			$va_relation_ids = $va_rels_for_id_by_date = [];
 			while($qr_res->nextRow()) {
 				$va_rels_for_id = [];
-				if (($vn_c >= $pn_limit) && !is_array($pa_sort_fields)) { break; }
+				if (($vn_c >= $pn_limit) && (($total > 1000) || !is_array($pa_sort_fields))) { break; }
 				
 				if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 					if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
