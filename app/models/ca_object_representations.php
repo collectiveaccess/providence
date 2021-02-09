@@ -1824,7 +1824,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				$files[$sidecar_id]['filesize'] = caFormatFileSize(filesize($files[$sidecar_id]['path']));
 			}
  			$files[$sidecar_id]['sidecar_id'] = $sidecar_id;
- 			$files[$sidecar_id]['mimetype'] = $qr_res->get('mimetype');
+ 			$files[$sidecar_id]['mimetype'] = $m = $qr_res->get('mimetype');
+ 			$files[$sidecar_id]['typename'] = ($t = Media::getTypenameForMimetype($m)) ? $t : $m;
  		}
  		return $files;
  	}

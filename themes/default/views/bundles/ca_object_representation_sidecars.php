@@ -58,13 +58,23 @@
 	}
 ?>
 			<div class="caListItem">
-				<span class="formLabel"><?php print _t('Sidecar file'); ?></span>
-				<?php print $t_sidecar->htmlFormElement('sidecar_file', '^ELEMENT', array('name' => $vs_id_prefix.'_sidecar_file{n}', 'id' => $vs_id_prefix.'_sidecar_file{n}', 'no_tooltips' => true)); ?>
-				
-				<span class="formLabel"><?php print _t('Notes'); ?></span>
-				<?php print $t_sidecar->htmlFormElement('notes', '^ELEMENT', array('name' => $vs_id_prefix.'_notes{n}', 'id' => $vs_id_prefix.'_notes{n}', 'no_tooltips' => true, 'dont_show_null_value' => true)); ?>
-				
-				<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+				<table>
+					<tr>
+						<td>
+							<span class="formLabel"><?php print _t('Description'); ?></span><br/>
+				<?php print $t_sidecar->htmlFormElement('notes', '^ELEMENT', array('name' => $vs_id_prefix.'_notes{n}', 'id' => $vs_id_prefix.'_notes{n}', 'no_tooltips' => true, 'dont_show_null_value' => true, 'width' => '670px')); ?>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<span class="formLabel"><?php print _t('Sidecar file'); ?></span>
+					
+							<?= $t_sidecar->htmlFormElement('sidecar_file', '^ELEMENT', array('name' => $vs_id_prefix.'_sidecar_file{n}', 'id' => $vs_id_prefix.'_sidecar_file{n}', 'no_tooltips' => true)); ?>
+						</td>
+					</tr>
+				</table>
+			
+				<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
 			</div>
 		</div>
 	</textarea>
@@ -86,7 +96,7 @@
 ?>
 			<div class="caListItem">
 				
-				<span class="formLabel">{notes} <strong>{mimetype}</strong> ({filesize})</span>
+				<span class="formLabel"><?= _t('Sidecar'); ?>: <span class="formLabelPlain">{notes}<span> <em>{typename}</em> ({filesize})</span>
 				<?php print urlDecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1,  null, array('align' => 'top')), '', '*', '*', 'downloadSidecarFile', array('representation_id' => $t_instance->getPrimaryKey(), 'sidecar_id' => "{sidecar_id}", 'download' => 1), array('id' => "{$vs_id_prefix}download{sidecar_id}", 'class' => 'attributeDownloadButton'))); ?>
 				
 				<input type="hidden" name="<?php print $vs_id_prefix; ?>_sidecar_id{n}" id="<?php print $vs_id_prefix; ?>_sidecar_id{n}" value="{sidecar_id}"/>
