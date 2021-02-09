@@ -1813,11 +1813,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$files = [];
  		while($qr_res->nextRow()) {
+ 			$file_info = $qr_res->getFileInfo('sidecar_file');
  			$sidecar_id = $qr_res->get('sidecar_id');
  			
  			$files[$sidecar_id] = $qr_res->getRow();
  			unset($files[$sidecar_id]['sidecar_file']);
- 			
  			$files[$sidecar_id]['path'] = $qr_res->getFilePath('sidecar_file');
  			$files[$sidecar_id]['url'] = $qr_res->getFileUrl('sidecar_file');
 			if(file_exists($files[$sidecar_id]['path'])) {
@@ -1825,7 +1825,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			}
  			$files[$sidecar_id]['sidecar_id'] = $sidecar_id;
  			$files[$sidecar_id]['mimetype'] = $m = $qr_res->get('mimetype');
- 			$files[$sidecar_id]['typename'] = ($t = Media::getTypenameForMimetype($m)) ? $t : $m;
+ 			
+ 			if (!($typename = Media::getTypenameForMimetype($m))) {
+ 				$typename = $file_info['PROPERTIES']['format_name'];
+ 			}
+ 			$files[$sidecar_id]['typename'] = $typename ? $typename : $m;
  		}
  		return $files;
  	}
