@@ -2265,7 +2265,7 @@ select.searchSetSelect {
 	position: absolute;
 	top: 100px;
 	left: 25%;
-	width: 400px;
+	width: 500px;
 	z-index:20000;
 }
 
@@ -7913,12 +7913,19 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 }
 
 .searchBuilderContainer {
+    position: relative;
     background-color: #f7f7f7;
 }
 .searchBuilderSubmit {
     text-align: right;
     padding: 0 5px 10px 0;
 }
+
+.searchBuilderSave {
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+}  
 
 #searchBuilderInput {
     width: 100%;

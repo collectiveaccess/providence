@@ -241,7 +241,10 @@ class AuthenticationManager {
 	private static function isFree() {
 		global $g_request;
 		if($g_request) {
-			$free_controllers = array_map("strtolower", AuthenticationManager::$g_authentication_conf->get('auth_not_required_for_controllers'));
+			$map = AuthenticationManager::$g_authentication_conf->get('auth_not_required_for_controllers');
+			if(!is_array($map)) { return false; }
+			
+			$free_controllers = array_map("strtolower", $map);
 			if (in_array(strtolower($g_request->getController()), $free_controllers)) { return true; }
 		}
 		return false;

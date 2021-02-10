@@ -1029,7 +1029,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								$vs_related_table = caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'));
 							}
 
-							$vs_label = $t_instance->getDisplayLabel($vs_base_bundle);
+							$vs_label = $t_instance->getDisplayLabel($vs_base_bundle, ['useDisambiguationLabels' => true, 'includeSourceSuffix' => false]);
 							if ($policy) { 
 							    $vs_label = _t('Current value for <em>%1</em> from <em>%2</em>', $vs_label, ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name'));
 							}

@@ -52,6 +52,12 @@
 	print $t_element->getPreferredLabelHTMLFormBundle($this->request,'element_labels','element_labels');
 ?>
 </div>
+<div class="bundleLabel">
+	<span class="formLabelText" id="_ca_metadata_element_labels_"><?php print _t("Disambiguation labels"); ?></span>
+<?php
+	print $t_element->getNonPreferredLabelHTMLFormBundle($this->request,'alt_element_labels','alt_element_labels');
+?>
+</div>
 <?php
 	$va_lookup_url_info = caJSONLookupServiceUrl($this->request, $t_element->tableName());
 	$va_options =	array(							
