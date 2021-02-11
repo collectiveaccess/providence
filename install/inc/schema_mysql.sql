@@ -7330,10 +7330,12 @@ create table if not exists ca_media_upload_sessions (
    last_activity_on          int unsigned                   null,
    cancelled                 tinyint unsigned               not null default 0,
    error_code                smallint unsigned              not null default 0,
+   source                    varchar(30)                    not null default 'UPLOADER',
    
    num_files		         int unsigned                   not null,
    total_bytes		         bigint unsigned                not null default 0,
    progress		             longtext                       null,
+   metadata		             longtext                       null,
    
    primary key (session_id),
 
