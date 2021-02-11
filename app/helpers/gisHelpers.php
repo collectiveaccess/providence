@@ -543,7 +543,7 @@
 					//
 					$t_length = new LengthAttributeValue();
 					$va_length_val = $t_length->parseValue($vs_token, array('displayLabel' => 'distance'));
-					$vn_length = ((float)array_shift(explode(' ', preg_replace('![^\d\.]+!', '', $va_length_val['value_decimal1'])))) / 1000;		// kilometers
+					$vn_length = ((float)explode(' ', preg_replace('![^\d\.]+!', '', $va_length_val['value_decimal1']))[0]) / 1000;		// kilometers
 					$vn_lat1_km = (10000/90) * $vn_lat1;
 					$vn_long1_km = (10000/90) * $vn_long1;
 					
