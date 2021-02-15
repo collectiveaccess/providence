@@ -759,10 +759,22 @@ if (!$for_current_value_reindex) {
 					} else {
 						$va_content = array();
 
-						if (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']) {
-							// Is reference to list item so index preferred label values
-							$t_item = new ca_list_items((int)$pa_field_data[$vs_field]);
-							$va_labels = $t_item->getPreferredDisplayLabelsForIDs(array((int)$pa_field_data[$vs_field]), array('returnAllLocales' => true));
+						if (
+							($is_list_code = (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']))
+							||
+							($is_list = (isset($va_field_list[$vs_field]['LIST']) && $va_field_list[$vs_field]['LIST']))
+						) {
+							if($is_list_code) {
+								// Is reference to list item
+								$t_item = new ca_list_items((int)$pa_field_data[$vs_field]);
+							} else {
+								// Is list item value
+								$t_item = ca_list_items::findAsInstance(['list_id' => caGetListID($va_field_list[$vs_field]['LIST']), 'item_value' => $pa_field_data[$vs_field]]);
+							}
+							if(!$t_item) { continue; }		// list item doesn't exist (can happen for access and status values)
+							
+							// Index idnos, values and preferred label values
+							$va_labels = $t_item->getPreferredDisplayLabelsForIDs([(int)$t_item->getPrimaryKey()], ['returnAllLocales' => true]);
 
 							foreach($va_labels as $vn_label_row_id => $va_labels_per_row) {
 								foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
@@ -1892,9 +1904,10 @@ if (!$for_current_value_reindex) {
 					
 					// Force recounts on related items when relationship record is modified
 					if ($t_subject->isRelationship()) {
-						$this->_doCountIndexing($t_rel, $va_item['row_id'], Datamodel::getInstanceByTableName($x=$t_subject->getOppositeTableName($t_rel->tableName()), true), false);
+						if ($opp = $t_subject->getOppositeTableName($t_rel->tableName())) {
+							$this->_doCountIndexing($t_rel, $va_item['row_id'], Datamodel::getInstanceByTableName($opp, true), false);
+						}
 					}
-				
 				}
 			}
 		}
