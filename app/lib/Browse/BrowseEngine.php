@@ -1542,14 +1542,20 @@
 												switch($vn_datatype) {			
 													case __CA_ATTRIBUTE_VALUE_LIST__:
 														if ($vs_f != 'item_id') { continue(2); }
+														
+														if((!isset($va_facet_info['dont_expand_hierarchically']) || !$va_facet_info['dont_expand_hierarchically']) ) {
 
-														// Include sub-items
-														$t_list_item = new ca_list_items();
-														$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
+															// Include sub-items
+															$t_list_item = new ca_list_items();
+															$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
 
-														$va_item_ids[] = (int)$vs_v;
-														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
-														$va_attr_values[] = array_map(function($v) { return (int)$v; }, array_unique($va_item_ids));
+															$va_item_ids[] = (int)$vs_v;
+															$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
+															$va_attr_values[] = array_map(function($v) { return (int)$v; }, array_unique($va_item_ids));
+														} else {
+															$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
+															$va_attr_values[] = $vs_v;
+														}
 														break;
 													case __CA_ATTRIBUTE_VALUE_OBJECTS__:
                                                     case __CA_ATTRIBUTE_VALUE_ENTITIES__:
@@ -6782,7 +6788,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 										$va_orderbys[] = $va_label_selects[] = $vs_rel_item_table_name.'.'.$vs_sort_by_field;
 									}
 								}
-
+								if ($va_facet_info['include_idno'] && ($idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD'))) {
+									$va_label_selects[] = $t_rel_item->tableName().'.'.$idno_fld;
+								}
 								// get labels
 								$vs_sql = "
 									SELECT ".join(', ', $va_label_selects)."
@@ -6796,7 +6804,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								while($qr_labels->nextRow()) {
 									$va_fetched_row = $qr_labels->getRow();
 									
-									$label_values = ['label' => $va_fetched_row[$vs_label_display_field]];
+									$l = $va_fetched_row[$vs_label_display_field];
+									if($idno_fld && $va_facet_info['include_idno'] && $va_fetched_row[$idno_fld]) { $l .= " (".$va_fetched_row[$idno_fld].")"; }
+									$label_values = ['label' => $l];
 									if ($natural_sort) { $label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_label_display_field]); }
 									
 									$va_facet_item = array_merge($va_facet_items[$va_fetched_row[$vs_rel_pk]], $label_values);
