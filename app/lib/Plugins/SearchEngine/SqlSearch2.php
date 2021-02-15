@@ -699,6 +699,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$tmp = explode('.', $filter['field']);
 				$path = [];
 				$joins = [];
+				
+				if(!($fi = Datamodel::getInstance($tmp[0], true))) { continue; }
+				if(!$fi->hasField($tmp[1])) { continue; }
 			
 				if ($tmp[0] !== $table_name) {
 					$path = Datamodel::getPath($table_name, $tmp[0]);
