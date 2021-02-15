@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,82 +39,97 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
  	'NAME_PLURAL' 		=> _t('Media uploads'),
  	'FIELDS' 			=> array(
  		'session_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '','LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this upload')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '','LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this upload')
 		),
 		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => null,
-				'DONT_ALLOW_IN_UI' => true,
-				'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this upload.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this upload.')
 		),
 		'cancelled' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Is cancelled?'), 'DESCRIPTION' => _t('Indicates that the upload is cancelled.')
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Is cancelled?'), 'DESCRIPTION' => _t('Indicates that the upload is cancelled.')
 		),
 		'created_on' => array(
-				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => null,
-				'LABEL' => _t('Upload creation date'), 'DESCRIPTION' => _t('The date and time the upload was started.')
+			'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Upload creation date'), 'DESCRIPTION' => _t('The date and time the upload was started.')
 		),
 		'completed_on' => array(
-				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => null,
-				'LABEL' => _t('Upload completion date'), 'DESCRIPTION' => _t('The date and time the upload was completed on. An empty value indicates an incomplete upload.')
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Upload completion date'), 'DESCRIPTION' => _t('The date and time the upload was completed on. An empty value indicates an incomplete upload.')
 		),
 		'last_activity_on' => array(
-				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => null,
-				'LABEL' => _t('Date of last upload activity'), 'DESCRIPTION' => _t('The date and time activity was last recorded on the upload.')
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Date of last upload activity'), 'DESCRIPTION' => _t('The date and time activity was last recorded on the upload.')
 		),
 		'session_key' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Upload key'), 'DESCRIPTION' => _t('Unique key for the upload.'),
-				'BOUNDS_LENGTH' => array(1,36)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Upload key'), 'DESCRIPTION' => _t('Unique key for the upload.'),
+			'BOUNDS_LENGTH' => array(1,36)
+		),
+		'source' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'BOUNDS_LENGTH' => [0, 30],
+			'DEFAULT' => '',
+			'LABEL' => _t('Source of session'), 'DESCRIPTION' => _t('Source of session. Use UPLOADER for file uploader; FORM:<form_code> for front-end importer forms.')
 		),
 		'num_files' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('File count'), 'DESCRIPTION' => _t('Number of files in upload.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('File count'), 'DESCRIPTION' => _t('Number of files in upload.')
 		),
 		'total_bytes' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Total upload size'), 'DESCRIPTION' => _t('The total size of the upload for all files, in bytes.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Total upload size'), 'DESCRIPTION' => _t('The total size of the upload for all files, in bytes.')
 		),
 		'error_code' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Error code'), 'DESCRIPTION' => _t('Error code. Zero if no error.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Error code'), 'DESCRIPTION' => _t('Error code. Zero if no error.')
 		),
 		'progress' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 0,
-				'LABEL' => _t('Upload progress'), 'DESCRIPTION' => _t('Data regarding upload process of individual files.')
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Upload progress'), 'DESCRIPTION' => _t('Data regarding upload process of individual files.')
+		),
+		'metadata' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Associated form metadata'), 'DESCRIPTION' => _t('User-entered metadata for upload.')
 		)
  	)
 );

@@ -73,17 +73,14 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	/**
 	 *
 	 */
-	public function hookCLICaUtilsGetCommands() {
-	    return [
-	        'Maintenance' => [
-	            'apply_prepopulate_rules' => [
-	                'Command' => 'apply-prepopulate-rules',
-	                'Options' => [],
-	                'Help' => _t('Help to come'),
-	                'ShortHelp' => _t('Short help to come'),
-	            ]
-	        ]
+	public function hookCLICaUtilsGetCommands(&$pa_params) {
+	    $pa_params['Maintenance']['apply_prepopulate_rules'] = [
+	    	'Command' => 'apply-prepopulate-rules',
+	        'Options' => [],
+	        'Help' => _t('Help to come'),
+	        'ShortHelp' => _t('Short help to come'),
 	    ];
+	    return $pa_params;
 	}
 	# -------------------------------------------------------
     /**
@@ -94,7 +91,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
         $tool->setSettings($pa_params[1]);
         $tool->setMode($pa_params[2]);
         
-        $pa_params['tool'] = $tool;
+        $pa_params[]['tool'] = $tool;
         return $pa_params;
     }
 	# --------------------------------------------------------------------------------------------

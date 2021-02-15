@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/find/FindMovementsController.php : controller for movement search request handling
+ * app/controllers/find/SearchMovementsController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -97,6 +97,11 @@
 						'reset' => $this->request->getUser()->getPreference('persistent_search')
 					),
 					'is_enabled' => true,
+					'requires' => [
+						'action:can_search_ca_movements' => 'AND',
+						'checktypelimitinconfig:!ca_movements_no_search_for_types:ca_movements' => 'AND',
+						'configuration:!ca_movements_disable_basic_search' => 'AND'
+					]
 				],
 				[
 					'displayName' => _t('Advanced search'),
@@ -107,6 +112,28 @@
 						'reset' => $this->request->getUser()->getPreference('persistent_search')
 					),
 					'is_enabled' => true,
+					'requires' => [
+						'action:can_search_ca_movements' => 'AND',
+						'action:can_use_adv_search_forms' => 'AND',
+						'checktypelimitinconfig:!ca_movements_no_advanced_search_for_types:ca_movements' => 'AND',
+						'configuration:!ca_movements_disable_advanced_search' => 'AND'
+					]
+				],
+				[
+					'displayName' => _t('Search builder'),
+					"default" => ['module' => 'find', 'controller' => 'SearchMovementsBuilder', 'action' => 'Index'],
+					'useActionInPath' => 1,
+					'parameters' => [
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					],
+					'is_enabled' => !$this->request->config->get('ca_movements_disable_search_builder'),
+					'requires' => [
+						'action:can_search_ca_movements' => 'AND',
+						'action:can_use_searchbuilder' => 'AND',
+						'checktypelimitinconfig:!ca_movements_no_search_builder_for_types:ca_movements' => 'AND',
+						'configuration:!ca_movements_disable_searchbuilder' => 'AND'
+					]
 				],
 				[
 					'displayName' => _t('Browse'),
@@ -115,6 +142,11 @@
 						'type_id' => $pa_item['item_id']
 					),
 					'is_enabled' => true,
+					'requires' => [
+						'action:can_browse_ca_movements' => 'AND',
+						'checktypelimitinconfig:!ca_movements_no_browse_for_types:ca_movements' => 'AND',
+						'configuration:!ca_movements_disable_browse' => 'AND'
+					]
 				]
 			];
  		}

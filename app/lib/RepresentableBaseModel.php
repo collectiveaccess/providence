@@ -262,22 +262,26 @@
 			foreach($va_reps as $vn_i => $va_rep) {
 				$mimetype = $va_rep['info']['original']['MIMETYPE'];
 				if(
-					(is_array($va_mimetypes) && (sizeof($va_mimetypes)) && isset($va_mimetypes[$mimetype]))
-					||
-					($vs_mimetypes_regex && preg_matcH("!{$vs_mimetypes_regex}!", $mimetype))
+					is_array($va_mimetypes) && sizeof($va_mimetypes)
+					&&
+					!(isset($va_mimetypes[$mimetype]))
+					&&
+					!($vs_mimetypes_regex && preg_matcH("!{$vs_mimetypes_regex}!", $mimetype))
 				) {
-					switch($vs_sortby) {
-						case 'filesize':
-							$va_found_reps[$va_rep['info'][$version]['FILESIZE']][] = $va_rep;
-							break;
-						case 'duration':
-							$vn_duration = $va_rep['info'][$version]['PROPERTIES']['duration'];
-							$va_found_reps[$vn_duration][] = $va_rep;
-							break;
-						default:
-							$va_found_reps[] = $va_rep;
-							break;
-					}
+					continue;	
+				}
+				
+				switch($vs_sortby) {
+					case 'filesize':
+						$va_found_reps[$va_rep['info'][$version]['FILESIZE']][] = $va_rep;
+						break;
+					case 'duration':
+						$vn_duration = $va_rep['info'][$version]['PROPERTIES']['duration'];
+						$va_found_reps[$vn_duration][] = $va_rep;
+						break;
+					default:
+						$va_found_reps[] = $va_rep;
+						break;
 				}
 			}
 		
