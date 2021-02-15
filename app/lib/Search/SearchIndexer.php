@@ -771,7 +771,7 @@ if (!$for_current_value_reindex) {
 								// Is list item value
 								$t_item = ca_list_items::findAsInstance(['list_id' => caGetListID($va_field_list[$vs_field]['LIST']), 'item_value' => $pa_field_data[$vs_field]]);
 							}
-							if(!$t_item) { die("X");continue; }
+							if(!$t_item) { continue; }		// list item doesn't exist (can happen for access and status values)
 							
 							// Index idnos, values and preferred label values
 							$va_labels = $t_item->getPreferredDisplayLabelsForIDs([(int)$t_item->getPrimaryKey()], ['returnAllLocales' => true]);
@@ -1905,9 +1905,10 @@ if (!$for_current_value_reindex) {
 					
 					// Force recounts on related items when relationship record is modified
 					if ($t_subject->isRelationship()) {
-						$this->_doCountIndexing($t_rel, $va_item['row_id'], Datamodel::getInstanceByTableName($x=$t_subject->getOppositeTableName($t_rel->tableName()), true), false);
+						if ($opp = $t_subject->getOppositeTableName($t_rel->tableName())) {
+							$this->_doCountIndexing($t_rel, $va_item['row_id'], Datamodel::getInstanceByTableName($opp, true), false);
+						}
 					}
-				
 				}
 			}
 		}
