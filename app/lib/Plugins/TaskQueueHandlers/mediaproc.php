@@ -326,6 +326,13 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 								}
 							}
 						} else {
+							if(is_array($va_media_center = $t_instance->getMediaCenter($vs_field))) {
+								$pa_parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
+								$pa_parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
+						
+								if (($pa_parameters['_centerX'] < 0) || ($pa_parameters['_centerX'] > 1)) { $pa_parameters['_centerX'] = 0.5; }
+								if (($pa_parameters['_centerY'] < 0) || ($pa_parameters['_centerY'] > 1)) { $pa_parameters['_centerY'] = 0.5; }
+							}
 							if (!($o_media->transform($operation, $pa_parameters))) {
 							  $this->error = $o_media->errors[0];
 							  $o_media->cleanup();
