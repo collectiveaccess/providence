@@ -1271,16 +1271,10 @@
     <list code="loan_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Loan label type values</name>
+          <name>Loan types</name>
         </label>
         <label locale="en_CA">
-          <name>Loan label type values</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Valeurs de type de libellé de prêt</name>
-        </label>
-        <label locale="sv_SE">
-          <name>Lån etikettyp värden</name>
+          <name>Loan types</name>
         </label>
       </labels>
       <items>
@@ -1649,12 +1643,12 @@
         <item idno="socken" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>parrish</name_singular>
-              <name_plural>parrishes</name_plural>
+              <name_singular>parish</name_singular>
+              <name_plural>parishes</name_plural>
             </label>
             <label locale="en_CA" preferred="1">
-              <name_singular>parrish</name_singular>
-              <name_plural>parrishes</name_plural>
+              <name_singular>parish</name_singular>
+              <name_plural>parishes</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
               <name_singular>socken</name_singular>
@@ -3293,9 +3287,6 @@
             <placement code="icon">
               <bundle>icon</bundle>
             </placement>
-            <placement code="validation_format">
-              <bundle>validation_format</bundle>
-            </placement>
             <placement code="ca_settings">
               <bundle>settings</bundle>
             </placement>
@@ -3615,9 +3606,6 @@
             <placement code="form_code">
               <bundle>form_code</bundle>
             </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
-            </placement>
             <placement code="is_system">
               <bundle>is_system</bundle>
             </placement>
@@ -3687,9 +3675,6 @@
             </placement>
             <placement code="display_code">
               <bundle>display_code</bundle>
-            </placement>
-            <placement code="table_num">
-              <bundle>table_num</bundle>
             </placement>
             <placement code="is_system">
               <bundle>is_system</bundle>
@@ -3844,33 +3829,6 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-            <label locale="en_CA">
-              <name>Relationships</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Relations</name>
-            </label>
-            <label locale="sv_SE">
-              <name>Relationer</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_object_lots">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_places</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
       </screens>
     </userInterface>
     <userInterface code="tour_stop_editor_ui" type="ca_tour_stops">
@@ -4020,9 +3978,6 @@
             <placement code="path">
               <bundle>path</bundle>
             </placement>
-            <placement code="template_id">
-              <bundle>template_id</bundle>
-            </placement>
             <placement code="description">
               <bundle>description</bundle>
             </placement>
@@ -4041,14 +3996,14 @@
     </userInterface>
     <userInterface code="standard_representation_ui" type="ca_object_representations">
       <labels>
-        <label locale="en_CA">
+        <label locale="en_US">
           <name>Object representation editor</name>
         </label>
       </labels>
       <screens>
         <screen idno="screen_23_0" default="0">
           <labels>
-            <label locale="en_CA">
+            <label locale="en_US">
               <name>Basic info</name>
             </label>
           </labels>
@@ -4072,7 +4027,39 @@
         </screen>
       </screens>
     </userInterface>
-    
+    <userInterface code="data_dictionary" type="ca_metadata_dictionary_entries">
+      <labels>
+        <label locale="en_US">
+          <name>Data dictionary editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="0" color="000000">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels1">
+              <bundle>preferred_labels</bundle>
+            </placement>
+            <placement code="bundle_name4">
+              <bundle>bundle_name</bundle>
+            </placement>
+            <placement code="table_num4">
+              <bundle>table_num</bundle>
+            </placement>
+            <placement code="ca_metadata_dictionary_rules6">
+              <bundle>ca_metadata_dictionary_rules</bundle>
+            </placement>
+            <placement code="settings6">
+              <bundle>settings</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
   </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_loans_x_entities">
@@ -5157,23 +5144,11 @@
     
     <relationshipTable name="ca_loans_x_object_representations">
       <types>
-        <type code="lender" default="1">
+        <type code="part_of" default="1">
           <labels>
             <label locale="en_US">
-              <typename>is lent from</typename>
-              <typename_reverse>is lender of</typename_reverse>
-            </label>
-            <label locale="en_CA">
-              <typename>is lent from</typename>
-              <typename_reverse>is lender of</typename_reverse>
-            </label>
-            <label locale="fr_FR">
-              <typename>est prêté par</typename>
-              <typename_reverse>a prêté</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>lånas ut från</typename>
-              <typename_reverse>är långivare av</typename_reverse>
+              <typename>contains</typename>
+              <typename_reverse>part of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -5536,35 +5511,6 @@
       </roles>
     </group>
   </groups>
-  <displays>
-    <display code="researcher_display" type="ca_objects" system="1">
-      <labels>
-        <label locale="en_US">
-          <name>Researcher Display</name>
-        </label>
-      </labels>
-      <bundlePlacements>
-        <placement code="idno">
-          <bundle>ca_objects.idno</bundle>
-        </placement>        
-        <placement code="preferred_labels">
-          <bundle>ca_objects.preferred_labels</bundle>
-        </placement>
-        <placement code="description">
-          <bundle>ca_objects.description</bundle>
-        </placement>
-        <placement code="date">
-          <bundle>ca_objects.date</bundle>
-        </placement>
-        <placement code="type">
-          <bundle>ca_objects.type_id</bundle>
-        </placement>        
-        <placement code="entities">
-          <bundle>ca_entities</bundle>
-        </placement>       
-      </bundlePlacements>
-    </display>   
-  </displays>
   
    <searchForms>
   	<searchForm code="ca_objects_adv_search" type="ca_objects" system="1">
