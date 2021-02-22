@@ -52,19 +52,19 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 			'DONT_ALLOW_IN_UI' => true,
 			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this upload.')
 		),
-		'cancelled' => array(
-			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false, 
-			'DEFAULT' => '',
-			'LABEL' => _t('Is cancelled?'), 'DESCRIPTION' => _t('Indicates that the upload is cancelled.')
-		),
 		'created_on' => array(
 			'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
 			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => null,
-			'LABEL' => _t('Upload creation date'), 'DESCRIPTION' => _t('The date and time the upload was started.')
+			'LABEL' => _t('Creation date'), 'DESCRIPTION' => _t('The date and time the upload was started on.')
+		),
+		'submitted_on' => array(
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Submission  date'), 'DESCRIPTION' => _t('The date and time the upload was submitted on. An empty value indicates an unsubmitted upload.')
 		),
 		'completed_on' => array(
 			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -95,6 +95,23 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 			'BOUNDS_LENGTH' => [0, 30],
 			'DEFAULT' => '',
 			'LABEL' => _t('Source of session'), 'DESCRIPTION' => _t('Source of session. Use UPLOADER for file uploader; FORM:<form_code> for front-end importer forms.')
+		),
+		'status' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'BOUNDS_LENGTH' => [0, 30],
+			'DEFAULT' => 'IN_PROGRESS',
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('In progress') => 'IN_PROGRESS',
+				_t('Submitted') => 'SUBMITTED',
+				_t('Processing') => 'PROCESSING',
+				_t('Processed') => 'PROCESSED',
+				_t('In review') => 'IN_REVIEW',
+				_t('Accepted') => 'ACCEPTED',
+				_t('Rejected') => 'REJECTED'
+			),
+			'LABEL' => _t('Status of session'), 'DESCRIPTION' => _t('Status of session. Possible states: IN_PROGRESS, SUBMITTED, PROCESSING, PROCESSED, IN_REVIEW, ACCEPTED, REJECTED.')
 		),
 		'num_files' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 

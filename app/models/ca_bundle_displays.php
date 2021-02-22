@@ -2812,7 +2812,7 @@ if (!$pb_omit_editing_info) {
 			if (method_exists($t_model, 'getLabelTableInstance') && ($t_label = $t_model->getLabelTableInstance()) && !(($table === 'ca_objects') && ($this->getAppConfig()->get('ca_objects_dont_use_labels')))) {
 				$display_list['-2'] = array(
 					'placement_id' => 				'-2',
-					'bundle_name' => 				"{$table}.preferred_labels",
+					'bundle_name' => 				"{$table}.preferred_labels.name_plural",
 					'display' => 					$t_label->getDisplayLabel($t_label->tableName().'.'.$t_label->getDisplayField()),
 					'settings' => 					[],
 					'allowEditing' =>				true,
