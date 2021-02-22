@@ -278,7 +278,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_item_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItemNames')) { MemoryCache::fetch($vs_cache_key, 'listItemNames'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItemNames')) { return MemoryCache::fetch($vs_cache_key, 'listItemNames'); }
 		}
 		
 		$t_list = new ca_lists();
