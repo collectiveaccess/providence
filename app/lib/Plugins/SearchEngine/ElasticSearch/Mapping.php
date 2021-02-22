@@ -495,6 +495,17 @@ class Mapping {
 				'format' => 'date_optional_time',
 				'ignore_malformed' => true
 			);
+
+			$va_mapping_config[$vs_table]['dynamic_templates'] = [
+				[
+					'content_ids' => [
+						'match' => '*_content_ids',
+						'mapping' => [
+							'type' => 'integer',
+						]
+					]
+				]
+			];
 		}
 		return $va_mapping_config;
 	}
