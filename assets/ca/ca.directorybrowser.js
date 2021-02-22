@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2020 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -376,6 +376,11 @@ var caUI = caUI || {};
 									}
 									return false;
 								});
+							} else if(item.type == 'FILE') {
+								jQuery('#' + newLevelListID + " li:last a:last").click(function() { 
+									that.deselectItem();
+									return false;
+								});
 							}
 							
 							if (item.type == 'DIR') {
@@ -512,6 +517,28 @@ var caUI = caUI || {};
 		
 			if (that.onSelection) {
 				that.onSelection(item_id, that.selectedItemIDs.join("/"), item.name, item.type);
+			}
+		}
+		// --------------------------------------------------------------------------------
+		// Clear user item selection
+		//
+		that.deselectItem = function() {
+			if (!that.allowSelection) return false;
+			
+			// set current selection display
+			if (that.currentSelectionDisplayID) {
+				jQuery('#' + that.currentSelectionDisplayID).html('');
+			}
+			
+			if (that.currentSelectionIDID) {
+				jQuery('#' + that.currentSelectionIDID).attr('value', null);
+			}
+			
+			that.selectedItemIDs = [];
+			jQuery('#' + that.container + '_scrolling_container').find('a').removeClass(that.classNameSelected).addClass(that.className);
+		
+			if (that.onSelection) {
+				that.onSelection(null, '', null, 'DESELECT');
 			}
 		}
 		// --------------------------------------------------------------------------------

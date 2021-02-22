@@ -101,7 +101,7 @@
 			currentSelectionDisplayID: 'browseCurrentSelection',
 
 			onSelection: function(item_id, path, name, type) {
-				if (type == 'DIR') { jQuery('#caDirectoryValue').val(path); }
+				if (type == 'DIR') { jQuery('#caDirectoryValue').val(path); } else { jQuery('#caDirectoryValue').val(''); }
 			}
 		});
 
@@ -548,7 +548,8 @@
 	<script type="text/javascript">
 		function caShowConfirmBatchExecutionPanel() {
 			var msg = '<?php print addslashes(_t("You are about to import files from <em>%1</em>")); ?>';
-			msg = msg.replace("%1", jQuery('#caDirectoryValue').val());
+			var dir = jQuery('#caDirectoryValue').val();
+			msg = msg.replace("%1", dir ? dir : '<?= addslashes('the import root'); ?>');
 			caConfirmBatchExecutionPanel.showPanel();
 			jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);
 		}
