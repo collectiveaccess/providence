@@ -764,15 +764,17 @@
 	 * @return string File name of a temporary file with the embedded metadata, false on failure
 	 */
 	function caEmbedMediaMetadataIntoFile($ps_file, $ps_table, $pn_pk, $ps_type_code, $pn_rep_pk, $ps_rep_type_code) {
-		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
 		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 
+		global $file_cleanup_list;
+		
 		if (!@is_readable($ps_file)) { return false; }
 		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
 
 		// make a temporary copy (we won't touch the original)
 		copy($ps_file, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($ps_file));
+		$file_cleanup_list[] = $vs_tmp_filepath;
 
 		//
 		// SUBJECT TABLE

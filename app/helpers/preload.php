@@ -107,3 +107,17 @@ spl_autoload_register(function ($class) {
     //
     return false;
 });
+
+/** 
+ * Global list of temporary file paths to delete at request end
+ */
+$file_cleanup_list = [];
+register_shutdown_function(function() {
+	global $file_cleanup_list;
+	if(is_array($file_cleanup_list)) {
+		foreach($file_cleanup_list as $f) {
+			@unlink($f);
+		}
+	}
+});
+

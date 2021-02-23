@@ -428,6 +428,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function read($ps_filepath, $mimetype="", $options=null) {
+		global $file_cleanup_list;
 		if (!(($this->handle) && ($$ps_filepath === $this->filepath))) {
 			
 			if ($mimetype == 'image/tilepic') {
@@ -477,6 +478,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						return false;
 					}
 					$ps_filepath = $this->filepath_conv = $vs_tmp_name.'.tiff';
+					$file_cleanup_list[] = $ps_filepath;
 
 					@unlink($vs_tmp_name);
 				}
@@ -507,7 +509,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 							//
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];
-								$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_image_tmp');
 								
 								$vb_is_rotated = false;
 								switch($vn_orientation) {

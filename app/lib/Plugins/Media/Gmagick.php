@@ -1195,6 +1195,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}	
 	# ------------------------------------------------
 	private function _dcrawConvertToTiff($ps_filepath) {
+		global $file_cleanup_list;
+		
 		if (!$this->ops_dcraw_path) {
 			$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugGmagick->read()");
 			return false;
@@ -1207,6 +1209,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
         $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
         $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
+        $file_cleanup_list[] = $vs_tmp_name;
+    	$file_cleanup_list[] = $vs_tmp_name.'.tiff';
+         
 		caExec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugGmagick->read()");
