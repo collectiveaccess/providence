@@ -358,12 +358,30 @@ class Configuration {
 					# handle scalar values
 					case 20:
 						// end quote? -> accept scalar
-						if((trim($vs_token) == '"') && $vn_in_quote) {
-							if($vn_in_quote) {
-								$vn_in_quote = 0;
-								$vn_state = -1;
+						switch($vs_token) {
+							# -------------------
+							case '"':
+								if ($vb_escape_set || (!$vn_in_quote && strlen($vs_scalar_value))) {	// Quote in interior of scalar - assume literal
+									$vs_scalar_value .= '"';
+									if(sizeof($va_tokens) == 0) {
+										$this->ops_config_settings["scalars"][$vs_key] = $this->_trimScalar($vs_scalar_value);
+										$vn_in_quote = 0;
+										$vb_escape_set = false;
+										$vn_state = -1;
+									}
+								} else {
+									if (!$vn_in_quote) {	// Quoted scalar
+										$vn_in_quote = 1;
+									} else {
+										// Accept quoted scalar
+										$vn_in_quote = 0;
+										$vb_escape_set = false;
+										$vn_state = -1;
 
-								$this->ops_config_settings["scalars"][$vs_key] = $vs_scalar_value;
+										$this->ops_config_settings["scalars"][$vs_key] = $vs_scalar_value;
+									}
+								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case '\\':
