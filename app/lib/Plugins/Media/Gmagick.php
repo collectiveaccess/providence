@@ -961,6 +961,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 * This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	 */
 	public function &writePreviews($ps_filepath, $pa_options) {
+		global $file_cleanup_list;
+		
 		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
 			if (!($tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
 				// no dir
@@ -992,7 +994,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if ($i > 1) { $this->handle->nextImage(); }
 			
 				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
-				$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+				$file_cleanup_list[] = $files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
 			
 				$i++;
 			} while($this->handle->hasnextimage());
@@ -1003,12 +1005,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		global $file_cleanup_list;
+		
 		if(!is_array($pa_files)) { return false; }
 
 		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
 		@rename($vs_archive_original, $vs_archive_original.".tif");
-		$vs_archive_original = $vs_archive_original.".tif";
-
+		$file_cleanup_list[] = $vs_archive_original = $vs_archive_original.".tif";
+		
 		$vo_orig = new Gmagick();
 		$this->setResourceLimits($vo_orig);
 
