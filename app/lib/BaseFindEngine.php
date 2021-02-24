@@ -447,11 +447,12 @@ class BaseFindEngine extends BaseObject {
 			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByIntrinsic($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
 			} elseif($t_table->hasElement($sort_field)) { // is attribute
-				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction, $hits);
+				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $sort_subfield, $limit_sql, $sort_direction, $hits);
 			} elseif($sort_field === 'preferred_labels') {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
 			} else {
-				throw new ApplicationException(_t('Unhandled sort'));
+				//throw new ApplicationException(_t('Unhandled sort'));
+				return $hits;
 			}
 		} elseif($t_table->getLabelTableName() == $sort_table) {
 			// is label?
@@ -460,15 +461,15 @@ class BaseFindEngine extends BaseObject {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
 			$is_attribute = $t_rel_table->hasElement($sort_field);
-			
 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
 				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
 			} elseif($is_attribute) {							// sort key is metadata attribute
-				$sort_key_values = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction, $hits);		
+				$sort_key_values = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $sort_subfield, $limit_sql, $sort_direction, $hits);		
 			} else {
-				throw new ApplicationException(_t('Unhandled sort'));
+				//throw new ApplicationException(_t('Unhandled sort'));
+				return $hits;
 			}
 		}
 
@@ -599,13 +600,13 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByAttribute($t_table, string $hit_table, string $element_code=null, string $limit_sql=null, $direction='asc', array $hits=null) {
+	private function _sortByAttribute($t_table, string $hit_table, string $element_code=null, string $subelement_code=null, string $limit_sql=null, $direction='asc', array $hits=null) {
 		$table_num = $t_table->tableNum();
 		
-		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+		if (!($element_id = ca_metadata_elements::getElementID($subelement_code ? $subelement_code : $element_code))) { 
 			throw new ApplicationException(_t('Invalid element'));
 		}
-		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
+		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
 		
 		$direction = self::sortDirection($direction);
 
@@ -627,7 +628,7 @@ class BaseFindEngine extends BaseObject {
 					WHERE cav.element_id = ? 
 					ORDER BY cav.value_sortable {$direction}
 					{$limit_sql}";
-		
+					
 		$qr_sort = $this->db->query($sql, [$element_id]);
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
@@ -645,7 +646,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByRelatedAttribute($t_table, $t_rel_table, string $hit_table, string $element_code=null, string $limit_sql=null, $direction='asc', array $hits=null) {
+	private function _sortByRelatedAttribute($t_table, $t_rel_table, string $hit_table, string $element_code=null, string $subelement_code=null, string $limit_sql=null, $direction='asc', array $hits=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -653,10 +654,10 @@ class BaseFindEngine extends BaseObject {
 		$rel_table_pk = $t_rel_table->primaryKey();
 		$rel_table_num = $t_rel_table->tableNum();
 		
-		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+		if (!($element_id = ca_metadata_elements::getElementID($subelement_code ? $subelement_code : $element_code))) { 
 			throw new ApplicationException(_t('Invalid element'));
 		}
-		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
+		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
 
 		$attr_tmp_table = $this->_createTempTableForAttributeIDs();
 		$sql = "

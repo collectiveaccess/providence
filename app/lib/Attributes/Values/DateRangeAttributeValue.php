@@ -503,6 +503,21 @@
 			return __CA_ATTRIBUTE_VALUE_DATERANGE__;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * Returns sortable value for metadata value
+		 *
+		 * @param string $value
+		 * 
+		 * @return string
+		 */
+		public function sortableValue(string $value) {
+			if(DateRangeAttributeValue::$o_tep->parse($value)) { 
+				$dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
+				return $dates[0].'/'.$dates[1];
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
         /**
          * Get extra values to add to search index.
          *
