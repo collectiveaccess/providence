@@ -11816,7 +11816,18 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql;}
 		$va_sql = array_filter($va_sql, function($v) { return strlen($v) > 0; });
 
-		$vs_sql = "SELECT * FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
+		$vs_pk = $t_instance->primaryKey();
+		
+		switch($ps_return_as) {
+			case 'queryresult':		
+			case 'arrays':
+				$select_flds = '*';
+				break;
+			default:
+				$select_flds = $vs_pk;
+				break;
+		}
+		$vs_sql = "SELECT {$select_flds} FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
@@ -11864,7 +11875,6 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$vn_c = 0;
 	
-		$vs_pk = $t_instance->primaryKey();
 		
 		switch($ps_return_as) {
 			case 'queryresult':
