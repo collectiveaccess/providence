@@ -15,6 +15,7 @@ Version 1.7.11 is a maintenance release with these bug fixes and minor improveme
 * Fix for incorrect HTML in entity label bundles.
 * Fix for issue where image media processed in the background by the task queue would not honor custom center points when cropped.
 * Removed extraneous fonts and trackers.
+* Updated base profile with minor fixes and improvements.
 
 You should rebuild the search indices for your database after updating. This can be accomplished using the "Rebuild search indices" option in the "Manage" menu under "Administrate" > "Maintenance", or by running <code>caUtils rebuild-search-indices</core> on the command line.
 
