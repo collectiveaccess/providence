@@ -4027,39 +4027,6 @@
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="data_dictionary" type="ca_metadata_dictionary_entries">
-      <labels>
-        <label locale="en_US">
-          <name>Data dictionary editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="0" color="000000">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="preferred_labels1">
-              <bundle>preferred_labels</bundle>
-            </placement>
-            <placement code="bundle_name4">
-              <bundle>bundle_name</bundle>
-            </placement>
-            <placement code="table_num4">
-              <bundle>table_num</bundle>
-            </placement>
-            <placement code="ca_metadata_dictionary_rules6">
-              <bundle>ca_metadata_dictionary_rules</bundle>
-            </placement>
-            <placement code="settings6">
-              <bundle>settings</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
   </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_loans_x_entities">
