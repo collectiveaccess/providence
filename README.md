@@ -36,7 +36,7 @@ If you are updating from a version prior to 1.7, you must recreate your existing
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
 ```
-Your database is out-of-date. Please install all schema migrations starting with migration #xxx. Click here to automatically apply the required updates, or see the update HOW-TO for instructions on applying database updates manually.
+Your database is out-of-date. Please install all schema migrations starting with migration #xxx. Click here to automatically apply the required updates.
 ```
  
 The migration number may vary depending upon the version you're upgrading from. Click on the `here` link to begin the database update process. 
