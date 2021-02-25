@@ -19,7 +19,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'c143884c767ce0f42b7dc66174cab9d077f7bbe3',
+    'reference' => '6a70f336a066630c6f9933776b74e582bdfb18a7',
     'name' => '__root__',
   ),
   'versions' => 
@@ -31,16 +31,16 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'c143884c767ce0f42b7dc66174cab9d077f7bbe3',
+      'reference' => '6a70f336a066630c6f9933776b74e582bdfb18a7',
     ),
     'aws/aws-sdk-php' => 
     array (
-      'pretty_version' => '3.172.4',
-      'version' => '3.172.4.0',
+      'pretty_version' => '3.173.16',
+      'version' => '3.173.16.0',
       'aliases' => 
       array (
       ),
-      'reference' => '506e60798bb7d13bdafadce9727ab9cc9ac987b0',
+      'reference' => 'e401bcb34e4ae88586a1f63bec6c0ddd12591e7a',
     ),
     'clue/stream-filter' => 
     array (
@@ -399,12 +399,12 @@ private static $installed = array (
     ),
     'pear/archive_tar' => 
     array (
-      'pretty_version' => '1.4.12',
-      'version' => '1.4.12.0',
+      'pretty_version' => '1.4.13',
+      'version' => '1.4.13.0',
       'aliases' => 
       array (
       ),
-      'reference' => '19bb8e95490d3e3ad92fcac95500ca80bdcc7495',
+      'reference' => '2b87b41178cc6d4ad3cba678a46a1cae49786011',
     ),
     'pear/console_getopt' => 
     array (
@@ -521,12 +521,12 @@ private static $installed = array (
     ),
     'php-http/message' => 
     array (
-      'pretty_version' => '1.10.0',
-      'version' => '1.10.0.0',
+      'pretty_version' => '1.11.0',
+      'version' => '1.11.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '39db36d5972e9e6d00ea852b650953f928d8f10d',
+      'reference' => 'fb0dbce7355cad4f4f6a225f537c34d013571f29',
     ),
     'php-http/message-factory' => 
     array (
@@ -772,12 +772,12 @@ private static $installed = array (
     ),
     'sabre/dav' => 
     array (
-      'pretty_version' => '4.1.4',
-      'version' => '4.1.4.0',
+      'pretty_version' => '4.1.5',
+      'version' => '4.1.5.0',
       'aliases' => 
       array (
       ),
-      'reference' => '4258420f15425a5f128fe5cad454e00ab4a68ae5',
+      'reference' => 'c1afdc77a95efea6ee40c03c45f57c3c0c80ec22',
     ),
     'sabre/event' => 
     array (
@@ -808,12 +808,12 @@ private static $installed = array (
     ),
     'sabre/vobject' => 
     array (
-      'pretty_version' => '4.3.3',
-      'version' => '4.3.3.0',
+      'pretty_version' => '4.3.5',
+      'version' => '4.3.5.0',
       'aliases' => 
       array (
       ),
-      'reference' => '58f9f9b46a1080c0130bd86f4df9a568aacb9c79',
+      'reference' => 'd8a0a9ae215a8acfb51afc29101c7344670b9c83',
     ),
     'sabre/xml' => 
     array (
@@ -952,8 +952,8 @@ private static $installed = array (
     ),
     'symfony/options-resolver' => 
     array (
-      'pretty_version' => 'v5.2.2',
-      'version' => '5.2.2.0',
+      'pretty_version' => 'v5.2.3',
+      'version' => '5.2.3.0',
       'aliases' => 
       array (
       ),
@@ -961,8 +961,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-ctype' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),
@@ -970,35 +970,35 @@ private static $installed = array (
     ),
     'symfony/polyfill-intl-idn' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '0eb8293dbbcd6ef6bf81404c9ce7d95bcdf34f44',
+      'reference' => '2d63434d922daf7da8dd863e7907e67ee3031483',
     ),
     'symfony/polyfill-intl-normalizer' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '6e971c891537eb617a00bb07a43d182a6915faba',
+      'reference' => '43a0283138253ed1d48d352ab6d0bdb3f809f248',
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'f377a3dd1fde44d37b9831d68dc8dea3ffd28e13',
+      'reference' => '5232de97ee3b75b0360528dae24e73db49566ab1',
     ),
     'symfony/polyfill-php72' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),
@@ -1006,8 +1006,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-php73' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),
@@ -1015,8 +1015,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-php80' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),
@@ -1024,8 +1024,8 @@ private static $installed = array (
     ),
     'symfony/var-dumper' => 
     array (
-      'pretty_version' => 'v5.2.2',
-      'version' => '5.2.2.0',
+      'pretty_version' => 'v5.2.3',
+      'version' => '5.2.3.0',
       'aliases' => 
       array (
       ),

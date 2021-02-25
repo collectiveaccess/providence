@@ -257,7 +257,7 @@ class Archive_Tar extends PEAR
     {
         $this->_close();
         // ----- Look for a local copy to delete
-        if ($this->_temp_tarname != '') {
+        if ($this->_temp_tarname != '' && (bool) preg_match('/^tar[[:alnum:]]*\.tmp$/', $this->_temp_tarname)) {
             @unlink($this->_temp_tarname);
         }
     }
@@ -2124,7 +2124,25 @@ class Archive_Tar extends PEAR
                             }
                         }
                     } elseif ($v_header['typeflag'] == "2") {
-                        if (strpos(realpath(dirname($v_header['link'])), realpath($p_path)) !== 0) {
+                        $link_depth = 0;
+                        foreach (explode("/", $v_header['filename']) as $dir) {
+                            if ($dir === "..") {
+                                $link_depth--;
+                            } elseif ($dir !== "" && $dir !== "." ) {
+                                $link_depth++;
+                            }
+                        }
+                        foreach (explode("/", $v_header['link']) as $dir){
+                            if ($link_depth <= 0) {
+                                break;
+                            }
+                            if ($dir === "..") {
+                                $link_depth--;
+                            } elseif ($dir !== "" && $dir !== ".") {
+                                $link_depth++;
+                            }
+                        }
+                        if (strpos($v_header['link'], "/") === 0 or $link_depth <= 0) {
                             $this->_error(
                                  'Out-of-path file extraction {'
                                  . $v_header['filename'] . ' --> ' .

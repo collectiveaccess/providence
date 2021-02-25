@@ -51,7 +51,7 @@ return array(
     'League\\CLImate\\' => array($vendorDir . '/league/climate/src'),
     'JmesPath\\' => array($vendorDir . '/mtdowling/jmespath.php/src'),
     'Http\\Promise\\' => array($vendorDir . '/php-http/promise/src'),
-    'Http\\Message\\' => array($vendorDir . '/php-http/message/src', $vendorDir . '/php-http/message-factory/src'),
+    'Http\\Message\\' => array($vendorDir . '/php-http/message-factory/src', $vendorDir . '/php-http/message/src'),
     'Http\\Discovery\\' => array($vendorDir . '/php-http/discovery/src'),
     'Http\\Client\\Common\\Plugin\\' => array($vendorDir . '/php-http/cache-plugin/src'),
     'Http\\Client\\Common\\' => array($vendorDir . '/php-http/client-common/src'),
