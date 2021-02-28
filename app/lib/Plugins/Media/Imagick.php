@@ -962,8 +962,11 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 			
 			$this->handle->setImageBackgroundColor(new ImagickPixel("#CC0000"));
-			$this->handle->setImageMatteColor(new ImagickPixel("#CC0000"));
-		
+			
+			if(method_exists($this->handle, 'setImageMatteColor')) { 
+				$this->handle->setImageMatteColor(new ImagickPixel("#CC0000"));
+			}
+			
 			if ($this->properties['gamma']) {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
 				if (!$this->properties['reference-white']) { $this->properties['reference-white'] = 65535; }
