@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2019 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,9 +30,6 @@
  * ----------------------------------------------------------------------
  */
  
-require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
-require_once(__CA_LIB_DIR__."/Db.php");
 require_once(__CA_LIB_DIR__."/IDNumbering/IDNumber.php");
 require_once(__CA_LIB_DIR__."/IDNumbering/IIDNumbering.php");
 require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
@@ -43,25 +40,25 @@ class MultipartIDNumber extends IDNumber {
 	 * A configuration object loaded with multipart_id_numbering.conf
 	 * @type Configuration
 	 */
-	private $opo_idnumber_config;
+	private $idnumber_config;
 	
 	/**
 	 * A configuration object loaded with search.conf
 	 * @type Configuration
 	 */
-	private $opo_search_config;
+	private $search_config;
 	
 	/**
 	 * The list of valid formats, related types and elements
 	 * @type array
 	 */
-	private $opa_formats;
+	private $formats;
 
 	/**
 	 * The current database connection object
 	 * @type Db
 	 */
-	private $opo_db;
+	private $db;
 
 	# -------------------------------------------------------
 	/**
@@ -76,18 +73,18 @@ class MultipartIDNumber extends IDNumber {
 		if (!$pm_type) { $pm_type = array('__default__'); }
 
 		parent::__construct();
-		$this->opo_idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
-		$this->opo_search_config = Configuration::load(__CA_APP_DIR__."/conf/search.conf");
-		$this->opa_formats = $this->opo_idnumber_config->getAssoc('formats');
+		$this->idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
+		$this->search_config = Configuration::load(__CA_APP_DIR__."/conf/search.conf");
+		$this->formats = $this->idnumber_config->getAssoc('formats');
 
 		if ($ps_format) { $this->setFormat($ps_format); }
 		if ($pm_type) { $this->setType($pm_type); }
 		if ($ps_value) { $this->setValue($ps_value); }
 
 		if ((!$po_db) || !is_object($po_db)) {
-			$this->opo_db = new Db();
+			$this->db = new Db();
 		} else {
-			$this->opo_db = $po_db;
+			$this->db = $po_db;
 		}
 	}
 	# -------------------------------------------------------
@@ -99,7 +96,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @return array
 	 */
 	public function getFormats() {
-		return array_keys($this->opa_formats);
+		return array_keys($this->formats);
 	}
 	# -------------------------------------------------------
 	/**
@@ -130,8 +127,8 @@ class MultipartIDNumber extends IDNumber {
 	 * @return string
 	 */
 	public function getFormatProperty($ps_property, $pa_options=null) {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->opa_formats[$vs_format][$vs_type][$ps_property])) {
-			return $this->opa_formats[$vs_format][$vs_type][$ps_property] ? $this->opa_formats[$vs_format][$vs_type][$ps_property] : '';
+		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->formats[$vs_format][$vs_type][$ps_property])) {
+			return $this->formats[$vs_format][$vs_type][$ps_property] ? $this->formats[$vs_format][$vs_type][$ps_property] : '';
 		}
 		return caGetOption('default', $pa_options, null);
 	}
@@ -143,8 +140,8 @@ class MultipartIDNumber extends IDNumber {
 	 * @return array List of elements as specified in "sort_order" setting, or null if there is no setting value
 	 */
 	public function getElementOrderForSort() {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->opa_formats[$vs_format][$vs_type]['sort_order'])) {
-			return (is_array($this->opa_formats[$vs_format][$vs_type]['sort_order']) && sizeof($this->opa_formats[$vs_format][$vs_type]['sort_order'])) ? $this->opa_formats[$vs_format][$vs_type]['sort_order'] : null;
+		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->formats[$vs_format][$vs_type]['sort_order'])) {
+			return (is_array($this->formats[$vs_format][$vs_type]['sort_order']) && sizeof($this->formats[$vs_format][$vs_type]['sort_order'])) ? $this->formats[$vs_format][$vs_type]['sort_order'] : null;
 		}
 		return null;
 	}
@@ -183,7 +180,7 @@ class MultipartIDNumber extends IDNumber {
 			}
 		}
 
-		$va_elements = $this->opa_formats[$vs_format][$vs_type]['elements'];
+		$va_elements = $this->formats[$vs_format][$vs_type]['elements'];
 		
 		if (!is_null($pn_index) && isset($va_elements[$pn_index])) { $va_elements = array($va_elements[$pn_index]); }
 
@@ -238,7 +235,7 @@ class MultipartIDNumber extends IDNumber {
 			return false;	// specifed type does not exist
 		}
 
-		$va_base_elements = $this->opa_formats[$ps_format][$ps_type]['elements'];
+		$va_base_elements = $this->formats[$ps_format][$ps_type]['elements'];
 		$va_ext_elements = $this->getElements();
 
 		if (sizeof($va_ext_elements) != (sizeof($va_base_elements) + 1)) {
@@ -295,8 +292,8 @@ class MultipartIDNumber extends IDNumber {
 	public function getTypes() {
 		if (!($vs_format = $this->getFormat())) { return array(); }
 		$va_types = array();
-		if (is_array($this->opa_formats[$vs_format])) {
-			foreach($this->opa_formats[$vs_format] as $vs_type => $va_info) {
+		if (is_array($this->formats[$vs_format])) {
+			foreach($this->formats[$vs_format] as $vs_type => $va_info) {
 				$va_types[$vs_type] = true;
 			}
 		}
@@ -323,10 +320,10 @@ class MultipartIDNumber extends IDNumber {
 	 */
 	public function getElements() {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
-			if (is_array($this->opa_formats[$vs_format][$vs_type]['elements'])) {
+			if (is_array($this->formats[$vs_format][$vs_type]['elements'])) {
 				$vb_is_child = $this->isChild();
 				$va_elements = array();
-				foreach($this->opa_formats[$vs_format][$vs_type]['elements'] as $vs_k => $va_element_info) {
+				foreach($this->formats[$vs_format][$vs_type]['elements'] as $vs_k => $va_element_info) {
 					if (!$vb_is_child && isset($va_element_info['child_only']) && (bool)$va_element_info['child_only']) { continue; }
 					$va_elements[$vs_k] = $va_element_info;
 				}
@@ -344,7 +341,7 @@ class MultipartIDNumber extends IDNumber {
 	 */
 	public function getElementInfo($ps_element_name) {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
-			return $this->opa_formats[$vs_format][$vs_type]['elements'][$ps_element_name];
+			return $this->formats[$vs_format][$vs_type]['elements'][$ps_element_name];
 		}
 		return null;
 	}
@@ -583,151 +580,170 @@ class MultipartIDNumber extends IDNumber {
 	 */
 	public function getNextValue($ps_element_name, $pm_value=null, $pb_dont_mark_value_as_used=false) {
 		if (!$pm_value) { $pm_value = $this->getValue(); }
-		$va_element_info = $this->getElementInfo($ps_element_name);
+		$element_info = $this->getElementInfo($ps_element_name);
 
-		$vs_table = $this->getFormat();
-		if(!Datamodel::tableExists($vs_table)) { return 'ERR'; }
-		$vs_field = Datamodel::getTableProperty($vs_table, 'ID_NUMBERING_ID_FIELD');
+		$table = $this->getFormat();
+		if(!Datamodel::tableExists($table)) { return 'ERR'; }
+		$vs_field = Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 		if(!$vs_field) { return 'ERR'; }
-		$vs_sort_field = Datamodel::getTableProperty($vs_table, 'ID_NUMBERING_SORT_FIELD');
-		if (!$vs_sort_field) { $vs_sort_field = $vs_field; }
+		$sort_field = Datamodel::getTableProperty($table, 'ID_NUMBERING_SORT_FIELD');
+		if (!$sort_field) { $sort_field = $vs_field; }
 
-		$vs_separator = $this->getSeparator();
+		$separator = $this->getSeparator();
 		$va_elements = $this->getElements();
 
 		if ($pm_value == null) {
-			$va_element_vals = array();
-			foreach($va_elements as $vs_element_name => $va_element_info) {
-				switch($va_element_info['type']) {
+			$element_vals = [];
+			foreach($va_elements as $element_name => $element_info) {
+				if ($element_name == $ps_element_name) { break; }
+				switch($element_info['type']) {
 					case 'CONSTANT':
-						$va_element_vals[] = $va_element_info['value'];
+						$element_vals[] = $element_info['value'];
 						break;
 					case 'YEAR':
 					case 'MONTH':
 					case 'DAY':
-						$va_date = getDate();
-						if ($va_element_info['type'] == 'YEAR') {
-							if ($va_element_info['width'] == 2) {
-								$va_date['year'] = substr($va_date['year'], 2, 2);
+						$date = getDate();
+						if ($element_info['type'] == 'YEAR') {
+							if ($element_info['width'] == 2) {
+								$date['year'] = substr($date['year'], 2, 2);
 							}
-							$va_element_vals[] = $va_date['year'];
+							$element_vals[] = $date['year'];
 						}
-						if ($va_element_info['type'] == 'MONTH') { $va_element_vals[]  = $va_date['mon']; }
-						if ($va_element_info['type'] == 'DAY') { $va_element_vals[]  = $va_date['mday']; }
+						if ($element_info['type'] == 'MONTH') { $element_vals[]  = $date['mon']; }
+						if ($element_info['type'] == 'DAY') { $element_vals[]  = $date['mday']; }
 						break;
 					case 'LIST':
-						if ($va_element_info['default']) {
-							$va_element_vals[] = $va_element_info['default'];
+						if ($element_info['default']) {
+							$element_vals[] = $element_info['default'];
 						} else {
-							if (is_array($va_element_info['values'])) {
-								$va_element_vals[] = array_shift($va_element_info['values']);
+							if (is_array($element_info['values'])) {
+								$element_vals[] = array_shift($element_info['values']);
 							}
 						}
 						break;
 					case 'PARENT':
-						$va_element_vals[] = $this->getParentValue();
+						$element_vals[] = $this->getParentValue();
+						break;
+					case 'SERIAL':
+						$element_vals[] = '';
 						break;
 					default:
-						$va_element_vals[] = '';
+						$element_vals[] = '';
 						break;
 				}
 			}
 		} elseif(is_array($pm_value)) {
-			$va_element_vals = array_values($pm_value);
+			$element_vals = array_values($pm_value);
 		} else {
-			$va_element_vals = $this->explodeValue($pm_value);
+			$element_vals = $this->explodeValue($pm_value);
 		}
 
-		$va_tmp = array();
-		$vn_i = 0;
-		foreach($va_elements as $vs_element_name => $va_element_info) {
-			if ($vs_element_name == $ps_element_name) { break; }
-			$va_tmp[] = array_shift($va_element_vals);
-			$vn_i++;
+		$tmp = [];
+		$i = 0;
+		$blank_count = 0;
+		foreach($va_elements as $element_name => $element_info) {
+			if ($element_name == $ps_element_name) { break; }
+			if (!strlen($v = array_shift($element_vals))) { $blank_count++; }
+			$tmp[] = $v;
+			$i++;
+		}
+		if ($blank_count > 0) {
+			return (($vn_zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) ? sprintf("%0{$vn_zeropad_to_length}d", 1) : 1;
 		}
 
-		$vs_stub = trim(join($vs_separator, $va_tmp));
+		$stub = trim(join($separator, $tmp));
 
-		$this->opo_db->dieOnError(false);
+		$this->db->dieOnError(false);
 
 		// Get the next number based upon field data
 		$vn_type_id = null;
-		$vs_type_limit_sql = '';
+		$type_limit_sql = '';
 		
-		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { return 'ERR'; }
-		if ((bool)$va_element_info['sequence_by_type']) {
+		if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return 'ERR'; }
+		if ((bool)$element_info['sequence_by_type']) {
 			$vs_type = $this->getType();
 			if ($vs_type == '__default__') {
 			    $va_types = $this->getTypes(); 
 			    
-			    $va_exclude_type_ids = [];
+			    $exclude_type_ids = [];
 			    foreach($va_types as $vs_type) {
 			        if ($vs_type == '__default__') { continue; }
 			        if ($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
-			            $va_exclude_type_ids[] = $vn_type_id;
+			            $exclude_type_ids[] = $vn_type_id;
 			        }
 			    }
-			    if (sizeof($va_exclude_type_ids) > 0) {
-			        $vs_type_limit_sql = " AND type_id NOT IN (".join(", ", $va_exclude_type_ids).")";
+			    if (sizeof($exclude_type_ids) > 0) {
+			        $type_limit_sql = " AND type_id NOT IN (".join(", ", $exclude_type_ids).")";
 			    }
 			} elseif($vn_type_id = (int)$t_instance->getTypeIDForCode($vs_type)) {
-		        $vs_type_limit_sql = " AND type_id = {$vn_type_id}";
+		        $type_limit_sql = " AND type_id = {$vn_type_id}";
 		    }
 		}
 		
-		if ($qr_res = $this->opo_db->query("
-			SELECT $vs_field FROM ".$vs_table."
+		$deleted_limit_sql = ($t_instance->hasField('deleted') ? " AND (deleted = 0)" : '');
+		
+		$field_limit_sql = ($stub === '') ? "{$vs_field} <> ''" : "{$vs_field} LIKE ?";
+		
+		if($stub === '') {
+			$field_limit_sql = "{$vs_field} <> ''";
+			$params = ['%'];
+		} else {
+			$field_limit_sql = "{$vs_field} LIKE ?";
+			$params = [$stub.$separator.'%'];
+		}
+		
+		
+		if ($qr_res = $this->db->query("
+			SELECT {$vs_field} FROM {$table}
 			WHERE
-				$vs_field LIKE ? {$vs_type_limit_sql}
-				".($t_instance->hasField('deleted') ? " AND (deleted = 0)" : '')."
+				{$field_limit_sql}
+				{$type_limit_sql}
+				{$deleted_limit_sql}
 			ORDER BY
-				$vs_sort_field DESC
-		", ($vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%')))) {
-			if ($this->opo_db->numErrors()) {
+				{$sort_field} DESC 
+			LIMIT 1
+		", $params)) {
+			if ($this->db->numErrors()) {
 				return "ERR";
 			}
-
+			
 			// Figure out what the sequence (last) number in the multipart number taken from the field is...
 			if ($qr_res->numRows()) {
 				while($qr_res->nextRow()) {
-					$va_tmp = $this->explodeValue($qr_res->get($vs_field));
-					if(is_numeric($va_tmp[$vn_i]) && (intval($va_tmp[$vn_i]) < pow(2,30))) {
-						$vn_num = intval($va_tmp[$vn_i]) + 1;
+					$tmp = $this->explodeValue($qr_res->get($vs_field));
+					if(is_numeric($tmp[$i]) && (intval($tmp[$i]) < pow(2,30))) {
+						$num = intval($tmp[$i]) + 1;
 						break;
 					}
 				}
-				if ($vn_num == '') { $vn_num = 1; }
-				if (is_array($va_tmp)) {
-					array_pop($va_tmp);
-					$vs_stub = join($vs_separator, $va_tmp);
+				if ($num == '') { $num = 1; }
+				if (is_array($tmp) && (sizeof($tmp) > 1)) {
+					array_pop($tmp);
+					$stub = join($separator, $tmp);
 				} else {
-					$vs_stub = '';
+					$stub = '';
 				}
 			} else {
-				$vn_num = 1;
+				$num = 1;
 			}
 
 			// Now get the last used sequence number for this "stub"
-			$vn_max_num = $this->getSequenceMaxValue($this->getFormat(), $ps_element_name, $vs_stub);
+			$max_num = 0; 
 
 			// Make the new number one more than the last used number if it is less than the last
 			// (this prevents numbers from being reused when records are deleted or renumbered)
-			if ($vn_num <= $vn_max_num) {
-				$vn_num = $vn_max_num + 1;
+			if ($num <= $max_num) {
+				$num = $max_num + 1;
 			}
 
-			// Record this newly issued number as the new "last used" number, unless told not to do so
-			if (!$pb_dont_mark_value_as_used) {
-				$this->setSequenceMaxValue($this->getFormat(), $ps_element_name, $vs_stub, $vn_num);
-			}
-
-			if (($vn_zeropad_to_length = (int)$va_element_info['zeropad_to_length']) > 0) {
-				return sprintf("%0{$vn_zeropad_to_length}d", $vn_num);
+			if (($vn_zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) {
+				return sprintf("%0{$vn_zeropad_to_length}d", $num);
 			} else {
-				return $vn_num;
+				return $num;
 			}
 		} else {
-			return 'ERR'; //.join('; ',$this->opo_db->getErrors()).']';
+			return 'ERR'; 
 		}
 	}
 	# -------------------------------------------------------
@@ -939,7 +955,7 @@ class MultipartIDNumber extends IDNumber {
 		$va_output_values = array_unique($va_output_values);
 		
 		// generate tokenized version
-		if($va_tokens = preg_split("![".$this->opo_search_config->get('indexing_tokenizer_regex')."]+!", $ps_value)) {
+		if($va_tokens = preg_split("![".$this->search_config->get('indexing_tokenizer_regex')."]+!", $ps_value)) {
 			$va_output_values = array_merge($va_output_values, $va_tokens);
 		}
 		
@@ -1233,10 +1249,6 @@ class MultipartIDNumber extends IDNumber {
 					$va_tmp[$vs_element_name] = $this->getNextValue($vs_element_name, $va_tmp, $pb_dont_mark_serial_value_as_used);
 					$vb_isset = $vb_is_not_empty = true;
 					continue;
-				} else {
-					if (!$pb_dont_mark_serial_value_as_used && (intval($va_element_values[$ps_name.'_'.$vs_element_name]) > $this->getSequenceMaxValue($ps_name, $vs_element_name, ''))) {
-						$this->setSequenceMaxValue($this->getFormat(), $vs_element_name, join($vs_separator, $va_tmp), $va_element_values[$ps_name.'_'.$vs_element_name]);
-					}
 				}
 			} elseif(($va_element_info['type'] == 'YEAR') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {  // set constant
 			    $va_date = getdate();
@@ -1326,7 +1338,7 @@ class MultipartIDNumber extends IDNumber {
 		}
 		$vs_element = '';
 
-		$va_element_info = $this->opa_formats[$vs_format][$vs_type]['elements'][$ps_element_name];
+		$va_element_info = $this->formats[$vs_format][$vs_type]['elements'][$ps_element_name];
 		$vs_element_form_name = $ps_name.'_'.$ps_element_name;
 
 		$vs_element_value = $ps_value;
@@ -1457,63 +1469,13 @@ class MultipartIDNumber extends IDNumber {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Get maximum sequence value for SERIAL element
-	 *
-	 * @param string $ps_format Format to get maximum sequence value for
-	 * @param string $ps_element Element name to get maximum sequence value for
-	 * @param string $ps_idno_stub Identifier stub (identifier without serial value) to get maximum sequence value for
-	 * @return int Integer value or false on error
-	 */
-	public function getSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub) {
-		$this->opo_db->dieOnError(false);
-
-		$vn_minimum_value = caGetOption('minimum_value', $this->getElementInfo($ps_element), 0, ['castTo' => 'int']);
-		if (!($qr_res = $this->opo_db->query("
-			SELECT seq
-			FROM ca_multipart_idno_sequences
-			WHERE
-				(format = ?) AND (element = ?) AND (idno_stub = ?)
-		", $ps_format, $ps_element, $ps_idno_stub))) {
-			return false;
-		}
-		if (!$qr_res->nextRow()) { return $vn_minimum_value - 1; }
-		return (($vn_v = $qr_res->get('seq')) < $vn_minimum_value) ? ($vn_minimum_value - 1) : $vn_v;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Record new maximum sequence value for SERIAL element
-	 *
-	 * @param string $ps_format Format to set sequence for
-	 * @param string $ps_element Element name to set sequence for
-	 * @param string $ps_idno_stub Identifier stub (identifier without serial value) to set sequence for
-	 * @param string $pn_value Maximum SERIAL value for this format/element/stub
-	 * @return bool True on success, false on failure
-	 */
-	public function setSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub, $pn_value) {
-		$this->opo_db->dieOnError(false);
-
-		$this->opo_db->query("
-			DELETE FROM ca_multipart_idno_sequences
-			WHERE format = ? AND element = ? AND idno_stub = ?
-		", [$ps_format, $ps_element, $ps_idno_stub]);
-
-		$pn_value = (int)preg_replace("![^\d]+!", "", $pn_value);
-		return $this->opo_db->query("
-			INSERT INTO ca_multipart_idno_sequences
-			(format, element, idno_stub, seq)
-			VALUES
-			(?, ?, ?, ?)
-		", [$ps_format, $ps_element, $ps_idno_stub, $pn_value]);
-	}
-	# -------------------------------------------------------
-	/**
 	 * Set database connection to use for queries
 	 *
 	 * @param Db $po_db A database connection instance
 	 * @return void
 	 */
-	public function setDb($po_db) {
-		$this->opo_db = $po_db;
+	public function setDb($db) {
+		$this->db = $db;
 	}
 	# -------------------------------------------------------
 	/**
