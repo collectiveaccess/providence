@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1384,7 +1384,10 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if (!is_null($pn_quality)) {
 					array_unshift($va_ops['convert'], '-quality '.intval($pn_quality));
 				}
-				array_unshift($va_ops['convert'], '-colorspace RGB');
+				
+				if($this->properties["colorspace"] === 'CMYK') {
+					array_unshift($va_ops['convert'], '-colorspace RGB');
+				}
 				caExec( join( ' ', array(
 					$this->commandWithDefaultArgs( 'convert' ),
 					caEscapeShellArg( $vs_input_file . '[0]' ),
