@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -236,7 +236,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function register() {
 		$this->opo_config = Configuration::load();
 		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
 		
 		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
 		
@@ -556,9 +555,11 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					// force all images to true color (takes care of GIF transparency for one thing...)
 					$this->handle->setImageType(imagick::IMGTYPE_TRUECOLOR);
 
-					if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
-						$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugImagick->read()");
-						return false;
+					if($this->handle->getImageColorspace() === imagick::COLORSPACE_CMYK) {
+						if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
+							$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugImagick->read()");
+							return false;
+						}
 					}
 					
 					$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
@@ -980,9 +981,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					case 'color':
 						$vn_colorspace = imagick::COLORSPACE_RGB;
 						break;
-					case 'sRGB':
-						$vn_colorspace = imagick::COLORSPACE_SRGB;
-						break;
 					case 'CMYK':
 						$vn_colorspace = imagick::COLORSPACE_CMYK;
 						break;
@@ -990,11 +988,15 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						$vn_colorspace = imagick::COLORSPACE_GRAY;
 						$this->handle->setimagedepth(1);
 						break;
+					default:
+					case 'sRGB':
+						$vn_colorspace = imagick::COLORSPACE_SRGB;
+						break;
 				}
-				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
+				if (!is_null($vn_colorspace) && ($vn_colorspace !== $this->handle->getImageColorspace())) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
-			$this->handle->stripImage();	// remove all lingering metadata
+			//$this->handle->stripImage();	// remove all lingering metadata
 			
 			# write the file
 			try {
