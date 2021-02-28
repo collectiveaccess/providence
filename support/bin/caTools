@@ -69,7 +69,7 @@
 
 	$va_args = $o_opts->getRemainingArgs();
 
-	$vs_app_heading = CLITools::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2019 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
+	$vs_app_heading = CLITools::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2021 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 
 	print $vs_app_heading;
 
