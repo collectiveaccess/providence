@@ -523,7 +523,8 @@
  			return $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, array_merge([
  				'zoomLevel' => caGetOption('defaultZoomLevel', $pa_element_info['settings'], null),
  				'minZoomLevel' => caGetOption('minZoomLevel', $pa_element_info['settings'], null),
- 				'maxZoomLevel' => caGetOption('maxZoomLevel', $pa_element_info['settings'], null)
+ 				'maxZoomLevel' => caGetOption('maxZoomLevel', $pa_element_info['settings'], null),
+ 				'defaultLocation' => caGetOption('defaultLocation', $pa_element_info['settings'], null)
  			], $pa_options));
  		}
  		# ------------------------------------------------------------------
