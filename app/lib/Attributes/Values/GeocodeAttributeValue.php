@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,9 +76,105 @@
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
 			'default' => 0,
-			'width' => 1, 'height' => 1,
+			'width' => '20px', 'height' => 1,
 			'label' => _t('Drop pin at search site?'),
 			'description' => _t('Check this option if you want a pin to be placed at the location of geo-searches.')
+		),
+		'minZoomLevel' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_SELECT,
+			'default' => 1,
+			'options' => [
+				0 => 0,
+				1 => 1,
+				2 => 2,
+				3 => 3,
+				4 => 4,
+				5 => 5,
+				6 => 6,
+				7 => 7,
+				8 => 8,
+				9 => 9,
+				10 => 10,
+				11 => 11,
+				12 => 12,
+				13 => 13,
+				14 => 14,
+				15 => 15,
+				16 => 16,
+				17 => 17,
+				18 => 18
+			],
+			'width' => '100px', 'height' => 1,
+			'label' => _t('Minimum zoom level'),
+			'description' => _t('Minimum allowable zoom level for map.')
+		),
+		'maxZoomLevel' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_SELECT,
+			'default' => 16,
+			'options' => [
+				0 => 0,
+				1 => 1,
+				2 => 2,
+				3 => 3,
+				4 => 4,
+				5 => 5,
+				6 => 6,
+				7 => 7,
+				8 => 8,
+				9 => 9,
+				10 => 10,
+				11 => 11,
+				12 => 12,
+				13 => 13,
+				14 => 14,
+				15 => 15,
+				16 => 16,
+				17 => 17,
+				18 => 18
+			],
+			'width' => '100px', 'height' => 1,
+			'label' => _t('Maximum zoom level'),
+			'description' => _t('Maximum allowed zoom level for map.')
+		),
+		'defaultZoomLevel' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_SELECT,
+			'default' => null,
+			'options' => [
+				_t('Auto') => -1,
+				0 => 0,
+				1 => 1,
+				2 => 2,
+				3 => 3,
+				4 => 4,
+				5 => 5,
+				6 => 6,
+				7 => 7,
+				8 => 8,
+				9 => 9,
+				10 => 10,
+				11 => 11,
+				12 => 12,
+				13 => 13,
+				14 => 14,
+				15 => 15,
+				16 => 16,
+				17 => 17,
+				18 => 18
+			],
+			'width' => '100px', 'height' => 1,
+			'label' => _t('Default zoom level'),
+			'description' => _t('Default zoom level for newly opened maps.')
+		),
+		'defaultLocation' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Default map location (enter as decimal &lt;latitude&gt;,&lt;longitude&gt;)'),
+			'description' => _t('Default center location for newly opened maps. Set as decimal latitude and longitude values, separated by a comma.')
 		),
 		'doesNotTakeLocale' => array(
 			'formatType' => FT_NUMBER,
@@ -424,7 +520,11 @@
  					$pa_options['baseLayer'] = $vs_base_layer_pref;
  				}
  			}
- 			return $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, $pa_options);
+ 			return $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, array_merge([
+ 				'zoomLevel' => caGetOption('defaultZoomLevel', $pa_element_info['settings'], null),
+ 				'minZoomLevel' => caGetOption('minZoomLevel', $pa_element_info['settings'], null),
+ 				'maxZoomLevel' => caGetOption('maxZoomLevel', $pa_element_info['settings'], null)
+ 			], $pa_options));
  		}
  		# ------------------------------------------------------------------
  		public function getAvailableSettings($pa_element_info=null) {
